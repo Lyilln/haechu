@@ -4301,11 +4301,18 @@ async function hbLogout(){ try{ clearTimeout(HB.ft); if(HB.dirty.size) await hbF
   try{ if(t) fetch(HB_URL+"/auth/v1/logout",{method:"POST",headers:{apikey:HB_KEY,Authorization:"Bearer "+t}}); }catch(e){}
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]); applyRoster(); }
 /* 照片、語音、影片：上傳到雲端，別人的手機找不到就從雲端下載 */
+/* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
+const MEDIA_URL="";
 async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
+  if(MEDIA_URL){ if(blob.size>48*1024*1024){ toast("檔案太大（超過 48MB），其他人會看不到"); return false; }
+    for(let i=0;i<3;i++){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"PUT",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":blob.type||"application/octet-stream"},body:blob}); if(r.ok||r.status===409) return true; if(r.status===401) await hbRefresh(); }catch(e){} await new Promise(r=>setTimeout(r,1500*(i+1))); }
+    toast("照片／語音沒有上傳成功，其他人可能看不到，請再傳一次"); return false; }
   if(blob.size>48*1024*1024){ toast("檔案太大（超過 48MB），其他人會看不到"); return false; }
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"application/octet-stream","x-upsert":"false"}}); return true; }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return true; await new Promise(r=>setTimeout(r,1500*(i+1))); } }
   toast("照片／語音沒有上傳成功，其他人可能看不到，請再傳一次"); return false; }
-async function hbDownload(id){ if(!HB_ON) return null; try{ const r=await fetch(HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id)); if(!r.ok) return null; return await r.blob(); }catch(e){ return null; } }
+async function hbDownload(id){ if(!HB_ON) return null;
+  if(MEDIA_URL){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id)); if(r.ok) return await r.blob(); }catch(e){} }
+  try{ const r=await fetch(HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id)); if(!r.ok) return null; return await r.blob(); }catch(e){ return null; } }
 
 /* 第一次開啟：產生示範資料（時間都相對「現在」計算，所以永遠不會過期） */
 function seed(){
