@@ -4075,6 +4075,11 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .cc-bd{position:absolute;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 110px);z-index:5;padding:10px 14px;border-radius:999px;background:#fff;color:#3C3489;font-weight:700;border:0}
 #ccNow{display:block;margin-top:4px;color:#cbbcff;font-size:12px}
 .concert2 .cc-fb{display:none}.concert2.menu-on .cc-fb{display:flex}
+
+/* 頭貼照片：iPhone 上按鈕裡的照片會被撐成橢圓、露出後面的底色；改成鋪滿整個圓 */
+:is(.ap2-av,.ad-av):has(> .av-img){position:relative;overflow:visible}
+:is(.ap2-av,.ad-av) > .av-img{position:absolute;inset:0;width:100%!important;height:100%!important;max-width:none;border-radius:50%;object-fit:cover;display:block}
+.ap2-av:has(> .av-img),.ad-av:has(> .av-img){background:transparent!important}
 </style>
 </head>
 <body>
@@ -9782,7 +9787,7 @@ document.addEventListener("click",e=>{
       setArtProf(mid,{[artNKey(k)]:v===MEMBERS[mid].name?"":v}); layer.innerHTML=""; render(); toast("已更新"+ART_NK[k]); break; }
     case "artCoverEd": case "artAvEd": { const mid=session().member||uniMe(), cov=a==="artCoverEd", has=cov?artProf(mid).cover:artProf(mid).avatar; if(has){ iosSheet([[cov?"換一張背景":"換一張頭貼",cov?"artPickCover":"artPickAv"],["恢復預設",cov?"artResetCover":"artResetAv"]]); break; } }   // 還沒換過：直接打開相簿，不用多一層選單
     case "artPickCover": case "artPickAv": { const mid=session().member||uniMe(), cov=a==="artPickCover"||a==="artCoverEd"; layer.innerHTML=""; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,cov?1400:480); const url=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(setArtProf(mid,cov?{cover:url}:{avatar:url})){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(cov?"已換上新背景":"已換上新頭貼"); } }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,cov?1400:480); if(!cov) b=await squareImg(b,480); const url=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(setArtProf(mid,cov?{cover:url}:{avatar:url})){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(cov?"已換上新背景":"已換上新頭貼"); } }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
     case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(); setArtProf(mid,a==="artResetCover"?{cover:""}:{avatar:""}); layer.innerHTML=""; render(); break; }
     case "uniSec": { const r0=route(); ui.secLast=ui.secLast||{}; ui.secLast[r0.role]=location.hash; const h=ui.secLast[t.dataset.v]||UNI_SEC[t.dataset.v]; layer.innerHTML=""; location.hash=h; window.scrollTo(0,0); break; }
     case "tLeave": openLeaveRoom(t.dataset.m); break;
@@ -10865,6 +10870,11 @@ const adminView=()=>{ try{ return route().role==="admin"&&!!session()&&session()
 function origName(by,fallback){ const e=String(by||"").toLowerCase(); const a=e&&ACCOUNTS[e]; return (a&&a.name)||fallback||"粉絲"; }
 const shownName=o=>adminView()&&o&&o.by?origName(o.by,o.name):(o&&o.name)||"粉絲";
 function setArtProf(mid,patch){ const all=S.get(K.artProf,{}); all[mid]={...(all[mid]||{}),...patch}; Object.keys(all[mid]).forEach(k=>{ if(!all[mid][k]) delete all[mid][k]; }); try{ S.set(K.artProf,all); return true; }catch(e){ toast("圖片太大，存不下來"); return false; } }
+/* 頭貼照片裁成正方形（取中間），圓形頭貼才不會變形 */
+async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=u; });
+  const s0=Math.min(im.naturalWidth,im.naturalHeight), sz=Math.min(max,s0), c=document.createElement("canvas"); c.width=c.height=sz;
+  c.getContext("2d").drawImage(im,(im.naturalWidth-s0)/2,(im.naturalHeight-s0)/2,s0,s0,0,0,sz,sz); URL.revokeObjectURL(u);
+  return await new Promise(res=>c.toBlob(b=>res(b||blob),"image/jpeg",.88)); }catch(e){ return blob; } }
 /* 頭貼：有上傳就用照片，沒有就用名字第一個字 */
 const mAvIn=mid=>{ const p=artProf(mid), m=MEMBERS[mid]; return p.avatar?`<img class="av-img" src="${p.avatar}" alt="">`:esc(m?m.name[0]:""); };
 const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
