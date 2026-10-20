@@ -4409,7 +4409,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020142823";
+const BUILD="20261020143640";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -7359,7 +7359,7 @@ function snSeed(){ return; const d=snDB(); if(d.seeded&&d.seed2) return; if(d.se
 const snFol=(d,uid)=>{ if(!d.fol[uid]){ d.fol[uid]=Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).map(id=>"m:"+id).concat(SNS_FANS.slice(0,3).map(f=>"f:"+f[0])); } return d.fol[uid]; };
 const snFollowers=(d,uid)=>Object.keys(d.fol).filter(k=>(d.fol[k]||[]).includes(uid)).length;
 const snLikes=(d,p)=>(p.base||0)+((d.likes[p.id]||[]).length);
-const snAv=(u,sz=32,ring=false,seen=false)=>u?`<span class="sn-av ${ring?"ring":""} ${seen?"seen":""}" style="--s:${sz}px"><i style="background:${grad(u.g||0)}">${u.av?`<img src="${u.av}" alt="">`:u.mid?mAvIn(u.mid):esc((u.name||u.u||"?")[0])}</i></span>`:"";
+const snAv=(u,sz=32,ring=false,seen=false)=>u?`<span class="sn-av ${ring?"ring":""} ${seen?"seen":""}" style="--s:${sz}px"><i style="background:${grad(u.g||0)}">${u.av?`<span class="av-img av-bgi" style="background-image:url('${u.av}')"></span>`:u.mid?mAvIn(u.mid):esc((u.name||u.u||"?")[0])}</i></span>`:"";
 const snPic=(seed,g,cls="")=>`<span class="sn-pic ${cls}" style="background:${grad((g||0)+(strHash(String(seed))%5))}"></span>`;
 const snMedia=(p,u,i)=>p.media&&p.media[i]?`<img class="sn-img" data-mid="${p.media[i].mid}" alt="">`:snPic(p.pics?p.pics[i]:p.id+i,u?u.g:0,"fill");
 const snCount=p=>p.media?p.media.length:(p.pics||[1]).length;
@@ -10407,11 +10407,31 @@ const thArtOf=t=>t.art||(t.light&&t.light.img)||(t.dark&&t.dark.img)||"";
 const thPat=(t,v,dark)=>t.pattern?`${dark?`linear-gradient(${rgba(v.bg,.8)},${rgba(v.bg,.8)}),`:""}url("${t.pattern}") repeat 0 0/150px,`:"";
 
 /* 套用：寫一段樣式蓋在最後面 */
+/* 主題換色：App 裡原本寫死的紫色／粉紅色（卡片底、漸層、標籤、文字…），換主題時全部換成主題的顏色
+   照深淺色分開處理，深色模式的顏色不會跑到淺色模式，反過來也一樣 */
+let thRcKey="";
+function thRecolor(t,v){ let st=document.getElementById("thRecolor"); if(!st){ st=document.createElement("style"); st.id="thRecolor"; const th=document.getElementById("thCSS"); document.head.insertBefore(st,th||null); }
+  if(!t){ st.textContent=""; thRcKey=""; return; } const key=t.id+"|"+v.ac; if(key===thRcKey) return; thRcKey=key;
+  const toHsl=(r,g,b)=>{ r/=255; g/=255; b/=255; const mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2; let h=0, s=0; if(mx!==mn){ const d=mx-mn; s=l>.5?d/(2-mx-mn):d/(mx+mn); h=mx===r?(g-b)/d+(g<b?6:0):mx===g?(b-r)/d+2:(r-g)/d+4; h*=60; } return [h,s,l]; };
+  const toRgb=(h,s,l)=>{ const k=n=>(n+h/30)%12, a=s*Math.min(l,1-l), f=n=>l-a*Math.max(-1,Math.min(k(n)-3,Math.min(9-k(n),1))); return [f(0)*255,f(8)*255,f(4)*255]; };
+  const [ar,ag,ab]=hexRgb(v.ac), [TH,TS]=toHsl(ar,ag,ab);
+  const P=["background-color","background-image","color","-webkit-text-fill-color","text-shadow","border-top-color","border-right-color","border-bottom-color","border-left-color","box-shadow","outline-color","fill","stroke"];
+  const hex2rgb=x=>x.replace(/#([0-9a-f]{3,8})\b/gi,(m,h)=>{ if(h.length===3||h.length===4) h=h.split("").map(c=>c+c).join(""); if(h.length!==6&&h.length!==8) return m; const n=[0,2,4].map(i=>parseInt(h.slice(i,i+2),16)), a=h.length===8?parseInt(h.slice(6,8),16)/255:1; return a<1?`rgba(${n[0]},${n[1]},${n[2]},${+a.toFixed(3)})`:`rgb(${n[0]},${n[1]},${n[2]})`; });
+  const fix=val=>hex2rgb(val).replace(/rgba?\(([^)]+)\)/g,(m0,inner)=>{ const q=inner.split(/[\s,\/]+/).filter(Boolean).map(Number); const [r,g,b]=q, a=q.length>3?q[3]:1; if([r,g,b].some(isNaN)) return m0;
+    const [h,sa,l]=toHsl(r,g,b); if(sa<.18||l<.06||l>.985||!(h>=235&&h<=350)) return m0;
+    const [R2,G2,B2]=toRgb(TH,Math.min(1,sa*Math.max(.45,TS)),l); return a<1?`rgba(${Math.round(R2)},${Math.round(G2)},${Math.round(B2)},${+a.toFixed(3)})`:`rgb(${Math.round(R2)},${Math.round(G2)},${Math.round(B2)})`; });
+  const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,"html[data-th]"); if(/^html\b/.test(x)) return x.replace(/^html/,'html[data-th]:not([data-theme="dark"])'); if(x===":root") return 'html[data-th]:not([data-theme="dark"])'; return 'html[data-th]:not([data-theme="dark"]) '+x; }).join(",");
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]/.test(r.selectorText)) continue; const d=[];
+      for(const p2 of P){ const val=r.style.getPropertyValue(p2); if(!val||/var\(/.test(val)) continue; const nv=fix(val); if(nv!==val) d.push(`${p2}:${nv}${r.style.getPropertyPriority(p2)?"!important":""}`); }
+      if(d.length) out.push(`${pre(r.selectorText)}{${d.join(";")}}`); }
+    else if(r.type===4&&r.cssRules){ const b0=out.length; walk(r.cssRules); if(out.length>b0){ const inner=out.splice(b0); out.push(`@media ${r.conditionText||r.media.mediaText}{${inner.join("\n")}}`); } } } };
+  [...document.styleSheets].filter(x=>x.ownerNode&&x.ownerNode.tagName==="STYLE"&&!["thCSS","thRecolor"].includes(x.ownerNode.id)).forEach(sh=>{ try{ walk(sh.cssRules); }catch(e){} });
+  st.textContent=out.join("\n"); }
 function thApplyCSS(){
   let st=document.getElementById("thCSS"); if(!st){ st=document.createElement("style"); st.id="thCSS"; document.head.appendChild(st); }
   const root=document.documentElement, t=session()?thCur():null;
-  if(!t){ st.textContent=""; root.removeAttribute("data-th"); return; }
-  const dark=thDarkNow(), v=thVar(t,dark), [r,g,b]=hexRgb(v.ac);
+  if(!t){ st.textContent=""; root.removeAttribute("data-th"); thRecolor(null); return; }
+  const dark=thDarkNow(), v=thVar(t,dark), [r,g,b]=hexRgb(v.ac); try{ thRecolor(t,thVar(t,false)); }catch(e){}
   const card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), s2=dark?mixHex(v.bg,"#ffffff",.11):mixHex(v.bg,v.ac,.06), s3=dark?mixHex(v.bg,"#ffffff",.16):mixHex(v.bg,v.ac,.11);
   const vink=dark?mixHex(v.ac,"#ffffff",.35):mixHex(v.ac,v.ink,.35), H="html[data-th][data-theme]";
   root.setAttribute("data-th",t.id);
@@ -10429,6 +10449,7 @@ ${H} .t-b.me{background:${v.bubM}!important;color:${thTxtOn(v.bubM,v)}!important
 ${t.deco?`${H} .t-b::after{content:"";position:absolute;right:-7px;top:-8px;width:18px;height:18px;background:url("${t.deco}") center/contain no-repeat;pointer-events:none}${H} .t-b.me::after{right:auto;left:-7px}`:""}
 ${H} .t-glow{background:linear-gradient(180deg,${rgba(v.ac,dark?.32:.2)} 0%,${rgba(v.ac,dark?.14:.08)} 35%,${rgba(v.bg,0)} 100%)!important}
 ${H} .t-page{background:${v.bg}!important}
+${H} .t-bgl.t-default{background:${thPat(t,v,dark)}${v.bg}!important}
 ${H} .t-pill{color:${vink}!important;border-color:${rgba(v.ac,.25)}!important;background:${card}!important}
 ${H} .t-empty-ico{color:${rgba(v.ac,.6)}!important;border-color:${rgba(v.ac,.2)}!important}
 ${H} .t-foot{background:${v.bar}!important;border-top:0!important;box-shadow:none!important}
