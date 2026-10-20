@@ -4109,6 +4109,15 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .ab-tx small{font-size:12px;color:var(--ink-3)}
 .ab-tx b{font-size:15px;font-weight:800;line-height:1.3}
 .ab-tx em{font-style:normal;font-size:13px;color:var(--ink-2)}
+
+/* 帳號清單：名字太長就截掉，「重設密碼」不會超出框框 */
+.ac-list{padding:4px 14px;overflow:hidden}
+.ac-row{display:flex;align-items:center;gap:10px;min-width:0}
+.ac-row:first-child{border-top:0}
+.ac-row b{flex:0 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-row small{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ac-row .btn{flex:none;margin-left:auto;white-space:nowrap}
+.roster .section-h{margin:22px 2px 12px}
 </style>
 </head>
 <body>
@@ -4214,13 +4223,13 @@ async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false}={},n
   if(!res.ok){ const er=new Error((j&&(j.msg||j.message||j.error_description||j.error))||("HTTP "+res.status)); er.status=res.status; er.code=j&&(j.error_code||j.code); throw er; }
   return j;
 }
-function hbSetTok(r){ HB.tok=r.access_token; HB.ref=r.refresh_token||HB.ref; HB.exp=Date.now()+((r.expires_in||3600)*1000); HB.uid=(r.user&&r.user.id)||HB.uid; }
+function hbSetTok(r){ HB.tok=r.access_token; HB.ref=r.refresh_token||HB.ref; HB.exp=Date.now()+((r.expires_in||3600)*1000); HB.uid=(r.user&&r.user.id)||HB.uid; try{ if(HB.ref) localStorage.setItem("daisuki_hb_auth",JSON.stringify({ref:HB.ref})); }catch(e){} }
 async function hbRefresh(){ try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r); return true; }catch(e){ if(!e.net){ hbKicked(); } return false; } }
 /* 維修模式：管理員打開後，管理員以外的人都不能登入，已經在用的人也會被請出去 */
 const maintOn=()=>!!(S.get(K.maint,{})||{}).on;
 function maintKick(){ try{ const s=session(); if(!HB_ON||!s||!maintOn()) return false; const a=ACCOUNTS[s.email]; if(a&&a.role==="admin") return false;
   hbLogout(); SS.del(); layer.innerHTML=""; ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; go("auth"); return true; }catch(e){ return false; } }
-function hbKicked(){ HB.tok=null; HB.ref=null; hbStop(); try{ SS.del(); }catch(e){} ui.loginErr="登入逾時，請重新登入"; try{ go("auth"); }catch(e){} }
+function hbKicked(){ HB.tok=null; HB.ref=null; try{ localStorage.removeItem("daisuki_hb_auth"); }catch(e){} hbStop(); try{ SS.del(); }catch(e){} ui.loginErr="登入逾時，請重新登入"; try{ go("auth"); }catch(e){} }
 function hbErrText(e,signup){ const c=String(e.code||""), m=String(e.message||"");
   if(e.net) return "連不上伺服器，請檢查網路";
   if(signup&&(c==="user_already_exists"||/already/i.test(m))) return "這個帳號已經有人用了";
@@ -4313,6 +4322,16 @@ let hbPT=0; function hbProfilesNow(){ if(!HB_ON||!HB.tok||Date.now()-hbPT<3000) 
 function hbStart(){ hbStop(); HB.pt=setInterval(hbPoll,4000); }
 function hbStop(){ clearInterval(HB.pt); HB.pt=null; }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&HB.tok) hbPoll(); });
+/* 打開 App：3 個月內登入過就直接進去 */
+async function hbResume(){ const h0=location.hash, sv=sessLoad(); let a=null; try{ a=JSON.parse(localStorage.getItem("daisuki_hb_auth")||"null"); }catch(e){}
+  if(!sv||!a||!a.ref) return false; HB.ref=a.ref; ui.authBusy=true; try{ render(); }catch(e){}
+  try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r);
+    await hbLoadProfiles(); await hbPullAll(); HB.fans=(await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}).catch(()=>({})))||{}; hbStart();
+    const un=String(sv.email||""); ui.authBusy=false; if(!ACCOUNTS[un]) throw new Error("gone");
+    if(maintOn()&&ACCOUNTS[un].role!=="admin"){ await hbLogout(); SS.del(); ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; render(); return true; }
+    pushResync().then(()=>{ if(ui.pushOn) hbSoon(); });
+    loginAs(un); if(h0&&/^#\/(fan|artist|admin)/.test(h0)&&h0!==location.hash) location.hash=h0; return true;
+  }catch(e){ ui.authBusy=false; if(!e.net){ HB.tok=null; HB.ref=null; SS.del(); } else ui.loginErr="連不上伺服器，請檢查網路"; try{ render(); }catch(x){} return false; } }
 /* 登入／註冊 */
 async function hbAuth(u,pw,signup,name){ const un=String(u||"").trim().toLowerCase(); ui.loginErr=""; ui.authBusy=true; try{ render(); }catch(e){}
   try{ const body={email:hbEmail(un),password:hbPw(pw)};
@@ -4360,7 +4379,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020125413";
+const BUILD="20261020130645";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -5196,8 +5215,12 @@ return {analyze,mount,sample,buildMesh};
 let ssMem=null;   // 只放在記憶體：關掉或重新打開就要重新登入（帳號會幫你記著）
 /* 簽售報名用的「我是誰」：示範帳號沿用 fan:me，新註冊的帳號用自己的 email，報名紀錄才不會混在一起 */
 const fsMeOf=v=>{ const e=v&&v.role==="fan"?String(v.email||"").toLowerCase():""; return e?"fan:"+e:"fan:me"; };
-const SS={ get(){ return ssMem; }, set(v){ ssMem=v; try{ FS_ME=fsMeOf(v); }catch(e){} try{ const a=v&&(!v.admin||v.uni)&&ACCOUNTS[v.email]; ME.name=(a&&a.name)||"棉花糖粉絲"; applyNick(); }catch(e){} try{ applyTheme(); }catch(e){} }, del(){ ssMem=null; try{ FS_ME="fan:me"; }catch(e){} try{ ui.lk=null; lockPaint(); applyTheme(); }catch(e){} } };
-S.del(K.session);   // 舊版把登入狀態存在手機裡，清掉
+const SS={ get(){ return ssMem; }, set(v){ ssMem=v; sessSave(v); try{ FS_ME=fsMeOf(v); }catch(e){} try{ const a=v&&(!v.admin||v.uni)&&ACCOUNTS[v.email]; ME.name=(a&&a.name)||"棉花糖粉絲"; applyNick(); }catch(e){} try{ applyTheme(); }catch(e){} }, del(){ ssMem=null; sessSave(null); try{ localStorage.removeItem("daisuki_hb_auth"); }catch(e){} try{ FS_ME="fan:me"; }catch(e){} try{ ui.lk=null; lockPaint(); applyTheme(); }catch(e){} } };
+/* 登入狀態：記在這支手機，3 個月內有打開過就不用重新登入（太久沒用才要再登入） */
+const SESS_DAYS=90;
+function sessSave(v){ try{ if(v) localStorage.setItem("daisuki_session",JSON.stringify({v,ts:Date.now()})); else localStorage.removeItem("daisuki_session"); }catch(e){} }
+function sessLoad(){ try{ const o=JSON.parse(localStorage.getItem("daisuki_session")||"null"); if(!o||!o.v||Date.now()-(o.ts||0)>SESS_DAYS*864e5) return null; return o.v; }catch(e){ return null; } }
+function sessTouch(){ try{ const o=JSON.parse(localStorage.getItem("daisuki_session")||"null"); if(o&&o.v&&Date.now()-(o.ts||0)>3600e3){ o.ts=Date.now(); localStorage.setItem("daisuki_session",JSON.stringify(o)); } }catch(e){} }
 const isAdminAcct=()=>{ const s=session(); return !!(s&&s.admin); };
 
 /* ===== 確認視窗（App 內建，取代瀏覽器的 confirm） ===== */
@@ -6740,7 +6763,7 @@ function mountSticks(scope){
   });
 }
 function render(){
-  const r=route(), s=session();
+  const r=route(), s=session(); if(s) sessTouch();
   const hashChanged=ui._h!==location.hash; ui._h=location.hash;
   if(s&&suspendOf(s.email)){ const sp=suspendOf(s.email); SS.del(); ui.loginErr=`這個帳號因為外流 TIE 內容，${suspendText(sp)}`; return go("auth"); }
   if(!s){ if(r.role!=="auth") return go("auth"); return paint(viewAuth(),false); }
@@ -10310,7 +10333,7 @@ const thCurId=()=>{ const id=S.get(acK(K.thCur),""); return id&&thOwned().includ
 const thCur=()=>{ const id=thCurId(); return id?thById(id):null; };
 const thRot=()=>{ const r={on:false,every:24,last:0,sel:null,...S.get(acK(K.thRot),{})}; if(r.every<=7) r.every*=24; if(!Array.isArray(r.sel)) r.sel=[]; return r; };
 const TH_EVERY=[[12,"每 12 小時"],[24,"每天"],[72,"每 3 天"],[168,"每週"]];
-const lockCfg=()=>({on:false,pin:"",...S.get(acK(K.lockCfg),{})});
+const lockCfg=()=>({on:false,pin:""});
 const thModeTxt=t=>t.modes==="both"?"淺色＋深色":t.modes==="light"?"只有淺色":"只有深色";
 const thFor=t=>t.scope==="app"?"HAECHU":t.scope==="member"?(MEMBERS[t.mid]?MEMBERS[t.mid].name:""):(groupOf(t.gid)?groupOf(t.gid).name:"");
 const thForce=()=>{ const t=thCur(); if(!t) return null; return t.modes==="light"?false:t.modes==="dark"?true:null; };
@@ -10346,6 +10369,10 @@ ${H} .t-rh-row h3,${H} .t-ib,${H} .t-sub{color:${v.ink}!important}${H} .t-dots i
 ${H} .t-b{background:${v.bubA}!important;color:${thTxtOn(v.bubA,v)}!important;border:1.5px solid ${v.bubAB}!important;box-shadow:none!important;position:relative}
 ${H} .t-b.me{background:${v.bubM}!important;color:${thTxtOn(v.bubM,v)}!important;border-color:${v.bubMB}!important;text-shadow:none!important}
 ${t.deco?`${H} .t-b::after{content:"";position:absolute;right:-7px;top:-8px;width:18px;height:18px;background:url("${t.deco}") center/contain no-repeat;pointer-events:none}${H} .t-b.me::after{right:auto;left:-7px}`:""}
+${H} .t-glow{background:linear-gradient(180deg,${rgba(v.ac,dark?.32:.2)} 0%,${rgba(v.ac,dark?.14:.08)} 35%,${rgba(v.bg,0)} 100%)!important}
+${H} .t-page{background:${v.bg}!important}
+${H} .t-pill{color:${vink}!important;border-color:${rgba(v.ac,.25)}!important;background:${card}!important}
+${H} .t-empty-ico{color:${rgba(v.ac,.6)}!important;border-color:${rgba(v.ac,.2)}!important}
 ${H} .t-foot{background:${v.bar}!important;border-top:0!important;box-shadow:none!important}
 ${H} .t-inp{background:${dark?mixHex(v.bar,"#ffffff",.08):"#ffffff"}!important}
 ${H} .t-meta span,${H} .t-time,${H} .t-day span{color:${v.sub}!important}`;
@@ -10402,7 +10429,7 @@ function viewTint(id){
       ${t.desc?`<p class="thd-desc">${esc(t.desc)}</p>`:""}
       <div class="thd-meta"><span>${t.scope==="app"?"官方免費主題":t.scope==="member"?"藝人主題":"團體主題"}</span><span>${thModeTxt(t)}</span></div>
       <div class="thd-pvh"><b>套用後的樣子</b>${both?`<div class="seg2 th-seg" style="--i:${dk?1:0}"><i class="seg2-ind"></i><button class="${dk?"":"on"}" data-a="thPv" data-v="0">淺色</button><button class="${dk?"on":""}" data-a="thPv" data-v="1">深色</button></div>`:""}</div>
-      <div class="thd-pv">${["home","chat","lock"].map(k=>`<figure>${thMock(k,t,dk,.6)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室",lock:"密碼鎖"}[k]}</figcaption></figure>`).join("")}</div>
+      <div class="thd-pv">${["home","chat"].map(k=>`<figure>${thMock(k,t,dk,.6)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室",lock:"密碼鎖"}[k]}</figcaption></figure>`).join("")}</div>
     </main>`; }
   const on=getThemes().filter(t=>t.status==="on"), f=followed();
   const sort=L=>L.slice().sort((a,b)=>(f.includes(b.gid)-f.includes(a.gid))||(b.ts-a.ts));
@@ -10440,11 +10467,6 @@ function viewLook(){
         ${del?`<button class="th-dot del" data-a="thDel" data-v="${id}" aria-label="刪除">${XI}</button>`:R.on?`<button class="th-dot ${on?"on":""}" data-a="thRotPick" data-v="${id}" aria-label="加入輪播">${on||""}</button>`:`<span class="th-dot ${on?"on":""}">${on?"✓":""}</span>`}
         <b>${x?esc(x.name):"基本"}</b><small>有效期間・無期限</small></div>`; }).join("")}</div>
     <button class="btn btn-soft btn-block th-goshop" data-a="thStore">到 ${TH_STORE} 逛主題</button>
-    <div class="section-h">密碼鎖</div>
-    <section class="card">
-      <div class="list-btn">使用密碼鎖<button class="sw" role="switch" aria-checked="${L.on}" aria-label="密碼鎖" data-a="lkSw" style="margin-left:auto"></button></div>
-      ${L.on?`<button class="list-btn" data-a="lkChange">變更密碼</button>${demoOn()?`<button class="list-btn" data-a="lkNow">示範：現在鎖起來</button>`:""}`:""}
-    </section>
   </main>`;
 }
 
@@ -10469,14 +10491,14 @@ function lockKey(v){ const k=ui.lk; if(!k) return; if(v==="del"){ k.pin=k.pin.sl
     if(k.first===k.pin){ S.set(acK(K.lockCfg),{on:true,pin:k.pin}); ui.lk=null; lockPaint(); render(); toast("已設定密碼鎖"); }
     else { k.first=""; k.pin=""; k.err="兩次不一樣，請重新設定"; lockPaint(); } },140); }
 /* 離開 App 再回來就鎖起來 */
-document.addEventListener("visibilitychange",()=>{ if(document.hidden) return; const L=session()?lockCfg():{}; if(L.on&&L.pin&&!ui.lk) lockShow("unlock"); });
+/* 密碼鎖已拿掉（不使用） */
 
 /* ---------- 做主題：管理員自己做，或藝人送申請 ---------- */
 const thBlank=()=>{ const s=session()||{}, m=s.member&&MEMBERS[s.member]; return {name:"",desc:"",scope:m?"member":"group",gid:m?m.group:(GROUPS[0]||{}).id||"",mid:s.member||"",price:0,modes:"both",light:{...TH_DEF.light},dark:{...TH_DEF.dark},icons:{},pass:["","","",""],cover:"",pattern:"",art:"",strip:"",deco:""}; };
 function thDraft(id){ if(!ui.thDraft||ui.thDraft._for!==(id||"new")){ const t=id&&thById(id), b=thBlank(); const d={...b,...(t?JSON.parse(JSON.stringify(t)):{}),_for:id||"new"};
     d.light={...TH_DEF.light,...(d.light||{})}; d.dark={...TH_DEF.dark,...(d.dark||{})}; d.icons=d.icons||{}; d.pass=(d.pass||[]).concat(["","","",""]).slice(0,4); if(!d.art) d.art=thArtOf(d); ui.thDraft=d; ui.thEdV=ui.thEdV||"light"; } return ui.thDraft; }
 const thEdVar=d=>d.modes==="both"?(ui.thEdV||"light"):d.modes;
-function thEdPv(d){ const dk=thEdVar(d)==="dark"; return ["home","chat","lock"].map(k=>`<figure>${thMock(k,d,dk,.42)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室",lock:"密碼鎖"}[k]}</figcaption></figure>`).join(""); }
+function thEdPv(d){ const dk=thEdVar(d)==="dark"; return ["home","chat"].map(k=>`<figure>${thMock(k,d,dk,.42)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室",lock:"密碼鎖"}[k]}</figcaption></figure>`).join(""); }
 function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id), me=s.member&&MEMBERS[s.member], ev=thEdVar(d), v=d[ev];
   const lab=t=>`<span class="fld-lab">${t}</span>`;
   const up=(f,cur,ttl,kind="")=>`<div class="th-slot ${kind}">${cur?`<button class="th-icb has" data-a="thImgX" data-f="${f}" aria-label="移除${ttl}"><img src="${cur}" alt=""><i>${XI}</i></button>`:`<label class="th-icb">＋<input type="file" accept="image/*" class="th-up" data-f="${f}" hidden></label>`}<small>${ttl}</small></div>`;
@@ -10500,7 +10522,7 @@ function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id),
       <div class="th-cgrid">${TH_COLS.map(([k,l])=>`<label class="th-c"><input type="color" class="th-in" data-f="${ev}.${k}" value="${v[k]}"><span>${l}</span></label>`).join("")}</div></section>
     <section class="card studio"><h3>圖片（可不放）</h3>
       <div class="th-slots">${up("cover",d.cover,"封面","tall")}${up("art",d.art,"主角插圖","tall")}${up("pattern",d.pattern,"背景圖案")}${up("strip",d.strip,"花邊","wide")}${up("deco",d.deco,"對話框裝飾")}</div>
-      ${lab("密碼鎖圖示")}<div class="th-icons four">${[0,1,2,3].map(i=>up("pass."+i,d.pass[i],String(i+1))).join("")}</div>
+
       ${lab("選單圖示・粉絲端")}<div class="th-icons">${TH_TABS.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div>
       ${lab("選單圖示・藝人端")}<div class="th-icons">${TH_TABS_ART.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div></section>
     <button class="btn btn-main btn-block" data-a="thSave" data-v="${id||""}">${adm?"儲存並上架":"送出申請"}</button>
@@ -10908,11 +10930,11 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
       <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="acPw" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).pw||"")}"></label>
       <button class="btn btn-main btn-block" data-a="acCreate" ${ui.acBusy?"disabled":""}>${ui.acBusy?"建立中…":"建立帳號"}</button></section>
     <div class="section-h">全部帳號<span class="muted">${L.length} 個</span></div>
-    <section class="card">${L.map(([k,a])=>`<div class="rs-m"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><b>${esc(a.name||k)}</b><small>${esc(acctUser(k))}・${ROLE_ZH[a.role]||"粉絲"}</small><button class="btn btn-soft btn-sm" data-a="acReset" data-v="${esc(k)}">重設密碼</button></div>`).join("")}</section>
+    <section class="card ac-list">${L.map(([k,a])=>`<div class="rs-m ac-row"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><b>${esc(a.name||k)}</b><small>${esc(acctUser(k))}・${ROLE_ZH[a.role]||"粉絲"}</small><button class="btn btn-soft btn-sm" data-a="acReset" data-v="${esc(k)}">重設密碼</button></div>`).join("")}</section>
   </main>`; }
 async function acCall(body){ if(!HB_ON) return {ok:true,local:true};
   try{ return await hbFetch("/functions/v1/admin-users",{method:"POST",body}); }
-  catch(e){ const c=String(e.message||""); return {error:e.net?"連不上伺服器":c==="exists"?"這個帳號已經有人用了":c==="not_admin"?"只有管理員能做這件事":e.status===404?"後台還沒設定好（admin-users）":c==="bad_username"?"帳號不能有空白、@、/，最多 20 個字":c==="short_password"?"密碼至少要 4 個字":"沒有成功，請再試一次"}; } }
+  catch(e){ const c=String(e.message||""); return {error:e.net?"後台的 admin-users 小程式沒有回應（還沒部署，或名稱不對）":c==="exists"?"這個帳號已經有人用了":c==="not_admin"?"只有管理員能做這件事":e.status===404?"後台還沒設定好（admin-users）":c==="bad_username"?"帳號不能有空白、@、/，最多 20 個字":c==="short_password"?"密碼至少要 4 個字":"沒有成功，請再試一次"}; } }
 /* 管理員還沒有藝人身分：把自己加進團之後，這裡就是自己的藝人端 */
 function viewNoArtist(){ return `<main class="page"><div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人身分</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster">到藝人與團</button></div></main>`; }
 /* 示範工具 */
@@ -11375,6 +11397,10 @@ seedStores(); seedStores2(); seedMascots(); setTimeout(()=>PIMG.loadAll(),0);
   const ws=S.get(K.whispers,[]); let a=false; ws.forEach(w=>{ if(w.from==="other"&&!w.tr&&T[w.text]){ w.tr=T[w.text]; a=true; } }); if(a) S.set(K.whispers,ws);
   const cs=S.get(K.comments,[]); let b=false; cs.forEach(c=>{ if(c.author!=="me"&&!c.tr&&T[c.text]){ c.tr=T[c.text]; b=true; } }); if(b) S.set(K.comments,cs); })();
 (function addKo2(){ const list=S.get(K.whispers,[]); let ch=false; list.forEach(w=>{ if(KO[w.id]&&!w.ko){ w.ko=KO[w.id]; ch=true; } }); if(ch) S.set(K.whispers,list); })();
+/* 打開 App：記得登入狀態就直接進去 */
+(function resume(){ const sv=sessLoad(); if(!sv) return;
+  if(HB_ON){ hbResume(); return; }
+  if(ACCOUNTS[sv.email]) { const h=location.hash; loginAs(sv.email); if(h&&/^#\/(fan|artist|admin)/.test(h)&&h!==location.hash) location.hash=h; } })();
 render();
 
 /* ---- fix pass: SVG ✕, broken images ---- */
