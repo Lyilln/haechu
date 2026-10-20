@@ -4396,7 +4396,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020135129";
+const BUILD="20261020140315";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -9836,11 +9836,13 @@ document.addEventListener("click",e=>{
       if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!rn){ toast("請輸入本名"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       const key=un.toLowerCase(); if(acctKey(un)){ toast("這個帳號已經有人用了"); break; }
       ui.acBusy=true; ui.acDraft={un,rn,nm,pw}; lsRerender();
-      acCall({action:"create",username:key,name:nm,password:pw}).then(async r=>{ ui.acBusy=false;
+      const role=ui.acRole==="admin"?"admin":"fan";
+      acCall({action:"create",username:key,name:nm,password:pw,role}).then(async r=>{ ui.acBusy=false;
         if(r.error){ lsRerender(); toast(r.error); return; }
-        if(r.local){ ACCOUNTS[key]={user:un,pw,role:"fan",name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
+        if(r.local){ ACCOUNTS[key]={user:un,pw,role,name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
         else { try{ await hbLoadProfiles(); }catch(e){} }
         await setRealName(key,rn); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
+    case "acRole": { const keep=["acUser","acReal","acName","acPw"].map(id=>(document.getElementById(id)||{}).value||""); ui.acRole=t.dataset.v; lsRerender(); ["acUser","acReal","acName","acPw"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); break; }
     case "acEdit": { const k=t.closest("[data-v]").dataset.v; ui.acFor=k; tieModal(`${esc(acctUser(k))} 的本名`,"",`<input id="acRealIn" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(realName(k))}"><button class="t-mbtn main" data-a="acEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "acEditOk": { const k=ui.acFor, v=((document.getElementById("acRealIn")||{}).value||"").trim(); layer.innerHTML=""; setRealName(k,v).then(()=>{ lsRerender(); toast("已儲存"); }); break; }
     case "acReset": { const k=t.dataset.v; ui.acFor=k; tieModal(`重設 ${esc(acctUser(k))} 的密碼`,"",`<input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acResetOk">確認</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
@@ -10963,6 +10965,8 @@ const ROLE_ZH={admin:"管理員",artist:"藝人",fan:"粉絲"};
 function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort((a,b)=>(a[1].role==="admin"?0:a[1].role==="artist"?1:2)-(b[1].role==="admin"?0:b[1].role==="artist"?1:2)||acctUser(a[0]).localeCompare(acctUser(b[0])));
   return `<main class="page roster">
     <section class="card studio"><h3>建立帳號</h3>
+      <span class="fld-lab">身分</span>
+      <div class="seg2 mod-seg" style="--i:${ui.acRole==="admin"?1:0}"><i class="seg2-ind"></i>${[["fan","粉絲"],["admin","管理員"]].map(([k,l])=>`<button class="${(ui.acRole||"fan")===k?"on":""}" data-a="acRole" data-v="${k}">${l}</button>`).join("")}</div>
       <span class="fld-lab">帳號</span><label class="field">${I.user}<input id="acUser" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).un||"")}"></label>
       <span class="fld-lab">本名（只有管理員看得到）</span><label class="field">${I.user}<input id="acReal" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).rn||"")}"></label>
       <span class="fld-lab">暱稱（大家看到的名字，本人之後可以改）</span><label class="field">${I.heart}<input id="acName" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).nm||"")}"></label>
@@ -10973,7 +10977,7 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
   </main>`; }
 async function acCall(body){ if(!HB_ON) return {ok:true,local:true};
   try{ return await hbFetch("/functions/v1/admin-users",{method:"POST",body}); }
-  catch(e){ const c=String(e.message||""); return {error:e.net?"後台的 admin-users 小程式沒有回應（還沒部署，或名稱不對）":c==="exists"?"這個帳號已經有人用了":c==="not_admin"?"只有管理員能做這件事":e.status===404?"後台還沒設定好（admin-users）":c==="bad_username"?"帳號不能有空白、@、/，最多 20 個字":c==="short_password"?"密碼至少要 4 個字":"沒有成功，請再試一次"}; } }
+  catch(e){ const c=String(e.message||""); return {error:e.net?"後台的 admin-users 小程式沒有回應（還沒部署，或名稱不對）":c==="exists"?"這個帳號已經有人用了":c==="not_admin"?"只有管理員能做這件事":e.status===404?"後台還沒設定好（admin-users）":c==="bad_username"?"帳號不能有空白、@、/，最多 20 個字":c==="short_password"?"密碼至少要 4 個字":/database error/i.test(c)?"後台擋住了（請跑第五段 SQL）":"沒有成功："+c.slice(0,60)}; } }
 /* 管理員還沒有藝人身分：把自己加進團之後，這裡就是自己的藝人端 */
 function viewNoArtist(){ return `<main class="page"><div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人身分</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster">到藝人與團</button></div></main>`; }
 /* 示範工具 */
