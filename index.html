@@ -5527,15 +5527,18 @@ function reportWho(r){ if(r.who) return r.who; const c=S.get(K.comments,[]).find
    ========================================================= */
 function viewRoster(){ hbProfilesNow();
   const r=S.get(K.roster,{groups:[],members:{},accounts:{}}), acc=Object.entries(ACCOUNTS).filter(([e,a])=>a.member);
-  const gsel=groupOf(ui.rsGroup)?ui.rsGroup:(GROUPS[0]||{}).id, gc=ui.rsColor??0;
+  const gsel=groupOf(ui.rsGroup)&&!groupOf(ui.rsGroup).solo?ui.rsGroup:(GROUPS.find(g=>!g.solo)||{}).id, gc=ui.rsColor??0;
   return adminHead("ARTISTS")+`<main class="page roster">
     <button class="rev-back" data-a="tab" data-v="me">‹ 回到 ME</button>
-    <section class="card studio"><h3>新增團</h3>
-      <span class="fld-lab">團名</span><label class="field">${I.star}<input id="rgName" maxlength="16" placeholder="輸入文字"></label>
+    <section class="card studio" id="rsNew"><h3>新增</h3>
+      <div class="chips">${[["group","團體"],["solo","SOLOIST"]].map(([k,l])=>`<button class="chip ${(ui.rsType||"group")===k?"on":""}" data-a="rsType" data-v="${k}">${l}</button>`).join("")}</div>
+      <span class="fld-lab">${ui.rsType==="solo"?"藝名":"團名"}</span><label class="field">${I.star}<input id="rgName" maxlength="16" placeholder="輸入文字"></label>
       <div class="rs-sw">${GRADS.map((c,i)=>`<button class="${gc===i?"on":""}" style="background:${grad(i)}" data-a="rsColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div>
-      <button class="btn btn-main btn-block" data-a="rgAdd">新增團</button></section>
-    ${GROUPS.length?`<section class="card studio"><h3>新增藝人</h3>
-      <div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${gsel===g.id?"on":""}" data-a="rsGroup" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
+      ${ui.rsType==="solo"?`<span class="fld-lab">藝人原本的帳號（可先不選）</span><label class="field">${I.user}<select id="rsAcc" class="rs-sel">${fanAccOpts()}</select></label>
+      <span class="fld-lab">生日（例如 3-21，可先不填）</span><label class="field">🎂<input id="rsBday" maxlength="5" placeholder="輸入文字"></label>`:""}
+      <button class="btn btn-main btn-block" data-a="rgAdd">${ui.rsType==="solo"?"新增 SOLOIST":"新增團體"}</button></section>
+    ${GROUPS.some(g=>!g.solo)?`<section class="card studio"><h3>新增團體成員</h3>
+      <div class="chips wrap">${GROUPS.filter(g=>!g.solo).map(g=>`<button class="chip ${gsel===g.id?"on":""}" data-a="rsGroup" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
       <span class="fld-lab">藝人名稱</span><label class="field">${I.user}<input id="rmName" maxlength="16" placeholder="輸入文字"></label>
       <span class="fld-lab">藝人原本的粉絲帳號（可先不選）</span><label class="field">${I.user}<select id="rmEmail" class="rs-sel">${fanAccOpts()}</select></label>
       <span class="fld-lab">生日（例如 3-21，可先不填）</span><label class="field">🎂<input id="rmBday" maxlength="5" placeholder="輸入文字"></label>
@@ -5543,7 +5546,7 @@ function viewRoster(){ hbProfilesNow();
 </section>`:""}
     <div class="section-h">目前的團與藝人<span class="muted">${GROUPS.length} 團</span></div>
     ${GROUPS.map(g=>{const ms=Object.entries(MEMBERS).filter(([id,m])=>m.group===g.id&&!m.official), custom=r.groups.some(x=>x.id===g.id);
-      return `<section class="card rs-g"><div class="rev-gh"><span class="rev-dot" style="background:${grad(g.g)}"></span><b>${esc(g.name)}</b>${custom?`<button class="del" data-a="rgDel" data-v="${g.id}">刪除</button>`:""}</div>
+      return `<section class="card rs-g"><div class="rev-gh"><span class="rev-dot" style="background:${grad(g.g)}"></span><b>${esc(g.name)}</b>${g.solo?`<span class="badge">SOLOIST</span>`:""}${custom?`<button class="del" data-a="rgDel" data-v="${g.id}">刪除</button>`:""}</div>
       <label class="rs-fd"><span>粉絲名</span><input class="fd-in" data-g="${g.id}" maxlength="16" value="${esc((S.get(K.fandom,{}))[g.id]||"")}" placeholder="輸入文字"></label>
       ${ms.map(([id,m])=>{const a=acc.find(([e,x])=>x.member===id);return `<div class="rs-m"><span class="av sm" style="background:${grad(m.g)}">${esc(m.name[0])}</span><b>${esc(m.name)}</b><small>${a?esc(acctUser(a[0])):"還沒有登入帳號"}</small>
         ${a?"":`<button class="btn btn-soft btn-sm" data-a="rmAcc" data-v="${id}">綁定粉絲帳號</button>`}${r.members[id]?`<button class="del" data-a="rmDel" data-v="${id}">刪除</button>`:""}</div>`}).join("")||`<p class="muted" style="font-size:13px;margin:6px 0 0">還沒有成員</p>`}</section>`}).join("")}
@@ -8258,7 +8261,7 @@ const aiFans=()=>S.get(K.aiFans,null)||AIF_BASE.map(f=>({...f,follows:GROUPS.fil
 const aiFan=id=>aiFans().find(f=>f.id===id);
 let SAMPLE=null, aiOff=false, aiBusy={};
 (async()=>{ try{ if(window.claude&&claude.use){ SAMPLE=await claude.use("sample"); if(SAMPLE) render(); } }catch(e){} })();
-const aiReady=()=>!!(SAMPLE&&!aiOff&&aiCfg().on);
+const aiReady=()=>false;   // AI 粉絲已關閉（不使用）
 function aiPick(gid,n){ const l=aiFans().filter(f=>(f.follows||[]).includes(gid)); for(let i=l.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [l[i],l[j]]=[l[j],l[i]]; } return l.slice(0,Math.max(1,Math.round(n*aiCfg().level))); }
 const memKey=(fid,mid)=>fid+":"+mid;
 function aiRemember(fid,mid,line){ const m=S.get(K.aiMem,{}), k=memKey(fid,mid); m[k]=[...(m[k]||[]),line.slice(0,80)].slice(-6); S.set(K.aiMem,m); }
@@ -9151,11 +9154,11 @@ function viewAdmin(tab){
     if(tab==="people") return viewUniPeople();
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
-    if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio"><h3>新增團'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
-      if(r0.p==="new") return uniHead("新增團或藝人")+`<main class="page roster">${h.slice(a,b)}</main>`;
+    if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
+      if(r0.p==="new") return uniHead("新增")+`<main class="page roster">${h.slice(a,b)}</main>`;
       const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}</main>`;
       const fd=S.get(K.fandom,{});
-      return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rev-dot" style="background:${grad(g.g)}"></span>${esc(g.name)}<span class="r">${n} 位${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
+      return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rev-dot" style="background:${grad(g.g)}"></span>${esc(g.name)}<span class="r">${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
     if(tab==="shopadm") return uniMainHead("商店")+viewShopAdmin();
     if(tab==="albums") return uniHead("專輯與店家")+`<main class="page">${GROUPS.length?adminAlbumHtml():NOG_HTML()}</main>`;
     if(tab==="translate"){ const h=viewAiFans(), a=h.indexOf('<section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務'), b=h.indexOf('</section>',a); return uniHead("翻譯服務")+`<main class="page">${a>0?h.slice(a,b+10):""}</main>`; }
@@ -9376,8 +9379,13 @@ document.addEventListener("click",e=>{
     case "revSave": { const v=Math.max(0,Math.min(100,+(document.getElementById("revShare")||{}).value||0)); S.set(K.revShare,v); render(); toast(`藝人分潤比例設為 ${v}%`); break; }
     case "rsColor": ui.rsColor=+t.dataset.v; { const y=window.scrollY; const n=(document.getElementById("rgName")||{}).value; render(); window.scrollTo(0,y); const i=document.getElementById("rgName"); if(i&&n) i.value=n; } break;
     case "rsGroup": ui.rsGroup=t.dataset.v; { const y=window.scrollY, keep=["rmName","rmEmail"].map(id=>(document.getElementById(id)||{}).value||""); render(); window.scrollTo(0,y); ["rmName","rmEmail"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); } break;
-    case "rgAdd": { const n=document.getElementById("rgName").value.trim(); if(!n){ toast("請輸入團名"); break; } if(GROUPS.some(g=>g.name===n)){ toast("已經有這個團了"); break; }
-      const id="g"+Date.now(), gc=ui.rsColor??0, g={id,name:n,g:gc,isNew:true}, off={name:n+" 官方",group:id,g:gc,official:true};
+    case "rsType": ui.rsType=t.dataset.v; { const y=window.scrollY, n=(document.getElementById("rgName")||{}).value; render(); window.scrollTo(0,y); const i=document.getElementById("rgName"); if(i&&n) i.value=n; } break;
+    case "rgAdd": { const solo=ui.rsType==="solo", n=document.getElementById("rgName").value.trim(); if(!n){ toast(solo?"請輸入藝名":"請輸入團名"); break; } if(GROUPS.some(g=>g.name===n)){ toast("已經有這個名字了"); break; }
+      const id="g"+Date.now(), gc=ui.rsColor??0, g={id,name:n,g:gc,isNew:true,...(solo?{solo:true}:{})}, off={name:n+" 官方",group:id,g:gc,official:true};
+      if(solo){ const mid="m"+Date.now(), m={name:n,group:id,g:gc}, em=((document.getElementById("rsAcc")||{}).value||"").trim().toLowerCase(), bd=((document.getElementById("rsBday")||{}).value||"").trim();
+        if(bd&&/^\d{1,2}-\d{1,2}$/.test(bd)){ const all=S.get(K.bdays,{}); all[mid]=bd; S.set(K.bdays,all); }
+        saveRoster(r=>{ r.groups.push(g); r.members[id+"_o"]=off; r.members[mid]=m; }); GROUPS.push(g); MEMBERS[id+"_o"]=off; MEMBERS[mid]=m; if(em) bindArtist(em,mid);
+        ui.rsType="group"; render(); toast(`已新增 SOLOIST「${n}」`); break; }
       saveRoster(r=>{ r.groups.push(g); r.members[id+"_o"]=off; }); GROUPS.push(g); MEMBERS[id+"_o"]=off; ui.rsGroup=id; render(); toast(`已新增「${n}」`); break; }
     case "rmAdd": { const n=document.getElementById("rmName").value.trim(), em=(document.getElementById("rmEmail").value||"").trim().toLowerCase(), gid=groupOf(ui.rsGroup)?ui.rsGroup:(GROUPS[0]||{}).id;
       if(!gid) break; if(!n){ toast("請輸入藝人名稱"); break; }
@@ -10203,8 +10211,11 @@ const TH_TABS_ALL=[...TH_TABS,["live","MEET"],["foc","FOC"]];
 const TH_COLS=[["ac","主色"],["bg","背景"],["ink","文字"],["sub","次要文字"],["bubA","藝人對話框"],["bubAB","藝人對話框邊框"],["bubM","我的對話框"],["bubMB","我的對話框邊框"],["bar","輸入列／鍵盤"]];
 const TH_DEF={light:{ac:"#8843FB",bg:"#FAF9FC",ink:"#1D1A24",sub:"#837D90",bubA:"#FFFFFF",bubAB:"#ECE8F2",bubM:"#8843FB",bubMB:"#8843FB",bar:"#FFFFFF"},
   dark:{ac:"#A48CFF",bg:"#141219",ink:"#F3F1F7",sub:"#9A94A6",bubA:"#2A2733",bubAB:"#2A2733",bubM:"#7B35F0",bubMB:"#7B35F0",bar:"#1B1A21"}};
-const getThemes=()=>S.get(K.themes,[]);
-const saveThemes=L=>S.set(K.themes,L);
+/* 吉祥物主題是 HAECHU 內建的免費主題：不存在資料裡，每個人都看得到 */
+let MS_BUILT=null;
+const msBuilt=()=>MS_BUILT||(MS_BUILT=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室、選單圖示和密碼鎖都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.UTC(2026,9,1)-i*DAY})));
+const getThemes=()=>{ const L=S.get(K.themes,[])||[], have=new Set(L.map(t=>t.id)); return [...msBuilt().filter(t=>!have.has(t.id)),...L]; };
+const saveThemes=L=>S.set(K.themes,L.filter(t=>!(String(t.id).startsWith("th_ms_")&&msBuilt().some(x=>x.id===t.id&&JSON.stringify(x)===JSON.stringify(t)))));
 const thById=id=>getThemes().find(t=>t.id===id);
 /* 每個帳號自己的（藝人帳號切到粉絲端也是同一份） */
 const acK=k=>{ const s=session(); const e=s&&s.email?String(s.email).toLowerCase():""; return !e||e===DEMO_FAN?k:k+"@"+e; };
@@ -10605,7 +10616,7 @@ const MS_THEMES=[
     light:{ac:"#2FAE7C",bg:"#EEFBF4",ink:"#1D5A42",sub:"#6FA690",bubA:"#FFFFFF",bubAB:"#BFE8D3",bubM:"#FFF4C9",bubMB:"#EADC9A",bar:"#C9EEDB"},
     dark:{ac:"#5BD6A2",bg:"#111C17",ink:"#E3F7EE",sub:"#8DB7A6",bubA:"#1C2E26",bubAB:"#2A4237",bubM:"#2F9C6F",bubMB:"#2F9C6F",bar:"#17271F"}}
 ];
-function seedMascots(){ if(S.get(K.seedMascot2,false)) return; S.set(K.seedMascot2,true);
+function seedMascots(){ return; if(S.get(K.seedMascot2,false)) return; S.set(K.seedMascot2,true);
   const L=getThemes().filter(t=>!String(t.id).startsWith("th_ms_"));
   const add=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室、選單圖示和密碼鎖都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.now()-(10+i)*DAY}));
   saveThemes([...add,...L]); }
@@ -11133,7 +11144,7 @@ const TOURS={
     ["#focStage","本週階段","宣傳週、排名週或打歌週。不設定就照日期走。"],
     ['[data-a="focSave"]',"儲存","按儲存，藝人和粉絲那邊馬上更新。"]],
   "admin:shopadm":[['[data-v="#/admin?tab=albums"]',"專輯與店家","專輯、版本、特典和店家。"],['[data-v="#/admin/themes"]',"主題","審核藝人做的主題，也可以自己上架。"]],
-  "admin:people":[['[data-v="#/admin?tab=banned"]',"禁用字詞","不想在 HAECHU 看到的字，放進來就傳不出去。"],['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],['[data-v="#/admin?tab=revenue"]',"點數統計","每位藝人的點數收入。"],['[data-v="#/admin?tab=aifans"]',"AI 粉絲","社群還不熱鬧的時候，AI 粉絲會陪藝人聊天。"],['[data-v="#/admin?tab=translate"]',"翻譯","翻譯服務的設定。"],['[data-a="theme"]',"外觀","淺色、深色，還有主題。"]]};
+  "admin:people":[['[data-v="#/admin?tab=banned"]',"禁用字詞","不想在 HAECHU 看到的字，放進來就傳不出去。"],['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],['[data-v="#/admin?tab=revenue"]',"點數統計","每位藝人的點數收入。"],['[data-v="#/admin?tab=translate"]',"翻譯","翻譯服務的設定。"],['[data-a="theme"]',"外觀","淺色、深色，還有主題。"]]};
 function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="fan"&&r.sub==="chat"&&!r.p) return "fan:chat";
   if(r.role==="fan"&&r.sub==="grp"&&!r.p) return "fan:grp";
@@ -11246,7 +11257,6 @@ function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").l
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${I.user}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${I.user}藝人與團<span class="r">${GROUPS.length} 團</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${I.star}點數統計</button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=aifans">${I.star}AI 粉絲<span class="r">${aiReady()?"運作中":aiCfg().on?"待連線":"已暫停"}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=translate">${I.gear}翻譯服務<span class="r">${trEngine()}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=banned">${I.gear}禁用字詞<span class="r">${bannedList().length} 個</span></button></section>
     <div class="section-h">App</div>
