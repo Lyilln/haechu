@@ -4277,7 +4277,12 @@ document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&HB.tok) 
 /* 登入／註冊 */
 async function hbAuth(u,pw,signup,name){ const un=String(u||"").trim().toLowerCase(); ui.loginErr=""; ui.authBusy=true; try{ render(); }catch(e){}
   try{ const body={email:hbEmail(un),password:hbPw(pw)};
-    const r=signup?await hbFetch("/auth/v1/signup",{method:"POST",body:{...body,data:{username:un,name:name||un}}},true):await hbFetch("/auth/v1/token?grant_type=password",{method:"POST",body},true);
+    let r;
+    if(signup) r=await hbFetch("/auth/v1/signup",{method:"POST",body:{...body,data:{username:un,name:name||un}}},true);
+    else { try{ r=await hbFetch("/auth/v1/token?grant_type=password",{method:"POST",body},true); }
+      catch(e1){ if(e1.net||!(e1.code==="invalid_credentials"||/invalid login/i.test(e1.message))) throw e1;
+        // 第一位管理員第一次登入：後台還沒有任何管理員時，管理員名單裡的帳號會自動開通（其他人一律由管理員建立帳號）
+        try{ r=await hbFetch("/auth/v1/signup",{method:"POST",body:{...body,data:{username:un,name:({husay:"HUSSEY"})[un]||un}}},true); }catch(e2){ throw e1; } } }
     if(!r||!r.access_token){ const er=new Error("confirm"); er.code="email_not_confirmed"; throw er; }
     hbSetTok(r); await hbLoadProfiles(); await hbPullAll(); HB.fans=(await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}).catch(()=>({})))||{}; hbStart();
     ui.authBusy=false; if(!ACCOUNTS[un]) ACCOUNTS[un]={user:un,role:"fan",name:name||un}; loginAs(un);
@@ -6744,7 +6749,6 @@ function viewAuth(){
       ${ui.loginErr?`<div class="err">${ui.loginErr}</div>`:""}
       <button class="btn btn-main btn-block" type="submit" ${ui.authBusy?"disabled":""}>${ui.authBusy?"登入中…":"登入"}</button>
       <button class="auth-sw" type="button" data-a="forgotPw">忘記密碼？</button>
-      <button class="auth-sw" type="button" data-a="authMode" data-v="reg">還沒有帳號？註冊新粉絲帳號</button>
     </form>`}
 
   </main>`;
@@ -8363,13 +8367,14 @@ const TR_LANGS={zh:"中文(繁體)",en:"English",ja:"日本語"};
 const DL_CODE={zh:"ZH-HANT",en:"EN-US",ja:"JA",ko:"KO"};
 /* 翻譯服務：有設定 DeepL 中繼站（搬到自己的網站後）就用 DeepL；在 claude.ai 裡或沒設定時用 Claude */
 const trCfg=()=>({url:"",...S.get(K.trCfg,{})});
-const useDeepL=()=>!!trCfg().url;
+const useDeepL=()=>HB_ON?!!HB.tok:!!trCfg().url;   // 正式網站：用 Supabase 裡的 DeepL（key 放在後台）
 const trEngine=()=>useDeepL()?"DeepL":"Claude";
 const xmlEsc=t=>String(t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").split("@@@").join("<x>@@@</x>");
 const xmlUn=t=>String(t).replace(/<x>@@@<\/x>/g,"@@@").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&amp;/g,"&");
 async function deeplTr(texts,lang){
-  const r=await fetch(trCfg().url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:texts.map(xmlEsc),target_lang:DL_CODE[lang]})});
-  if(!r.ok) throw new Error("deepl "+r.status); const d=await r.json(); return (d.translations||[]).map(x=>xmlUn(x.text||""));
+  let d;
+  if(HB_ON) d=await hbFetch("/functions/v1/deepl",{method:"POST",body:{text:texts.map(xmlEsc),target_lang:DL_CODE[lang]}});
+  else { const r=await fetch(trCfg().url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({text:texts.map(xmlEsc),target_lang:DL_CODE[lang]})}); if(!r.ok) throw new Error("deepl "+r.status); d=await r.json(); } return (d.translations||[]).map(x=>xmlUn(x.text||""));
 }
 async function claudeTr(texts,lang,style){
   if(!SAMPLE||aiOff) return null;
@@ -8413,8 +8418,8 @@ function viewAiFans(){
       <div class="chips">${[[.6,"少"],[1,"一般"],[1.6,"熱鬧"]].map(([v,l])=>`<button class="chip ${cfg.level===v?"on":""}" data-a="aiLevel" data-v="${v}">${l}</button>`).join("")}</div></section>
     <section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務</h3><span class="badge">目前：${trEngine()}</span></div>
       
-      <span class="fld-lab">DeepL 中繼站網址</span><label class="field"><input id="trUrl" type="url" inputmode="url" autocomplete="off" placeholder="輸入文字" value="${esc(trCfg().url)}"></label>
-      <div class="ls-btns"><button class="btn btn-main" data-a="trSave">儲存</button><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div></section>
+      ${HB_ON?`<div class="ls-btns"><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div>`:`<span class="fld-lab">DeepL 中繼站網址</span><label class="field"><input id="trUrl" type="url" inputmode="url" autocomplete="off" placeholder="輸入文字" value="${esc(trCfg().url)}"></label>
+      <div class="ls-btns"><button class="btn btn-main" data-a="trSave">儲存</button><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div>`}</section>
     <div class="section-h">粉絲名單<span class="muted">${fans.length} 位</span></div>
     ${fans.map(f=>ed===f.id?`<section class="card studio aif-ed">
       <label class="foc-lab">名字</label><label class="field"><input id="aifName" maxlength="16" value="${esc(f.name)}"></label>
@@ -9134,6 +9139,7 @@ function viewAdmin(tab){
     if(tab==="revenue") return uniHead("點數統計")+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
     if(tab==="people") return viewUniPeople();
+    if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio"><h3>新增團'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
       if(r0.p==="new") return uniHead("新增團或藝人")+`<main class="page roster">${h.slice(a,b)}</main>`;
@@ -9664,8 +9670,20 @@ document.addEventListener("click",e=>{
 
     case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
+    case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim();
+      if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
+      const key=un.toLowerCase(); if(acctKey(un)){ toast("這個帳號已經有人用了"); break; }
+      ui.acBusy=true; ui.acDraft={un,nm,pw}; lsRerender();
+      acCall({action:"create",username:key,name:nm,password:pw}).then(async r=>{ ui.acBusy=false;
+        if(r.error){ lsRerender(); toast(r.error); return; }
+        if(r.local){ ACCOUNTS[key]={user:un,pw,role:"fan",name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
+        else { try{ await hbLoadProfiles(); }catch(e){} }
+        ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
+    case "acReset": { const k=t.dataset.v; ui.acFor=k; tieModal(`重設 ${esc(acctUser(k))} 的密碼`,"",`<input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acResetOk">確認</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "acResetOk": { const k=ui.acFor, pw=((document.getElementById("acNewPw")||{}).value||"").trim(); if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
+      layer.innerHTML=""; acCall({action:"reset",username:k,password:pw}).then(r=>{ if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]){ ACCOUNTS[k].pw=pw; if(ACCOUNTS[k].role!=="admin") saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[k]={...(x.accounts[k]||ACCOUNTS[k]),pw}; }); } toast(`${acctUser(k)} 的新密碼設好了`); }); break; }
     case "trSave": { const v=(document.getElementById("trUrl").value||"").trim(); if(v&&!/^https:\/\//.test(v)){ toast("網址要用 https:// 開頭"); break; } S.set(K.trCfg,{url:v}); lsRerender(); toast(v?"已改用 DeepL 翻譯":"已改回 Claude 翻譯"); break; }
-    case "trTest": { toast("翻譯中…"); translateMany(["今天的舞台好棒！@@@ 辛苦了 💜"],"ko").then(o=>{ toast(o&&o[0]?`${trEngine()}：${o[0]}`:(useDeepL()?"連不到 DeepL 中繼站（在 claude.ai 裡會被擋，搬到自己的網站後才會通）":"翻譯服務還沒連上")); }); break; }
+    case "trTest": { toast("翻譯中…"); translateMany(["今天的舞台好棒！@@@ 辛苦了 💜"],"ko").then(o=>{ toast(o&&o[0]?`${trEngine()}：${o[0]}`:(HB_ON?"DeepL 還沒接好（後台的 deepl 和 DEEPL_KEY）":useDeepL()?"連不到 DeepL 中繼站（在 claude.ai 裡會被擋，搬到自己的網站後才會通）":"翻譯服務還沒連上")); }); break; }
     case "aiToggle": { const c=aiCfg(); c.on=!c.on; S.set(K.aiCfg,c); lsRerender(); toast(c.on?"AI 粉絲開啟了":"AI 粉絲暫停了"); break; }
     case "aiLevel": { const c=aiCfg(); c.level=+t.dataset.v; S.set(K.aiCfg,c); lsRerender(); break; }
     case "aifEdit": ui.aiEdit=t.dataset.f; lsRerender(); break;
@@ -10772,6 +10790,21 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
   </main>`; }
 /* 還沒有任何團：要團才能做的設定，先帶去新增團 */
 const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有團</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增團</button></div>`;
+/* 帳號：所有帳號都由管理員建立；忘記密碼也由管理員重設 */
+const ROLE_ZH={admin:"管理員",artist:"藝人",fan:"粉絲"};
+function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort((a,b)=>(a[1].role==="admin"?0:a[1].role==="artist"?1:2)-(b[1].role==="admin"?0:b[1].role==="artist"?1:2)||acctUser(a[0]).localeCompare(acctUser(b[0])));
+  return `<main class="page roster">
+    <section class="card studio"><h3>建立帳號</h3>
+      <span class="fld-lab">帳號</span><label class="field">${I.user}<input id="acUser" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).un||"")}"></label>
+      <span class="fld-lab">暱稱</span><label class="field">${I.heart}<input id="acName" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).nm||"")}"></label>
+      <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="acPw" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).pw||"")}"></label>
+      <button class="btn btn-main btn-block" data-a="acCreate" ${ui.acBusy?"disabled":""}>${ui.acBusy?"建立中…":"建立帳號"}</button></section>
+    <div class="section-h">全部帳號<span class="muted">${L.length} 個</span></div>
+    <section class="card">${L.map(([k,a])=>`<div class="rs-m"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><b>${esc(a.name||k)}</b><small>${esc(acctUser(k))}・${ROLE_ZH[a.role]||"粉絲"}</small><button class="btn btn-soft btn-sm" data-a="acReset" data-v="${esc(k)}">重設密碼</button></div>`).join("")}</section>
+  </main>`; }
+async function acCall(body){ if(!HB_ON) return {ok:true,local:true};
+  try{ return await hbFetch("/functions/v1/admin-users",{method:"POST",body}); }
+  catch(e){ const c=String(e.message||""); return {error:e.net?"連不上伺服器":c==="exists"?"這個帳號已經有人用了":c==="not_admin"?"只有管理員能做這件事":e.status===404?"後台還沒設定好（admin-users）":c==="bad_username"?"帳號不能有空白、@、/，最多 20 個字":c==="short_password"?"密碼至少要 4 個字":"沒有成功，請再試一次"}; } }
 /* 管理員還沒有藝人身分：把自己加進團之後，這裡就是自己的藝人端 */
 function viewNoArtist(){ return `<main class="page"><div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人身分</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster">到藝人與團</button></div></main>`; }
 /* 示範工具 */
@@ -11199,6 +11232,7 @@ function viewUniTodo(){ const T=uniTodo(), on=getLives().filter(l=>!l.endTs), cm
 function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").length;
   return uniMainHead("人員")+`<main class="page">
     <section class="card">
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${I.user}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${I.user}藝人與團<span class="r">${GROUPS.length} 團</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${I.star}點數統計</button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=aifans">${I.star}AI 粉絲<span class="r">${aiReady()?"運作中":aiCfg().on?"待連線":"已暫停"}</span></button>
