@@ -2526,6 +2526,23 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 
 
 .cm-about{display:flex;flex-direction:column;gap:10px}
+.g-ph{position:absolute;inset:0;border-radius:inherit;background-size:cover;background-position:center;background-repeat:no-repeat}
+.ex-mg i,.ex-gi i,.abx-ph,.rg-ph-img{position:relative}
+.ex-gi i,.g-ico{overflow:hidden}.g-ico{position:relative}
+.ex-mg i em{z-index:1}
+.cmx-hph{position:absolute;inset:0;background-size:cover;background-position:center}
+.abx-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 2px 2px}
+.abx-top h2{margin:0;font-size:30px;font-weight:800;line-height:1.2;letter-spacing:-.01em;color:var(--ink);min-width:0;overflow-wrap:anywhere;text-wrap:balance}
+.abx-ph{flex:none;width:96px;height:96px;aspect-ratio:1;border-radius:24px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;font-size:34px}
+.abx-intro{margin:2px 2px 6px;font-size:14px;line-height:1.7;color:var(--ink-2);white-space:pre-wrap;word-break:break-word}
+.abx-sec{font-size:13px;font-weight:700;color:var(--ink-3);padding:8px 2px 0}
+.rg-ph{display:flex;gap:12px;align-items:center;margin:2px 0 6px;text-align:left}
+.rg-ph-img{flex:none;width:72px;height:72px;border-radius:18px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;font-size:26px}
+.rg-ph-r{display:flex;flex-direction:column;gap:8px;min-width:0}.rg-ph-r small{font-size:12px;color:var(--ink-3);line-height:1.5}
+.rg-ph-b{display:flex;gap:8px}
+.rg-ph-note{margin:0 0 6px;font-size:12px;color:var(--ink-3);text-align:left}
+.rg-intro{min-height:84px}
+.rs-th{width:30px;height:30px;border-radius:10px;flex:none;display:inline-grid;place-items:center;color:#fff;font-size:13px;font-weight:700;margin-right:10px;vertical-align:middle}.rev-gh .rs-th{margin-right:2px}
 .ab-h{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 4px}
 .ab-h h2{margin:0;font-size:24px}
 .ab-logo{width:52px;height:52px;border-radius:16px;display:grid;place-items:center;color:#fff;font-weight:700;font-size:20px}
@@ -2847,8 +2864,10 @@ html[data-theme="dark"] .t-me .t-vc em{color:#fff!important}
 .cn-c{padding:2px 16px;background:var(--s1)}
 .cn-r{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--line);font-size:14.5px}.cn-r:last-child{border-bottom:0}
 /* 查看更多 */
-.cmx-shw{position:fixed;inset:0;z-index:70;background:rgba(15,12,22,.5);display:flex;align-items:center;justify-content:center;padding:16px;animation:fadeIn .2s}
-.cmx-sh{width:100%;max-width:380px;background:var(--s1);border-radius:18px;padding:6px 6px 10px;box-shadow:0 20px 50px -20px rgba(0,0,0,.5)}
+.cmx-shw{position:fixed;inset:0;z-index:70;background:rgba(15,12,22,.5);display:flex;align-items:flex-end;justify-content:center;padding:0;animation:fadeIn .2s}
+.cmx-sh{width:100%;max-width:520px;background:var(--s1);border-radius:22px 22px 0 0;padding:6px 6px calc(14px + env(safe-area-inset-bottom,0px));box-shadow:0 -10px 40px -16px rgba(0,0,0,.4);animation:cmxUp .28s cubic-bezier(.2,.8,.2,1)}
+.cmx-grab{display:block;width:38px;height:5px;border-radius:3px;background:var(--line,rgba(0,0,0,.15));margin:4px auto 2px}
+@keyframes cmxUp{from{transform:translateY(100%)}to{transform:none}}
 .cmx-shh{display:flex;align-items:center;justify-content:space-between;padding:10px 12px 6px}.cmx-shh b{font-size:16px}
 .cmx-shh button{width:34px;height:34px;border:0;background:none;color:var(--ink);display:grid;place-items:center}.cmx-shh svg{width:20px;height:20px}
 .cmx-sh>button{width:100%;display:flex;align-items:center;gap:12px;border:0;background:none;padding:12px;font-size:14.5px;font-weight:600;font-family:inherit;color:var(--ink);text-align:left;border-radius:10px}
@@ -4183,7 +4202,7 @@ const K = {
   pcImgs:"daisuki_pc_imgs",
   albums:"daisuki_albums", seedAlb:"daisuki_seed_alb", albBuy:"daisuki_album_buys",
   grpSeen:"daisuki_group_seen",
-  gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", lockCfg:"daisuki_lock", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
+  gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", gPhoto:"daisuki_group_photo", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", lockCfg:"daisuki_lock", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
   gNotices:"daisuki_group_notices", seedGN:"daisuki_seed_gn",
   notifs:"daisuki_notifications", maint:"daisuki_maint", feed:"daisuki_feed", feedSeen:"daisuki_feed_seen", unread:"daisuki_notif_unread", fanArtists:"daisuki_fan_artists",
   posts:"daisuki_posts", session:"daisuki_session", settings:"daisuki_notif_settings",
@@ -4409,7 +4428,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020143640";
+const BUILD="20261020145634";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -5671,7 +5690,7 @@ function viewRoster(){ hbProfilesNow();
 </section>`:""}
     <div class="section-h">目前的團與藝人<span class="muted">${GROUPS.length} 團</span></div>
     ${GROUPS.map(g=>{const ms=Object.entries(MEMBERS).filter(([id,m])=>m.group===g.id&&!m.official), custom=r.groups.some(x=>x.id===g.id);
-      return `<section class="card rs-g"><div class="rev-gh"><span class="rev-dot" style="background:${grad(g.g)}"></span><b>${esc(g.name)}</b>${g.solo?`<span class="badge">SOLOIST</span>`:""}<button class="btn btn-soft btn-sm rs-ed" data-a="rgEdit" data-v="${g.id}">編輯</button>${custom?`<button class="del" data-a="rgDel" data-v="${g.id}">刪除</button>`:""}</div>
+      return `<section class="card rs-g"><div class="rev-gh"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b>${g.solo?`<span class="badge">SOLOIST</span>`:""}<button class="btn btn-soft btn-sm rs-ed" data-a="rgEdit" data-v="${g.id}">編輯</button>${custom?`<button class="del" data-a="rgDel" data-v="${g.id}">刪除</button>`:""}</div>
       <label class="rs-fd"><span>粉絲名</span><input class="fd-in" data-g="${g.id}" maxlength="16" value="${esc((S.get(K.fandom,{}))[g.id]||"")}" placeholder="輸入文字"></label>
       ${ms.map(([id,m])=>{const a=acc.find(([e,x])=>x.member===id);return `<div class="rs-m"><span class="av sm" style="background:${grad(m.g)}">${esc(m.name[0])}</span><b>${esc(m.name)}</b><small>${a?esc(acctUser(a[0])+(realName(a[0])?"・"+realName(a[0]):"")):"還沒有登入帳號"}</small>
         <button class="btn btn-soft btn-sm rs-ed" data-a="rmEdit" data-v="${id}">編輯</button>${r.members[id]?`<button class="del" data-a="rmDel" data-v="${id}">刪除</button>`:""}</div>`}).join("")||`<p class="muted" style="font-size:13px;margin:6px 0 0">還沒有成員</p>`}</section>`}).join("")}
@@ -5681,8 +5700,8 @@ function fanAccOpts(){ const list=Object.entries(ACCOUNTS).filter(([e,a])=>(a.ro
 /* 綁定：粉絲帳號變成藝人帳號；管理員帳號還是管理員，只是多了這個藝人身分 */
 function bindArtist(em,id){ const a=ACCOUNTS[em]; if(!a||!(a.role==="fan"||(a.role==="admin"&&!(a.member&&MEMBERS[a.member])))) return false; const n=a.role==="admin"?{...a,member:id}:{...a,role:"artist",member:id}; ACCOUNTS[em]=n; if(HB_ON) hbSetProfile(em,{role:n.role,member:id}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]=n; }); return true; }
 function unbindArtist(em){ const a=ACCOUNTS[em]; if(!a) return; const x={...a,role:a.role==="admin"?"admin":"fan"}; delete x.member; ACCOUNTS[em]=x; if(HB_ON) hbSetProfile(em,{role:x.role,member:null}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]={...(r.accounts[em]||{}),...x}; delete r.accounts[em].member; }); }
-function rgEditOpen(n){ const g=groupOf(ui.rgEd); if(!g) return; const c=ui.rgEdC??g.g;
-  tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
+function rgEditOpen(n,it){ const g=groupOf(ui.rgEd); if(!g) return; const c=ui.rgEdC??g.g, ph=gPhoto(g.id);
+  tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">${g.solo?"大頭貼":"團體照（出道照）"}</span>${g.solo?`<p class="rg-ph-note">SOLOIST 直接用本人的頭貼，不用另外上傳。</p>`:`<div class="rg-ph"><span class="rg-ph-img" style="background:${grad(c)}">${ph?`<span class="g-ph" style="background-image:url('${ph}')"></span>`:esc(g.name[0])}</span><span class="rg-ph-r"><small>放在粉絲端的社群頭貼、社群封面和 About。回歸換新照片時再上傳一次就好。</small><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rgPhPick">${ph?"更換":"上傳"}</button>${ph?`<button class="btn btn-soft btn-sm" data-a="rgPhDel">移除</button>`:""}</span></span></div>`}<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">${g.solo?"About 介紹（不填就用本人的個人簡介）":"About 介紹"}</span><textarea id="rgEdIntro" class="t-wel-ta rg-intro" maxlength="300" placeholder="輸入文字">${esc(it??(g.intro||""))}</textarea><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
 function saveRoster(fn){ const r=S.get(K.roster,{groups:[],members:{},accounts:{}}); fn(r); S.set(K.roster,r); }
 
 /* =========================================================
@@ -7028,7 +7047,7 @@ function myFeedTop(){
 }
 function openGNotice(id){ const n=getGNotices().find(x=>x.id===id); if(!n) return; const g=groupOf(n.group);
   setLayer(`<div class="tiei gn-page"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>公告</b><span class="sh-sp"></span></header>
-    <div class="tiei-body"><div class="gn-g"><span class="av sm" style="background:${grad(g.g)}">${esc(g.name[0])}</span>${esc(g.name)}</div><h2 class="gn-t">${esc(n.title)}</h2><small class="gn-d">${evWhen(n.ts)}</small><div class="gn-c">${esc(n.body).replace(/\n/g,"<br>")}</div></div></div>`,"gn"); }
+    <div class="tiei-body"><div class="gn-g"><span class="av sm g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span>${esc(g.name)}</div><h2 class="gn-t">${esc(n.title)}</h2><small class="gn-d">${evWhen(n.ts)}</small><div class="gn-c">${esc(n.body).replace(/\n/g,"<br>")}</div></div></div>`,"gn"); }
 /* TIE 介紹頁（仿 Weverse DM 訂閱頁）：勾選同意 → 開始 TIE（接到原本的購買流程） */
 function openTieIntro(mid){ if(MEMBERS[mid]&&isSelfGid(MEMBERS[mid].group)){ toast(selfBuyMsg()); return; } const m=MEMBERS[mid], g=groupOf(m.group), mn=Math.min(...PLANS.map(p=>p.pts)), c=WHISPER_NAME;
   const F=[["與藝人即時交流","隨時查看最愛藝人發送的豐富日常。",`<div class="tf-chat"><i>${esc(artName(mid,"tie"))}</i><u>你好</u><u>在忙嗎？</u></div>`],
@@ -7080,11 +7099,11 @@ function exploreTop(){
   const all=GROUPS.filter(g=>grpMembers(g.id).length).filter(g=>cat==="all"||(cat==="solo"?grpMembers(g.id).length===1:cat==="group"?grpMembers(g.id).length>1:g.isNew));
   const shown=ui.exAll?all:all.slice(0,4);
   return `<label class="ex-srch">${I.search||"🔍"}<input id="exQ" placeholder="輸入文字" autocomplete="off"></label>
-    ${mine.length?`<h2 class="mf-h">我的社群</h2><div class="ex-my">${mine.map(g=>`<button class="ex-mg" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${esc(g.name[0])}${grpUnseen(g.id)?"<em></em>":""}</i><small>${esc(g.name)}</small></button>`).join("")}</div>`:""}
+    ${mine.length?`<h2 class="mf-h">我的社群</h2><div class="ex-my">${mine.map(g=>`<button class="ex-mg" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}${grpUnseen(g.id)?"<em></em>":""}</i><small>${esc(g.name)}</small></button>`).join("")}</div>`:""}
     ${ban.length?`<div class="ex-ban" id="exBan">${ban.map(g=>`<button class="ex-b" data-a="gOpen" data-v="${g.id}" style="background:${grad(g.g)}"><b>OPEN! ${esc(g.name)}</b><small>立即前往查看</small><span>${esc(g.name[0])}</span></button>`).join("")}</div>${ban.length>1?`<div class="tiei-dots ex-dots">${ban.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
     <h2 class="mf-h">全部社群</h2>
     <div class="ex-cat">${[["all","全部"],["group","Group"],["solo","Solo"],["new","New"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="exCat" data-v="${k}">${l}</button>`).join("")}</div>
-    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc((g.name+" "+ms.join(" ")).toLowerCase())}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${esc(g.name[0])}</i><span><b>${esc(g.name)}${g.isNew?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
+    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc((g.name+" "+ms.join(" ")).toLowerCase())}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${g.isNew?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
     ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}`;
 }
 /* 搜尋：直接在全部社群裡篩選（不重畫，才不會收鍵盤） */
@@ -7132,7 +7151,7 @@ const I3={dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy=
   stack:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h13a1 1 0 0 1 1 1v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M3 7v13a1 1 0 0 0 1 1h13" fill="none" stroke="currentColor" stroke-width="2"/></svg>',
   cam:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3.5z"/><circle cx="12" cy="12.5" r="3.5" fill="#fff"/></svg>'};
 /* 預設頭像（沒有照片、或網路不好照片跑不出來時）：漸層圓 + App 的「星」字標 */
-const defAv=(cls="")=>`<span class="lav ${cls}"><i>星</i></span>`;
+const defAv=(cls="")=>`<span class="lav ${cls}"><i>${esc(((typeof ME!=="undefined"&&ME&&ME.name)||"粉").trim()[0]||"粉")}</i></span>`;
 const cmAvatar=(gid,cls="")=>PCI[`cmav|${gid}`]?`<span class="lav img ${cls}"><img src="${PCI[`cmav|${gid}`]}" alt=""></span>`:defAv(cls);
 function cmProf(gid){ const P=S.get(K.cmProf,{}); let x=P[gid]; if(!x){ x={nick:ME.name,intro:"",hide:false,joined:Date.now()}; P[gid]=x; S.set(K.cmProf,P); } return {...x,nick:ME.name}; }
 const bmSet=()=>new Set(S.get(K.bm,[]));
@@ -7145,7 +7164,7 @@ function grpShopNotices(gid){ const L=[], D=864e5;
 const cmNoticesOf=(gid,nt)=>nt==="s"?grpShopNotices(gid):getGNotices().filter(n=>n.group===gid);
 function grpHero(gid,skel){ const g=groupOf(gid), a=getAlbums().find(x=>x.gid===gid), cov=a&&a.vers[0]&&PCI[`vc|${a.id}|${a.vers[0].id}`], on=followed().includes(gid);
   if(skel) return `<section class="cmx-hero sk"></section>`;
-  return `<section class="cmx-hero">${cov?`<img src="${cov}" alt="">`:`<span class="cmx-hbg"><i>HAECHU</i></span>`}<span class="cmx-shade"></span>
+  const gp=gPhoto(gid); return `<section class="cmx-hero">${gp?`<span class="cmx-hph" style="background-image:url('${gp}')"></span>`:cov?`<img src="${cov}" alt="">`:`<span class="cmx-hbg"><i>HAECHU</i></span>`}<span class="cmx-shade"></span>
     <div class="cmx-hi"><small>${fmtW(gFans(gid))} members${on?"・✓ 已加入":""}</small><b>${esc(g.name)}</b>
       ${on?`<button class="cmx-ms" data-a="cmMs" data-v="${gid}">${isMember(gid)?"💎 Membership":"＋ Membership"}</button>`:`<button class="cmx-ms" data-a="gJoin" data-v="${gid}">＋ 加入社群</button>`}</div></section>`; }
 const cmTop=(gid,title,{me=true}={})=>`<header class="cmx-top" id="cmTop"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><b class="cmx-tt">${esc(title)}</b><span class="cmx-r">${me&&followed().includes(gid)?`<button class="cmx-av" data-a="cmGo" data-v="me" aria-label="我的社群個人頁">${cmAvatar(gid)}</button>`:""}<button class="cmx-ib" data-a="cmMore" aria-label="查看更多">${I3.dots}</button></span></header>`;
@@ -7198,7 +7217,7 @@ function viewArtWrite(v){ const s=session(), mid=s.member, vis=ART_W[v]?v:"all",
     <footer class="aw-tb">${ms.length<4&&!ms.some(x=>x.kind==="video")?`<label class="aw-ic" aria-label="加入照片或影片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m4 17 5-5 4 4 2.5-2.5L20 18"/></svg><input type="file" id="postMedia" accept="image/*,video/*" multiple></label>`:""}<button class="aw-ic" data-a="pollNew" aria-label="票選活動">${PL_IC}</button></footer></div>`; }
 function openLetterTo(gid){ const g=groupOf(gid);
   setLayer(`<div class="lt-w" role="dialog" aria-label="收件人"><header class="lt-h"><span></span><b>收件人</b><button data-a="tCloseLayer" aria-label="關閉">${I3.x}</button></header><p class="lt-sub">可選擇團體或藝人並傳送粉絲信。</p>
-    <h4>寫給團體</h4><button class="lt-r" data-a="cmLetter" data-v="${gid}"><span class="lt-av" style="background:${grad(g.g)}">${esc(g.name[0])}</span><b>${esc(g.name)}</b></button>
+    <h4>寫給團體</h4><button class="lt-r" data-a="cmLetter" data-v="${gid}"><span class="lt-av g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b></button>
     <h4>寫給成員</h4>${grpMembers(gid).map(m=>`<button class="lt-r" data-a="cmLetter" data-v="${m}"><span class="lt-av" style="background:${grad(MEMBERS[m].g)}">${mAvIn(m)}</span><b>${esc(artName(m,"feed"))}</b></button>`).join("")}</div>`,"ltto"); }
 const LT_TPL=[["#FFFFFF","#1D1A24"],["#FFF4E0","#4A3B1F"],["#EFE8FF","#3B2E6B"],["#FFE9F2","#6B2443"],["#E6F6EF","#1F4A3A"]];
 const ltKey=(gid,to)=>gid+"|"+to;
@@ -7250,7 +7269,7 @@ function viewCmNotif(gid){ const g=groupOf(gid), N=cnGet(gid);
       return `<div class="cn-h"><b>${h}</b><button data-a="cnAll" data-v="${gi}" data-on="${all?0:1}">${all?"全部關閉":"全部打開"}</button></div><section class="card cn-c">${L.map(([k,l])=>`<div class="cn-r"><span>${l}</span><button class="sw ${N[k]?"on":""}" role="switch" data-a="cnTog" data-v="${k}" aria-checked="${!!N[k]}" aria-label="${l}"></button></div>`).join("")}</section>`; }).join("")}</main></div>`; }
 /* 右上「⋮」查看更多 */
 function openCmMore(gid){ const on=followed().includes(gid);
-  setLayer(`<div class="cmx-shw" data-a="tCloseLayer"><div class="cmx-sh" role="dialog" aria-label="查看更多"><div class="cmx-shh"><b>查看更多</b><button data-a="tCloseLayer" aria-label="關閉">${I3.x}</button></div>
+  setLayer(`<div class="cmx-shw" data-a="tCloseLayer"><div class="cmx-sh" role="dialog" aria-label="查看更多"><i class="cmx-grab"></i><div class="cmx-shh"><b>查看更多</b><button data-a="tCloseLayer" aria-label="關閉">${I3.x}</button></div>
     <button data-a="cmGo" data-v="search">${I.search}<span>搜尋</span><i>›</i></button><button data-a="cmGo" data-v="bm">${I3.bm}<span>書籤</span><i>›</i></button><button data-a="cmGo" data-v="apply">${I3.log}<span>活動申請紀錄</span><i>›</i></button>
     <button data-a="cmMs" data-v="${gid}">${I3.heart}<span>Membership</span><i>›</i></button><hr><button data-a="cmGo" data-v="notif">${I3.bell}<span>通知設定</span><i>›</i></button>
     ${on?`<hr><button data-a="gLeave" data-v="${gid}">${I3.out}<span>退出社群</span></button>`:""}</div></div>`,"cmmore"); }
@@ -7282,7 +7301,9 @@ function openCal(gid){ const g=groupOf(gid), base=new Date(), mo=ui.calMo||0, d0
       <h4 class="cal-lh">${sel?`${d0.getMonth()+1}/${sel}`:"接下來的行程"}</h4>
       ${list.length?list.map(x=>`<div class="cal-it"><span>${x.ic}</span><div><small>${esc(x.k)}・${evWhen(x.ts)}</small><b>${esc(x.t)}</b></div></div>`).join(""):`<p class="me-none">${sel?"這一天沒有行程":"最近沒有行程"}</p>`}</div></div>`,"cal"); }
 function viewAbout(gid){ const g=groupOf(gid), open=ui.abOpen||null;
-  return `<div class="ab-h"><h2>${esc(g.name)}</h2><span class="ab-logo" style="background:${grad(g.g)}">${esc(g.name[0])}</span></div>
+  const ph=gPhoto(gid), it=gIntro(gid);
+  return `<section class="abx-top"><h2>${esc(g.name)}</h2><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(g.name[0])}</span></section>
+    ${it?`<p class="abx-intro">${esc(it)}</p>`:""}${g.solo?"":`<div class="abx-sec">成員 ${grpMembers(gid).length}</div>`}
     ${grpMembers(gid).map(m=>{ const M=MEMBERS[m], o=open===m; return `<section class="card ab-m ${o?"o":""}" id="ab-${m}"><button class="ab-mh" data-a="abTog" data-v="${m}" aria-expanded="${o}"><i style="background:${grad(M.g)}">${mAvIn(m)}</i><b>${esc(M.name)}</b><span class="ab-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>${o?`<button class="ab-pro" data-a="cmMem" data-v="${m}">查看個人簡介</button>`:""}</section>`; }).join("")}`; }
 function viewMemberProfile(gid,mid){ setTimeout(apBarSync,0); return `<div class="gcm ap2" style="--gt:${gTheme(gid)}">${artProfileHtml(mid,false)}</div>`; }
 function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.group===gid&&!p.hidden), fans=S.get(K.fanPosts,[]).filter(p=>p.gid===gid).sort((a,b)=>b.ts-a.ts);
@@ -7290,7 +7311,7 @@ function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.grou
   if(ch==="artist") return chips+(art.length?art.map(p=>postCard(p)).join(""):`<p class="me-none">還沒有藝人貼文</p>`);
   if(ch==="fan") return chips+(fans.length?fans.map(fanCard).join(""):`<p class="me-none me-center">還沒有粉絲貼文，點右下角 ＋ 發第一篇吧</p>`);
   return chips+`${cmSec("最近藝人貼文")}${art.slice(0,2).map(p=>postCard(p)).join("")||`<p class="me-none">還沒有藝人貼文</p>`}
-    ${cmSec("Moments")}<div class="cm-mo">${grpMembers(gid).map(m=>`<button data-a="cmMem" data-v="${m}"><span style="background:${grad(MEMBERS[m].g)}"><i>${mAvIn(m)}</i></span><small>${esc(artName(m,"feed"))}</small></button>`).join("")}</div>
+    
     ${cmSec(`${esc(groupOf(gid).name)} 的評論`,fans.length?"查看更多":"","cmFan")}${fans.slice(0,3).map(fanCard).join("")||`<p class="me-none">還沒有粉絲貼文</p>`}`; }
 function grpMedia(gid){ const ch=ui.cmMed||"all", lv=getLives().filter(l=>l.endTs&&MEMBERS[l.member]&&MEMBERS[l.member].group===gid).sort((a,b)=>b.startTs-a.startTs), vd=vodList(gid), g=groupOf(gid), vc=ui.cmVc||"all";
   const chips=`<div class="cm-chips">${[["all","全部"],["live","LIVE"],["vod","影音"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmMed" data-v="${k}">${l}</button>`).join("")}</div>`;
@@ -9072,7 +9093,7 @@ function openVodPlayer(id,plKey){ const v=vodOf(id); if(!v) return; const g=grou
   const liked=v.cat==="MV"&&mvLiked(v.gid);
   setLayer(`<div class="yv-pw" style="--gt:${gTheme(v.gid)}"><div class="yv-pv">${vodThumb(v,"big")}<span class="yv-pp">${PLAY}</span><span class="yv-pbar"><i></i></span><button class="yv-px" data-a="tCloseLayer" aria-label="關閉">${XI}</button></div>
     <div class="yv-pb"><h3>${esc(v.title)}</h3><small>${fmtViews(v.views||0)}・${ymd(v.ts)}${v.album?`・《${esc(v.album)}》`:""}・${esc(vcatName(v.cat))}</small>
-      <div class="yv-pa"><span class="yv-av sm" style="background:${grad(g.g)}">${esc(g.name[0])}</span><b>${esc(g.name)}</b>${v.cat==="MV"?`<button class="yv-like ${liked?"on":""}" data-a="mvLike" data-v="${v.gid}">${liked?"♥":"♡"} ${fmt(mvLikes(v.gid))}</button>`:""}</div>
+      <div class="yv-pa"><span class="yv-av sm g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b>${v.cat==="MV"?`<button class="yv-like ${liked?"on":""}" data-a="mvLike" data-v="${v.gid}">${liked?"♥":"♡"} ${fmt(mvLikes(v.gid))}</button>`:""}</div>
       ${v.link?`<a class="yv-yt" href="${esc(v.link)}" target="_blank" rel="noopener">在 YouTube 觀看 ↗</a>`:""}
       ${next.length?`<div class="yv-sh"><h3>接下來播放</h3></div>${next.slice(0,10).map(vodRow).join("")}`:""}</div></div>`,"vplay"); }
 /* 管理員：影音頻道 */
@@ -9243,12 +9264,12 @@ function reportCard(r){
 function concertAdminHtml(){
   const gid=ui.ccGid&&groupOf(ui.ccGid)?ui.ccGid:GROUPS[0].id, mins=ui.ccMins||90, now=Date.now(), list=getConcerts(), live=liveConcert();
   const up=list.filter(c=>!c.ended&&c.endTs>now), past=list.filter(c=>c.ended||c.endTs<=now).slice(-5).reverse();
-  const row=c=>{ const on=live&&live.id===c.id; return `<div class="cc-row ${on?"on":""}"><span class="cc-av" style="background:${grad(groupOf(c.gid).g)}">${esc(groupOf(c.gid).name[0])}</span><span class="cc-i"><b>${esc(groupOf(c.gid).name)}・${esc(c.title)}</b><small>${on?"● 進行中・":""}${evWhen(c.startTs)} – ${fsWhen(c.endTs).split(" ")[1]}</small></span>
+  const row=c=>{ const on=live&&live.id===c.id; return `<div class="cc-row ${on?"on":""}"><span class="cc-av g-ico" style="background:${grad(groupOf(c.gid).g)}">${gIcoIn(groupOf(c.gid))}</span><span class="cc-i"><b>${esc(groupOf(c.gid).name)}・${esc(c.title)}</b><small>${on?"● 進行中・":""}${evWhen(c.startTs)} – ${fsWhen(c.endTs).split(" ")[1]}</small></span>
     ${on?"":`<button class="del" data-a="ccDel" data-id="${c.id}">刪除</button>`}</div>`; };
   return `<section class="card studio"><div class="foc-cfg-h"><h3>演唱會燈海</h3><span class="badge">${live?"進行中":"排程"}</span></div>
     
     ${up.length?`<label class="foc-lab">即將舉行</label>${up.map(row).join("")}`:`<p class="muted" style="margin:6px 0 0">目前沒有演唱會</p>`}
-    ${past.length?`<label class="foc-lab">已結束</label>${past.map(c=>`<div class="cc-row done"><span class="cc-av" style="background:${grad(groupOf(c.gid).g)}">${esc(groupOf(c.gid).name[0])}</span><span class="cc-i"><b>${esc(groupOf(c.gid).name)}・${esc(c.title)}</b><small>${evWhen(c.startTs)}</small></span></div>`).join("")}`:""}
+    ${past.length?`<label class="foc-lab">已結束</label>${past.map(c=>`<div class="cc-row done"><span class="cc-av g-ico" style="background:${grad(groupOf(c.gid).g)}">${gIcoIn(groupOf(c.gid))}</span><span class="cc-i"><b>${esc(groupOf(c.gid).name)}・${esc(c.title)}</b><small>${evWhen(c.startTs)}</small></span></div>`).join("")}`:""}
   </section>`;
 }
 function lsAdminHtml(){
@@ -9296,7 +9317,7 @@ function viewAdmin(tab){
       if(r0.p==="new") return uniHead("新增藝人")+`<main class="page roster">${h.slice(a,b)}</main>`;
       const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}</main>`;
       const fd=S.get(K.fandom,{});
-      return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rev-dot" style="background:${grad(g.g)}"></span>${esc(g.name)}<span class="r">${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
+      return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span>${esc(g.name)}<span class="r">${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
     if(tab==="shopadm") return uniMainHead("商店")+viewShopAdmin();
     if(tab==="albums") return uniHead("專輯與店家")+`<main class="page">${GROUPS.length?adminAlbumHtml():NOG_HTML()}</main>`;
     if(tab==="translate"){ const h=viewAiFans(), a=h.indexOf('<section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務'), b=h.indexOf('</section>',a); return uniHead("翻譯服務")+`<main class="page">${a>0?h.slice(a,b+10):""}</main>`; }
@@ -9527,11 +9548,14 @@ document.addEventListener("click",e=>{
       const cur=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e].member===id)||""; if(acc!==cur){ if(cur) unbindArtist(cur); if(acc) bindArtist(acc,id); }
       layer.innerHTML=""; lsRerender(); toast("已儲存"); break; }
     case "rgEdit": { const g=groupOf(t.dataset.v); if(!g) break; ui.rgEd=g.id; ui.rgEdC=g.g; rgEditOpen(); break; }
-    case "rgEdColor": { const n=(document.getElementById("rgEdName")||{}).value; ui.rgEdC=+t.dataset.v; rgEditOpen(n); break; }
+    case "rgEdColor": { const n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; ui.rgEdC=+t.dataset.v; rgEditOpen(n,it); break; }
+    case "rgPhPick": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,720); b=await squareImg(b,720); const url=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); const M={...(S.get(K.gPhoto,{})||{})}; M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } rgEditOpen(n,it); toast("團體照換好了"); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+    case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const M={...(S.get(K.gPhoto,{})||{})}; delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
     case "rgEditOk": { const g=groupOf(ui.rgEd); if(!g) break; const nm=((document.getElementById("rgEdName")||{}).value||"").trim(); if(!nm){ toast(g.solo?"請輸入藝名":"請輸入團名"); break; } if(nameBlock(nm)) break;
-      if(GROUPS.some(x=>x.id!==g.id&&x.name===nm)){ toast("已經有這個名字了"); break; } const c=ui.rgEdC??g.g;
-      saveRoster(r=>{ const x=(r.groups||[]).find(y=>y.id===g.id); if(x){ x.name=nm; x.g=c; } if(r.members[g.id+"_o"]) r.members[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(r.members).forEach(k=>{ if(r.members[k].group===g.id&&!r.members[k].official) r.members[k].name=nm; }); });
-      g.name=nm; g.g=c; if(MEMBERS[g.id+"_o"]) MEMBERS[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(MEMBERS).forEach(k=>{ if(MEMBERS[k].group===g.id&&!MEMBERS[k].official) MEMBERS[k].name=nm; });
+      if(GROUPS.some(x=>x.id!==g.id&&x.name===nm)){ toast("已經有這個名字了"); break; } const c=ui.rgEdC??g.g, itr=((document.getElementById("rgEdIntro")||{}).value||"").trim();
+      saveRoster(r=>{ const x=(r.groups||[]).find(y=>y.id===g.id); if(x){ x.name=nm; x.g=c; if(itr) x.intro=itr; else delete x.intro; } if(r.members[g.id+"_o"]) r.members[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(r.members).forEach(k=>{ if(r.members[k].group===g.id&&!r.members[k].official) r.members[k].name=nm; }); });
+      g.name=nm; g.g=c; if(itr) g.intro=itr; else delete g.intro; if(MEMBERS[g.id+"_o"]) MEMBERS[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(MEMBERS).forEach(k=>{ if(MEMBERS[k].group===g.id&&!MEMBERS[k].official) MEMBERS[k].name=nm; });
       layer.innerHTML=""; lsRerender(); toast("已儲存"); break; }
     case "rsType": ui.rsType=t.dataset.v; { const y=window.scrollY, n=(document.getElementById("rgName")||{}).value; render(); window.scrollTo(0,y); const i=document.getElementById("rgName"); if(i&&n) i.value=n; } break;
     case "rgAdd": { const solo=ui.rsType==="solo", n=document.getElementById("rgName").value.trim(); if(!n){ toast(solo?"請輸入藝名":"請輸入團名"); break; } if(GROUPS.some(g=>g.name===n)){ toast("已經有這個名字了"); break; }
@@ -9858,7 +9882,10 @@ document.addEventListener("click",e=>{
     case "acRole": { const keep=["acUser","acReal","acName","acPw"].map(id=>(document.getElementById(id)||{}).value||""); ui.acRole=t.dataset.v; lsRerender(); ["acUser","acReal","acName","acPw"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); break; }
     case "acEdit": { const k=t.dataset.v, a=ACCOUNTS[k]||{}; ui.acFor=k; const pw=knownPw(k)||(a.pw||"");
       tieModal(esc(acctUser(k)),`<span class="info-row"><em>帳號</em>${esc(acctUser(k))}</span><span class="info-row"><em>密碼</em>${pw?`<b class="ac-pw">${esc(pw)}</b>`:"還沒記下來（在下面重設一次就會記住）"}</span><span class="info-row"><em>身分</em>${ROLE_ZH[a.role]||"粉絲"}</span><span class="info-row"><em>暱稱</em>${esc(a.name||"")}</span>`,
-        `<span class="fs-f-lab">本名</span><input id="acRealIn" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(realName(k))}"><span class="fs-f-lab">重設密碼（不改就留空）</span><input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+        `<span class="fs-f-lab">本名</span><input id="acRealIn" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(realName(k))}"><span class="fs-f-lab">重設密碼（不改就留空）</span><input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acEditOk">儲存</button>${k===String((session()||{}).email||"").toLowerCase()?"":`<button class="t-mbtn danger" data-a="acDel" data-v="${esc(k)}">刪除帳號</button>`}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "acDel": { const k=t.dataset.v; ui.acFor=k; tieModal(`刪除 ${esc(acctUser(k))}？`,"刪掉之後這個帳號就不能登入了，他的個人資料也會一起刪掉，不能復原。",`<button class="t-mbtn danger" data-a="acDelOk">刪除</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "acDelOk": { const k=ui.acFor; if(!k||k===String((session()||{}).email||"").toLowerCase()) break; layer.innerHTML="";
+      acCall({action:"delete",username:k}).then(async r=>{ if(r.error){ toast(r.error); return; } const a=ACCOUNTS[k]; if(a&&a.member&&!HB_ON) unbindArtist(k); delete ACCOUNTS[k]; if(r.local) saveRoster(x=>{ if(x.accounts) delete x.accounts[k]; }); try{ delete REAL[k]; delete PWS[k]; }catch(e){} if(!HB_ON) await setNote(k,{real_name:"",pw:""}); lsRerender(); toast(`已刪除 ${acctUser(k)}`); }); break; }
     case "acEditOk": { const k=ui.acFor, rn=((document.getElementById("acRealIn")||{}).value||"").trim(), np=((document.getElementById("acNewPw")||{}).value||"").trim();
       if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } layer.innerHTML="";
       (async()=>{ if(np){ const r=await acCall({action:"reset",username:k,password:np}); if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]) ACCOUNTS[k].pw=np; }
@@ -11054,6 +11081,11 @@ async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=a
 /* 頭貼：有上傳就用照片，沒有就用名字第一個字 */
 const mAvIn=mid=>{ const p=artProf(mid), m=MEMBERS[mid]; return p.avatar?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${p.avatar}')"></span>`:esc(m?m.name[0]:""); };
 const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
+/* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
+const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
+function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).avatar||""):""; } return (S.get(K.gPhoto,{})||{})[gid]||""; }
+const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(g.name[0]); };
+function gIntro(gid){ const g=groupOf(gid); if(!g) return ""; if(g.intro) return g.intro; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).bio||""):""; } return ""; }
 
 /* ===== 藝人個人頁：藝人首頁和粉絲看到的同一個版面（照 Weverse） ===== */
 function artMedia(posts){ const out=[]; posts.forEach(p=>{ (p.media||[]).forEach(x=>out.push({id:p.id,mid:x.kind==="video"?x.thumb||"":x.mid})); if(!p.media&&p.color!=null) out.push({id:p.id,c:p.color}); }); return out; }
