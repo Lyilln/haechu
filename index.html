@@ -4302,11 +4302,11 @@ async function hbLogout(){ try{ clearTimeout(HB.ft); if(HB.dirty.size) await hbF
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]); applyRoster(); }
 /* 照片、語音、影片：上傳到雲端，別人的手機找不到就從雲端下載 */
 /* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
-const MEDIA_URL="";
+const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
 async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
   if(MEDIA_URL){ if(blob.size>48*1024*1024){ toast("檔案太大（超過 48MB），其他人會看不到"); return false; }
     for(let i=0;i<3;i++){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"PUT",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":blob.type||"application/octet-stream"},body:blob}); if(r.ok||r.status===409) return true; if(r.status===401) await hbRefresh(); }catch(e){} await new Promise(r=>setTimeout(r,1500*(i+1))); }
-    toast("照片／語音沒有上傳成功，其他人可能看不到，請再傳一次"); return false; }
+    }   // R2 傳不上去：改放 Supabase，至少大家看得到
   if(blob.size>48*1024*1024){ toast("檔案太大（超過 48MB），其他人會看不到"); return false; }
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"application/octet-stream","x-upsert":"false"}}); return true; }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return true; await new Promise(r=>setTimeout(r,1500*(i+1))); } }
   toast("照片／語音沒有上傳成功，其他人可能看不到，請再傳一次"); return false; }
