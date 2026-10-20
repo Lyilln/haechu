@@ -5537,18 +5537,20 @@ function viewRoster(){ hbProfilesNow();
   const gsel=groupOf(ui.rsGroup)&&!groupOf(ui.rsGroup).solo?ui.rsGroup:(GROUPS.find(g=>!g.solo)||{}).id, gc=ui.rsColor??0;
   return adminHead("ARTISTS")+`<main class="page roster">
     <button class="rev-back" data-a="tab" data-v="me">‹ 回到 ME</button>
-    <section class="card studio" id="rsNew"><h3>新增</h3>
-      <div class="chips">${[["group","團體"],["solo","SOLOIST"]].map(([k,l])=>`<button class="chip ${(ui.rsType||"group")===k?"on":""}" data-a="rsType" data-v="${k}">${l}</button>`).join("")}</div>
+    <section class="card studio" id="rsNew">
+      <span class="fld-lab">類型</span>
+      <div class="seg2 mod-seg rs-type" style="--i:${ui.rsType==="solo"?1:0}"><i class="seg2-ind"></i>${[["group","團體"],["solo","個人（SOLOIST）"]].map(([k,l])=>`<button class="${(ui.rsType||"group")===k?"on":""}" data-a="rsType" data-v="${k}">${l}</button>`).join("")}</div>
       <span class="fld-lab">${ui.rsType==="solo"?"藝名":"團名"}</span><label class="field">${I.star}<input id="rgName" maxlength="16" placeholder="輸入文字"></label>
+      <span class="fld-lab">代表色</span>
       <div class="rs-sw">${GRADS.map((c,i)=>`<button class="${gc===i?"on":""}" style="background:${grad(i)}" data-a="rsColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div>
-      ${ui.rsType==="solo"?`<span class="fld-lab">藝人原本的帳號（可先不選）</span><label class="field">${I.user}<select id="rsAcc" class="rs-sel">${fanAccOpts()}</select></label>
-      <span class="fld-lab">生日（例如 3-21，可先不填）</span><label class="field">🎂<input id="rsBday" maxlength="5" placeholder="輸入文字"></label>`:""}
-      <button class="btn btn-main btn-block" data-a="rgAdd">${ui.rsType==="solo"?"新增 SOLOIST":"新增團體"}</button></section>
+      ${ui.rsType==="solo"?`<span class="fld-lab">登入帳號</span><label class="field">${I.user}<select id="rsAcc" class="rs-sel">${fanAccOpts()}</select></label>
+      <span class="fld-lab">生日（月-日，可以之後再填）</span><label class="field">🎂<input id="rsBday" maxlength="5" placeholder="輸入文字"></label>`:""}
+      <button class="btn btn-main btn-block" data-a="rgAdd">${ui.rsType==="solo"?"建立個人藝人":"建立團體"}</button></section>
     ${GROUPS.some(g=>!g.solo)?`<section class="card studio"><h3>新增團體成員</h3>
       <div class="chips wrap">${GROUPS.filter(g=>!g.solo).map(g=>`<button class="chip ${gsel===g.id?"on":""}" data-a="rsGroup" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
       <span class="fld-lab">藝人名稱</span><label class="field">${I.user}<input id="rmName" maxlength="16" placeholder="輸入文字"></label>
-      <span class="fld-lab">藝人原本的粉絲帳號（可先不選）</span><label class="field">${I.user}<select id="rmEmail" class="rs-sel">${fanAccOpts()}</select></label>
-      <span class="fld-lab">生日（例如 3-21，可先不填）</span><label class="field">🎂<input id="rmBday" maxlength="5" placeholder="輸入文字"></label>
+      <span class="fld-lab">登入帳號</span><label class="field">${I.user}<select id="rmEmail" class="rs-sel">${fanAccOpts()}</select></label>
+      <span class="fld-lab">生日（月-日，可以之後再填）</span><label class="field">🎂<input id="rmBday" maxlength="5" placeholder="輸入文字"></label>
       <button class="btn btn-main btn-block" data-a="rmAdd">新增藝人</button>
 </section>`:""}
     <div class="section-h">目前的團與藝人<span class="muted">${GROUPS.length} 團</span></div>
@@ -5559,7 +5561,7 @@ function viewRoster(){ hbProfilesNow();
         ${a?"":`<button class="btn btn-soft btn-sm" data-a="rmAcc" data-v="${id}">綁定粉絲帳號</button>`}${r.members[id]?`<button class="del" data-a="rmDel" data-v="${id}">刪除</button>`:""}</div>`}).join("")||`<p class="muted" style="font-size:13px;margin:6px 0 0">還沒有成員</p>`}</section>`}).join("")}
   </main>`;
 }
-function fanAccOpts(){ const list=Object.entries(ACCOUNTS).filter(([e,a])=>(a.role==="fan"&&e!==DEMO_FAN)||(a.role==="admin"&&!(a.member&&MEMBERS[a.member]))); return `<option value="">先不選</option>`+list.map(([e,a])=>`<option value="${esc(e)}">${esc(a.name||e)}（${esc(acctUser(e))}）</option>`).join(""); }
+function fanAccOpts(){ const list=Object.entries(ACCOUNTS).filter(([e,a])=>(a.role==="fan"&&e!==DEMO_FAN)||(a.role==="admin"&&!(a.member&&MEMBERS[a.member]))); return `<option value="">之後再綁定</option>`+list.map(([e,a])=>`<option value="${esc(e)}">${esc(acctUser(e))}・${esc(a.name||e)}</option>`).join(""); }
 /* 綁定：粉絲帳號變成藝人帳號；管理員帳號還是管理員，只是多了這個藝人身分 */
 function bindArtist(em,id){ const a=ACCOUNTS[em]; if(!a||!(a.role==="fan"||(a.role==="admin"&&!(a.member&&MEMBERS[a.member])))) return false; const n=a.role==="admin"?{...a,member:id}:{...a,role:"artist",member:id}; ACCOUNTS[em]=n; if(HB_ON) hbSetProfile(em,{role:n.role,member:id}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]=n; }); return true; }
 function saveRoster(fn){ const r=S.get(K.roster,{groups:[],members:{},accounts:{}}); fn(r); S.set(K.roster,r); }
@@ -9162,7 +9164,7 @@ function viewAdmin(tab){
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
-      if(r0.p==="new") return uniHead("新增")+`<main class="page roster">${h.slice(a,b)}</main>`;
+      if(r0.p==="new") return uniHead("新增藝人")+`<main class="page roster">${h.slice(a,b)}</main>`;
       const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}</main>`;
       const fd=S.get(K.fandom,{});
       return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rev-dot" style="background:${grad(g.g)}"></span>${esc(g.name)}<span class="r">${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
@@ -9778,8 +9780,8 @@ document.addEventListener("click",e=>{
     case "artNameEd": { const mid=session().member||uniMe(), k=ART_NK[t.dataset.v]?t.dataset.v:"tie"; tieModal(ART_NK[k],"",`<input id="artNameIn" class="a-nick-in" data-k="${k}" maxlength="16" placeholder="輸入文字" value="${esc(artName(mid,k))}"><button class="t-mbtn main" data-a="artNameOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "artNameOk": { const mid=session().member||uniMe(), el=document.getElementById("artNameIn")||{value:"",dataset:{}}, k=ART_NK[el.dataset.k]?el.dataset.k:"tie", v=el.value.trim(); if(!v){ toast("名稱不能空白"); break; } if(nameBlock(v)) break;
       setArtProf(mid,{[artNKey(k)]:v===MEMBERS[mid].name?"":v}); layer.innerHTML=""; render(); toast("已更新"+ART_NK[k]); break; }
-    case "artCoverEd": case "artAvEd": { const mid=session().member||uniMe(), cov=a==="artCoverEd", has=cov?artProf(mid).cover:artProf(mid).avatar; iosSheet([[cov?"從相簿選背景":"從相簿選頭貼",cov?"artPickCover":"artPickAv"],...(has?[["恢復預設",cov?"artResetCover":"artResetAv"]]:[])]); break; }
-    case "artPickCover": case "artPickAv": { const mid=session().member||uniMe(), cov=a==="artPickCover"; layer.innerHTML=""; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+    case "artCoverEd": case "artAvEd": { const mid=session().member||uniMe(), cov=a==="artCoverEd", has=cov?artProf(mid).cover:artProf(mid).avatar; if(has){ iosSheet([[cov?"換一張背景":"換一張頭貼",cov?"artPickCover":"artPickAv"],["恢復預設",cov?"artResetCover":"artResetAv"]]); break; } }   // 還沒換過：直接打開相簿，不用多一層選單
+    case "artPickCover": case "artPickAv": { const mid=session().member||uniMe(), cov=a==="artPickCover"||a==="artCoverEd"; layer.innerHTML=""; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,cov?1400:480); const url=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(setArtProf(mid,cov?{cover:url}:{avatar:url})){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(cov?"已換上新背景":"已換上新頭貼"); } }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
     case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(); setArtProf(mid,a==="artResetCover"?{cover:""}:{avatar:""}); layer.innerHTML=""; render(); break; }
     case "uniSec": { const r0=route(); ui.secLast=ui.secLast||{}; ui.secLast[r0.role]=location.hash; const h=ui.secLast[t.dataset.v]||UNI_SEC[t.dataset.v]; layer.innerHTML=""; location.hash=h; window.scrollTo(0,0); break; }
@@ -10818,7 +10820,7 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
     ${L.length?`<section class="card pt-list">${L.map(x=>`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(x.label)}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`).join("")}</section>`:`<p class="me-none">這段時間還沒有點數</p>`}
   </main>`; }
 /* 還沒有任何團：要團才能做的設定，先帶去新增團 */
-const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有團</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增團</button></div>`;
+const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增藝人</button></div>`;
 /* 帳號：所有帳號都由管理員建立；忘記密碼也由管理員重設 */
 const ROLE_ZH={admin:"管理員",artist:"藝人",fan:"粉絲"};
 function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort((a,b)=>(a[1].role==="admin"?0:a[1].role==="artist"?1:2)-(b[1].role==="admin"?0:b[1].role==="artist"?1:2)||acctUser(a[0]).localeCompare(acctUser(b[0])));
