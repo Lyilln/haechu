@@ -4090,6 +4090,25 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 
 /* 頭貼一律用「鋪滿裁切」顯示：照片不管直的橫的都不會變形或露出後面的底色 */
 .av-bgi{display:block!important;width:100%!important;height:100%!important;aspect-ratio:1/1;border-radius:50%;background-color:transparent;background-size:cover!important;background-position:center!important;background-repeat:no-repeat!important;flex:none}
+
+/* 查看所有橫幅 */
+.ab-pg{position:fixed;inset:0;z-index:80;background:var(--bg);display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px);animation:abIn .28s cubic-bezier(.2,.9,.3,1)}
+@keyframes abIn{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+.ab-h{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:10px 12px;flex:none}
+.ab-h b{text-align:center;font-size:17px;font-weight:800;color:var(--ink)}
+.ab-x{width:40px;height:40px;border:0;background:none;color:var(--ink);display:grid;place-items:center;padding:0}
+.ab-x svg{width:22px;height:22px}
+.ab-chips{display:flex;gap:8px;overflow-x:auto;padding:4px 16px 12px;flex:none;scrollbar-width:none}
+.ab-chips::-webkit-scrollbar{display:none}
+.ab-chips button{flex:none;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:var(--s1);color:var(--ink);font:inherit;font-size:14px;font-weight:700}
+.ab-chips button.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.ab-list{flex:1;overflow-y:auto;padding:4px 16px calc(24px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:12px}
+.ab-it{display:flex;align-items:stretch;gap:0;border:0;padding:0;border-radius:16px;overflow:hidden;background:var(--s1);box-shadow:var(--shadow);text-align:left;font:inherit;color:var(--ink);min-height:104px}
+.ab-it .wsp-th{width:120px;flex:none;border-radius:0;aspect-ratio:auto;height:auto}
+.ab-tx{display:flex;flex-direction:column;justify-content:center;gap:4px;padding:12px 14px;min-width:0}
+.ab-tx small{font-size:12px;color:var(--ink-3)}
+.ab-tx b{font-size:15px;font-weight:800;line-height:1.3}
+.ab-tx em{font-style:normal;font-size:13px;color:var(--ink-2)}
 </style>
 </head>
 <body>
@@ -4340,6 +4359,11 @@ async function pushEnable(){
 async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} try{ await s.unsubscribe(); }catch(e){} } ui.pushOn=false; toast("手機通知關掉了"); pushRefreshUI(); }
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
+/* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
+const BUILD="20261020125413";
+async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
+  if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
+setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
 /* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
 const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
 async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
@@ -7596,7 +7620,7 @@ function viewArtist(tab){
   if(tab==="me"){
     return head+`<main class="page">
       <section class="card me-card"><div class="av lg" style="margin:0 auto;background:${grad(m.g)}">${mAvIn(mid)}</div>
-        <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.name}・藝人帳號</span></section>
+        <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span></section>
       <div class="section-h">${WHISPER_NAME} 設定</div>
       <section class="card">
         <button class="list-btn" data-a="mediaNameEd">${I.star}社群 Media 名稱<span class="r">${esc(mediaName(g.id))}</span></button>
@@ -9068,11 +9092,18 @@ function prodArt(p){ const g=groupOf(p.gid), C=GRADS[(p.kind==="tie"?p.g2:g.g)%G
 const prodLabel=p=>p.kind==="ms"?"MEMBERSHIP":p.k==="stick"?"OFFICIAL":p.kind==="album"?(p.pre?"PRE-ORDER":"ALBUM"):p.k==="limited"?"LIMITED":"";
 const prodThumb=(p,big)=>`<span class="wsp-th ${big?"big":""}">${prodLabel(p)?`<small>${prodLabel(p)}</small>`:""}${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img class="wsp-cov" src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span>`;
 const prodCard=p=>`<button class="wsp-pc" data-a="pOpen" data-v="${p.id}">${prodThumb(p)}<span class="wsp-nm">${esc(p.name)}</span><span class="wsp-pr"><b>${fmt(p.pts)}</b> 點${p.from?" 起":""}</span>${p.own?`<em class="wsp-tag on">${esc(p.ownTxt||"已擁有")}</em>`:p.kind==="ms"?`<em class="wsp-tag">送官方應援棒</em>`:p.pre?`<em class="wsp-tag on">預購特典中</em>`:""}</button>`;
+/* 查看所有橫幅（照 Weverse Shop 的「＋」）：上面依藝人篩選，下面一張一張列出來 */
+function openAllBan(){ const f=followed().filter(g=>groupOf(g)&&!isSelfGid(g)), fl=ui.banF&&f.includes(ui.banF)?ui.banF:"all";
+  const L=f.filter(g=>fl==="all"||g===fl).flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own));
+  const sub=p=>p.pre?"現正預購中！":p.kind==="ms"?"加入就送官方應援棒！":"HAECHU SHOP 現正販售中！";
+  setLayer(`<div class="ab-pg" role="dialog" aria-label="查看所有橫幅"><header class="ab-h"><span></span><b>查看所有橫幅</b><button class="ab-x" data-a="closeLayer" aria-label="關閉">${XSVG}</button></header>
+    <div class="ab-chips">${[["all","ALL"],...f.map(g=>[g,groupOf(g).name])].map(([k,l])=>`<button class="${fl===k?"on":""}" data-a="banF" data-v="${esc(k)}">${esc(l)}</button>`).join("")}</div>
+    <div class="ab-list">${L.length?L.map(p=>`<button class="ab-it" data-a="banGo" data-v="${p.id}">${prodThumb(p)}<span class="ab-tx"><small>${esc(groupOf(p.gid).name)}</small><b>${esc(p.name)}</b><em>${sub(p)}</em></span></button>`).join(""):`<p class="me-none">還沒有商品</p>`}</div></div>`,"allban"); }
 function viewShop(){
   const q=srchQ("shop"), f=followed();
   if(ui.shopG&&groupOf(ui.shopG)) return viewShopGroup(ui.shopG);
   const all=f.flatMap(shopProducts).filter(p=>!q||(p.name+" "+groupOf(p.gid).name).toLowerCase().includes(q));
-  const ban=f.flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own).slice(0,2)).slice(0,6);
+  const ban=f.flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own&&!isSelfGid(p.gid)).slice(0,2)).slice(0,6);
   const mine=Object.keys(subs()).filter(id=>MEMBERS[id]);
   return fanHeader(false,"shop","搜尋商品、團名...")+`<main class="page">${srchLabel("shop")}
     ${q?(all.length?`<div class="wsp-grid">${all.map(prodCard).join("")}</div>`:srchEmpty("商品")):`
@@ -9450,7 +9481,7 @@ document.addEventListener("click",e=>{
     case "rgDel": { const id=t.dataset.v; if(Object.entries(MEMBERS).some(([k,m])=>m.group===id&&!m.official)){ toast("請先刪除這個團的成員"); break; }
       ask(`要刪除「${groupOf(id).name}」嗎？`,()=>{ saveRoster(r=>{ r.groups=r.groups.filter(g=>g.id!==id); delete r.members[id+"_o"]; }); const i=GROUPS.findIndex(g=>g.id===id); if(i>=0) GROUPS.splice(i,1); delete MEMBERS[id+"_o"]; S.set(K.fanArtists,followed().filter(x=>x!==id)); render(); toast("已刪除"); }); break; }
     case "meShop": ui.shopTab=t.dataset.v; go("fan",null,"shop"); window.scrollTo(0,0); break;
-    case "acctInfo": { const s2=session()||{}; tieModal("帳號設定",`<span class="info-row"><em>登入帳號</em>${esc(acctUser(s2.email))}</span><span class="info-row"><em>身分</em>${s2.role==="fan"?"粉絲":s2.role==="artist"?"藝人":"管理員"}</span><span class="info-row"><em>密碼</em>接上 Firebase 後可以在這裡修改</span>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
+    case "acctInfo": { const s2=session()||{}; const ac2=ACCOUNTS[s2.email]||{}, rl=ac2.role||s2.role; tieModal("帳號設定",`<span class="info-row"><em>登入帳號</em>${esc(acctUser(s2.email))}</span><span class="info-row"><em>身分</em>${rl==="admin"?"管理員":rl==="artist"?"藝人":"粉絲"}</span><span class="info-row"><em>密碼</em>${rl==="admin"?"到 管理 → 人員 → 帳號 可以重設":"忘記密碼請找管理員"}</span>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
     case "cmDel": { (ui.composeMedia||[]).splice(+t.dataset.i,1); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "playVideo": playVideo(t.dataset.mid); break;
     case "wish": { const id=t.dataset.m, all=S.get(K.bdayWish,{}), k=wishKey(id), w=all[k]||{n:0}; if(w.mine) break; w.n++; w.mine=true; all[k]=w; S.set(K.bdayWish,all);
@@ -9603,7 +9634,7 @@ document.addEventListener("click",e=>{
     case "mFollow": { const m=t.dataset.v, f=S.get(K.mFollow,{}); if(f[m]) delete f[m]; else f[m]=Date.now(); S.set(K.mFollow,f); toast(f[m]?`已追蹤 ${artName(m,"feed")}`:"已取消追蹤"); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "mpTab": { ui.mpTab=t.dataset.v; const h=document.getElementById("apHero"), y=window.scrollY, lim=h?h.offsetHeight-70:0; render(); window.scrollTo(0,Math.min(y,Math.max(lim,0)+1)); break; }
     case "mpSort": { ui.mpOld=!ui.mpOld; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
-    case "artProfEdit": iosSheet([["更換背景","artCoverEd"],["更換頭貼","artAvEd"],["名稱","artNameEd",'data-v="feed"'],["個人簡介","artBioEd"]]); break;
+    case "artProfEdit": iosSheet([["名稱","artNameEd",'data-v="feed"'],["個人簡介","artBioEd"]]); break;
     case "cmFeed": ui.cmFeed=t.dataset.v; render(); break;
     case "cmFan": ui.cmFeed="fan"; render(); window.scrollTo(0,0); break;
     case "cmMed": ui.cmMed=t.dataset.v; render(); break;
@@ -9739,6 +9770,7 @@ document.addEventListener("click",e=>{
 
     case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
+    case "appReload": location.reload(); break;
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
     case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim();
@@ -9977,7 +10009,9 @@ document.addEventListener("click",e=>{
     case "openChatFromToast": document.querySelectorAll(".toast").forEach(x=>x.remove()); ui.wDraft=""; ui.srch=null; ui.scrollChat=true; location.hash="#/fan/chat?m="+ui.toastMember; break;
     case "passExpire": { const all=subs(), r2=all[t.dataset.m]; r2.seenUntil=Math.max(r2.seenUntil||0,Date.now()); r2.expires=Date.now()-(t.dataset.v==="long"?25:1)*3600e3; if(r2.since>r2.expires) r2.since=r2.expires-DAY; S.set(K.tieSubs,all); render();
       toast(t.dataset.v==="long"?"示範：這張券已到期超過 24 小時":"示範：這張券剛到期（1 小時前）"); break; }
-    case "wsPlus": { const b=document.getElementById("spBan"); const k=b?Math.round(b.scrollLeft/Math.max(1,b.clientWidth)):0; const sl=b&&b.children[k]; const p=sl&&prodBy(sl.dataset.v); if(p){ ui.shopG=p.gid; ui.shopCat="all"; render(); window.scrollTo(0,0); } break; }
+    case "wsPlus": ui.banF="all"; openAllBan(); break;
+    case "banF": ui.banF=t.dataset.v; openAllBan(); break;
+    case "banGo": layer.innerHTML=""; openProd(t.dataset.v); break;
     case "addPts": S.set(K.points,points()+3000); render(); toast("示範：已補充 3,000 點"); break;
     case "tWelcome": { const cur=welcomeOf(session().member||uniMe());
       tieModal("TIE歡迎語","粉絲新訂閱你的 TIE 時，系統會立刻用你的名義送出這句話。",`<textarea id="welTxt" class="t-wel-ta" maxlength="200">${esc(cur)}</textarea><button class="t-mbtn main" data-a="tWelcomeSave">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
