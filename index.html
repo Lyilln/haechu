@@ -1190,6 +1190,7 @@ main .adm-live .btn-danger{background:#FFE4EC;color:#F43F5E;box-shadow:none}
 .from-fan{white-space:nowrap;font-size:10.5px;font-weight:900;letter-spacing:.14em;color:#A47BFF;margin-right:6px}
 .nick-tk{display:inline-block;padding:0 6px;margin:0 1px;border-radius:6px;background:rgba(255,255,255,.3);font-size:.9em;font-weight:800}
 .t-nick{flex:none;height:30px;padding:0 10px;border-radius:999px;background:#F3EEFF;color:#6F2FE6;font-size:11.5px;font-weight:800}
+.wel-nick{align-self:flex-start;border:0;margin:-2px 0 10px;font-family:inherit}
 /* ===== 粉絲訊息次數提示 ===== */
 .t-qbar{position:fixed;left:16px;right:16px;top:calc(env(safe-area-inset-top,0px) + 70px);z-index:65;max-width:448px;margin:0 auto;padding:12px 16px;border-radius:18px;background:rgba(59,42,107,.88);color:#fff;font-size:13px;font-weight:600;line-height:1.6;box-shadow:0 14px 30px -12px rgba(59,42,107,.6);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);opacity:0;transform:translateY(-10px);pointer-events:none;transition:opacity .25s,transform .25s}
 .t-qbar.show{opacity:1;transform:none}
@@ -4219,7 +4220,7 @@ const K = {
   gNotices:"daisuki_group_notices", seedGN:"daisuki_seed_gn",
   notifs:"daisuki_notifications", maint:"daisuki_maint", feed:"daisuki_feed", feedSeen:"daisuki_feed_seen", unread:"daisuki_notif_unread", fanArtists:"daisuki_fan_artists",
   posts:"daisuki_posts", session:"daisuki_session", settings:"daisuki_notif_settings",
-  likes:"daisuki_liked", comments:"daisuki_comments", whispers:"daisuki_whispers", wRead:"daisuki_whisper_read", wArtistRead:"daisuki_whisper_artist_read", wSubs:"daisuki_whisper_subs", tieSubs:"daisuki_tie_passes", tieWelcome:"daisuki_tie_welcome", points:"daisuki_points", seed9:"daisuki_seed_pass_v1", anns:"daisuki_announcements", seed10:"daisuki_seed_ann_v1", pick:"daisuki_promo_pick", sched:"daisuki_schedule", lightsea:"daisuki_lightsea", tieSet:"daisuki_tie_settings", tieCleared:"daisuki_tie_cleared", tieTr:"daisuki_tie_translated", tieNotice:"daisuki_tie_notice", lives:"daisuki_lives", events:"daisuki_events", seed5:"daisuki_seed_live_v1", sticks:"daisuki_lightsticks", seed12:"daisuki_seed_media_v1", seed13:"daisuki_seed_comments_v1", membership:"daisuki_membership", owned:"daisuki_owned", sales:"daisuki_sales", revShare:"daisuki_rev_share", seed14:"daisuki_seed_sales_v1", mutes:"daisuki_mutes", roster:"daisuki_roster", tieMs:"daisuki_tie_milestone_msg", msDone:"daisuki_milestones_done", bdays:"daisuki_birthdays", bdayWish:"daisuki_bday_wish", seed15:"daisuki_seed_bday_v1", cards:"daisuki_cards", gachaLog:"daisuki_gacha_log", svOpen:"daisuki_survival_open", svVotes:"daisuki_survival_votes", svMine:"daisuki_survival_mine", stubs:"daisuki_stubs", artistNick:"daisuki_artist_nick", lastEmail:"daisuki_last_email", plans:"daisuki_live_plans", seed11:"daisuki_seed_meet_v2", reports:"daisuki_reports", announce:"daisuki_announce", annSeen:"daisuki_announce_seen", seed6:"daisuki_seed_admin_v1", seeded:"daisuki_seed_v4", mshow:"daisuki_music_show", msVotes:"daisuki_music_votes", msMine:"daisuki_music_my_votes", mvLike:"daisuki_mv_like", seed16:"daisuki_seed_music_v1", aiCfg:"daisuki_ai_cfg", aiFans:"daisuki_ai_fans", aiMem:"daisuki_ai_memory", aiQ:"daisuki_ai_queue", tieTrX:"daisuki_tie_translated_x", trCfg:"daisuki_translate_cfg", fs:"daisuki_fansign", signedAlbums:"daisuki_signed_albums", seed17:"daisuki_seed_fansign_v1", demoOn:"daisuki_demo_buttons", seed18:"daisuki_seed_fansign_v3", theme:"daisuki_theme", leaks:"daisuki_tie_leaks", suspends:"daisuki_suspends", leakPolicy:"daisuki_leak_policy", onboard:"daisuki_onboard", selDone:"daisuki_select_done", cardMeta:"daisuki_card_meta", gachaSnd:"daisuki_gacha_sound", repCard:"daisuki_rep_card", annSeenA:"daisuki_announce_seen_artist", concerts:"daisuki_concerts", curGrp:"daisuki_current_group", tracks:"daisuki_tracks", rgBest:"daisuki_rhythm_best", rgLv:"daisuki_rhythm_level"
+  likes:"daisuki_liked", comments:"daisuki_comments", whispers:"daisuki_whispers", wRead:"daisuki_whisper_read", wArtistRead:"daisuki_whisper_artist_read", wSubs:"daisuki_whisper_subs", tieSubs:"daisuki_tie_passes", tieWelcome:"daisuki_tie_welcome", tieReadBy:"daisuki_tie_read_by", points:"daisuki_points", seed9:"daisuki_seed_pass_v1", anns:"daisuki_announcements", seed10:"daisuki_seed_ann_v1", pick:"daisuki_promo_pick", sched:"daisuki_schedule", lightsea:"daisuki_lightsea", tieSet:"daisuki_tie_settings", tieCleared:"daisuki_tie_cleared", tieTr:"daisuki_tie_translated", tieNotice:"daisuki_tie_notice", lives:"daisuki_lives", events:"daisuki_events", seed5:"daisuki_seed_live_v1", sticks:"daisuki_lightsticks", seed12:"daisuki_seed_media_v1", seed13:"daisuki_seed_comments_v1", membership:"daisuki_membership", owned:"daisuki_owned", sales:"daisuki_sales", revShare:"daisuki_rev_share", seed14:"daisuki_seed_sales_v1", mutes:"daisuki_mutes", roster:"daisuki_roster", tieMs:"daisuki_tie_milestone_msg", msDone:"daisuki_milestones_done", bdays:"daisuki_birthdays", bdayWish:"daisuki_bday_wish", seed15:"daisuki_seed_bday_v1", cards:"daisuki_cards", gachaLog:"daisuki_gacha_log", svOpen:"daisuki_survival_open", svVotes:"daisuki_survival_votes", svMine:"daisuki_survival_mine", stubs:"daisuki_stubs", artistNick:"daisuki_artist_nick", lastEmail:"daisuki_last_email", plans:"daisuki_live_plans", seed11:"daisuki_seed_meet_v2", reports:"daisuki_reports", announce:"daisuki_announce", annSeen:"daisuki_announce_seen", seed6:"daisuki_seed_admin_v1", seeded:"daisuki_seed_v4", mshow:"daisuki_music_show", msVotes:"daisuki_music_votes", msMine:"daisuki_music_my_votes", mvLike:"daisuki_mv_like", seed16:"daisuki_seed_music_v1", aiCfg:"daisuki_ai_cfg", aiFans:"daisuki_ai_fans", aiMem:"daisuki_ai_memory", aiQ:"daisuki_ai_queue", tieTrX:"daisuki_tie_translated_x", trCfg:"daisuki_translate_cfg", fs:"daisuki_fansign", signedAlbums:"daisuki_signed_albums", seed17:"daisuki_seed_fansign_v1", demoOn:"daisuki_demo_buttons", seed18:"daisuki_seed_fansign_v3", theme:"daisuki_theme", leaks:"daisuki_tie_leaks", suspends:"daisuki_suspends", leakPolicy:"daisuki_leak_policy", onboard:"daisuki_onboard", selDone:"daisuki_select_done", cardMeta:"daisuki_card_meta", gachaSnd:"daisuki_gacha_sound", repCard:"daisuki_rep_card", annSeenA:"daisuki_announce_seen_artist", concerts:"daisuki_concerts", curGrp:"daisuki_current_group", tracks:"daisuki_tracks", rgBest:"daisuki_rhythm_best", rgLv:"daisuki_rhythm_level"
 };
 const store = {
   get(k,fb){try{const v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch{return fb}},
@@ -4230,7 +4231,7 @@ const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
 /* 每個粉絲帳號自己的資料（追蹤、TIE 券、點數、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
-const PK_SET=new Set(["fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","tieWelcome","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","mutes","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
+const PK_SET=new Set(["fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","mutes","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
   get(k,fb){k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
@@ -4441,7 +4442,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020152258";
+const BUILD="20261020154446";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -4691,7 +4692,7 @@ function tieSet(member){
   return {chatName:m?artName(member,"tie"):"",nickname:ME.name,badge:true,translate:true,muted:false,fav:false,bgMode:"default",bgColor:"#E6E6FA",bgPattern:1,bgImage:null,...sv};
 }
 function saveTieSet(member,u){ const all=S.get(K.tieSet,{}); all[member]={...(all[member]||{}),...u}; S.set(K.tieSet,all); }
-const artistReadTs=()=>S.get(K.wArtistRead,0);
+const artistReadTs=mid=>(S.get(K.tieReadBy,{})||{})[mid]||0;   // 藝人讀到哪裡（每位藝人分開、所有手機同步）
 const DAY=864e5;
 const subDays=member=>{const r=subs()[member];return r?Math.floor((Math.min(Date.now(),r.expires)-r.since)/DAY)+1:0};
 function recallWhisper(id){ S.set(K.whispers,S.get(K.whispers,[]).filter(w=>w.id!==id)); }
@@ -6869,7 +6870,7 @@ function render(){
   if(s.role==="artist"&&r.sub==="write") return paint(viewArtWrite(r.p),false);
   if(s.role==="artist"&&r.tab==="live"){ const hl=liveNow(s.member); if(hl){ hostSig=""; return paint(viewHostRoom(hl),false); } }
   if(s.role==="artist"&&r.tab==="foc"&&r.p==="fansign"){ const v=viewFsDesk(r.id); if(v) return paint(v,false); }
-  if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); S.set(K.wArtistRead,Date.now()); return paint(v,false); }
+  if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); S.set(K.wArtistRead,Date.now()); const mid0=s.member, RB=S.get(K.tieReadBy,{})||{}; if(mid0&&getWhispers().some(w=>w.member===mid0&&w.from!=="artist"&&w.ts>(RB[mid0]||0))){ S.set(K.tieReadBy,{...RB,[mid0]:Date.now()}); } return paint(v,false); }
   if(s.role==="artist") return paint(viewArtist(r.tab||"home"),true,artistNav(r.tab||"home"));
   return paint(viewAdmin(r.tab||"home"),true,adminNav(r.tab||"home"));
 }
@@ -7849,7 +7850,7 @@ function viewTieList(){
 /* ---------- 聊天室 ---------- */
 function viewTieRoom(member){
   setTimeout(()=>tieCeleCheck(member),350);
-  const m=MEMBERS[member], st=tieSet(member), readTs=artistReadTs();
+  const m=MEMBERS[member], st=tieSet(member), readTs=artistReadTs(member);
   const tr=new Set(S.get(K.tieTr,[]));
   const q=srchQ("tieroom");
   let msgs=fanRoom(member);
@@ -10137,9 +10138,10 @@ document.addEventListener("click",e=>{
     case "banGo": layer.innerHTML=""; openProd(t.dataset.v); break;
     case "addPts": S.set(K.points,points()+3000); render(); toast("示範：已補充 3,000 點"); break;
     case "tWelcome": { const cur=welcomeOf(session().member||uniMe());
-      tieModal("TIE歡迎語","粉絲新訂閱你的 TIE 時，系統會立刻用你的名義送出這句話。",`<textarea id="welTxt" class="t-wel-ta" maxlength="200">${esc(cur)}</textarea><button class="t-mbtn main" data-a="tWelcomeSave">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+      tieModal("TIE歡迎語","粉絲新訂閱你的 TIE 時，系統會立刻用你的名義送出這句話。打 @@@ 的地方，每位粉絲看到的會是自己的暱稱。",`<textarea id="welTxt" class="t-wel-ta" maxlength="200" placeholder="輸入文字">${esc(cur)}</textarea><button type="button" class="t-nick wel-nick" data-a="welNick">@@@ 插入粉絲暱稱</button><button class="t-mbtn main" data-a="tWelcomeSave">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "welNick": { const ta=document.getElementById("welTxt"); if(!ta) break; const a0=ta.selectionStart??ta.value.length, b0=ta.selectionEnd??a0; ta.value=ta.value.slice(0,a0)+"@@@"+ta.value.slice(b0); ta.focus(); ta.selectionStart=ta.selectionEnd=a0+3; break; }
     case "tWelcomeSave": { const v=document.getElementById("welTxt").value.trim(); if(!v){ toast("歡迎語不能空白"); break; }
-      const w2=S.get(K.tieWelcome,{}); w2[session().member]=v; S.set(K.tieWelcome,w2); layer.innerHTML=""; toast("已儲存歡迎語"); break; }
+      const w2=S.get(K.tieWelcome,{}); w2[session().member||uniMe()]=v; S.set(K.tieWelcome,w2); layer.innerHTML=""; toast("已儲存歡迎語"); break; }
     case "openChat": ui.wDraft=""; ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; layer.innerHTML="";
       location.hash="#/fan/chat?m="+t.dataset.m;
       if(!S.get(K.tieNotice,false)) setTimeout(()=>tieModal("保護藝人的隱私","為了保護藝人，請不要截圖或錄影外流聊天室的內容。",`<button class="t-mbtn main" data-a="tNoticeOk">我同意</button>`),250);
