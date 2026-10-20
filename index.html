@@ -2191,6 +2191,19 @@ html[data-theme] body .mf-an{display:flex;align-items:center;gap:12px;padding:14
 .wsp-tag{font-style:normal;font-size:11px;color:var(--ink-2);border:1px solid var(--line);padding:2px 7px;border-radius:6px;margin-top:2px}
 .wsp-tag.on{color:var(--violet-ink);border-color:var(--violet)}
 .wsp-th{position:relative;display:grid;place-items:center;aspect-ratio:1;width:100%;border-radius:14px;background:var(--s2)}
+.wsp-th{container-type:inline-size}
+.tkt{position:relative;display:flex;width:86%;aspect-ratio:1.72;border-radius:7cqw;filter:drop-shadow(0 3cqw 5cqw rgba(40,30,70,.16));
+  -webkit-mask:radial-gradient(circle 4.6cqw at 34% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 4.6cqw at 34% 100%,#0000 98%,#000) bottom/100% 51% no-repeat;
+  mask:radial-gradient(circle 4.6cqw at 34% 0,#0000 98%,#000) top/100% 51% no-repeat,radial-gradient(circle 4.6cqw at 34% 100%,#0000 98%,#000) bottom/100% 51% no-repeat;overflow:hidden}
+.tkt-stub{flex:0 0 34%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3cqw;background:linear-gradient(150deg,var(--c0),var(--c1));position:relative}
+.tkt-stub::after{content:"";position:absolute;right:-.6cqw;top:7cqw;bottom:7cqw;border-right:1.2cqw dashed rgba(255,255,255,.75)}
+.tkt-av{position:relative;width:17cqw;height:17cqw;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:rgba(255,255,255,.28);box-shadow:0 0 0 1.2cqw rgba(255,255,255,.7);color:#fff;font-style:normal;font-weight:800;font-size:7cqw}
+.tkt-stub em{font-style:normal;font-size:3.6cqw;font-weight:700;letter-spacing:.12em;color:rgba(255,255,255,.92);font-family:Quicksand,sans-serif}
+.tkt-body{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;padding:0 5cqw 0 7cqw;background:var(--s1);gap:.6cqw;text-align:left}
+.tkt-body small{position:static!important;font-size:3.4cqw!important;letter-spacing:.24em!important;color:var(--ink-3)!important;font-weight:700;text-align:left!important}
+.tkt-body b{font-family:Quicksand,sans-serif;font-size:12cqw;line-height:1;font-weight:800;letter-spacing:.06em;background:linear-gradient(120deg,var(--c0),var(--c1));-webkit-background-clip:text;background-clip:text;color:transparent}
+.tkt-nm{font-size:4.6cqw;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tkt-bar{display:block;height:4.6cqw;margin-top:2.4cqw;width:78%;opacity:.5;background:repeating-linear-gradient(90deg,var(--ink) 0 .5cqw,transparent .5cqw 1.2cqw,var(--ink) 1.2cqw 2.2cqw,transparent 2.2cqw 2.8cqw)}
 .wsp-th small{position:absolute;top:9px;left:0;right:0;text-align:center;font-size:10px;font-weight:700;letter-spacing:.08em;color:var(--ink-3)}
 .wsp-th svg{width:78%;height:78%}
 .wsp-th.big{border-radius:20px;margin-top:4px}.wsp-th.big small{font-size:12px;top:14px}
@@ -4428,7 +4441,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020145634";
+const BUILD="20261020151524";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -9165,7 +9178,9 @@ function prodArt(p){ const g=groupOf(p.gid), C=GRADS[(p.kind==="tie"?p.g2:g.g)%G
   if(p.k==="stick") return `<svg viewBox="0 0 120 120">${defs}<circle cx="60" cy="40" r="20" fill="url(#${id})" opacity=".95"/><circle cx="60" cy="40" r="20" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="54" cy="34" r="5" fill="rgba(255,255,255,.7)"/><rect x="55" y="60" width="10" height="44" rx="5" fill="#E9E6EF" stroke="#CFCAD9"/><rect x="55" y="62" width="10" height="6" fill="#CFCAD9"/></svg>`;
   if(p.k==="album") return `<svg viewBox="0 0 120 120">${defs}<rect x="30" y="24" width="64" height="72" rx="3" fill="#D9D5E2"/><rect x="24" y="20" width="64" height="72" rx="3" fill="url(#${id})"/><text x="56" y="44" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif">${nm}</text><text x="56" y="54" font-size="5" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="Quicksand,sans-serif">${p.kind==="album"?esc(albumOf(p.aid).title):"The 1st Mini Album"}</text>${p.kind==="album"?`<text x="56" y="88" font-size="5.5" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif">${esc(verOf(albumOf(p.aid),p.vid).name)}</text>`:""}<circle cx="56" cy="72" r="11" fill="rgba(255,255,255,.25)"/></svg>`;
   if(p.k==="limited") return `<svg viewBox="0 0 120 120">${defs}<rect x="24" y="30" width="34" height="50" rx="4" fill="#fff" stroke="#E2DEEA" transform="rotate(-10 41 55)"/><rect x="43" y="26" width="34" height="50" rx="4" fill="url(#${id})" stroke="#fff" stroke-width="2"/><rect x="62" y="30" width="34" height="50" rx="4" fill="#fff" stroke="#E2DEEA" transform="rotate(10 79 55)"/><circle cx="60" cy="92" r="6" fill="${c1}"/><circle cx="76" cy="94" r="4" fill="${c0}"/><circle cx="46" cy="94" r="4" fill="${c0}"/></svg>`;
-  return `<svg viewBox="0 0 120 120">${defs}<rect x="16" y="36" width="88" height="48" rx="8" fill="#fff" stroke="#E2DEEA"/><rect x="16" y="36" width="30" height="48" rx="8" fill="url(#${id})"/><rect x="38" y="36" width="8" height="48" fill="url(#${id})"/><text x="31" y="65" font-size="16" font-weight="700" fill="#fff" text-anchor="middle" font-family="Huninn,sans-serif">${mAvIn(p.mid)}</text><text x="74" y="56" font-size="9" font-weight="700" fill="#3B3546" text-anchor="middle" font-family="Quicksand,sans-serif">${WHISPER_NAME}</text><text x="74" y="70" font-size="6" fill="#8A8496" text-anchor="middle" font-family="Huninn,sans-serif">${esc(artName(p.mid,"feed"))}</text></svg>`; }
+  /* TIE 券：做成一張票（左邊票根放藝人頭貼，中間撕線，右邊票面） */
+  const pm=artProf(p.mid).avatar, mm=MEMBERS[p.mid];
+  return `<span class="tkt" style="--c0:${c0};--c1:${c1}"><span class="tkt-stub"><i class="tkt-av">${pm?`<span class="g-ph" style="background-image:url('${pm}')"></span>`:esc(mm?mm.name[0]:"")}</i><em>PASS</em></span><span class="tkt-body"><small>HAECHU</small><b>${WHISPER_NAME}</b><span class="tkt-nm">${esc(artName(p.mid,"tie"))}</span><i class="tkt-bar"></i></span></span>`; }
 const prodLabel=p=>p.kind==="ms"?"MEMBERSHIP":p.k==="stick"?"OFFICIAL":p.kind==="album"?(p.pre?"PRE-ORDER":"ALBUM"):p.k==="limited"?"LIMITED":"";
 const prodThumb=(p,big)=>`<span class="wsp-th ${big?"big":""}">${prodLabel(p)?`<small>${prodLabel(p)}</small>`:""}${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img class="wsp-cov" src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span>`;
 const prodCard=p=>`<button class="wsp-pc" data-a="pOpen" data-v="${p.id}">${prodThumb(p)}<span class="wsp-nm">${esc(p.name)}</span><span class="wsp-pr"><b>${fmt(p.pts)}</b> 點${p.from?" 起":""}</span>${p.own?`<em class="wsp-tag on">${esc(p.ownTxt||"已擁有")}</em>`:p.kind==="ms"?`<em class="wsp-tag">送官方應援棒</em>`:p.pre?`<em class="wsp-tag on">預購特典中</em>`:""}</button>`;
