@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>HAECHU</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HAECHU">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <script>(function(){function z(){var w=Math.min(window.innerWidth||390,screen.width||9999);var v=Math.max(.8,Math.min(.92,w/440));document.documentElement.style.zoom=v;document.documentElement.style.setProperty("--zm",v);}z();addEventListener("resize",z);addEventListener("orientationchange",function(){setTimeout(z,300)});})();</script>
 <script>try{var m=JSON.parse(localStorage.getItem("daisuki_theme")||'"system"');var d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light");document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -4296,16 +4303,40 @@ async function hbAuth(u,pw,signup,name){ const un=String(u||"").trim().toLowerCa
     if(!r||!r.access_token){ const er=new Error("confirm"); er.code="email_not_confirmed"; throw er; }
     hbSetTok(r); await hbLoadProfiles(); await hbPullAll(); HB.fans=(await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}).catch(()=>({})))||{}; hbStart();
     ui.authBusy=false; if(!ACCOUNTS[un]) ACCOUNTS[un]={user:un,role:"fan",name:name||un};
+    pushResync().then(()=>{ if(ui.pushOn) hbSoon(); });
     if(maintOn()&&ACCOUNTS[un].role!=="admin"){ await hbLogout(); ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; try{ render(); }catch(x){} return; }
     loginAs(un);
   }catch(e){ ui.authBusy=false; HB.tok=null;
     // 連不到後端、又不是在正式網站上（例如某些預覽畫面）：自動改成本機試玩
     const h=location.hostname||""; if(e.net&&!/\.(pages|workers)\.dev$/.test(h)&&!HB_HOSTS.includes(h)){ HB_ON=false; ui.loginErr=""; if(signup){ ACCOUNTS[un]={pw:String(pw||""),role:"fan",name:name||un}; saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[un]=ACCOUNTS[un]; }); } return login(un,pw); }
     ui.loginErr=hbErrText(e,signup); try{ render(); }catch(x){} } }
-async function hbLogout(){ try{ clearTimeout(HB.ft); if(HB.dirty.size) await hbFlush(); }catch(e){} const t=HB.tok; HB.tok=null; HB.ref=null; hbStop();
+async function hbLogout(){ try{ clearTimeout(HB.ft); if(HB.dirty.size) await hbFlush(); }catch(e){} try{ await pushLogout(); }catch(e){} const t=HB.tok; HB.tok=null; HB.ref=null; hbStop();
   try{ if(t) fetch(HB_URL+"/auth/v1/logout",{method:"POST",headers:{apikey:HB_KEY,Authorization:"Bearer "+t}}); }catch(e){}
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]); applyRoster(); }
 /* 照片、語音、影片：上傳到雲端，別人的手機找不到就從雲端下載 */
+/* 手機推播通知：iPhone 要先「加入主畫面」從主畫面打開；Android 用 Chrome 就可以 */
+const VAPID_PUBLIC="BDU4YWn1PFmL7oeDwVj7flX9sAnHF_GpGuwk-jAcJ-cYpELabm4hX4FkJk-6fMCH-Lv4RpbHM3W5-H8eSEI-bJk";
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+const isStandalone=()=>{ try{ return matchMedia("(display-mode: standalone)").matches||navigator.standalone===true; }catch(e){ return false; } };
+const pushSupported=()=>HB_ON&&"serviceWorker" in navigator&&"PushManager" in window&&"Notification" in window;
+try{ if(HB_ON&&"serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(()=>{}); }catch(e){}
+const b64u=s=>{ const p="=".repeat((4-s.length%4)%4), b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from([...b].map(c=>c.charCodeAt(0))); };
+async function pushSub(){ try{ const r=await navigator.serviceWorker.ready; return await r.pushManager.getSubscription(); }catch(e){ return null; } }
+/* 登入後：這支手機已經開過推播，就改成通知現在登入的這個帳號 */
+async function pushResync(){ ui.pushOn=false; if(!pushSupported()||Notification.permission!=="granted") return; const s=await pushSub(); if(!s) return;
+  try{ await hbFetch("/rest/v1/rpc/save_push",{method:"POST",body:{p_sub:s.toJSON()}}); ui.pushOn=true; }catch(e){} }
+async function pushEnable(){
+  if(isIOS&&!isStandalone()){ tieModal("先加入主畫面","iPhone 要從主畫面的 HAECHU 打開，才能收到通知：<br>1. 點 Safari 下方的分享按鈕<br>2. 選「加入主畫面」<br>3. 從主畫面的 HAECHU 打開，再到這裡開啟",`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); return; }
+  if(!pushSupported()){ toast("這支手機的瀏覽器不支援通知"); return; }
+  let p; try{ p=await Notification.requestPermission(); }catch(e){ p="denied"; }
+  if(p!=="granted"){ toast("沒有允許通知，可以到手機的設定裡打開"); return; }
+  try{ const r=await navigator.serviceWorker.ready; let s=await r.pushManager.getSubscription(); if(!s) s=await r.pushManager.subscribe({userVisibleOnly:true,applicationServerKey:b64u(VAPID_PUBLIC)});
+    await hbFetch("/rest/v1/rpc/save_push",{method:"POST",body:{p_sub:s.toJSON()}}); ui.pushOn=true; toast("手機通知開啟了"); }
+  catch(e){ toast("沒有開成功，請再試一次"); }
+  pushRefreshUI(); }
+async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} try{ await s.unsubscribe(); }catch(e){} } ui.pushOn=false; toast("手機通知關掉了"); pushRefreshUI(); }
+async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
+function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
 const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
 async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
@@ -7524,6 +7555,7 @@ function viewNotifs(){
         ${groups.map(g=>`<button class="chip ${ui.notifFilter===g.id?"on":""}" data-a="nf" data-v="${g.id}">${g.name}</button>`).join("")}
       </div>
       ${pinnedHtml()}
+      ${HB_ON&&!ui.pushOn?`<button class="btn btn-soft btn-block" style="margin:0 0 12px" data-a="pushToggle">開啟手機通知</button>`:""}
       <span class="nz-pill soft">一般粉絲專屬動態</span>
       ${list.length?`<div class="nz-list">${list.map(card).join("")}</div>`:`<p class="nz-empty">尚無一般互動訊息 🔮</p>`}
       ${list.length?`<div class="nz-foot"><button data-a="notifClear">清除所有通知</button></div>`:""}
@@ -7534,6 +7566,7 @@ function openSettings(){
   const row=(k,t,d)=>`<div class="row"><div class="lbl"><b>${t}</b><span>${d}</span></div><button class="sw" role="switch" aria-checked="${s[k]}" aria-label="${t}" data-a="toggleSet" data-k="${k}"></button></div>`;
   setLayer(`<div class="scrim" data-a="closeLayer"><div class="sheet" role="dialog" aria-label="通知設定">
     <div class="grab"></div><h3>通知設定</h3><p>關掉的類型不會再通知你</p>
+    ${HB_ON?`<div class="row"><div class="lbl"><b>手機通知</b><span>像 App 一樣在手機上跳通知</span></div><button class="sw" role="switch" aria-checked="${!!ui.pushOn}" aria-label="手機通知" data-a="pushToggle"></button></div>`:""}
     ${row("post","新貼文","追蹤的藝人發文時")}
     ${row("comment","留言回覆","藝人回覆你的留言時")}
     ${row("whisper",WHISPER_NAME+" 訊息","你訂閱的成員傳 "+WHISPER_NAME+" 訊息時")}
@@ -9702,6 +9735,7 @@ document.addEventListener("click",e=>{
 
     case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
+    case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
     case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim();
       if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
