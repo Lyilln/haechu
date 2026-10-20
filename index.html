@@ -4441,7 +4441,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020151524";
+const BUILD="20261020152258";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -10144,7 +10144,7 @@ document.addEventListener("click",e=>{
       location.hash="#/fan/chat?m="+t.dataset.m;
       if(!S.get(K.tieNotice,false)) setTimeout(()=>tieModal("保護藝人的隱私","為了保護藝人，請不要截圖或錄影外流聊天室的內容。",`<button class="t-mbtn main" data-a="tNoticeOk">我同意</button>`),250);
       break;
-    case "tNoticeOk": S.set(K.tieNotice,true); layer.innerHTML=""; break;
+    case "tNoticeOk": { S.set(K.tieNotice,true); layer.innerHTML=""; const m0=route().m; if(m0) setTimeout(()=>tieCeleCheck(m0),250); break; }
     case "tCloseLayer": if(e.target===t||t.tagName==="BUTTON"){ const d=layer.querySelector(".t-drawer-w"); if(d){ d.classList.remove("open"); setTimeout(()=>layer.innerHTML="",280); } else layer.innerHTML=""; } break;
     case "tListClear": tieModal("清除對話列表","清除後，聊天室裡的舊訊息會先隱藏。之後可以到聊天室設定的「載入歷史對話」找回來。",`<button class="t-mbtn danger" data-a="tListClearOk">確定清除</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break;
     case "tListClearOk": clearRooms(); layer.innerHTML=""; render(); toast("已清除對話列表"); break;
