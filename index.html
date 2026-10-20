@@ -4129,7 +4129,7 @@ const K = {
   grpSeen:"daisuki_group_seen",
   gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", lockCfg:"daisuki_lock", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
   gNotices:"daisuki_group_notices", seedGN:"daisuki_seed_gn",
-  notifs:"daisuki_notifications", feed:"daisuki_feed", feedSeen:"daisuki_feed_seen", unread:"daisuki_notif_unread", fanArtists:"daisuki_fan_artists",
+  notifs:"daisuki_notifications", maint:"daisuki_maint", feed:"daisuki_feed", feedSeen:"daisuki_feed_seen", unread:"daisuki_notif_unread", fanArtists:"daisuki_fan_artists",
   posts:"daisuki_posts", session:"daisuki_session", settings:"daisuki_notif_settings",
   likes:"daisuki_liked", comments:"daisuki_comments", whispers:"daisuki_whispers", wRead:"daisuki_whisper_read", wArtistRead:"daisuki_whisper_artist_read", wSubs:"daisuki_whisper_subs", tieSubs:"daisuki_tie_passes", tieWelcome:"daisuki_tie_welcome", points:"daisuki_points", seed9:"daisuki_seed_pass_v1", anns:"daisuki_announcements", seed10:"daisuki_seed_ann_v1", pick:"daisuki_promo_pick", sched:"daisuki_schedule", lightsea:"daisuki_lightsea", tieSet:"daisuki_tie_settings", tieCleared:"daisuki_tie_cleared", tieTr:"daisuki_tie_translated", tieNotice:"daisuki_tie_notice", lives:"daisuki_lives", events:"daisuki_events", seed5:"daisuki_seed_live_v1", sticks:"daisuki_lightsticks", seed12:"daisuki_seed_media_v1", seed13:"daisuki_seed_comments_v1", membership:"daisuki_membership", owned:"daisuki_owned", sales:"daisuki_sales", revShare:"daisuki_rev_share", seed14:"daisuki_seed_sales_v1", mutes:"daisuki_mutes", roster:"daisuki_roster", tieMs:"daisuki_tie_milestone_msg", msDone:"daisuki_milestones_done", bdays:"daisuki_birthdays", bdayWish:"daisuki_bday_wish", seed15:"daisuki_seed_bday_v1", cards:"daisuki_cards", gachaLog:"daisuki_gacha_log", svOpen:"daisuki_survival_open", svVotes:"daisuki_survival_votes", svMine:"daisuki_survival_mine", stubs:"daisuki_stubs", artistNick:"daisuki_artist_nick", lastEmail:"daisuki_last_email", plans:"daisuki_live_plans", seed11:"daisuki_seed_meet_v2", reports:"daisuki_reports", announce:"daisuki_announce", annSeen:"daisuki_announce_seen", seed6:"daisuki_seed_admin_v1", seeded:"daisuki_seed_v4", mshow:"daisuki_music_show", msVotes:"daisuki_music_votes", msMine:"daisuki_music_my_votes", mvLike:"daisuki_mv_like", seed16:"daisuki_seed_music_v1", aiCfg:"daisuki_ai_cfg", aiFans:"daisuki_ai_fans", aiMem:"daisuki_ai_memory", aiQ:"daisuki_ai_queue", tieTrX:"daisuki_tie_translated_x", trCfg:"daisuki_translate_cfg", fs:"daisuki_fansign", signedAlbums:"daisuki_signed_albums", seed17:"daisuki_seed_fansign_v1", demoOn:"daisuki_demo_buttons", seed18:"daisuki_seed_fansign_v3", theme:"daisuki_theme", leaks:"daisuki_tie_leaks", suspends:"daisuki_suspends", leakPolicy:"daisuki_leak_policy", onboard:"daisuki_onboard", selDone:"daisuki_select_done", cardMeta:"daisuki_card_meta", gachaSnd:"daisuki_gacha_sound", repCard:"daisuki_rep_card", annSeenA:"daisuki_announce_seen_artist", concerts:"daisuki_concerts", curGrp:"daisuki_current_group", tracks:"daisuki_tracks", rgBest:"daisuki_rhythm_best", rgLv:"daisuki_rhythm_level"
 };
@@ -4182,6 +4182,10 @@ async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false}={},n
 }
 function hbSetTok(r){ HB.tok=r.access_token; HB.ref=r.refresh_token||HB.ref; HB.exp=Date.now()+((r.expires_in||3600)*1000); HB.uid=(r.user&&r.user.id)||HB.uid; }
 async function hbRefresh(){ try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r); return true; }catch(e){ if(!e.net){ hbKicked(); } return false; } }
+/* 維修模式：管理員打開後，管理員以外的人都不能登入，已經在用的人也會被請出去 */
+const maintOn=()=>!!(S.get(K.maint,{})||{}).on;
+function maintKick(){ try{ const s=session(); if(!HB_ON||!s||!maintOn()) return false; const a=ACCOUNTS[s.email]; if(a&&a.role==="admin") return false;
+  hbLogout(); SS.del(); layer.innerHTML=""; ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; go("auth"); return true; }catch(e){ return false; } }
 function hbKicked(){ HB.tok=null; HB.ref=null; hbStop(); try{ SS.del(); }catch(e){} ui.loginErr="登入逾時，請重新登入"; try{ go("auth"); }catch(e){} }
 function hbErrText(e,signup){ const c=String(e.code||""), m=String(e.message||"");
   if(e.net) return "連不上伺服器，請檢查網路";
@@ -4265,9 +4269,10 @@ async function hbPoll(){ if(!HB.tok||document.hidden) return; let ch=false;
       else { hbRow(row); hbWriteLocal(row.k,row.v); }
       if(row.k===K.roster) applyRoster(); ch=true; });
     HB.n++;
-    if(HB.n%3===0||/tab=roster/.test(location.hash)){ const before=JSON.stringify(ACCOUNTS); await hbLoadProfiles(); if(JSON.stringify(ACCOUNTS)!==before) ch=true; }
-    if(HB.n%6===1){ const f=await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}); if(f&&typeof f==="object"&&JSON.stringify(f)!==JSON.stringify(HB.fans)){ HB.fans=f; ch=true; } }
+    if(HB.n%30===0||/tab=(roster|accounts)/.test(location.hash)){ const before=JSON.stringify(ACCOUNTS); await hbLoadProfiles(); if(JSON.stringify(ACCOUNTS)!==before) ch=true; }
+    if(HB.n%15===1){ const f=await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}); if(f&&typeof f==="object"&&JSON.stringify(f)!==JSON.stringify(HB.fans)){ HB.fans=f; ch=true; } }
   }catch(e){}
+  if(ch&&maintKick()) return;
   if(ch) hbSoon(); }
 function hbSoon(){ clearTimeout(HB.rt); HB.rt=setTimeout(()=>{ try{ const s=session(); if(!s) return; if(s.role==="fan") feedDeliver(); if(document.querySelector("textarea:focus,input:focus,select:focus")) return; const y=window.scrollY; render(); window.scrollTo(0,y); }catch(e){} },120); }
 let hbPT=0; function hbProfilesNow(){ if(!HB_ON||!HB.tok||Date.now()-hbPT<3000) return; hbPT=Date.now(); const before=JSON.stringify(ACCOUNTS); hbLoadProfiles().then(()=>{ if(JSON.stringify(ACCOUNTS)!==before) hbSoon(); }).catch(()=>{}); }
@@ -4285,7 +4290,9 @@ async function hbAuth(u,pw,signup,name){ const un=String(u||"").trim().toLowerCa
         try{ r=await hbFetch("/auth/v1/signup",{method:"POST",body:{...body,data:{username:un,name:({husay:"HUSSEY"})[un]||un}}},true); }catch(e2){ throw e1; } } }
     if(!r||!r.access_token){ const er=new Error("confirm"); er.code="email_not_confirmed"; throw er; }
     hbSetTok(r); await hbLoadProfiles(); await hbPullAll(); HB.fans=(await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}).catch(()=>({})))||{}; hbStart();
-    ui.authBusy=false; if(!ACCOUNTS[un]) ACCOUNTS[un]={user:un,role:"fan",name:name||un}; loginAs(un);
+    ui.authBusy=false; if(!ACCOUNTS[un]) ACCOUNTS[un]={user:un,role:"fan",name:name||un};
+    if(maintOn()&&ACCOUNTS[un].role!=="admin"){ await hbLogout(); ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; try{ render(); }catch(x){} return; }
+    loginAs(un);
   }catch(e){ ui.authBusy=false; HB.tok=null;
     // 連不到後端、又不是在正式網站上（例如某些預覽畫面）：自動改成本機試玩
     const h=location.hostname||""; if(e.net&&!/\.(pages|workers)\.dev$/.test(h)&&!HB_HOSTS.includes(h)){ HB_ON=false; ui.loginErr=""; if(signup){ ACCOUNTS[un]={pw:String(pw||""),role:"fan",name:name||un}; saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[un]=ACCOUNTS[un]; }); } return login(un,pw); }
@@ -4294,7 +4301,10 @@ async function hbLogout(){ try{ clearTimeout(HB.ft); if(HB.dirty.size) await hbF
   try{ if(t) fetch(HB_URL+"/auth/v1/logout",{method:"POST",headers:{apikey:HB_KEY,Authorization:"Bearer "+t}}); }catch(e){}
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]); applyRoster(); }
 /* 照片、語音、影片：上傳到雲端，別人的手機找不到就從雲端下載 */
-async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return; for(let i=0;i<2;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"application/octet-stream","x-upsert":"false"}}); return; }catch(e){ if(e.status===409||/exists/i.test(e.message)) return; } } }
+async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
+  if(blob.size>48*1024*1024){ toast("檔案太大（超過 48MB），其他人會看不到"); return false; }
+  for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"application/octet-stream","x-upsert":"false"}}); return true; }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return true; await new Promise(r=>setTimeout(r,1500*(i+1))); } }
+  toast("照片／語音沒有上傳成功，其他人可能看不到，請再傳一次"); return false; }
 async function hbDownload(id){ if(!HB_ON) return null; try{ const r=await fetch(HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id)); if(!r.ok) return null; return await r.blob(); }catch(e){ return null; } }
 
 /* 第一次開啟：產生示範資料（時間都相對「現在」計算，所以永遠不會過期） */
@@ -9670,6 +9680,7 @@ document.addEventListener("click",e=>{
 
     case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
+    case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
     case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim();
       if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       const key=un.toLowerCase(); if(acctKey(un)){ toast("這個帳號已經有人用了"); break; }
@@ -11240,6 +11251,7 @@ function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").l
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=banned">${I.gear}禁用字詞<span class="r">${bannedList().length} 個</span></button></section>
     <div class="section-h">App</div>
     <section class="card">
+      <button class="list-btn" data-a="maintToggle">${I.gear}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button>
       <button class="list-btn" data-a="theme">${I.gear}外觀<span class="r">${themeLabel()}</span></button>
       <button class="list-btn" data-a="coachAgain">${I.star}重看教學</button>
       <button class="list-btn danger" data-a="logout">${I.out}登出</button></section>
