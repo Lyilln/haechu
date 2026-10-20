@@ -4126,6 +4126,11 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .rs-g .rev-gh .rs-ed{margin-left:auto}
 .rs-sw-m{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
 .ac-nm{display:flex;align-items:baseline;gap:8px;flex:1 1 auto;min-width:0;cursor:pointer}
+
+.ac-row{cursor:pointer}
+.ac-go{flex:none;margin-left:auto;color:var(--ink-3);display:grid;place-items:center}
+.ac-go svg{width:16px;height:16px}
+.ac-pw{font-size:16px;letter-spacing:.06em;-webkit-user-select:text;user-select:text}
 </style>
 </head>
 <body>
@@ -4251,15 +4256,23 @@ async function hbLoadProfiles(){ const L=await hbFetch("/rest/v1/profiles?select
   L.forEach(p=>{ ACCOUNTS[p.username]={user:p.username,role:p.role==="fan"&&p.member?"artist":p.role,name:p.name||p.username,member:p.member||undefined,id:p.id}; });
   try{ const me=session()&&ACCOUNTS[session().email]; if(me&&me.role==="admin") await hbLoadReal(); }catch(e){} }
 /* 本名：管理員建帳號時填的真實姓名，只有管理員看得到（正式網站存在後台的 admin_notes，預覽存在這支手機） */
-const REAL={};
+const REAL={}, PWS={};
 const realName=k=>REAL[String(k||"").toLowerCase()]||"";
-async function hbLoadReal(){ if(!HB_ON||!HB.tok) return; try{ const L=await hbFetch("/rest/v1/admin_notes?select=username,real_name"); Object.keys(REAL).forEach(k=>delete REAL[k]); (Array.isArray(L)?L:[]).forEach(r=>{ if(r.real_name) REAL[r.username]=r.real_name; }); }catch(e){} }
-async function setRealName(k,v){ k=String(k||"").toLowerCase(); v=String(v||"").trim(); if(v) REAL[k]=v; else delete REAL[k];
-  if(!HB_ON){ const M=S.get("daisuki_real_local",{}); if(v) M[k]=v; else delete M[k]; S.set("daisuki_real_local",M); return true; }
-  try{ await hbFetch("/rest/v1/admin_notes?on_conflict=username",{method:"POST",body:{username:k,real_name:v,updated_at:new Date().toISOString()},prefer:"resolution=merge-duplicates,return=minimal"}); return true; }catch(e){ toast("本名沒有存到伺服器（後台第四段 SQL 跑了嗎？）"); return false; } }
+const knownPw=k=>PWS[String(k||"").toLowerCase()]||"";
+async function hbLoadReal(){ if(!HB_ON||!HB.tok) return; let L=null;
+  try{ L=await hbFetch("/rest/v1/admin_notes?select=username,real_name,pw"); }catch(e){ try{ L=await hbFetch("/rest/v1/admin_notes?select=username,real_name"); }catch(x){} }
+  if(!Array.isArray(L)) return; [REAL,PWS].forEach(o=>Object.keys(o).forEach(k=>delete o[k])); L.forEach(r=>{ if(r.real_name) REAL[r.username]=r.real_name; if(r.pw) PWS[r.username]=r.pw; }); }
+/* 管理員的帳號筆記：本名、密碼（只有管理員看得到） */
+async function setNote(k,patch){ k=String(k||"").toLowerCase();
+  if("real_name" in patch){ const v=String(patch.real_name||"").trim(); patch.real_name=v; if(v) REAL[k]=v; else delete REAL[k]; }
+  if("pw" in patch){ const v=String(patch.pw||"").trim(); patch.pw=v; if(v) PWS[k]=v; else delete PWS[k]; }
+  if(!HB_ON){ const M=S.get("daisuki_real_local",{}), P=S.get("daisuki_pw_local",{}); if("real_name" in patch){ if(patch.real_name) M[k]=patch.real_name; else delete M[k]; } if("pw" in patch){ if(patch.pw) P[k]=patch.pw; else delete P[k]; } S.set("daisuki_real_local",M); S.set("daisuki_pw_local",P); return true; }
+  try{ await hbFetch("/rest/v1/admin_notes?on_conflict=username",{method:"POST",body:{username:k,...patch,updated_at:new Date().toISOString()},prefer:"resolution=merge-duplicates,return=minimal"}); return true; }
+  catch(e){ toast("pw" in patch?"密碼沒有記到伺服器（後台第六段 SQL 跑了嗎？）":"本名沒有存到伺服器（後台第四段 SQL 跑了嗎？）"); return false; } }
+const setRealName=(k,v)=>setNote(k,{real_name:v});
 async function hbSetProfile(username,patch){ if(!HB_ON||!HB.tok) return true; try{ await hbFetch("/rest/v1/profiles?username=eq."+encodeURIComponent(username),{method:"PATCH",body:patch,prefer:"return=minimal"}); return true; }catch(e){ toast("沒有存到伺服器，請再試一次"); return false; } }
 /* 讀進團與藝人（管理員在「藝人與團」建的） */
-try{ if(!HB_ON) Object.assign(REAL,JSON.parse(localStorage.getItem("daisuki_real_local")||"{}")); }catch(e){}
+try{ if(!HB_ON){ Object.assign(REAL,JSON.parse(localStorage.getItem("daisuki_real_local")||"{}")); Object.assign(PWS,JSON.parse(localStorage.getItem("daisuki_pw_local")||"{}")); } }catch(e){}
 function applyRoster(){ try{ const r=S.get(K.roster,{groups:[],members:{}})||{};
   const keepT=GROUPS.filter(g=>g.id==="tdm_g"), mT=MEMBERS.tdm_m;
   GROUPS.length=0; (r.groups||[]).forEach(g=>{ if(!GROUPS.some(x=>x.id===g.id)) GROUPS.push(g); }); keepT.forEach(g=>GROUPS.push(g));
@@ -4396,7 +4409,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261020140315";
+const BUILD="20261020142823";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -9841,10 +9854,15 @@ document.addEventListener("click",e=>{
         if(r.error){ lsRerender(); toast(r.error); return; }
         if(r.local){ ACCOUNTS[key]={user:un,pw,role,name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
         else { try{ await hbLoadProfiles(); }catch(e){} }
-        await setRealName(key,rn); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
+        await setNote(key,{real_name:rn,pw}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
     case "acRole": { const keep=["acUser","acReal","acName","acPw"].map(id=>(document.getElementById(id)||{}).value||""); ui.acRole=t.dataset.v; lsRerender(); ["acUser","acReal","acName","acPw"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); break; }
-    case "acEdit": { const k=t.closest("[data-v]").dataset.v; ui.acFor=k; tieModal(`${esc(acctUser(k))} 的本名`,"",`<input id="acRealIn" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(realName(k))}"><button class="t-mbtn main" data-a="acEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
-    case "acEditOk": { const k=ui.acFor, v=((document.getElementById("acRealIn")||{}).value||"").trim(); layer.innerHTML=""; setRealName(k,v).then(()=>{ lsRerender(); toast("已儲存"); }); break; }
+    case "acEdit": { const k=t.dataset.v, a=ACCOUNTS[k]||{}; ui.acFor=k; const pw=knownPw(k)||(a.pw||"");
+      tieModal(esc(acctUser(k)),`<span class="info-row"><em>帳號</em>${esc(acctUser(k))}</span><span class="info-row"><em>密碼</em>${pw?`<b class="ac-pw">${esc(pw)}</b>`:"還沒記下來（在下面重設一次就會記住）"}</span><span class="info-row"><em>身分</em>${ROLE_ZH[a.role]||"粉絲"}</span><span class="info-row"><em>暱稱</em>${esc(a.name||"")}</span>`,
+        `<span class="fs-f-lab">本名</span><input id="acRealIn" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(realName(k))}"><span class="fs-f-lab">重設密碼（不改就留空）</span><input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "acEditOk": { const k=ui.acFor, rn=((document.getElementById("acRealIn")||{}).value||"").trim(), np=((document.getElementById("acNewPw")||{}).value||"").trim();
+      if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } layer.innerHTML="";
+      (async()=>{ if(np){ const r=await acCall({action:"reset",username:k,password:np}); if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]) ACCOUNTS[k].pw=np; }
+        await setNote(k,np?{real_name:rn,pw:np}:{real_name:rn}); lsRerender(); toast(np?"已儲存，新密碼設好了":"已儲存"); })(); break; }
     case "acReset": { const k=t.dataset.v; ui.acFor=k; tieModal(`重設 ${esc(acctUser(k))} 的密碼`,"",`<input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acResetOk">確認</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "acResetOk": { const k=ui.acFor, pw=((document.getElementById("acNewPw")||{}).value||"").trim(); if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       layer.innerHTML=""; acCall({action:"reset",username:k,password:pw}).then(r=>{ if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]){ ACCOUNTS[k].pw=pw; if(ACCOUNTS[k].role!=="admin") saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[k]={...(x.accounts[k]||ACCOUNTS[k]),pw}; }); } toast(`${acctUser(k)} 的新密碼設好了`); }); break; }
@@ -10973,7 +10991,7 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
       <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="acPw" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).pw||"")}"></label>
       <button class="btn btn-main btn-block" data-a="acCreate" ${ui.acBusy?"disabled":""}>${ui.acBusy?"建立中…":"建立帳號"}</button></section>
     <div class="section-h">全部帳號<span class="muted">${L.length} 個</span></div>
-    <section class="card ac-list">${L.map(([k,a])=>`<div class="rs-m ac-row"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><span class="ac-nm" data-a="acEdit" data-v="${esc(k)}"><b>${esc(realName(k)||a.name||k)}</b><small>${esc(acctUser(k))}・${esc(a.name||"")}・${ROLE_ZH[a.role]||"粉絲"}</small></span><button class="btn btn-soft btn-sm" data-a="acReset" data-v="${esc(k)}">重設密碼</button></div>`).join("")}</section>
+    <section class="card ac-list">${L.map(([k,a])=>`<div class="rs-m ac-row" data-a="acEdit" data-v="${esc(k)}" role="button"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><span class="ac-nm"><b>${esc(realName(k)||a.name||k)}</b><small>${esc(acctUser(k))}・${esc(a.name||"")}・${ROLE_ZH[a.role]||"粉絲"}</small></span><span class="ac-go">${UI_S.chev}</span></div>`).join("")}</section>
   </main>`; }
 async function acCall(body){ if(!HB_ON) return {ok:true,local:true};
   try{ return await hbFetch("/functions/v1/admin-users",{method:"POST",body}); }
