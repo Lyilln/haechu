@@ -1848,6 +1848,27 @@ html[data-theme] body .sw[aria-checked="true"]{background:var(--violet)}
 .foc-ms i{width:8px;height:8px;border-radius:50%;border:2px solid #DDD6FE}
 .foc-ms i.on{background:#8843FB;border-color:#8843FB}
 .info-row{display:block;text-align:left;margin:6px 0;color:var(--ink)}
+/* 管理員：帳號資料視窗（緊湊、左右對齊） */
+.t-modal.acm{padding:24px 20px 18px;text-align:left}
+.t-modal.acm h3{text-align:center;margin:0 0 14px}
+.t-modal.acm .t-mb{display:flex;flex-direction:column;gap:12px}
+.acm-info{display:flex;flex-direction:column;border-radius:16px;background:var(--s2,#F4F1FA);padding:4px 14px}
+.acm-r{display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:40px;border-bottom:1px solid var(--line)}
+.acm-r:last-child{border-bottom:0}
+.acm-r em{font-style:normal;font-size:13px;color:var(--ink-2);flex:none}
+.acm-r b{font-weight:600;font-size:14.5px;color:var(--ink);text-align:right;min-width:0;overflow-wrap:anywhere}
+.acm-mute{color:var(--ink-3);font-weight:500}
+.t-modal.acm .acm-note{margin:-4px 2px 0!important;padding:0!important;font-size:12px!important;line-height:1.5;color:var(--ink-3)!important;text-align:left!important}
+.t-modal.acm .acm-note.warn{color:#D97706!important}
+.t-modal.acm .acm-btns{margin-top:6px}
+.acm-f{display:flex;flex-direction:column;gap:6px}
+.acm-f span{font-size:12.5px;font-weight:700;color:var(--violet-ink)}
+.acm-f input{width:100%;height:44px;border-radius:12px;border:1px solid var(--line);background:var(--s1,#fff);color:var(--ink);padding:0 14px;font-size:16px;outline:0}
+.acm-f input:focus{border-color:var(--violet)}
+.acm-f input::placeholder{color:var(--ink-3)}
+.acm-btns{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+html[data-theme="dark"] .acm-info{background:rgba(255,255,255,.06)}
+html[data-theme="dark"] .acm-f input{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.12)!important;color:var(--ink)!important}
 .info-row em{display:block;font-style:normal;font-size:11px;font-weight:800;color:#B4A8D8;letter-spacing:.12em}
 
 
@@ -4475,7 +4496,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021051825";
+const BUILD="20261021053523";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -9957,16 +9978,21 @@ document.addEventListener("click",e=>{
         else { try{ await hbLoadProfiles(); }catch(e){} }
         await setNote(key,{real_name:rn,pw}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
     case "acRole": { const keep=["acUser","acReal","acName","acPw"].map(id=>(document.getElementById(id)||{}).value||""); ui.acRole=t.dataset.v; lsRerender(); ["acUser","acReal","acName","acPw"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); break; }
-    case "acEdit": { const k=t.dataset.v, a=ACCOUNTS[k]||{}; ui.acFor=k; const pw=knownPw(k)||(a.pw||"");
-      tieModal(esc(acctUser(k)),`<span class="info-row"><em>帳號</em>${esc(acctUser(k))}</span><span class="info-row"><em>密碼</em>${pw?`<b class="ac-pw">${esc(pw)}</b>`:"還沒記下來（在下面重設一次就會記住）"}</span><span class="info-row"><em>身分</em>${ROLE_ZH[a.role]||"粉絲"}</span><span class="info-row"><em>暱稱</em>${esc(a.name||"")}</span>`,
-        `<span class="fs-f-lab">本名</span><input id="acRealIn" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(realName(k))}"><span class="fs-f-lab">重設密碼（不改就留空）</span><input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acEditOk">儲存</button>${k===String((session()||{}).email||"").toLowerCase()?"":`<button class="t-mbtn danger" data-a="acDel" data-v="${esc(k)}">刪除帳號</button>`}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "acEdit": { const k=t.dataset.v, a=ACCOUNTS[k]||{}; ui.acFor=k; const pw=knownPw(k)||(a.pw||""), self=k===String((session()||{}).email||"").toLowerCase();
+      const row=(l,v)=>`<div class="acm-r"><em>${l}</em><b>${v}</b></div>`;
+      tieModal(esc(acctUser(k)),"",`<div class="acm-info">${row("帳號",esc(acctUser(k)))}${row("密碼",pw?`<span class="ac-pw">${esc(pw)}</span>`:`<span class="acm-mute">看不到</span>`)}${row("身分",ROLE_ZH[a.role]||"粉絲")}${row("暱稱",esc(a.name||""))}</div>
+        ${pw?"":`<p class="acm-note">密碼只有在管理員建立或重設時才會記下來${HB_ON?"（後台要先跑過第六段 SQL）":""}。</p>`}
+        <label class="acm-f"><span>本名</span><input id="acRealIn" maxlength="20" autocomplete="off" placeholder="只有管理員看得到" value="${esc(realName(k))}"></label>
+        <label class="acm-f"><span>重設密碼</span><input id="acNewPw" maxlength="40" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="不改就留空"></label>
+        ${self?`<p class="acm-note warn">這是你自己的帳號：重設之後，電腦和其他手機都要用新密碼登入。</p>`:""}
+        <div class="acm-btns"><button class="t-mbtn main" data-a="acEditOk">儲存</button>${self?"":`<button class="t-mbtn danger" data-a="acDel" data-v="${esc(k)}">刪除帳號</button>`}<button class="t-mbtn" data-a="tCloseLayer">取消</button></div>`,"acm"); break; }
     case "acDel": { const k=t.dataset.v; ui.acFor=k; tieModal(`刪除 ${esc(acctUser(k))}？`,"刪掉之後這個帳號就不能登入了，他的個人資料也會一起刪掉，不能復原。",`<button class="t-mbtn danger" data-a="acDelOk">刪除</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "acDelOk": { const k=ui.acFor; if(!k||k===String((session()||{}).email||"").toLowerCase()) break; layer.innerHTML="";
       acCall({action:"delete",username:k}).then(async r=>{ if(r.error){ toast(r.error); return; } const a=ACCOUNTS[k]; if(a&&a.member&&!HB_ON) unbindArtist(k); delete ACCOUNTS[k]; if(r.local) saveRoster(x=>{ if(x.accounts) delete x.accounts[k]; }); try{ delete REAL[k]; delete PWS[k]; }catch(e){} if(!HB_ON) await setNote(k,{real_name:"",pw:""}); lsRerender(); toast(`已刪除 ${acctUser(k)}`); }); break; }
     case "acEditOk": { const k=ui.acFor, rn=((document.getElementById("acRealIn")||{}).value||"").trim(), np=((document.getElementById("acNewPw")||{}).value||"").trim();
       if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } layer.innerHTML="";
       (async()=>{ if(np){ const r=await acCall({action:"reset",username:k,password:np}); if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]) ACCOUNTS[k].pw=np; }
-        await setNote(k,np?{real_name:rn,pw:np}:{real_name:rn}); lsRerender(); toast(np?"已儲存，新密碼設好了":"已儲存"); })(); break; }
+        const ok=await setNote(k,np?{real_name:rn,pw:np}:{real_name:rn}); lsRerender(); toast(np?(ok?"已儲存，新密碼是「"+np+"」":"新密碼「"+np+"」設好了，但後台沒記下來（請跑第六段 SQL）"):(ok?"已儲存":"沒存到後台（請跑第五、六段 SQL）")); })(); break; }
     case "acReset": { const k=t.dataset.v; ui.acFor=k; tieModal(`重設 ${esc(acctUser(k))} 的密碼`,"",`<input id="acNewPw" class="a-nick-in" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字"><button class="t-mbtn main" data-a="acResetOk">確認</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "acResetOk": { const k=ui.acFor, pw=((document.getElementById("acNewPw")||{}).value||"").trim(); if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       layer.innerHTML=""; acCall({action:"reset",username:k,password:pw}).then(r=>{ if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]){ ACCOUNTS[k].pw=pw; if(ACCOUNTS[k].role!=="admin") saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[k]={...(x.accounts[k]||ACCOUNTS[k]),pw}; }); } toast(`${acctUser(k)} 的新密碼設好了`); }); break; }
