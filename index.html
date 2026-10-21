@@ -2944,7 +2944,7 @@ html[data-theme="dark"] .imgph i{color:rgba(255,255,255,.12)}
 .pm-cw{width:calc(100% + 32px);margin:12px -16px 0}
 .pm-car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}.pm-car::-webkit-scrollbar{display:none}
 .pm-ci{position:relative;flex:0 0 100%;aspect-ratio:4/5;scroll-snap-align:center;scroll-snap-stop:always;padding:0;border:0;overflow:hidden;background:var(--s2)}
-.pm-ci img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pm-ci img:not([src]){visibility:hidden}
+.pm-ci img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.pm-ci img.pm-bb{object-fit:cover;filter:blur(18px) brightness(.85);transform:scale(1.15)}.pm-ci img:not([src]){visibility:hidden}
 .pm-dots{display:flex;justify-content:center;gap:5px;padding:10px 0 2px}.pm-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);opacity:.35;transition:opacity .2s,transform .2s}.pm-dots i.on{opacity:1;background:var(--ink);transform:scale(1.1)}
 /* 貼文頁 */
 .pd{position:fixed;inset:0;z-index:70;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}.pd.in{animation:msiIn .3s cubic-bezier(.2,.9,.3,1)}
@@ -2983,10 +2983,12 @@ html[data-theme="dark"] .imgph i{color:rgba(255,255,255,.12)}
 .pd-pill{flex:1;min-width:0;display:flex;align-items:center;height:40px;border-radius:999px;background:var(--s2);padding:0 14px}.pd-pill input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;outline:none}
 .pd-send{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--violet);color:#fff}.pd-send:disabled{opacity:.3}.pd-send svg{width:18px;height:18px}
 /* 看大圖 */
-.gal2{position:fixed;inset:0;z-index:85;background:#000;color:#fff;display:flex;flex-direction:column;touch-action:pan-x}
+.gal2{position:fixed;inset:0;z-index:85;background:#000;color:#fff;display:flex;flex-direction:column}
 .gal2-top{display:flex;justify-content:flex-end;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px}.gal2-top button{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:#fff}.gal2-top svg{width:24px;height:24px}
 .gal2-s{flex:1;min-height:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}.gal2-s::-webkit-scrollbar{display:none}
 .gal2-i{position:relative;flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always}.gal2-i .imgph{background:#111}.gal2-i:has(img[src]) .imgph{display:none}.gal2-i img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.gal2-i img:not([src]){visibility:hidden}
+.gal2-sh{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 90px);z-index:3;display:flex;flex-direction:column;border-radius:14px;overflow:hidden;background:#2A2A2E}.gal2-sh button{border:0;background:none;color:#fff;font:inherit;font-size:15px;text-align:left;padding:15px 18px}.gal2-sh button+button{border-top:1px solid rgba(255,255,255,.08)}
+.gal2{transition:background .2s}.gal2-s.drag{transition:none}
 .gal2-n{text-align:center;font-size:14px;padding:10px 0 8px;font-variant-numeric:tabular-nums}
 .gal2-th{display:flex;gap:6px;justify-content:center;overflow-x:auto;padding:0 12px calc(env(safe-area-inset-bottom,0px) + 14px);scrollbar-width:none}
 .gal2-th button{flex:none;width:52px;height:52px;padding:0;border:2px solid transparent;border-radius:6px;overflow:hidden;background:#222;opacity:.55}.gal2-th button.on{border-color:#fff;opacity:1}.gal2-th img{width:100%;height:100%;object-fit:cover}
@@ -4590,7 +4592,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021164133";
+const BUILD="20261021165505";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5918,7 +5920,7 @@ function postMediaHtml(p){
   if(ms[0].kind==="video"){ const v=ms[0]; return `<button class="pm-video" data-a="playVideo" data-mid="${v.mid}" style="aspect-ratio:${v.w||16}/${v.h||9}" aria-label="播放影片">${v.thumb?`<img data-mid="${v.thumb}" alt="">`:""}<span class="pm-play">${PLAY}</span>${v.dur?`<em>${fmtDur(v.dur)}</em>`:""}</button>`; }
   if(ms.length===1) return `<button class="pm-one" data-a="pmGal" data-v="${p.id}" aria-label="照片"><span class="imgph"><i>HAECHU</i></span><img data-mid="${ms[0].mid}" alt=""></button>`;
   /* 多張：像 Weverse 直接在卡片裡左右滑，下面小圓點 */
-  return `<div class="pm-cw"><div class="pm-car">${ms.map((x,i)=>`<button class="pm-ci" data-a="pmGal" data-v="${p.id}" aria-label="照片 ${i+1}"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></button>`).join("")}</div><div class="pm-dots">${ms.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div></div>`;
+  return `<div class="pm-cw"><div class="pm-car">${ms.map((x,i)=>`<button class="pm-ci" data-a="pmGal" data-v="${p.id}" aria-label="照片 ${i+1}"><span class="imgph"><i>HAECHU</i></span><img class="pm-bb" data-mid="${x.mid}" alt=""><img data-mid="${x.mid}" alt=""></button>`).join("")}</div><div class="pm-dots">${ms.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div></div>`;
 }
 function videoThumb(file){ return new Promise(res=>{ const u=URL.createObjectURL(file), v=document.createElement("video"); let done=false;
   const fin=x=>{ if(done) return; done=true; URL.revokeObjectURL(u); res(x); };
@@ -8005,6 +8007,16 @@ function openGallery(pid,start=0){ const p=getPosts().find(x=>x.id===pid); if(!p
     <div class="gal2-s" id="galS">${ms.map(x=>`<div class="gal2-i"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></div>`).join("")}</div>
     <div class="gal2-n" id="galN">${start+1}/${ms.length}</div>${ms.length>1?`<div class="gal2-th">${ms.map((x,i)=>`<button class="${i===start?"on":""}" data-a="galGo" data-i="${i}"><img data-mid="${x.mid}" alt=""></button>`).join("")}</div>`:""}</div>`,"gal");
   hydrateMedia(layer); const sc=document.getElementById("galS"); if(sc) requestAnimationFrame(()=>{ sc.scrollLeft=start*sc.clientWidth; }); }
+/* 看大圖往下拉就關掉（照 Weverse） */
+(function(){ let g=null;
+  document.addEventListener("touchstart",e=>{ const s=e.target.closest&&e.target.closest("#galS"); if(!s||e.touches.length!==1){ g=null; return; } g={s,x:e.touches[0].clientX,y:e.touches[0].clientY,on:false,dy:0}; },{passive:true});
+  document.addEventListener("touchmove",e=>{ if(!g) return; const dx=e.touches[0].clientX-g.x, dy=e.touches[0].clientY-g.y;
+    if(!g.on){ if(Math.abs(dx)>10&&Math.abs(dx)>Math.abs(dy)){ g=null; return; } if(dy<12||Math.abs(dy)<Math.abs(dx)*1.3) return; g.on=true; g.s.classList.add("drag"); }
+    g.dy=Math.max(0,dy); g.s.style.transform=`translateY(${g.dy}px)`; const w=g.s.closest(".gal2"); if(w) w.style.background=`rgba(0,0,0,${Math.max(.2,1-g.dy/500)})`; if(e.cancelable) e.preventDefault(); },{passive:false});
+  document.addEventListener("touchend",()=>{ if(!g) return; const x=g; g=null; if(!x.on) return; x.s.classList.remove("drag");
+    if(x.dy>110){ const b=document.querySelector('[data-a="galX"]'); if(b) b.click(); return; }
+    x.s.style.transition="transform .22s"; x.s.style.transform=""; const w=x.s.closest(".gal2"); if(w) w.style.background=""; setTimeout(()=>{ x.s.style.transition=""; },230); },{passive:true});
+})();
 document.addEventListener("scroll",e=>{ const b=e.target; if(!b||!b.classList) return;
   if(b.id==="galS"){ const n=b.children.length, k=Math.round(b.scrollLeft/Math.max(1,b.clientWidth)); const c=document.getElementById("galN"); if(c) c.textContent=(k+1)+"/"+n; document.querySelectorAll(".gal2-th button").forEach((x,i)=>x.classList.toggle("on",i===k)); }
   if(b.classList.contains("pm-car")){ const k=Math.round(b.scrollLeft/Math.max(1,b.clientWidth)); const d=b.parentElement&&b.parentElement.querySelector(".pm-dots"); if(d) [...d.children].forEach((x,i)=>x.classList.toggle("on",i===k)); } },true);
@@ -9971,7 +9983,15 @@ document.addEventListener("click",e=>{
     case "pdView": openGallery(t.dataset.v,+t.dataset.i||0); break;
     case "galX": { const bk=ui.galBack; ui.galBack=null; if(bk&&bk.sheet){ ui.sheet=bk.sheet; renderComments(true); } else layer.innerHTML=""; break; }
     case "galGo": { const sc=document.getElementById("galS"); if(sc) sc.scrollTo({left:(+t.dataset.i)*sc.clientWidth,behavior:"smooth"}); break; }
-    case "galDl": { const sc=document.getElementById("galS"); if(!sc) break; const k=Math.round(sc.scrollLeft/Math.max(1,sc.clientWidth)), im=sc.children[k]&&sc.children[k].querySelector("img"); if(!im||!im.src){ toast("照片還在載入"); break; } const a2=document.createElement("a"); a2.href=im.src; a2.download="HAECHU_"+Date.now()+".jpg"; document.body.appendChild(a2); a2.click(); a2.remove(); break; }
+    case "galDl": { const sc=document.getElementById("galS"); if(!sc) break; ui.galK=Math.round(sc.scrollLeft/Math.max(1,sc.clientWidth));
+      const sh=document.getElementById("galSh"); if(sh){ sh.remove(); break; }
+      sc.parentElement.insertAdjacentHTML("beforeend",`<div class="gal2-sh" id="galSh"><button data-a="galSave" data-v="one">僅儲存此檔案</button>${sc.children.length>1?`<button data-a="galSave" data-v="all">儲存所有可下載的檔案</button>`:""}</div>`); break; }
+    case "galSave": { const sc=document.getElementById("galS"), sh=document.getElementById("galSh"); if(sh) sh.remove(); if(!sc) break;
+      const imgs=[...sc.querySelectorAll(".gal2-i img")].filter((im,i)=>t.dataset.v==="all"||i===ui.galK).filter(im=>im.src); if(!imgs.length){ toast("照片還在載入"); break; }
+      (async()=>{ try{ const files=await Promise.all(imgs.map(async(im,i)=>{ const b=await (await fetch(im.src)).blob(); return new File([b],`HAECHU_${Date.now()}_${i+1}.jpg`,{type:b.type||"image/jpeg"}); }));
+          if(navigator.canShare&&navigator.canShare({files})){ await navigator.share({files}); return; }
+          files.forEach(f=>{ const u=URL.createObjectURL(f), a2=document.createElement("a"); a2.href=u; a2.download=f.name; document.body.appendChild(a2); a2.click(); a2.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); });
+        }catch(err){ if(!(err&&err.name==="AbortError")) toast("沒有存成功，長按照片也可以儲存"); } })(); break; }
     case "pdBack": if(ui.sheet&&ui.sheet.cid){ ui.sheet.cid=null; ui.cDraft=""; renderComments(true); } else { ui.sheet=null; ui.cDraft=""; layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "pdOpenRep": if(ui.sheet){ ui.sheet.cid=t.dataset.c; ui.cDraft=""; renderComments(true); } break;
     case "pdFold": { ui.pdFold=ui.pdFold||{}; ui.pdFold[t.dataset.v]=!ui.pdFold[t.dataset.v]; renderComments(); break; }
