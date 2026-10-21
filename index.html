@@ -4615,7 +4615,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021225941";
+const BUILD="20261021231438";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8478,6 +8478,17 @@ const DEMO_REPLY=["有看到你喔～謝謝你今天也來陪我 ♡","哈哈哈
 let meetSig="";
 /* 直播間打字：鍵盤蓋住下面的留言，只有輸入列浮到鍵盤上面；畫面本身不被往上推 */
 if(window.visualViewport){ const vv=window.visualViewport; const kb=()=>{ const r=document.querySelector(".dl"); if(!r) return; const k=Math.max(0,Math.round(innerHeight-vv.height)); r.style.setProperty("--kb",k+"px"); r.style.transform=vv.offsetTop?`translateY(${Math.round(vv.offsetTop)}px)`:""; }; vv.addEventListener("resize",kb); vv.addEventListener("scroll",kb); }
+/* TIE 聊天室打字（iPhone）：鍵盤打開時，輸入列貼在鍵盤正上方、標題列留在最上面，中間不留空白 */
+if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
+  const fit=()=>{ raf=0; const f=document.querySelector(".t-foot"), h=document.querySelector(".t-rh"); if(!f) return;
+    const typing=document.activeElement&&document.activeElement.id==="win";
+    const gap=typing?Math.max(0,Math.round(innerHeight-(vv.offsetTop+vv.height))):0, top=typing?Math.max(0,Math.round(vv.offsetTop)):0;
+    f.style.transform=gap?`translateY(${-gap}px)`:""; if(h) h.style.transform=top?`translateY(${top}px)`:"";
+    const bg=document.querySelector(".t-bgl"); if(bg) bg.style.transform=top?`translateY(${top}px)`:""; };
+  const q=()=>{ if(!raf) raf=requestAnimationFrame(fit); };
+  vv.addEventListener("resize",q); vv.addEventListener("scroll",q);
+  document.addEventListener("focusin",e=>{ if(e.target.id!=="win") return; q(); setTimeout(()=>{ const end=document.getElementById("chat-end"); if(end) end.scrollIntoView({block:"end"}); q(); },320); });
+  document.addEventListener("focusout",e=>{ if(e.target.id!=="win") return; setTimeout(q,60); }); }
 /* App 內的小視窗：縮小直播後，在其他頁面也看得到藝人最新一句話 */
 function lvMiniMount(){ let el=document.getElementById("lvMini"); const l=ui.lvMini&&getLive(ui.lvMini);
   if(!l||l.endTs||document.querySelector(".dl")||!session()){ if(l&&l.endTs) ui.lvMini=null; if(el) el.remove(); return; }
