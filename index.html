@@ -163,7 +163,6 @@ button{cursor:pointer;border:0;background:none;padding:0}
 
 /* auth */
 .auth{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 24px}
-.auth-ver{display:block;text-align:center;margin-top:18px;font-size:10.5px;color:var(--ink-3);opacity:.6;letter-spacing:.06em;font-variant-numeric:tabular-nums}
 .auth.boot{align-items:center;gap:22px}.auth.boot .boot-dot{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--violet-soft);border-top-color:var(--violet);animation:spin .8s linear infinite}
 
 
@@ -4505,7 +4504,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021065520";
+const BUILD="20261021070247";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -7012,7 +7011,6 @@ function viewAuth(){
       ${ui.loginErr?`<div class="err">${ui.loginErr}</div>`:""}
       <button class="btn btn-main btn-block" type="submit" ${ui.authBusy?"disabled":""}>${ui.authBusy?"登入中…":"登入"}</button>
       <button class="auth-sw" type="button" data-a="forgotPw">忘記密碼？</button>
-      <small class="auth-ver">${HB_ON?"":"・"}${esc(BUILD==="dev"?"dev":BUILD.slice(2,12))}</small>
     </form>`}
 
   </main>`;
