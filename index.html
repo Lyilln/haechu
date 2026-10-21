@@ -1909,6 +1909,9 @@ html[data-theme="dark"] .acm-f input{background:rgba(255,255,255,.06)!important;
 
 /* 打歌 */
 .foc-badges em:not(.on){opacity:.4;filter:saturate(.4)}
+html[data-theme="light"] .foc-badges em{color:#9A6B00}
+html[data-theme="light"] .ad-row em,html[data-theme="light"] .t-att small,html[data-theme="light"] .a2h-n{color:#6B6680}
+html[data-theme="light"] .info-row em{color:#7A6BA8}
 html[data-theme="dark"] .foc-badges em{background:rgba(212,160,23,.16);color:#F2C94C;border-color:rgba(242,201,76,.3)}
 html[data-theme="dark"] .foc-badges em:not(.on){opacity:.6}
 
@@ -2551,6 +2554,7 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .cm-chips::-webkit-scrollbar{display:none}
 .cm-chips button{flex:none;border:1px solid var(--line);background:var(--s1);border-radius:999px;padding:7px 14px;font-weight:700;font-size:13px;font-family:inherit;color:var(--ink-2)}
 .cm-chips button.on{background:var(--gt);border-color:var(--gt);color:#fff}
+.cm-chips button.on{background:color-mix(in srgb,var(--gt) 72%,#1B1626);border-color:transparent;text-shadow:0 1px 2px rgba(0,0,0,.2)} /* 團的代表色太淺時白字才看得清楚 */
 .cm-chips.sm button{padding:5px 11px;font-size:12px}
 .cm-lv{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:4px 16px 6px}
 .cm-lv::-webkit-scrollbar{display:none}
@@ -2641,8 +2645,8 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .cmx-hbg i{font-style:normal;font-weight:800;font-size:44px;color:rgba(255,255,255,.28);letter-spacing:.08em;transform:translateY(-30px)}
 .cmx-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28) 0%,transparent 26%,transparent 46%,rgba(0,0,0,.55) 100%)}
 .cmx-hi{position:absolute;left:16px;right:16px;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff;text-align:center}
-.cmx-hi small{font-size:12px;font-weight:600;opacity:.92}
-.cmx-hi b{font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1.15;text-shadow:0 2px 14px rgba(0,0,0,.3);text-wrap:balance}
+.cmx-hi small{font-size:12px;font-weight:600;opacity:.95;text-shadow:0 1px 6px rgba(0,0,0,.45)}
+.cmx-hi b{font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 14px rgba(0,0,0,.3);text-wrap:balance}
 .cmx-ms{margin-top:10px;border:0;border-radius:999px;padding:8px 18px;font-weight:700;font-size:13.5px;font-family:inherit;background:var(--wk);color:#1D1A24}
 .cmx-hero.sk{background:linear-gradient(180deg,var(--s3),var(--s2));animation:skp 1.2s ease-in-out infinite}
 .cmx-tabs{top:calc(env(safe-area-inset-top,0px) + 52px)}
@@ -4498,7 +4502,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021062809";
+const BUILD="20261021063836";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -9020,7 +9024,7 @@ function applyTheme(){ let fz=null; try{ fz=session()?thForce():null; }catch(e){
     if(prop==="box-shadow"){ if(L>.82) return out(255,255,255,a*.12); return m0; }
     return m0; });
   const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme/.test(x)) return null; if(x===":root"||x==="html") return 'html[data-theme="dark"]'; if(/^html\b/.test(x)) return x.replace(/^html/,'html[data-theme="dark"]'); return 'html[data-theme="dark"] '+x; }).filter(Boolean).join(",");
-  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-theme|\.tkt|\.dk-keep/.test(r.selectorText)) continue; const d=[];   // 實體的東西（TIE 券）深色模式也維持原本的白票 for(const p of P){ const v=r.style.getPropertyValue(p); if(!v||/var\(/.test(v)) continue; const nv=fix(p,v,r.selectorText); if(nv!==v) d.push(`${p}:${nv}${r.style.getPropertyPriority(p)?" !important":""}`); }
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-theme|\.tkt|\.dk-keep/.test(r.selectorText)) continue; /* 實體的東西（TIE 券）深色模式也維持原本的白票 */ const d=[]; for(const p of P){ const v=r.style.getPropertyValue(p); if(!v||/var\(/.test(v)) continue; const nv=fix(p,v,r.selectorText); if(nv!==v) d.push(`${p}:${nv}${r.style.getPropertyPriority(p)?" !important":""}`); }
       if(d.length){ const sel=pre(r.selectorText); if(sel) out.push(`${sel}{${d.join(";")}}`); } } else if(r.type===4&&r.cssRules&&!/print/.test(r.conditionText||"")){ const before=out.length; walk(r.cssRules); if(out.length>before){ const inner=out.splice(before); out.push(`@media ${r.conditionText}{${inner.join("")}}`); } } } };
   sheets.forEach(sh=>{ try{ walk(sh.cssRules); }catch(e){} });
   const st=document.createElement("style"); st.id="darkCSS"; st.textContent=out.join("\n"); document.head.appendChild(st);
@@ -10592,7 +10596,7 @@ ${H} .t-empty-ico{color:${rgba(v.ac,.6)}!important;border-color:${rgba(v.ac,.2)}
 ${H} .t-foot{background:${v.bar}!important;border-top:0!important;box-shadow:none!important}
 ${H} .t-inp{background:${dark?mixHex(v.bar,"#ffffff",.08):"#ffffff"}!important}
 ${H} .t-meta span,${H} .t-time,${H} .t-day span{color:${v.sub}!important}
-${(()=>{ if(1.05/(wcagLum(v.ac)+.05)>=3) return ""; const on=lumHex(v.ink)<.5?v.ink:"#1D1A24", L=thAcFillSel(); return L.length?`${L.map(x=>H+" "+x).join(",")}{color:${on}!important;text-shadow:none!important}`:""; })()}`;
+${(()=>{ if(1.05/(wcagLum(v.ac)+.05)>=3) return ""; const on=lumHex(v.ink)<.5?v.ink:"#1D1A24", L=thAcFillSel(); const L2=[...L,".th-dot.on"]; return `${L2.map(x=>H+" "+x).join(",")}{color:${on}!important;text-shadow:none!important}`; })()}`;
 }
 /* 主題的主色太淺時（例如粉橘），按鈕上的白字會看不清楚：找出所有「主色底＋白字」的地方，改成深色字 */
 const wcagLum=hex=>{ const [r,g,b]=hexRgb(hex).map(x=>{ x/=255; return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4); }); return .2126*r+.7152*g+.0722*b; };
