@@ -4536,7 +4536,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021155807";
+const BUILD="20261021160402";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6071,7 +6071,7 @@ function cardFace(cid,{big=false}={}){
   const c=GRADS[m.g%GRADS.length], tier=+t, g=groupOf(m.group);
   return `<div class="pc t${tier} ${big?"big":""}" style="--c1:${c[0]};--c2:${c[1]}"><span class="pc-bg"></span>${tier>=2?`<span class="pc-holo${tier===2?" lite":""}"></span>`:""}<span class="pc-glare"></span>
     <span class="pc-in">${esc(ini(m.name))}</span><span class="pc-sp">✦</span>
-    <span class="pc-ft"><b>${esc(m.name)}</b><small>${esc(g?g.name:"")}・${TIERS[tier].name}</small><i>${"★".repeat(tier)}</i></span></div>`;
+    <span class="pc-ft"><b>${esc(m.name)}</b><small>${gTag(g)}${TIERS[tier].name}</small><i>${"★".repeat(tier)}</i></span></div>`;
 }
 
 /* 卡池一覽：先看得到這期有哪些卡、每張多少機率，還沒有的卡會霧掉 */
@@ -6944,7 +6944,7 @@ function chantStop(){ chantT.forEach(clearTimeout); chantT=[]; ui.chant=null; }
 function viewStubs(){
   const st=S.get(K.stubs,[]);
   return coreHead("燈海出席票根")+`<main class="page stubs">${st.length?st.map(x=>{const m=MEMBERS[x.member], g=groupOf(x.group);if(!m||!g) return "";const c=GRADS[m.g%GRADS.length];
-    return `<article class="stub" style="--c1:${c[0]};--c2:${c[1]}"><div class="stub-l"><span>LIGHT SEA</span><b>${esc(m.name)} 燈海</b><small>${esc(g.name)}・${ymd(x.ts)}</small><em>${esc(x.seat)}</em></div>
+    return `<article class="stub" style="--c1:${c[0]};--c2:${c[1]}"><div class="stub-l"><span>LIGHT SEA</span><b>${esc(m.name)} 燈海</b><small>${gTag(g)}${ymd(x.ts)}</small><em>${esc(x.seat)}</em></div>
       <div class="stub-r"><span>揮棒</span><b>${fmt(x.swings)}</b><span>口號分數</span><b>${fmt(x.score)}</b></div></article>`}).join(""):emptyBox("🎫","還沒有票根","藝人開燈海時，到 CORE 舉起應援棒待滿 20 秒，離開時就會拿到")}</main>`;
 }
 
@@ -7130,7 +7130,7 @@ function postCard(p,{mine=false}={}){
   return `<article class="card post" id="post-${p.id}">
     <div class="post-head">
       <div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>
-      <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${g.name}・${ago(p.ts)}</span></div>
+      <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${gTag(g)}${ago(p.ts)}</span></div>
       ${isAdminAcct()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
     </div>
     ${p.tag&&p.tag!=="日常"?`<span class="post-tag t-${POST_TAGS.indexOf(p.tag)}">${p.tag==="劇透"?"⚠ ":""}${esc(p.tag)}</span>`:""}
@@ -7196,7 +7196,7 @@ function myFeedTop(){
   const dms=feedDMs(), f=followed(), ns=getGNotices().filter(n=>f.includes(n.group)).slice(0,6); let h="";
   if(dms.length){ const d=dms[(ui.dmIdx||0)%dms.length], m=MEMBERS[d.id], g=groupOf(m.group);
     h+=`<h2 class="mf-h">有新 ${WHISPER_NAME} 喔！</h2><section class="card mf-dm">
-      <div class="mf-dm-top"><span class="av mf-av" style="background:${grad(m.g)}">${mAvIn(d.id,"tie")}</span><div class="mf-dm-i"><b>${esc(artName(d.id,"tie"))} ${I.verified}</b><small>${esc(g?g.name:"")}・${ago(d.ts)}</small>
+      <div class="mf-dm-top"><span class="av mf-av" style="background:${grad(m.g)}">${mAvIn(d.id,"tie")}</span><div class="mf-dm-i"><b>${esc(artName(d.id,"tie"))} ${I.verified}</b><small>${gTag(g)}${ago(d.ts)}</small>
       <button class="mf-lock" data-a="tieIntro" data-m="${d.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>立即查看是什麼內容吧！</button></div></div>
       ${dms.length>1?`<button class="mf-more" data-a="dmNext">查看其他 ${WHISPER_NAME} <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>`:""}</section>`; }
   if(ns.length) h+=`<h2 class="mf-h">最新公告</h2><div class="hl mf-ann">${ns.map((n,i)=>{const g=groupOf(n.group);return `<button class="hl-i ${i?"":"on"} card mf-an" data-a="gnOpen" data-v="${n.id}"><span class="mf-an-ic" style="background:${grad(g.g)};color:#fff">${esc(ini(g.name))}</span><span class="mf-an-b"><b>${esc(g.name)}</b><small>${esc(n.title)}</small></span><em>${ago(n.ts)}</em></button>`}).join("")}</div>`;
@@ -7213,7 +7213,7 @@ function openTieIntro(mid){ if(MEMBERS[mid]&&isSelfGid(MEMBERS[mid].group)){ toa
     ["共度時間越久，字數越多","訂閱天數到了紀念日，能傳的字數就變多。",`<div class="tf-days"><b>1～49 天</b><em>30 字</em><b>50 天</b><em>50 字</em><b>100 天</b><em>100 字</em><b>365 天</b><em>365 字</em></div>`]];
   setLayer(`<div class="tiei" data-m="${mid}"><header class="tiei-top"><span class="sh-sp"></span><span class="sh-sp"></span><button class="icon-btn" data-a="tCloseLayer" aria-label="關閉">${XI}</button></header>
     <div class="tiei-body">
-      <div class="tiei-hero"><span class="av tiei-av" style="background:${grad(m.g)}">${mAvIn(mid,"tie")}</span><b>${esc(artName(mid,"tie"))}</b><small>${esc(g.name)}・${c} 券</small><em>${fmt(mn)} 點起</em></div>
+      <div class="tiei-hero"><span class="av tiei-av" style="background:${grad(m.g)}">${mAvIn(mid,"tie")}</span><b>${esc(artName(mid,"tie"))}</b><small>${gTag(g)}${c} 券</small><em>${fmt(mn)} 點起</em></div>
       <h3>訂閱後即可開始互動</h3>
       <div class="tiei-car" id="tieiCar">${F.map(x=>`<div class="tiei-f"><div class="tiei-mock">${x[2]}</div><b>${x[0]}</b><small>${x[1]}</small></div>`).join("")}</div>
       <div class="tiei-dots">${F.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>
@@ -7955,6 +7955,8 @@ const TIE_EMOJI=["💜","🥹","✨","😭","🫶","🤍","🎀","🌙","☘︎"
 /* 藝人顏色：原本的紫色＋四個 HAECHU 自己的顏色；ARTIST 徽章和頭貼外圈跟著換 */
 const ART_COLORS=[["#8843FB","星夢紫"],["#F2649E","櫻花粉"],["#14B88A","薄荷綠"],["#F0565C","珊瑚紅"],["#B98A6E","奶茶棕"]];
 const artColor=mid=>{ const c=artProf(mid).color; return ART_COLORS.some(x=>x[0]===c)?c:ART_COLORS[0][0]; };
+/* 「團名・」：SOLOIST 團名就是自己，不重複寫 */
+const gTag=g=>g&&!g.solo?esc(g.name)+"・":"";
 const artBadge=mid=>`<span class="t-badge" style="background:${artColor(mid)}">ARTIST</span>`;
 const tieAv=(m,cls="")=>`<div class="t-av ${cls}" style="background:${grad(m.g)};--ac:${artColor(midOf(m))}">${mAvIn(midOf(m),"tie")}</div>`;
 const tieHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tieHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tieHG)"/></svg><i></i></span>`;
@@ -11347,7 +11349,7 @@ function openArtistProfile(mid){ const m=MEMBERS[mid], p=tieProf(mid), g=groupOf
     <div class="apf-av" style="background:${grad(m.g)}">${mAvIn(mid,"tie")}</div>
     <div class="apf-nm">${artBadge(mid)}<h2>${esc(artName(mid,"tie"))}</h2></div>
     <div class="apf-bio">${p.bio?esc(p.bio):""}</div>
-    <div class="apf-pill">${esc(g?g.name:"")}・${esc(m.name)}</div></div>`,"apf"); }
+    <div class="apf-pill">${g&&g.solo?esc(g.name):gTag(g)+esc(m.name)}</div></div>`,"apf"); }
 /* 禁用字詞：粉絲的 TIE、留言、直播聊天都會擋 */
 const BAN_DEF=["幹你","操你","靠北","雞掰","雞巴","婊子","賤人","去死","死全家","白痴","智障","fuck","shit","bitch","asshole"];
 const bannedList=()=>S.get(K.banned,BAN_DEF);
