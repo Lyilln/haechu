@@ -4521,7 +4521,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021151051";
+const BUILD="20261021151420";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -11380,7 +11380,8 @@ function fgStart(){ const box=document.getElementById("fgBox"); if(!box) return;
   requestAnimationFrame(step); }
 
 /* ===== 管理員：不管在哪一端，看到不當內容都能馬上處理 ===== */
-function admQuick(item){ ui.amItem=item; const nm=shownName({name:item.name,by:item.by});
+/* 在藝人端：不顯示粉絲是誰（FROM FAN），只寫「這位粉絲」 */
+function admQuick(item){ ui.amItem=item; const r0=route(), artSide=(r0&&r0.role==="artist")||(session()||{}).role==="artist"; const nm=artSide?"這位粉絲":shownName({name:item.name,by:item.by});
   iosSheet([["刪除這則","amDo",'data-v="del"'],[`禁言 ${esc(nm)} 24 小時`,"amDo",'data-v="24"'],[`禁言 ${esc(nm)} 7 天`,"amDo",'data-v="168"'],[`停權 ${esc(nm)}`,"amDo",'data-v="ban"']],{cancel:"取消"}); }
 function amApply(v){ const it=ui.amItem; if(!it) return; layer.innerHTML="";
   if(v==="del"){ const r={kind:it.kind,commentId:it.commentId,ref:it.ref||{},who:it.who}; if(it.kind==="fanpost") S.set(K.fanPosts,S.get(K.fanPosts,[]).filter(x=>x.id!==it.id)); else removeReported(r);
