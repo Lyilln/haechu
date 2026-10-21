@@ -3667,6 +3667,8 @@ html[data-theme="dark"] .ann-go{background:#F5E6B8!important;color:#26232E!impor
 .t-bgl .th-art{height:auto!important;object-fit:contain!important}.th-chat.dk .th-art{opacity:.85}.th-chat.dk .th-strip,.lk-pad.dk .lk-strip,.mk-pad.dk .mk-strip{filter:brightness(.72) saturate(.9)}
 .th-art{position:absolute;right:-6%;bottom:calc(env(safe-area-inset-bottom,0px) + 96px);width:64%;max-width:340px;pointer-events:none}
 .th-strip{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 50px);height:72px;background:repeat-x left bottom/auto 100%;pointer-events:none}
+/* 聊天室背景的插圖和草地：照「最小畫面高度」放，Safari 工具列收起／出現時不會跟著跳 */
+@supports (height:100svh){ .t-bgl .th-art{bottom:auto;top:calc(100svh - env(safe-area-inset-bottom,0px) - 96px);transform:translateY(-100%)} .t-bgl .th-strip{bottom:auto;top:calc(100svh - env(safe-area-inset-bottom,0px) - 122px)} }
 /* 我的主題（照 LINE マイ着せかえ） */
 .th-edit{font-size:13px;font-weight:800;color:var(--violet-ink);padding:4px 10px;border-radius:999px;background:var(--violet-soft)}
 .th-my{display:grid;grid-template-columns:repeat(3,1fr);gap:16px 12px;margin:12px 0 4px}
@@ -4146,6 +4148,8 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .t-page{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 .t-page{width:100%;height:100%}
 .t-page>header:first-of-type,.t-page>.t-top{position:sticky;top:0;z-index:30}
+/* 聊天室背景：iPhone 在可捲動的頁面裡，fixed 會跟著訊息一起捲 → 改成黏在畫面上（不佔位置） */
+.t-page>.t-bgl{position:sticky;top:0;inset:auto;flex:none;width:100%;height:100vh;height:100dvh;margin-bottom:-100vh;margin-bottom:-100dvh}
 .concert2 .cc-heat,.concert2 #ccCount{display:none}
 .bd{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;min-height:110px;padding:12px 10px;border-radius:10px;text-align:center;font-weight:700;font-size:20px;line-height:1.25;word-break:break-all;box-sizing:border-box}
 .bd.sm{min-height:76px;font-size:15px}.bd i{font-style:normal;font-size:22px}
@@ -4536,7 +4540,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021160402";
+const BUILD="20261021161343";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8013,7 +8017,9 @@ function viewTieRoom(member){
         <div class="t-b me" data-lp="${w.id}">${esc(w.text)}</div></div>`;
     }
     const shown=w.ko||w.text;   // 藝人原文；開啟翻譯後按 A 會在下面顯示中文
-    const lang=st.trLang||"zh", tx=trText(w,lang), canTr=st.translate&&w.ko&&!(tr.has(w.id)&&tx), showTr=st.translate&&w.ko&&tr.has(w.id)&&tx;
+    const lang=st.trLang||"zh", wel=w.welcome&&!w.kind&&!isZhText(w.text), wtx=wel?welTr(w,lang):"";   /* 歡迎語不是中文：一律附上翻譯 */
+    if(wel&&!wtx) setTimeout(()=>welTranslate(w.id,lang),0);
+    const tx=wel?wtx:trText(w,lang), canTr=!wel&&st.translate&&w.ko&&!(tr.has(w.id)&&tx), showTr=wel?!!wtx:st.translate&&w.ko&&tr.has(w.id)&&tx;
     return sep+`<div class="t-art">${tieAv(m,"ring")}
       <div class="t-art-c"><div class="t-art-n">${st.badge?artBadge(member):""}<b>${esc(st.chatName)}</b>${w.milestone?`<span class="t-ms">🎉 ${w.milestone} 天紀念日</span>`:""}</div>
         ${w.reply?tieRq(w.reply,false,true):""}<div class="t-bw">${w.kind?mediaBubble(w):`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
@@ -8723,6 +8729,12 @@ async function tieOriginal(wid){
   if(ko){ w.ko=w.text; w.text=t; w.kt=1; } else w.ko=t; S.set(K.whispers,list);
   const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); }
 }
+const welTr=(w,lang)=>(S.get(K.tieTrX,{})||{})[w.id+":w"+lang]||"";
+const welAsked=new Set();
+async function welTranslate(wid,lang){ const k=wid+":"+lang; if(welAsked.has(k)) return; welAsked.add(k); const w=getWhispers().find(x=>x.id===wid); if(!w) return;
+  const out=await translateMany([w.text],lang); const t=out&&aiClean(out[0]); if(!t){ welAsked.delete(k); return; }
+  const all=S.get(K.tieTrX,{})||{}; all[wid+":w"+lang]=t; S.set(K.tieTrX,all);
+  const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing&&!layer.innerHTML) render(); }
 const trText=(w,lang)=>lang==="zh"?w.text:(S.get(K.tieTrX,{})[w.id+":"+lang]||"");
 async function tieTranslateX(wid,lang){
   const w=getWhispers().find(x=>x.id===wid); if(!w) return false; if(trText(w,lang)) return true;
