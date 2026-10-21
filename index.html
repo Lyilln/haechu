@@ -4139,6 +4139,8 @@ html[data-theme="dark"] .fg-blob{opacity:.35}
 .itb{isolation:isolate;z-index:1}.itf-ph{position:relative;z-index:0}
 .img-fail{position:relative}.img-fail::after{content:"🖼";position:absolute;inset:0;display:grid;place-items:center;font-size:28px;opacity:.35}
 html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;touch-action:manipulation}
+/* 全 App 都用自己的下拉更新動畫：關掉瀏覽器自己的下拉重新整理（TIE 拉一拉不會整頁重新載入） */
+html,body{overscroll-behavior-y:none}
 .t-page{-webkit-overflow-scrolling:touch;overscroll-behavior:none}
 .t-page{width:100%;height:100%}
 .t-page>header:first-of-type,.t-page>.t-top{position:sticky;top:0;z-index:30}
@@ -4311,7 +4313,13 @@ async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false}={},n
   return j;
 }
 function hbSetTok(r){ HB.tok=r.access_token; HB.ref=r.refresh_token||HB.ref; HB.exp=Date.now()+((r.expires_in||3600)*1000); HB.uid=(r.user&&r.user.id)||HB.uid; try{ if(HB.ref) localStorage.setItem("daisuki_hb_auth",JSON.stringify({ref:HB.ref})); }catch(e){} }
-async function hbRefresh(){ try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r); return true; }catch(e){ if(!e.net){ hbKicked(); } return false; } }
+/* 換新登入憑證：同一時間只換一次（好幾個請求同時換，舊憑證會被判定重複使用而登出）；失敗時先看看手機上有沒有更新的憑證再試一次 */
+let hbRefP=null;
+function hbRefresh(){ if(hbRefP) return hbRefP; hbRefP=(async()=>{ try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r); return true; }
+  catch(e){ if(e.net) return false;
+    try{ const a=JSON.parse(localStorage.getItem("daisuki_hb_auth")||"null"); if(a&&a.ref&&a.ref!==HB.ref){ HB.ref=a.ref; const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r); return true; } }catch(x){ if(x.net) return false; }
+    hbKicked(); return false; }
+  finally{ setTimeout(()=>{ hbRefP=null; },0); } })(); return hbRefP; }
 /* 維修模式：管理員打開後，管理員以外的人都不能登入，已經在用的人也會被請出去 */
 const maintOn=()=>!!(S.get(K.maint,{})||{}).on;
 function maintKick(){ try{ const s=session(); if(!HB_ON||!s||!maintOn()) return false; const a=ACCOUNTS[s.email]; if(a&&a.role==="admin") return false;
@@ -4448,7 +4456,7 @@ async function hbResume(){ const h0=location.hash, sv=sessLoad(); let a=null; tr
   if(fast){ Object.keys(ACCOUNTS).forEach(k=>delete ACCOUNTS[k]); Object.assign(ACCOUNTS,cached); try{ applyRoster(); }catch(e){}
     loginAs(un); if(h0&&/^#\/(fan|artist|admin)/.test(h0)&&h0!==location.hash) navReplace(h0); navRestore(); }
   else { ui.authBusy=true; ui.resuming=true; try{ render(); }catch(e){} }
-  try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r);
+  try{ HB.exp=0; const ok=await hbRefresh(); if(!ok){ const er=new Error("refresh"); er.net=!HB.ref?false:true; if(!session()) er.net=false; throw er; }
     await hbLoadProfiles(); await hbPullAll(); HB.fans=(await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}).catch(()=>({})))||{}; hbStart();
     ui.authBusy=false; ui.resuming=false; if(!ACCOUNTS[un]) throw new Error("gone");
     if(maintOn()&&ACCOUNTS[un].role!=="admin"){ await hbLogout(); SS.del(); ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; navRoot("#/auth"); render(); return true; }
@@ -4509,7 +4517,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021120224";
+const BUILD="20261021121603";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -5405,13 +5413,13 @@ function pageAnim(){
 const PTR={y0:null,x0:0,pull:0,busy:false};
 function ptrEl(){ let p=document.getElementById("ptr"); if(!p){ p=document.createElement("div"); p.id="ptr"; p.className="ptr"; p.setAttribute("aria-hidden","true");
   p.innerHTML=`<svg class="ptr-ring" viewBox="0 0 36 36"><circle class="ptr-bg" cx="18" cy="18" r="13"/><circle class="ptr-arc" cx="18" cy="18" r="13" pathLength="100"/></svg>`; document.body.appendChild(p); } return p; }
-const ptrOk=()=>!!document.querySelector(".nav")&&!layer.innerHTML.trim()&&!document.querySelector(".concert,.mr")&&window.scrollY<=0&&!(document.getElementById("askLayer")||{}).innerHTML;
+const ptrOk=()=>!!document.querySelector(".nav,.t-msgs")&&!((document.querySelector(".t-page")||{}).scrollTop>0)&&!layer.innerHTML.trim()&&!document.querySelector(".concert,.mr")&&window.scrollY<=0&&!(document.getElementById("askLayer")||{}).innerHTML;
 function ptrSet(y){ const p=ptrEl(); p.style.transform=`translate(-50%,${y-56}px)`; p.style.opacity=Math.min(1,y/40); if(!p.classList.contains("spin")) p.querySelector(".ptr-arc").style.strokeDasharray=`${Math.min(85,y/72*85)} 100`; }
 document.addEventListener("touchstart",e=>{ if(PTR.busy||e.touches.length!==1||!ptrOk()) { PTR.y0=null; return; } PTR.y0=e.touches[0].clientY; PTR.x0=e.touches[0].clientX; PTR.pull=0; },{passive:true});
 document.addEventListener("touchmove",e=>{
   if(PTR.y0==null) return; const dy=e.touches[0].clientY-PTR.y0, dx=Math.abs(e.touches[0].clientX-PTR.x0);
   if(dy<=2){ if(dy<-6&&PTR.pull===0) PTR.y0=null; return; }
-  if(window.scrollY>0||(PTR.pull===0&&dx>dy)){ PTR.y0=null; return; }
+  if(window.scrollY>0||(document.querySelector(".t-page")||{}).scrollTop>0||(PTR.pull===0&&dx>dy)){ PTR.y0=null; return; }
   e.preventDefault(); PTR.pull=Math.min(130,dy*.5); const p=ptrEl(); p.classList.remove("back","spin","ok");
   ptrSet(PTR.pull,PTR.pull>72?"放開就更新 ✨":"下拉更新");
   const app=root.querySelector(".app"); if(app) app.style.transform=`translateY(${PTR.pull*.35}px)`;
@@ -5421,6 +5429,7 @@ document.addEventListener("touchend",()=>{
   if(app){ app.style.transition="transform .3s"; app.style.transform=""; setTimeout(()=>{ if(app) app.style.transition=""; },320); }
   p.classList.add("back");
   if(PTR.pull>72){ PTR.busy=true; p.classList.add("spin"); ptrSet(64,"更新中…");
+    try{ if(HB.tok) hbPoll(); }catch(e){}
     setTimeout(()=>{ const y=window.scrollY; ui.pgKey=null; render(); window.scrollTo(0,y); p.classList.remove("spin"); p.classList.add("ok"); ptrSet(64);
       setTimeout(()=>{ ptrSet(0); PTR.busy=false; setTimeout(()=>p.classList.remove("ok"),400); },650); },900);
   } else ptrSet(0);
