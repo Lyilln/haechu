@@ -4592,7 +4592,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021165505";
+const BUILD="20261021170027";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4908,7 +4908,11 @@ function fanRooms(){
     .sort((a,b)=>(b.active-a.active)||((b.last?b.last.ts:0)-(a.last?a.last.ts:0)));
 }
 const fanWhisperUnread=()=>fanRooms().reduce((n,r)=>n+r.unread,0);
-const artistWhisperUnread=mid=>{const last=S.get(K.wArtistRead,0);return getWhispers().filter(w=>w.member===mid&&w.from!=="artist"&&w.ts>last).length};
+/* 藝人讀到哪裡：跟著帳號走（手機的 Safari 和主畫面 App、不同手機都一樣），不是只記在這支手機 */
+const artReadK=()=>{ const e=myEmail(); return HB_ON&&e?K.wArtistRead+"@"+e:K.wArtistRead; };
+const artReadGet=()=>Math.max(S.get(artReadK(),0)||0,artReadK()!==K.wArtistRead?(S.get(K.wArtistRead,0)||0):0);
+const artReadSet=t=>{ const cur=S.get(artReadK(),0)||0; if(t-cur>60e3||getWhispers().some(w=>w.from!=="artist"&&w.ts>cur)) S.set(artReadK(),t); };
+const artistWhisperUnread=mid=>{const last=artReadGet();return getWhispers().filter(w=>w.member===mid&&w.from!=="artist"&&w.ts>last).length};
 function sendWhisper(memberId,text,replyId){
   const m=MEMBERS[memberId], wid="w"+Date.now(), rw=replyId&&getWhispers().find(x=>x.id===replyId);
   S.set(K.whispers,[...S.get(K.whispers,[]),{id:wid,member:memberId,from:"artist",text,ts:Date.now(),reply:rw?{text:rw.text,tr:rw.tr||""}:undefined}]);
@@ -7064,7 +7068,7 @@ function render(){
   if(s.role==="artist"&&r.sub==="write") return paint(viewArtWrite(r.p),false);
   if(s.role==="artist"&&r.tab==="live"){ const hl=liveNow(s.member); if(hl){ hostSig=""; return paint(viewHostRoom(hl),false); } }
   if(s.role==="artist"&&r.tab==="foc"&&r.p==="fansign"){ const v=viewFsDesk(r.id); if(v) return paint(v,false); }
-  if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); S.set(K.wArtistRead,Date.now()); const mid0=s.member, RB=S.get(K.tieReadBy,{})||{}; if(mid0&&getWhispers().some(w=>w.member===mid0&&w.from!=="artist"&&w.ts>(RB[mid0]||0))){ S.set(K.tieReadBy,{...RB,[mid0]:Date.now()}); } return paint(v,false); }
+  if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); artReadSet(Date.now()); const mid0=s.member, RB=S.get(K.tieReadBy,{})||{}; if(mid0&&getWhispers().some(w=>w.member===mid0&&w.from!=="artist"&&w.ts>(RB[mid0]||0))){ S.set(K.tieReadBy,{...RB,[mid0]:Date.now()}); } return paint(v,false); }
   if(s.role==="artist") return paint(viewArtist(r.tab||"home"),true,artistNav(r.tab||"home"));
   return paint(viewAdmin(r.tab||"home"),true,adminNav(r.tab||"home"));
 }
