@@ -4273,7 +4273,7 @@ const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
 /* 每個粉絲帳號自己的資料（追蹤、TIE 券、點數、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
-const PK_SET=new Set(["tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","mutes","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
+const PK_SET=new Set(["tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
   get(k,fb){k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
@@ -4444,7 +4444,10 @@ async function hbPoll(){ if(!HB.tok||document.hidden) return; let ch=false;
   if(ch) hbSoon(); }
 function hbSoon(){ clearTimeout(HB.rt); HB.rt=setTimeout(()=>{ try{ const s=session(); if(!s) return; if(s.role==="fan") feedDeliver(); if(document.querySelector("textarea:focus,input:focus,select:focus")) return; const y=window.scrollY; render(); window.scrollTo(0,y); }catch(e){} },120); }
 let hbPT=0; function hbProfilesNow(){ if(!HB_ON||!HB.tok||Date.now()-hbPT<3000) return; hbPT=Date.now(); const before=JSON.stringify(ACCOUNTS); hbLoadProfiles().then(()=>{ if(JSON.stringify(ACCOUNTS)!==before) hbSoon(); }).catch(()=>{}); }
-function hbStart(){ hbStop(); HB.pt=setInterval(hbPoll,4000); setTimeout(msPublish,800); }
+function hbStart(){ hbStop(); HB.pt=setInterval(hbPoll,4000); setTimeout(msPublish,800); setTimeout(mutesMigrate,900); }
+/* 以前管理員設的禁言／停權只存在自己名下（別的管理員、被禁言的人都看不到）：搬回大家共用的那份 */
+function mutesMigrate(){ try{ const s=session(); if(!s||!s.admin||!s.email) return; const fk="daisuki_hb_mutesmig@"+String(s.email).toLowerCase(); if(localStorage.getItem(fk)) return; localStorage.setItem(fk,"1"); const own=hbReadLocal(K.mutes+"@"+String(s.email).toLowerCase()); if(!own||typeof own!=="object"||!Object.keys(own).length) return;
+  const all=getMutes(); let ch=false; Object.entries(own).forEach(([k,v])=>{ if(!all[k]||(v&&all[k].ts<v.ts)){ all[k]=v; ch=true; } }); if(ch) S.set(K.mutes,all); }catch(e){} }
 function hbStop(){ clearInterval(HB.pt); HB.pt=null; }
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden&&HB.tok) hbPoll(); else if(document.hidden&&HB.tok&&HB.dirty.size){ clearTimeout(HB.ft); hbFlush(); } });
 window.addEventListener("pagehide",()=>{ if(HB.tok&&HB.dirty.size){ clearTimeout(HB.ft); hbFlush(); } });
@@ -4518,7 +4521,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021123209";
+const BUILD="20261021143248";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -4705,7 +4708,9 @@ function feedDeliver(){ try{ const s=session(); if(!s||s.role!=="fan") return fa
     if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
   if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); return true; } return false; }catch(e){ return false; } }
-function getNotifications(){ return S.get(K.notifs,[]).sort((a,b)=>b.ts-a.ts); }
+/* 自己說的話（TIE、直播聊天、留言）不進通知 */
+const selfSaid=n=>n.self&&/^你傳了 |」直播間說：|的貼文留言：/.test(n.text||"");
+function getNotifications(){ return S.get(K.notifs,[]).filter(n=>!selfSaid(n)).sort((a,b)=>b.ts-a.ts); }
 function hasUnread(){ return S.get(K.unread,"0")==="1"; }
 function markAllRead(){ S.set(K.unread,"0"); }
 function getSettings(){ return {post:true,comment:true,live:true,whisper:true,event:true,...S.get(K.settings,{})}; }
@@ -4829,7 +4834,6 @@ function sendWhisper(memberId,text,replyId){
   return feedPush({kind:"whisper",member:memberId,group:m.group,text,color:null,direct:true},"tie:"+memberId);
 }
 function fanReply(memberId,text){
-  logSelf("whisper",memberId,`你傳了 ${WHISPER_NAME} 給 ${artName(memberId,"tie")}：『${text}』`);
   S.set(K.whispers,[...S.get(K.whispers,[]),{id:"w"+Date.now(),member:memberId,from:"me",name:tieSet(memberId).nickname||ME.name,by:myEmail(),g:ME.g,ms:isMember(MEMBERS[memberId].group),text,ts:Date.now()}]);
   markRoomRead(memberId);
 }
@@ -4891,7 +4895,6 @@ function endLive(id){ const l=getLive(id); if(l){ l.endTs=Date.now(); saveLive(l
 function liveSay(id,from,text,{reply=null,react=false}={}){
   const l=getLive(id); if(!l||l.endTs) return;
   l.msgs.push(from==="me"?{from,name:ME.name,by:myEmail(),g:ME.g,text,ts:Date.now()}:{from,text,ts:Date.now(),...(reply?{reply}:{})}); saveLive(l);
-  if(from==="me"&&!react) logSelf("live",l.member,`你在「${l.title}」直播間說：『${text}』`,{liveId:l.id});
   if(from==="artist"&&reply&&reply.from==="me"&&reply.by) feedPush({kind:"live",member:l.member,group:l.group,text:`在直播中回覆了你：「${text}」`,liveId:l.id,color:null,direct:true,liveReply:true},"u:"+reply.by);
 }
 const FAKE=[["星光應援團 🌟",4,["好可愛！！","我來了我來了","💜💜💜","今天的聲音好溫柔"]],["小月亮粉 🌙",2,["今天也好喜歡你","哈哈哈哈","真的假的！","下次直播什麼時候～"]],["晚安露露",6,["有在聽喔～","記得喝水！","螢幕前尖叫","晚餐吃了什麼？"]],["晴天娃娃",5,["第一次搶到直播！","可以唱一小段嗎","好療癒","從台中來報到"]],["棉被裡的粉絲",1,["躲在被子裡看 🫣","明天要考試但我在這","今天心情變好了"]],["奶茶少冰",7,["推薦一下最近在聽的歌！","好想去演唱會","愛你愛你"]]];
@@ -4961,7 +4964,6 @@ const commentCount=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).len
 const getComments=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).sort((a,b)=>a.ts-b.ts);
 function addComment(postId,text){
   const c={id:"c"+Date.now(),postId,author:"me",by:myEmail(),name:ME.name,g:ME.g,text,ts:Date.now(),reply:null};
-  { const pp=S.get(K.posts,[]).find(x=>x.id===postId); if(pp) logSelf("comment",pp.member,`你在 ${artName(pp.member,"feed")} 的貼文留言：『${text}』`,{postId}); }
   S.set(K.comments,[...S.get(K.comments,[]),c]);
   const posts=S.get(K.posts,[]), p=posts.find(x=>x.id===postId); if(p){p.comments++;S.set(K.posts,posts)}
   return c;
@@ -5812,7 +5814,7 @@ function viewRoster(){ hbProfilesNow();
     ${GROUPS.map(g=>{const ms=Object.entries(MEMBERS).filter(([id,m])=>m.group===g.id&&!m.official), custom=r.groups.some(x=>x.id===g.id);
       return `<section class="card rs-g"><div class="rev-gh"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b>${g.solo?`<span class="badge">SOLOIST</span>`:""}<button class="btn btn-soft btn-sm rs-ed" data-a="rgEdit" data-v="${g.id}">編輯</button>${custom?`<button class="del" data-a="rgDel" data-v="${g.id}">刪除</button>`:""}</div>
       <label class="rs-fd"><span>粉絲名</span><input class="fd-in" data-g="${g.id}" maxlength="16" value="${esc((S.get(K.fandom,{}))[g.id]||"")}" placeholder="輸入文字"></label>
-      ${ms.map(([id,m])=>{const a=acc.find(([e,x])=>x.member===id);return `<div class="rs-m"><span class="av sm" style="background:${grad(m.g)}">${esc(m.name[0])}</span><b>${esc(m.name)}</b><small>${a?esc(acctUser(a[0])+(realName(a[0])?"・"+realName(a[0]):"")):"還沒有登入帳號"}</small>
+      ${ms.map(([id,m])=>{const a=acc.find(([e,x])=>x.member===id);return `<div class="rs-m"><span class="av sm" style="background:${grad(m.g)}">${esc(ini(m.name))}</span><b>${esc(m.name)}</b><small>${a?esc(acctUser(a[0])+(realName(a[0])?"・"+realName(a[0]):"")):"還沒有登入帳號"}</small>
         <button class="btn btn-soft btn-sm rs-ed" data-a="rmEdit" data-v="${id}">編輯</button>${r.members[id]?`<button class="del" data-a="rmDel" data-v="${id}">刪除</button>`:""}</div>`}).join("")||`<p class="muted" style="font-size:13px;margin:6px 0 0">還沒有成員</p>`}</section>`}).join("")}
   </main>`;
 }
@@ -5821,7 +5823,7 @@ function fanAccOpts(){ const list=Object.entries(ACCOUNTS).filter(([e,a])=>(a.ro
 function bindArtist(em,id){ const a=ACCOUNTS[em]; if(!a||!(a.role==="fan"||(a.role==="admin"&&!(a.member&&MEMBERS[a.member])))) return false; const n=a.role==="admin"?{...a,member:id}:{...a,role:"artist",member:id}; ACCOUNTS[em]=n; if(HB_ON) hbSetProfile(em,{role:n.role,member:id}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]=n; }); return true; }
 function unbindArtist(em){ const a=ACCOUNTS[em]; if(!a) return; const x={...a,role:a.role==="admin"?"admin":"fan"}; delete x.member; ACCOUNTS[em]=x; if(HB_ON) hbSetProfile(em,{role:x.role,member:null}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]={...(r.accounts[em]||{}),...x}; delete r.accounts[em].member; }); }
 function rgEditOpen(n,it){ const g=groupOf(ui.rgEd); if(!g) return; const c=ui.rgEdC??g.g, ph=(S.get(K.gPhoto,{})||{})[g.id]||"";
-  tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">出道／回歸照</span>${`<div class="rg-ph"><span class="rg-ph-img" style="background:${grad(c)}">${ph?`<span class="g-ph" style="background-image:url('${ph}')"></span>`:esc(g.name[0])}</span><span class="rg-ph-r"><small>${g.solo?"放在 TIE 券上（社群照片用本人的頭貼）。":"放在 TIE 券、粉絲端的社群頭貼、社群封面和 About。"}回歸換新照片時再上傳一次就好。</small><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rgPhPick">${ph?"更換":"上傳"}</button>${ph?`<button class="btn btn-soft btn-sm" data-a="rgPhDel">移除</button>`:""}</span></span></div>`}<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">${g.solo?"About 介紹（不填就用本人的個人簡介）":"About 介紹"}</span><textarea id="rgEdIntro" class="t-wel-ta rg-intro" maxlength="300" placeholder="輸入文字">${esc(it??(g.intro||""))}</textarea><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
+  tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">出道／回歸照</span>${`<div class="rg-ph"><span class="rg-ph-img" style="background:${grad(c)}">${ph?`<span class="g-ph" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span><span class="rg-ph-r"><small>${g.solo?"放在 TIE 券上（社群照片用本人的頭貼）。":"放在 TIE 券、粉絲端的社群頭貼、社群封面和 About。"}回歸換新照片時再上傳一次就好。</small><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rgPhPick">${ph?"更換":"上傳"}</button>${ph?`<button class="btn btn-soft btn-sm" data-a="rgPhDel">移除</button>`:""}</span></span></div>`}<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">${g.solo?"About 介紹（不填就用本人的個人簡介）":"About 介紹"}</span><textarea id="rgEdIntro" class="t-wel-ta rg-intro" maxlength="300" placeholder="輸入文字">${esc(it??(g.intro||""))}</textarea><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
 function saveRoster(fn){ const r=S.get(K.roster,{groups:[],members:{},accounts:{}}); fn(r); S.set(K.roster,r); }
 
 /* =========================================================
@@ -6040,7 +6042,7 @@ function cardFace(cid,{big=false}={}){
   const [mid,t]=cid.split(":"), m=MEMBERS[mid]; if(!m) return "";
   const c=GRADS[m.g%GRADS.length], tier=+t, g=groupOf(m.group);
   return `<div class="pc t${tier} ${big?"big":""}" style="--c1:${c[0]};--c2:${c[1]}"><span class="pc-bg"></span>${tier>=2?`<span class="pc-holo${tier===2?" lite":""}"></span>`:""}<span class="pc-glare"></span>
-    <span class="pc-in">${esc(m.name[0])}</span><span class="pc-sp">✦</span>
+    <span class="pc-in">${esc(ini(m.name))}</span><span class="pc-sp">✦</span>
     <span class="pc-ft"><b>${esc(m.name)}</b><small>${esc(g?g.name:"")}・${TIERS[tier].name}</small><i>${"★".repeat(tier)}</i></span></div>`;
 }
 
@@ -6181,7 +6183,7 @@ const alCount=()=>{ const f=followed(), own=getCards(); let have=0, total=0; get
 const parseIt=cid=>{ const [,aid,iid,pid]=String(cid).split("|"), a=albumOf(aid); if(!a) return null; const r=itemOf(a,iid); if(!r) return null; const p=photoOf(r.it,pid); return p?{a,it:r.it,v:r.v,p}:null; };
 /* 一樣東西的正面／背面（沒上傳照片時用成員的顏色做示意） */
 function itemFace(cid,{big=false}={}){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), m=MEMBERS[p.mid], C=GRADS[(m?m.g:g.g)%GRADS.length], img=PCI[`ph|${a.id}|${p.id}|f`];
-  return `<div class="itf ${p.sp?"sp":""} ${big?"big":""} k-${it.k}" style="--c1:${C[0]};--c2:${C[1]}">${img?`<img src="${img}" alt="">`:`<div class="itf-ph"><i>${esc(m?m.name[0]:g.name[0])}</i><b>${esc(m?m.name:g.name)}</b><small>${esc(it.name)}</small></div>`}<span class="apc-gl"></span>${p.sp?'<span class="apc-rim"></span>':""}</div>`; }
+  return `<div class="itf ${p.sp?"sp":""} ${big?"big":""} k-${it.k}" style="--c1:${C[0]};--c2:${C[1]}">${img?`<img src="${img}" alt="">`:`<div class="itf-ph"><i>${esc(m?ini(m.name):ini(g.name))}</i><b>${esc(m?m.name:g.name)}</b><small>${esc(it.name)}</small></div>`}<span class="apc-gl"></span>${p.sp?'<span class="apc-rim"></span>':""}</div>`; }
 function itemBack(cid){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), img=PCI[`ph|${a.id}|${p.id}|b`]||PCI[`ib|${a.id}|${it.id}`];
   return img?`<div class="itb img ${p.sp?"sp":""}"><img src="${img}" alt="">${p.sp?'<span class="apc-rim"></span>':""}</div>`:`<div class="itb ${p.sp?"sp":""}" style="background:${grad(g.g)}"><b>${esc(g.name)}</b><small>${esc(a.title)}</small>${p.sp?'<span class="apc-rim"></span>':""}</div>`; }
 const itemDims=(it,scale)=>`width:${(it.w*scale).toFixed(1)}px;height:${(it.h*scale).toFixed(1)}px;--rad:${Math.max(3,.35*scale).toFixed(1)}px`;
@@ -6253,7 +6255,7 @@ function viewCards(){
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
       return n?`<button class="cb-it" data-a="cardView" data-v="${cid}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${n>1?`<em>×${n}</em>`:""}${rep===cid?'<b class="cb-rep">代表卡</b>':""}</button>`:`<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
-    return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(g.name[0])}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
+    return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.map(it=>grid(a,it)).join("")}`).join("")}
       ${(a.ex||[]).filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).length?`<div class="cb-vh">專輯外（店家特典・簽售・打歌節目）</div>${a.ex.filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
       :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`);
@@ -6376,7 +6378,7 @@ function viewSurvival(){
     ${svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`}
     <section class="sv-hero"><span class="sv-eb">🏆 第 2 輪・生存排名戰</span><p>這裡是練習生們的磨練之地。快為你心儀的 Idol 投下珍貴的一票，幫助他們衝向 PAK（Perfect All-Kill）！</p>
       <div class="sv-meta"><span>今天還有 <b>${left}</b> 票</span><span>本輪結算倒數 <b>${Math.floor(d/864e5)} 天 ${Math.floor(d%864e5/36e5)} 小時</b></span></div></section>
-    ${list.map((t,i)=>`<article class="card sv-c ${i<3?"top":""}"><span class="sv-rk">${i+1}</span><span class="sv-av" style="background:${grad(t.g)}">${esc(t.name[0])}</span>
+    ${list.map((t,i)=>`<article class="card sv-c ${i<3?"top":""}"><span class="sv-rk">${i+1}</span><span class="sv-av" style="background:${grad(t.g)}">${esc(ini(t.name))}</span>
       <div class="sv-b"><b>${esc(t.name)}</b><small>${esc(t.agency)}・${t.tags.map(x=>esc(x)).join("・")}</small>
         <div class="sv-st">${["Vocal","Dance","Charm"].map((l,k)=>`<span><em>${l}</em><i><u style="width:${t.st[k]}%"></u></i></span>`).join("")}</div></div>
       <div class="sv-r"><b>${fmt(v[t.id])}</b><button class="btn btn-sm ${left?"btn-main":"btn-soft"}" data-a="svVote" data-v="${t.id}" ${left?"":"disabled"}>Pick Me</button></div></article>`).join("")}
@@ -6921,7 +6923,7 @@ function viewStubs(){
 /* 應援棒：管理員上傳的設計圖 → 3D；沒上傳的團用預設款 */
 const getSticks=()=>S.get(K.sticks,{});
 const _defStick={};
-function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g.g%GRADS.length]; _defStick[gid]=LS3D.analyze(LS3D.sample("round",c[0],c[1],g.name[0])); } return _defStick[gid]; }
+function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g.g%GRADS.length]; _defStick[gid]=LS3D.analyze(LS3D.sample("round",c[0],c[1],ini(g.name))); } return _defStick[gid]; }
 let _genStick=null;
 const genericStick=()=>_genStick||(_genStick=Object.assign(LS3D.analyze(LS3D.sample("round","#E9E3F7","#FCE7F3","★")),{glow:"#C7AEFF"}));
 const stickOf=gid=>gid==="generic"?genericStick():getSticks()[gid]||defaultStick(gid);
@@ -7044,8 +7046,8 @@ const selDoneFor=()=>!!S.get(K.selDone,{})[(session()||{}).email||""];   // 每�
 function viewSelect(){
   const first=!followed().length||!selDoneFor();
   if(!ui.selectDraft) ui.selectDraft=new Set(first?[]:followed());
-  const q=ui.selectQuery.trim().toLowerCase();
-  const list=GROUPS.filter(g=>(ui.selectFilter==="new"?g.isNew:true)&&(!q||g.name.toLowerCase().includes(q)));
+  const q=nz(ui.selectQuery.trim());
+  const list=GROUPS.filter(g=>(ui.selectFilter==="new"?g.isNew:true)&&hit(q,g.name,...grpMembers(g.id).flatMap(id=>[MEMBERS[id].name,artName(id,"feed"),artName(id,"tie")])));
   const n=ui.selectDraft.size;
   const names=GROUPS.filter(g=>ui.selectDraft.has(g.id)).map(g=>g.name).join("、");
   return `<header class="top"><div class="top-row">
@@ -7125,13 +7127,15 @@ const emptyBox=(icon,title,text,btn="")=>`<div class="empty"><div class="e-ico">
    有關鍵字時顯示「包含「…」之結果」，找不到時顯示 🔮 提示
    點搜尋列以外的任何地方：關閉搜尋並清空關鍵字（照 NSY） ---------- */
 const srchOn=key=>!!(ui.srch&&ui.srch.key===key);
-const srchQ=key=>srchOn(key)?ui.srch.q.trim().toLowerCase():"";
+/* 搜尋一律把花體字、全形字轉成一般字再比（打 kirin 也找得到 𝐊𝐢𝐫𝐢𝐧） */
+const nz=x=>String(x||"").normalize("NFKC").toLowerCase();
+const srchQ=key=>srchOn(key)?nz(ui.srch.q.trim()):"";
 const srchBtn=key=>`<button class="icon-btn sh-btn" data-a="shOpen" data-k="${key}" aria-label="搜尋">${I.search}</button>`;
 function srchBar(ph){ const q=ui.srch.q;
   return `<div class="sh-bar"><label class="sh-in">${I.search}<input id="shq" placeholder="輸入文字" value="${esc(q)}" autocomplete="off" enterkeyhint="search">${q?`<button type="button" class="sh-x" data-a="shClear" aria-label="清除關鍵字">${XI}</button>`:""}</label><button class="sh-close" data-a="shClose">關閉</button></div>`; }
 const srchLabel=key=>{const q=srchOn(key)?ui.srch.q.trim():""; return q?`<div class="sh-label">包含「${esc(q)}」之結果</div>`:"";};
 const srchEmpty=noun=>`<div class="card sh-empty"><div class="sh-e-ico">🔮</div><h5>無符合搜尋條件的${noun}</h5><p>請嘗試更換其他搜尋關鍵字 ✨</p></div>`;
-const hit=(q,...fields)=>!q||fields.some(f=>String(f||"").toLowerCase().includes(q));
+const hit=(q,...fields)=>!q||fields.some(f=>nz(f).includes(q));
 const postHit=(q,p)=>{const m=MEMBERS[p.member],g=groupOf(p.group);return hit(q,m&&m.name,g&&g.name,p.text)};
 const evHit=(q,e)=>{const m=MEMBERS[e.member],g=groupOf(e.group);return hit(q,e.title,e.place,e.desc,m&&m.name,g&&g.name)};
 const liveHit=(q,l)=>{const m=MEMBERS[l.member],g=groupOf(l.group);return hit(q,l.title,m&&m.name,g&&g.name)};
@@ -7167,7 +7171,7 @@ function myFeedTop(){
       <div class="mf-dm-top"><span class="av mf-av" style="background:${grad(m.g)}">${mAvIn(d.id,"tie")}</span><div class="mf-dm-i"><b>${esc(artName(d.id,"tie"))} ${I.verified}</b><small>${esc(g?g.name:"")}・${ago(d.ts)}</small>
       <button class="mf-lock" data-a="tieIntro" data-m="${d.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>立即查看是什麼內容吧！</button></div></div>
       ${dms.length>1?`<button class="mf-more" data-a="dmNext">查看其他 ${WHISPER_NAME} <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>`:""}</section>`; }
-  if(ns.length) h+=`<h2 class="mf-h">最新公告</h2><div class="hl mf-ann">${ns.map((n,i)=>{const g=groupOf(n.group);return `<button class="hl-i ${i?"":"on"} card mf-an" data-a="gnOpen" data-v="${n.id}"><span class="mf-an-ic" style="background:${grad(g.g)};color:#fff">${esc(g.name[0])}</span><span class="mf-an-b"><b>${esc(g.name)}</b><small>${esc(n.title)}</small></span><em>${ago(n.ts)}</em></button>`}).join("")}</div>`;
+  if(ns.length) h+=`<h2 class="mf-h">最新公告</h2><div class="hl mf-ann">${ns.map((n,i)=>{const g=groupOf(n.group);return `<button class="hl-i ${i?"":"on"} card mf-an" data-a="gnOpen" data-v="${n.id}"><span class="mf-an-ic" style="background:${grad(g.g)};color:#fff">${esc(ini(g.name))}</span><span class="mf-an-b"><b>${esc(g.name)}</b><small>${esc(n.title)}</small></span><em>${ago(n.ts)}</em></button>`}).join("")}</div>`;
   return h;
 }
 function openGNotice(id){ const n=getGNotices().find(x=>x.id===id); if(!n) return; const g=groupOf(n.group);
@@ -7225,10 +7229,10 @@ function exploreTop(){
   const shown=ui.exAll?all:all.slice(0,4);
   return `<label class="ex-srch">${I.search||"🔍"}<input id="exQ" placeholder="輸入文字" autocomplete="off"></label>
     ${mine.length?`<h2 class="mf-h">我的社群</h2><div class="ex-my">${mine.map(g=>`<button class="ex-mg" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}${grpUnseen(g.id)?"<em></em>":""}</i><small>${esc(g.name)}</small></button>`).join("")}</div>`:""}
-    ${ban.length?`<div class="ex-ban" id="exBan">${ban.map(g=>`<button class="ex-b" data-a="gOpen" data-v="${g.id}" style="background:${grad(g.g)}"><b>OPEN! ${esc(g.name)}</b><small>立即前往查看</small><span>${esc(g.name[0])}</span></button>`).join("")}</div>${ban.length>1?`<div class="tiei-dots ex-dots">${ban.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
+    ${ban.length?`<div class="ex-ban" id="exBan">${ban.map(g=>`<button class="ex-b" data-a="gOpen" data-v="${g.id}" style="background:${grad(g.g)}"><b>OPEN! ${esc(g.name)}</b><small>立即前往查看</small><span>${esc(ini(g.name))}</span></button>`).join("")}</div>${ban.length>1?`<div class="tiei-dots ex-dots">${ban.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
     <h2 class="mf-h">全部社群</h2>
     <div class="ex-cat">${[["all","全部"],["group","Group"],["solo","Solo"],["new","New"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="exCat" data-v="${k}">${l}</button>`).join("")}</div>
-    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc((g.name+" "+ms.join(" ")).toLowerCase())}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${g.isNew?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
+    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${g.isNew?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
     ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}`;
 }
 /* 搜尋：直接在全部社群裡篩選（不重畫，才不會收鍵盤） */
@@ -7239,7 +7243,7 @@ document.addEventListener("input",e=>{ const t=e.target, id=t.id;
   if(id==="cwTxt"){ const b=document.getElementById("cwOk"); if(b) b.disabled=!t.value.trim(); }
   else if(id==="meNick"||id==="meIntro"){ const n=document.getElementById(id+"N"); if(n) n.textContent=t.value.length; ui.meDraft={nick:(document.getElementById("meNick")||{}).value,intro:(document.getElementById("meIntro")||{}).value}; }
   else if(id==="cmQ") cmSearchRun(t.dataset.g,t.value); });
-document.addEventListener("input",e=>{ if(e.target.id!=="exQ") return; const q=e.target.value.trim().toLowerCase();
+document.addEventListener("input",e=>{ if(e.target.id!=="exQ") return; const q=nz(e.target.value.trim());
   if(q&&!ui.exAll){ ui.exAll=true; ui.exQ=q; render(); const i=document.getElementById("exQ"); if(i){ i.value=q; i.focus(); } }
   document.querySelectorAll(".ex-g").forEach(r=>r.hidden=!!q&&!r.dataset.q.includes(q)); });
 document.addEventListener("scroll",e=>{ const b=e.target; if(!b||b.id!=="exBan") return; const i=Math.round(b.scrollLeft/b.clientWidth); document.querySelectorAll(".ex-dots i").forEach((d,k)=>d.classList.toggle("on",k===i)); },true);
@@ -7375,8 +7379,8 @@ function viewCmMeEdit(gid){ const P={...cmProf(gid),...(ui.meDraft||{})}, bg=PCI
 function viewCmSearch(gid){ const g=groupOf(gid);
   return `<div class="gcm cmx-pg" style="--gt:${gTheme(gid)}"><header class="cmx-sub"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><label class="cmx-q">${I.search}<input id="cmQ" data-g="${gid}" placeholder="輸入文字" autocomplete="off"></label></header>
     <main class="page cm-body" id="cmQR"><div class="cmx-none">${I.search}<p>沒有最近的搜尋字詞。</p></div></main></div>`; }
-function cmSearchRun(gid,q){ const box=document.getElementById("cmQR"); if(!box) return; q=q.trim().toLowerCase(); if(!q){ box.innerHTML=`<div class="cmx-none">${I.search}<p>沒有最近的搜尋字詞。</p></div>`; return; }
-  const art=getPosts().filter(p=>p.group===gid&&!p.hidden&&p.text.toLowerCase().includes(q)), fans=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&p.text.toLowerCase().includes(q));
+function cmSearchRun(gid,q){ const box=document.getElementById("cmQR"); if(!box) return; q=nz(q.trim()); if(!q){ box.innerHTML=`<div class="cmx-none">${I.search}<p>沒有最近的搜尋字詞。</p></div>`; return; }
+  const art=getPosts().filter(p=>p.group===gid&&!p.hidden&&nz(p.text).includes(q)), fans=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&nz(p.text).includes(q));
   box.innerHTML=art.length||fans.length?`${art.length?cmSec(`藝人貼文 ${art.length}`):""}${art.map(p=>postCard(p)).join("")}${fans.length?cmSec(`粉絲貼文 ${fans.length}`):""}${fans.map(fanCard).join("")}`:`<div class="cmx-none">${I.search}<p>找不到包含「${esc(q)}」的貼文。</p></div>`; hydrateMedia(box); }
 function viewCmBm(gid){ const g=groupOf(gid), tab=ui.bmTab||"fan", B=bmSet();
   const fans=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&B.has("f:"+p.id)), art=getPosts().filter(p=>p.group===gid&&B.has("p:"+p.id));
@@ -7427,7 +7431,7 @@ function openCal(gid){ const g=groupOf(gid), base=new Date(), mo=ui.calMo||0, d0
       ${list.length?list.map(x=>`<div class="cal-it"><span>${x.ic}</span><div><small>${esc(x.k)}・${evWhen(x.ts)}</small><b>${esc(x.t)}</b></div></div>`).join(""):`<p class="me-none">${sel?"這一天沒有行程":"最近沒有行程"}</p>`}</div></div>`,"cal"); }
 function viewAbout(gid){ const g=groupOf(gid), open=ui.abOpen||null;
   const ph=gPhoto(gid), it=gIntro(gid);
-  return `<section class="abx-top"><h2>${esc(g.name)}</h2><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(g.name[0])}</span></section>
+  return `<section class="abx-top"><h2>${esc(g.name)}</h2><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span></section>
     ${it?`<p class="abx-intro">${esc(it)}</p>`:""}${g.solo?"":`<div class="abx-sec">成員 ${grpMembers(gid).length}</div>`}
     ${grpMembers(gid).map(m=>{ const M=MEMBERS[m], o=open===m; return `<section class="card ab-m ${o?"o":""}" id="ab-${m}"><button class="ab-mh" data-a="abTog" data-v="${m}" aria-expanded="${o}"><i style="background:${grad(M.g)}">${mAvIn(m)}</i><b>${esc(M.name)}</b><span class="ab-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>${o?`<button class="ab-pro" data-a="cmMem" data-v="${m}">查看個人簡介</button>`:""}</section>`; }).join("")}`; }
 function viewMemberProfile(gid,mid){ setTimeout(apBarSync,0); return `<div class="gcm ap2" style="--gt:${gTheme(gid)}">${artProfileHtml(mid,false)}</div>`; }
@@ -7539,8 +7543,8 @@ function snHome(d){ const me=snMeId(), fol=snFol(d,me), U=snUser(me), mode=ui.sn
     <main class="sn-feed">${items.length?items.map(x=>snPostCard(d,x.p,x.by)).join(""):`<div class="sn-empty"><b>還沒有貼文</b></div>`}</main>`; }
 
 function snPostPage(d,id){ const p=d.posts.find(x=>x.id===id); return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>貼文</b><span class="sn-sp"></span></header><main class="sn-feed">${p?snPostCard(d,p):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
-function snExplore(d){ const q=(ui.snQ||"").trim().toLowerCase(), me=snMeId();
-  const hits=q?snAllUsers().filter(u=>u.id!==me&&(u.u.includes(q)||String(u.name).toLowerCase().includes(q))):[];
+function snExplore(d){ const q=nz((ui.snQ||"").trim()), me=snMeId();
+  const hits=q?snAllUsers().filter(u=>u.id!==me&&(nz(u.u).includes(q)||nz(u.name).includes(q))):[];
   const P=d.posts.filter(p=>p.uid!==me).sort((a,b)=>snLikes(d,b)-snLikes(d,a));
   return `<header class="sn-top"><label class="sn-q">${si("search")}<input id="snQ" placeholder="搜尋" autocomplete="off" value="${esc(ui.snQ||"")}"></label></header>
     ${q?`<main class="sn-ul">${hits.length?hits.map(u=>`<button class="sn-ur" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}<span><b>${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><small>${esc(u.name)}</small></span></button>`).join(""):`<p class="sn-none">找不到「${esc(q)}」</p>`}</main>`
@@ -7579,8 +7583,8 @@ function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route(
     ${n&&dr.mode!=="story"&&n<10?`<label class="sn-addm">＋ 再加相片<input type="file" accept="image/*" multiple id="snFile"></label>`:""}
     ${dr.mode==="story"?"":`<textarea id="snCap" class="sn-cap" placeholder="輸入說明文字…">${esc(dr.cap)}</textarea>`}
     <nav class="sn-mode"><button class="${dr.mode==="post"?"on":""}" data-a="snMode" data-v="post">貼文</button><button class="${dr.mode==="story"?"on":""}" data-a="snMode" data-v="story">限時動態</button></nav>`; }
-function snDmList(d){ const me=snMeId(), q=(ui.snDmQ||"").trim().toLowerCase(); const ids=Object.keys(d.dm).filter(k=>(d.dm[k]||[]).length).sort((a,b)=>d.dm[b][d.dm[b].length-1].ts-d.dm[a][d.dm[a].length-1].ts);
-  const list=(q?snAllUsers().filter(u=>u.id!==me&&(u.u.includes(q)||String(u.name).toLowerCase().includes(q))).map(u=>u.id):ids).map(snUser).filter(Boolean);
+function snDmList(d){ const me=snMeId(), q=nz((ui.snDmQ||"").trim()); const ids=Object.keys(d.dm).filter(k=>(d.dm[k]||[]).length).sort((a,b)=>d.dm[b][d.dm[b].length-1].ts-d.dm[a][d.dm[a].length-1].ts);
+  const list=(q?snAllUsers().filter(u=>u.id!==me&&(nz(u.u).includes(q)||nz(u.name).includes(q))).map(u=>u.id):ids).map(snUser).filter(Boolean);
   const lim=Date.now()-864e5, notes=d.notes||{}, myN=notes[me]&&notes[me].ts>lim?notes[me]:null, others=snFol(d,me).filter(x=>notes[x]&&notes[x].ts>lim);
   return `<header class="sn-top"><b class="sn-un">${esc(snUser(me).u)}</b><span class="sn-sp"></span></header>
     <label class="sn-q in">${si("search")}<input id="snDmQ" placeholder="搜尋" autocomplete="off" value="${esc(ui.snDmQ||"")}"></label>
@@ -7865,10 +7869,10 @@ function renderComments(first=false){
   const isAdm=role==="admin";
   const target=replyTo&&list.find(c=>c.id===replyTo);
   const cm=c=>`<div class="cm ${c.id===focusC?"flash":""}" id="cm-${c.id}">
-      <div class="av sm" style="background:${grad(c.g)}">${esc(c.name[0])}</div>
+      <div class="av sm" style="background:${grad(c.g)}">${esc(ini(c.name))}</div>
       <div class="cm-b">
         <div class="cm-h"><b>${esc(c.author==="artist"?artName(p.member,"feed"):shownName(c))}</b>${c.author==="artist"?I.verified:""}${role!=="fan"&&c.author!=="artist"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}${isMeC(c)&&(role==="fan"||!isUni())?`<span class="badge">${role==="fan"?"你":"示範粉絲"}</span>`:""}<span>${ago(c.ts)}</span></div>
-        <p>${esc(c.text)}</p>${session().role==="artist"&&c.tr?`<p class="cm-tr">${esc(c.tr)}</p>`:""}
+        <p>${esc(c.text)}</p>${session().role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="cm-tr">${esc(c.zh)}</p>`:""}
         ${c.reply?`<div class="cm-r"><div class="av xs" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>
             <div><div class="cm-h"><b>${esc(artName(p.member,"feed"))}</b>${I.verified}<span>${ago(c.reply.ts)}</span></div><p>${esc(c.reply.text)}</p></div></div>`
           :isArtist&&c.author!=="artist"?`<button class="cm-rbtn" data-a="replyTo" data-c="${c.id}">回覆</button>`:""}
@@ -8125,11 +8129,11 @@ function viewTieArtist(mid){
   let lastDay="";
   const body=msgs.map(w=>{
     const d=dayLabel(w.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
-    if(w.from==="artist") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-mecol">${w.reply?tieRq(w.reply,true):""}${w.kind?mediaBubble(w):`<div class="t-b me">${nickTag(esc(w.ko||w.text))}</div>`}</div></div>`;
+    if(w.from==="artist") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-mecol">${w.reply?tieRq(w.reply,true,true):""}${w.kind?mediaBubble(w):`<div class="t-b me">${nickTag(esc(w.kt?(w.ko||w.text):w.text))}</div>`}</div></div>`;
     const sh=fanShown(w,mid);
     return sep+`<div class="t-art" data-sw="${w.id}"><span class="fan-av">${mascot("msg:"+w.id)}</span>
       <div class="t-art-c"><div class="t-art-n"><span class="from-fan">FROM FAN</span>${sh.member?(sh.name?`<b class="a-nick">${esc(sh.name)}</b>`:`<span class="a-dia" title="Membership">💎</span>`):""}${w.from==="me"&&isAdminAcct()&&!isUni()?`<span class="t-badge soft">示範粉絲</span>`:""}</div>
-      <div class="t-bw"><div class="t-b">${esc(w.text)}${w.tr?`<div class="t-tr">${esc(w.tr)}</div>`:""}</div><span class="t-time">${timeHM(w.ts)}</span><button class="t-rep" data-a="tieRep" data-id="${w.id}" aria-label="檢舉這則訊息">⋯</button></div></div></div>`;
+      <div class="t-bw"><div class="t-b">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:""}</div><span class="t-time">${timeHM(w.ts)}</span><button class="t-rep" data-a="tieRep" data-id="${w.id}" aria-label="檢舉這則訊息">⋯</button></div></div></div>`;
   }).join("");
   const draft=ui.wDraft||"";
   const QUICK=["謝謝大家，今天也在努力練習中 ♡","大家吃過晚餐了嗎？記得保暖喔～","今晚文字直播見！期待和你們相聚 ✨"];
@@ -8449,9 +8453,9 @@ const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>
 
 function showWinRow(wk){ const ws=getMShow().wins[wk]||{}, rk=ranked(wk);
   return SHOWS.map(s=>{ const sg=songOf(ws[s.id]), g=sg&&groupOf(sg.gid);
-    return `<div class="mu-show"><span class="mu-sn"><b>${s.name}</b><small>每週${WDAY[s.day]}</small></span>${g?`<span class="mu-win"><i style="background:${grad(g.g)}">${esc(g.name[0])}</i><span><b>${esc(g.name)}</b><small>《${esc(sg.title)}》</small></span><em>🏆</em></span>`:`<span class="mu-tbd">${rk?"還沒公布":"不排名"}</span>`}</div>`; }).join(""); }
+    return `<div class="mu-show"><span class="mu-sn"><b>${s.name}</b><small>每週${WDAY[s.day]}</small></span>${g?`<span class="mu-win"><i style="background:${grad(g.g)}">${esc(ini(g.name))}</i><span><b>${esc(g.name)}</b><small>《${esc(sg.title)}》</small></span><em>🏆</em></span>`:`<span class="mu-tbd">${rk?"還沒公布":"不排名"}</span>`}</div>`; }).join(""); }
 /* 打歌：像排行榜一樣一首一列，點了再從下面拉出應援選單（買專輯、MV 愛心、投票、My Pick） */
-const songCover=gid=>{ const a=getAlbums().find(x=>x.gid===gid), c=a&&a.vers[0]&&PCI[`vc|${a.id}|${a.vers[0].id}`], g=groupOf(gid); return c?`<img src="${c}" alt="">`:`<i style="background:${grad(g?g.g:0)}">${esc(g?g.name[0]:"")}</i>`; };
+const songCover=gid=>{ const a=getAlbums().find(x=>x.gid===gid), c=a&&a.vers[0]&&PCI[`vc|${a.id}|${a.vers[0].id}`], g=groupOf(gid); return c?`<img src="${c}" alt="">`:`<i style="background:${grad(g?g.g:0)}">${esc(g?ini(g.name):"")}</i>`; };
 function viewPromo(){
   const ms=getMShow(), wk=curWeek(), t=weekType(wk), sc=getSched(), pick=S.get(K.pick,null), f=followed(), rk=ranked(wk);
   const score=x=>rk?songVotes(x.id):mvLikes(x.gid);
@@ -8637,17 +8641,18 @@ function aiFlush(){
   if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); }
 }
 setInterval(aiFlush,1200);
-/* 藝人端：真人粉絲的留言、TIE 沒有翻譯的，打開時一次翻成韓文 */
+/* 藝人端：粉絲的留言、TIE 不是中文的，打開時一次翻成中文（存在 zh；中文的不翻） */
+const isZhText=t=>{ const x=String(t||"").replace(/@@@/g,""); if(/[\u3040-\u30ff\uAC00-\uD7A3]/.test(x)) return false; const han=(x.match(/\p{Script=Han}/gu)||[]).length, oth=(x.match(/\p{L}/gu)||[]).length-han; return han>0?han>=oth:oth===0; };
 const trAsked=new Set();
 async function aiTranslateFor(mid){
   if(!useDeepL()&&(!SAMPLE||aiOff)) return; const ids=new Set(getPosts().filter(p=>p.member===mid).map(p=>p.id));
-  const ws=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"&&!w.tr&&!w.kind&&!trAsked.has(w.id)).slice(-20).map(w=>({id:w.id,text:w.text}));
-  const cs=S.get(K.comments,[]).filter(c=>ids.has(c.postId)&&!c.tr&&!trAsked.has(c.id)).slice(-20).map(c=>({id:c.id,text:c.text}));
+  const ws=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"&&!w.zh&&!w.kind&&!trAsked.has(w.id)&&!isZhText(w.text)).slice(-20).map(w=>({id:w.id,text:w.text}));
+  const cs=S.get(K.comments,[]).filter(c=>ids.has(c.postId)&&!c.zh&&!trAsked.has(c.id)&&!isZhText(c.text)).slice(-20).map(c=>({id:c.id,text:c.text}));
   const items=[...ws,...cs]; if(!items.length) return; items.forEach(x=>trAsked.add(x.id));
-  const out=await translateMany(items.map(x=>x.text),"ko"); if(!out) return;
+  const out=await translateMany(items.map(x=>x.text),"zh"); if(!out) return;
   const map={}; items.forEach((x,k)=>{ if(out[k]) map[x.id]=aiClean(out[k]); }); if(!Object.keys(map).length) return;
-  const W=S.get(K.whispers,[]); W.forEach(w=>{ if(map[w.id]) w.tr=map[w.id]; }); S.set(K.whispers,W);
-  const C=S.get(K.comments,[]); C.forEach(c=>{ if(map[c.id]) c.tr=map[c.id]; }); S.set(K.comments,C);
+  const W=S.get(K.whispers,[]); W.forEach(w=>{ if(map[w.id]) w.zh=map[w.id]; }); S.set(K.whispers,W);
+  const C=S.get(K.comments,[]); C.forEach(c=>{ if(map[c.id]) c.zh=map[c.id]; }); S.set(K.comments,C);
   const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); }
 }
 /* TIE 翻譯（照 Bubble）：藝人訊息顯示原文（韓文），粉絲按 A 看翻譯
@@ -8685,7 +8690,7 @@ async function tieOriginal(wid){
   const out=await translateMany([w0.text],ko?"zh":"ko",ko?null:"把這則偶像傳給粉絲的訊息，改寫成這位韓國偶像會親手打的自然韓文（語氣親切、像 Bubble 私訊）");
   const t=out&&aiClean(out[0]); if(!t) return;
   const list=S.get(K.whispers,[]), w=list.find(x=>x.id===wid); if(!w) return;
-  if(ko){ w.ko=w.text; w.text=t; } else w.ko=t; S.set(K.whispers,list);
+  if(ko){ w.ko=w.text; w.text=t; w.kt=1; } else w.ko=t; S.set(K.whispers,list);
   const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); }
 }
 const trText=(w,lang)=>lang==="zh"?w.text:(S.get(K.tieTrX,{})[w.id+":"+lang]||"");
@@ -8869,7 +8874,7 @@ function fsChatHtml(msgs,side){
 }
 const fsWhen=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:${pad(d.getMinutes())}`; };
 const fsHead=ev=>{ const g=groupOf(ev.group); return `<div class="fs-h"><span class="av sm" style="background:${grad(g?g.g:0)}">${esc(fsName(ev)[0]||"")}</span><div><b>${esc(ev.title)}</b><small>${esc(fsName(ev))}・${fsTypeName(ev)}・${ev.toSign?"含 To 簽":"盲簽（只簽名）"}・${fsWhen(ev.startTs)}・${ev.type==="solo"?"一人 90 秒":"每位成員 60 秒"}</small></div></div>`; };
-const fsMav=(mid,cls="")=>{ const m=MEMBERS[mid]; return `<span class="fs-mav ${cls}" style="background:${grad(m?m.g:0)}">${esc(m?m.name[0]:"?")}</span>`; };
+const fsMav=(mid,cls="")=>{ const m=MEMBERS[mid]; return `<span class="fs-mav ${cls}" style="background:${grad(m?m.g:0)}">${esc(m?ini(m.name):"?")}</span>`; };
 /* ---------- 粉絲端：CORE ---------- */
 function fsFanCards(){
   const f=followed(), list=fsAll().filter(e=>f.includes(e.group)&&groupOf(e.group)&&e.id!=="fsshow"&&(e.status!=="done"||(fsMySlots(e).length&&Date.now()-e.startTs<3*864e5))).sort((a,b)=>a.startTs-b.startTs);
@@ -8923,7 +8928,7 @@ function viewFsFanRoom(id){
 }
 function fsCallRing(ev,mid){ const m=MEMBERS[mid], left=fsLeft(ev), total=fsSec(ev), r=56, C=2*Math.PI*r;
   return `<svg class="fs-cring" viewBox="0 0 128 128"><circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" class="fg" style="stroke-dasharray:${C};stroke-dashoffset:${C*(1-left/total)}"/></svg>
-    <span class="fs-call-face" style="background:${grad(m?m.g:0)}">${esc(m?m.name[0]:"?")}</span><em>${left}s</em>`; }
+    <span class="fs-call-face" style="background:${grad(m?m.g:0)}">${esc(m?ini(m.name):"?")}</span><em>${left}s</em>`; }
 function fsAlbBar(ev,sign,need){ const n=sign&&sign.sigs?Object.keys(sign.sigs).length:0;
   return `${fsAlbum(ev,sign,{sm:true,fan:true})}<div><b>簽名專輯</b><small>${n?`已經有 ${n}／${need} 位簽名了 ✨`:"成員簽名後會出現在這裡"}</small></div>`; }
 function viewSigned(){
@@ -9184,7 +9189,7 @@ function viewCore(){
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
     ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"]];
-  const show=t=>!q||(t[2]+t[3]).toLowerCase().includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
+  const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
     ${!q&&now.length?`${secH("live","正在發生")}<div class="now-list">${now.join("")}</div>`:""}
@@ -9279,7 +9284,7 @@ function shopProducts(gid){ const g=groupOf(gid); if(!g) return []; const L=[], 
     note:["裡面的東西是隨機的，不能指定成員。","不同版本放的東西不一樣。","預購特典、Lucky Draw 是店家另外附送的，不在專輯裡；Lucky Draw 是抽獎，不一定抽得到，抽完就沒了。","購買使用的是 App 內的點數，不會另外收費。"]})));
   MERCH.filter(it=>it.k!=="album").forEach(it=>L.push({id:"m:"+gid+":"+it.k,kind:"merch",gid,k:it.k,cat:"merch",ic:it.ic,name:`${g.name} ${it.name}`,pts:it.pts,own:owns(gid,it.k)||(it.k==="stick"&&isMember(gid)),ownTxt:it.k==="stick"&&isMember(gid)&&!owns(gid,it.k)?"會員已擁有":"已擁有",
     det:[it.d],note:["買過的周邊會收在 ME 的「我的周邊」。","購買使用的是 App 內的點數，不會另外收費。"]}));
-  groupArtists(gid).forEach(mid=>{ const m=MEMBERS[mid], st=passStatus(mid); L.push({id:"t:"+mid,kind:"tie",gid,mid,cat:"tie",ic:m.name[0],g2:m.g,name:`${WHISPER_NAME} 券・${artName(mid,"tie")}`,pts:Math.min(...PLANS.map(p=>p.pts)),from:true,own:isActive(mid),ownTxt:st?st.txt:"",
+  groupArtists(gid).forEach(mid=>{ const m=MEMBERS[mid], st=passStatus(mid); L.push({id:"t:"+mid,kind:"tie",gid,mid,cat:"tie",ic:ini(m.name),g2:m.g,name:`${WHISPER_NAME} 券・${artName(mid,"tie")}`,pts:Math.min(...PLANS.map(p=>p.pts)),from:true,own:isActive(mid),ownTxt:st?st.txt:"",
     det:[`收 ${artName(mid,"tie")} 傳給你的訊息，你也可以回覆。`,"訂閱越久，能傳的字數越多。"],note:["券有效期間內才能收到訊息、也才能回覆。","請不要截圖或外流聊天室內容，外流會被停權。"]}); });
   return L; }
 const prodBy=id=>{ const [k,x]=id.split(":"); const gid=k==="t"?(MEMBERS[x]||{}).group:k==="v"?(albumOf(x)||{}).gid:x; return gid?shopProducts(gid).find(p=>p.id===id):null; };
@@ -9306,7 +9311,7 @@ function openAllBan(){ const f=followed().filter(g=>groupOf(g)&&!isSelfGid(g)), 
 function viewShop(){
   const q=srchQ("shop"), f=followed();
   if(ui.shopG&&groupOf(ui.shopG)) return viewShopGroup(ui.shopG);
-  const all=f.flatMap(shopProducts).filter(p=>!q||(p.name+" "+groupOf(p.gid).name).toLowerCase().includes(q));
+  const all=f.flatMap(shopProducts).filter(p=>!q||nz(p.name+" "+groupOf(p.gid).name).includes(q));
   const ban=f.flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own&&!isSelfGid(p.gid)).slice(0,2)).slice(0,6);
   const mine=Object.keys(subs()).filter(id=>MEMBERS[id]);
   return fanHeader(false,"shop","搜尋商品、團名...")+`<main class="page">${srchLabel("shop")}
@@ -9748,7 +9753,7 @@ document.addEventListener("click",e=>{
     case "tVoice": playVoice(t.dataset.mid); break;
     case "boxTab": ui.boxTab=t.dataset.v; render(); break;
     case "lsGroup": ui.lsGid=t.dataset.v; lsRerender(); break;
-    case "lsSample": { const g=groupOf(ui.lsGid||GROUPS[0].id), c=GRADS[g.g%GRADS.length]; if(lsLoad(LS3D.sample(t.dataset.v,c[0],c[1],g.name[0]))){ lsRerender(); toast("辨識完成，可以旋轉看看 ✨"); } break; }
+    case "lsSample": { const g=groupOf(ui.lsGid||GROUPS[0].id), c=GRADS[g.g%GRADS.length]; if(lsLoad(LS3D.sample(t.dataset.v,c[0],c[1],ini(g.name)))){ lsRerender(); toast("辨識完成，可以旋轉看看 ✨"); } break; }
     case "lsMode": { const d=ui.lsDraft; if(!d) break; d.ds.mode=t.dataset.v; lsRerender(); break; }
     case "lsGlow": { const d=ui.lsDraft; if(!d) break; d.ds.glow=t.dataset.v; document.querySelectorAll('[data-a="lsGlow"]').forEach(b=>b.classList.toggle("on",b===t)); const el=document.querySelector('.ls-box[data-ls="draft"]'); if(el&&el._ls) el._ls.set("glow",t.dataset.v); break; }
     case "lsCancel": ui.lsDraft=null; lsRerender(); break;
@@ -10547,7 +10552,7 @@ const TH_DEF={light:{ac:"#8843FB",bg:"#FAF9FC",ink:"#1D1A24",sub:"#837D90",bubA:
 /* 吉祥物主題是 HAECHU 內建的免費主題：不存在資料裡，每個人都看得到 */
 let MS_BUILT=null;
 const msBuilt=()=>MS_BUILT||(MS_BUILT=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室、選單圖示和密碼鎖都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.UTC(2026,9,1)-i*DAY})));
-const getThemes=()=>{ const L=S.get(K.themes,[])||[], have=new Set(L.map(t=>t.id)); return [...msBuilt().filter(t=>!have.has(t.id)),...L]; };
+const getThemes=()=>{ const L=(S.get(K.themes,[])||[]).map(t=>t.id==="th_ms_dog"&&t.light&&/^#(CDE9C0|9ED68A)$/i.test(t.light.bar)?{...t,light:msBuilt()[1].light,dark:msBuilt()[1].dark}:t), have=new Set(L.map(t=>t.id)); return [...msBuilt().filter(t=>!have.has(t.id)),...L]; };
 const saveThemes=L=>S.set(K.themes,L.filter(t=>!(String(t.id).startsWith("th_ms_")&&msBuilt().some(x=>x.id===t.id&&JSON.stringify(x)===JSON.stringify(t)))));
 const thById=id=>getThemes().find(t=>t.id===id);
 /* 每個帳號自己的（藝人帳號切到粉絲端也是同一份） */
@@ -10970,9 +10975,9 @@ const MS_THEMES=[
   {sp:"cat",name:"貓咪",strip:"flower",p:{a:"#FF9FB4",b:"#FFD08A",c:"#F6C7B4",d:"#7A4434",e:"#FFE08A",f:"#BFE3FF",bg:"#FFF4EC",bar:"#FBD8C6"},
     light:{ac:"#EE7F62",bg:"#FFF4EC",ink:"#6B3A2C",sub:"#BD8A76",bubA:"#FFFFFF",bubAB:"#F4CDBC",bubM:"#FFE1D3",bubMB:"#F4CDBC",bar:"#FBD8C6"},
     dark:{ac:"#FF9F82",bg:"#1E1714",ink:"#FCEDE6",sub:"#C7A497",bubA:"#33261F",bubAB:"#4A372D",bubM:"#C45A3C",bubMB:"#C45A3C",bar:"#2B201B"}},
-  {sp:"dog",name:"小狗",strip:"grass",p:{a:"#FF9FB4",b:"#9CCBFF",c:"#C9E2F7",d:"#2C4A6B",e:"#FFE08A",f:"#BFE3FF",bg:"#EEF7FF",bar:"#9ED68A",g:"#7CC56A",g2:"#5BA54C"},
-    light:{ac:"#3E8EDB",bg:"#EEF7FF",ink:"#24466B",sub:"#7E9BBB",bubA:"#FFFFFF",bubAB:"#C6DDF3",bubM:"#E4F4DA",bubMB:"#B9DCA6",bar:"#CDE9C0"},
-    dark:{ac:"#6FB1F5",bg:"#121A22",ink:"#E6F1FB",sub:"#93A9BF",bubA:"#1F2B36",bubAB:"#2E3F4F",bubM:"#3B7A3A",bubMB:"#3B7A3A",bar:"#1A2A1E"}},
+  {sp:"dog",name:"小狗",strip:"grass",p:{a:"#FF9FB4",b:"#9CCBFF",c:"#C9E2F7",d:"#2C4A6B",e:"#FFE08A",f:"#BFE3FF",bg:"#EEF7FF",bar:"#BFDCF5",g:"#7CC56A",g2:"#5BA54C"},
+    light:{ac:"#3E8EDB",bg:"#EEF7FF",ink:"#24466B",sub:"#7E9BBB",bubA:"#FFFFFF",bubAB:"#C6DDF3",bubM:"#DCEBFA",bubMB:"#B6D1EE",bar:"#CFE3F6"},
+    dark:{ac:"#6FB1F5",bg:"#121A22",ink:"#E6F1FB",sub:"#93A9BF",bubA:"#1F2B36",bubAB:"#2E3F4F",bubM:"#2F6DAE",bubMB:"#2F6DAE",bar:"#18222D"}},
   {sp:"fox",name:"狐狸",strip:"leaf",p:{a:"#FF8A4C",b:"#E8574A",c:"#F5CFA6",d:"#6A3415",e:"#FFC94D",f:"#FFE3B3",bg:"#FFF5EA",bar:"#F7D2AA"},
     light:{ac:"#E8722E",bg:"#FFF5EA",ink:"#6A3415",sub:"#C2875E",bubA:"#FFFDF6",bubAB:"#F1C9A2",bubM:"#FFE2C2",bubMB:"#F1C9A2",bar:"#F7D2AA"},
     dark:{ac:"#FF9A55",bg:"#1F1610",ink:"#FDEBDC",sub:"#C9A283",bubA:"#35261B",bubAB:"#4C3626",bubM:"#D86A2A",bubMB:"#D86A2A",bar:"#2C1F15"}},
@@ -11234,7 +11239,9 @@ async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=a
    ・LOVE：在藝人首頁「編輯個人檔案」改，換動態、直播、社群這些地方
    ・TIE 還沒自己設定時，先用 LOVE 的；SNS 有自己的「編輯個人檔案」 */
 const tieProf=mid=>{ const p=artProf(mid); return {avatar:p.av_tie||p.avatar||"",cover:p.cover_tie||p.cover||"",bio:p.bio_tie!=null?p.bio_tie:(p.bio||"")}; };
-const mAvIn=(mid,pl)=>{ const m=MEMBERS[mid], u=pl==="tie"?tieProf(mid).avatar:artProf(mid).avatar; return u?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${u}')"></span>`:esc(m?m.name[0]:""); };
+/* 名字第一個字（花體字也轉回一般字，不會變成「?」） */
+const ini=x=>([...String(x||"").normalize("NFKC").trim()][0]||"").toUpperCase();
+const mAvIn=(mid,pl)=>{ const m=MEMBERS[mid], u=pl==="tie"?tieProf(mid).avatar:artProf(mid).avatar; return u?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${u}')"></span>`:(m?"H":""); };
 const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
@@ -11242,7 +11249,7 @@ const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS
 function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).avatar||""):""; } return (S.get(K.gPhoto,{})||{})[gid]||""; }
 /* TIE 券上的照片：管理員上傳的出道／回歸照（團體、SOLOIST 都可以傳），沒有就用社群照片 */
 const tktPhoto=gid=>(S.get(K.gPhoto,{})||{})[gid]||gPhoto(gid);
-const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(g.name[0]); };
+const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(ini(g.name)); };
 function gIntro(gid){ const g=groupOf(gid); if(!g) return ""; if(g.intro) return g.intro; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).bio||""):""; } return ""; }
 
 /* ===== 藝人個人頁：藝人首頁和粉絲看到的同一個版面（照 Weverse） ===== */
