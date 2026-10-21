@@ -4521,7 +4521,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021151420";
+const BUILD="20261021153304";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -5832,7 +5832,7 @@ function fanAccOpts(){ const list=Object.entries(ACCOUNTS).filter(([e,a])=>canBi
 /* 綁定：粉絲帳號變成藝人帳號；管理員帳號還是管理員，只是多了這個藝人身分 */
 function bindArtist(em,id){ const a=ACCOUNTS[em]; if(!canBind(em,a)) return false; const n=a.role==="admin"?{...a,member:id}:{...a,role:"artist",member:id}; ACCOUNTS[em]=n; if(HB_ON) hbSetProfile(em,{role:n.role,member:id}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]=n; }); return true; }
 function unbindArtist(em){ const a=ACCOUNTS[em]; if(!a) return; const x={...a,role:a.role==="admin"?"admin":"fan"}; delete x.member; ACCOUNTS[em]=x; if(HB_ON) hbSetProfile(em,{role:x.role,member:null}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]={...(r.accounts[em]||{}),...x}; delete r.accounts[em].member; }); }
-function rgEditOpen(n,it){ const g=groupOf(ui.rgEd); if(!g) return; const c=ui.rgEdC??g.g, ph=(S.get(K.gPhoto,{})||{})[g.id]||"";
+function rgEditOpen(n,it){ const g=groupOf(ui.rgEd); if(!g) return; const c=ui.rgEdC??g.g, ph=gPhotoMap()[g.id]||"";
   tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">出道／回歸照</span>${`<div class="rg-ph"><span class="rg-ph-img" style="background:${grad(c)}">${ph?`<span class="g-ph" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span><span class="rg-ph-r"><small>${g.solo?"放在 TIE 券上（社群照片用本人的頭貼）。":"放在 TIE 券、粉絲端的社群頭貼、社群封面和 About。"}回歸換新照片時再上傳一次就好。</small><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rgPhPick">${ph?"更換":"上傳"}</button>${ph?`<button class="btn btn-soft btn-sm" data-a="rgPhDel">移除</button>`:""}</span></span></div>`}<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">${g.solo?"About 介紹（不填就用本人的個人簡介）":"About 介紹"}</span><textarea id="rgEdIntro" class="t-wel-ta rg-intro" maxlength="300" placeholder="輸入文字">${esc(it??(g.intro||""))}</textarea><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
 function saveRoster(fn){ const r=S.get(K.roster,{groups:[],members:{},accounts:{}}); fn(r); S.set(K.roster,r); }
 
@@ -9692,8 +9692,10 @@ document.addEventListener("click",e=>{
     case "rgEdit": { const g=groupOf(t.dataset.v); if(!g) break; ui.rgEd=g.id; ui.rgEdC=g.g; rgEditOpen(); break; }
     case "rgEdColor": { const n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; ui.rgEdC=+t.dataset.v; rgEditOpen(n,it); break; }
     case "rgPhPick": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,1080); if(HB_ON) toast("上傳中…"); const url=(HB_ON&&await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); const M={...(S.get(K.gPhoto,{})||{})}; M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } rgEditOpen(n,it); toast("出道／回歸照換好了"); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
-    case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const M={...(S.get(K.gPhoto,{})||{})}; delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
+      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,1080); GPREV[gid]=URL.createObjectURL(b); rgEditOpen(n,it); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("出道／回歸照換好了");
+        const url=(HB_ON&&await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
+        imgSwap(url,()=>{ const M={...(S.get(K.gPhoto,{})||{})}; M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete GPREV[gid]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+    case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; delete GPREV[gid]; const M={...(S.get(K.gPhoto,{})||{})}; delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
     case "rgEditOk": { const g=groupOf(ui.rgEd); if(!g) break; const nm=((document.getElementById("rgEdName")||{}).value||"").trim(); if(!nm){ toast(g.solo?"請輸入藝名":"請輸入團名"); break; } if(nameBlock(nm)) break;
       if(GROUPS.some(x=>x.id!==g.id&&x.name===nm)){ toast("已經有這個名字了"); break; } const c=ui.rgEdC??g.g, itr=((document.getElementById("rgEdIntro")||{}).value||"").trim();
       saveRoster(r=>{ const x=(r.groups||[]).find(y=>y.id===g.id); if(x){ x.name=nm; x.g=c; if(itr) x.intro=itr; else delete x.intro; } if(r.members[g.id+"_o"]) r.members[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(r.members).forEach(k=>{ if(r.members[k].group===g.id&&!r.members[k].official) r.members[k].name=nm; }); });
@@ -10112,8 +10114,11 @@ document.addEventListener("click",e=>{
       setArtProf(mid,{[artNKey(k)]:v===MEMBERS[mid].name?"":v}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&k==="tie") openTieArtDrawer(mid,true); toast("已更新"+ART_NK[k]); break; }
     case "artCoverEd": case "artAvEd": { const mid=session().member||uniMe(), cov=a==="artCoverEd"; ui.artPl=t.dataset.v==="tie"?"tie":""; ui.artFromDrawer=!!t.closest(".t-drawer-w"); const p=artProf(mid), has=ui.artPl?(cov?p.cover_tie:p.av_tie):(cov?p.cover:p.avatar); if(has){ iosSheet([[cov?"換一張背景":"換一張頭貼",cov?"artPickCover":"artPickAv"],["恢復預設",cov?"artResetCover":"artResetAv"]]); break; } }   // 還沒換過：直接打開相簿，不用多一層選單
     case "artPickCover": case "artPickAv": { const mid=session().member||uniMe(), cov=a==="artPickCover"||a==="artCoverEd"; const back=()=>{ if(ui.artFromDrawer&&ui.artPl==="tie") openTieArtDrawer(mid,true); }; if(!(ui.artFromDrawer&&layer.querySelector(".t-drawer-w"))) layer.innerHTML=""; const inp=document.createElement("input"); inp.oncancel=()=>{ if(!layer.querySelector(".t-drawer-w")) back(); }; inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,cov?1400:1080); if(!cov) b=await squareImg(b,1080); if(HB_ON) toast("上傳中…"); const url=(HB_ON&&await hbImgUrl("prof_"+mid+"_"+(cov?"c":"a")+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); const tie=ui.artPl==="tie"; if(setArtProf(mid,cov?{[tie?"cover_tie":"cover"]:url}:{[tie?"av_tie":"avatar"]:url})){ const y=window.scrollY; render(); window.scrollTo(0,y); back(); toast(cov?"已換上新背景":"已換上新頭貼"); } }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
-    case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(), tie=ui.artPl==="tie"; setArtProf(mid,a==="artResetCover"?{[tie?"cover_tie":"cover"]:""}:{[tie?"av_tie":"avatar"]:""}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&tie) openTieArtDrawer(mid,true); break; }
+      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,cov?1400:1080); if(!cov) b=await squareImg(b,1080); const tie=ui.artPl==="tie", fld=cov?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar");
+        PREV[mid]={...(PREV[mid]||{}),[fld]:URL.createObjectURL(b)}; { const y=window.scrollY; render(); window.scrollTo(0,y); } back(); toast(cov?"已換上新背景":"已換上新頭貼");
+        const url=(HB_ON&&await hbImgUrl("prof_"+mid+"_"+(cov?"c":"a")+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
+        imgSwap(url,()=>{ if(PREV[mid]) delete PREV[mid][fld]; setArtProf(mid,{[fld]:url}); const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+    case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(), tie=ui.artPl==="tie"; delete PREV[mid]; setArtProf(mid,a==="artResetCover"?{[tie?"cover_tie":"cover"]:""}:{[tie?"av_tie":"avatar"]:""}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&tie) openTieArtDrawer(mid,true); break; }
     case "uniSec": { const r0=route(); ui.secLast=ui.secLast||{}; ui.secLast[r0.role]=location.hash; const h=ui.secLast[t.dataset.v]||UNI_SEC[t.dataset.v]; layer.innerHTML=""; navRoot(h); window.scrollTo(0,0); break; }
     case "tLeave": openLeaveRoom(t.dataset.m); break;
     case "tLeaveOk": { const m0=t.dataset.m, L=tieLeft(); L[m0]=tiePeriod(m0); S.set(K.tieLeft,L); layer.innerHTML=""; go("fan",null,"whisper"); toast("已離開聊天室"); break; }
@@ -11225,7 +11230,12 @@ function viewShopAdmin(){ const n=getThemes().filter(t=>t.status==="pending").le
    藝人端：自己換背景和頭貼、生日當天的全螢幕慶祝、TIE 的「⋯」選單
    新手教學：第一次登入／註冊看歡迎頁；之後每個分頁第一次打開，都會一個一個介紹這頁的功能
    ========================================================= */
-const artProf=mid=>(S.get(K.artProf,{})[mid])||{};
+/* 換圖片時先用手機上的那張馬上顯示，上傳到雲端好了再換成雲端網址（看起來是立刻換好） */
+const PREV={}, GPREV={};
+const artProf=mid=>{ const p=(S.get(K.artProf,{})[mid])||{}; return PREV[mid]?{...p,...PREV[mid]}:p; };
+const gPhotoMap=()=>({...(S.get(K.gPhoto,{})||{}),...GPREV});
+/* 上傳完、雲端那張也載入好了，才換掉預覽（不會閃一下） */
+function imgSwap(url,done){ if(!url||url.startsWith("data:")){ done(); return; } const im=new Image(); let ok=false; const fin=()=>{ if(ok) return; ok=true; done(); }; im.onload=fin; im.onerror=fin; setTimeout(fin,15000); im.src=url; }
 /* 名稱：動態、直播、TIE 聊天室各自一個，沒改過就是藝名（MEMBERS 的名字，只有管理員能改） */
 /* 每個團社群的 Media 分頁名稱：只有這一團的藝人能改 */
 const mediaName=gid=>(S.get(K.mediaName,{})[gid])||"LIVE・Media";
@@ -11256,9 +11266,9 @@ const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
 /* 社群照片：團體用管理員上傳的出道／回歸照；SOLOIST 用本人的頭貼（規則：SOLOIST 不用管理員上傳） */
-function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).avatar||""):""; } return (S.get(K.gPhoto,{})||{})[gid]||""; }
+function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).avatar||""):""; } return gPhotoMap()[gid]||""; }
 /* TIE 券上的照片：管理員上傳的出道／回歸照（團體、SOLOIST 都可以傳），沒有就用社群照片 */
-const tktPhoto=gid=>(S.get(K.gPhoto,{})||{})[gid]||gPhoto(gid);
+const tktPhoto=gid=>gPhotoMap()[gid]||gPhoto(gid);
 const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(ini(g.name)); };
 function gIntro(gid){ const g=groupOf(gid); if(!g) return ""; if(g.intro) return g.intro; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).bio||""):""; } return ""; }
 
