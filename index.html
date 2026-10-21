@@ -4266,7 +4266,7 @@ const K = {
 };
 const store = {
   get(k,fb){try{const v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch{return fb}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{}},
+  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{ try{localStorage.removeItem(k)}catch{} }},   /* 手機空間滿了存不進去：把舊的那份拿掉，改用記憶體裡的新資料（不然會一直讀到舊的） */
   del(k){try{localStorage.removeItem(k)}catch{}}
 };
 const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
@@ -4362,7 +4362,7 @@ function applyRoster(){ try{ const r=S.get(K.roster,{groups:[],members:{}})||{};
   GROUPS.length=0; (r.groups||[]).forEach(g=>{ if(!GROUPS.some(x=>x.id===g.id)) GROUPS.push(g); }); keepT.forEach(g=>GROUPS.push(g));
   Object.keys(MEMBERS).forEach(k=>delete MEMBERS[k]); Object.assign(MEMBERS,r.members||{}); if(mT) MEMBERS.tdm_m=mT;
   if(!HB_ON) Object.assign(ACCOUNTS,r.accounts||{}); }catch(e){} }
-function hbWriteLocal(k,v){ HB.applying=true; try{ if(v===null||v===undefined){ localStorage.removeItem(k); delete mem[k]; } else { localStorage.setItem(k,JSON.stringify(v)); mem[k]=v; } }catch(e){} HB.applying=false; }
+function hbWriteLocal(k,v){ HB.applying=true; try{ if(v===null||v===undefined){ delete mem[k]; localStorage.removeItem(k); } else { mem[k]=v; try{ localStorage.setItem(k,JSON.stringify(v)); }catch(x){ try{ localStorage.removeItem(k); }catch(y){} } } }catch(e){} HB.applying=false; }
 function hbReadLocal(k){ try{ const t=localStorage.getItem(k); return t==null?(k in mem?mem[k]:null):JSON.parse(t); }catch(e){ return null; } }
 /* 還沒送上雲端的修改：記在手機上，就算 App 被關掉、重新整理也不會不見，下次打開會合併後再送 */
 const HB_PEND="daisuki_hb_pend";
@@ -4444,7 +4444,18 @@ async function hbPoll(){ if(!HB.tok||document.hidden) return; let ch=false;
   if(ch) hbSoon(); }
 function hbSoon(){ clearTimeout(HB.rt); HB.rt=setTimeout(()=>{ try{ const s=session(); if(!s) return; if(s.role==="fan") feedDeliver(); if(document.querySelector("textarea:focus,input:focus,select:focus")) return; const y=window.scrollY; render(); window.scrollTo(0,y); }catch(e){} },120); }
 let hbPT=0; function hbProfilesNow(){ if(!HB_ON||!HB.tok||Date.now()-hbPT<3000) return; hbPT=Date.now(); const before=JSON.stringify(ACCOUNTS); hbLoadProfiles().then(()=>{ if(JSON.stringify(ACCOUNTS)!==before) hbSoon(); }).catch(()=>{}); }
-function hbStart(){ hbStop(); HB.pt=setInterval(hbPoll,4000); setTimeout(msPublish,800); setTimeout(mutesMigrate,900); }
+function hbStart(){ hbStop(); HB.pt=setInterval(hbPoll,4000); setTimeout(msPublish,800); setTimeout(mutesMigrate,900); setTimeout(imgMigrate,3000); }
+/* 以前的頭貼、背景、出道照直接塞在資料裡（很大，會把手機空間塞滿）：管理員打開 App 時，一張一張搬到雲端空間，資料裡只留網址 */
+async function imgMigrate(){ try{ const s=session(); if(!HB_ON||!HB.tok||!s||!s.admin||imgMigrate.on) return; imgMigrate.on=true;
+  const P=S.get(K.artProf,{})||{};
+  for(const mid of Object.keys(P)) for(const f of ["avatar","av_tie","cover","cover_tie"]){ const v=P[mid]&&P[mid][f]; if(typeof v!=="string"||!v.startsWith("data:")) continue;
+    const b=await (await fetch(v)).blob(), url=await hbImgUrl("prof_"+mid+"_"+f+"_"+Date.now().toString(36)+".jpg",b); if(!url) return;
+    const cur=S.get(K.artProf,{})||{}; if(cur[mid]&&cur[mid][f]===v){ cur[mid][f]=url; S.set(K.artProf,cur); } }
+  const G=S.get(K.gPhoto,{})||{};
+  for(const gid of Object.keys(G)){ const v=G[gid]; if(typeof v!=="string"||!v.startsWith("data:")) continue;
+    const b=await (await fetch(v)).blob(), url=await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b); if(!url) return;
+    const cur={...(S.get(K.gPhoto,{})||{})}; if(cur[gid]===v){ cur[gid]=url; S.set(K.gPhoto,cur); } }
+  }catch(e){} finally{ imgMigrate.on=false; } }
 /* 以前管理員設的禁言／停權只存在自己名下（別的管理員、被禁言的人都看不到）：搬回大家共用的那份 */
 function mutesMigrate(){ try{ const s=session(); if(!s||!s.admin||!s.email) return; const fk="daisuki_hb_mutesmig@"+String(s.email).toLowerCase(); if(localStorage.getItem(fk)) return; localStorage.setItem(fk,"1"); const own=hbReadLocal(K.mutes+"@"+String(s.email).toLowerCase()); if(!own||typeof own!=="object"||!Object.keys(own).length) return;
   const all=getMutes(); let ch=false; Object.entries(own).forEach(([k,v])=>{ if(!all[k]||(v&&all[k].ts<v.ts)){ all[k]=v; ch=true; } }); if(ch) S.set(K.mutes,all); }catch(e){} }
@@ -4521,7 +4532,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021153720";
+const BUILD="20261021154308";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
