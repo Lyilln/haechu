@@ -483,6 +483,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .t-art-c{display:flex;flex-direction:column;align-items:flex-start;max-width:70%;min-width:0}
 .t-art-n{display:flex;align-items:center;gap:6px;margin-bottom:4px}
 .t-art-n b{font-size:13px;color:#1F2937;white-space:nowrap}
+html[data-theme="dark"] .t-art-n b{color:#F1EEF7!important}
 .t-bw{position:relative;width:fit-content;max-width:100%}
 .t-abtn{position:absolute;right:-24px;bottom:2px;width:20px;height:20px;border-radius:50%;background:#F5F5F5;color:#A0A0A0;font-size:11px;font-weight:800;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .t-time{position:absolute;right:-34px;bottom:0;font-size:11px;font-weight:300;color:#A3A3A3;white-space:nowrap}
@@ -4497,7 +4498,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021061845";
+const BUILD="20261021062809";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
