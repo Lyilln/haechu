@@ -4521,10 +4521,10 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021153304";
+const BUILD="20261021153720";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
-  if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
-setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
+  if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
+setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
 /* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
 const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
 async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
@@ -10012,7 +10012,7 @@ document.addEventListener("click",e=>{
 
     case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
-    case "appReload": location.reload(); break;
+    case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
     case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), rn=((document.getElementById("acReal")||{}).value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim();
