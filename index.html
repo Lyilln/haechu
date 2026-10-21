@@ -4509,7 +4509,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021120059";
+const BUILD="20261021120224";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -10594,7 +10594,7 @@ ${H} .bg{display:none}
 ${H} .top,${H} .t-lh{background:${rgba(v.bg,.86)}!important;border-bottom-color:${rgba(v.ink,.06)}!important}
 ${H} .nav-in{background:${rgba(card,.92)}!important}
 ${H} .nav-btn.on,${H} .nav-btn.on .nav-ico{color:${vink}!important}
-${H} .t-rh{background:${rgba(v.bg,.9)}!important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+${H} .t-rh{background:${v.bar}!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 ${H} .t-rh-row h3,${H} .t-ib,${H} .t-sub{color:${v.ink}!important}${H} .t-dots i{background:${v.ink}!important}
 ${H} .t-b{background:${v.bubA}!important;color:${thTxtOn(v.bubA,v)}!important;border:1.5px solid ${v.bubAB}!important;box-shadow:none!important;position:relative}
 ${H} .t-b.me{background:${v.bubM}!important;color:${thTxtOn(v.bubM,v)}!important;border-color:${v.bubMB}!important;text-shadow:none!important}
@@ -10604,7 +10604,7 @@ ${H} .t-page{background:${v.bg}!important}
 ${H} .t-bgl.t-default{background:${thPat(t,v,dark)}${v.bg}!important}
 ${H} .t-pill{color:${vink}!important;border-color:${rgba(v.ac,.25)}!important;background:${card}!important}
 ${H} .t-empty-ico{color:${rgba(v.ac,.6)}!important;border-color:${rgba(v.ac,.2)}!important}
-${H} .t-foot{background:${v.bar}!important;border-top:0!important;box-shadow:none!important}
+${H} .t-foot{background:${v.bar}!important;border-top:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 ${H} .t-inp{background:${dark?mixHex(v.bar,"#ffffff",.08):"#ffffff"}!important}
 ${H} .t-meta span,${H} .t-time,${H} .t-day span{color:${v.sub}!important}
 ${(()=>{ if(1.05/(wcagLum(v.ac)+.05)>=3) return ""; const on=lumHex(v.ink)<.5?v.ink:"#1D1A24", L=thAcFillSel(); const L2=[...L,".th-dot.on"]; return `${L2.map(x=>H+" "+x).join(",")}{color:${on}!important;text-shadow:none!important}`; })()}`;
