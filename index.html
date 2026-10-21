@@ -2723,7 +2723,8 @@ html[data-theme="dark"] .cmx-fab{background:#F3F1F7;color:#1D1A24}
 .ap2-pen{position:absolute;right:14px;bottom:14px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.4);color:#fff;display:grid;place-items:center}
 .ap2-pen svg{width:17px;height:17px}
 .ap2-bar{position:sticky;top:0;margin-bottom:calc(-50px - env(safe-area-inset-top,0px));height:calc(50px + env(safe-area-inset-top,0px));box-sizing:border-box;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 6px;background:var(--bg);border-bottom:1px solid var(--line);transform:translateY(-102%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
-.ap2-bar.on{transform:none}
+.ap2-bar:not(.on){visibility:hidden;transition:transform .2s,visibility 0s .2s}
+.ap2-bar.on{transform:none;visibility:visible}
 .ap2-bar .ap2-ib{background:transparent;color:var(--ink)}
 .ap2-bsp{width:38px;height:38px;flex:none}
 .ap2-bt{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:800;min-width:0;color:var(--ink)}
@@ -4450,11 +4451,11 @@ async function imgMigrate(){ try{ const s=session(); if(!HB_ON||!HB.tok||!s||!s.
   const P=S.get(K.artProf,{})||{};
   for(const mid of Object.keys(P)) for(const f of ["avatar","av_tie","cover","cover_tie"]){ const v=P[mid]&&P[mid][f]; if(typeof v!=="string"||!v.startsWith("data:")) continue;
     const b=await (await fetch(v)).blob(), url=await hbImgUrl("prof_"+mid+"_"+f+"_"+Date.now().toString(36)+".jpg",b); if(!url) return;
-    const cur=S.get(K.artProf,{})||{}; if(cur[mid]&&cur[mid][f]===v){ cur[mid][f]=url; S.set(K.artProf,cur); } }
+    await hbPoll(); const cur=S.get(K.artProf,{})||{}; if(cur[mid]&&cur[mid][f]===v&&!HB.dirty.has(K.artProf)){ cur[mid][f]=url; S.set(K.artProf,cur); } }   /* 先拿最新的：別人剛換過就不要蓋掉 */
   const G=S.get(K.gPhoto,{})||{};
   for(const gid of Object.keys(G)){ const v=G[gid]; if(typeof v!=="string"||!v.startsWith("data:")) continue;
     const b=await (await fetch(v)).blob(), url=await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b); if(!url) return;
-    const cur={...(S.get(K.gPhoto,{})||{})}; if(cur[gid]===v){ cur[gid]=url; S.set(K.gPhoto,cur); } }
+    await hbPoll(); const cur={...(S.get(K.gPhoto,{})||{})}; if(cur[gid]===v&&!HB.dirty.has(K.gPhoto)){ cur[gid]=url; S.set(K.gPhoto,cur); } }
   }catch(e){} finally{ imgMigrate.on=false; } }
 /* 以前管理員設的禁言／停權只存在自己名下（別的管理員、被禁言的人都看不到）：搬回大家共用的那份 */
 function mutesMigrate(){ try{ const s=session(); if(!s||!s.admin||!s.email) return; const fk="daisuki_hb_mutesmig@"+String(s.email).toLowerCase(); if(localStorage.getItem(fk)) return; localStorage.setItem(fk,"1"); const own=hbReadLocal(K.mutes+"@"+String(s.email).toLowerCase()); if(!own||typeof own!=="object"||!Object.keys(own).length) return;
@@ -4532,7 +4533,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021154512";
+const BUILD="20261021154849";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
