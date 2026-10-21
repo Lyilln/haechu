@@ -4532,7 +4532,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021154308";
+const BUILD="20261021154512";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4550,6 +4550,9 @@ async function hbImgUrl(id,blob){ if(!HB_ON||!HB.tok||!blob) return null;
   if(MEDIA_URL){ for(let i=0;i<3;i++){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"PUT",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":blob.type||"image/jpeg"},body:blob}); if(r.ok||r.status===409) return MEDIA_URL+"/media/"+encodeURIComponent(id); if(r.status===401) await hbRefresh(); }catch(e){} await new Promise(r=>setTimeout(r,1200*(i+1))); } }
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"image/jpeg","x-upsert":"false"}}); return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); await new Promise(r=>setTimeout(r,1200*(i+1))); } }
   return null; }
+/* 換掉的舊圖片從雲端刪掉（只刪 App 自己放的頭貼、背景、出道照；失敗就算了） */
+function mediaDel(url){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||typeof url!=="string"||!url.startsWith(MEDIA_URL+"/media/")) return; const id=url.slice((MEDIA_URL+"/media/").length); if(!/^(prof_|gph_)/.test(decodeURIComponent(id))) return;
+  fetch(MEDIA_URL+"/media/"+id,{method:"DELETE",headers:{Authorization:"Bearer "+HB.tok}}).catch(()=>{}); }catch(e){} }
 async function hbDownload(id){ if(!HB_ON) return null;
   if(MEDIA_URL){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id)); if(r.ok) return await r.blob(); }catch(e){} }
   try{ const r=await fetch(HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id)); if(!r.ok) return null; return await r.blob(); }catch(e){ return null; } }
@@ -9705,8 +9708,8 @@ document.addEventListener("click",e=>{
     case "rgPhPick": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,1080); GPREV[gid]=URL.createObjectURL(b); rgEditOpen(n,it); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("出道／回歸照換好了");
         const url=(HB_ON&&await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
-        imgSwap(url,()=>{ const M={...(S.get(K.gPhoto,{})||{})}; M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete GPREV[gid]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
-    case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; delete GPREV[gid]; const M={...(S.get(K.gPhoto,{})||{})}; delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
+        imgSwap(url,()=>{ const M={...(S.get(K.gPhoto,{})||{})}; const old=M[gid]; if(old!==url) mediaDel(old); M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete GPREV[gid]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+    case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; delete GPREV[gid]; const M={...(S.get(K.gPhoto,{})||{})}; mediaDel(M[gid]); delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
     case "rgEditOk": { const g=groupOf(ui.rgEd); if(!g) break; const nm=((document.getElementById("rgEdName")||{}).value||"").trim(); if(!nm){ toast(g.solo?"請輸入藝名":"請輸入團名"); break; } if(nameBlock(nm)) break;
       if(GROUPS.some(x=>x.id!==g.id&&x.name===nm)){ toast("已經有這個名字了"); break; } const c=ui.rgEdC??g.g, itr=((document.getElementById("rgEdIntro")||{}).value||"").trim();
       saveRoster(r=>{ const x=(r.groups||[]).find(y=>y.id===g.id); if(x){ x.name=nm; x.g=c; if(itr) x.intro=itr; else delete x.intro; } if(r.members[g.id+"_o"]) r.members[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(r.members).forEach(k=>{ if(r.members[k].group===g.id&&!r.members[k].official) r.members[k].name=nm; }); });
@@ -10128,8 +10131,8 @@ document.addEventListener("click",e=>{
       inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,cov?1400:1080); if(!cov) b=await squareImg(b,1080); const tie=ui.artPl==="tie", fld=cov?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar");
         PREV[mid]={...(PREV[mid]||{}),[fld]:URL.createObjectURL(b)}; { const y=window.scrollY; render(); window.scrollTo(0,y); } back(); toast(cov?"已換上新背景":"已換上新頭貼");
         const url=(HB_ON&&await hbImgUrl("prof_"+mid+"_"+(cov?"c":"a")+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
-        imgSwap(url,()=>{ if(PREV[mid]) delete PREV[mid][fld]; setArtProf(mid,{[fld]:url}); const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
-    case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(), tie=ui.artPl==="tie"; delete PREV[mid]; setArtProf(mid,a==="artResetCover"?{[tie?"cover_tie":"cover"]:""}:{[tie?"av_tie":"avatar"]:""}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&tie) openTieArtDrawer(mid,true); break; }
+        imgSwap(url,()=>{ if(PREV[mid]) delete PREV[mid][fld]; const old=((S.get(K.artProf,{})||{})[mid]||{})[fld]; if(setArtProf(mid,{[fld]:url})&&old!==url) mediaDel(old); const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+    case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(), tie=ui.artPl==="tie"; delete PREV[mid]; mediaDel(((S.get(K.artProf,{})||{})[mid]||{})[a==="artResetCover"?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar")]); setArtProf(mid,a==="artResetCover"?{[tie?"cover_tie":"cover"]:""}:{[tie?"av_tie":"avatar"]:""}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&tie) openTieArtDrawer(mid,true); break; }
     case "uniSec": { const r0=route(); ui.secLast=ui.secLast||{}; ui.secLast[r0.role]=location.hash; const h=ui.secLast[t.dataset.v]||UNI_SEC[t.dataset.v]; layer.innerHTML=""; navRoot(h); window.scrollTo(0,0); break; }
     case "tLeave": openLeaveRoom(t.dataset.m); break;
     case "tLeaveOk": { const m0=t.dataset.m, L=tieLeft(); L[m0]=tiePeriod(m0); S.set(K.tieLeft,L); layer.innerHTML=""; go("fan",null,"whisper"); toast("已離開聊天室"); break; }
