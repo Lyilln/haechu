@@ -4,6 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>HAECHU</title>
+<meta name="copyright" content="© 2026 HAECHU. All rights reserved.">
+<!-- © 2026 HAECHU. All rights reserved. 本程式的設計、介面與內容受著作權保護，未經授權禁止複製、修改、轉作他用或散布。 -->
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" type="image/png" href="favicon-32.png">
@@ -163,6 +165,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 
 /* auth */
 .auth{min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:32px 24px}
+.copy-note{margin:22px 16px 8px;text-align:center;font-size:10.5px;line-height:1.6;color:var(--ink-3);opacity:.75}
 .auth.boot{align-items:center;gap:22px}.auth.boot .boot-dot{width:22px;height:22px;border-radius:50%;border:2.5px solid var(--violet-soft);border-top-color:var(--violet);animation:spin .8s linear infinite}
 
 
@@ -4504,7 +4507,8 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021113602";
+const BUILD="20261021115341";
+const COPY_NOTE=`<p class="copy-note">© 2026 HAECHU. All rights reserved.<br>本 App 的設計與內容受著作權保護，禁止複製或轉作他用。</p>`;
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -7014,7 +7018,7 @@ function viewAuth(){
       <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="pw" type="password" placeholder="輸入密碼" autocomplete="current-password" required></label>
       ${ui.loginErr?`<div class="err">${ui.loginErr}</div>`:""}
       <button class="btn btn-main btn-block" type="submit" ${ui.authBusy?"disabled":""}>${ui.authBusy?"登入中…":"登入"}</button>
-      <button class="auth-sw" type="button" data-a="forgotPw">忘記密碼？</button>
+      <button class="auth-sw" type="button" data-a="forgotPw">忘記密碼？</button>${COPY_NOTE}
     </form>`}
 
   </main>`;
@@ -7674,7 +7678,7 @@ function viewFan(tab){
         <button class="list-btn" data-a="coachAgain">${I.star}重看教學</button>
         <button class="list-btn" data-a="a2h">${I.home}加到主畫面<span class="r">iPhone</span></button>
         <button class="list-btn danger" data-a="logout">${I.out}登出</button>
-      </section>
+      </section>${COPY_NOTE}
       ${isAdminAcct()&&!isUni()?`<div class="section-h">管理員工具<span class="muted">只有管理員帳號看得到</span></div>
       <section class="card">
         <button class="list-btn" data-a="swapRole">${I.swap}切換到藝人端（露娜）<span class="r">測試連動</span></button>
@@ -7818,7 +7822,7 @@ function viewArtist(tab){
         <button class="list-btn" data-a="coachAgain">${I.star}重看教學</button>
         <button class="list-btn" data-a="a2h">${I.home}加到主畫面<span class="r">iPhone</span></button>
         <button class="list-btn danger" data-a="logout">${I.out}登出</button>
-      </section>
+      </section>${COPY_NOTE}
       ${isAdminAcct()&&!isUni()?`<div class="section-h">管理員工具<span class="muted">只有管理員帳號看得到</span></div>
       <section class="card">
         <button class="list-btn" data-a="swapRole">${I.swap}切換到粉絲端<span class="r">看通知</span></button>
@@ -9519,7 +9523,7 @@ function viewAdmin(tab){
         <button class="list-btn" data-a="coachAgain">${I.star}重看教學</button>
         <button class="list-btn" data-a="a2h">${I.home}加到主畫面<span class="r">iPhone</span></button>
         <button class="list-btn danger" data-a="logout">${I.out}登出</button>
-      </section></main>`;
+      </section>${COPY_NOTE}</main>`;
   }
   // 總覽
   const posts=getPosts(), comments=S.get(K.comments,[]), on=getLives().filter(l=>!l.endTs), open=openReports();
@@ -11630,7 +11634,7 @@ function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").l
       <button class="list-btn" data-a="maintToggle">${I.gear}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button>
       <button class="list-btn" data-a="theme">${I.gear}外觀<span class="r">${themeLabel()}</span></button>
       <button class="list-btn" data-a="coachAgain">${I.star}重看教學</button>
-      <button class="list-btn danger" data-a="logout">${I.out}登出</button></section>
+      <button class="list-btn danger" data-a="logout">${I.out}登出</button></section>${COPY_NOTE}
   </main>`; }
 
 /* ---------- 斷掉訂閱的 TIE（照 Lysn） ---------- */
