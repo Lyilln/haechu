@@ -4413,7 +4413,7 @@ async function hbResume(){ const h0=location.hash, sv=sessLoad(); let a=null; tr
   let cached=null; try{ cached=JSON.parse(localStorage.getItem("daisuki_hb_acc")||"null"); }catch(e){}
   const fast=!!(cached&&cached[un]);
   if(fast){ Object.keys(ACCOUNTS).forEach(k=>delete ACCOUNTS[k]); Object.assign(ACCOUNTS,cached); try{ applyRoster(); }catch(e){}
-    loginAs(un); if(h0&&/^#\/(fan|artist|admin)/.test(h0)&&h0!==location.hash){ NAV_REP=true; location.replace(h0); } }
+    loginAs(un); if(h0&&/^#\/(fan|artist|admin)/.test(h0)&&h0!==location.hash) navReplace(h0); navRestore(); }
   else { ui.authBusy=true; ui.resuming=true; try{ render(); }catch(e){} }
   try{ const r=await hbFetch("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:HB.ref}},true); hbSetTok(r);
     await hbLoadProfiles(); await hbPullAll(); HB.fans=(await hbFetch("/rest/v1/rpc/group_fans",{method:"POST",body:{}}).catch(()=>({})))||{}; hbStart();
@@ -4421,7 +4421,7 @@ async function hbResume(){ const h0=location.hash, sv=sessLoad(); let a=null; tr
     if(maintOn()&&ACCOUNTS[un].role!=="admin"){ await hbLogout(); SS.del(); ui.loginErr="HAECHU 維修中，請稍後再來 🛠"; navRoot("#/auth"); render(); return true; }
     pushResync().then(()=>{ if(ui.pushOn) hbSoon(); });
     if(fast){ const s=session(); if(!s||s.email!==un) loginAs(un); else hbSoon(); }
-    else { loginAs(un); if(h0&&/^#\/(fan|artist|admin)/.test(h0)&&h0!==location.hash){ NAV_REP=true; location.replace(h0); } }
+    else { loginAs(un); if(h0&&/^#\/(fan|artist|admin)/.test(h0)&&h0!==location.hash) navReplace(h0); navRestore(); }
     return true;
   }catch(e){ ui.authBusy=false; ui.resuming=false;
     if(!e.net){ HB.tok=null; HB.ref=null; SS.del(); try{ localStorage.removeItem("daisuki_hb_acc"); }catch(x){} if(fast) navRoot("#/auth"); }
@@ -4475,7 +4475,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021044631";
+const BUILD="20261021051825";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -4995,16 +4995,29 @@ function route(){
 }
 function go(role,sub,tab){ const h="#/"+role+(sub?"/"+sub:"")+(tab?"?tab="+tab:""); if(sub) { if(location.hash===h) render(); else location.hash=h; } else navRoot(h); }
 /* ===== 返回的規則（三端一樣）=====
-   ・底下導覽列的分頁、登入後的首頁：都是「最上層」，切換時不留上一頁的紀錄
-   ・從最上層點進去的頁面才一層一層記下來；返回只會回到上一層
-   ・已經在最上層就沒有上一頁（不會回到別的分頁，也不會跑出 App）
-   ・每次打開 App 都從 0 層開始，舊的瀏覽紀錄不算（避免回到上一次打開的頁面而重新載入） */
-let NAV_D=0, NAV_PEND=null, NAV_REP=false;
-const navDepth=()=>NAV_D;
-function navStamp(){ const st=history.state; if(st&&st.hc===NAV_BOOT&&typeof st.d==="number"){ NAV_D=st.d; return; } NAV_D=NAV_REP?NAV_D:NAV_D+1; NAV_REP=false; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},""); }catch(e){} }
-function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } if(location.hash===h){ render(); return; } NAV_REP=true; location.replace(h); }
-function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; } const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.uni?"fan":s.role); if(location.hash!==home) navRoot(home); }
+   ・底下導覽列的分頁、登入後的首頁：都是「最上層」，切換時不留紀錄
+   ・從最上層點進去的頁面一層一層記下來；返回（按返回鍵、往右滑）回到「上一個頁面」
+   ・在最上層就沒有上一頁（不會回到別的分頁，也不會跑出 App）
+   ・App 重新整理或被系統重新載入後，還是記得原本一路點進來的頁面，返回一樣回上一頁（不會直接跳回首頁）
+   ・換頁不留紀錄時，直接改網址、不經過瀏覽器事件，才不會算錯層數 */
 const NAV_BOOT=Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+let NAV_D=0, NAV_PEND=null, NAV_BASE=0, NAV_STK=[location.hash];
+const navDepth=()=>NAV_BASE+NAV_D;
+const NAV_SAVED=(()=>{ try{ const a=JSON.parse(sessionStorage.getItem("hc_nav")||"null"); return Array.isArray(a)&&a.length?a:null; }catch(e){ return null; } })();
+function navSave(){ try{ sessionStorage.setItem("hc_nav",JSON.stringify(NAV_STK)); }catch(e){} }
+function navSet(){ NAV_STK.length=NAV_BASE+NAV_D+1; NAV_STK[NAV_BASE+NAV_D]=location.hash; if(NAV_STK.length>40){ const cut=NAV_STK.length-40; NAV_STK=NAV_STK.slice(cut); NAV_BASE=Math.max(0,NAV_BASE-cut); } navSave(); }
+function navStamp(){ const st=history.state; if(st&&st.hc===NAV_BOOT&&typeof st.d==="number") NAV_D=st.d; else { NAV_D++; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},""); }catch(e){} } navSet(); }
+function navReplace(h){ ui.navUi=performance.now(); if(location.hash!==h){ try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h); }catch(e){} } navSet(); render(); }
+function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } NAV_BASE=0; navReplace(h); }
+function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
+  if(NAV_BASE>0){ NAV_BASE--; navReplace(NAV_STK[NAV_BASE]); return; }   // 重新載入過：照記下來的上一頁回去
+  const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.uni?"fan":s.role); if(location.hash!==home) navRoot(home); }
+/* 回到指定的那一頁（例如離開 SNS 回到進來前的頁面）：在記錄裡就一路退回去，不在就當作最上層打開 */
+function navBackTo(h){ ui.navUi=performance.now(); const cur=NAV_BASE+NAV_D; let k=-1; if(h) for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]===h){ k=i; break; } }
+  if(k<0){ if(h) navRoot(h); else navBack(); return; }
+  const steps=cur-k; if(steps<=NAV_D){ history.go(-steps); return; } if(NAV_D>0){ NAV_PEND=h; ui.navPendBase=k; history.go(-NAV_D); return; } NAV_BASE=k; navReplace(h); }
+/* 重新載入後：如果停在原本記下來的那一頁，就把前面點進來的路徑接回來 */
+function navRestore(){ const a=NAV_SAVED; if(a&&a[a.length-1]===location.hash&&a.length>1){ NAV_STK=a.slice(); NAV_BASE=a.length-1; NAV_D=0; navSave(); } }
 try{ history.replaceState({d:0,hc:NAV_BOOT},""); }catch(e){}
 const session=()=>SS.get();
 
@@ -9779,7 +9792,7 @@ document.addEventListener("click",e=>{
     case "cmNtL": ui.cmNt=t.dataset.v; openNoticeList(route().id); break;
     case "snOpen": { const n=grpShopNotices(route().id).find(x=>x.id===t.dataset.v); if(n) tieModal(n.title,esc(n.body).replace(/\n/g,"<br>"),`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
     case "pmGal": openGallery(t.dataset.v); break;
-    case "cmTab": { const r=route(); location.hash=grpHash(r.id,t.dataset.v); window.scrollTo(0,0); break; }
+    case "cmTab": { const r=route(); navReplace(grpHash(r.id,t.dataset.v)); window.scrollTo(0,0); break; }   // 社群裡 Home／Feed／LIVE／Shop 之間切換不留紀錄
     case "cmShop": { const r=route(); ui.shopCat="all"; location.hash=grpHash(r.id,"shop"); window.scrollTo(0,0); break; }
     case "cmAbout": { const r=route(); ui.abOpen=null; location.hash=grpHash(r.id,"about"); window.scrollTo(0,0); break; }
     case "cmAbMem": { const r=route(), m=t.dataset.v; ui.abOpen=m; location.hash=grpHash(r.id,"about"); window.scrollTo(0,0); setTimeout(()=>{ const el=document.getElementById("ab-"+m); if(el) el.scrollIntoView({block:"center"}); },80); break; }
@@ -9872,7 +9885,9 @@ document.addEventListener("click",e=>{
     case "coreGo": ui.srch=null; location.hash=t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v; window.scrollTo(0,0); break;
     case "openSns": ui.snsFrom=location.hash; location.hash="#/"+(route().role||session().role)+"/sns"; window.scrollTo(0,0); break;
     case "focGo": location.hash="#/artist?tab=foc&p="+t.dataset.v; window.scrollTo(0,0); break;
-    case "snsGo": ui.snTab="grid"; if(t.dataset.v!=="new") ui.snDraft=ui.snDraft&&ui.snDraft.media.length?ui.snDraft:null; clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; } if(layer.innerHTML) layer.innerHTML=""; location.hash="#/"+session().role+"/sns?p="+t.dataset.v+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
+    case "snsGo": ui.snTab="grid"; if(t.dataset.v!=="new") ui.snDraft=ui.snDraft&&ui.snDraft.media.length?ui.snDraft:null; clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; } if(layer.innerHTML) layer.innerHTML=""; { const h="#/"+session().role+"/sns?p="+t.dataset.v+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""), cur=route(), tabLike=t.closest(".sn-tabs,.sn-nav,nav")&&!t.dataset.id;
+      if(tabLike&&cur.sub==="sns"&&["home","reels","dm","explore","profile"].includes(cur.p||"home")&&!cur.id) navReplace(h); else location.hash=h; }   // SNS 底下的分頁之間切換不留紀錄（跟 Instagram 一樣）
+    window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
     case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snToggleLike(id,true); const y=window.scrollY; render(); window.scrollTo(0,y); snHeartPop(id); snTapT=0; } else { snTapT=now; ui.snTapId=id; } break; }
     case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id); const y=window.scrollY; render(); window.scrollTo(0,y); if(!had) snHeartPop(id); break; }
@@ -9916,7 +9931,7 @@ document.addEventListener("click",e=>{
     case "snStoryDel": { const id=t.dataset.v; const d=snDB(); d.stories=d.stories.filter(x=>x.id!==id); snSave(d); toast("已刪除限時動態"); clearTimeout(ui.snStT); if(ui.snStory){ snShowStory(); } break; }
     case "snAdmUser": { const uid=t.dataset.v; iosSheet([["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`]]); break; }
     case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); d.posts=d.posts.filter(p=>p.uid!==uid); d.stories=d.stories.filter(x=>x.uid!==uid); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
-    case "snsExit": if(ui.snsFrom){ location.hash=ui.snsFrom; ui.snsFrom=null; } else go(session().role); break;
+    case "snsExit": { const f=ui.snsFrom; ui.snsFrom=null; navBackTo(f); break; }
     case "coreGallery": { ui.vodCat="MV"; const gl=document.createElement("div"); gl.className="glow-tr"; document.body.appendChild(gl); setTimeout(()=>gl.remove(),1200);
       ui.vTab="home"; ui.vCat="all"; ui.vSort="new"; location.hash="#/fan/core?p=gallery&id="+t.dataset.v; window.scrollTo(0,0); break; }
     case "vPlay": openVodPlayer(t.dataset.v,t.dataset.pl); break;
@@ -10386,7 +10401,7 @@ document.addEventListener("touchstart",e=>{ const el=e.target.closest("[data-lp]
 document.addEventListener("click",e=>{ if(e.target.closest('[data-a="tCopy"]')){ const tx=ui.copyText||""; (navigator.clipboard?navigator.clipboard.writeText(tx):Promise.reject()).catch(()=>{}); layer.innerHTML=""; toast("已複製"); } });
 window.addEventListener("hashchange",()=>{ if(concertTimer) concertOff(); });
 window.addEventListener("hashchange",()=>{ navStamp();
-  if(NAV_PEND){ const h=NAV_PEND; NAV_PEND=null; if(location.hash!==h){ NAV_REP=true; location.replace(h); return; } }
+  if(NAV_PEND){ const h=NAV_PEND; NAV_PEND=null; NAV_BASE=ui.navPendBase||0; ui.navPendBase=0; navReplace(h); return; }
   if(performance.now()-(ui.navUi||0)>700) ui.swiped=true;   // 瀏覽器自己的返回（Safari 邊緣滑、Android 返回鍵）已經有動畫了，這邊不再疊一層
   render(); });
 document.addEventListener("click",()=>{ ui.navUi=performance.now(); },true);
@@ -11599,7 +11614,7 @@ seedStores(); seedStores2(); seedMascots(); setTimeout(()=>PIMG.loadAll(),0);
 /* 打開 App：記得登入狀態就直接進去 */
 (function resume(){ const sv=sessLoad(); if(!sv) return;
   if(HB_ON){ hbResume(); return; }
-  if(ACCOUNTS[sv.email]) { const h=location.hash; loginAs(sv.email); if(h&&/^#\/(fan|artist|admin)/.test(h)&&h!==location.hash){ NAV_REP=true; location.replace(h); } } })();
+  if(ACCOUNTS[sv.email]) { const h=location.hash; loginAs(sv.email); if(h&&/^#\/(fan|artist|admin)/.test(h)&&h!==location.hash) navReplace(h); navRestore(); } })();
 render();
 
 /* ---- fix pass: SVG ✕, broken images ---- */
