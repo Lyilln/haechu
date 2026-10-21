@@ -4265,7 +4265,7 @@ const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
 /* 每個粉絲帳號自己的資料（追蹤、TIE 券、點數、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
-const PK_SET=new Set(["fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","mutes","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
+const PK_SET=new Set(["tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","mutes","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
   get(k,fb){k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
@@ -4288,8 +4288,10 @@ const HB_LOCAL=new Set(["daisuki_session","daisuki_last_email","daisuki_clean_v1
 const hbSyncable=k=>typeof k==="string"&&k.startsWith("daisuki_")&&!HB_LOCAL.has(k)&&!k.startsWith("daisuki_m_")&&!k.startsWith("daisuki_hb");
 const HB={tok:null,ref:null,exp:0,uid:null,base:{},ver:{},dirty:new Set(),since:"",busy:false,ft:null,pt:null,fans:{},applying:false,n:0,fail:0};
 /* 帳號名稱 → 登入用的內部 email（看不到也收不到信，只是後台需要 email 格式） */
-const hbEmail=u=>"u"+[...new TextEncoder().encode(String(u||"").trim().toLowerCase())].map(b=>b.toString(16).padStart(2,"0")).join("")+"@haechu.app";
-const hbPw=pw=>"hc:"+String(pw||"").trim().toLowerCase();   // 原本的密碼不分大小寫，照舊
+const normAcct=u=>String(u||"").normalize("NFKC").replace(/\s+/g,"").toLowerCase();
+const normPw=p=>String(p||"").normalize("NFKC").trim();
+const hbEmail=u=>"u"+[...new TextEncoder().encode(normAcct(u))].map(b=>b.toString(16).padStart(2,"0")).join("")+"@haechu.app";
+const hbPw=pw=>"hc:"+normPw(pw).toLowerCase();   // 原本的密碼不分大小寫，照舊
 async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false}={},noAuth=false,retried=false){
   if(!noAuth&&HB.ref&&Date.now()>HB.exp-60e3&&!path.startsWith("/auth/")) await hbRefresh();
   const h={apikey:HB_KEY,...headers};
@@ -4455,7 +4457,7 @@ async function hbResume(){ const h0=location.hash, sv=sessLoad(); let a=null; tr
     else ui.loginErr="連不上伺服器，請檢查網路";
     try{ render(); }catch(x){} return false; } }
 /* 登入／註冊 */
-async function hbAuth(u,pw,signup,name){ const un=String(u||"").trim().toLowerCase(); ui.loginErr=""; ui.authBusy=true; try{ render(); }catch(e){}
+async function hbAuth(u,pw,signup,name){ const un=normAcct(u); ui.loginErr=""; ui.authBusy=true; try{ render(); }catch(e){}
   try{ const body={email:hbEmail(un),password:hbPw(pw)};
     let r;
     if(signup) r=await hbFetch("/auth/v1/signup",{method:"POST",body:{...body,data:{username:un,name:name||un}}},true);
@@ -4502,7 +4504,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021063836";
+const BUILD="20261021064220";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -5647,7 +5649,7 @@ function mascot(k){
 const NICK_TK="@@@";
 /* Membership（整個團）：買了的粉絲，藝人那邊會看到「藝人幫 Membership 粉絲取的愛稱」；沒買的照樣是 FROM FAN＋隨機名字 */
 /* 營收紀錄：每一筆購買都記下來，管理員看收成、跟藝人算帳用 */
-function recordSale(type,{gid=null,mid=null,pts=0,label=""}={}){ const l=S.get(K.sales,[]); l.unshift({id:"s"+Date.now()+Math.random().toString(36).slice(2,5),type,gid:gid||(mid&&MEMBERS[mid]?MEMBERS[mid].group:null),mid,pts,label,ts:Date.now(),buyer:"me"}); S.set(K.sales,l.slice(0,2000)); }
+function recordSale(type,{gid=null,mid=null,pts=0,label=""}={}){ const l=S.get(K.sales,[]); l.unshift({id:"s"+Date.now()+Math.random().toString(36).slice(2,5),type,gid:gid||(mid&&MEMBERS[mid]?MEMBERS[mid].group:null),mid,pts,label,ts:Date.now(),buyer:myEmail()||"me"}); /* 記下是哪個帳號買的：購買紀錄只看得到自己的 */ S.set(K.sales,l.slice(0,2000)); }
 const MS_PLANS=[{id:"m30",days:30,pts:300,name:"30 天"},{id:"m365",days:365,pts:3000,name:"365 天"}];
 const getMS=()=>S.get(K.membership,{});
 const isMember=gid=>{ const r=getMS()[gid]; return !!(r&&r.expires>Date.now()); };
@@ -7621,7 +7623,7 @@ function meSecBody(k,f){
   if(k==="ms") return `<section class="card me-list">${f.filter(gid=>isMember(gid)||msGrace(gid)).map(gid=>{const g=groupOf(gid), on=isMember(gid), gr=msGrace(gid);return `<button class="me-row" data-a="meShop" data-v="ms"><span class="me-ic" style="background:${grad(g.g)}">💎</span><span class="me-t"><b>${esc(g.name)}</b><small class="${on?"on":gr?"grace":""}">${on?`會員中・剩餘 ${msLeft(gid)} 天`:gr?"已到期・24 小時內續訂可保留資歷":"還不是會員"}</small></span><i>›</i></button>`}).join("")||`<p class="me-none">還沒有加入 Membership，到 SHOP 看看</p>`}</section>`;
   if(k==="tie") return `<section class="card me-list">${Object.keys(subs()).filter(id=>MEMBERS[id]).map(id=>{const m=MEMBERS[id], st=passStatus(id);return `<button class="me-row" data-a="openChat" data-m="${id}"><span class="me-ic" style="background:${grad(m.g)};overflow:hidden">${mAvIn(id)}</span><span class="me-t"><b>${esc(artName(id,"tie"))}</b><small class="${st.cls==="on"?"on":st.cls==="grace"?"grace":""}">${st.txt}・💜 +${subDays(id)} 天</small></span><i>›</i></button>${isActive(id)&&grpMembers(m.group).filter(x=>!MEMBERS[x].official).length>1?`<button class="me-sub" data-a="tPickGo" data-m="${id}">變更藝人 ›</button>`:""}`}).join("")||`<p class="me-none">還沒有 ${WHISPER_NAME} 券，到 SHOP 選一位成員吧</p>`}</section>`;
   if(k==="merch") return `<section class="card me-list">${(()=>{const o=S.get(K.owned,{}), rows=[];Object.keys(o).forEach(gid=>MERCH.forEach(it=>{ if(o[gid][it.k]&&groupOf(gid)) rows.push(`<div class="me-row"><span class="me-ic" style="background:${grad(groupOf(gid).g)}">${it.ic}</span><span class="me-t"><b>${esc(groupOf(gid).name)}・${it.name}</b><small>${ymd(o[gid][it.k])} 購買</small></span></div>`); }));return rows.join("")||`<p class="me-none">還沒有周邊，到 SHOP 的「周邊」看看</p>`})()}</section>`;
-  return `<section class="card me-list">${S.get(K.sales,[]).filter(x=>x.buyer==="me").slice(0,40).map(x=>`<div class="me-row"><span class="me-t"><b>${esc(x.label)}</b><small>${ago(x.ts)}</small></span><em class="me-pts">−${fmt(x.pts)}</em></div>`).join("")||`<p class="me-none">還沒有購買紀錄</p>`}</section>`;
+  return `<section class="card me-list">${S.get(K.sales,[]).filter(x=>x.buyer===myEmail()).slice(0,40).map(x=>`<div class="me-row"><span class="me-t"><b>${esc(x.label)}</b><small>${ago(x.ts)}</small></span><em class="me-pts">−${fmt(x.pts)}</em></div>`).join("")||`<p class="me-none">還沒有購買紀錄</p>`}</section>`;
 }
 function viewFan(tab){
   if(tab==="home"){
@@ -7656,7 +7658,7 @@ function viewFan(tab){
       </section>
       ${secH("star","我的")}
       <div class="me-grid">${[["ms","gem","會員",`${f.filter(isMember).length} 個`],["tie","tie",`${WHISPER_NAME} 券`,`${Object.keys(subs()).filter(isActive).length} 張運行中`],["merch","bag","周邊",`${(()=>{const o=S.get(K.owned,{});return Object.keys(o).reduce((n,g)=>n+Object.keys(o[g]||{}).length,0)})()} 件`],
-        ["cards","card","小卡",(()=>{const c=alCount();return c.have+" / "+c.total})()],["signed","album","簽名專輯",`${S.get(K.signedAlbums,[]).length} 張`],["buy","receipt","購買紀錄",`${S.get(K.sales,[]).filter(x=>x.buyer==="me").length} 筆`]]
+        ["cards","card","小卡",(()=>{const c=alCount();return c.have+" / "+c.total})()],["signed","album","簽名專輯",`${S.get(K.signedAlbums,[]).length} 張`],["buy","receipt","購買紀錄",`${S.get(K.sales,[]).filter(x=>x.buyer===myEmail()).length} 筆`]]
         .map(([k,ic,n,sub])=>`<button class="me-g" data-a="${k==="cards"?"openCards":k==="signed"?"openSigned":"meSec"}" data-v="${k}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`).join("")}</div>
       ${!isAdminAcct()&&canSwap()?`<div class="section-h">身分</div><section class="card"><button class="list-btn" data-a="swapRole">${I.swap}切換到藝人端（${esc(MEMBERS[session().home]?MEMBERS[session().home].name:"")}）</button></section>`:""}
       ${secH("gear","設定")}
@@ -11166,7 +11168,7 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
     <div class="section-h">全部帳號<span class="muted">${L.length} 個</span></div>
     <section class="card ac-list">${L.map(([k,a])=>`<div class="rs-m ac-row" data-a="acEdit" data-v="${esc(k)}" role="button"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><span class="ac-nm"><b>${esc(realName(k)||a.name||k)}</b><small>${esc(acctUser(k))}・${esc(a.name||"")}・${ROLE_ZH[a.role]||"粉絲"}</small></span><span class="ac-go">${UI_S.chev}</span></div>`).join("")}</section>
   </main>`; }
-async function acCall(body){ if(!HB_ON) return {ok:true,local:true};
+async function acCall(body){ body={...body}; if(body.username) body.username=normAcct(body.username); if(body.password) body.password=normPw(body.password); if(!HB_ON) return {ok:true,local:true};
   try{ return await hbFetch("/functions/v1/admin-users",{method:"POST",body}); }
   catch(e){ const c=String(e.message||""); return {error:e.net?"後台的 admin-users 小程式沒有回應（還沒部署，或名稱不對）":c==="exists"?"這個帳號已經有人用了":c==="not_admin"?"只有管理員能做這件事":e.status===404?"後台還沒設定好（admin-users）":c==="bad_username"?"帳號不能有空白、@、/，最多 20 個字":c==="short_password"?"密碼至少要 4 個字":/database error/i.test(c)?"後台擋住了（請跑第五段 SQL）":"沒有成功："+c.slice(0,60)}; } }
 /* 管理員還沒有藝人身分：把自己加進團之後，這裡就是自己的藝人端 */
