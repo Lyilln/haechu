@@ -1969,6 +1969,8 @@ html[data-theme="dark"] .foc-badges em:not(.on){opacity:.6}
 .t-anniv b{font-size:15px;color:#8843FB;font-weight:900}.t-anniv span{font-size:13px;color:#374151}.t-anniv small{font-size:11.5px;color:#9CA3AF}
 .a-nick{font-size:13.5px;background:linear-gradient(90deg,#C084FC,#F9A8D4,#93C5FD,#C084FC);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent!important;-webkit-text-fill-color:transparent;animation:nickFlow 4s linear infinite;filter:drop-shadow(0 0 6px rgba(249,168,212,.45))}
 @media (prefers-reduced-motion:reduce){.a-nick{animation:none}}
+/* 淺色模式：流光改用比較濃的顏色，白底上才看得清楚 */
+html:not([data-theme="dark"]) .a-nick,html:not([data-theme="dark"]) .nick-me.glow{background-image:linear-gradient(90deg,#8B3DFF,#E8459B,#2F7BF5,#8B3DFF);filter:drop-shadow(0 0 5px rgba(232,69,155,.35))}
 .a-dia{font-size:12px}
 .cm-tr{color:#7B68EE!important;font-size:12.5px!important;border-top:1px dashed rgba(196,181,253,.6);padding-top:4px;margin-top:4px}
 .hm-tr{display:block;font-style:normal;font-size:11.5px;color:#A47BFF;margin-top:2px}
@@ -4517,7 +4519,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021121603";
+const BUILD="20261021121754";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&Date.now()-(ui.verTs||0)>30*60e3){ ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,8000);
@@ -10582,7 +10584,7 @@ function thRecolor(t,v){ let st=document.getElementById("thRecolor"); if(!st){ s
     const [h,sa,l]=toHsl(r,g,b); if(sa<.18||l<.06||l>.985||!(h>=235&&h<=350)) return m0;
     const [R2,G2,B2]=toRgb(TH,Math.min(1,sa*Math.max(.45,TS)),l); return a<1?`rgba(${Math.round(R2)},${Math.round(G2)},${Math.round(B2)},${+a.toFixed(3)})`:`rgb(${Math.round(R2)},${Math.round(G2)},${Math.round(B2)})`; });
   const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,"html[data-th]"); if(/^html\b/.test(x)) return x.replace(/^html/,'html[data-th]:not([data-theme="dark"])'); if(x===":root") return 'html[data-th]:not([data-theme="dark"])'; return 'html[data-th]:not([data-theme="dark"]) '+x; }).join(",");
-  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep/.test(r.selectorText)) continue;   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me/.test(r.selectorText)) continue;   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
       for(const p2 of P){ const val=r.style.getPropertyValue(p2); if(!val||/var\(/.test(val)) continue; const nv=fix(val); if(nv!==val) d.push(`${p2}:${nv}${r.style.getPropertyPriority(p2)?"!important":""}`); }
       if(d.length) out.push(`${pre(r.selectorText)}{${d.join(";")}}`); }
     else if(r.type===4&&r.cssRules){ const b0=out.length; walk(r.cssRules); if(out.length>b0){ const inner=out.splice(b0); out.push(`@media ${r.conditionText||r.media.mediaText}{${inner.join("\n")}}`); } } } };
