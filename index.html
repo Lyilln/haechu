@@ -2940,6 +2940,56 @@ html[data-theme="dark"] .imgph{background:linear-gradient(125deg,transparent 55%
 html[data-theme="dark"] .imgph i{color:rgba(255,255,255,.12)}
 .pm-one{position:relative;display:block;width:calc(100% + 32px);margin:12px -16px 0;aspect-ratio:1;padding:0;border:0;overflow:hidden;background:none}
 .pm-one img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pm-one img:not([src]){visibility:hidden}
+/* 卡片裡多張照片：左右滑＋小圓點（照 Weverse） */
+.pm-cw{width:calc(100% + 32px);margin:12px -16px 0}
+.pm-car{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}.pm-car::-webkit-scrollbar{display:none}
+.pm-ci{position:relative;flex:0 0 100%;aspect-ratio:4/5;scroll-snap-align:center;scroll-snap-stop:always;padding:0;border:0;overflow:hidden;background:var(--s2)}
+.pm-ci img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pm-ci img:not([src]){visibility:hidden}
+.pm-dots{display:flex;justify-content:center;gap:5px;padding:10px 0 2px}.pm-dots i{width:6px;height:6px;border-radius:50%;background:var(--ink-3);opacity:.35;transition:opacity .2s,transform .2s}.pm-dots i.on{opacity:1;background:var(--ink);transform:scale(1.1)}
+/* 貼文頁 */
+.pd{position:fixed;inset:0;z-index:70;background:var(--bg);color:var(--ink);display:flex;flex-direction:column}.pd.in{animation:msiIn .3s cubic-bezier(.2,.9,.3,1)}
+@keyframes cmFlash{0%{background:color-mix(in srgb,var(--violet) 18%,transparent)}100%{background:transparent}}
+.pd-top{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 4px) 6px 6px;border-bottom:1px solid var(--line);background:var(--bg)}
+.pd-ib{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:var(--ink)}.pd-ib svg{width:22px;height:22px}
+.pd-tt{display:flex;flex-direction:column;align-items:center;line-height:1.2}.pd-tt b{font-size:16px}.pd-tt button{border:0;background:none;color:var(--ink-3);font:inherit;font-size:11.5px;padding:2px 4px}
+.pd-body{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:16px}
+.pd-post{padding:14px 16px 4px}
+.pd-ph{display:flex;align-items:center;gap:10px}.pd-pw{flex:1;min-width:0;display:flex;flex-direction:column}.pd-pw b{display:flex;align-items:center;gap:3px;font-size:14.5px}.pd-pw b svg{width:14px;height:14px}.pd-pw small{font-size:11.5px;color:var(--ink-3)}
+.pd-av{width:34px;height:34px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:800;font-size:13px}.pd-av.lg{width:40px;height:40px}
+.pd-av .av-img{width:100%;height:100%;border-radius:50%;background-size:cover;background-position:center}
+.pd-txt{margin:12px 0 10px;font-size:15px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.pd-imgs{display:flex;flex-direction:column;gap:6px;margin:8px -16px 0}
+.pd-img{position:relative;display:block;width:100%;max-height:none;padding:0;border:0;overflow:hidden;background:var(--s2)}
+.pd-img img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.pd-img img:not([src]){visibility:hidden}
+.pd-stat{margin:12px 0 4px;font-size:12.5px;color:var(--ink-3)}
+.pd-sec{border-top:8px solid var(--s2)}
+.pd-sh{width:100%;display:flex;align-items:center;gap:6px;padding:14px 16px 6px;border:0;background:none;color:var(--ink);font:inherit;text-align:left}
+.pd-sh b{font-size:15px}.pd-sh em{font-style:normal;font-size:13px;color:var(--ink-3)}.pd-sh i{margin-left:auto;color:var(--ink-3)}.pd-sh i svg{width:18px;height:18px;transition:transform .2s}.pd-sh i.dn svg{transform:rotate(180deg)}
+.pd-c{display:flex;gap:10px;padding:10px 16px}.pd-c.top{background:var(--s1);border-bottom:1px solid var(--line);padding:14px 16px}.pd-c.flash{animation:cmFlash 1.6s}
+.pd-cb{flex:1;min-width:0}
+.pd-ch{display:flex;align-items:center;gap:6px}.pd-ch b{display:flex;align-items:center;gap:3px;font-size:13.5px}.pd-ch b svg{width:13px;height:13px}.pd-ch small{font-size:11px;color:var(--ink-3)}
+.pd-more{margin-left:auto;width:28px;height:24px;display:grid;place-items:center;border:0;background:none;color:var(--ink-3)}.pd-more svg{width:16px;height:16px}
+.pd-ct{margin:3px 0 0;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.pd-tr{margin:4px 0 0;font-size:13.5px;color:var(--violet)}
+.pd-ca{display:flex;gap:14px;margin-top:6px}
+.pd-lk,.pd-rp{display:flex;align-items:center;gap:4px;border:0;background:none;padding:2px 0;color:var(--ink-2);font:inherit;font-size:12px}
+.pd-lk svg,.pd-rp svg{width:17px;height:17px}.pd-lk.on{color:#F43F5E}.pd-lk.on svg{fill:currentColor}
+.pd-none{padding:18px 16px;margin:0;color:var(--ink-3);font-size:13px}
+.pd-in{border-top:1px solid var(--line);background:var(--bg);padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 8px)}
+.pd-to{font-size:11.5px;color:var(--ink-3);padding:0 4px 6px}
+.pd-bar{display:flex;align-items:center;gap:8px}
+.pd-hb{width:36px;height:36px;display:grid;place-items:center;border:0;background:none;color:var(--ink)}.pd-hb svg{width:23px;height:23px}.pd-hb.on{color:#F43F5E}.pd-hb.on svg{fill:currentColor}
+.pd-bar .act.bm{width:36px;height:36px;padding:0;display:grid;place-items:center}
+.pd-pill{flex:1;min-width:0;display:flex;align-items:center;height:40px;border-radius:999px;background:var(--s2);padding:0 14px}.pd-pill input{flex:1;min-width:0;border:0;background:none;color:var(--ink);font:inherit;font-size:15px;outline:none}
+.pd-send{width:36px;height:36px;border-radius:50%;border:0;display:grid;place-items:center;background:var(--violet);color:#fff}.pd-send:disabled{opacity:.3}.pd-send svg{width:18px;height:18px}
+/* 看大圖 */
+.gal2{position:fixed;inset:0;z-index:85;background:#000;color:#fff;display:flex;flex-direction:column;touch-action:pan-x}
+.gal2-top{display:flex;justify-content:flex-end;gap:6px;padding:calc(env(safe-area-inset-top,0px) + 6px) 10px 6px}.gal2-top button{width:44px;height:44px;display:grid;place-items:center;border:0;background:none;color:#fff}.gal2-top svg{width:24px;height:24px}
+.gal2-s{flex:1;min-height:0;display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior:contain}.gal2-s::-webkit-scrollbar{display:none}
+.gal2-i{position:relative;flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always}.gal2-i .imgph{background:#111}.gal2-i:has(img[src]) .imgph{display:none}.gal2-i img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}.gal2-i img:not([src]){visibility:hidden}
+.gal2-n{text-align:center;font-size:14px;padding:10px 0 8px;font-variant-numeric:tabular-nums}
+.gal2-th{display:flex;gap:6px;justify-content:center;overflow-x:auto;padding:0 12px calc(env(safe-area-inset-bottom,0px) + 14px);scrollbar-width:none}
+.gal2-th button{flex:none;width:52px;height:52px;padding:0;border:2px solid transparent;border-radius:6px;overflow:hidden;background:#222;opacity:.55}.gal2-th button.on{border-color:#fff;opacity:1}.gal2-th img{width:100%;height:100%;object-fit:cover}
 .pm-n{position:absolute;right:12px;bottom:12px;display:flex;align-items:center;gap:5px;font-style:normal;font-weight:800;font-size:15px;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.35)}
 .pm-n svg{width:17px;height:17px;filter:drop-shadow(0 1px 3px rgba(0,0,0,.3))}
 .gal{position:fixed;inset:0;z-index:80;background:#000;display:flex;align-items:center}
@@ -4540,7 +4590,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261021161343";
+const BUILD="20261021164133";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5866,7 +5916,9 @@ function saveRoster(fn){ const r=S.get(K.roster,{groups:[],members:{},accounts:{
 function postMediaHtml(p){
   const ms=p.media||[]; if(!ms.length) return "";
   if(ms[0].kind==="video"){ const v=ms[0]; return `<button class="pm-video" data-a="playVideo" data-mid="${v.mid}" style="aspect-ratio:${v.w||16}/${v.h||9}" aria-label="播放影片">${v.thumb?`<img data-mid="${v.thumb}" alt="">`:""}<span class="pm-play">${PLAY}</span>${v.dur?`<em>${fmtDur(v.dur)}</em>`:""}</button>`; }
-  return `<button class="pm-one" data-a="pmGal" data-v="${p.id}" aria-label="照片，共 ${ms.length} 張"><span class="imgph"><i>HAECHU</i></span><img data-mid="${ms[0].mid}" alt="">${ms.length>1?`<em class="pm-n">${I3.stack}${ms.length}</em>`:""}</button>`;
+  if(ms.length===1) return `<button class="pm-one" data-a="pmGal" data-v="${p.id}" aria-label="照片"><span class="imgph"><i>HAECHU</i></span><img data-mid="${ms[0].mid}" alt=""></button>`;
+  /* 多張：像 Weverse 直接在卡片裡左右滑，下面小圓點 */
+  return `<div class="pm-cw"><div class="pm-car">${ms.map((x,i)=>`<button class="pm-ci" data-a="pmGal" data-v="${p.id}" aria-label="照片 ${i+1}"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></button>`).join("")}</div><div class="pm-dots">${ms.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div></div>`;
 }
 function videoThumb(file){ return new Promise(res=>{ const u=URL.createObjectURL(file), v=document.createElement("video"); let done=false;
   const fin=x=>{ if(done) return; done=true; URL.revokeObjectURL(u); res(x); };
@@ -7434,9 +7486,6 @@ function openCmMore(gid){ const on=followed().includes(gid);
     <button data-a="cmGo" data-v="search">${I.search}<span>搜尋</span><i>›</i></button><button data-a="cmGo" data-v="bm">${I3.bm}<span>書籤</span><i>›</i></button><button data-a="cmGo" data-v="apply">${I3.log}<span>活動申請紀錄</span><i>›</i></button>
     <button data-a="cmMs" data-v="${gid}">${I3.heart}<span>Membership</span><i>›</i></button><hr><button data-a="cmGo" data-v="notif">${I3.bell}<span>通知設定</span><i>›</i></button>
     ${on?`<hr><button data-a="gLeave" data-v="${gid}">${I3.out}<span>退出社群</span></button>`:""}</div></div>`,"cmmore"); }
-/* 貼文照片：像 Weverse 只露第一張，右下角標張數；照片還沒載入（或網路不好）時是灰底＋HAECHU浮水印 */
-function openGallery(pid){ const p=getPosts().find(x=>x.id===pid); if(!p||!p.media) return; const ms=p.media.filter(x=>x.kind!=="video");
-  setLayer(`<div class="gal" role="dialog" aria-label="照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><div class="gal-s">${ms.map((x,i)=>`<div class="gal-i"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""><em>${i+1} / ${ms.length}</em></div>`).join("")}</div></div>`,"gal"); hydrateMedia(layer); }
 
 const myEmail=()=>String((session()||{}).email||"").toLowerCase();
 /* 「我」說的話：多人版每則都記是誰（by），別人的就當成其他粉絲 */
@@ -7891,46 +7940,74 @@ function openComments(postId,{focusC=null,replyTo=null}={}){
   ui.sheet={postId,focusC,replyTo};
   renderComments(true);
 }
+/* 貼文頁（照 Weverse）：上面「貼文／前往社群」，照片一張張往下排，下面藝人留言、全部留言；點留言的回覆進「回覆」頁
+   ui.sheet={postId,focusC,replyTo,cid}；cid 有值就是回覆頁 */
+const PDI={share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V3M7 8l5-5 5 5"/><path d="M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg>',
+  more:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>',
+  reply:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M4 5h16v11H9l-5 4z"/></svg>',
+  chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>',
+  dl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg>',
+  send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'};
+const cLiked=c=>Array.isArray(c.likedBy)&&c.likedBy.includes(myEmail());
+const cReps=c=>(c.reps||[]).slice().sort((a,b)=>a.ts-b.ts);
+function pdMediaHtml(p){ const ms=p.media||[]; if(!ms.length) return ""; if(ms[0].kind==="video") return postMediaHtml(p);
+  return `<div class="pd-imgs">${ms.map((x,i)=>`<button class="pd-img" data-a="pdView" data-v="${p.id}" data-i="${i}" style="aspect-ratio:${x.w||4}/${x.h||5}" aria-label="照片 ${i+1}"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></button>`).join("")}</div>`; }
 function renderComments(first=false){
   if(!ui.sheet) return;
-  const {postId,focusC,replyTo}=ui.sheet;
+  const {postId,focusC,replyTo,cid}=ui.sheet;
   const p=S.get(K.posts,[]).find(x=>x.id===postId);
   if(!p){ ui.sheet=null; layer.innerHTML=""; return toast("這則動態已被刪除"); }
-  const m=MEMBERS[p.member], role=session().role, isArtist=role==="artist"&&session().member===p.member;
-  const list=getComments(postId);
-  const isAdm=role==="admin";
-  const target=replyTo&&list.find(c=>c.id===replyTo);
-  const cm=c=>`<div class="cm ${c.id===focusC?"flash":""}" id="cm-${c.id}">
-      <div class="av sm" style="background:${grad(c.g)}">${esc(ini(c.name))}</div>
-      <div class="cm-b">
-        <div class="cm-h"><b>${esc(c.author==="artist"?artName(p.member,"feed"):shownName(c))}</b>${c.author==="artist"?I.verified:""}${role!=="fan"&&c.author!=="artist"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}${isMeC(c)&&(role==="fan"||!isUni())?`<span class="badge">${role==="fan"?"你":"示範粉絲"}</span>`:""}<span>${ago(c.ts)}</span></div>
-        <p>${esc(c.text)}</p>${session().role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="cm-tr">${esc(c.zh)}</p>`:""}
-        ${c.reply?`<div class="cm-r"><div class="av xs" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>
-            <div><div class="cm-h"><b>${esc(artName(p.member,"feed"))}</b>${I.verified}<span>${ago(c.reply.ts)}</span></div><p>${esc(c.reply.text)}</p></div></div>`
-          :isArtist&&c.author!=="artist"?`<button class="cm-rbtn" data-a="replyTo" data-c="${c.id}">回覆</button>`:""}
-        ${isAdminAcct()&&!isMeC(c)&&c.author!=="artist"?`<button class="cm-adel" data-a="amC" data-c="${c.id}">管理</button>`:""}
-        ${role==="fan"&&!isAdminAcct()&&!isMeC(c)&&c.author!=="artist"?(reportedByMe(c.id)?`<span class="cm-rep done">已檢舉</span>`:`<button class="cm-rep" data-a="report" data-c="${c.id}" data-post="${c.postId}">檢舉</button>`):""}
-      </div></div>`;
+  const m=MEMBERS[p.member], g=groupOf(p.group), role=session().role, isArtist=role==="artist"&&session().member===p.member;
+  const list=getComments(postId), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
+  const who=c=>c.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:`${esc(shownName(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
+  const av=c=>c.author==="artist"?`<span class="pd-av" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:`<span class="pd-av" style="background:${grad(c.g)}">${esc(ini(c.name))}</span>`;
+  const more=c=>c.author==="artist"||isMeC(c)?"":isAdminAcct()?`<button class="pd-more" data-a="amC" data-c="${c.id}" aria-label="管理">${PDI.more}</button>`:role==="fan"?`<button class="pd-more" data-a="pdRep" data-c="${c.id}" aria-label="更多">${PDI.more}</button>`:"";
+  const tr=c=>role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="pd-tr">${esc(c.zh)}</p>`:"";
+  const nRep=c=>cReps(c).length+(c.reply?1:0);
+  const item=(c,top)=>`<div class="pd-c ${c.id===focusC?"flash":""} ${top?"top":""}" id="cm-${c.id}">${av(c)}<div class="pd-cb">
+      <div class="pd-ch"><b>${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}</div>
+      <p class="pd-ct">${esc(c.text)}</p>${tr(c)}
+      <div class="pd-ca"><button class="pd-lk ${cLiked(c)?"on":""}" data-a="pdCLike" data-c="${c.id}" aria-label="喜歡">${I.heart}${(c.likedBy||[]).length?`<span>${fmt(c.likedBy.length)}</span>`:""}</button>
+        ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:""}</div></div></div>`;
+  const repItem=r=>`<div class="pd-c" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):`<span class="pd-av" style="background:${grad(r.g)}">${esc(ini(r.name))}</span>`}<div class="pd-cb">
+      <div class="pd-ch"><b>${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div><p class="pd-ct">${esc(r.text)}</p></div></div>`;
+  const sec=(t,n,body,k)=>`<section class="pd-sec"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
+  const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";
-  const canWrite=role==="fan"||isArtist;
-  setLayer(`<div class="scrim" data-a="closeSheet"><div class="sheet cs" role="dialog" aria-label="留言">
-    <div class="grab"></div>
-    <div class="cs-h"><h3>留言</h3><span class="muted">${fmt(list.length)} 則</span><div class="spacer"></div>
-      <button class="icon-btn sm" data-a="closeSheet" aria-label="關閉">${XI}</button></div>
-    <div class="cs-list" id="csl">
-      ${list.length?list.map(cm).join(""):`<p class="cs-end">沒有更多的留言了</p>`}
-    </div>
-    ${canWrite?`<form class="cs-in" id="cform">
-      ${target?`<div class="cs-to">回覆 ${esc(target.name)}<button type="button" data-a="cancelReply" aria-label="取消回覆">${XI}</button></div>`:""}
-      <div class="cs-bar"><label class="cs-row cs-pill"><input id="cin" autocomplete="off" placeholder="" aria-label="${target?"寫下你的回覆":"留言"}" value="${esc(draft)}"></label>
-      <button class="cs-send" type="submit" id="csend" ${draft.trim()?"":"disabled"} aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg></button></div>
-    </form>`:""}
-  </div></div>`,"comments");
+  const bar=(ph,to)=>canWrite?`<form class="pd-in" id="cform">${to?`<div class="pd-to">正在回覆 ${esc(to)}</div>`:""}<div class="pd-bar">${cid?"":`<button type="button" class="pd-hb ${liked?"on":""}" data-a="like" data-id="${p.id}" aria-label="按讚">${I.heart}<span hidden>${fmt(likeN(p))}</span></button>${role==="fan"?bmBtn("p:"+p.id):""}`}
+      <label class="pd-pill"><input id="cin" autocomplete="off" placeholder="${ph}" value="${esc(draft)}"></label><button class="pd-send" type="submit" id="csend" ${draft.trim()?"":"disabled"} aria-label="送出">${PDI.send}</button></div></form>`:"";
+  let html;
+  if(cid){ const c=list.find(x=>x.id===cid); if(!c){ ui.sheet.cid=null; return renderComments(true); }
+    const arts=[...(c.reply?[{id:c.id+"_r",author:"artist",text:c.reply.text,ts:c.reply.ts}]:[]),...cReps(c).filter(r=>r.author==="artist")], fans=cReps(c).filter(r=>r.author!=="artist");
+    html=head("回覆")+`<main class="pd-body" id="csl">${item(c,true)}
+      ${arts.length?sec("藝人回覆",arts.length,arts.map(repItem).join(""),"ar"):""}
+      ${sec("全部回覆",fans.length,fans.length?fans.map(repItem).join(""):`<p class="pd-none">還沒有回覆</p>`)}</main>`+bar("請輸入回覆",c.author==="artist"?artName(p.member,"feed"):shownName(c));
+  } else {
+    const arts=list.filter(c=>c.author==="artist"), fans=list.filter(c=>c.author!=="artist");
+    const lk=postLocked(p);
+    html=head("貼文")+`<main class="pd-body" id="csl"><article class="pd-post">
+      <div class="pd-ph"><span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span><span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
+      ${lk?lockedBody(p,lk):`${p.text?`<p class="pd-txt">${esc(p.text)}</p>`:""}${p.media?pdMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}${p.poll?pollCard(p):""}`}
+      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>
+      ${arts.length?sec("藝人留言",arts.length,arts.map(c=>item(c)).join(""),"ac"):""}
+      ${sec("全部留言",fans.length,fans.length?fans.map(c=>item(c)).join(""):`<p class="pd-none">還沒有留言</p>`)}</main>`+bar(isArtist&&replyTo?"請輸入回覆":"請輸入留言");
+  }
+  const keep=!first&&document.getElementById("csl")?document.getElementById("csl").scrollTop:null;
+  setLayer(`<div class="pd ${first?"in":""}" role="dialog" aria-label="${cid?"回覆":"貼文"}">${html}</div>`,"comments"); hydrateMedia(layer);
   const l=document.getElementById("csl");
   if(focusC){ const el=document.getElementById("cm-"+focusC); if(el) el.scrollIntoView({block:"center"}); ui.sheet.focusC=null; }
-  else if(!first) l.scrollTop=l.scrollHeight;
-  if(target&&!first||target&&first){ const i=document.getElementById("cin"); if(i) i.focus(); }
+  else if(keep!=null) l.scrollTop=keep;
 }
+/* 貼文看大圖（照 Weverse）：右上下載、關閉；中間左右滑；下面張數和縮圖 */
+function openGallery(pid,start=0){ const p=getPosts().find(x=>x.id===pid); if(!p||!p.media) return; const ms=p.media.filter(x=>x.kind!=="video"); if(!ms.length) return;
+  ui.galBack=layer.innerHTML?{sheet:ui.sheet}:null;
+  setLayer(`<div class="gal2" role="dialog" aria-label="照片"><div class="gal2-top"><button data-a="galDl" aria-label="下載">${PDI.dl}</button><button data-a="galX" aria-label="關閉">${XI}</button></div>
+    <div class="gal2-s" id="galS">${ms.map(x=>`<div class="gal2-i"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></div>`).join("")}</div>
+    <div class="gal2-n" id="galN">${start+1}/${ms.length}</div>${ms.length>1?`<div class="gal2-th">${ms.map((x,i)=>`<button class="${i===start?"on":""}" data-a="galGo" data-i="${i}"><img data-mid="${x.mid}" alt=""></button>`).join("")}</div>`:""}</div>`,"gal");
+  hydrateMedia(layer); const sc=document.getElementById("galS"); if(sc) requestAnimationFrame(()=>{ sc.scrollLeft=start*sc.clientWidth; }); }
+document.addEventListener("scroll",e=>{ const b=e.target; if(!b||!b.classList) return;
+  if(b.id==="galS"){ const n=b.children.length, k=Math.round(b.scrollLeft/Math.max(1,b.clientWidth)); const c=document.getElementById("galN"); if(c) c.textContent=(k+1)+"/"+n; document.querySelectorAll(".gal2-th button").forEach((x,i)=>x.classList.toggle("on",i===k)); }
+  if(b.classList.contains("pm-car")){ const k=Math.round(b.scrollLeft/Math.max(1,b.clientWidth)); const d=b.parentElement&&b.parentElement.querySelector(".pm-dots"); if(d) [...d.children].forEach((x,i)=>x.classList.toggle("on",i===k)); } },true);
 
 /* ---------- 聊天室共用：時間格式 ---------- */
 function timeHM(ts){const t=new Date(ts);return pad(t.getHours())+":"+pad(t.getMinutes())}
@@ -8017,9 +8094,8 @@ function viewTieRoom(member){
         <div class="t-b me" data-lp="${w.id}">${esc(w.text)}</div></div>`;
     }
     const shown=w.ko||w.text;   // 藝人原文；開啟翻譯後按 A 會在下面顯示中文
-    const lang=st.trLang||"zh", wel=w.welcome&&!w.kind&&!isZhText(w.text), wtx=wel?welTr(w,lang):"";   /* 歡迎語不是中文：一律附上翻譯 */
-    if(wel&&!wtx) setTimeout(()=>welTranslate(w.id,lang),0);
-    const tx=wel?wtx:trText(w,lang), canTr=!wel&&st.translate&&w.ko&&!(tr.has(w.id)&&tx), showTr=wel?!!wtx:st.translate&&w.ko&&tr.has(w.id)&&tx;
+    const lang=st.trLang||"zh", wel=w.welcome&&!w.kind&&!isZhText(w.text);   /* 歡迎語不是中文：跟藝人訊息一樣有 A，按了才顯示翻譯 */
+    const tx=wel?welTr(w,lang):trText(w,lang), hasSrc=wel||w.ko, canTr=st.translate&&hasSrc&&!(tr.has(w.id)&&tx), showTr=st.translate&&hasSrc&&tr.has(w.id)&&tx;
     return sep+`<div class="t-art">${tieAv(m,"ring")}
       <div class="t-art-c"><div class="t-art-n">${st.badge?artBadge(member):""}<b>${esc(st.chatName)}</b>${w.milestone?`<span class="t-ms">🎉 ${w.milestone} 天紀念日</span>`:""}</div>
         ${w.reply?tieRq(w.reply,false,true):""}<div class="t-bw">${w.kind?mediaBubble(w):`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
@@ -8731,10 +8807,9 @@ async function tieOriginal(wid){
 }
 const welTr=(w,lang)=>(S.get(K.tieTrX,{})||{})[w.id+":w"+lang]||"";
 const welAsked=new Set();
-async function welTranslate(wid,lang){ const k=wid+":"+lang; if(welAsked.has(k)) return; welAsked.add(k); const w=getWhispers().find(x=>x.id===wid); if(!w) return;
-  const out=await translateMany([w.text],lang); const t=out&&aiClean(out[0]); if(!t){ welAsked.delete(k); return; }
-  const all=S.get(K.tieTrX,{})||{}; all[wid+":w"+lang]=t; S.set(K.tieTrX,all);
-  const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing&&!layer.innerHTML) render(); }
+async function welTranslate(wid,lang){ const k=wid+":"+lang; if(welAsked.has(k)) return; welAsked.add(k); const w=getWhispers().find(x=>x.id===wid); if(!w){ welAsked.delete(k); return; }
+  const out=await translateMany([w.text],lang); const t=out&&aiClean(out[0]); welAsked.delete(k); if(!t) return;
+  const all=S.get(K.tieTrX,{})||{}; all[wid+":w"+lang]=t; S.set(K.tieTrX,all); }
 const trText=(w,lang)=>lang==="zh"?w.text:(S.get(K.tieTrX,{})[w.id+":"+lang]||"");
 async function tieTranslateX(wid,lang){
   const w=getWhispers().find(x=>x.id===wid); if(!w) return false; if(trText(w,lang)) return true;
@@ -9892,7 +9967,18 @@ document.addEventListener("click",e=>{
     case "cmNt": ui.cmNt=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "cmNtL": ui.cmNt=t.dataset.v; openNoticeList(route().id); break;
     case "snOpen": { const n=grpShopNotices(route().id).find(x=>x.id===t.dataset.v); if(n) tieModal(n.title,esc(n.body).replace(/\n/g,"<br>"),`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
-    case "pmGal": openGallery(t.dataset.v); break;
+    case "pmGal": ui.cDraft=""; openComments(t.dataset.v); break;
+    case "pdView": openGallery(t.dataset.v,+t.dataset.i||0); break;
+    case "galX": { const bk=ui.galBack; ui.galBack=null; if(bk&&bk.sheet){ ui.sheet=bk.sheet; renderComments(true); } else layer.innerHTML=""; break; }
+    case "galGo": { const sc=document.getElementById("galS"); if(sc) sc.scrollTo({left:(+t.dataset.i)*sc.clientWidth,behavior:"smooth"}); break; }
+    case "galDl": { const sc=document.getElementById("galS"); if(!sc) break; const k=Math.round(sc.scrollLeft/Math.max(1,sc.clientWidth)), im=sc.children[k]&&sc.children[k].querySelector("img"); if(!im||!im.src){ toast("照片還在載入"); break; } const a2=document.createElement("a"); a2.href=im.src; a2.download="HAECHU_"+Date.now()+".jpg"; document.body.appendChild(a2); a2.click(); a2.remove(); break; }
+    case "pdBack": if(ui.sheet&&ui.sheet.cid){ ui.sheet.cid=null; ui.cDraft=""; renderComments(true); } else { ui.sheet=null; ui.cDraft=""; layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); } break;
+    case "pdOpenRep": if(ui.sheet){ ui.sheet.cid=t.dataset.c; ui.cDraft=""; renderComments(true); } break;
+    case "pdFold": { ui.pdFold=ui.pdFold||{}; ui.pdFold[t.dataset.v]=!ui.pdFold[t.dataset.v]; renderComments(); break; }
+    case "pdGrp": { const gid=t.dataset.v; ui.sheet=null; layer.innerHTML=""; openGroup(gid); break; }
+    case "pdShare": { const p0=ui.sheet&&getPosts().find(x=>x.id===ui.sheet.postId); try{ navigator.share({title:APP_NAME,text:p0?artName(p0.member,"feed")+"：「"+(p0.text||"").slice(0,60)+"」":APP_NAME,url:location.origin+location.pathname}).catch(()=>{}); }catch(err){} break; }
+    case "pdCLike": { const L=S.get(K.comments,[]), c=L.find(x=>x.id===t.dataset.c); if(!c) break; const me=myEmail()||"me", b=new Set(c.likedBy||[]); if(b.has(me)) b.delete(me); else b.add(me); c.likedBy=[...b]; S.set(K.comments,L); renderComments(); break; }
+    case "pdRep": { const c=S.get(K.comments,[]).find(x=>x.id===t.dataset.c); if(!c) break; if(reportedByMe(c.id)){ toast("已經檢舉過了"); break; } iosSheet([["檢舉這則留言","report",`data-c="${c.id}" data-post="${c.postId}"`]]); break; }
     case "cmTab": { const r=route(); navReplace(grpHash(r.id,t.dataset.v)); window.scrollTo(0,0); break; }   // 社群裡 Home／Feed／LIVE／Shop 之間切換不留紀錄
     case "cmShop": { const r=route(); ui.shopCat="all"; location.hash=grpHash(r.id,"shop"); window.scrollTo(0,0); break; }
     case "cmAbout": { const r=route(); ui.abOpen=null; location.hash=grpHash(r.id,"about"); window.scrollTo(0,0); break; }
@@ -9906,7 +9992,7 @@ document.addEventListener("click",e=>{
     case "mFollow": { const m=t.dataset.v, f=S.get(K.mFollow,{}); if(f[m]) delete f[m]; else f[m]=Date.now(); S.set(K.mFollow,f); toast(f[m]?`已追蹤 ${artName(m,"feed")}`:"已取消追蹤"); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "mpTab": { ui.mpTab=t.dataset.v; const h=document.getElementById("apHero"), y=window.scrollY, lim=h?h.offsetHeight-70:0; render(); window.scrollTo(0,Math.min(y,Math.max(lim,0)+1)); break; }
     case "mpSort": { ui.mpOld=!ui.mpOld; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
-    case "artProfEdit": iosSheet([["名稱","artNameEd",'data-v="feed"'],["個人簡介","artBioEd"]]); break;
+    case "artProfEdit": iosSheet([["名稱","artNameEd",'data-v="feed"']]); break;
     case "cmFeed": ui.cmFeed=t.dataset.v; render(); break;
     case "cmFan": ui.cmFeed="fan"; render(); window.scrollTo(0,0); break;
     case "cmMed": ui.cmMed=t.dataset.v; render(); break;
@@ -10315,7 +10401,7 @@ document.addEventListener("click",e=>{
       if(!S.get(K.tieNotice,false)) setTimeout(()=>tieModal("保護藝人的隱私","為了保護藝人，請不要截圖或錄影外流聊天室的內容。",`<button class="t-mbtn main" data-a="tNoticeOk">我同意</button>`),250);
       break;
     case "tNoticeOk": { S.set(K.tieNotice,true); layer.innerHTML=""; const m0=route().m; if(m0) setTimeout(()=>tieCeleCheck(m0),250); break; }
-    case "tCloseLayer": if(e.target===t||t.tagName==="BUTTON"){ const d=layer.querySelector(".t-drawer-w"); if(d){ d.classList.remove("open"); setTimeout(()=>layer.innerHTML="",280); } else layer.innerHTML=""; } break;
+    case "tCloseLayer": if(e.target===t||t.tagName==="BUTTON"){ const d=layer.querySelector(".t-drawer-w"); if(d){ ui.tieDrw=null; d.classList.remove("open"); setTimeout(()=>layer.innerHTML="",280); } else layer.innerHTML=""; } break;
     case "tListClear": tieModal("清除對話列表","清除後，聊天室裡的舊訊息會先隱藏。之後可以到聊天室設定的「載入歷史對話」找回來。",`<button class="t-mbtn danger" data-a="tListClearOk">確定清除</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break;
     case "tListClearOk": clearRooms(); layer.innerHTML=""; render(); toast("已清除對話列表"); break;
     case "tDrawer": openTieDrawer(route().m); break;
@@ -10326,6 +10412,7 @@ document.addEventListener("click",e=>{
     case "tGallery": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=gallery"; window.scrollTo(0,0); break;
     case "tToSettings": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=settings"; break;
     case "tTranslate": { const id=t.dataset.id, lang=tieSet(route().m).trLang||"zh"; const done=()=>{ const s2=new Set(S.get(K.tieTr,[])); s2.add(id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); };
+      const wl=getWhispers().find(x=>x.id===id); if(wl&&wl.welcome){ if(welTr(wl,lang)) done(); else { t.classList.add("busy"); welTranslate(id,lang).then(()=>{ t.classList.remove("busy"); if(welTr(wl,lang)) done(); else toast("翻譯失敗，等一下再試試"); }); } break; }
       if(lang==="zh") done(); else { t.classList.add("busy"); tieTranslateX(id,lang).then(ok=>{ t.classList.remove("busy"); if(ok) done(); }); } break; }
     case "tLang": { const m2=t.dataset.m, cur=tieSet(m2).trLang||"zh"; tieModal("翻譯結果語言",`<span class="t-langs">${Object.entries(TR_LANGS).map(([k,v])=>`<button class="t-lang ${cur===k?"on":""}" data-a="tLangSet" data-m="${m2}" data-v="${k}">${v}${cur===k?" ✓":""}</button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "tLangSet": { saveTieSet(t.dataset.m,{trLang:t.dataset.v}); S.set(K.tieTr,[]); layer.innerHTML=""; render(); toast("翻譯會改成 "+TR_LANGS[t.dataset.v]); break; }
@@ -10415,11 +10502,16 @@ document.addEventListener("submit",e=>{
     return; }
   if(e.target.id==="cform"){ e.preventDefault();
     const text=(ui.cDraft||"").trim(); if(!text||!ui.sheet) return; ui.cDraft="";
+    if(ui.sheet.cid){ const L=S.get(K.comments,[]), c=L.find(x=>x.id===ui.sheet.cid); if(!c) return; const p0=getPosts().find(x=>x.id===c.postId), art=session().role==="artist"&&p0&&session().member===p0.member;
+      if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); if(c.aiFan) aiOnCommentReply(c); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
+        c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
+      if(meBlocked()||banBlock(text)){ ui.cDraft=text; return; }
+      c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:ME.name,g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆 💜"); return; }
     if(session().role==="artist"&&!ui.sheet.replyTo){ const c=addArtistComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; }
     if(session().role==="artist"){
       const {c,reached}=replyComment(ui.sheet.replyTo,text); if(c&&c.aiFan) aiOnCommentReply(c); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);
       toast(reached?"已回覆，粉絲收到通知了":"已回覆");
-    } else { if(meBlocked()){ ui.cDraft=text; return; } if(banBlock(text)){ ui.cDraft=text; return; } addComment(ui.sheet.postId,text); renderComments(); toast("已留言 💜"); }
+    } else { if(meBlocked()){ ui.cDraft=text; return; } if(banBlock(text)){ ui.cDraft=text; return; } { const c=addComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; } renderComments(); toast("已留言 💜"); }
     return; }
   if(e.target.id==="login"){ e.preventDefault(); login(document.getElementById("em").value,document.getElementById("pw").value); }
   if(e.target.id==="reg"){ e.preventDefault(); const em=(document.getElementById("rEm").value||"").trim().toLowerCase(), nm=(document.getElementById("rNm").value||"").trim(), pw=document.getElementById("rPw").value||"";
@@ -10512,6 +10604,9 @@ window.addEventListener("hashchange",()=>{ navStamp();
   if(performance.now()-(ui.navUi||0)>700) ui.swiped=true;   // 瀏覽器自己的返回（Safari 邊緣滑、Android 返回鍵）已經有動畫了，這邊不再疊一層
   render(); });
 document.addEventListener("click",()=>{ ui.navUi=performance.now(); },true);
+/* TIE 藝人抽屜裡打開的視窗（顏色、簡介、名稱、頭貼…）關掉後，回到抽屜 */
+document.addEventListener("click",()=>{ if(!ui.tieDrw) return; clearTimeout(ui.tieDrwT); ui.tieDrwT=setTimeout(()=>{ const mid=ui.tieDrw; if(!mid) return; if(!document.querySelector(".t-rh")||!MEMBERS[mid]){ ui.tieDrw=null; return; } if(!layer.innerHTML.trim()) openTieArtDrawer(mid,true); },360); });
+addEventListener("hashchange",()=>{ ui.tieDrw=null; });
 window.addEventListener("storage",render); // 同一台裝置開兩個分頁時也會同步
 setInterval(()=>{ if(!document.querySelector("textarea:focus,input:focus")) { const y=window.scrollY; render(); window.scrollTo(0,y);} },60e3); // 每分鐘更新「X 分鐘前」
 
@@ -10551,7 +10646,7 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
   const STANDALONE=navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;
   document.addEventListener("touchstart",e=>{ if(e.touches.length!==1){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<36;
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
-    if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele")){ st=null; return; }
+    if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
     st={x:t.clientX,y:t.clientY,t:performance.now(),dx:0,on:false,edge}; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!st) return; const t=e.touches[0], dx=t.clientX-st.x, dy=t.clientY-st.y;
@@ -11323,7 +11418,6 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=ui.m
     <div class="ap2-c">${own?`<button class="ap2-av" data-a="artAvEd" aria-label="更換頭貼" style="background:${grad(M.g)}">${mAvIn(mid)}<i>${I.camera}</i></button>`:`<span class="ap2-av" style="background:${grad(M.g)}">${mAvIn(mid)}</span>`}
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
-      ${p.bio?`<p class="ap2-bio">${esc(p.bio)}</p>`:""}
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
   <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${true?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
@@ -11340,7 +11434,7 @@ function artBdayCheck(mid){ if(!mid||layer.innerHTML||document.getElementById("c
     <p class="bdc-n">已經有 <b>${fmt(w.n)}</b> 位粉絲送上祝福</p></div>`,"cele");
   clearTimeout(ui.celeT); ui.celeT=setTimeout(()=>{ const c=layer.querySelector(".cele"); if(c) layer.innerHTML=""; },6500); }
 /* TIE 的「⋯」：藝人自己的聊天室選單 */
-function openTieArtDrawer(mid,still){ const m=MEMBERS[mid], p=tieProf(mid);
+function openTieArtDrawer(mid,still){ const m=MEMBERS[mid], p=tieProf(mid); ui.tieDrw=mid;
   setLayer(`<div class="t-drawer-w" data-a="tCloseLayer"><aside class="t-drawer ad-dw" role="dialog" aria-label="聊天室選單">
     <div class="ad-b">
       <div class="ad-cover" style="${p.cover?`background-image:url('${p.cover}')`:`background:${grad(m.g)}`}"><button class="ad-pen" data-a="artCoverEd" data-v="tie" aria-label="更換背景">${UI_S.pen}</button></div>
