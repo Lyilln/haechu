@@ -1644,8 +1644,6 @@ body.rg-on .concert2 .cc-top,body.rg-on .concert2 .cc-foot,body.rg-on .concert2 
 .t-modal{max-height:86vh;max-height:86dvh;overflow-y:auto;overscroll-behavior:contain}
 .fs-room,.fs-pad-w,.t-drawer{overflow-y:auto;overscroll-behavior:contain}
 .t-page{overscroll-behavior:contain}
-/* TIE 聊天室：到頂／到底不要整頁回彈（iPhone 回彈時背景、吉祥物、輸入列會不見）；下拉更新由 App 自己做 */
-html:has(.t-msgs),html:has(.t-msgs) body{overscroll-behavior-y:none}
 /* =========================================================
    新風格 v2（全站）：中性底色、平面卡片、淺紫重點
    ・選擇器前面加 html[data-theme] body，蓋過舊樣式和自動產生的深色樣式
@@ -4638,7 +4636,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022040623";
+const BUILD="20261022040953";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5162,7 +5160,11 @@ const I={
 /* =========================================================
    2. 路由
    ========================================================= */
-const ui={feedTab:"feed",notifFilter:"all",selectDraft:null,selectFilter:"all",selectQuery:"",composeText:"",composeColor:null,focusPost:null,expanded:new Set(),loginErr:""};
+const ui={_wd:{},feedTab:"feed",notifFilter:"all",selectDraft:null,selectFilter:"all",selectQuery:"",composeText:"",composeColor:null,focusPost:null,expanded:new Set(),loginErr:""};
+/* 每個 TIE 聊天室的輸入框草稿各自保留（粉絲端每位藝人一份、藝人端一份）；記在這支手機，關掉 App 也還在 */
+try{ Object.assign(ui._wd,JSON.parse(localStorage.getItem("daisuki_m_wdraft")||"{}")); }catch(e){}
+Object.defineProperty(ui,"wDraft",{get(){ const r=route(), k=((session()||{}).email||"")+":"+(r.role||"")+":"+(r.m||"-"); return ui._wd[k]||""; },
+  set(v){ const r=route(), k=((session()||{}).email||"")+":"+(r.role||"")+":"+(r.m||"-"); if(v) ui._wd[k]=v; else delete ui._wd[k]; clearTimeout(ui._wdT); ui._wdT=setTimeout(()=>{ try{ localStorage.setItem("daisuki_m_wdraft",JSON.stringify(ui._wd)); }catch(e){} },300); }});
 function route(){
   const h=location.hash.replace(/^#\/?/,""); const [path,q]=h.split("?");
   const parts=path.split("/").filter(Boolean);
@@ -8509,15 +8511,7 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
   /* 打字時（iPhone）：用量的。實測 getBoundingClientRect 的 0 就是看得到的畫面最上面；
      看得到的畫面高度 = visualViewport.height × 換算比例；iOS 26 鍵盤上面還浮著「^ ˅ ✓」（Safari 再加網址膠囊），所以輸入列再往上抬 */
   const nudge=(el,d)=>{ const m=/translateY\((-?[\d.]+)px\)/.exec(el.style.transform||""), t=m?+m[1]:0, z=parseFloat(getComputedStyle(document.documentElement).zoom)||1; el.style.transform=`translateY(${(t+d/z).toFixed(1)}px)`; };
-  /* 其他整頁的聊天室（貼文留言、簽售室）：輸入框在最下面的整頁視窗，鍵盤開著時整個視窗縮成看得到的那一塊 */
-  const BOXES=".pd,.fs-room", BOX_IN="#cin,#fsIn";
-  const fitBox=()=>{ const ae=document.activeElement, on=ae&&ae.matches&&ae.matches(BOX_IN), box=on?ae.closest(BOXES):null;
-    document.querySelectorAll(BOXES).forEach(b=>{ if(b!==box&&b.dataset.kb){ b.style.height=""; b.style.bottom=""; b.style.transform=""; delete b.dataset.kb; } });
-    if(!box) return; const k=document.documentElement.getBoundingClientRect().width/Math.max(1,vv.width), z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
-    if(vv.height>=(screen.height||innerHeight)*0.8){ if(box.dataset.kb){ box.style.height=""; box.style.bottom=""; box.style.transform=""; delete box.dataset.kb; } return; }
-    box.dataset.kb="1"; box.style.bottom="auto"; box.style.height=(vv.height*k/z)+"px";
-    for(let i=0;i<3;i++){ const d=-box.getBoundingClientRect().top; if(Math.abs(d)<1) break; nudge(box,d); } };
-  const fit=()=>{ raf=0; fitBox(); const f=document.querySelector(".t-foot"), h=document.querySelector(".t-rh"), bg=document.querySelector(".t-bgl"); if(!f) return;
+  const fit=()=>{ raf=0; const f=document.querySelector(".t-foot"), h=document.querySelector(".t-rh"), bg=document.querySelector(".t-bgl"); if(!f) return;
     const typing=document.activeElement&&document.activeElement.id==="win";
     const k=document.documentElement.getBoundingClientRect().width/Math.max(1,vv.width);
     const kbOpen=typing&&vv.height<(screen.height||innerHeight)*0.8;
@@ -8539,8 +8533,7 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
       d.textContent=`${++fitN} ih${innerHeight} sh${screen.height} vh${Math.round(vv.height)} vw${Math.round(vv.width)} ot${Math.round(vv.offsetTop)} sy${Math.round(scrollY)} k${k.toFixed(3)} kb${kbOpen?1:0} sa${isStandalone()?1:0} fb${Math.round(f.getBoundingClientRect().bottom)} ht${h?Math.round(h.getBoundingClientRect().top):"-"}`; } };
   const q=()=>{ if(!raf) raf=requestAnimationFrame(fit); };
   vv.addEventListener("resize",q); vv.addEventListener("scroll",q); addEventListener("scroll",q,{passive:true}); addEventListener("resize",q);
-  document.addEventListener("focusin",e=>{ if(!e.target.matches||!e.target.matches("#win,"+BOX_IN)) return; q(); setTimeout(q,350); setTimeout(q,700); });
-  document.addEventListener("focusout",e=>{ if(e.target.matches&&e.target.matches(BOX_IN)) setTimeout(q,80); });
+  document.addEventListener("focusin",e=>{ if(e.target.id!=="win") return; q(); setTimeout(q,350); setTimeout(q,700); });
   /* 鍵盤打開後：最新一則訊息剛好在輸入列上面（不夠捲就在下面補空間） */
   function kbToEnd(){ const f=document.querySelector(".t-foot"), end=document.getElementById("chat-end"), ms=document.querySelector(".t-msgs"); if(!f||!end||!ms) return;
     const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
@@ -9851,7 +9844,7 @@ document.addEventListener("click",e=>{
     case "back": navBack(); break;
     case "tab": if(isUni()&&t.classList.contains("nav-btn")&&session().role==="admin"){ const h=UNI_ATABGO[t.dataset.v]||"#/admin"; navRoot(h); window.scrollTo(0,0); break; }
       if(isUni()&&t.classList.contains("nav-btn")&&session().role==="fan"){ ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.srch=null; const h=UNI_ROUTE[t.dataset.v]||"#/fan"; navRoot(h); window.scrollTo(0,0); break; }
-      ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.wDraft=""; ui.srch=null; if((t.dataset.v==="whisper"||t.dataset.v==="live")&&session().role==="artist") ui.scrollChat=true; go(session().role,null,t.dataset.v==="home"?null:t.dataset.v); window.scrollTo(0,0); break;
+      ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.srch=null; if((t.dataset.v==="whisper"||t.dataset.v==="live")&&session().role==="artist") ui.scrollChat=true; go(session().role,null,t.dataset.v==="home"?null:t.dataset.v); window.scrollTo(0,0); break;
     case "ft": ui.feedTab=t.dataset.v; render(); window.scrollTo(0,0); break;
     case "sf": ui.selectFilter=t.dataset.v; render(); break;
     case "sqClear": ui.selectQuery=""; render(); { const i=document.getElementById("sq"); if(i) i.focus(); } break;
@@ -10504,7 +10497,7 @@ document.addEventListener("click",e=>{
       render();
       if(res.type==="renew") toast(`已續訂 ${artName(mid,"tie")}，愛心天數保留 +${res.days} 💜`);
       break; }
-    case "openChatFromToast": document.querySelectorAll(".toast").forEach(x=>x.remove()); ui.wDraft=""; ui.srch=null; ui.scrollChat=true; location.hash="#/fan/chat?m="+ui.toastMember; break;
+    case "openChatFromToast": document.querySelectorAll(".toast").forEach(x=>x.remove()); ui.srch=null; ui.scrollChat=true; location.hash="#/fan/chat?m="+ui.toastMember; break;
     case "passExpire": { const all=subs(), r2=all[t.dataset.m]; r2.seenUntil=Math.max(r2.seenUntil||0,Date.now()); r2.expires=Date.now()-(t.dataset.v==="long"?25:1)*3600e3; if(r2.since>r2.expires) r2.since=r2.expires-DAY; S.set(K.tieSubs,all); render();
       toast(t.dataset.v==="long"?"示範：這張券已到期超過 24 小時":"示範：這張券剛到期（1 小時前）"); break; }
     case "wsPlus": ui.banF="all"; openAllBan(); break;
@@ -10516,7 +10509,7 @@ document.addEventListener("click",e=>{
     case "welNick": { const ta=document.getElementById("welTxt"); if(!ta) break; const a0=ta.selectionStart??ta.value.length, b0=ta.selectionEnd??a0; ta.value=ta.value.slice(0,a0)+"@@@"+ta.value.slice(b0); ta.focus(); ta.selectionStart=ta.selectionEnd=a0+3; break; }
     case "tWelcomeSave": { const v=document.getElementById("welTxt").value.trim(); if(!v){ toast("歡迎語不能空白"); break; }
       const w2=S.get(K.tieWelcome,{}); w2[session().member||uniMe()]=v; S.set(K.tieWelcome,w2); layer.innerHTML=""; toast("已儲存歡迎語"); break; }
-    case "openChat": ui.wDraft=""; ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; layer.innerHTML="";
+    case "openChat": ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; layer.innerHTML="";
       location.hash="#/fan/chat?m="+t.dataset.m;
       if(!S.get(K.tieNotice,false)) setTimeout(()=>tieModal("保護藝人的隱私","為了保護藝人，請不要截圖或錄影外流聊天室的內容。",`<button class="t-mbtn main" data-a="tNoticeOk">我同意</button>`),250);
       break;
