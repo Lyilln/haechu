@@ -3665,6 +3665,7 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 .ia-av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:800}.ia-av img{width:100%;height:100%;object-fit:cover}.ia-h{background:var(--violet,#8843FB)}
 .ia-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.ia-tx em{font-style:normal;font-size:11px;font-weight:800;color:var(--ink-3);display:flex;align-items:center;gap:5px}.ia-tx em i{width:6px;height:6px;border-radius:50%}
 .ia-tx b{font-size:14px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.av-go{border:0;padding:0;cursor:pointer;font:inherit;color:inherit}
 .nw .chips{margin-bottom:12px}
 .nw-tag{display:inline-block;align-self:flex-start;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
 .nw-th{display:block;width:100%;aspect-ratio:16/9;border-radius:var(--radius-l);overflow:hidden;background:var(--s2,var(--line))}
@@ -4682,7 +4683,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022111750";
+const BUILD="20261022113145";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4902,6 +4903,9 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
     if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
   if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); setTimeout(()=>iaBanner(add[0]),60); return true; } return false; }catch(e){ return false; } }
+/* 推播帶著 op=貼文編號 進來：直接打開那則貼文 */
+function opFromHash(){ const m=/[?&]op=([^&]+)/.exec(location.hash); if(!m) return; const id=decodeURIComponent(m[1]); history.replaceState(null,"",location.pathname+location.search+"#/fan"); if(!session()) return; ui.feedTab="feed"; ui.focusPost=id; ui.expanded.add(id); ui._opId=id; render(); }
+addEventListener("hashchange",opFromHash); setTimeout(opFromHash,300);
 /* App 開著的時候：手機推播改成 App 內的通知條（後台看到「在線上」就不送手機推播） */
 function onlinePing(){ try{ const s=session(); if(!s||s.role!=="fan"||!HB_ON) return; S.set(K.online,document.hidden?0:Date.now()); }catch(e){} }
 setInterval(()=>{ if(!document.hidden) onlinePing(); },20e3); document.addEventListener("visibilitychange",onlinePing); setTimeout(onlinePing,1500);
@@ -7330,7 +7334,7 @@ function postCard(p,{mine=false}={}){
   const long=p.text.length>90 && !ui.expanded.has(p.id);
   return `<article class="card post" id="post-${p.id}">
     <div class="post-head">
-      <div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>
+      ${viewerFan()&&!mine?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
       <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${gTag(g)}${ago(p.ts)}</span></div>
       ${isAdminAcct()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
     </div>
@@ -8132,7 +8136,7 @@ function renderComments(first=false){
     const arts=list.filter(c=>c.author==="artist"), fans=list.filter(c=>c.author!=="artist");
     const lk=postLocked(p);
     html=head("貼文")+`<main class="pd-body" id="csl"><article class="pd-post">
-      <div class="pd-ph"><span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span><span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
+      <div class="pd-ph">${viewerFan()?`<button class="pd-av lg av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`}<span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
       ${lk?lockedBody(p,lk):`${p.text?`<p class="pd-txt">${esc(p.text)}</p>`:""}${p.media?pdMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}${p.poll?pollCard(p):""}`}
       <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>
       ${arts.length?sec("藝人留言",arts.length,arts.map(c=>item(c)).join(""),"ac"):""}
@@ -10341,6 +10345,7 @@ document.addEventListener("click",e=>{
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
     case "goCore": go("fan",null,"core"); window.scrollTo(0,0); break;
     case "goNotifs": go("fan","notifications"); break;
+    case "goArtist": { const mm=MEMBERS[t.dataset.v]; if(!mm) break; layer.innerHTML=""; ui.sheet=null; ui.mpTab="post"; location.hash=grpHash(mm.group,"about",t.dataset.v); window.scrollTo(0,0); break; }
     case "newsF": ui.newsF=t.dataset.v; lsRerender(); break;
     case "newsOpen": location.hash=t.dataset.b+"&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
     case "openNews": location.hash="#/fan/core?p=news"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
