@@ -2622,6 +2622,7 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .ex-mg i em{z-index:1}
 .cmx-hph{position:absolute;inset:0;background-size:cover;background-position:center}
 .abx-top{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:12px 2px 2px}
+.abx-tl{display:flex;flex-direction:column;gap:12px;min-width:0}.abx-ls{display:flex;gap:10px}.abx-l{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:var(--s1);color:var(--ink);display:grid;place-items:center;padding:0}.abx-l svg{width:19px;height:19px}
 .abx-top h2{margin:0;font-size:30px;font-weight:800;line-height:1.2;letter-spacing:-.01em;color:var(--ink);min-width:0;overflow-wrap:anywhere;text-wrap:balance}
 .abx-ph{flex:none;width:96px;height:96px;aspect-ratio:1;border-radius:24px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;font-size:34px}
 .abx-intro{margin:2px 2px 6px;font-size:14px;line-height:1.7;color:var(--ink-2);white-space:pre-wrap;word-break:break-word}
@@ -4682,7 +4683,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022121830";
+const BUILD="20261022122318";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4909,7 +4910,8 @@ addEventListener("hashchange",opFromHash); setTimeout(opFromHash,300);
 function onlinePing(){ try{ const s=session(); if(!s||s.role!=="fan"||!HB_ON) return; S.set(K.online,document.hidden?0:Date.now()); }catch(e){} }
 setInterval(()=>{ if(!document.hidden) onlinePing(); },20e3); document.addEventListener("visibilitychange",onlinePing); setTimeout(onlinePing,1500);
 let iaT=0;
-function iaBanner(n){ try{ if(!n||document.hidden||n.self) return; const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
+let visSince=Date.now(); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) visSince=Date.now(); });
+function iaBanner(n){ try{ if(!n||document.hidden||n.self||Date.now()-visSince<6000) return;   // 剛打開／剛從推播點進來：手機已經通知過了，不再跳一次 const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
   const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"], act=n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":n.kind==="system"?"goNotifs":"openPost", m=MEMBERS[n.member];
   document.querySelectorAll(".ia-ban").forEach(x=>x.remove()); const b=document.createElement("button"); b.className="ia-ban"; b.type="button";
   Object.entries({a:act,ek:n.evKind||"",ev:n.eventId||"",lv:n.liveId||"",m:n.member||"",id:n.postId||n.newsId||"",c:n.commentId||""}).forEach(([k,v])=>b.dataset[k]=v);
@@ -4942,7 +4944,7 @@ function createPost(memberId,text,color,tag,media,vis,pw,poll){
   const m=MEMBERS[memberId];
   const post={id:"p"+Date.now(),member:memberId,group:m.group,ts:Date.now(),text,color:media&&media.length?null:color,tag:tag||"日常",media:media&&media.length?media:undefined,likes:0,comments:0,vis:vis==="ms"||vis==="pw"?vis:undefined,pw:vis==="pw"?String(pw||""):undefined,poll:poll?{...poll,base:poll.opts.map(()=>0)}:undefined};
   S.set(K.posts,[post,...S.get(K.posts,[])]);
-  const safe=post.vis==="ms"?"💎 Membership 限定貼文":post.vis==="pw"?"🔒 私密貼文":post.tag==="劇透"?"⚠ 劇透貼文":text;   // 私密、Membership、劇透：通知裡不露內容
+  const safe=post.vis==="ms"?"💎 Membership 貼文，快來看看！":post.vis==="pw"?"🔒 私密貼文，快來看看！":text;   // 私密、Membership：通知裡不露內容
   const reached=feedPush({kind:"post",member:memberId,group:m.group,text:safe,postId:post.id,color},"g:"+m.group);
   return {post,reached};
 }
@@ -7661,7 +7663,9 @@ function openCal(gid){ const g=groupOf(gid), base=new Date(), mo=ui.calMo||0, d0
       ${list.length?list.map(x=>`<div class="cal-it"><span>${x.ic}</span><div><small>${esc(x.k)}・${evWhen(x.ts)}</small><b>${esc(x.t)}</b></div></div>`).join(""):`<p class="me-none">${sel?"這一天沒有行程":"最近沒有行程"}</p>`}</div></div>`,"cal"); }
 function viewAbout(gid){ const g=groupOf(gid), open=ui.abOpen||null;
   const ph=gPhoto(gid), it=gIntro(gid);
-  return `<section class="abx-top"><h2>${esc(g.name)}</h2><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span></section>
+  const sm=g.solo?soloMid(gid):"", AB_IC={sns:'<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.8" cy="7.2" r=".9" fill="currentColor"/>',tie:'<path d="M6 5h12a2.6 2.6 0 0 1 2.6 2.6v7.2A2.6 2.6 0 0 1 18 17.4h-6.2L7.4 20.6v-3.2H6a2.6 2.6 0 0 1-2.6-2.6V7.6A2.6 2.6 0 0 1 6 5z"/><path d="M12 13.6s-2.8-1.6-2.8-3.4a1.5 1.5 0 0 1 2.8-.8 1.5 1.5 0 0 1 2.8.8c0 1.8-2.8 3.4-2.8 3.4z"/>',shop:'<path d="M5.6 8.4h12.8l-1.1 11.2a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 10.6V7.6a3 3 0 0 1 6 0v3"/>'};
+  const abl=[["sns",SNS_NAME],["tie",WHISPER_NAME],["shop","SHOP"]].map(([k,l])=>`<button class="abx-l" data-a="abLink" data-k="${k}" data-g="${gid}" data-m="${sm||""}" aria-label="${l}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${AB_IC[k]}</svg></button>`).join("");
+  return `<section class="abx-top"><div class="abx-tl"><h2>${esc(g.name)}</h2><div class="abx-ls">${abl}</div></div><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span></section>
     ${it?`<p class="abx-intro">${esc(it)}</p>`:""}${g.solo?"":`<div class="abx-sec">成員 ${grpMembers(gid).length}</div>`}
     ${grpMembers(gid).map(m=>{ const M=MEMBERS[m], o=open===m; return `<section class="card ab-m ${o?"o":""}" id="ab-${m}"><button class="ab-mh" data-a="abTog" data-v="${m}" aria-expanded="${o}"><i style="background:${grad(M.g)}">${mAvIn(m)}</i><b>${esc(M.name)}</b><span class="ab-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>${o?`<button class="ab-pro" data-a="cmMem" data-v="${m}">查看個人簡介</button>`:""}</section>`; }).join("")}`; }
 function viewMemberProfile(gid,mid){ setTimeout(apBarSync,0); return `<div class="gcm ap2" style="--gt:${gTheme(gid)}">${artProfileHtml(mid,false)}</div>`; }
@@ -10373,6 +10377,11 @@ document.addEventListener("click",e=>{
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
     case "goCore": go("fan",null,"core"); window.scrollTo(0,0); break;
     case "goNotifs": go("fan","notifications"); break;
+    case "abLink": { const k=t.dataset.k, gid=t.dataset.g, mm=t.dataset.m; layer.innerHTML="";
+      if(k==="sns"){ ui.snsFrom=location.hash; location.hash=mm?"#/fan/sns?p=profile&id="+encodeURIComponent("m:"+mm):"#/fan/sns"; }
+      else if(k==="tie"){ if(mm){ ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; location.hash="#/fan/chat?m="+mm; } else go("fan",null,"whisper"); }
+      else { ui.shopG=gid; ui.shopCat="all"; go("fan",null,"shop"); }
+      window.scrollTo(0,0); break; }
     case "goArtist": { const mm=MEMBERS[t.dataset.v]; if(!mm) break; layer.innerHTML=""; ui.sheet=null; ui.mpTab="post"; location.hash=grpHash(mm.group,"about",t.dataset.v); window.scrollTo(0,0); break; }
     case "newsF": ui.newsF=t.dataset.v; lsRerender(); break;
     case "newsOpen": location.hash=t.dataset.b+"&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
@@ -11746,7 +11755,7 @@ const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
 /* 社群照片：團體用管理員上傳的出道／回歸照；SOLOIST 用本人的頭貼（規則：SOLOIST 不用管理員上傳） */
-function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).avatar||""):""; } return gPhotoMap()[gid]||""; }
+function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; return gPhotoMap()[gid]||""; }   // SOLO 也用管理員放的出道照；社群頭貼只在個人社群裡出現
 /* TIE 券上的照片：管理員上傳的出道／回歸照（團體、SOLOIST 都可以傳），沒有就用社群照片 */
 const tktPhoto=gid=>gPhotoMap()[gid]||gPhoto(gid);
 const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(ini(g.name)); };
