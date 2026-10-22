@@ -3688,7 +3688,7 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 .nw-dt{font-size:12px;color:var(--ink-3)}
 .nw-gs{display:flex;flex-wrap:wrap;gap:6px}
 .nw-gs span{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;color:var(--gt);background:color-mix(in srgb,var(--gt) 12%,transparent)}
-.nw-body{margin:8px 0 0;font-size:15px;line-height:1.8;color:var(--ink);word-break:break-word}
+.nw-body{margin:10px 0 0;font-size:15.5px;line-height:1.85;color:var(--ink);word-break:break-word;border-top:1px solid var(--line);padding-top:14px}.nw-body p{margin:0 0 14px}
 .nw-adimg{position:relative;margin-bottom:12px}.nw-adimg img{width:100%;border-radius:12px;display:block}
 .nw-adimg button{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.5);color:#fff;display:grid;place-items:center}.nw-adimg .xi{width:16px;height:16px}
 .uni-an.is-hidden p{opacity:.5}
@@ -4508,8 +4508,7 @@ try{ if(!HB_ON){ Object.assign(REAL,JSON.parse(localStorage.getItem("daisuki_rea
 function applyRoster(){ try{ const r=S.get(K.roster,{groups:[],members:{}})||{};
   const keepT=GROUPS.filter(g=>g.id==="tdm_g"), mT=MEMBERS.tdm_m;
   GROUPS.length=0; (r.groups||[]).forEach(g0=>{ if(GROUPS.some(x=>x.id===g0.id)) return; const g={...g0};
-    /* SOLOIST：社群名稱跟著藝人自己改的名字（管理員端仍看原本的名字） */
-    if(g.solo){ g._n=g0.name; Object.defineProperty(g,"name",{enumerable:true,configurable:true,get(){ try{ const m=soloMid(this.id); const n=m&&!adminView()&&artProf(m).n_feed; return n||this._n; }catch(e){ return this._n; } },set(v){ this._n=v; }}); }
+    /* SOLOIST：外面一律顯示藝名；社群名字只在點進個人社群後才顯示 */
     GROUPS.push(g); }); keepT.forEach(g=>GROUPS.push(g));
   Object.keys(MEMBERS).forEach(k=>delete MEMBERS[k]); Object.assign(MEMBERS,r.members||{}); if(mT) MEMBERS.tdm_m=mT;
   if(!HB_ON) Object.assign(ACCOUNTS,r.accounts||{}); }catch(e){} }
@@ -4683,7 +4682,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022120801";
+const BUILD="20261022121830";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4943,7 +4942,8 @@ function createPost(memberId,text,color,tag,media,vis,pw,poll){
   const m=MEMBERS[memberId];
   const post={id:"p"+Date.now(),member:memberId,group:m.group,ts:Date.now(),text,color:media&&media.length?null:color,tag:tag||"日常",media:media&&media.length?media:undefined,likes:0,comments:0,vis:vis==="ms"||vis==="pw"?vis:undefined,pw:vis==="pw"?String(pw||""):undefined,poll:poll?{...poll,base:poll.opts.map(()=>0)}:undefined};
   S.set(K.posts,[post,...S.get(K.posts,[])]);
-  const reached=feedPush({kind:"post",member:memberId,group:m.group,text,postId:post.id,color},"g:"+m.group);
+  const safe=post.vis==="ms"?"💎 Membership 限定貼文":post.vis==="pw"?"🔒 私密貼文":post.tag==="劇透"?"⚠ 劇透貼文":text;   // 私密、Membership、劇透：通知裡不露內容
+  const reached=feedPush({kind:"post",member:memberId,group:m.group,text:safe,postId:post.id,color},"g:"+m.group);
   return {post,reached};
 }
 
@@ -9590,17 +9590,28 @@ function coreHead(title){ return `<header class="top core-top"><div class="top-r
 /* ===== 娛樂新聞 NEWS：管理員手動發＋App 自動快訊（出道、回歸、一位、三冠王、AK、PAK）。粉絲、藝人、管理員看到同一份 ===== */
 const NEWS_TAG={debut:["出道","#F472B6"],cb:["回歸","#8B5CF6"],win:["一位","#F59E0B"],crown:["三冠王","#D97706"],ak:["AK","#EF4444"],pak:["PAK","#DC2626"],off:["新聞","#0EA5E9"]};
 const idTs=(id,re)=>{ const t=+String(id).replace(re,""); return t>1.5e12&&t<4e12?t:0; };
-function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.ended||[])];
-  GROUPS.forEach(g=>{ const t=idTs(g.id,/^g/); if(!t) return; const ms=groupArtists(g.id).map(id=>artName(id,"feed")).filter(Boolean);
-    L.push({id:"au_dbt_"+g.id,tag:"debut",ts:t,gids:[g.id],title:`${g.name} 正式出道！`,body:g.solo?`SOLO 歌手 ${g.name} 正式出道，一起迎接新人！`:`新團 ${g.name} 正式出道${ms.length?`，成員：${ms.join("、")}`:""}。一起迎接新人！`}); });
-  songs.forEach(s=>{ const t=idTs(s.id,/^s/), g=groupOf(s.gid); if(!t||!g) return;
-    L.push({id:"au_cb_"+s.id,tag:"cb",ts:t,gids:[s.gid],title:`${g.name}《${s.title}》回歸打歌`,body:`${g.name} 帶著新歌《${s.title}》回歸，開始登上音樂節目打歌舞台。`}); });
-  Object.keys(m.wins).sort().forEach(wk=>{ const ws=m.wins[wk]||{}; SHOWS.forEach(sh=>{ const sid=ws[sh.id], s=songOf(sid); if(!s||!groupOf(s.gid)) return;
-    const cr=crowned(sid,sh.id,shiftWeek(wk,1))&&!crowned(sid,sh.id,wk), t=wkDate(wk).getTime()+((sh.day+6)%7)*D+20*36e5, nm=songName(s);
-    L.push({id:`au_w_${wk}_${sh.id}`,tag:cr?"crown":"win",ts:t,gids:[s.gid],title:cr?`${nm} 在 ${sh.name} 達成三冠王！`:`${nm} 拿下 ${sh.name} 一位`,body:cr?`${nm} 連續三週拿下 ${sh.name} 一位，正式成為三冠王！`:`恭喜 ${nm} 拿下 ${sh.name} 一位（+${fmt(MSP.win)} 積分）！`}); }); });
-  songs.forEach(s=>{ if(!groupOf(s.gid)) return; const st=songStats(s.id), nm=songName(s), end=wk=>wkDate(wk).getTime()+6*D+21*36e5;
-    st.aks.forEach(wk=>L.push({id:`au_ak_${s.id}_${wk}`,tag:"ak",ts:end(wk),gids:[s.gid],title:`${nm} 達成 All-Kill！`,body:`同一週拿下全部 ${SHOWS.length} 個音樂節目一位，${nm} 達成 AK（+${fmt(MSP.ak)} 積分）！`}));
-    if(st.pak) L.push({id:`au_pak_${s.id}`,tag:"pak",ts:end(st.pak),gids:[s.gid],title:`${nm} 達成 Perfect All-Kill！`,body:`連續 4 個排名週都拿下一位，${nm} 達成 PAK（+${fmt(MSP.pak)} 積分）！`}); });
+const nwMD=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}月${d.getDate()}日`; };
+const NW_BY="HAECHU 娛樂新聞部";
+function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.ended||[])], pick=(id,a)=>a[strHash(id)%a.length];
+  const tail=(id,g)=>pick(id,[`粉絲可以到 ${g.name} 的社群留言祝賀。`,`${g.name} 的社群裡已經湧入許多祝賀留言。`,`更多消息請持續關注 ${g.name} 的 HAECHU 社群。`]);
+  GROUPS.forEach(g=>{ const t=idTs(g.id,/^g/); if(!t) return; const ms=groupArtists(g.id).map(id=>MEMBERS[id]&&MEMBERS[id].name).filter(Boolean), id="au_dbt_"+g.id;
+    L.push({id,tag:"debut",ts:t,gids:[g.id],title:g.solo?`SOLO 新人 ${g.name} 今日正式出道`:`${ms.length>1?ms.length+" 人":""}新團 ${g.name} 今日正式出道`,
+      body:`【${NW_BY}】HAECHU 推出的新${g.solo?" SOLO 歌手":"團體"}「${g.name}」於 ${nwMD(t)} 正式出道。\n\n${g.solo?`${g.name} 以個人身分出道，`:ms.length?`${g.name} 由 ${ms.join("、")} 共 ${ms.length} 位成員組成，`:""}官方社群已在 HAECHU 同步開放。粉絲可以搶先加入社群、開通 TIE，第一時間接收藝人的消息。\n\n${tail(id,g)}`}); });
+  const cbN={}; songs.slice().sort((a,b)=>idTs(a.id,/^s/)-idTs(b.id,/^s/)).forEach(s=>{ const t=idTs(s.id,/^s/), g=groupOf(s.gid); if(!t||!g) return; cbN[s.gid]=(cbN[s.gid]||0)+1; const n=cbN[s.gid], id="au_cb_"+s.id;
+    L.push({id,tag:"cb",ts:t,gids:[s.gid],title:`${g.name} 攜新曲《${s.title}》${n>1?`第 ${n} 次`:""}回歸…本週起登上音樂節目`,
+      body:`【${NW_BY}】${g.name} 於 ${nwMD(t)} 帶著新曲《${s.title}》正式回歸。\n\n《${s.title}》是 ${g.name} ${n>1?`出道以來第 ${n} 次回歸的主打曲`:"的首張主打曲"}。本週起，${g.name} 將陸續登上 ${SHOWS.map(x=>x.name).join("、")} 等音樂節目的打歌舞台。\n\n粉絲可以到 FEST →「打歌」為《${s.title}》應援。${tail(id,g)}`}); });
+  const wk=Object.keys(m.wins).sort(), sN={}, gN={}, ord=SHOWS.slice().sort((a,b)=>((a.day+6)%7)-((b.day+6)%7));
+  wk.forEach(w=>{ const ws=m.wins[w]||{}; ord.forEach(sh=>{ const sid=ws[sh.id], so=songOf(sid), g=so&&groupOf(so.gid); if(!g) return;
+    sN[sid]=(sN[sid]||0)+1; gN[so.gid]=(gN[so.gid]||0)+1; const k=sN[sid], n=gN[so.gid], id=`au_w_${w}_${sh.id}`;
+    const cr=crowned(sid,sh.id,shiftWeek(w,1))&&!crowned(sid,sh.id,w), t=wkDate(w).getTime()+((sh.day+6)%7)*D+20*36e5;
+    L.push({id,tag:cr?"crown":"win",ts:t,gids:[so.gid],
+      title:cr?`${g.name}《${so.title}》${sh.name} 連續三週一位…達成三冠王`:`${g.name}《${so.title}》拿下 ${sh.name} 一位…${n===1?"出道後首座音樂節目一位":`出道以來第 ${n} 座獎盃`}`,
+      body:`【${NW_BY}】${g.name} 在 ${nwMD(t)} 播出的 ${sh.name} 中，以《${so.title}》拿下本週一位${cr?"，並以連續三週一位達成這個節目的「三冠王」":""}。\n\n這是《${so.title}》的第 ${k} 座一位獎盃，也是 ${g.name} 出道以來的第 ${n} 座${n===1?"，意義格外特別":""}。${g.name} 本次獲得 ${fmt(MSP.win)} 打歌積分。\n\n${tail(id,g)}`}); }); });
+  songs.forEach(s=>{ const g=groupOf(s.gid); if(!g) return; const st=songStats(s.id), end=w=>wkDate(w).getTime()+6*D+21*36e5;
+    st.aks.forEach(w=>{ const id=`au_ak_${s.id}_${w}`; L.push({id,tag:"ak",ts:end(w),gids:[s.gid],title:`${g.name}《${s.title}》橫掃一週 ${SHOWS.length} 大音樂節目…達成 All-Kill`,
+      body:`【${NW_BY}】${g.name} 的《${s.title}》在 ${nwMD(wkDate(w).getTime())} 這一週，拿下 ${SHOWS.map(x=>x.name).join("、")} 全部 ${SHOWS.length} 個音樂節目的一位，達成 All-Kill（AK）。\n\n${g.name} 因此獲得 ${fmt(MSP.ak)} 打歌積分。\n\n${tail(id,g)}`}); });
+    if(st.pak){ const id=`au_pak_${s.id}`; L.push({id,tag:"pak",ts:end(st.pak),gids:[s.gid],title:`${g.name}《${s.title}》連續 4 個排名週拿下一位…達成 Perfect All-Kill`,
+      body:`【${NW_BY}】${g.name} 的《${s.title}》連續 4 個排名週都拿下音樂節目一位，達成 Perfect All-Kill（PAK）。\n\n${g.name} 因此獲得 ${fmt(MSP.pak)} 打歌積分。\n\n${tail(id,g)}`}); } });
   const now=Date.now(); return L.map(x=>({...x,auto:true,ts:Math.min(x.ts,now)})); }
 const getNewsM=()=>S.get(K.news,[])||[];
 function newsAll(withHidden){ const H=S.get(K.newsHide,{})||{}, cut=Date.now()-120*864e5;
@@ -9615,9 +9626,9 @@ function newsListHtml(base,mine,mineLab){ const f=ui.newsF==="mine"?"mine":"all"
     ${rest.length?`<section class="card nw-list">${rest.map(row).join("")}</section>`:""}</main>`; }
 function newsDetailHtml(id){ const n=newsOf(id), H=S.get(K.newsHide,{})||{}; if(!n||H[n.id]) return `<main class="page"><p class="me-none">這則新聞已經撤下</p></main>`;
   const gs=(n.gids||[]).map(groupOf).filter(Boolean);
-  return `<main class="page nw-d">${n.img?`<img class="nw-dimg" src="${esc(n.img)}" alt="">`:""}${newsTag(n)}<h2>${esc(n.title)}</h2><small class="nw-dt">${ymd(n.ts)}・HAECHU ${n.auto?"快訊":"新聞"}</small>
+  return `<main class="page nw-d">${n.img?`<img class="nw-dimg" src="${esc(n.img)}" alt="">`:""}${newsTag(n)}<h2>${esc(n.title)}</h2><small class="nw-dt">${NW_BY}・${ymdhm(n.ts)}</small>
     ${gs.length?`<div class="nw-gs">${gs.map(g=>`<span style="--gt:${gTheme(g.id)}">${esc(g.name)}</span>`).join("")}</div>`:""}
-    <p class="nw-body">${esc(n.body||"").replace(/\n/g,"<br>")}</p></main>`; }
+    <div class="nw-body">${esc(n.body||"").split(/\n{2,}/).map(x=>`<p>${x.replace(/\n/g,"<br>")}</p>`).join("")}</div></main>`; }
 const newsSub=()=>{ const n=newsAll()[0]; return n?esc(n.title):"還沒有新聞"; };
 function newsAdminHtml(){ const d=ui.nwDraft||(ui.nwDraft={title:"",body:"",gids:[],img:""}), H=S.get(K.newsHide,{})||{}, L=newsAll(true);
   return `<section class="card studio"><div class="foc-cfg-h"><h3>發新聞</h3></div>
