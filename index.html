@@ -1865,7 +1865,8 @@ html[data-theme] body .sw[aria-checked="true"]{background:var(--violet)}
 .foc-row>span:first-child{font-size:13px;color:var(--ink-2)}
 .foc-row b{font-size:13px}.foc-row small{display:block;font-size:12px;color:var(--ink-3)}
 .foc-stage{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--violet);background:var(--violet-soft);padding:4px 6px 4px 12px;border-radius:999px}
-.foc-stage .core-info{margin:0}
+.foc-stage .core-info{margin:0;flex:none;width:22px;height:22px;padding:0;display:grid;place-items:center;line-height:1;box-sizing:border-box}
+.foc-stage{padding:3px 3px 3px 12px!important;line-height:1;overflow:hidden}
 .foc-week{position:relative;display:flex;gap:12px;align-items:center;padding:12px 14px;margin:10px 0 14px;border-radius:20px;background:linear-gradient(135deg,rgba(245,240,255,.9),rgba(252,231,243,.7))}
 .foc-week>span{color:#F472B6;font-size:16px}
 .foc-week b{display:block;font-size:12.5px}
@@ -4649,7 +4650,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022073714";
+const BUILD="20261022090803";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7231,7 +7232,7 @@ function viewSelect(){
   const first=!followed().length||!selDoneFor();
   if(!ui.selectDraft) ui.selectDraft=new Set(first?[]:followed());
   const q=nz(ui.selectQuery.trim());
-  const list=GROUPS.filter(g=>(ui.selectFilter==="new"?g.isNew:true)&&hit(q,g.name,...grpMembers(g.id).flatMap(id=>[MEMBERS[id].name,artName(id,"feed"),artName(id,"tie")])));
+  const list=GROUPS.filter(g=>(ui.selectFilter==="new"?gNew(g):true)&&hit(q,g.name,...grpMembers(g.id).flatMap(id=>[MEMBERS[id].name,artName(id,"feed"),artName(id,"tie")])));
   const n=ui.selectDraft.size;
   const names=GROUPS.filter(g=>ui.selectDraft.has(g.id)).map(g=>g.name).join("、");
   return `<header class="top"><div class="top-row">
@@ -7247,7 +7248,7 @@ function viewSelect(){
       </div>
       ${list.length?`<div class="grid">${list.map(g=>`
         <button class="g-card ${ui.selectDraft.has(g.id)?"on":""}" style="background:${grad(g.g)}" data-a="pick" data-id="${g.id}" aria-pressed="${ui.selectDraft.has(g.id)}">
-          <span class="deco d1">${I.heart}</span><span class="deco d2">${I.heart}</span><span class="deco d3">✦</span><span class="chk">${I.check}</span><b>${g.name}</b>${g.isNew?'<span class="tag">New</span>':""}
+          <span class="deco d1">${I.heart}</span><span class="deco d2">${I.heart}</span><span class="deco d3">✦</span><span class="chk">${I.check}</span><b>${g.name}</b>${gNew(g)?'<span class="tag">New</span>':""}
         </button>`).join("")}</div>`
       :srchEmpty("藝人")}
     </main>
@@ -7408,15 +7409,15 @@ const grpLastPost=gid=>getPosts().filter(p=>p.group===gid&&!p.hidden).reduce((m,
 const grpUnseen=gid=>grpLastPost(gid)>((S.get(K.grpSeen,{}))[gid]||0);
 function exploreTop(){
   const fa=followed(), cat=ui.exCat||"all", mine=GROUPS.filter(g=>fa.includes(g.id));
-  const ban=GROUPS.filter(g=>g.isNew&&!fa.includes(g.id)&&grpMembers(g.id).length);
-  const all=GROUPS.filter(g=>grpMembers(g.id).length).filter(g=>cat==="all"||(cat==="solo"?grpMembers(g.id).length===1:cat==="group"?grpMembers(g.id).length>1:g.isNew));
+  const ban=GROUPS.filter(g=>gNew(g)&&!fa.includes(g.id)&&grpMembers(g.id).length);
+  const all=GROUPS.filter(g=>grpMembers(g.id).length).filter(g=>cat==="all"||(cat==="solo"?grpMembers(g.id).length===1:cat==="group"?grpMembers(g.id).length>1:gNew(g)));
   const shown=ui.exAll?all:all.slice(0,4);
   return `<label class="ex-srch">${I.search||"🔍"}<input id="exQ" placeholder="輸入文字" autocomplete="off"></label>
     ${mine.length?`<h2 class="mf-h">我的社群</h2><div class="ex-my">${mine.map(g=>`<button class="ex-mg" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}${grpUnseen(g.id)?"<em></em>":""}</i><small>${esc(g.name)}</small></button>`).join("")}</div>`:""}
     ${ban.length?`<div class="ex-ban" id="exBan">${ban.map(g=>`<button class="ex-b" data-a="gOpen" data-v="${g.id}" style="background:${grad(g.g)}"><b>OPEN! ${esc(g.name)}</b><small>立即前往查看</small><span>${esc(ini(g.name))}</span></button>`).join("")}</div>${ban.length>1?`<div class="tiei-dots ex-dots">${ban.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
     <h2 class="mf-h">全部社群</h2>
     <div class="ex-cat">${[["all","全部"],["group","Group"],["solo","Solo"],["new","New"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="exCat" data-v="${k}">${l}</button>`).join("")}</div>
-    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${g.isNew?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
+    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${gNew(g)?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
     ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}`;
 }
 /* 搜尋：直接在全部社群裡篩選（不重畫，才不會收鍵盤） */
@@ -11596,7 +11597,10 @@ function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; if(g.solo){ const 
 /* TIE 券上的照片：管理員上傳的出道／回歸照（團體、SOLOIST 都可以傳），沒有就用社群照片 */
 const tktPhoto=gid=>gPhotoMap()[gid]||gPhoto(gid);
 const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(ini(g.name)); };
-function gIntro(gid){ const g=groupOf(gid); if(!g) return ""; if(g.intro) return g.intro; if(g.solo){ const m=soloMid(gid); return m?(artProf(m).bio||""):""; } return ""; }
+/* 社群的介紹：只用管理員寫的團體介紹（藝人個人簡介不放社群） */
+function gIntro(gid){ const g=groupOf(gid); if(!g) return ""; return g.intro||""; }
+/* 「NEW」標示：團建立後 3 天內才有，之後自動拿掉（各端一起） */
+const gNew=g=>{ if(!g||!g.isNew) return false; const t=+String(g.id).replace(/^g/,""); return t>1.5e12&&Date.now()-t<3*864e5; };
 
 /* ===== 藝人個人頁：藝人首頁和粉絲看到的同一個版面（照 Weverse） ===== */
 function artMedia(posts){ const out=[]; posts.forEach(p=>{ (p.media||[]).forEach(x=>out.push({id:p.id,mid:x.kind==="video"?x.thumb||"":x.mid})); if(!p.media&&p.color!=null) out.push({id:p.id,c:p.color}); }); return out; }
