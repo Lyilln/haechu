@@ -4393,6 +4393,7 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .ac-go{flex:none;margin-left:auto;color:var(--ink-3);display:grid;place-items:center}
 .ac-go svg{width:16px;height:16px}
 .ac-pw{font-size:16px;letter-spacing:.06em;-webkit-user-select:text;user-select:text}
+.db-row{display:flex;align-items:center;gap:12px;padding:12px 4px}.db-row+.db-row{border-top:1px solid var(--line,rgba(0,0,0,.06))}.db-av{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}.db-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.db-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.db-tx small{font-size:12px;opacity:.6}.db-act{display:flex;gap:6px;flex:none}.db-b{min-width:0!important;padding:0 12px!important;height:32px!important;margin:0!important}
 </style>
 </head>
 <body>
@@ -4453,7 +4454,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide",
+  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4735,7 +4736,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022225601";
+const BUILD="20261022231221";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6237,7 +6238,17 @@ function seedBday(){ if(S.get(K.seed15,false)) return; S.set(K.seed15,true); con
    ========================================================= */
 const TIERS={1:{name:"日常",rate:.82},2:{name:"舞台",rate:.15},3:{name:"流光",rate:.03}};
 /* 藝人（不管團體或 SOLO，管理員也一樣）不能買自己團的任何東西，不能幫自己衝銷量 */
-function selfGroup(){ const s=session(); if(!s) return null; const a=ACCOUNTS[s.email], mid=isUni()?uniMe():(a&&a.role==="artist"?a.member:null); return mid&&MEMBERS[mid]?MEMBERS[mid].group:null; }
+/* 出道申請：粉絲在 ME 填藝名 → 管理員核准 → 自動建 SOLOIST 並綁定帳號 */
+const getDebut=()=>S.get(K.debut,[])||[];
+const myDebut=()=>{ const em=myEmail(); return em?getDebut().filter(x=>x.email===em).sort((a,b)=>b.ts-a.ts)[0]||null:null; };
+function debutSync(){ try{ const s=session(), d=myDebut(); if(!s||s.home||!d||d.status!=="ok"||!d.mid||!MEMBERS[d.mid]) return; const a=ACCOUNTS[s.email]; if(a&&!a.member) ACCOUNTS[s.email]={...a,role:a.role==="admin"?"admin":"artist",member:d.mid}; SS.set({...s,home:d.mid}); }catch(e){} }
+function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="no"?"未通過":"";
+  return `<div class="section-h">出道</div><section class="card"><button class="list-btn" data-a="debutAsk">${I.star}申請出道<span class="r">${st}</span></button></section>`; }
+function debutAdmHtml(){ const L=getDebut().slice().sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
+  const row=x=>`<div class="db-row"><span class="db-av" style="background:${grad(x.g||0)}">${esc((x.name||"?")[0])}</span><span class="db-tx"><b>${esc(x.name)}</b><small>${esc(acctUser(x.email))}・${ago(x.ts)}</small></span>${x.status==="wait"?`<span class="db-act"><button class="btn btn-sm btn-main db-b" data-a="dbOk" data-v="${x.id}">核准</button><button class="btn btn-sm btn-soft db-b" data-a="dbNo" data-v="${x.id}">不核准</button></span>`:`<span class="r muted">${x.status==="ok"?"已出道":"未通過"}</span>`}</div>`;
+  return `<main class="page">${W.length?`<section class="card">${W.map(row).join("")}</section>`:`<div class="t-empty"><span class="t-empty-ico">${I.star}</span><p>目前沒有申請</p></div>`}${H.length?`<div class="section-h">紀錄</div><section class="card">${H.slice(0,30).map(row).join("")}</section>`:""}</main>`; }
+const debutWait=()=>getDebut().filter(x=>x.status==="wait").length;
+function selfGroup(){ const s=session(); if(!s) return null; const a=ACCOUNTS[s.email], mid=isUni()?uniMe():(a&&a.member||s.home||null); return mid&&MEMBERS[mid]?MEMBERS[mid].group:null; }
 const isSelfGid=gid=>!!gid&&gid===selfGroup();
 const selfBuyMsg=()=>{ const g=groupOf(selfGroup()); return g&&g.solo?"不能購買自己的商品":"不能購買自己團的商品"; };
 const cardPool=()=>Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&followed().includes(MEMBERS[id].group)&&!isSelfGid(MEMBERS[id].group));
@@ -7278,6 +7289,7 @@ function mountSticks(scope){
   });
 }
 function render(){
+  try{ debutSync(); }catch(e){}
   const r=route(), s=session(); if(s) sessTouch();
   const hashChanged=ui._h!==location.hash; ui._h=location.hash;
   if(s&&suspendOf(s.email)){ const sp=suspendOf(s.email); SS.del(); ui.loginErr=`這個帳號因為外流 TIE 內容，${suspendText(sp)}`; return go("auth"); }
@@ -8039,6 +8051,7 @@ function viewFan(tab){
         ["cards","card","小卡",(()=>{const c=alCount();return c.have+" / "+c.total})()],["signed","album","簽名專輯",`${S.get(K.signedAlbums,[]).length} 張`],["buy","receipt","購買紀錄",`${S.get(K.sales,[]).filter(x=>x.buyer===myEmail()).length} 筆`]]
         .map(([k,ic,n,sub])=>`<button class="me-g" data-a="${k==="cards"?"openCards":k==="signed"?"openSigned":"meSec"}" data-v="${k}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`).join("")}</div>
       ${!isAdminAcct()&&canSwap()?`<div class="section-h">身分</div><section class="card"><button class="list-btn" data-a="swapRole">${I.swap}切換到藝人端（${esc(MEMBERS[session().home]?MEMBERS[session().home].name:"")}）</button></section>`:""}
+      ${debutRow()}
       ${secH("gear","設定")}
       <section class="card">
         <button class="list-btn" data-a="settings">${I.bell}通知設定</button>
@@ -9871,7 +9884,7 @@ function tourApprove(id){ const all=S.get(K.wtours,[])||[], t=all.find(x=>x.id==
 /* 進場：世巡的站要有票；進場就蓋章 */
 function tourGate(){ const c=liveConcert(); if(!c||!c.stop) return true; if(myTix()[c.stop]){ const s=myStamps(); if(!s[c.stop]){ s[c.stop]=Date.now(); S.set(K.tourStamp,s); } return true; }
   const t=tourOf(c.tour); if(t) tourBuyAsk(t.id,c.stop); return false; }
-function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===sid); if(!st) return;
+function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===sid); if(!st) return; if(isSelfGid(t.gid)){ toast(selfBuyMsg()); return; }
   iosAlert(`${esc(st.city)}站門票`,`${esc(t.title)}<br>${TOUR_TIX} 點・目前有 ${fmt(points())} 點`,`<button data-a="tCloseLayer">取消</button><button data-a="tourBuyOk" data-v="${tid}" data-s="${sid}">購買</button>`); }
 function viewCoreSub(page,id){
   if(page==="tour") return viewTourFan(id);
@@ -10083,6 +10096,7 @@ function viewAdmin(tab){
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="ptadd") return uniHead("加點數")+viewPtAdd();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
+    if(tab==="debut") return uniHead("出道申請")+debutAdmHtml();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
       if(r0.p==="new") return uniHead("新增藝人")+`<main class="page roster">${h.slice(a,b)}</main>`;
       const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}</main>`;
@@ -10100,6 +10114,7 @@ function viewAdmin(tab){
   }
   if(tab==="revenue") return viewRevenue();
   if(tab==="roster") return viewRoster();
+  if(tab==="debut") return adminHead("出道申請")+`<button class="rev-back" data-a="tab" data-v="me" style="margin:12px 16px 0">‹ 回到 ME</button>`+debutAdmHtml();
   if(tab==="aifans") return viewAiFans();
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
@@ -10165,6 +10180,7 @@ function viewAdmin(tab){
       <section class="card me-card"><div class="av lg" style="margin:0 auto;background:linear-gradient(135deg,#4C1D95,#8843FB)">管</div><h2>管理員</h2><span class="muted" style="font-size:13px">admin</span></section>
       <div class="section-h">管理</div>
       <section class="card">
+        <button class="list-btn" data-a="tab" data-v="debut">${I.star}出道申請<span class="r">${debutWait()?debutWait()+" 件待審核":"沒有新申請"}</span></button>
         <button class="list-btn" data-a="tab" data-v="roster">${I.user}藝人與團管理<span class="r">${GROUPS.length} 團</span></button>
         <button class="list-btn" data-a="thAdmin">${I.star}主題管理<span class="r">${(()=>{const n=getThemes().filter(t=>t.status==="pending").length;return n?n+" 件待審核":TH_STORE})()}</span></button>
         <button class="list-btn" data-a="demoToggle">${I.gear}示範按鈕<span class="r">${demoOn()?"顯示中":"已隱藏"}</span></button>
@@ -10329,6 +10345,20 @@ document.addEventListener("click",e=>{
       saveRoster(r=>{ const x=(r.groups||[]).find(y=>y.id===g.id); if(x){ x.name=nm; x.g=c; if(itr) x.intro=itr; else delete x.intro; } if(r.members[g.id+"_o"]) r.members[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(r.members).forEach(k=>{ if(r.members[k].group===g.id&&!r.members[k].official) r.members[k].name=nm; }); });
       g.name=nm; g.g=c; if(itr) g.intro=itr; else delete g.intro; if(MEMBERS[g.id+"_o"]) MEMBERS[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(MEMBERS).forEach(k=>{ if(MEMBERS[k].group===g.id&&!MEMBERS[k].official) MEMBERS[k].name=nm; });
       layer.innerHTML=""; lsRerender(); toast("已儲存"); break; }
+    case "debutAsk": { const d=myDebut();
+      if(d&&d.status==="wait"){ tieModal("申請出道",`<span class="info-row"><em>藝名</em>${esc(d.name)}</span><span class="info-row"><em>狀態</em>審核中</span>`,`<button class="t-mbtn" data-a="debutCancel" data-v="${d.id}">撤回申請</button><button class="t-mbtn main" data-a="tCloseLayer">好</button>`); break; }
+      tieModal("申請出道",`<span class="fs-f-lab">藝名</span><input id="dbName" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn main" data-a="debutOk">送出</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); setTimeout(()=>{ const i=document.getElementById("dbName"); if(i) i.focus(); },60); break; }
+    case "debutOk": { const n=((document.getElementById("dbName")||{}).value||"").trim(), em=myEmail(); if(!em) break; if(!n){ toast("請輸入藝名"); break; }
+      const low=n.toLowerCase(); if(GROUPS.some(g=>g.name.toLowerCase()===low)||Object.values(MEMBERS).some(m=>!m.official&&String(m.name).toLowerCase()===low)||getDebut().some(x=>x.status==="wait"&&x.name.toLowerCase()===low)){ toast("已經有這個藝名了"); break; }
+      S.set(K.debut,[...getDebut(),{id:"db"+Date.now(),email:em,name:n,g:Math.floor(Math.random()*8),ts:Date.now(),status:"wait"}]); layer.innerHTML=""; render(); toast("已送出，等管理員核准"); break; }
+    case "debutCancel": { S.set(K.debut,getDebut().filter(x=>x.id!==t.dataset.v)); layer.innerHTML=""; render(); toast("已撤回申請"); break; }
+    case "dbOk": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x||x.status!=="wait") break; const n=x.name;
+      if(GROUPS.some(g=>g.name===n)){ toast("已經有這個名字了"); break; } if(!ACCOUNTS[x.email]){ toast("找不到這個帳號"); break; } if(ACCOUNTS[x.email].member){ toast("這個帳號已經是藝人了"); break; }
+      const id="g"+Date.now(), gc=x.g||0, g={id,name:n,g:gc,isNew:true,solo:true}, off={name:n+" 官方",group:id,g:gc,official:true}, mid="m"+Date.now(), m={name:n,group:id,g:gc};
+      saveRoster(r=>{ r.groups.push(g); r.members[id+"_o"]=off; r.members[mid]=m; }); GROUPS.push(g); MEMBERS[id+"_o"]=off; MEMBERS[mid]=m; bindArtist(x.email,mid);
+      x.status="ok"; x.mid=mid; x.done=Date.now(); S.set(K.debut,L);
+      feedPush({kind:"core",self:true,text:`🎉 恭喜出道！「${n}」的出道申請通過了，到 ME 切換到藝人端吧`},"u:"+x.email); render(); toast(`已核准「${n}」出道`); break; }
+    case "dbNo": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x) break; ask(`不核准「${x.name}」的出道申請嗎？`,()=>{ x.status="no"; x.done=Date.now(); S.set(K.debut,L); feedPush({kind:"core",self:true,text:`「${x.name}」的出道申請這次沒有通過`},"u:"+x.email); render(); }); break; }
     case "rsType": ui.rsType=t.dataset.v; { const y=window.scrollY, n=(document.getElementById("rgName")||{}).value; render(); window.scrollTo(0,y); const i=document.getElementById("rgName"); if(i&&n) i.value=n; } break;
     case "rgAdd": { const solo=ui.rsType==="solo", n=document.getElementById("rgName").value.trim(); if(!n){ toast(solo?"請輸入藝名":"請輸入團名"); break; } if(GROUPS.some(g=>g.name===n)){ toast("已經有這個名字了"); break; }
       const id="g"+Date.now(), gc=ui.rsColor??0, g={id,name:n,g:gc,isNew:true,...(solo?{solo:true}:{})}, off={name:n+" 官方",group:id,g:gc,official:true};
@@ -12421,6 +12451,7 @@ function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").l
   return uniMainHead("人員")+`<main class="page">
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${I.user}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=debut">${I.star}出道申請<span class="r">${debutWait()?`<i class="seg-dot"></i>${debutWait()} 件待審核`:"沒有新申請"}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${I.user}藝人與團<span class="r">${GROUPS.length} 團</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${I.star}加點數</button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${I.star}點數統計</button>
