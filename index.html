@@ -3659,6 +3659,32 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 
 .uni-more{margin-left:auto;width:34px;height:34px;border-radius:50%;font-size:18px;font-weight:900;color:var(--ink-3);flex:none}
 .rs-row .rev-dot{width:12px;height:12px;border-radius:50%;flex:none}
+.nw .chips{margin-bottom:12px}
+.nw-tag{display:inline-block;align-self:flex-start;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
+.nw-th{display:block;width:100%;aspect-ratio:16/9;border-radius:var(--radius-l);overflow:hidden;background:var(--s2,var(--line))}
+.nw-th img{width:100%;height:100%;object-fit:cover;display:block}
+.nw-th.sm{width:84px;height:64px;aspect-ratio:auto;border-radius:12px;flex:none}
+.nw-ph{display:grid;place-items:center;width:100%;height:100%;background:linear-gradient(135deg,var(--gt),color-mix(in srgb,var(--gt) 55%,#fff))}
+.nw-ph b{color:#fff;font-weight:900;font-size:clamp(12px,4vw,22px);letter-spacing:.04em;padding:0 8px;text-align:center;text-shadow:0 1px 8px rgba(0,0,0,.18)}
+.nw-th.sm .nw-ph b{font-size:10px;line-height:1.2;word-break:break-all;padding:0 6px}
+.nw-hero{display:flex;flex-direction:column;gap:10px;width:100%;border:0;background:none;padding:0;text-align:left;font-family:inherit;color:var(--ink);margin-bottom:14px}
+.nw-i{display:flex;flex-direction:column;gap:5px;min-width:0;flex:1}
+.nw-i b{font-size:15px;line-height:1.45;font-weight:800;text-wrap:balance}
+.nw-hero .nw-i b{font-size:18px}
+.nw-i small{font-size:12px;color:var(--ink-3)}
+.nw-list{padding:0}
+.nw-row{display:flex;gap:12px;align-items:center;width:100%;border:0;border-bottom:1px solid var(--line);background:none;padding:12px 14px;text-align:left;font-family:inherit;color:var(--ink)}
+.nw-row:last-child{border-bottom:0}
+.nw-d{display:flex;flex-direction:column;gap:8px}
+.nw-dimg{width:100%;border-radius:var(--radius-l);display:block;margin-bottom:6px}
+.nw-d h2{margin:2px 0 0;font-size:21px;line-height:1.4;text-wrap:balance}
+.nw-dt{font-size:12px;color:var(--ink-3)}
+.nw-gs{display:flex;flex-wrap:wrap;gap:6px}
+.nw-gs span{font-size:12px;font-weight:700;padding:3px 10px;border-radius:999px;color:var(--gt);background:color-mix(in srgb,var(--gt) 12%,transparent)}
+.nw-body{margin:8px 0 0;font-size:15px;line-height:1.8;color:var(--ink);word-break:break-word}
+.nw-adimg{position:relative;margin-bottom:12px}.nw-adimg img{width:100%;border-radius:12px;display:block}
+.nw-adimg button{position:absolute;top:8px;right:8px;width:30px;height:30px;border-radius:50%;border:0;background:rgba(0,0,0,.5);color:#fff;display:grid;place-items:center}.nw-adimg .xi{width:16px;height:16px}
+.uni-an.is-hidden p{opacity:.5}
 .uni-an{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}.uni-an:last-child{border-bottom:0}
 .uni-an p{flex:1;min-width:0;margin:0;font-size:14px;line-height:1.5;display:flex;flex-direction:column;gap:2px}.uni-an p b{font-size:12px;color:var(--violet-ink)}.uni-an small{font-size:11.5px;color:var(--ink-3)}
 .ann-sh{display:flex;flex-direction:column;gap:2px;max-height:88vh;overflow-y:auto}
@@ -4367,7 +4393,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec",
+  vsec:"daisuki_vsec", news:"daisuki_news", newsHide:"daisuki_news_hide",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4650,7 +4676,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022090803";
+const BUILD="20261022091339";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4866,7 +4892,7 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
   if(seen===null){ S.set(K.feedSeen,F.map(e=>e.id).slice(0,500)); return false; }   // 新帳號：之前的通知不補送
   const have=new Set(seen), me=myEmail(), fol=followed(), st=getSettings(), add=[];
   F.forEach(e=>{ if(have.has(e.id)) return; have.add(e.id); seen.unshift(e.id); const a=String(e.aud||"");
-    const ok=a==="all"?true:a.startsWith("g:")?fol.includes(a.slice(2)):a.startsWith("tie:")?(isActive(a.slice(4))&&!tieSet(a.slice(4)).muted):a.startsWith("u:")?a.slice(2)===me:false;
+    const ok=a==="all"?true:a.startsWith("g:")?fol.includes(a.slice(2)):a.startsWith("gs:")?a.slice(3).split(",").some(x=>fol.includes(x)):a.startsWith("tie:")?(isActive(a.slice(4))&&!tieSet(a.slice(4)).muted):a.startsWith("u:")?a.slice(2)===me:false;
     if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
   if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); return true; } return false; }catch(e){ return false; } }
@@ -7326,7 +7352,7 @@ const evHit=(q,e)=>{const m=MEMBERS[e.member],g=groupOf(e.group);return hit(q,e.
 const liveHit=(q,l)=>{const m=MEMBERS[l.member],g=groupOf(l.group);return hit(q,l.title,m&&m.name,g&&g.name)};
 
 /* ---------- 小圖示（區塊標題用，風格 C） ---------- */
-const HI={cam:'<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.3" r="3.3"/>',card:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
+const HI={news:'<path d="M4.5 5.5h11v13h-10a1 1 0 0 1-1-1z"/><path d="M15.5 9h3.5v8.5a1 1 0 0 1-1 1h-2.5"/><path d="M7.5 9h5M7.5 12h5M7.5 15h3"/>',cam:'<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.3" r="3.3"/>',card:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
   trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/>',play:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/>',pen:'<path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 7l3 3"/>',
   gem:'<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/>',tie:'<path d="M12 12c-3-4-8-4-8 0s5 4 8 0zm0 0c3-4 8-4 8 0s-5 4-8 0z"/>',bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
   album:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/>',receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',live:'<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4"/>',
@@ -7931,11 +7957,12 @@ NAV.foc=`<svg viewBox="0 0 24 24" ${NS}><path d="M7 4h5l-.6 5.2a3.5 3.5 0 0 1-7 
 const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)?"dot":0});
 
 /* ---------- 粉絲：通知頁 ---------- */
-const NK={core:["CORE","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
+const NK={news:["NEWS","#0EA5E9"],core:["CORE","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
 function notifMsg(n){
   if(n.self) return n.text;
   const m=MEMBERS[n.member], nm=m?artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed"):"";
   if(n.kind==="core") return (nm?nm+" ":"")+n.text;
+  if(n.kind==="news") return "新聞："+n.text;
   return {post:`${nm} 發布了新貼文：${n.text}`,comment:`${nm} 回覆了你的留言：「${n.text}」`,live:n.liveReply?`${nm} ${n.text} 💬`:`${nm} 開始直播了：${n.text} 🔥`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${n.text}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
 }
 function pinnedHtml(){
@@ -7958,8 +7985,8 @@ function viewNotifs(){
   const list=ui.notifFilter==="all"?all:all.filter(n=>n.group===ui.notifFilter);
   const groups=f.map(groupOf).filter(Boolean);
   const card=n=>{const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"];
-    const act=n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
-    return `<button class="nz-card ${n.self?"self":""}" data-a="${act}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||""}" data-c="${n.commentId||""}">
+    const act=n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
+    return `<button class="nz-card ${n.self?"self":""}" data-a="${act}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||n.newsId||""}" data-c="${n.commentId||""}">
       <span class="nz-type"><i style="background:${col}"></i>${lab}${n.self?"・你的動態":""}</span>
       <p>${esc(notifMsg(n))}</p><span class="nz-time">${ago(n.ts)}</span></button>`};
   return `<header class="top"><div class="top-row">
@@ -9404,7 +9431,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
-const FOC_PAGES={concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
+const FOC_PAGES={news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
   const sc=getSched(), ls=lightsea(), gid=MEMBERS[mid].group, mine=ls&&ls.gid===gid, nc=nextConcert(gid), g=groupOf(gid);
@@ -9415,6 +9442,7 @@ function viewArtistFoc(mid,p){
       ${mine||nc?`<div class="foc-cc ${mine?"on":""}"><b>${mine?`✺ 進行中・${esc(ls.title)}`:`下一場：${esc(nc.title)}`}</b><small>${mine?`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`:`${evWhen(nc.startTs)} 開始`}</small></div>`:""}
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:nc?(canCtl(nc,mid)?`<button class="btn btn-main btn-block cc-ctl" data-a="ccNow" data-id="${nc.id}">現在開始演唱會</button>`:""):acOpenCard(mid)}
       ${!mine&&demoOn()?`<button class="btn btn-soft btn-block" data-a="lsDemo">示範：打開燈控台看看</button>`:""}</section></main>`;
+  if(p==="news"){ const nid=route().id; return focHead("新聞")+(nid?newsDetailHtml(nid):newsListHtml("#/artist?tab=foc&p=news",[gid],g.solo?"我的":"我們團")); }
   if(p==="sign") return focHead("簽售")+`<main class="page foc">${fsArtistCard(mid)}</main>`;
   if(p==="stick") return focHead("官方應援棒")+`<main class="page foc"><section class="card foc-c foc-ls"><div class="ls-stage"><span class="ls-tag">${getSticks()[gid]?"管理員已上傳設計圖":"預設款・等管理員上傳設計圖"}</span><div class="ls-box" data-ls="${gid}" data-o="ctl"></div></div></section></main>`;
   if(p==="honor") return focHead("榮譽與職務")+`<main class="page foc"><section class="card foc-c">
@@ -9432,7 +9460,7 @@ function viewArtistFoc(mid,p){
     </section>
     ${secH("live","現場")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}</div>
     ${secH("trophy","舞台")}<div class="tiles">${tile("focGo","honor","trophy","榮譽與職務",`今年 ${fmt(yearPts)} 分`)}${tile("focGo","stick","bolt","官方應援棒",`${esc(g.name)}`)}</div>
-    ${secH("cam","社群")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}</div>
+    ${secH("cam","社群")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
   </main>`;
 }
 const FIC={
@@ -9444,7 +9472,7 @@ const FIC={
 /* =========================================================
    CORE（從 NSY 搬過來）：獨家影音、選秀宇宙、打歌戰場、體感演唱會、90s 簽售
    ========================================================= */
-const CORE_SECTIONS={card:"PHOTOCARD 抽卡 卡冊 小卡 photocard",survival:"選秀宇宙 survival project 宇宙 選秀",promo:"打歌戰場 promotion 正在打歌中的藝人 打歌 戰場 藝人",live:"體感演唱會 live sync 演唱會 體感 應援 應援棒",meet:"90s 簽售 meet greet 簽售"};
+const CORE_SECTIONS={news:"新聞 news 娛樂 快訊 一位 出道 回歸",card:"PHOTOCARD 抽卡 卡冊 小卡 photocard",survival:"選秀宇宙 survival project 宇宙 選秀",promo:"打歌戰場 promotion 正在打歌中的藝人 打歌 戰場 藝人",live:"體感演唱會 live sync 演唱會 體感 應援 應援棒",meet:"90s 簽售 meet greet 簽售"};
 const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>';
 function coreStickGroup(){ const ls=lightsea(); if(ls) return ls.gid; const f=followed(), p=S.get(K.pick,null), cg=curGrp(); if(cg!=="all"&&f.includes(cg)&&!ui.coreStick) return cg; if(ui.coreStick&&f.includes(ui.coreStick)) return ui.coreStick; return p&&f.includes(p)?p:(f[0]||GROUPS[0].id); }
 function coreConcertCard(){ const ls=lightsea(), lg=ls&&groupOf(ls.gid), sg=coreStickGroup(), fg=followed(), nx=getConcerts().filter(c=>!c.ended&&c.startTs>Date.now()), nxf=nx.filter(c=>fg.includes(c.gid)), nc=nxf[0]||nx[0], hs=hasStick(sg);
@@ -9461,12 +9489,12 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
     ${!q&&now.length?`${secH("live","正在發生")}<div class="now-list">${now.join("")}</div>`:""}
-    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["現場",["concert","fsl"]],["應援",["promo","survival"]],["收藏與社群",["cards","sns"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
+    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["現場",["concert","fsl"]],["應援",["promo","survival"]],["收藏與社群",["cards","sns"]],["娛樂",["news"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
   </main>`;
 }
 function vodList(gid){ return getVods(gid).filter(v=>!v.sec).map(v=>({id:v.id,type:vcatName(v.cat),title:v.title,ts:v.ts,v})); }
@@ -9519,7 +9547,50 @@ function adminVodHtml(){ const gid=ui.vodG||GROUPS[0].id, vs=getVods(gid), al=ge
     ${vs.map(v=>`<div class="vd-r">${upCell("vth|"+v.id,"","16/9")}<span><b>${esc(v.title)}</b><small>${esc(vcatName(v.cat))}${v.album?`・《${esc(v.album)}》`:""}・${ymd(v.ts)}${v.link?"・有連結":""}</small></span><button class="btn btn-soft btn-sm" data-a="vodDel" data-v="${v.id}">刪除</button></div>`).join("")}</section>`; }
 const ymd=ts=>{const t=new Date(ts);return `${t.getFullYear()}.${pad(t.getMonth()+1)}.${pad(t.getDate())}`};
 function coreHead(title){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title core-t">${title}</div><span class="sh-sp"></span></div></header>`; }
+/* ===== 娛樂新聞 NEWS：管理員手動發＋App 自動快訊（出道、回歸、一位、三冠王、AK、PAK）。粉絲、藝人、管理員看到同一份 ===== */
+const NEWS_TAG={debut:["出道","#F472B6"],cb:["回歸","#8B5CF6"],win:["一位","#F59E0B"],crown:["三冠王","#D97706"],ak:["AK","#EF4444"],pak:["PAK","#DC2626"],off:["新聞","#0EA5E9"]};
+const idTs=(id,re)=>{ const t=+String(id).replace(re,""); return t>1.5e12&&t<4e12?t:0; };
+function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.ended||[])];
+  GROUPS.forEach(g=>{ const t=idTs(g.id,/^g/); if(!t) return; const ms=groupArtists(g.id).map(id=>artName(id,"feed")).filter(Boolean);
+    L.push({id:"au_dbt_"+g.id,tag:"debut",ts:t,gids:[g.id],title:`${g.name} 正式出道！`,body:g.solo?`SOLO 歌手 ${g.name} 正式出道，一起迎接新人！`:`新團 ${g.name} 正式出道${ms.length?`，成員：${ms.join("、")}`:""}。一起迎接新人！`}); });
+  songs.forEach(s=>{ const t=idTs(s.id,/^s/), g=groupOf(s.gid); if(!t||!g) return;
+    L.push({id:"au_cb_"+s.id,tag:"cb",ts:t,gids:[s.gid],title:`${g.name}《${s.title}》回歸打歌`,body:`${g.name} 帶著新歌《${s.title}》回歸，開始登上音樂節目打歌舞台。`}); });
+  Object.keys(m.wins).sort().forEach(wk=>{ const ws=m.wins[wk]||{}; SHOWS.forEach(sh=>{ const sid=ws[sh.id], s=songOf(sid); if(!s||!groupOf(s.gid)) return;
+    const cr=crowned(sid,sh.id,shiftWeek(wk,1))&&!crowned(sid,sh.id,wk), t=wkDate(wk).getTime()+((sh.day+6)%7)*D+20*36e5, nm=songName(s);
+    L.push({id:`au_w_${wk}_${sh.id}`,tag:cr?"crown":"win",ts:t,gids:[s.gid],title:cr?`${nm} 在 ${sh.name} 達成三冠王！`:`${nm} 拿下 ${sh.name} 一位`,body:cr?`${nm} 連續三週拿下 ${sh.name} 一位，正式成為三冠王！`:`恭喜 ${nm} 拿下 ${sh.name} 一位（+${fmt(MSP.win)} 積分）！`}); }); });
+  songs.forEach(s=>{ if(!groupOf(s.gid)) return; const st=songStats(s.id), nm=songName(s), end=wk=>wkDate(wk).getTime()+6*D+21*36e5;
+    st.aks.forEach(wk=>L.push({id:`au_ak_${s.id}_${wk}`,tag:"ak",ts:end(wk),gids:[s.gid],title:`${nm} 達成 All-Kill！`,body:`同一週拿下全部 ${SHOWS.length} 個音樂節目一位，${nm} 達成 AK（+${fmt(MSP.ak)} 積分）！`}));
+    if(st.pak) L.push({id:`au_pak_${s.id}`,tag:"pak",ts:end(st.pak),gids:[s.gid],title:`${nm} 達成 Perfect All-Kill！`,body:`連續 4 個排名週都拿下一位，${nm} 達成 PAK（+${fmt(MSP.pak)} 積分）！`}); });
+  const now=Date.now(); return L.map(x=>({...x,auto:true,ts:Math.min(x.ts,now)})); }
+const getNewsM=()=>S.get(K.news,[])||[];
+function newsAll(withHidden){ const H=S.get(K.newsHide,{})||{}, cut=Date.now()-120*864e5;
+  return [...getNewsM().map(x=>({...x,tag:"off"})),...newsAuto().filter(x=>x.ts>cut)].filter(x=>withHidden||!H[x.id]).sort((a,b)=>b.ts-a.ts); }
+const newsOf=id=>newsAll(true).find(x=>x.id===id);
+const newsTag=n=>{ const [l,c]=NEWS_TAG[n.tag]||NEWS_TAG.off; return `<em class="nw-tag" style="--c:${c}">${n.auto?"快訊・":""}${l}</em>`; };
+const newsThumb=n=>{ const g=groupOf((n.gids||[])[0]); return n.img?`<img src="${esc(n.img)}" alt="">`:`<span class="nw-ph" style="--gt:${g?gTheme(g.id):"#8843FB"}"><b>${esc(g?g.name:"HAECHU")}</b></span>`; };
+function newsListHtml(base,mine,mineLab){ const f=ui.newsF==="mine"?"mine":"all", all=newsAll(), L=f==="mine"?all.filter(n=>!(n.gids||[]).length||n.gids.some(g=>mine.includes(g))):all, [h,...rest]=L;
+  const row=n=>`<button class="nw-row" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${base}"><span class="nw-i">${newsTag(n)}<b>${esc(n.title)}</b><small>${relDay(n.ts)}</small></span><span class="nw-th sm">${newsThumb(n)}</span></button>`;
+  return `<main class="page nw"><div class="chips"><button class="chip ${f==="all"?"on":""}" data-a="newsF" data-v="all">全部</button><button class="chip ${f==="mine"?"on":""}" data-a="newsF" data-v="mine">${mineLab}</button></div>
+    ${h?`<button class="nw-hero" data-a="newsOpen" data-v="${esc(h.id)}" data-b="${base}"><span class="nw-th">${newsThumb(h)}</span><span class="nw-i">${newsTag(h)}<b>${esc(h.title)}</b><small>${relDay(h.ts)}</small></span></button>`:`<p class="me-none">還沒有新聞</p>`}
+    ${rest.length?`<section class="card nw-list">${rest.map(row).join("")}</section>`:""}</main>`; }
+function newsDetailHtml(id){ const n=newsOf(id), H=S.get(K.newsHide,{})||{}; if(!n||H[n.id]) return `<main class="page"><p class="me-none">這則新聞已經撤下</p></main>`;
+  const gs=(n.gids||[]).map(groupOf).filter(Boolean);
+  return `<main class="page nw-d">${n.img?`<img class="nw-dimg" src="${esc(n.img)}" alt="">`:""}${newsTag(n)}<h2>${esc(n.title)}</h2><small class="nw-dt">${ymd(n.ts)}・HAECHU ${n.auto?"快訊":"新聞"}</small>
+    ${gs.length?`<div class="nw-gs">${gs.map(g=>`<span style="--gt:${gTheme(g.id)}">${esc(g.name)}</span>`).join("")}</div>`:""}
+    <p class="nw-body">${esc(n.body||"").replace(/\n/g,"<br>")}</p></main>`; }
+const newsSub=()=>{ const n=newsAll()[0]; return n?esc(n.title):"還沒有新聞"; };
+function newsAdminHtml(){ const d=ui.nwDraft||(ui.nwDraft={title:"",body:"",gids:[],img:""}), H=S.get(K.newsHide,{})||{}, L=newsAll(true);
+  return `<section class="card studio"><div class="foc-cfg-h"><h3>發新聞</h3></div>
+    <span class="fld-lab">標題</span><label class="field"><input id="nwTi" maxlength="60" placeholder="輸入文字" value="${esc(d.title)}"></label>
+    <span class="fld-lab">內容</span><label class="field ann-ta"><textarea id="nwBo" rows="5" maxlength="2000" placeholder="輸入文字">${esc(d.body)}</textarea></label>
+    <span class="fld-lab">相關藝人</span><div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${d.gids.includes(g.id)?"on":""}" data-a="nwG" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
+    <span class="fld-lab">圖片</span>${d.img?`<div class="nw-adimg"><img src="${esc(d.img)}" alt=""><button data-a="nwImgDel" aria-label="移除">${XI}</button></div>`:`<button class="btn btn-soft btn-block" data-a="nwImg" ${ui.nwBusy?"disabled":""}>${ui.nwBusy?"上傳中…":"選一張圖"}</button>`}
+    <button class="btn btn-main btn-block" data-a="nwPost" ${ui.nwBusy?"disabled":""}>發布</button></section>
+    <div class="section-h">全部新聞<span class="muted">${L.length} 則</span></div>
+    ${L.length?`<section class="card">${L.map(n=>`<div class="uni-an ${H[n.id]?"is-hidden":""}"><p>${newsTag(n)}<span>${esc(n.title)}</span><small>${ago(n.ts)}${H[n.id]?"・已撤下":""}</small></p><button class="btn btn-soft btn-sm" data-a="${n.auto?"nwHide":"nwDel"}" data-v="${esc(n.id)}">${n.auto?(H[n.id]?"恢復":"撤下"):"刪除"}</button></div>`).join("")}</section>`:`<p class="me-none">還沒有新聞</p>`}`; }
+const nwKeep=()=>{ const d=ui.nwDraft; if(!d) return; const a=document.getElementById("nwTi"), b=document.getElementById("nwBo"); if(a) d.title=a.value; if(b) d.body=b.value; };
 function viewCoreSub(page,id){
+  if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
   if(false) return `<main class="page"><div class="vod-grid">${GROUPS.map(g=>`<button class="vod-g" data-a="coreGallery" data-v="${g.id}" style="background:${grad(g.g)}"><span class="vod-play">${PLAY}</span><span class="vod-bar">${esc(g.name)}</span></button>`).join("")}</div></main>`;
   if(page==="gallery") return go("fan",null,"core");
@@ -9747,7 +9818,7 @@ function viewAdmin(tab){
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
     const seg=ui.focSeg||"sched", lsOn=!!liveConcert();
-    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["sv","選秀"]];
+    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>當前活動階段配置</h3><span class="badge">即時同步中</span></div>
         <label class="foc-lab">本週階段</label>
         <label class="field"><input id="focStage" value="${esc(st)}"></label>
@@ -9757,7 +9828,7 @@ function viewAdmin(tab){
         <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
         ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}</section>
 `,
-      music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml())+adminVodHtml()+adminMusicHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
+      music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml())+adminVodHtml()+adminMusicHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
         <div class="ls-btns"><button class="btn ${svOpen()?"btn-soft":"btn-main"}" data-a="svToggle">${svOpen()?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
 `}[seg]||"";
     return adminHead("FOC")+`<main class="page">
@@ -10236,6 +10307,21 @@ document.addEventListener("click",e=>{
     case "notifClear": ask("要清除所有一般通知嗎？置頂公告不會被清掉。",()=>{ S.set(K.notifs,getNotifications().filter(n=>n.kind==="system")); markAllRead(); render(); toast("已清除通知"); }); break;
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
     case "goCore": go("fan",null,"core"); window.scrollTo(0,0); break;
+    case "newsF": ui.newsF=t.dataset.v; lsRerender(); break;
+    case "newsOpen": location.hash=t.dataset.b+"&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
+    case "openNews": location.hash="#/fan/core?p=news"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
+    case "nwG": { nwKeep(); const d=ui.nwDraft, v=t.dataset.v; d.gids=d.gids.includes(v)?d.gids.filter(x=>x!==v):[...d.gids,v]; lsRerender(); break; }
+    case "nwImg": { nwKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; ui.nwBusy=true; lsRerender();
+        try{ const b=await shrinkImg(f,1600); const url=(HB_ON&&await hbImgUrl("gph_news_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(ui.nwDraft) ui.nwDraft.img=url; }catch(e){ toast("這張圖讀不出來"); }
+        ui.nwBusy=false; lsRerender(); }; inp.click(); break; }
+    case "nwImgDel": { nwKeep(); const d=ui.nwDraft; if(d){ mediaDel(d.img); d.img=""; } lsRerender(); break; }
+    case "nwPost": { nwKeep(); const d=ui.nwDraft; if(!d||!d.title.trim()||!d.body.trim()){ toast("標題和內容都要填"); break; }
+      const n={id:"nw"+Date.now(),title:d.title.trim(),body:d.body.trim(),img:d.img||"",gids:d.gids.filter(groupOf),ts:Date.now()};
+      S.set(K.news,[n,...getNewsM()].slice(0,200)); feedPush({kind:"news",group:n.gids[0]||"",text:n.title.slice(0,80),newsId:n.id,direct:true},n.gids.length?"gs:"+n.gids.join(","):"all");
+      ui.nwDraft=null; lsRerender(); toast("已發布"); break; }
+    case "nwDel": { const id=t.dataset.v, n=getNewsM().find(x=>x.id===id); if(n&&n.img) mediaDel(n.img); S.set(K.news,getNewsM().filter(x=>x.id!==id)); S.set(K.notifs,S.get(K.notifs,[]).filter(x=>x.newsId!==id)); lsRerender(); toast("已刪除"); break; }
+    case "nwHide": { const id=t.dataset.v, H={...(S.get(K.newsHide,{})||{})}; if(H[id]) delete H[id]; else H[id]=1; S.set(K.newsHide,H); lsRerender(); toast(H[id]?"已撤下":"已恢復"); break; }
     case "meSec": ui.meSec=t.dataset.v; render(); window.scrollTo(0,0); break;
     case "meSecBack": ui.meSec=null; render(); window.scrollTo(0,0); break;
     case "muOpen": case "muSheet": openSongSheet(t.dataset.v); break;
