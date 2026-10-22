@@ -4709,7 +4709,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022124303";
+const BUILD="20261022124410";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7469,7 +7469,7 @@ function seedGN(){ if(S.get(K.seedGN,false)) return; S.set(K.seedGN,true); const
   S.set(K.gNotices,L); }
 function schedItems(){
   const f=followed(), now=Date.now(), D=864e5, it=[];
-  Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&f.includes(MEMBERS[id].group)).forEach(id=>{ const d=bdayLeft(id); if(d!=null&&d<=30){ const w=S.get(K.bdayWish,{})[wishKey(id)]||{n:0}; it.push({ts:now+d*D,ic:"🎂",t:d===0?`今天是 ${artName(id,"feed")} 的生日！`:`${artName(id,"feed")} 的生日`,s:d===0?"今天":`倒數 ${d} 天・已有 ${fmt(w.n)} 位粉絲送出祝福`,btn:`<button class="mf-wish ${w.mine?"on":""}" data-a="wish" data-m="${id}">${w.mine?"已送出 💜":"送出祝福"}</button>`}); } });
+  Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&f.includes(MEMBERS[id].group)).forEach(id=>{ const d=bdayLeft(id); if(d!=null&&d<=30){ const w=S.get(K.bdayWish,{})[wishKey(id)]||{n:0}; it.push({ts:now+d*D,ic:"🎂",t:d===0?`今天是 ${MEMBERS[id].name} 的生日！`:`${MEMBERS[id].name} 的生日`,s:d===0?"今天":`倒數 ${d} 天・已有 ${fmt(w.n)} 位粉絲送出祝福`,btn:`<button class="mf-wish ${w.mine?"on":""}" data-a="wish" data-m="${id}">${w.mine?"已送出 💜":"送出祝福"}</button>`}); } });
   getConcerts().filter(c=>!c.ended&&c.endTs>now&&f.includes(c.gid)).forEach(c=>it.push({ts:c.startTs,ic:"🎤",t:`${groupOf(c.gid).name}・${c.title}`,s:c.startTs<=now?"演唱會進行中":"演唱會・"+evWhen(c.startTs)}));
   getPlans().filter(p=>f.includes(p.group)&&MEMBERS[p.member]).forEach(p=>it.push({ts:p.ts,ic:"📡",t:`${artName(p.member,"feed")}・${p.title}`,s:"直播預告・"+evWhen(p.ts)}));
   fsAll().filter(e=>f.includes(e.group)&&groupOf(e.group)&&e.id!=="fsshow"&&e.status!=="done").forEach(e=>it.push({ts:e.status==="open"&&e.closeTs?e.closeTs:(e.startTs||now),ic:"✍️",t:e.title,s:e.status==="live"?"簽售進行中":e.status==="open"&&e.closeTs?`簽售報名到 ${fsWhen(e.closeTs)}`:"簽售"}));
@@ -7674,7 +7674,7 @@ const isMeC=c=>c.author==="me"&&(c.by?c.by===myEmail():(((session()||{}).role!==
 const isMine=p=>p.mine&&(p.by?p.by===myEmail():myEmail()===DEMO_FAN);
 const fanCard=p=>`<section class="card fp"><div class="fp-h">${isMine(p)?cmAvatar(p.gid,"sm"):`<i style="background:${grad(p.g||3)}">${esc((p.name||"粉")[0])}</i>`}<b>${esc(shownName(p))}</b><small>${ago(p.ts)}</small>${isAdminAcct()&&!isMine(p)?`<button class="uni-more fp-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div><p>${esc(p.text)}</p><div class="fp-f">${p.hideArt?'<span class="fp-hid">藝人看不到</span>':""}${bmBtn("f:"+p.id)}</div></section>`;
 function grpSched(gid){ const now=Date.now(), D=864e5, it=[];
-  grpMembers(gid).forEach(id=>{ const d=bdayLeft(id); if(d!=null) it.push({ts:now+d*D,ic:"🎂",t:`${artName(id,"feed")} 生日`,k:"紀念日"}); });
+  grpMembers(gid).forEach(id=>{ const d=bdayLeft(id); if(d!=null) it.push({ts:now+d*D,ic:"🎂",t:`${MEMBERS[id].name} 生日`,k:"紀念日"}); });
   getConcerts().filter(c=>c.gid===gid&&!c.ended&&c.endTs>now).forEach(c=>it.push({ts:c.startTs,ic:"🎤",t:c.title,k:"演唱會"}));
   getPlans().filter(p=>p.group===gid&&MEMBERS[p.member]).forEach(p=>it.push({ts:p.ts,ic:"📡",t:`${artName(p.member,"feed")}・${p.title}`,k:"直播"}));
   fsAll().filter(e=>e.group===gid&&e.id!=="fsshow"&&e.status!=="done").forEach(e=>it.push({ts:e.startTs||now,ic:"✍️",t:e.title,k:"簽售"}));
