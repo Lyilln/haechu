@@ -6,7 +6,7 @@ self.addEventListener("push", (e) => {
   try { d = e.data ? e.data.json() : {}; } catch (x) { d = { body: e.data ? e.data.text() : "" }; }
   e.waitUntil(self.registration.showNotification(d.title || "HAECHU", {
     body: d.body || "",
-    icon: "icon-192.png",
+    icon: d.icon || "icon-192.png",
     badge: "icon-192.png",
     tag: d.tag || undefined,
     data: { path: d.path || "" },
