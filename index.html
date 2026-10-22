@@ -4709,7 +4709,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022123943";
+const BUILD="20261022124303";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -11141,7 +11141,7 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
 
 
 /* ===== 返回手勢（粉絲、藝人、管理員三端都能用）=====
-   在頁面任何地方往右滑（橫向的意圖明顯時才算）就會拉開這一頁，底下露出上一頁；放開時滑過 1/3 或甩得快就返回。
+   只有從最左邊邊緣往右滑才算（她 10/22：畫面任何地方都能滑太糟糕）；拉開這一頁，底下露出上一頁；放開時滑過 1/3 或甩得快就返回。
    從左邊緣開始滑一定算；從中間滑時，如果手指在可以左右滑的列表（留言列、商品列、應援棒…）上，就讓給那個列表。 */
 (function swipeBack(){ let st=null;
   const BACK='[data-a="back"],[aria-label="返回"],[data-a="pClose"],[data-a="gClose"],[data-a="aeClose"],[data-a="meetBack"],[data-a="snsExit"],[data-a="ltX"]';
@@ -11155,7 +11155,7 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }
   /* 在 Safari／Chrome 瀏覽器裡：最左邊那一條是瀏覽器自己的返回手勢，讓給它（兩個一起動就會出現兩層畫面）；加到主畫面的 App 才由這裡處理 */
   const STANDALONE=navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;
-  document.addEventListener("touchstart",e=>{ if(e.touches.length!==1){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<36;
+  document.addEventListener("touchstart",e=>{ if(e.touches.length!==1){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
     if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
