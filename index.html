@@ -4635,7 +4635,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022042126";
+const BUILD="20261022050102";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8515,24 +8515,29 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
     const k=document.documentElement.getBoundingClientRect().width/Math.max(1,vv.width);
     const kbOpen=typing&&vv.height<(screen.height||innerHeight)*0.8;
     const was=document.documentElement.classList.contains("kbo"); document.documentElement.classList.toggle("kbo",!!kbOpen);
-    if(kbOpen&&!was) setTimeout(()=>{ const m=document.querySelector(".t-msgs.kbbox"); if(m) m.scrollTop=m.scrollHeight; },380);
-    if(!kbOpen&&was) [60,250].forEach(t=>setTimeout(()=>{ if(document.activeElement&&document.activeElement.id==="win") return; const end=document.getElementById("chat-end"); if(end) end.scrollIntoView({block:"end"}); },t));
-    const ms=document.querySelector(".t-msgs");
-    if(!kbOpen){ f.style.transform=""; if(h) h.style.transform=""; if(bg) bg.style.transform=""; if(ms&&ms.classList.contains("kbbox")){ ms.classList.remove("kbbox"); ms.style.cssText=""; const end=document.getElementById("chat-end"); if(end) end.scrollIntoView({block:"end"}); } }   /* 收鍵盤：同一瞬間就回到最新一則，不會先跳到上面再滑下來 */
+    if(!kbOpen&&was) [60,250].forEach(t=>setTimeout(()=>{ if(document.activeElement&&document.activeElement.id==="win") return; kbRestore(ui.kbBackEnd); },t));
+    const ms=document.querySelector(".t-msgs"), keep0=ms&&ms.classList.contains("kbbox")&&document.getElementById("chat-end")?Math.max(0,(document.getElementById("chat-end").getBoundingClientRect().bottom-ms.getBoundingClientRect().bottom)/(parseFloat(getComputedStyle(document.documentElement).zoom)||1)):null;   /* 先量（輸入列還沒移動前），之後才知道要保持在哪 */
+    if(!kbOpen){ f.style.transform=""; if(h) h.style.transform=""; if(bg) bg.style.transform=""; if(ms&&ms.classList.contains("kbbox")){ const fromEnd=keep0||0; ms.classList.remove("kbbox"); ms.style.cssText=""; kbRestore(fromEnd); } }   /* 收鍵盤（照 LINE）：同一瞬間回到原本看的地方，不閃、不跳 */
     else { const lift=isIOS&&isStandalone()?-10:6, want=vv.height*k-lift*k;   /* 實測：visualViewport 的底已經扣掉「^ ˅ ✓」和網址膠囊，不用再抬 */
       for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nudge(f,d); }
       if(h) for(let i=0;i<3;i++){ const d=-h.getBoundingClientRect().top; if(Math.abs(d)<1) break; nudge(h,d); }
       if(bg) bg.style.transform=h?h.style.transform:"";
       /* 訊息區：鍵盤開著時變成標題列和輸入列中間自己捲的一塊（不靠整頁捲動，才不會亂跳、最新一則才不會被擋住） */
-      if(ms&&h){ const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, first=!ms.classList.contains("kbbox"); ms.classList.add("kbbox");
+      if(ms&&h){ const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, first=!ms.classList.contains("kbbox"), keep=first?null:keep0; ms.classList.add("kbbox");
         const hb=h.getBoundingClientRect().bottom, ft=f.getBoundingClientRect().top; ms.style.height=Math.max(60,(ft-hb)/z)+"px";
         for(let i=0;i<3;i++){ const d=hb-ms.getBoundingClientRect().top; if(Math.abs(d)<1) break; nudge(ms,d); }
-        if(first) ms.scrollTop=ms.scrollHeight; } }
+        if(first||keep!=null){ if(first) ms.scrollTop=ms.scrollHeight; const want=first?(ui.kbFromEnd||0):keep; for(let i=0;i<4;i++){ const d=pageFromEnd()-want; if(Math.abs(d)<1) break; ms.scrollTop+=d; } } } }
     if(/[?&]dbg/.test(location.search)){ let d=document.getElementById("kbDbg"); if(!d||!f.contains(d)){ if(d) d.remove(); d=document.createElement("div"); d.id="kbDbg"; d.style.cssText="position:absolute;left:6px;bottom:100%;margin-bottom:4px;z-index:99999;background:#000c;color:#0f0;font:12px/1.4 monospace;padding:4px 6px;border-radius:6px;pointer-events:none"; f.appendChild(d); }
       d.textContent=`${++fitN} ih${innerHeight} sh${screen.height} vh${Math.round(vv.height)} vw${Math.round(vv.width)} ot${Math.round(vv.offsetTop)} sy${Math.round(scrollY)} k${k.toFixed(3)} kb${kbOpen?1:0} sa${isStandalone()?1:0} fb${Math.round(f.getBoundingClientRect().bottom)} ht${h?Math.round(h.getBoundingClientRect().top):"-"}`; } };
   const q=()=>{ if(!raf) raf=requestAnimationFrame(fit); };
   vv.addEventListener("resize",q); vv.addEventListener("scroll",q); addEventListener("scroll",q,{passive:true}); addEventListener("resize",q);
   document.addEventListener("focusin",e=>{ if(e.target.id!=="win") return; q(); setTimeout(q,350); setTimeout(q,700); });
+  /* 照 LINE：打開鍵盤時，原本貼在輸入列上面的那則訊息還是貼在輸入列上面；收起時回到原本看的位置
+     fromEnd＝看到的最下面離聊天最底還有多少（0 就是在最新一則） */
+  const pageFromEnd=()=>{ const end=document.getElementById("chat-end"), f=document.querySelector(".t-foot"); if(!end||!f) return 0; const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1; return Math.max(0,(end.getBoundingClientRect().bottom-f.getBoundingClientRect().top)/z); };
+  function kbRestore(fromEnd){ ui.kbBackEnd=fromEnd||0; const end=document.getElementById("chat-end"), f=document.querySelector(".t-foot"); if(!end||!f) return; const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
+    for(let i=0;i<3;i++){ const d=(end.getBoundingClientRect().bottom-f.getBoundingClientRect().top)/z-ui.kbBackEnd; if(Math.abs(d)<1) break; scrollBy(0,d); } }
+  document.addEventListener("touchstart",e=>{ if(e.target.id==="win"&&document.activeElement!==e.target) ui.kbFromEnd=pageFromEnd(); },{passive:true,capture:true});
   /* 鍵盤打開後：最新一則訊息剛好在輸入列上面（不夠捲就在下面補空間） */
   function kbToEnd(){ const f=document.querySelector(".t-foot"), end=document.getElementById("chat-end"), ms=document.querySelector(".t-msgs"); if(!f||!end||!ms) return;
     const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
