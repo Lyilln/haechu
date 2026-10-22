@@ -4734,7 +4734,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022144513";
+const BUILD="20261022144805";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5013,7 +5013,7 @@ function onlinePing(){ try{ const s=session(); if(!s||s.role!=="fan"||!HB_ON) re
 setInterval(()=>{ if(!document.hidden) onlinePing(); },20e3); document.addEventListener("visibilitychange",onlinePing); setTimeout(onlinePing,1500);
 let iaT=0;
 let visSince=Date.now(); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) visSince=Date.now(); });
-function iaBanner(n){ try{ if(!n||document.hidden||n.self||Date.now()-visSince<6000) return;   // 剛打開／剛從推播點進來：手機已經通知過了，不再跳一次 const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
+function iaBanner(n){ try{ if(!n||document.hidden||n.self||Date.now()-visSince<2500||(n.ts&&n.ts<visSince)) return;   // 剛打開／剛從推播點進來：手機已經通知過了，不再跳一次 const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
   const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"], act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":n.kind==="system"?"goNotifs":"openPost", m=MEMBERS[n.member];
   document.querySelectorAll(".ia-ban").forEach(x=>x.remove()); const b=document.createElement("button"); b.className="ia-ban"; b.type="button";
   Object.entries({a:act,ek:n.evKind||"",ev:n.eventId||"",lv:n.liveId||"",m:n.member||"",id:n.postId||n.newsId||n.tourId||"",c:n.commentId||""}).forEach(([k,v])=>b.dataset[k]=v);
@@ -5995,6 +5995,8 @@ function mascot(k){
 const NICK_TK="@@@";
 /* Membership（整個團）：買了的粉絲，藝人那邊會看到「藝人幫 Membership 粉絲取的愛稱」；沒買的照樣是 FROM FAN＋隨機名字 */
 /* 營收紀錄：每一筆購買都記下來，管理員看收成、跟藝人算帳用 */
+/* 購買紀錄的名稱：Membership 一律顯示現在的藝名／團名（舊紀錄可能存到社群名字） */
+const saleLbl=x=>{ const g=x&&x.gid&&groupOf(x.gid); return x&&x.type==="membership"&&g?String(x.label||"").replace(/^.*? Membership/,g.name+" Membership"):String((x&&x.label)||""); };
 function recordSale(type,{gid=null,mid=null,pts=0,label=""}={}){ const l=S.get(K.sales,[]); l.unshift({id:"s"+Date.now()+Math.random().toString(36).slice(2,5),type,gid:gid||(mid&&MEMBERS[mid]?MEMBERS[mid].group:null),mid,pts,label,ts:Date.now(),buyer:myEmail()||"me"}); /* 記下是哪個帳號買的：購買紀錄只看得到自己的 */ S.set(K.sales,l.slice(0,2000)); }
 const MS_PLANS=[{id:"m30",days:30,pts:300,name:"30 天"},{id:"m365",days:365,pts:3000,name:"365 天"}];
 const getMS=()=>S.get(K.membership,{});
@@ -6092,7 +6094,7 @@ function viewRevenue(){
     ${groups.map(({g,total,ms})=>`<section class="card rev-g"><div class="rev-gh"><span class="rev-dot" style="background:${grad(g.g)}"></span><b>${esc(g.name)}</b><em>${fmt(total)}</em></div>
       ${ms.map(id=>{const v=Math.round(all.byMember[id]||0);return `<div class="rev-m"><span>${esc(artName(id,"feed"))}</span><small>分到 ${fmt(v)}</small><b>應得 ${fmt(Math.round(v*sh/100))}</b></div>`}).join("")}</section>`).join("")}
     <div class="section-h">最近的購買<span class="muted">${all.sales.length} 筆</span></div>
-    <section class="card rev-list">${all.sales.slice(0,30).map(x=>`<div class="rev-row"><span class="rev-t t-${x.type}">${T[x.type]}</span><p>${esc(x.label)}</p><b>${fmt(x.pts)}</b><small>${ago(x.ts)}</small></div>`).join("")||`<p class="muted" style="padding:14px">還沒有購買紀錄</p>`}</section>
+    <section class="card rev-list">${all.sales.slice(0,30).map(x=>`<div class="rev-row"><span class="rev-t t-${x.type}">${T[x.type]}</span><p>${esc(saleLbl(x))}</p><b>${fmt(x.pts)}</b><small>${ago(x.ts)}</small></div>`).join("")||`<p class="muted" style="padding:14px">還沒有購買紀錄</p>`}</section>
   </main>`;
 }
 
@@ -7994,7 +7996,7 @@ function meSecBody(k,f){
   if(k==="ms") return `<section class="card me-list">${f.filter(gid=>isMember(gid)||msGrace(gid)).map(gid=>{const g=groupOf(gid), on=isMember(gid), gr=msGrace(gid);return `<button class="me-row" data-a="meShop" data-v="ms"><span class="me-ic" style="background:${grad(g.g)}">💎</span><span class="me-t"><b>${esc(g.name)}</b><small class="${on?"on":gr?"grace":""}">${on?`會員中・剩餘 ${msLeft(gid)} 天`:gr?"已到期・24 小時內續訂可保留資歷":"還不是會員"}</small></span><i>›</i></button>`}).join("")||`<p class="me-none">還沒有加入 Membership，到 SHOP 看看</p>`}</section>`;
   if(k==="tie") return `<section class="card me-list">${Object.keys(subs()).filter(id=>MEMBERS[id]).map(id=>{const m=MEMBERS[id], st=passStatus(id);return `<button class="me-row" data-a="openChat" data-m="${id}"><span class="me-ic" style="background:${grad(m.g)};overflow:hidden">${mAvIn(id)}</span><span class="me-t"><b>${esc(artName(id,"tie"))}</b><small class="${st.cls==="on"?"on":st.cls==="grace"?"grace":""}">${st.txt}・💜 +${subDays(id)} 天</small></span><i>›</i></button>${isActive(id)&&grpMembers(m.group).filter(x=>!MEMBERS[x].official).length>1?`<button class="me-sub" data-a="tPickGo" data-m="${id}">變更藝人 ›</button>`:""}`}).join("")||`<p class="me-none">還沒有 ${WHISPER_NAME} 券，到 SHOP 選一位成員吧</p>`}</section>`;
   if(k==="merch") return `<section class="card me-list">${(()=>{const o=S.get(K.owned,{}), rows=[];Object.keys(o).forEach(gid=>MERCH.forEach(it=>{ if(o[gid][it.k]&&groupOf(gid)) rows.push(`<div class="me-row"><span class="me-ic" style="background:${grad(groupOf(gid).g)}">${it.ic}</span><span class="me-t"><b>${esc(groupOf(gid).name)}・${it.name}</b><small>${ymd(o[gid][it.k])} 購買</small></span></div>`); }));return rows.join("")||`<p class="me-none">還沒有周邊，到 SHOP 的「周邊」看看</p>`})()}</section>`;
-  return `<section class="card me-list">${S.get(K.sales,[]).filter(x=>x.buyer===myEmail()).slice(0,40).map(x=>`<div class="me-row"><span class="me-t"><b>${esc(x.label)}</b><small>${ago(x.ts)}</small></span><em class="me-pts">−${fmt(x.pts)}</em></div>`).join("")||`<p class="me-none">還沒有購買紀錄</p>`}</section>`;
+  return `<section class="card me-list">${S.get(K.sales,[]).filter(x=>x.buyer===myEmail()).slice(0,40).map(x=>`<div class="me-row"><span class="me-t"><b>${esc(saleLbl(x))}</b><small>${ago(x.ts)}</small></span><em class="me-pts">−${fmt(x.pts)}</em></div>`).join("")||`<p class="me-none">還沒有購買紀錄</p>`}</section>`;
 }
 function viewFan(tab){
   if(tab==="home"){
@@ -11930,7 +11932,7 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
     <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
     <p class="pt-rule">${WHISPER_NAME} 券全部算給這位藝人；Membership、周邊、主題等算給整個團，再平均分給團裡的藝人。實得是收到的 ${sh}%。</p>
     <div class="section-h">明細<span class="muted">${L.length} 筆</span></div>
-    ${L.length?`<section class="card pt-list">${L.map(x=>`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(x.label)}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`).join("")}</section>`:`<p class="me-none">這段時間還沒有點數</p>`}
+    ${L.length?`<section class="card pt-list">${L.map(x=>`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(saleLbl(x))}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`).join("")}</section>`:`<p class="me-none">這段時間還沒有點數</p>`}
   </main>`; }
 /* 還沒有任何團：要團才能做的設定，先帶去新增團 */
 const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增藝人</button></div>`;
