@@ -482,8 +482,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .t-quick::-webkit-scrollbar{display:none}
 .t-quick button{white-space:nowrap;padding:6px 12px;border-radius:999px;background:#fff;border:1px solid #EFE6FF;color:#7E22CE;font-size:12px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
 .t-msgs{position:relative;z-index:1;padding:16px 16px 96px}
-/* 打字時：鍵盤擋住下面，插圖和花邊先藏起來（不然只露出半個耳朵） */
-html.kbo .t-bgl .th-art,html.kbo .t-bgl .th-strip{opacity:0;transition:opacity .15s}
+/* 打字時（照 LINE）：背景整張停在原位，被鍵盤蓋住的就蓋住，不藏也不移 */
 .t-msgs.kbbox{position:fixed!important;left:0;right:0;top:0;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;padding-bottom:12px!important;z-index:1}
 /* 打字時（iPhone）：輸入列跟著內容走，iPhone 會自己把它放在鍵盤上面 */
 
@@ -4636,7 +4635,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022041623";
+const BUILD="20261022042126";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
