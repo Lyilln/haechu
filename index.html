@@ -4649,7 +4649,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022071840";
+const BUILD="20261022072106";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8004,7 +8004,6 @@ function viewArtist(tab){
         <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span></section>
       <div class="section-h">${WHISPER_NAME} 設定</div>
       <section class="card">
-        <button class="list-btn" data-a="mediaNameEd">${I.star}社群 Media 名稱<span class="r">${esc(mediaName(g.id))}</span></button>
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="tab" data-v="points">${I.star}點數收入</button>
@@ -11857,7 +11856,7 @@ const TOURS={
     ['[data-a="focGo"][data-v="honor"]',"榮譽與職務","MC 任務、今年的打歌積分和拿過的獎。"],
     ['[data-a="focGo"][data-v="stick"]',"官方應援棒","你們團的應援棒，可以轉來轉去看。"],
     ['.tile[data-a="openSns"]',"SNS","你的個人帳號：發照片和限時動態、跟大家互動。"]],
-  "artist:me":[['[data-a="mediaNameEd"]',"影音頁名稱","幫你們社群的影音頁取個名字。"],
+  "artist:me":[
     ['[data-a="aNick"]',"粉絲的愛稱","幫 Membership 粉絲取一個專屬的愛稱。"],
     ['[data-a="thMine"]',"做主題","設計一套你自己的 App 主題，通過審核後就會上架。"],
     ['[data-a="tab"][data-v="points"]',"點數收入","你收到了多少點數。"],
