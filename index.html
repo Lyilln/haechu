@@ -4619,7 +4619,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022022632";
+const BUILD="20261022022925";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8493,7 +8493,8 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
     const typing=document.activeElement&&document.activeElement.id==="win";
     const k=document.documentElement.getBoundingClientRect().width/Math.max(1,vv.width);
     const kbOpen=typing&&vv.height<(screen.height||innerHeight)*0.8;
-    document.documentElement.classList.toggle("kbo",!!kbOpen);
+    const was=document.documentElement.classList.contains("kbo"); document.documentElement.classList.toggle("kbo",!!kbOpen);
+    if(kbOpen&&!was) setTimeout(kbToEnd,380);
     if(!kbOpen){ f.style.transform=""; if(h) h.style.transform=""; if(bg) bg.style.transform=""; }
     else { const lift=isIOS&&isStandalone()?-10:6, want=vv.height*k-lift*k;   /* 實測：visualViewport 的底已經扣掉「^ ˅ ✓」和網址膠囊，不用再抬 */
       for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nudge(f,d); }
@@ -8504,10 +8505,16 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
   const q=()=>{ if(!raf) raf=requestAnimationFrame(fit); };
   vv.addEventListener("resize",q); vv.addEventListener("scroll",q); addEventListener("scroll",q,{passive:true}); addEventListener("resize",q);
   document.addEventListener("focusin",e=>{ if(e.target.id!=="win") return; q(); setTimeout(q,350); setTimeout(q,700); });
+  /* 鍵盤打開後：最新一則訊息剛好在輸入列上面（不夠捲就在下面補空間） */
+  function kbToEnd(){ const f=document.querySelector(".t-foot"), end=document.getElementById("chat-end"), ms=document.querySelector(".t-msgs"); if(!f||!end||!ms) return;
+    const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
+    for(let i=0;i<3;i++){ const d=end.getBoundingClientRect().bottom-f.getBoundingClientRect().top+10; if(Math.abs(d)<2) break; const y0=scrollY; scrollBy(0,d/z);
+      if(Math.abs(scrollY-y0)<1&&d>0){ ms.style.paddingBottom=(parseFloat(getComputedStyle(ms).paddingBottom)+d/z)+"px"; } }
+    q(); }
   /* 打字時往上滑看訊息：先收起鍵盤（像 LINE、iMessage），畫面回到正常，不會亂跳 */
   let ty=null; document.addEventListener("touchstart",e=>{ ty=document.activeElement&&document.activeElement.id==="win"&&!e.target.closest(".t-foot")?e.touches[0].clientY:null; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(ty==null) return; if(Math.abs(e.touches[0].clientY-ty)>12){ ty=null; const w=document.getElementById("win"); if(w) w.blur(); } },{passive:true});
-  document.addEventListener("focusout",e=>{ if(e.target.id!=="win") return; setTimeout(()=>{ q(); const end=document.getElementById("chat-end"); if(end&&document.activeElement.id!=="win") end.scrollIntoView({block:"end"}); },80); }); }
+  document.addEventListener("focusout",e=>{ if(e.target.id!=="win") return; const ms=document.querySelector(".t-msgs"); if(ms) ms.style.paddingBottom=""; setTimeout(()=>{ q(); const end=document.getElementById("chat-end"); if(end&&document.activeElement.id!=="win") end.scrollIntoView({block:"end"}); },80); }); }
 /* App 內的小視窗：縮小直播後，在其他頁面也看得到藝人最新一句話 */
 function lvMiniMount(){ let el=document.getElementById("lvMini"); const l=ui.lvMini&&getLive(ui.lvMini);
   if(!l||l.endTs||document.querySelector(".dl")||!session()){ if(l&&l.endTs) ui.lvMini=null; if(el) el.remove(); return; }
