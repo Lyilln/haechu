@@ -2801,6 +2801,7 @@ html[data-theme="dark"] .cmx-fab{background:#F3F1F7;color:#1D1A24}
 .cm-abs{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;border:0;background:none;padding:14px 16px 20px;font:inherit;color:var(--ink)}.cm-abs i{width:150px;height:150px;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#fff;font-style:normal;font-size:48px;font-weight:800}.cm-abs i .av-img{width:100%;height:100%;border-radius:50%}.cm-abs b{font-size:16px;font-weight:700}
 .cm-abc .cm-ab{margin-inline:0;padding:2px 14px 14px}
 .cm-ab i{overflow:hidden}.cm-ab i .av-img,.ab-mh i .av-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.cm-lt.on{box-shadow:inset 0 0 0 2px #FB7185}.cm-lt.on em{background:#FB7185;color:#fff}
 .cm-abm{display:block;width:100%;height:46px;border:0;border-top:1px solid var(--line);background:none;font:inherit;font-size:14px;font-weight:600;color:var(--ink-2)}
 .ab-m{border-radius:16px;padding:4px 16px}
 .ab-mh i{overflow:hidden;flex:none;transition:width .25s,height .25s}
@@ -4734,7 +4735,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022144805";
+const BUILD="20261022225601";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5736,6 +5737,7 @@ function pageAnim(){
   const prev=ui.pgKey; ui.pgKey=key; const pd=ui.pgDepth; ui.pgDepth=d;
   if(!prev) return "op";
   /* SNS 裡切換分頁：跟 Instagram 一樣直接換，不做動畫（下面的分頁列才不會跟著跳） */
+  if(r.sub==="grp"&&r.id&&!r.m&&new RegExp("/grp\\?id="+encodeURIComponent(r.id)+"(&p=(feed|media|shop))?\\|").test(prev)&&["home","feed","media","shop",null].includes(r.p||null)) return null;   // 社群 Home／Feed／MEET・Media／Shop 之間切換：直接換，不閃
   if(r.sub==="sns"&&prev.includes("/sns")) return ["home","reels","dm","explore"].includes(r.p||"home")||(r.p==="profile"&&!r.id)?null:"op";
   return d>pd?"push":d<pd?"pop":"fade";
 }
@@ -7787,9 +7789,12 @@ function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.grou
   return chips+`${cmSec("最近藝人貼文")}${art.slice(0,2).map(p=>postCard(p)).join("")||`<p class="me-none">還沒有藝人貼文</p>`}
     
     ${cmSec(`${esc(groupOf(gid).name)} 的評論`,fans.length?"查看更多":"","cmFan")}${fans.slice(0,3).map(fanCard).join("")||`<p class="me-none">還沒有粉絲貼文</p>`}`; }
-function grpMedia(gid){ const ch=ui.cmMed||"all", lv=getLives().filter(l=>l.endTs&&MEMBERS[l.member]&&MEMBERS[l.member].group===gid).sort((a,b)=>b.startTs-a.startTs), vd=vodList(gid), g=groupOf(gid), vc=ui.cmVc||"all";
-  const chips=`<div class="cm-chips">${[["all","全部"],["live","LIVE"],["vod","影音"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmMed" data-v="${k}">${l}</button>`).join("")}</div>`;
-  const lvH=`${cmSec("最新 LIVE")}${lv.length?`<div class="cm-lv">${lv.slice(0,8).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length];return `<button class="cm-lc" data-a="openReplay" data-id="${l.id}"><span class="cm-lt" style="background:linear-gradient(135deg,${c[0]},${c[1]})"><em>REPLAY</em><i>${mmss(l)}</i></span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${relDay(l.startTs)}</small></button>`}).join("")}</div>`:`<p class="me-none">還沒有直播紀錄</p>`}`;
+/* MEET 卡片：正在直播的排前面（點進直播間），結束的是重播 */
+function meetCards(lv){ return `<div class="cm-lv">${lv.slice(0,12).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length], on=!l.endTs;return `<button class="cm-lc" data-a="${on?"openLive":"openReplay"}" data-id="${l.id}" data-lv="${l.id}"><span class="cm-lt ${on?"on":""}" style="background:linear-gradient(135deg,${c[0]},${c[1]})"><em>${on?"● LIVE":"REPLAY"}</em>${on?"":`<i>${mmss(l)}</i>`}</span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${on?"直播中":relDay(l.startTs)}</small></button>`}).join("")}</div>`; }
+const meetOf=f=>getLives().filter(l=>MEMBERS[l.member]&&f(l)).sort((a,b)=>(!a.endTs?0:1)-(!b.endTs?0:1)||b.startTs-a.startTs);
+function grpMedia(gid){ const ch=ui.cmMed||"all", lv=meetOf(l=>MEMBERS[l.member].group===gid), vd=vodList(gid), g=groupOf(gid), vc=ui.cmVc||"all";
+  const chips=`<div class="cm-chips">${[["all","全部"],["live","MEET"],["vod","影音"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmMed" data-v="${k}">${l}</button>`).join("")}</div>`;
+  const lvH=`${cmSec("最新 MEET")}${lv.length?meetCards(lv):`<p class="me-none">還沒有直播紀錄</p>`}`;
   const types=[...new Set(vd.map(v=>v.type))];
   let vdH=`${cmSec("最新影音")}<div class="cm-chips sm">${[["all","全部"],...types.map(t=>[t,t])].map(([k,l])=>`<button class="${vc===k?"on":""}" data-a="cmVc" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="cm-lv">${vd.filter(v=>vc==="all"||v.type===vc).map(v=>`${vodCard(v.v)}`).join("")}</div>
@@ -11982,7 +11987,7 @@ const teaserIn=mid=>{ const u=mPhoto(mid), m=MEMBERS[mid]; return u?`<span class
 function imgSwap(url,done){ if(!url||url.startsWith("data:")){ done(); return; } const im=new Image(); let ok=false; const fin=()=>{ if(ok) return; ok=true; done(); }; im.onload=fin; im.onerror=fin; setTimeout(fin,15000); im.src=url; }
 /* 名稱：動態、直播、TIE 聊天室各自一個，沒改過就是藝名（MEMBERS 的名字，只有管理員能改） */
 /* 每個團社群的 Media 分頁名稱：只有這一團的藝人能改 */
-const mediaName=gid=>(S.get(K.mediaName,{})[gid])||"LIVE・Media";
+const mediaName=gid=>"MEET・Media";   // 固定名稱，不能改（直播在 App 裡叫 MEET）
 const ART_NK={feed:"名稱",live:"名稱",tie:"TIE 聊天室名稱"};
 /* 名稱：TIE 聊天室自己一個；動態、直播等其他地方共用一個（連動）。沒改過就是藝名 */
 const artNKey=k=>k==="tie"?"n_tie":"n_feed";
@@ -12029,7 +12034,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);
   const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b><span>${esc(x.fan.text)}</span></span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span><span class="ap2-ct">${esc(x.text)}</span></button>`).join(""):`<p class="me-none">還沒有留言</p>`)
-    :tab==="media"?(vsecHtml(M.group,own)||`<p class="me-none">還沒有影片</p>`)
+    :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own})).join(""):`<p class="me-none">還沒有貼文</p>`);
   return `<header class="ap2-bar" id="apBar" style="--apbg:${p.cover?`url('${p.cover}')`:grad(M.g)}">${own?`<span class="ap2-bsp"></span>`:`<button class="ap2-ib" data-a="back" aria-label="返回">${I.back}</button>`}<span class="ap2-bt"><span class="ap2-bav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span></span><span class="ap2-bsp"></span></header>
