@@ -4617,7 +4617,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022020950";
+const BUILD="20261022021135";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8492,7 +8492,7 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
     const k=document.documentElement.getBoundingClientRect().width/Math.max(1,vv.width);
     const kbOpen=typing&&vv.height<(screen.height||innerHeight)*0.8;
     if(!kbOpen){ f.style.transform=""; if(h) h.style.transform=""; if(bg) bg.style.transform=""; }
-    else { const lift=IOS26?(isStandalone()?64:106):6, want=vv.height*k-lift*k;
+    else { const lift=6, want=vv.height*k-lift*k;   /* 實測：visualViewport 的底已經扣掉「^ ˅ ✓」和網址膠囊，不用再抬 */
       for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nudge(f,d); }
       if(h) for(let i=0;i<3;i++){ const d=-h.getBoundingClientRect().top; if(Math.abs(d)<1) break; nudge(h,d); }
       if(bg) bg.style.transform=h?h.style.transform:""; }
