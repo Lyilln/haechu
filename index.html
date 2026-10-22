@@ -3659,6 +3659,7 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 
 .uni-more{margin-left:auto;width:34px;height:34px;border-radius:50%;font-size:18px;font-weight:900;color:var(--ink-3);flex:none}
 .rs-row .rev-dot{width:12px;height:12px;border-radius:50%;flex:none}
+.tk-ph{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:12px}.tk-stage{width:100%;max-width:420px;border-radius:28px;background:#FFE1EC;padding:18px 14px 0;box-sizing:border-box;overflow:hidden;position:relative}.tk-stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:#F7CFDD}.tk-stage svg{position:relative;z-index:1;display:block;width:100%}.tk-t{margin:10px 0 0;font-size:22px}.tk-soon{font-size:13px;font-weight:700;padding:5px 14px;border-radius:999px;background:#FFE1EC;color:#C2416F}
 .nw .chips{margin-bottom:12px}
 .nw-tag{display:inline-block;align-self:flex-start;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
 .nw-th{display:block;width:100%;aspect-ratio:16/9;border-radius:var(--radius-l);overflow:hidden;background:var(--s2,var(--line))}
@@ -4676,7 +4677,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022091339";
+const BUILD="20261022102136";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7352,7 +7353,7 @@ const evHit=(q,e)=>{const m=MEMBERS[e.member],g=groupOf(e.group);return hit(q,e.
 const liveHit=(q,l)=>{const m=MEMBERS[l.member],g=groupOf(l.group);return hit(q,l.title,m&&m.name,g&&g.name)};
 
 /* ---------- 小圖示（區塊標題用，風格 C） ---------- */
-const HI={news:'<path d="M4.5 5.5h11v13h-10a1 1 0 0 1-1-1z"/><path d="M15.5 9h3.5v8.5a1 1 0 0 1-1 1h-2.5"/><path d="M7.5 9h5M7.5 12h5M7.5 15h3"/>',cam:'<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.3" r="3.3"/>',card:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
+const HI={truck:'<path d="M3 7.5h11v9H3z"/><path d="M14 10.5h3.5l3 3v3H14z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/><path d="M4.5 7.5l1.2-2.5h7.6l1.2 2.5"/>',news:'<path d="M4.5 5.5h11v13h-10a1 1 0 0 1-1-1z"/><path d="M15.5 9h3.5v8.5a1 1 0 0 1-1 1h-2.5"/><path d="M7.5 9h5M7.5 12h5M7.5 15h3"/>',cam:'<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.3" r="3.3"/>',card:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
   trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/>',play:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/>',pen:'<path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 7l3 3"/>',
   gem:'<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/>',tie:'<path d="M12 12c-3-4-8-4-8 0s5 4 8 0zm0 0c3-4 8-4 8 0s-5 4-8 0z"/>',bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
   album:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/>',receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',live:'<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4"/>',
@@ -9431,7 +9432,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
-const FOC_PAGES={news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
+const FOC_PAGES={truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
   const sc=getSched(), ls=lightsea(), gid=MEMBERS[mid].group, mine=ls&&ls.gid===gid, nc=nextConcert(gid), g=groupOf(gid);
@@ -9442,6 +9443,7 @@ function viewArtistFoc(mid,p){
       ${mine||nc?`<div class="foc-cc ${mine?"on":""}"><b>${mine?`✺ 進行中・${esc(ls.title)}`:`下一場：${esc(nc.title)}`}</b><small>${mine?`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`:`${evWhen(nc.startTs)} 開始`}</small></div>`:""}
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:nc?(canCtl(nc,mid)?`<button class="btn btn-main btn-block cc-ctl" data-a="ccNow" data-id="${nc.id}">現在開始演唱會</button>`:""):acOpenCard(mid)}
       ${!mine&&demoOn()?`<button class="btn btn-soft btn-block" data-a="lsDemo">示範：打開燈控台看看</button>`:""}</section></main>`;
+  if(p==="truck") return focHead("應援餐車")+truckPhHtml();
   if(p==="news"){ const nid=route().id; return focHead("新聞")+(nid?newsDetailHtml(nid):newsListHtml("#/artist?tab=foc&p=news",[gid],g.solo?"我的":"我們團")); }
   if(p==="sign") return focHead("簽售")+`<main class="page foc">${fsArtistCard(mid)}</main>`;
   if(p==="stick") return focHead("官方應援棒")+`<main class="page foc"><section class="card foc-c foc-ls"><div class="ls-stage"><span class="ls-tag">${getSticks()[gid]?"管理員已上傳設計圖":"預設款・等管理員上傳設計圖"}</span><div class="ls-box" data-ls="${gid}" data-o="ctl"></div></div></section></main>`;
@@ -9459,7 +9461,7 @@ function viewArtistFoc(mid,p){
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     </section>
     ${secH("live","現場")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}</div>
-    ${secH("trophy","舞台")}<div class="tiles">${tile("focGo","honor","trophy","榮譽與職務",`今年 ${fmt(yearPts)} 分`)}${tile("focGo","stick","bolt","官方應援棒",`${esc(g.name)}`)}</div>
+    ${secH("trophy","舞台")}<div class="tiles">${tile("focGo","honor","trophy","榮譽與職務",`今年 ${fmt(yearPts)} 分`)}${tile("focGo","stick","bolt","官方應援棒",`${esc(g.name)}`)}${tile("focGo","truck","truck","應援餐車","即將開放")}</div>
     ${secH("cam","社群")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
   </main>`;
 }
@@ -9472,7 +9474,7 @@ const FIC={
 /* =========================================================
    CORE（從 NSY 搬過來）：獨家影音、選秀宇宙、打歌戰場、體感演唱會、90s 簽售
    ========================================================= */
-const CORE_SECTIONS={news:"新聞 news 娛樂 快訊 一位 出道 回歸",card:"PHOTOCARD 抽卡 卡冊 小卡 photocard",survival:"選秀宇宙 survival project 宇宙 選秀",promo:"打歌戰場 promotion 正在打歌中的藝人 打歌 戰場 藝人",live:"體感演唱會 live sync 演唱會 體感 應援 應援棒",meet:"90s 簽售 meet greet 簽售"};
+const CORE_SECTIONS={truck:"應援餐車 餐車 咖啡車 應援 truck",news:"新聞 news 娛樂 快訊 一位 出道 回歸",card:"PHOTOCARD 抽卡 卡冊 小卡 photocard",survival:"選秀宇宙 survival project 宇宙 選秀",promo:"打歌戰場 promotion 正在打歌中的藝人 打歌 戰場 藝人",live:"體感演唱會 live sync 演唱會 體感 應援 應援棒",meet:"90s 簽售 meet greet 簽售"};
 const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>';
 function coreStickGroup(){ const ls=lightsea(); if(ls) return ls.gid; const f=followed(), p=S.get(K.pick,null), cg=curGrp(); if(cg!=="all"&&f.includes(cg)&&!ui.coreStick) return cg; if(ui.coreStick&&f.includes(ui.coreStick)) return ui.coreStick; return p&&f.includes(p)?p:(f[0]||GROUPS[0].id); }
 function coreConcertCard(){ const ls=lightsea(), lg=ls&&groupOf(ls.gid), sg=coreStickGroup(), fg=followed(), nx=getConcerts().filter(c=>!c.ended&&c.startTs>Date.now()), nxf=nx.filter(c=>fg.includes(c.gid)), nc=nxf[0]||nx[0], hs=hasStick(sg);
@@ -9489,12 +9491,12 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["truck","truck","應援餐車","即將開放"]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
     ${!q&&now.length?`${secH("live","正在發生")}<div class="now-list">${now.join("")}</div>`:""}
-    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["現場",["concert","fsl"]],["應援",["promo","survival"]],["收藏與社群",["cards","sns"]],["娛樂",["news"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
+    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["現場",["concert","fsl"]],["應援",["promo","survival","truck"]],["收藏與社群",["cards","sns"]],["娛樂",["news"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
   </main>`;
 }
 function vodList(gid){ return getVods(gid).filter(v=>!v.sec).map(v=>({id:v.id,type:vcatName(v.cat),title:v.title,ts:v.ts,v})); }
@@ -9589,7 +9591,21 @@ function newsAdminHtml(){ const d=ui.nwDraft||(ui.nwDraft={title:"",body:"",gids
     <div class="section-h">全部新聞<span class="muted">${L.length} 則</span></div>
     ${L.length?`<section class="card">${L.map(n=>`<div class="uni-an ${H[n.id]?"is-hidden":""}"><p>${newsTag(n)}<span>${esc(n.title)}</span><small>${ago(n.ts)}${H[n.id]?"・已撤下":""}</small></p><button class="btn btn-soft btn-sm" data-a="${n.auto?"nwHide":"nwDel"}" data-v="${esc(n.id)}">${n.auto?(H[n.id]?"恢復":"撤下"):"刪除"}</button></div>`).join("")}</section>`:`<p class="me-none">還沒有新聞</p>`}`; }
 const nwKeep=()=>{ const d=ui.nwDraft; if(!d) return; const a=document.getElementById("nwTi"), b=document.getElementById("nwBo"); if(a) d.title=a.value; if(b) d.body=b.value; };
+/* ===== 應援餐車：先做佔位頁（3D 版之後做進來）。粉絲 FEST、藝人 FOC 都有入口 ===== */
+function truckPhHtml(){ return `<main class="page tk-ph"><div class="tk-stage"><svg viewBox="0 0 360 300" role="img" aria-label="應援餐車">
+  <ellipse cx="180" cy="272" rx="150" ry="10" fill="#000" opacity=".08"/>
+  <path d="M38 118 Q34 90 46 62" stroke="#C98BA8" stroke-width="1.2" fill="none"/><ellipse cx="46" cy="50" rx="13" ry="15" fill="#FF9EC4"/><ellipse cx="27" cy="62" rx="12" ry="14" fill="#FFE08A"/>
+  <rect x="70" y="58" width="170" height="30" rx="15" fill="#FFF6FA" stroke="#F0679C" stroke-width="3"/><text x="155" y="79" text-anchor="middle" font-family="'Cherry Bomb One',Jua,sans-serif" font-size="16" fill="#F0679C">♡ HAECHU CAFE ♡</text>
+  <rect x="20" y="96" width="270" height="148" rx="22" fill="#FFC2D9"/><rect x="20" y="214" width="270" height="30" rx="14" fill="#F0679C" opacity=".35"/>
+  <path d="M290 132 L318 132 Q340 134 342 160 L342 230 Q342 244 328 244 L290 244 Z" fill="#FFC2D9"/><path d="M298 140 L318 140 Q332 142 334 160 L334 176 L298 176 Z" fill="#DDF3FF"/>
+  <rect x="36" y="104" width="200" height="22" fill="#fff"/>${[36,76,116,156,196].map(x=>`<rect x="${x}" y="104" width="20" height="22" fill="#F0679C"/>`).join("")}
+  <rect x="44" y="134" width="132" height="44" rx="6" fill="#FFF8EE"/><rect x="40" y="176" width="140" height="7" rx="3" fill="#E9B98F"/>
+  ${[60,84,108].map(x=>`<path d="M${x} 158 h16 l-2 18 h-12 Z" fill="#fff" stroke="#E7C3D4"/><rect x="${x+1}" y="163" width="14" height="7" fill="#F0679C"/>`).join("")}
+  <rect x="186" y="134" width="96" height="74" rx="10" fill="#fff"/><rect x="192" y="140" width="40" height="46" rx="6" fill="#F0679C" opacity=".3"/><text x="258" y="162" text-anchor="middle" font-size="14" fill="#F0679C">♡</text>
+  <circle cx="86" cy="248" r="20" fill="#5B4352"/><circle cx="86" cy="248" r="8" fill="#F3E6EC"/><circle cx="290" cy="248" r="20" fill="#5B4352"/><circle cx="290" cy="248" r="8" fill="#F3E6EC"/>
+</svg></div><h2 class="tk-t">應援餐車</h2><span class="tk-soon">即將開放</span></main>`; }
 function viewCoreSub(page,id){
+  if(page==="truck") return coreHead("應援餐車")+truckPhHtml();
   if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
   if(false) return `<main class="page"><div class="vod-grid">${GROUPS.map(g=>`<button class="vod-g" data-a="coreGallery" data-v="${g.id}" style="background:${grad(g.g)}"><span class="vod-play">${PLAY}</span><span class="vod-bar">${esc(g.name)}</span></button>`).join("")}</div></main>`;
