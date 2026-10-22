@@ -4649,7 +4649,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022072106";
+const BUILD="20261022073312";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7160,6 +7160,9 @@ function render(){
   return paint(viewAdmin(r.tab||"home"),true,adminNav(r.tab||"home"));
 }
 const SNAP=new Map(), NAVSTK=[];
+/* TIE 聊天室：最後一則訊息貼在輸入列上面（照 LINE），下面留的空間＝輸入列的高度＋一點點 */
+function tieFootPad(){ const ms=document.querySelector(".t-msgs"), f=document.querySelector(".t-foot"); if(!ms||!f||ms.classList.contains("kbbox")) return; ms.style.paddingBottom=(f.offsetHeight+14)+"px"; }
+addEventListener("resize",()=>tieFootPad());
 function paint(html,hasNav,navHtml=""){
   const pgChg=ui._ph!==location.hash, prevY=window.scrollY, prevBottom=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-40;
   if(hasNav&&isUni()){ const ro=route().role; if(ro==="fan") navHtml=uniNav(uniActive()); else if(ro==="admin") navHtml=uniAdminNav(); html=uniSwitch()+html; }
@@ -7178,7 +7181,7 @@ function paint(html,hasNav,navHtml=""){
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ L.classList.remove("go"); L.style.transform=""; L.style.setProperty("--i",i); L.style.setProperty("--f",i); }
   } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
-  hydrateMedia(root); if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
+  hydrateMedia(root); tieFootPad(); if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
   const tev=document.getElementById("tev"); if(tev){ tev.focus(); tev.setSelectionRange(tev.value.length,tev.value.length); }
   { const hs=document.getElementById("hostFeed"); if(hs) hs.scrollTop=hs.scrollHeight; const ms=document.getElementById("mrStream"); if(ms) ms.scrollTop=ms.scrollHeight; }
   mountSticks(root);
@@ -8556,7 +8559,7 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
     const was=document.documentElement.classList.contains("kbo"); document.documentElement.classList.toggle("kbo",!!kbOpen);
     if(!kbOpen&&was) [60,250].forEach(t=>setTimeout(()=>{ if(document.activeElement&&document.activeElement.id==="win") return; kbRestore(ui.kbBackEnd); },t));
     const ms=document.querySelector(".t-msgs"), keep0=ms&&ms.classList.contains("kbbox")&&document.getElementById("chat-end")?Math.max(0,(document.getElementById("chat-end").getBoundingClientRect().bottom-ms.getBoundingClientRect().bottom)/(parseFloat(getComputedStyle(document.documentElement).zoom)||1)):null;   /* 先量（輸入列還沒移動前），之後才知道要保持在哪 */
-    if(!kbOpen){ f.style.transform=""; if(h) h.style.transform=""; if(bg) bg.style.transform=""; if(ms&&ms.classList.contains("kbbox")){ const fromEnd=keep0||0; ms.classList.remove("kbbox"); ms.style.cssText=""; kbRestore(fromEnd); } }   /* 收鍵盤（照 LINE）：同一瞬間回到原本看的地方，不閃、不跳 */
+    if(!kbOpen){ f.style.transform=""; if(h) h.style.transform=""; if(bg) bg.style.transform=""; if(ms&&ms.classList.contains("kbbox")){ const fromEnd=keep0||0; ms.classList.remove("kbbox"); ms.style.cssText=""; tieFootPad(); kbRestore(fromEnd); } }   /* 收鍵盤（照 LINE）：同一瞬間回到原本看的地方，不閃、不跳 */
     else { const lift=isIOS&&isStandalone()?-10:6, want=vv.height*k-lift*k;   /* 實測：visualViewport 的底已經扣掉「^ ˅ ✓」和網址膠囊，不用再抬 */
       for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nudge(f,d); }
       if(h) for(let i=0;i<3;i++){ const d=-h.getBoundingClientRect().top; if(Math.abs(d)<1) break; nudge(h,d); }
