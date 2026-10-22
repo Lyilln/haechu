@@ -2632,7 +2632,7 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .rg-ph-r{display:flex;flex-direction:column;gap:8px;min-width:0}.rg-ph-r small{font-size:12px;color:var(--ink-3);line-height:1.5}
 .rg-ph-b{display:flex;gap:8px}
 .rg-ph-note{margin:0 0 6px;font-size:12px;color:var(--ink-3);text-align:left}
-.rg-intro{min-height:84px}
+.rg-intro{min-height:60px!important;height:60px}
 .rs-th{width:30px;height:30px;border-radius:10px;flex:none;display:inline-grid;place-items:center;color:#fff;font-size:13px;font-weight:700;margin-right:10px;vertical-align:middle}.rev-gh .rs-th{margin-right:2px}
 .ab-h{display:flex;align-items:center;justify-content:space-between;padding:8px 2px 4px}
 .ab-h h2{margin:0;font-size:24px}
@@ -4359,7 +4359,8 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .rs-m small{flex:1 1 auto;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .rs-ed{flex:none;margin-left:auto;white-space:nowrap}
 .rs-g .rev-gh .rs-ed{margin-left:auto}
-.rs-sw-m{display:flex;flex-wrap:wrap;gap:10px;margin:4px 0 12px}
+.rs-sw-m{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 12px}.rs-sw-m button{width:24px;height:24px;border-width:2px}
+#rgEdName.a-nick-in{margin-top:0}
 .ac-nm{display:flex;align-items:baseline;gap:8px;flex:1 1 auto;min-width:0;cursor:pointer}
 
 .ac-row{cursor:pointer}
@@ -4708,7 +4709,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022123415";
+const BUILD="20261022123943";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4928,6 +4929,8 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
     if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
   if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); setTimeout(()=>iaBanner(add[0]),60); return true; } return false; }catch(e){ return false; } }
+/* 選檔案：iPhone 上要把 <input> 放進頁面裡，選好的檔案才一定收得到 */
+function pickClick(inp){ try{ inp.style.cssText="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0"; document.body.appendChild(inp); inp.addEventListener("change",()=>setTimeout(()=>inp.remove(),3000)); inp.addEventListener("cancel",()=>inp.remove()); }catch(e){} inp.click(); }
 /* 推播帶著 op=貼文編號 進來：直接打開那則貼文 */
 function opFromHash(){ const m=/[?&]op=([^&]+)/.exec(location.hash); if(!m) return; const id=decodeURIComponent(m[1]); history.replaceState(null,"",location.pathname+location.search+"#/fan"); if(!session()) return; ui.feedTab="feed"; ui.focusPost=id; ui.expanded.add(id); ui._opId=id; render(); }
 addEventListener("hashchange",opFromHash); setTimeout(opFromHash,300);
@@ -6074,7 +6077,7 @@ function fanAccOpts(){ const list=Object.entries(ACCOUNTS).filter(([e,a])=>canBi
 function bindArtist(em,id){ const a=ACCOUNTS[em]; if(!canBind(em,a)) return false; const n=a.role==="admin"?{...a,member:id}:{...a,role:"artist",member:id}; ACCOUNTS[em]=n; if(HB_ON) hbSetProfile(em,{role:n.role,member:id}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]=n; }); return true; }
 function unbindArtist(em){ const a=ACCOUNTS[em]; if(!a) return; const x={...a,role:a.role==="admin"?"admin":"fan"}; delete x.member; ACCOUNTS[em]=x; if(HB_ON) hbSetProfile(em,{role:x.role,member:null}); else saveRoster(r=>{ r.accounts=r.accounts||{}; r.accounts[em]={...(r.accounts[em]||{}),...x}; delete r.accounts[em].member; }); }
 function rgEditOpen(n,it){ const g=groupOf(ui.rgEd); if(!g) return; const c=ui.rgEdC??g.g, ph=gPhotoMap()[g.id]||"";
-  tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">出道／回歸照</span>${`<div class="rg-ph"><span class="rg-ph-img" style="background:${grad(c)}">${ph?`<span class="g-ph" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span><span class="rg-ph-r"><small>${g.solo?"放在 TIE 券上（社群照片用本人的頭貼）。":"放在 TIE 券、粉絲端的社群頭貼、社群封面和 About。"}回歸換新照片時再上傳一次就好。</small><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rgPhPick">${ph?"更換":"上傳"}</button>${ph?`<button class="btn btn-soft btn-sm" data-a="rgPhDel">移除</button>`:""}</span></span></div>`}<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">${g.solo?"About 介紹（不填就用本人的個人簡介）":"About 介紹"}</span><textarea id="rgEdIntro" class="t-wel-ta rg-intro" maxlength="300" placeholder="輸入文字">${esc(it??(g.intro||""))}</textarea><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
+  tieModal(g.solo?"編輯 SOLOIST":"編輯團體","",`<span class="fs-f-lab">出道／回歸照</span>${`<div class="rg-ph"><span class="rg-ph-img" style="background:${grad(c)}">${ph?`<span class="g-ph" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span><span class="rg-ph-r"><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rgPhPick">${ph?"更換":"上傳"}</button>${ph?`<button class="btn btn-soft btn-sm" data-a="rgPhDel">移除</button>`:""}</span></span></div>`}<span class="fs-f-lab">${g.solo?"藝名":"團名"}</span><input id="rgEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(n??g.name)}"><span class="fs-f-lab">About 介紹</span><textarea id="rgEdIntro" rows="2" class="t-wel-ta rg-intro" maxlength="300" placeholder="輸入文字">${esc(it??(g.intro||""))}</textarea><span class="fs-f-lab">代表色</span><div class="rs-sw rs-sw-m">${GRADS.map((x,i)=>`<button class="${c===i?"on":""}" style="background:${grad(i)}" data-a="rgEdColor" data-v="${i}" aria-label="代表色 ${i+1}"></button>`).join("")}</div><button class="t-mbtn main" data-a="rgEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
 function saveRoster(fn){ const r=S.get(K.roster,{groups:[],members:{},accounts:{}}); fn(r); S.set(K.roster,r); }
 
 /* =========================================================
@@ -10231,7 +10234,7 @@ document.addEventListener("click",e=>{
     case "rgPhPick": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,1080); GPREV[gid]=URL.createObjectURL(b); rgEditOpen(n,it); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("出道／回歸照換好了");
         const url=(HB_ON&&await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
-        imgSwap(url,()=>{ const M={...(S.get(K.gPhoto,{})||{})}; const old=M[gid]; if(old!==url) mediaDel(old); M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete GPREV[gid]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+        imgSwap(url,()=>{ const M={...(S.get(K.gPhoto,{})||{})}; const old=M[gid]; if(old!==url) mediaDel(old); M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete GPREV[gid]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; pickClick(inp); break; }
     case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; delete GPREV[gid]; const M={...(S.get(K.gPhoto,{})||{})}; mediaDel(M[gid]); delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
     case "rgEditOk": { const g=groupOf(ui.rgEd); if(!g) break; const nm=((document.getElementById("rgEdName")||{}).value||"").trim(); if(!nm){ toast(g.solo?"請輸入藝名":"請輸入團名"); break; } if(nameBlock(nm)) break;
       if(GROUPS.some(x=>x.id!==g.id&&x.name===nm)){ toast("已經有這個名字了"); break; } const c=ui.rgEdC??g.g, itr=((document.getElementById("rgEdIntro")||{}).value||"").trim();
@@ -10540,7 +10543,7 @@ document.addEventListener("click",e=>{
     case "nwImg": { nwKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; ui.nwBusy=true; lsRerender();
         try{ const b=await shrinkImg(f,1600); const url=(HB_ON&&await hbImgUrl("gph_news_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(ui.nwDraft) ui.nwDraft.img=url; }catch(e){ toast("這張圖讀不出來"); }
-        ui.nwBusy=false; lsRerender(); }; inp.click(); break; }
+        ui.nwBusy=false; lsRerender(); }; pickClick(inp); break; }
     case "nwImgDel": { nwKeep(); const d=ui.nwDraft; if(d){ mediaDel(d.img); d.img=""; } lsRerender(); break; }
     case "nwPost": { nwKeep(); const d=ui.nwDraft; if(!d||!d.title.trim()||!d.body.trim()){ toast("標題和內容都要填"); break; }
       const n={id:"nw"+Date.now(),title:d.title.trim(),body:d.body.trim(),img:d.img||"",gids:d.gids.filter(groupOf),ts:Date.now()};
@@ -10730,7 +10733,7 @@ document.addEventListener("click",e=>{
       inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,cov?1400:1080); if(!cov) b=await squareImg(b,1080); const tie=ui.artPl==="tie", fld=cov?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar");
         PREV[mid]={...(PREV[mid]||{}),[fld]:URL.createObjectURL(b)}; { const y=window.scrollY; render(); window.scrollTo(0,y); } back(); toast(cov?"已換上新背景":"已換上新頭貼");
         const url=(HB_ON&&await hbImgUrl("prof_"+mid+"_"+(cov?"c":"a")+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
-        imgSwap(url,()=>{ if(PREV[mid]) delete PREV[mid][fld]; const old=((S.get(K.artProf,{})||{})[mid]||{})[fld]; if(setArtProf(mid,{[fld]:url})&&old!==url) mediaDel(old); const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; inp.click(); break; }
+        imgSwap(url,()=>{ if(PREV[mid]) delete PREV[mid][fld]; const old=((S.get(K.artProf,{})||{})[mid]||{})[fld]; if(setArtProf(mid,{[fld]:url})&&old!==url) mediaDel(old); const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; pickClick(inp); break; }
     case "artResetCover": case "artResetAv": { const mid=session().member||uniMe(), tie=ui.artPl==="tie"; delete PREV[mid]; mediaDel(((S.get(K.artProf,{})||{})[mid]||{})[a==="artResetCover"?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar")]); setArtProf(mid,a==="artResetCover"?{[tie?"cover_tie":"cover"]:""}:{[tie?"av_tie":"avatar"]:""}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&tie) openTieArtDrawer(mid,true); break; }
     case "uniSec": { const r0=route(); ui.secLast=ui.secLast||{}; ui.secLast[r0.role]=location.hash; const h=ui.secLast[t.dataset.v]||UNI_SEC[t.dataset.v]; layer.innerHTML=""; navRoot(h); window.scrollTo(0,0); break; }
     case "tLeave": openLeaveRoom(t.dataset.m); break;
