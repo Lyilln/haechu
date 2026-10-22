@@ -4682,7 +4682,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022103712";
+const BUILD="20261022111750";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5723,7 +5723,7 @@ function audioDur(blob){ return new Promise(res=>{ const a=new Audio(), u=URL.cr
 function sendWhisperMedia(memberId,kind,mid,meta){
   const m=MEMBERS[memberId], label=kind==="photo"?"📷 照片":"🎙️ 語音";
   S.set(K.whispers,[...S.get(K.whispers,[]),{id:"w"+Date.now(),member:memberId,from:"artist",kind,mid,text:label,ts:Date.now(),...meta}]);
-  return feedPush({kind:"whisper",member:memberId,group:m.group,text:kind==="photo"?"傳了一張照片給你 📷":"傳了一則語音給你 🎙️",color:null,direct:true},"tie:"+memberId);
+  return feedPush({kind:"whisper",member:memberId,group:m.group,text:kind==="photo"?"📷 照片":"🎙️ 語音",color:null,direct:true},"tie:"+memberId);
 }
 function openAttach(){
   tieModal("傳照片或語音",`<div class="t-att">
@@ -10935,7 +10935,7 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
 
 /* ===== 底部選單：背景不跟著動；按住上方（灰色短線）往下拉可以關掉 ===== */
 (function sheetDrag(){ const SH=".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh"; let d=null;
-  document.addEventListener("touchmove",e=>{ const w=e.target.closest(".mu2-shw,.t-sheet-w,.scrim,.ios-w,.cmx-shw,.cmx-fabw,.t-modal-w,.fg-w"); if(!w) return; const sc=e.target.closest(".mu2-sh,.t-sheet,.sheet,.t-modal,.ios-sh,.cmx-sh");
+  document.addEventListener("touchmove",e=>{ const w=e.target.closest(".mu2-shw,.t-sheet-w,.scrim,.ios-w,.cmx-shw,.cmx-fabw,.t-modal-w,.fg-w,.t-drawer-w"); if(!w) return; const sc=e.target.closest(".mu2-sh,.t-sheet,.sheet,.t-modal,.ios-sh,.cmx-sh,.t-drawer");
     if(!sc||(sc.scrollHeight<=sc.clientHeight+1&&!d)) { if(e.cancelable) e.preventDefault(); } },{passive:false});
   document.addEventListener("touchstart",e=>{ const sh=e.target.closest(SH); if(!sh) return; const handle=e.target.closest(".grab,.mu2-grab"); if(!handle&&sh.scrollTop>0) return; const t=e.touches[0]; d={sh,y0:t.clientY,t:performance.now(),dy:0,h:!!handle}; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!d) return; const dy=e.touches[0].clientY-d.y0; if(dy<0&&!d.on){ d=null; return; } if(!d.on&&dy<6) return; d.on=true; d.dy=Math.max(0,dy); d.sh.style.transition="none"; d.sh.style.transform=`translateY(${d.dy}px)`; if(e.cancelable) e.preventDefault(); },{passive:false});
