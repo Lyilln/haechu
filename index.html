@@ -1110,6 +1110,20 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 .tb-v .t-vc{box-shadow:none;padding:0;width:auto;flex:1;min-width:0}
 .tb-v small{flex:none;font-size:12px;color:#9CA3AF}
 .tb-empty{text-align:center;padding:60px 24px;color:#9CA3AF;font-size:13px}
+/* TIE BOX（照 Bubble OUR BOX：白底、大標題、張數膠囊） */
+.t-page.ob{background:var(--bg)!important;color:var(--ink)}
+.ob-h{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 4px) 6px 0;position:sticky;top:0;background:var(--bg);z-index:5}
+.ob-h .t-ib{color:var(--ink)}.ob-done{font:inherit;font-weight:700;font-size:15px;width:auto!important;padding:0 10px;color:var(--violet)!important}
+.ob-dots{display:flex;flex-direction:column;gap:4px;align-items:center}.ob-dots i{width:4px;height:4px;border-radius:50%;background:currentColor}
+.ob-t{margin:44px 0 0;text-align:center;font-family:"Archivo Black","Arial Black",system-ui,sans-serif;font-size:32px;font-weight:900;letter-spacing:-.01em;color:var(--ink)}
+.ob-n{align-self:center;margin:18px auto 0;padding:2px 11px;border-radius:999px;background:color-mix(in srgb,var(--ink) 18%,transparent);color:var(--ink-3);font-size:12px;font-weight:700;font-variant-numeric:tabular-nums}.ob-n b{color:var(--ink)}
+.ob-empty{margin:auto 0;padding:0 24px 30vh;text-align:center;color:var(--ink-3);font-size:14px;line-height:1.8}
+.ob-list{display:flex;flex-direction:column;gap:16px;padding:28px 16px 40px}
+.ob-it{position:relative;display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.ob-it small{font-size:11.5px;color:var(--ink-3)}
+.ob-tx{max-width:86%;padding:11px 15px;border-radius:4px 20px 20px 20px;background:var(--s2);font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
+.ob-ph{width:62%;aspect-ratio:1;border-radius:16px;overflow:hidden;padding:0;border:0;background:var(--s2)}.ob-ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ob-it.ed{padding-left:34px}.ob-x{position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;border:0;display:grid;place-items:center;background:#E5484D;color:#fff;padding:0}.ob-x svg{width:12px;height:12px}
 .ph-view{position:fixed;inset:0;z-index:80;background:rgba(20,12,40,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 60px) 16px calc(env(safe-area-inset-bottom,0px) + 40px);animation:fade .2s}
 .ph-view img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
 .ph-view .ph-x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:16px}
@@ -4621,7 +4635,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022023254";
+const BUILD="20261022023702";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5632,17 +5646,16 @@ function viewTieGallery(member){ const L=fanRoom(member).filter(w=>w.from==="art
   return `<div class="t-page"><header class="t-ph"><button class="t-ib" data-a="back" aria-label="返回">${TI.back}</button><h3>照片・影片</h3><span class="t-ph-sp"></span></header>
     ${L.length?Object.entries(by).map(([d,ws])=>`<h4 class="tg-d">${d}</h4><div class="tb-grid">${ws.map(w=>`<button data-a="tPhoto" data-mid="${w.mid}" data-ts="${w.ts}" aria-label="照片"><img data-mid="${w.mid}" alt="">${w.kind==="video"?`<em>▶</em>`:""}</button>`).join("")}</div>`).join("")
       :`<p class="tb-empty">還沒有收到 ${esc(tieSet(member).chatName)} 的照片或影片<br><small>訂閱之前傳的照片、影片看不到喔</small></p>`}</div>`; }
+/* TIE BOX（照 Bubble 的 OUR BOX）：長按藝人的訊息（文字、照片、語音都可以）收藏到這裡；最多 BOX_MAX 則 */
+const BOX_MAX=9;
 function viewTieBox(member){
-  const tab=ui.boxTab||"photo", msgs=fanRoom(member).filter(w=>w.from==="artist"&&(w.kind==="photo"||w.kind==="voice")).reverse(), KS=new Set(S.get(K.boxKeep,[])), keep=fanRoom(member).filter(w=>w.from==="artist"&&!w.kind&&KS.has(w.id)).reverse(), list=tab==="text"?keep:msgs.filter(w=>w.kind===tab);
-  if(tab==="text") return `<div class="t-page"><header class="t-ph"><button class="t-ib" data-a="back" aria-label="返回">${TI.back}</button><h3>${WHISPER_NAME} BOX</h3><span class="t-ph-sp"></span></header>
-    <div class="tb-tabs"><button data-a="boxTab" data-v="photo">照片 ${msgs.filter(w=>w.kind==="photo").length}</button><button data-a="boxTab" data-v="voice">語音 ${msgs.filter(w=>w.kind==="voice").length}</button><button class="on" data-a="boxTab" data-v="text">文字 ${keep.length}</button></div>
-    ${keep.length?`<div class="tb-list">${keep.map(w=>`<div class="tb-v"><div class="t-b">${nickify(esc(w.ko||w.text),member)}</div><small>${ymd(w.ts)}</small></div>`).join("")}</div>`:`<p class="tb-empty">長按 ${esc(tieSet(member).chatName)} 的訊息，選「收藏到 ${WHISPER_NAME} BOX」就會收在這裡</p>`}</div>`;
-  return `<div class="t-page"><header class="t-ph"><button class="t-ib" data-a="back" aria-label="返回">${TI.back}</button><h3>${WHISPER_NAME} BOX</h3><span class="t-ph-sp"></span></header>
-    <div class="tb-tabs"><button class="${tab==="photo"?"on":""}" data-a="boxTab" data-v="photo">照片 ${msgs.filter(w=>w.kind==="photo").length}</button><button class="${tab==="voice"?"on":""}" data-a="boxTab" data-v="voice">語音 ${msgs.filter(w=>w.kind==="voice").length}</button><button class="${tab==="text"?"on":""}" data-a="boxTab" data-v="text">文字 ${keep.length}</button></div>
-    ${!list.length?`<p class="tb-empty">${tab==="photo"?`還沒有收到 ${esc(tieSet(member).chatName)} 的照片`:`還沒有收到 ${esc(tieSet(member).chatName)} 的語音`}</p>`
-      :tab==="photo"?`<div class="tb-grid">${list.map(w=>`<button data-a="tPhoto" data-mid="${w.mid}" data-ts="${w.ts}" aria-label="照片"><img data-mid="${w.mid}" alt=""><em>${(new Date(w.ts).getMonth()+1)}/${new Date(w.ts).getDate()}</em></button>`).join("")}</div>`
-      :`<div class="tb-list">${list.map(w=>`<div class="tb-v">${mediaBubble(w)}<small>${ymd(w.ts)}</small></div>`).join("")}</div>`}
-  </div>`;
+  const KS=S.get(K.boxKeep,[])||[], room=fanRoom(member), keep=KS.map(id=>room.find(w=>w.id===id&&w.from==="artist")).filter(Boolean).reverse(), ed=!!ui.boxEdit;
+  const item=w=>`<div class="ob-it ${ed?"ed":""}">${ed?`<button class="ob-x" data-a="boxDel" data-id="${w.id}" aria-label="移除">${XI}</button>`:""}
+      ${w.kind==="photo"?`<button class="ob-ph" data-a="tPhoto" data-mid="${w.mid}" data-ts="${w.ts}" aria-label="照片"><img data-mid="${w.mid}" alt=""></button>`:w.kind?mediaBubble(w):`<div class="ob-tx">${nickify(esc(w.ko||w.text),member)}</div>`}
+      <small>${ymd(w.ts)}</small></div>`;
+  return `<div class="t-page ob"><header class="ob-h"><button class="t-ib" data-a="back" aria-label="返回">${TI.back}</button><span></span>${keep.length?`<button class="t-ib ${ed?"ob-done":""}" data-a="boxEdit" aria-label="${ed?"完成":"編輯"}">${ed?"完成":`<span class="ob-dots"><i></i><i></i><i></i></span>`}</button>`:`<span class="t-ib"></span>`}</header>
+    <h2 class="ob-t">${WHISPER_NAME} BOX</h2><div class="ob-n"><b>${keep.length}</b> / ${BOX_MAX}</div>
+    ${keep.length?`<div class="ob-list">${keep.map(item).join("")}</div>`:`<p class="ob-empty">沒有收藏的訊息<br>請自由收藏聊天室裡的訊息:)</p>`}</div>`;
 }
 /* 示範：露娜的聊天室先放一張照片、一則語音 */
 async function seedMedia(){
@@ -8231,7 +8244,7 @@ function viewTieBgColor(member){ const st=tieSet(member), pk=ui.bgPick, tab=ui.b
 /* 長按藝人的訊息：系統選單 */
 function openMsgSheet(id){ const w=getWhispers().find(v=>v.id===id); if(!w) return; ui.copyText=w.ko||w.text; const m=route().m;
   if(w.from!=="artist"){ iosSheet([["複製","tCopy"]]); return; }
-  const items=[]; if(!w.kind) items.push(["複製","tCopy"]); items.push(["翻譯設定","tToSettings",`data-m="${m}"`]); if(!w.kind&&w.ko) items.push(["查看翻譯結果","tTrSheet",`data-id="${id}"`]); items.push([`收藏到 ${WHISPER_NAME} BOX`,"tKeep",`data-id="${id}"`]); iosSheet(items); }
+  const items=[]; if(!w.kind) items.push(["複製","tCopy"]); items.push(["翻譯設定","tToSettings",`data-m="${m}"`]); if(!w.kind&&w.ko) items.push(["查看翻譯結果","tTrSheet",`data-id="${id}"`]); if(!(S.get(K.boxKeep,[])||[]).includes(id)) items.push([`收藏到 ${WHISPER_NAME} BOX`,"tKeep",`data-id="${id}"`]); else items.push([`從 ${WHISPER_NAME} BOX 移除`,"boxDel",`data-id="${id}"`]); iosSheet(items); }
 
 /* ---------- 聊天室設定 ---------- */
 function viewTieSettings(member){
@@ -10494,7 +10507,7 @@ document.addEventListener("click",e=>{
     case "tMute": { const st=tieSet(t.dataset.m); saveTieSet(t.dataset.m,{muted:!st.muted}); openTieDrawer(t.dataset.m); toast(!st.muted?"已關閉這個聊天室的通知":"已開啟通知"); break; }
     case "tFav": { const st=tieSet(t.dataset.m); saveTieSet(t.dataset.m,{fav:!st.fav}); openTieDrawer(t.dataset.m); toast(!st.fav?"已加入我的最愛 ⭐":"已移出我的最愛"); break; }
     case "tTrToggle": { const st=tieSet(t.dataset.m); saveTieSet(t.dataset.m,{translate:!st.translate}); const inDrawer=!!t.closest(".t-drawer"); render(); if(inDrawer){ openTieDrawer(t.dataset.m); } break; }
-    case "tBox": { const m2=route().m; layer.innerHTML=""; ui.boxTab="photo"; if(m2) location.hash="#/fan/chat?m="+m2+"&p=box"; break; }
+    case "tBox": { const m2=route().m; layer.innerHTML=""; ui.boxEdit=false; if(m2) location.hash="#/fan/chat?m="+m2+"&p=box"; break; }
     case "tGallery": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=gallery"; window.scrollTo(0,0); break;
     case "tToSettings": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=settings"; break;
     case "tTranslate": { const id=t.dataset.id, lang=tieSet(route().m).trLang||"zh"; const done=()=>{ const s2=new Set(S.get(K.tieTr,[])); s2.add(id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); };
@@ -10531,7 +10544,12 @@ document.addEventListener("click",e=>{
       const L=subs(), used=out.filter(x=>(L[x]||{}).swapPer===tiePeriod(x)); if(used.length){ toast(`${used.map(x=>artName(x,"feed")).join("、")} 的券這段期間已經換過 1 次了`); break; }
       ask(`要把 ${out.map(x=>artName(x,"feed")).join("、")} 換成 ${inn.map(x=>artName(x,"feed")).join("、")} 嗎？每張券在使用期間只能換 1 次。`,()=>{ out.forEach((x,i)=>{ const rec=L[x], to=inn[i]; if(!rec||!to) return; L[to]={...rec,since:Date.now(),periods:[{start:Date.now(),end:null}],swapPer:Date.now()}; delete L[x]; }); S.set(K.tieSubs,L); ui.pickSet=null; toast("已更改藝人 💜"); location.hash="#/fan/chat?m="+(inn.includes(route().m)?route().m:(sel.includes(route().m)?route().m:inn[0])); },{title:"更改藝人",ok:"更改"}); break; }
     case "tPickGo": ui.pickSet=null; location.hash="#/fan/chat?m="+t.dataset.m+"&p=pick"; setTimeout(openPickNotice,300); break;
-    case "tKeep": { const L=S.get(K.boxKeep,[]); if(!L.includes(t.dataset.id)) L.push(t.dataset.id); S.set(K.boxKeep,L); layer.innerHTML=""; toast(`已收藏到 ${WHISPER_NAME} BOX`); break; }
+    case "tKeep": { const L=S.get(K.boxKeep,[])||[], id=t.dataset.id, m0=route().m, room=m0?fanRoom(m0):[]; layer.innerHTML="";
+      if(L.includes(id)){ toast(`已經在 ${WHISPER_NAME} BOX 裡了`); break; }
+      if(L.filter(x=>room.some(w=>w.id===x)).length>=BOX_MAX){ toast(`${WHISPER_NAME} BOX 最多收藏 ${BOX_MAX} 則，先移除一些再收藏`); break; }
+      L.push(id); S.set(K.boxKeep,L); toast(`已收藏到 ${WHISPER_NAME} BOX`); break; }
+    case "boxEdit": ui.boxEdit=!ui.boxEdit; render(); break;
+    case "boxDel": { S.set(K.boxKeep,(S.get(K.boxKeep,[])||[]).filter(x=>x!==t.dataset.id)); if(!(S.get(K.boxKeep,[])||[]).length) ui.boxEdit=false; render(); break; }
     case "tTrSheet": { layer.innerHTML=""; const b=document.querySelector(`[data-a="tTranslate"][data-id="${t.dataset.id}"]`); if(b) b.click(); else { const s2=new Set(S.get(K.tieTr,[])); s2.add(t.dataset.id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "tBgTab": ui.tieBgTab=t.dataset.v; openTieBgMenu(t.dataset.m); break;
     case "tBgSet": { const mode=t.dataset.mode, u={bgMode:mode};
