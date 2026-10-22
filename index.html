@@ -2628,6 +2628,7 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .abx-intro{margin:2px 2px 6px;font-size:14px;line-height:1.7;color:var(--ink-2);white-space:pre-wrap;word-break:break-word}
 .abx-sec{font-size:13px;font-weight:700;color:var(--ink-3);padding:8px 2px 0}
 .rg-ph{display:flex;gap:12px;align-items:center;margin:2px 0 6px;text-align:left}
+.rg-ph-img.tz{width:64px;height:80px;border-radius:14px}.rg-ph-img.tz .av-img{width:100%;height:100%}
 .rg-ph-img{flex:none;width:72px;height:72px;border-radius:18px;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:800;font-size:26px}
 .rg-ph-r{display:flex;flex-direction:column;gap:8px;min-width:0}.rg-ph-r small{font-size:12px;color:var(--ink-3);line-height:1.5}
 .rg-ph-b{display:flex;gap:8px}
@@ -4384,7 +4385,7 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .rs-ed{flex:none;margin-left:auto;white-space:nowrap}
 .rs-g .rev-gh .rs-ed{margin-left:auto}
 .rs-sw-m{display:flex;flex-wrap:wrap;gap:5px;margin:4px 0 12px}.rs-sw-m button{width:24px;height:24px;border-width:2px}
-#rgEdName.a-nick-in{margin-top:0}
+#rgEdName.a-nick-in,.t-modal .fs-f-lab+.a-nick-in{margin-top:0}
 .ac-nm{display:flex;align-items:baseline;gap:8px;flex:1 1 auto;min-width:0;cursor:pointer}
 
 .ac-row{cursor:pointer}
@@ -4451,7 +4452,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", wtours:"daisuki_wtours", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide",
+  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4733,7 +4734,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022142143";
+const BUILD="20261022144258";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7668,7 +7669,7 @@ function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid
       <button class="cm-go" data-a="cmNotices">確認 ${esc(g.name)} 的公告 <span>→</span></button></section>
     ${cmSec("Calendar")}<section class="card cm-card">${up?`<div class="cm-up"><small>${evWhen(up.ts)}</small><b>${up.ic} ${esc(up.t)}</b></div>`:""}<button class="cm-go" data-a="cmCal">確認 ${esc(g.name)} 的行程 <span>→</span></button></section>
     ${prods.length?`${cmSec("Merch","查看更多","cmShop")}<div class="cm-merch">${prods.map(prodCard).join("")}</div>`:""}
-    ${cmSec("About")}<section class="card cm-abc">${g.solo&&ms[0]?(()=>{ const m=ms[0], gp=gPhoto(gid); return `<button class="cm-abs" data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${gp?`<span class="av-img av-bgi" role="img" aria-label="${esc(MEMBERS[m].name)}" style="background-image:url('${gp}')"></span>`:mAvIn(m)}</i><b>${esc(MEMBERS[m].name)}</b></button>`; })():`<div class="cm-ab">${ms.map(m=>`<button data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${mAvIn(m)}</i><small>${esc(MEMBERS[m].name)}</small></button>`).join("")}</div>`}<button class="cm-abm" data-a="cmAbout">查看更多 ›</button></section>`; }
+    ${cmSec("About")}<section class="card cm-abc">${g.solo&&ms[0]?(()=>{ const m=ms[0], gp=gPhoto(gid); return `<button class="cm-abs" data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${gp?`<span class="av-img av-bgi" role="img" aria-label="${esc(MEMBERS[m].name)}" style="background-image:url('${gp}')"></span>`:mAvIn(m)}</i><b>${esc(MEMBERS[m].name)}</b></button>`; })():`<div class="cm-ab">${ms.map(m=>`<button data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${teaserIn(m)}</i><small>${esc(MEMBERS[m].name)}</small></button>`).join("")}</div>`}<button class="cm-abm" data-a="cmAbout">查看更多 ›</button></section>`; }
 function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt);
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" data-a="${n.shop?"snOpen":"gnOpen"}" data-v="${n.id}"><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
@@ -7775,7 +7776,7 @@ function viewAbout(gid){ const g=groupOf(gid), open=ui.abOpen||null;
   const abl=[["sns",SNS_NAME],["tie",WHISPER_NAME],["shop","SHOP"]].map(([k,l])=>`<button class="abx-l" data-a="abLink" data-k="${k}" data-g="${gid}" data-m="${sm||""}" aria-label="${l}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${AB_IC[k]}</svg></button>`).join("");
   return `<section class="abx-top"><div class="abx-tl"><h2>${esc(g.name)}</h2><div class="abx-ls">${abl}</div></div><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span></section>
     ${it?`<p class="abx-intro">${esc(it)}</p>`:""}${g.solo?"":`<div class="abx-sec">成員 ${grpMembers(gid).length}</div>`}
-    ${grpMembers(gid).map(m=>{ const M=MEMBERS[m], o=open===m; return `<section class="card ab-m ${o?"o":""}" id="ab-${m}"><button class="ab-mh" data-a="abTog" data-v="${m}" aria-expanded="${o}"><i style="background:${grad(M.g)}">${mAvIn(m)}</i><b>${esc(M.name)}</b><span class="ab-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>${o?`<button class="ab-pro" data-a="cmMem" data-v="${m}">查看個人簡介</button>`:""}</section>`; }).join("")}`; }
+    ${grpMembers(gid).map(m=>{ const M=MEMBERS[m], o=open===m; return `<section class="card ab-m ${o?"o":""}" id="ab-${m}"><button class="ab-mh" data-a="abTog" data-v="${m}" aria-expanded="${o}"><i style="background:${grad(M.g)}">${teaserIn(m)}</i><b>${esc(M.name)}</b><span class="ab-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>${o?`<button class="ab-pro" data-a="cmMem" data-v="${m}">查看個人簡介</button>`:""}</section>`; }).join("")}`; }
 function viewMemberProfile(gid,mid){ setTimeout(apBarSync,0); return `<div class="gcm ap2" style="--gt:${gTheme(gid)}">${artProfileHtml(mid,false)}</div>`; }
 function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.group===gid&&!p.hidden), fans=S.get(K.fanPosts,[]).filter(p=>p.gid===gid).sort((a,b)=>b.ts-a.ts);
   const chips=`<div class="cm-chips">${[["hl","Highlight"],["fan","Fan"],["artist","Artist"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmFeed" data-v="${k}">${l}</button>`).join("")}</div>`;
@@ -10302,7 +10303,7 @@ document.addEventListener("click",e=>{
     case "rsGroup": ui.rsGroup=t.dataset.v; { const y=window.scrollY, keep=["rmName","rmEmail"].map(id=>(document.getElementById(id)||{}).value||""); render(); window.scrollTo(0,y); ["rmName","rmEmail"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); } break;
     case "rmEdit": { const id=t.dataset.v, m=MEMBERS[id]; if(!m) break; ui.rmEd=id; const cur=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e].member===id)||"", bd=(S.get(K.bdays,{})[id])||"";
       const opts=`<option value="">${cur?"解除綁定":"之後再選"}</option>`+(cur?`<option value="${esc(cur)}" selected>${esc(acctUser(cur))}・${esc(realName(cur)||ACCOUNTS[cur].name||"")}</option>`:"")+Object.entries(ACCOUNTS).filter(([e,a])=>e!==cur&&((a.role==="fan")||(a.role==="admin"&&!(a.member&&MEMBERS[a.member])))).map(([e,a])=>`<option value="${esc(e)}">${esc(acctUser(e))}・${esc(realName(e)||a.name||e)}</option>`).join("");
-      tieModal(`編輯 ${esc(m.name)}`,"",`<span class="fs-f-lab">藝名</span><input id="rmEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(m.name)}"><span class="fs-f-lab">生日（月-日）</span><input id="rmEdBday" class="a-nick-in" maxlength="5" placeholder="輸入文字" value="${esc(bd)}"><span class="fs-f-lab">用哪個帳號登入</span><select id="rmEdAcc" class="a-nick-in">${opts}</select><button class="t-mbtn main" data-a="rmEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+      tieModal(`編輯 ${esc(m.name)}`,"",`<span class="fs-f-lab">Teaser 照</span><div class="rg-ph"><span class="rg-ph-img tz" id="rmPhImg" style="background:${grad(m.g)}">${teaserIn(id)}</span><span class="rg-ph-r"><span class="rg-ph-b"><button class="btn btn-soft btn-sm" data-a="rmPhPick" id="rmPhBtn">${mPhoto(id)?"更換":"上傳"}</button><button class="btn btn-soft btn-sm" data-a="rmPhDel">移除</button></span></span></div><span class="fs-f-lab">藝名</span><input id="rmEdName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(m.name)}"><span class="fs-f-lab">生日（月-日）</span><input id="rmEdBday" class="a-nick-in" maxlength="5" placeholder="輸入文字" value="${esc(bd)}"><span class="fs-f-lab">用哪個帳號登入</span><select id="rmEdAcc" class="a-nick-in">${opts}</select><button class="t-mbtn main" data-a="rmEditOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "rmEditOk": { const id=ui.rmEd, m=MEMBERS[id]; if(!m) break; const nm=((document.getElementById("rmEdName")||{}).value||"").trim(), bd=((document.getElementById("rmEdBday")||{}).value||"").trim(), acc=((document.getElementById("rmEdAcc")||{}).value||"").trim().toLowerCase();
       if(!nm){ toast("請輸入藝名"); break; } if(nameBlock(nm)) break; if(bd&&!/^\d{1,2}-\d{1,2}$/.test(bd)){ toast("生日請用 月-日，例如 3-21"); break; }
       const g=groupOf(m.group); saveRoster(r=>{ if(r.members[id]) r.members[id].name=nm; if(g&&g.solo){ const x=(r.groups||[]).find(y=>y.id===g.id); if(x) x.name=nm; } }); m.name=nm; if(g&&g.solo) g.name=nm;
@@ -10586,6 +10587,12 @@ document.addEventListener("click",e=>{
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
     case "goCore": go("fan",null,"core"); window.scrollTo(0,0); break;
     case "goNotifs": go("fan","notifications"); break;
+    case "rmPhPick": { const id=ui.rmEd; if(!id) break; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:4/5,max:1350}); if(!f) return;
+        try{ const b=await shrinkImg(f,1350); MPREV[id]=URL.createObjectURL(b); const el=document.getElementById("rmPhImg"); if(el) el.innerHTML=teaserIn(id); const bt=document.getElementById("rmPhBtn"); if(bt) bt.textContent="更換"; { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("Teaser 照換好了");
+          const url=(HB_ON&&await hbImgUrl("gph_m_"+id+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
+          imgSwap(url,()=>{ const M={...(S.get(K.mPhoto,{})||{})}; const old=M[id]; if(old!==url) mediaDel(old); M[id]=url; try{ S.set(K.mPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete MPREV[id]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; pickClick(inp); break; }
+    case "rmPhDel": { const id=ui.rmEd; if(!id) break; delete MPREV[id]; const M={...(S.get(K.mPhoto,{})||{})}; mediaDel(M[id]); delete M[id]; S.set(K.mPhoto,M); const el=document.getElementById("rmPhImg"); if(el) el.innerHTML=teaserIn(id); { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "cmCrop": { const L=ui.composeMedia||[], i=+t.dataset.i, x=L[i]; if(!x||x.kind!=="photo") break; (async()=>{ const b0=await MDB.get(x.mid); if(!b0){ toast("找不到這張照片"); return; } const b=await cropImg(b0,{free:true,max:1280}); if(!b) return;
       const id="pp"+Date.now()+i, im=await new Promise(res=>{ const u=URL.createObjectURL(b), q=new Image(); q.onload=()=>{ res(q); URL.revokeObjectURL(u); }; q.src=u; }); await MDB.put(id,b); L[i]={...x,mid:id,w:im.naturalWidth,h:im.naturalHeight}; const y=window.scrollY; render(); window.scrollTo(0,y); })(); break; }
     case "tPhCrop": { const p=ui.tiePh; if(!p) break; (async()=>{ const b=await cropImg(p.blob,{free:true,max:1280}); if(!b) return; p.blob=b; tiePhPrev(); })(); break; }
@@ -11965,6 +11972,10 @@ function viewShopAdmin(){ const n=getThemes().filter(t=>t.status==="pending").le
 const PREV={}, GPREV={};
 const artProf=mid=>{ const p=(S.get(K.artProf,{})[mid])||{}; return PREV[mid]?{...p,...PREV[mid]}:p; };
 const gPhotoMap=()=>({...(S.get(K.gPhoto,{})||{}),...GPREV});
+/* 成員的 Teaser 照（管理員在「藝人與團」放）：About 用。SOLO 用出道／回歸照；社群頭貼只在個人社群裡出現 */
+const MPREV={};
+function mPhoto(mid){ const m=MEMBERS[mid]; if(!m) return ""; const g=groupOf(m.group); if(g&&g.solo) return gPhoto(g.id); return MPREV[mid]||(S.get(K.mPhoto,{})||{})[mid]||""; }
+const teaserIn=mid=>{ const u=mPhoto(mid), m=MEMBERS[mid]; return u?`<span class="av-img av-bgi" role="img" aria-label="${esc(m?m.name:"")}" style="background-image:url('${u}')"></span>`:esc(ini(m?m.name:"")); };
 /* 上傳完、雲端那張也載入好了，才換掉預覽（不會閃一下） */
 function imgSwap(url,done){ if(!url||url.startsWith("data:")){ done(); return; } const im=new Image(); let ok=false; const fin=()=>{ if(ok) return; ok=true; done(); }; im.onload=fin; im.onerror=fin; setTimeout(fin,15000); im.src=url; }
 /* 名稱：動態、直播、TIE 聊天室各自一個，沒改過就是藝名（MEMBERS 的名字，只有管理員能改） */
