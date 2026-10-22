@@ -4734,7 +4734,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022144258";
+const BUILD="20261022144513";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4951,7 +4951,7 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
   const have=new Set(seen), me=myEmail(), fol=followed(), st=getSettings(), add=[];
   F.forEach(e=>{ if(have.has(e.id)) return; have.add(e.id); seen.unshift(e.id); const a=String(e.aud||"");
     const ok=a==="all"?true:a.startsWith("g:")?fol.includes(a.slice(2)):a.startsWith("gs:")?a.slice(3).split(",").some(x=>fol.includes(x)):a.startsWith("tix:")?!!myTix()[a.slice(4)]:a.startsWith("tie:")?(isActive(a.slice(4))&&!tieSet(a.slice(4)).muted):a.startsWith("u:")?a.slice(2)===me:false;
-    if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
+    if(ok&&st[e.kind]!==false){ const {aud,...n}=e; if(n.vis==="ms"&&!isMember(n.group)) n.text="查看Membership貼文"; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
   if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); setTimeout(()=>iaBanner(add[0]),60); return true; } return false; }catch(e){ return false; } }
 /* =========================================================
@@ -5046,8 +5046,8 @@ function createPost(memberId,text,color,tag,media,vis,pw,poll){
   const m=MEMBERS[memberId];
   const post={id:"p"+Date.now(),member:memberId,group:m.group,ts:Date.now(),text,color:media&&media.length?null:color,tag:tag||"日常",media:media&&media.length?media:undefined,likes:0,comments:0,vis:vis==="ms"||vis==="pw"?vis:undefined,pw:vis==="pw"?String(pw||""):undefined,poll:poll?{...poll,base:poll.opts.map(()=>0)}:undefined};
   S.set(K.posts,[post,...S.get(K.posts,[])]);
-  const safe=post.vis==="ms"?"💎 Membership 貼文，快來看看！":post.vis==="pw"?"🔒 私密貼文，快來看看！":text;   // 私密、Membership：通知裡不露內容
-  const reached=feedPush({kind:"post",member:memberId,group:m.group,text:safe,postId:post.id,color},"g:"+m.group);
+  const safe=post.vis==="pw"?"查看非公開貼文":text;   // 私密貼文：通知裡不露內容；Membership：有買的看內容、沒買的看到「查看Membership貼文」（送到每個人時再決定）
+  const reached=feedPush({kind:"post",member:memberId,group:m.group,text:safe,postId:post.id,color,vis:post.vis||undefined},"g:"+m.group);
   return {post,reached};
 }
 
@@ -8099,7 +8099,7 @@ function notifMsg(n){
   if(n.kind==="core") return (nm?nm+" ":"")+n.text;
   if(n.kind==="news") return "新聞："+n.text;
   if(n.kind==="tour") return `${nm}：${n.text}`;
-  return {post:`${nm} 發布了新貼文：${n.text}`,comment:`${nm} 回覆了你的留言：「${n.text}」`,live:n.liveReply?`${nm} ${n.text} 💬`:`${nm} 開始直播了：${n.text} 🔥`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${n.text}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
+  return {post:`📝 ${nm} 發表了貼文：${n.text}`,comment:`${nm} 回覆了你的留言：「${n.text}」`,live:n.liveReply?`${nm} ${n.text} 💬`:`${nm} 開始直播了：${n.text} 🔥`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${n.text}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
 }
 function pinnedHtml(){
   const anns=getAnns(); if(!anns.length) return "";
