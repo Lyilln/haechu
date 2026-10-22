@@ -1866,7 +1866,7 @@ html[data-theme] body .sw[aria-checked="true"]{background:var(--violet)}
 .foc-row b{font-size:13px}.foc-row small{display:block;font-size:12px;color:var(--ink-3)}
 .foc-stage{display:flex;align-items:center;gap:6px;font-size:12px;font-weight:800;color:var(--violet);background:var(--violet-soft);padding:4px 6px 4px 12px;border-radius:999px}
 .foc-stage .core-info{margin:0;flex:none;width:22px;height:22px;padding:0;display:grid;place-items:center;line-height:1;box-sizing:border-box}
-.foc-stage{padding:3px 3px 3px 12px!important;line-height:1;overflow:hidden}
+.foc-stage{padding:4px 4px 4px 12px!important;line-height:1;overflow:hidden}.foc-stage .core-info svg{width:13px;height:13px;display:block}
 .foc-week{position:relative;display:flex;gap:12px;align-items:center;padding:12px 14px;margin:10px 0 14px;border-radius:20px;background:linear-gradient(135deg,rgba(245,240,255,.9),rgba(252,231,243,.7))}
 .foc-week>span{color:#F472B6;font-size:16px}
 .foc-week b{display:block;font-size:12.5px}
@@ -3660,6 +3660,11 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 .uni-more{margin-left:auto;width:34px;height:34px;border-radius:50%;font-size:18px;font-weight:900;color:var(--ink-3);flex:none}
 .rs-row .rev-dot{width:12px;height:12px;border-radius:50%;flex:none}
 .tk-ph{display:flex;flex-direction:column;align-items:center;gap:10px;padding-top:12px}.tk-stage{width:100%;max-width:420px;border-radius:28px;background:#FFE1EC;padding:18px 14px 0;box-sizing:border-box;overflow:hidden;position:relative}.tk-stage::after{content:"";position:absolute;left:0;right:0;bottom:0;height:56px;background:#F7CFDD}.tk-stage svg{position:relative;z-index:1;display:block;width:100%}.tk-t{margin:10px 0 0;font-size:22px}.tk-soon{font-size:13px;font-weight:700;padding:5px 14px;border-radius:999px;background:#FFE1EC;color:#C2416F}
+.ia-ban{position:fixed;left:10px;right:10px;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:9999;display:flex;align-items:center;gap:10px;padding:10px 14px;border:0;border-radius:20px;background:color-mix(in srgb,var(--s1,#fff) 88%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);box-shadow:0 10px 30px rgba(0,0,0,.18);color:var(--ink);font-family:inherit;text-align:left;transform:translateY(-140%);transition:transform .32s cubic-bezier(.2,.9,.3,1.1)}
+.ia-ban.on{transform:none}
+.ia-av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:800}.ia-av img{width:100%;height:100%;object-fit:cover}.ia-h{background:var(--violet,#8843FB)}
+.ia-tx{display:flex;flex-direction:column;gap:2px;min-width:0}.ia-tx em{font-style:normal;font-size:11px;font-weight:800;color:var(--ink-3);display:flex;align-items:center;gap:5px}.ia-tx em i{width:6px;height:6px;border-radius:50%}
+.ia-tx b{font-size:14px;font-weight:600;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .nw .chips{margin-bottom:12px}
 .nw-tag{display:inline-block;align-self:flex-start;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
 .nw-th{display:block;width:100%;aspect-ratio:16/9;border-radius:var(--radius-l);overflow:hidden;background:var(--s2,var(--line))}
@@ -4394,7 +4399,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", news:"daisuki_news", newsHide:"daisuki_news_hide",
+  vsec:"daisuki_vsec", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4415,7 +4420,7 @@ const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
 /* 每個粉絲帳號自己的資料（追蹤、TIE 券、點數、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
-const PK_SET=new Set(["ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
+const PK_SET=new Set(["online","ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
   get(k,fb){k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
@@ -4677,7 +4682,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022102136";
+const BUILD="20261022103712";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4896,7 +4901,19 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
     const ok=a==="all"?true:a.startsWith("g:")?fol.includes(a.slice(2)):a.startsWith("gs:")?a.slice(3).split(",").some(x=>fol.includes(x)):a.startsWith("tie:")?(isActive(a.slice(4))&&!tieSet(a.slice(4)).muted):a.startsWith("u:")?a.slice(2)===me:false;
     if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
-  if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); return true; } return false; }catch(e){ return false; } }
+  if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); setTimeout(()=>iaBanner(add[0]),60); return true; } return false; }catch(e){ return false; } }
+/* App 開著的時候：手機推播改成 App 內的通知條（後台看到「在線上」就不送手機推播） */
+function onlinePing(){ try{ const s=session(); if(!s||s.role!=="fan"||!HB_ON) return; S.set(K.online,document.hidden?0:Date.now()); }catch(e){} }
+setInterval(()=>{ if(!document.hidden) onlinePing(); },20e3); document.addEventListener("visibilitychange",onlinePing); setTimeout(onlinePing,1500);
+let iaT=0;
+function iaBanner(n){ try{ if(!n||document.hidden||n.self) return; const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
+  const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"], act=n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":n.kind==="system"?"goNotifs":"openPost", m=MEMBERS[n.member];
+  document.querySelectorAll(".ia-ban").forEach(x=>x.remove()); const b=document.createElement("button"); b.className="ia-ban"; b.type="button";
+  Object.entries({a:act,ek:n.evKind||"",ev:n.eventId||"",lv:n.liveId||"",m:n.member||"",id:n.postId||n.newsId||"",c:n.commentId||""}).forEach(([k,v])=>b.dataset[k]=v);
+  b.innerHTML=`${m?`<span class="ia-av" style="background:${grad(m.g)}">${mAvIn(n.member)}</span>`:`<span class="ia-av ia-h">H</span>`}<span class="ia-tx"><em><i style="background:${col}"></i>${esc(lab)}</em><b>${esc(notifMsg(n))}</b></span>`;
+  document.body.appendChild(b); requestAnimationFrame(()=>b.classList.add("on")); clearTimeout(iaT);
+  const close=()=>{ b.classList.remove("on"); setTimeout(()=>b.remove(),300); }; iaT=setTimeout(close,4500); b.addEventListener("click",()=>setTimeout(close,0));
+  let y0=0; b.addEventListener("touchstart",e=>{ y0=e.touches[0].clientY; },{passive:true}); b.addEventListener("touchmove",e=>{ if(e.touches[0].clientY-y0<-12) close(); },{passive:true}); }catch(e){} }
 /* 自己說的話（TIE、直播聊天、留言）不進通知 */
 const selfSaid=n=>n.self&&/^你傳了 |」直播間說：|的貼文留言：/.test(n.text||"");
 function getNotifications(){ return S.get(K.notifs,[]).filter(n=>!selfSaid(n)).sort((a,b)=>b.ts-a.ts); }
@@ -9456,7 +9473,7 @@ function viewArtistFoc(mid,p){
   return `<main class="page foc">
     <section class="card foc-c hero"><span class="foc-strip"></span>
       <div class="foc-h"><span class="foc-ic">${FIC.stage}</span><div><b>舞台演出</b><small>STAGE &amp; CONCERT</small></div><span class="foc-badges"><em class="${hasAK?"on":""}">AK</em><em class="${hasPAK?"on":""}">PAK</em></span></div>
-      <div class="foc-row"><span>目前階段</span><span class="foc-stage">${esc(sc.stage)}<button class="core-info" data-a="focTip" aria-label="賽制說明">i</button></span></div>
+      <div class="foc-row"><span>目前階段</span><span class="foc-stage">${esc(sc.stage)}<button class="core-info" data-a="focTip" aria-label="賽制說明"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="1.6" fill="currentColor"/><path d="M12 11v7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button></span></div>
       <div class="foc-week"><span>✦</span><div><b>${wt==="宣傳週"?"宣傳週不排名，先好好準備舞台":wonShows.length?`本週拿下 ${wonShows.length} 個一位（+${fmt(wonShows.length*MSP.win)}）`:"本週還沒有一位，一起加油！"}</b><small>${wonShows.length?esc(wonShows.map(x=>x.name).join("・"))+"・":""}${left?`本週剩 ${left} 天`:"今天結算"}・結算 ${esc(sc.deadline)}</small></div></div>
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     </section>
@@ -10323,6 +10340,7 @@ document.addEventListener("click",e=>{
     case "notifClear": ask("要清除所有一般通知嗎？置頂公告不會被清掉。",()=>{ S.set(K.notifs,getNotifications().filter(n=>n.kind==="system")); markAllRead(); render(); toast("已清除通知"); }); break;
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
     case "goCore": go("fan",null,"core"); window.scrollTo(0,0); break;
+    case "goNotifs": go("fan","notifications"); break;
     case "newsF": ui.newsF=t.dataset.v; lsRerender(); break;
     case "newsOpen": location.hash=t.dataset.b+"&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
     case "openNews": location.hash="#/fan/core?p=news"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
