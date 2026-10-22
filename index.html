@@ -1124,10 +1124,11 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 .ob-tx{max-width:86%;padding:11px 15px;border-radius:4px 20px 20px 20px;background:var(--s2);font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
 .ob-ph{width:62%;aspect-ratio:1;border-radius:16px;overflow:hidden;padding:0;border:0;background:var(--s2)}.ob-ph img{width:100%;height:100%;object-fit:cover;display:block}
 .ob-it.ed{padding-left:34px}.ob-x{position:absolute;left:0;top:6px;width:24px;height:24px;border-radius:50%;border:0;display:grid;place-items:center;background:#E5484D;color:#fff;padding:0}.ob-x svg{width:12px;height:12px}
-.ph-view{position:fixed;inset:0;z-index:80;background:rgba(20,12,40,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 60px) 16px calc(env(safe-area-inset-bottom,0px) + 40px);animation:fade .2s}
+.ph-view{position:fixed;inset:0;z-index:80;background:#000;touch-action:none;overscroll-behavior:contain;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 60px) 16px calc(env(safe-area-inset-bottom,0px) + 40px);animation:fade .2s}
 .ph-view img{max-width:100%;max-height:100%;object-fit:contain;border-radius:12px}
 .ph-view .ph-x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 14px);right:16px;width:42px;height:42px;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;font-size:16px}
 .ph-view small{margin-top:12px;color:rgba(255,255,255,.7);font-size:12px}
+.ph-keep{position:absolute;left:16px;top:calc(env(safe-area-inset-top,0px) + 18px);height:34px;padding:0 14px;border-radius:999px;border:0;background:rgba(255,255,255,.14);color:#fff;font:inherit;font-size:13px;font-weight:700}.ph-keep.on{background:#fff;color:#111}
 /* ===== 整個 App 不顯示捲軸 ===== */
 html,body,*{scrollbar-width:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
@@ -4635,7 +4636,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022023702";
+const BUILD="20261022024330";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5598,7 +5599,7 @@ const fmtDur=s=>{ s=Math.max(0,Math.round(s||0)); return Math.floor(s/60)+":"+pa
 
 function mediaBubble(w){
   if(w.kind==="photo") return `<button class="t-photo" data-a="tPhoto" data-mid="${w.mid}" data-ts="${w.ts}" style="aspect-ratio:${w.w||3}/${w.h||4}" aria-label="照片"><img data-mid="${w.mid}" alt="照片"></button>`;
-  if(w.kind==="voice") return `<div class="t-vc" data-vid="${w.mid}" data-a="tVoice" data-mid="${w.mid}" role="button" aria-label="播放語音"><span class="t-vplay">${VPLAY}</span><span class="t-wave">${[46,78,100,62,88].map(h=>`<i style="height:${h}%"></i>`).join("")}</span><em>${fmtDur2(w.dur)}</em></div>`;
+  if(w.kind==="voice") return `<div class="t-vc" data-vid="${w.mid}" ${w.from==="artist"&&w.id&&(session()||{}).role==="fan"?`data-lp="${w.id}"`:""} data-a="tVoice" data-mid="${w.mid}" role="button" aria-label="播放語音"><span class="t-vplay">${VPLAY}</span><span class="t-wave">${[46,78,100,62,88].map(h=>`<i style="height:${h}%"></i>`).join("")}</span><em>${fmtDur2(w.dur)}</em></div>`;
   return "";
 }
 /* 語音播放：同一時間只播一則 */
@@ -5619,7 +5620,9 @@ function playVoice(mid){   // iPhone 要在點下去的那一刻就開始播，�
   vpUI();
 }
 function openPhoto(mid,ts){
-  setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><img data-mid="${mid}" alt="照片"><small>${ts?ymd(+ts)+" "+timeHM(+ts):""}</small></div>`,"photo");
+  /* TIE 裡藝人傳的照片：粉絲可以收藏到 TIE BOX */
+  const w=(session()||{}).role==="fan"&&route().m?fanRoom(route().m).find(x=>x.mid===mid&&x.from==="artist"):null, kept=w&&(S.get(K.boxKeep,[])||[]).includes(w.id);
+  setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button>${w?`<button class="ph-keep ${kept?"on":""}" data-a="${kept?"boxDel":"tKeep"}" data-id="${w.id}" aria-label="${kept?"從 TIE BOX 移除":"收藏到 TIE BOX"}">${kept?"已收藏":"收藏到 "+WHISPER_NAME+" BOX"}</button>`:""}<img data-mid="${mid}" alt="照片"><small>${ts?ymd(+ts)+" "+timeHM(+ts):""}</small></div>`,"photo");
   hydrateMedia(layer);
 }
 async function prepPhoto(file){   // 縮到長邊 1280，省空間
@@ -7078,7 +7081,7 @@ function render(){
   if(s.role==="fan") feedDeliver();
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
-  thRotTick();
+  thRotTick(); thSync();
   if(r.sub==="sns") return paint(viewSns(r.p||"home",r.id),false);
   if(r.sub==="look") return paint(viewLook(),false);
   if(r.sub==="replay"&&getLive(r.id)) return paint(viewReplay(r.id),false);
@@ -10549,7 +10552,7 @@ document.addEventListener("click",e=>{
       if(L.filter(x=>room.some(w=>w.id===x)).length>=BOX_MAX){ toast(`${WHISPER_NAME} BOX 最多收藏 ${BOX_MAX} 則，先移除一些再收藏`); break; }
       L.push(id); S.set(K.boxKeep,L); toast(`已收藏到 ${WHISPER_NAME} BOX`); break; }
     case "boxEdit": ui.boxEdit=!ui.boxEdit; render(); break;
-    case "boxDel": { S.set(K.boxKeep,(S.get(K.boxKeep,[])||[]).filter(x=>x!==t.dataset.id)); if(!(S.get(K.boxKeep,[])||[]).length) ui.boxEdit=false; render(); break; }
+    case "boxDel": { if(t.closest(".ph-view,.ios-w")) layer.innerHTML=""; S.set(K.boxKeep,(S.get(K.boxKeep,[])||[]).filter(x=>x!==t.dataset.id)); if(!(S.get(K.boxKeep,[])||[]).length) ui.boxEdit=false; render(); break; }
     case "tTrSheet": { layer.innerHTML=""; const b=document.querySelector(`[data-a="tTranslate"][data-id="${t.dataset.id}"]`); if(b) b.click(); else { const s2=new Set(S.get(K.tieTr,[])); s2.add(t.dataset.id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "tBgTab": ui.tieBgTab=t.dataset.v; openTieBgMenu(t.dataset.m); break;
     case "tBgSet": { const mode=t.dataset.mode, u={bgMode:mode};
@@ -10708,6 +10711,8 @@ window.addEventListener("hashchange",()=>{ navStamp();
   if(performance.now()-(ui.navUi||0)>700) ui.swiped=true;   // 瀏覽器自己的返回（Safari 邊緣滑、Android 返回鍵）已經有動畫了，這邊不再疊一層
   render(); });
 document.addEventListener("click",()=>{ ui.navUi=performance.now(); },true);
+/* 看照片時：手指在照片視窗上滑，後面的聊天室不能跟著動 */
+document.addEventListener("touchmove",e=>{ if(e.target.closest&&e.target.closest(".ph-view")&&e.cancelable) e.preventDefault(); },{passive:false});
 /* TIE 藝人抽屜裡打開的視窗（顏色、簡介、名稱、頭貼…）關掉後，回到抽屜 */
 document.addEventListener("click",()=>{ if(!ui.tieDrw) return; clearTimeout(ui.tieDrwT); ui.tieDrwT=setTimeout(()=>{ const mid=ui.tieDrw; if(!mid) return; if(!document.querySelector(".t-rh")||!MEMBERS[mid]){ ui.tieDrw=null; return; } if(!layer.innerHTML.trim()) openTieArtDrawer(mid,true); },360); });
 addEventListener("hashchange",()=>{ ui.tieDrw=null; });
@@ -10886,6 +10891,10 @@ function thAcFillSel(){ if(thAcSel) return thAcSel; const out=new Set(), over=ne
   return thAcSel=[...out].filter(x=>!over.has(x)); }
 /* 選單圖示：主題有放就用主題的（藝人端的 FOC 沿用 CORE 的圖） */
 function thIcon(k){ const t=session()?thCur():null; if(!t||!t.icons) return ""; const src=t.icons[k]||(k==="foc"?t.icons.core:""); return src?`<img class="th-ic" src="${src}" alt="">`:""; }
+/* 每次畫面更新都對一次：淺色／深色／跟隨系統、目前的主題，跟畫面上的不一樣就重新套（別的手機改了主題、系統切換深色時，TIE 才不會一下對一下錯） */
+let thSig="";
+function thSync(){ try{ const t=session()?thCur():null, fz=t?thForce():null, dk=fz==null?themeDark():fz, sig=(t?t.id+":"+(t.ts||0):"-")+"|"+(dk?1:0);
+  if(sig!==thSig||document.documentElement.getAttribute("data-theme")!==(dk?"dark":"light")){ thSig=sig; applyTheme(); } }catch(e){} }
 /* 主題輪播：每次畫面更新時看一下是不是該換了 */
 function thRotTick(){ if(!session()) return; const R=thRot(), own=thOwned(), pool=R.sel.filter(id=>id===""||own.includes(id)); if(!R.on||pool.length<2) return; const now=Date.now(); if(R.last&&now-R.last<R.every*36e5) return;
   const cur=thCurId(), i=pool.indexOf(cur), next=pool[(i+1)%pool.length];
