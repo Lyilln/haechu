@@ -3692,6 +3692,26 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 .tr-form{margin-bottom:12px}.tr-add{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center;margin-bottom:12px}.tr-add .field{margin:0;min-width:0}.tr-add .btn{grid-column:1/-1}.tr-add select,.tr-add input{display:block;width:100%;min-width:0;height:44px;border:0;background:none;font:inherit;font-size:15px;color:var(--ink);-webkit-appearance:none;appearance:none}
 .tr-dl{display:flex;flex-direction:column;gap:6px;margin-bottom:10px}.tr-di{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:14px;background:var(--violet-soft)}.tr-di b{font-size:14px}.tr-di small{flex:1;font-size:12px;color:var(--ink-3)}.tr-di button{border:0;background:none;color:var(--ink-3);width:28px;height:28px;display:grid;place-items:center}.tr-di .xi{width:14px;height:14px}
 .tr-say{margin:10px 0 0}.tr-say input{width:100%;border:0;background:none;font:inherit;color:var(--ink)}
+.crp{position:fixed;inset:0;z-index:2147480000;background:rgba(12,10,18,.94);display:flex;flex-direction:column;color:#fff;touch-action:none;animation:crpIn .2s ease}
+.crp.out{opacity:0;transition:opacity .2s}@keyframes crpIn{from{opacity:0}}
+.crp-h{display:flex;align-items:center;justify-content:space-between;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 8px}.crp-h b{font-size:16px}
+.crp-h button{height:40px;padding:0 14px;border:0;border-radius:999px;background:none;color:#fff;font:inherit;font-size:15px}.crp-h .crp-ok{background:#8843FB;font-weight:800}
+.crp-st{position:relative;flex:1;min-height:0;overflow:hidden;touch-action:none;cursor:grab}
+.crp-im{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.crp-fr{position:absolute;box-shadow:0 0 0 9999px rgba(12,10,18,.62);border:1.5px solid rgba(255,255,255,.9);pointer-events:none}
+.crp-fr.round{border-radius:50%}
+.crp-fr i{position:absolute;inset:0;border:0 solid rgba(255,255,255,.28)}.crp-fr i:first-child{border-left-width:1px;border-right-width:1px;left:33.33%;right:33.33%}.crp-fr i:last-child{border-top-width:1px;border-bottom-width:1px;top:33.33%;bottom:33.33%}
+.crp-fr.round i{display:none}
+.crp-rs{display:flex;justify-content:center;gap:8px;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 14px)}
+.crp-rs button{height:36px;padding:0 14px;border-radius:999px;border:1px solid rgba(255,255,255,.3);background:none;color:#fff;font:inherit;font-size:13.5px}.crp-rs button.on{background:#fff;color:#1a1424;border-color:#fff}
+.crp:not(:has(.crp-rs)) .crp-st{margin-bottom:calc(env(safe-area-inset-bottom,0px) + 20px)}
+.cmm .cmm-crop{left:4px;right:auto}.cmm-crop svg{width:11px;height:11px}
+.tph{position:fixed;inset:0;z-index:60;background:rgba(20,12,40,.94);display:flex;flex-direction:column;color:#fff}
+.tph-h{display:grid;grid-template-columns:44px 1fr 44px;align-items:center;padding:calc(env(safe-area-inset-top,0px) + 8px) 10px 6px;text-align:center}.tph-h button{width:40px;height:40px;border:0;background:none;color:#fff;display:grid;place-items:center}.tph-h .xi{width:20px;height:20px}
+.tph-im{flex:1;min-height:0;display:grid;place-items:center;padding:12px}.tph-im img{max-width:100%;max-height:100%;object-fit:contain;border-radius:8px}
+.tph-f{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px calc(env(safe-area-inset-bottom,0px) + 16px)}
+.tph-c{display:flex;align-items:center;gap:6px;height:44px;padding:0 16px;border-radius:999px;border:1px solid rgba(255,255,255,.35);background:none;color:#fff;font:inherit;font-size:14.5px}.tph-c svg{width:17px;height:17px}
+.tph-s{height:44px;padding:0 26px;border-radius:999px;border:0;background:#8843FB;color:#fff;font:inherit;font-size:15px;font-weight:800}
 .nw .chips{margin-bottom:12px}
 .nw-tag{display:inline-block;align-self:flex-start;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.02em;padding:2px 8px;border-radius:999px;color:var(--c);background:color-mix(in srgb,var(--c) 14%,transparent)}
 .nw-th{display:block;width:100%;aspect-ratio:16/9;border-radius:var(--radius-l);overflow:hidden;background:var(--s2,var(--line))}
@@ -4709,7 +4729,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022124410";
+const BUILD="20261022125009";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4929,6 +4949,55 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
     if(ok&&st[e.kind]!==false){ const {aud,...n}=e; add.push(n); } });
   if(seen.length!==S.get(K.feedSeen,[]).length) S.set(K.feedSeen,seen.slice(0,500));
   if(add.length){ S.set(K.notifs,[...add,...S.get(K.notifs,[])].slice(0,100)); S.set(K.unread,"1"); setTimeout(()=>iaBanner(add[0]),60); return true; } return false; }catch(e){ return false; } }
+/* =========================================================
+   裁剪：放照片的地方先跳出裁剪框（比例＝那個位置實際顯示的比例）
+   ・單指拖曳移動、兩指縮放（電腦：拖曳＋滾輪）；框外變暗，框內就是最後的樣子
+   ・完成才換上去，取消就什麼都不變
+   ・cropImg(檔案或 Blob,{ratio,round,max,free}) → Blob（取消是 null）
+   ・free：貼文照片用，可以選 原比例／1:1／4:5／16:9
+   ========================================================= */
+function cropImg(src,{ratio=1,round=false,max=1600,free=false}={}){ return new Promise(async done=>{
+  let url, img; try{ url=URL.createObjectURL(src); img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }); }catch(e){ toast("這張照片讀不出來"); done(null); return; }
+  const IW=img.naturalWidth, IH=img.naturalHeight, R0=IW/IH, RATIOS=[["原比例",R0],["1:1",1],["4:5",.8],["16:9",16/9]];
+  let r=free?R0:ratio;
+  const w=document.createElement("div"); w.className="crp"; w.setAttribute("role","dialog"); w.setAttribute("aria-label","裁剪照片");
+  w.innerHTML=`<header class="crp-h"><button class="crp-x" type="button">取消</button><b>裁剪</b><button class="crp-ok" type="button">完成</button></header>
+    <div class="crp-st"><img class="crp-im" alt="" src="${url}"><div class="crp-fr ${round?"round":""}"><i></i><i></i></div></div>
+    ${free?`<div class="crp-rs">${RATIOS.map(([l],k)=>`<button type="button" data-k="${k}" class="${k===0?"on":""}">${l}</button>`).join("")}</div>`:""}`;
+  document.body.appendChild(w); const st=w.querySelector(".crp-st"), im=w.querySelector(".crp-im"), fr=w.querySelector(".crp-fr");
+  let F={x:0,y:0,w:0,h:0}, s=1, x=0, y=0;
+  const minS=()=>Math.max(F.w/IW,F.h/IH);
+  const clamp=()=>{ s=Math.max(minS(),Math.min(minS()*6,s)); x=Math.min(F.x,Math.max(F.x+F.w-IW*s,x)); y=Math.min(F.y,Math.max(F.y+F.h-IH*s,y)); };
+  const paint=()=>{ im.style.transform=`translate(${x}px,${y}px) scale(${s})`; };
+  const layout=keep=>{ const W=st.clientWidth, H=st.clientHeight, pad=22, aw=W-pad*2, ah=H-pad*2; let fw=aw, fh=fw/r; if(fh>ah){ fh=ah; fw=fh*r; }
+    const old={...F}, cx=old.w?((old.x+old.w/2)-x)/s:IW/2, cy=old.h?((old.y+old.h/2)-y)/s:IH/2;
+    F={x:(W-fw)/2,y:(H-fh)/2,w:fw,h:fh}; Object.assign(fr.style,{left:F.x+"px",top:F.y+"px",width:fw+"px",height:fh+"px"});
+    if(!keep||!old.w) s=minS(); else s=Math.max(s,minS()); x=F.x+F.w/2-cx*s; y=F.y+F.h/2-cy*s; clamp(); paint(); };
+  requestAnimationFrame(()=>layout(false));
+  const onRs=()=>layout(true); addEventListener("resize",onRs);
+  /* 手勢 */
+  const P=new Map(); let g0=null;
+  const start=()=>{ const ps=[...P.values()]; if(ps.length===1) g0={x:ps[0].x,y:ps[0].y,ox:x,oy:y,s}; else if(ps.length>=2){ const [a,b]=ps, mx=(a.x+b.x)/2, my=(a.y+b.y)/2; g0={d:Math.hypot(a.x-b.x,a.y-b.y),mx,my,ox:x,oy:y,s}; } };
+  st.addEventListener("pointerdown",e=>{ st.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY}); start(); });
+  st.addEventListener("pointermove",e=>{ if(!P.has(e.pointerId)||!g0) return; P.set(e.pointerId,{x:e.clientX,y:e.clientY}); const ps=[...P.values()], rc=st.getBoundingClientRect();
+    if(ps.length===1&&g0.d==null){ x=g0.ox+(ps[0].x-g0.x); y=g0.oy+(ps[0].y-g0.y); }
+    else if(ps.length>=2&&g0.d){ const [a,b]=ps, d=Math.hypot(a.x-b.x,a.y-b.y), mx=(a.x+b.x)/2, my=(a.y+b.y)/2, ns=Math.max(minS(),Math.min(minS()*6,g0.s*d/g0.d)), k=ns/g0.s;
+      const px=g0.mx-rc.left, py=g0.my-rc.top; x=px-(px-g0.ox)*k+(mx-g0.mx); y=py-(py-g0.oy)*k+(my-g0.my); s=ns; }
+    clamp(); paint(); });
+  const up=e=>{ P.delete(e.pointerId); start(); }; st.addEventListener("pointerup",up); st.addEventListener("pointercancel",up);
+  st.addEventListener("wheel",e=>{ e.preventDefault(); const rc=st.getBoundingClientRect(), px=e.clientX-rc.left, py=e.clientY-rc.top, ns=Math.max(minS(),Math.min(minS()*6,s*(1-e.deltaY*.0015))), k=ns/s; x=px-(px-x)*k; y=py-(py-y)*k; s=ns; clamp(); paint(); },{passive:false});
+  w.addEventListener("touchmove",e=>{ if(e.cancelable) e.preventDefault(); },{passive:false});
+  const close=v=>{ removeEventListener("resize",onRs); w.classList.add("out"); setTimeout(()=>{ w.remove(); URL.revokeObjectURL(url); },200); done(v); };
+  w.querySelector(".crp-x").onclick=()=>close(null);
+  w.querySelector(".crp-ok").onclick=async()=>{ const sx=(F.x-x)/s, sy=(F.y-y)/s, sw=F.w/s, sh=F.h/s, k=Math.min(1,max/Math.max(sw,sh)), c=document.createElement("canvas");
+    c.width=Math.max(1,Math.round(sw*k)); c.height=Math.max(1,Math.round(sh*k)); const ctx=c.getContext("2d"); ctx.imageSmoothingQuality="high"; ctx.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
+    const b=await new Promise(res=>c.toBlob(res,"image/jpeg",.9)); close(b); };
+  if(free) w.querySelector(".crp-rs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; w.querySelectorAll(".crp-rs button").forEach(x2=>x2.classList.toggle("on",x2===b)); r=RATIOS[+b.dataset.k][1]; layout(false); });
+}); }
+/* 各個位置的比例 */
+const CROP_IC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>`;
+const CROP_COVER=3/2, CROP_PROF=390/363;
+const cropPhone=()=>Math.min(.75,Math.max(.4,innerWidth/innerHeight));
 /* 選檔案：iPhone 上要把 <input> 放進頁面裡，選好的檔案才一定收得到 */
 function pickClick(inp){ try{ inp.style.cssText="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0"; document.body.appendChild(inp); inp.addEventListener("change",()=>setTimeout(()=>inp.remove(),3000)); inp.addEventListener("cancel",()=>inp.remove()); }catch(e){} inp.click(); }
 /* 推播帶著 op=貼文編號 進來：直接打開那則貼文 */
@@ -5667,7 +5736,7 @@ function pageAnim(){
 const PTR={y0:null,x0:0,pull:0,busy:false};
 function ptrEl(){ let p=document.getElementById("ptr"); if(!p){ p=document.createElement("div"); p.id="ptr"; p.className="ptr"; p.setAttribute("aria-hidden","true");
   p.innerHTML=`<svg class="ptr-ring" viewBox="0 0 36 36"><circle class="ptr-bg" cx="18" cy="18" r="13"/><circle class="ptr-arc" cx="18" cy="18" r="13" pathLength="100"/></svg>`; document.body.appendChild(p); } return p; }
-const ptrOk=()=>!!document.querySelector(".nav,.t-msgs")&&!((document.querySelector(".t-page")||{}).scrollTop>0)&&!layer.innerHTML.trim()&&!document.querySelector(".concert,.mr")&&window.scrollY<=0&&!(document.getElementById("askLayer")||{}).innerHTML;
+const ptrOk=()=>!document.querySelector(".crp")&&!!document.querySelector(".nav,.t-msgs")&&!((document.querySelector(".t-page")||{}).scrollTop>0)&&!layer.innerHTML.trim()&&!document.querySelector(".concert,.mr")&&window.scrollY<=0&&!(document.getElementById("askLayer")||{}).innerHTML;
 function ptrSet(y){ const p=ptrEl(); p.style.transform=`translate(-50%,${y-56}px)`; p.style.opacity=Math.min(1,y/40); if(!p.classList.contains("spin")) p.querySelector(".ptr-arc").style.strokeDasharray=`${Math.min(85,y/72*85)} 100`; }
 document.addEventListener("touchstart",e=>{ if(PTR.busy||e.touches.length!==1||!ptrOk()) { PTR.y0=null; return; } PTR.y0=e.touches[0].clientY; PTR.x0=e.touches[0].clientX; PTR.pull=0; },{passive:true});
 document.addEventListener("touchmove",e=>{
@@ -6336,8 +6405,12 @@ async function shrinkImg(file,max=1000){ const url=URL.createObjectURL(file);
   try{ const img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }); const sc=Math.min(1,max/Math.max(img.naturalWidth,img.naturalHeight)), c=document.createElement("canvas");
     c.width=Math.round(img.naturalWidth*sc); c.height=Math.round(img.naturalHeight*sc); c.getContext("2d").drawImage(img,0,0,c.width,c.height); return await new Promise(r=>c.toBlob(r,"image/jpeg",.86)); }
   finally{ URL.revokeObjectURL(url); } }
-document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!t.classList.contains("ap-in")) return; const f=t.files&&t.files[0]; if(!f) return;
-  const key=t.dataset.pk, cell=t.closest(".ap-cell"); if(cell) cell.classList.add("busy");
+document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!t.classList.contains("ap-in")) return; let f=t.files&&t.files[0]; if(!f) return;
+  const key=t.dataset.pk, cell=t.closest(".ap-cell");
+  { const ar=cell&&cell.style.aspectRatio?cell.style.aspectRatio.split("/").map(Number):null, hero=document.querySelector(".me-hero");
+    const cr=key.startsWith("cmav|")?{ratio:1,round:true,max:1080}:key.startsWith("cmbg|")?{ratio:hero?hero.clientWidth/Math.max(1,hero.clientHeight):CROP_PROF}:key.startsWith("vth|")?{ratio:16/9}:ar&&ar[0]?{ratio:ar.length>1&&ar[1]?ar[0]/ar[1]:ar[0]}:null;
+    if(cr){ const c=await cropImg(f,cr); t.value=""; if(!c) return; f=c; } }
+  if(cell) cell.classList.add("busy");
   try{ const b=await shrinkImg(f, key.startsWith("vc")||key.startsWith("vb")?1400:1000); if(!b) throw 0; await PIMG.put(key,b); if(key.startsWith("vc|")) await aeCoverAuto(key); else toast("照片上傳好了"); }catch(err){ toast("這張照片讀不出來，換一張試試"); }
   if(layer.querySelector(".ae")) openAlbumEditor(ui.aeId); else if(/^(cm(av|bg)|vth)\|/.test(key)) render(); });
 /* ===== 自由轉：手指往哪拖就往哪轉，放開會順著慣性轉一下；正面、背面都看得到 ===== */
@@ -7605,7 +7678,7 @@ function viewArtWrite(v){ const s=session(), mid=s.member, vis=ART_W[v]?v:"all",
     ${vis==="pw"?`<label class="aw-pw">${FAB_LOCK}<input id="cpw" maxlength="12" autocomplete="off" placeholder="設定密碼" aria-label="貼文密碼" value="${esc(ui.composePw||"")}"></label>`:""}
     <textarea id="ct" class="cw-t" placeholder="輸入文字">${esc(ui.composeText)}</textarea>
     ${ui.composePoll?`<div class="aw-poll"><button class="aw-pq" data-a="pollNew"><b>${esc(ui.composePoll.q)}</b>${ui.composePoll.opts.map(o=>`<span>${o.img?`<img src="${o.img}" alt="">`:""}${esc(o.t)}</span>`).join("")}<small>${pollLeft(ui.composePoll.end)}</small></button><button class="aw-px" data-a="pollDel" aria-label="移除票選">${I3.x}</button></div>`:""}
-    ${ms.length?`<div class="cm-media aw-media">${ms.map((x,i)=>`<span class="cmm"><img data-mid="${x.kind==="video"?x.thumb||"":x.mid}" alt="">${x.kind==="video"?`<i>${PLAY}</i>`:""}<button data-a="cmDel" data-i="${i}" aria-label="移除">${XI}</button></span>`).join("")}</div>`:""}
+    ${ms.length?`<div class="cm-media aw-media">${ms.map((x,i)=>`<span class="cmm"><img data-mid="${x.kind==="video"?x.thumb||"":x.mid}" alt="">${x.kind==="video"?`<i>${PLAY}</i>`:`<button class="cmm-crop" data-a="cmCrop" data-i="${i}" aria-label="裁剪">${CROP_IC}</button>`}<button data-a="cmDel" data-i="${i}" aria-label="移除">${XI}</button></span>`).join("")}</div>`:""}
     <footer class="aw-tb">${ms.length<4&&!ms.some(x=>x.kind==="video")?`<label class="aw-ic" aria-label="加入照片或影片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m4 17 5-5 4 4 2.5-2.5L20 18"/></svg><input type="file" id="postMedia" accept="image/*,video/*" multiple></label>`:""}<button class="aw-ic" data-a="pollNew" aria-label="票選活動">${PL_IC}</button></footer></div>`; }
 function openLetterTo(gid){ const g=groupOf(gid);
   setLayer(`<div class="lt-w" role="dialog" aria-label="收件人"><header class="lt-h"><span></span><b>收件人</b><button data-a="tCloseLayer" aria-label="關閉">${I3.x}</button></header><p class="lt-sub">可選擇團體或藝人並傳送粉絲信。</p>
@@ -10232,7 +10305,7 @@ document.addEventListener("click",e=>{
     case "rgEdit": { const g=groupOf(t.dataset.v); if(!g) break; ui.rgEd=g.id; ui.rgEdC=g.g; rgEditOpen(); break; }
     case "rgEdColor": { const n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; ui.rgEdC=+t.dataset.v; rgEditOpen(n,it); break; }
     case "rgPhPick": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ const b=await shrinkImg(f,1080); GPREV[gid]=URL.createObjectURL(b); rgEditOpen(n,it); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("出道／回歸照換好了");
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:CROP_COVER}); if(!f) return; try{ const b=await shrinkImg(f,1440); GPREV[gid]=URL.createObjectURL(b); rgEditOpen(n,it); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("出道／回歸照換好了");
         const url=(HB_ON&&await hbImgUrl("gph_"+gid+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
         imgSwap(url,()=>{ const M={...(S.get(K.gPhoto,{})||{})}; const old=M[gid]; if(old!==url) mediaDel(old); M[gid]=url; try{ S.set(K.gPhoto,M); }catch(e){ toast("圖片太大，存不下來"); return; } delete GPREV[gid]; if(!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; pickClick(inp); break; }
     case "rgPhDel": { const gid=ui.rgEd, n=(document.getElementById("rgEdName")||{}).value, it=(document.getElementById("rgEdIntro")||{}).value; delete GPREV[gid]; const M={...(S.get(K.gPhoto,{})||{})}; mediaDel(M[gid]); delete M[gid]; S.set(K.gPhoto,M); rgEditOpen(n,it); break; }
@@ -10506,6 +10579,11 @@ document.addEventListener("click",e=>{
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
     case "goCore": go("fan",null,"core"); window.scrollTo(0,0); break;
     case "goNotifs": go("fan","notifications"); break;
+    case "cmCrop": { const L=ui.composeMedia||[], i=+t.dataset.i, x=L[i]; if(!x||x.kind!=="photo") break; (async()=>{ const b0=await MDB.get(x.mid); if(!b0){ toast("找不到這張照片"); return; } const b=await cropImg(b0,{free:true,max:1280}); if(!b) return;
+      const id="pp"+Date.now()+i, im=await new Promise(res=>{ const u=URL.createObjectURL(b), q=new Image(); q.onload=()=>{ res(q); URL.revokeObjectURL(u); }; q.src=u; }); await MDB.put(id,b); L[i]={...x,mid:id,w:im.naturalWidth,h:im.naturalHeight}; const y=window.scrollY; render(); window.scrollTo(0,y); })(); break; }
+    case "tPhCrop": { const p=ui.tiePh; if(!p) break; (async()=>{ const b=await cropImg(p.blob,{free:true,max:1280}); if(!b) return; p.blob=b; tiePhPrev(); })(); break; }
+    case "tPhSend": { const p=ui.tiePh; ui.tiePh=null; layer.innerHTML=""; if(!p) break; (async()=>{ try{ const {blob,w,h}=await prepPhoto(p.blob), id="m"+Date.now(); await MDB.put(id,blob); sendWhisperMedia(p.mid,"photo",id,{w,h}); aiOnTie(p.mid,"（傳了一張照片）",blob); ui.scrollChat=true; render(); tieToast("照片已傳送"); }catch(e){ toast("這張照片讀不出來，換一張試試"); } })(); break; }
+    case "tPhX": ui.tiePh=null; layer.innerHTML=""; break;
     case "tourOpen": location.hash="#/fan/core?p=tour&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
     case "openTour": location.hash="#/fan/core?p=tour"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
     case "tourBuy": tourBuyAsk(t.dataset.v,t.dataset.s); break;
@@ -10541,7 +10619,7 @@ document.addEventListener("click",e=>{
     case "openNews": location.hash="#/fan/core?p=news"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
     case "nwG": { nwKeep(); const d=ui.nwDraft, v=t.dataset.v; d.gids=d.gids.includes(v)?d.gids.filter(x=>x!==v):[...d.gids,v]; lsRerender(); break; }
     case "nwImg": { nwKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; ui.nwBusy=true; lsRerender();
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:16/9}); if(!f) return; ui.nwBusy=true; lsRerender();
         try{ const b=await shrinkImg(f,1600); const url=(HB_ON&&await hbImgUrl("gph_news_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(ui.nwDraft) ui.nwDraft.img=url; }catch(e){ toast("這張圖讀不出來"); }
         ui.nwBusy=false; lsRerender(); }; pickClick(inp); break; }
     case "nwImgDel": { nwKeep(); const d=ui.nwDraft; if(d){ mediaDel(d.img); d.img=""; } lsRerender(); break; }
@@ -10730,7 +10808,7 @@ document.addEventListener("click",e=>{
       setArtProf(mid,{[artNKey(k)]:v===MEMBERS[mid].name?"":v}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&k==="tie") openTieArtDrawer(mid,true); toast("已更新"+ART_NK[k]); break; }
     case "artCoverEd": case "artAvEd": { const mid=session().member||uniMe(), cov=a==="artCoverEd"; ui.artPl=t.dataset.v==="tie"?"tie":""; ui.artFromDrawer=!!t.closest(".t-drawer-w"); const p=artProf(mid), has=ui.artPl?(cov?p.cover_tie:p.av_tie):(cov?p.cover:p.avatar); if(has){ iosSheet([[cov?"換一張背景":"換一張頭貼",cov?"artPickCover":"artPickAv"],["恢復預設",cov?"artResetCover":"artResetAv"]]); break; } }   // 還沒換過：直接打開相簿，不用多一層選單
     case "artPickCover": case "artPickAv": { const mid=session().member||uniMe(), cov=a==="artPickCover"||a==="artCoverEd"; const back=()=>{ if(ui.artFromDrawer&&ui.artPl==="tie") openTieArtDrawer(mid,true); }; if(!(ui.artFromDrawer&&layer.querySelector(".t-drawer-w"))) layer.innerHTML=""; const inp=document.createElement("input"); inp.oncancel=()=>{ if(!layer.querySelector(".t-drawer-w")) back(); }; inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; try{ let b=await shrinkImg(f,cov?1400:1080); if(!cov) b=await squareImg(b,1080); const tie=ui.artPl==="tie", fld=cov?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar");
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,cov?{ratio:CROP_PROF}:{ratio:1,round:true,max:1080}); if(!f){ back(); return; } try{ let b=await shrinkImg(f,cov?1400:1080); if(!cov) b=await squareImg(b,1080); const tie=ui.artPl==="tie", fld=cov?(tie?"cover_tie":"cover"):(tie?"av_tie":"avatar");
         PREV[mid]={...(PREV[mid]||{}),[fld]:URL.createObjectURL(b)}; { const y=window.scrollY; render(); window.scrollTo(0,y); } back(); toast(cov?"已換上新背景":"已換上新頭貼");
         const url=(HB_ON&&await hbImgUrl("prof_"+mid+"_"+(cov?"c":"a")+"_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
         imgSwap(url,()=>{ if(PREV[mid]) delete PREV[mid][fld]; const old=((S.get(K.artProf,{})||{})[mid]||{})[fld]; if(setArtProf(mid,{[fld]:url})&&old!==url) mediaDel(old); const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }catch(e){ toast("這張圖讀不出來"); } }; pickClick(inp); break; }
@@ -11074,11 +11152,11 @@ document.addEventListener("change",async e=>{
     return; }
   if(e.target.classList&&e.target.classList.contains("vt-file")){ const f=e.target.files&&e.target.files[0], i=+e.target.dataset.i; if(!f||!ui.pollDraft) return; try{ const b=await shrinkImg(f,480); const url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(b); }); ui.pollDraft.opts[i].img=url; setLayer(pollEdHtml(),"poll"); }catch(err){ toast("這張圖讀不出來"); } return; }
   if(e.target.id==="snFile"){ const fs=[...(e.target.files||[])]; if(fs.length){ toast("處理中…"); await snAddFiles(fs); } return; }
-  if(e.target.id==="snAvIn"){ const f=e.target.files&&e.target.files[0]; if(!f) return; try{ const b=await shrinkImg(f,320); const url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(b); }); const d=snDB(), me=snMeId(); (d.prof[me]=d.prof[me]||{}).av=url; snSave(d); render(); }catch(err){ toast("這張照片讀不出來"); } return; }
+  if(e.target.id==="snAvIn"){ const f0=e.target.files&&e.target.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:1,round:true,max:640}); e.target.value=""; if(!f) return; try{ const b=await shrinkImg(f,320); const url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(b); }); const d=snDB(), me=snMeId(); (d.prof[me]=d.prof[me]||{}).av=url; snSave(d); render(); }catch(err){ toast("這張照片讀不出來"); } return; }
   if(e.target.id==="postMedia"){ const fs=[...(e.target.files||[])]; if(!fs.length) return; toast("處理中…"); await addPostMedia(fs); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(e.target.id==="attPhoto"||e.target.id==="attVoice"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const mid=session().member, isP=e.target.id==="attPhoto"; layer.innerHTML="";
     try{ const id="m"+Date.now(); let reached;
-      if(isP){ const {blob,w,h}=await prepPhoto(f); await MDB.put(id,blob); reached=sendWhisperMedia(mid,"photo",id,{w,h}); aiOnTie(mid,"（傳了一張照片）",blob); }
+      if(isP){ ui.tiePh={mid,blob:f}; e.target.value=""; tiePhPrev(); return; }
       else { if(f.size>15*1024*1024){ toast("語音檔太大了，請小於 15MB"); return; } const dur=await audioDur(f); await MDB.put(id,f); reached=sendWhisperMedia(mid,"voice",id,{dur}); aiOnTie(mid,"（傳了一段語音，大約 "+Math.round(dur||0)+" 秒，你聽不到內容）"); }
       ui.scrollChat=true; render(); tieToast(isP?"照片已傳送":"語音已傳送");
     }catch(err){ toast(isP?"這張照片讀不出來，換一張試試":"這個音檔讀不出來，換成 m4a 或 mp3 試試"); }
@@ -11086,13 +11164,17 @@ document.addEventListener("change",async e=>{
   if(e.target.id==="lsThr"&&ui.lsDraft){ lsLoad(ui.lsDraft.src,+e.target.value); lsRerender(); return; }
   if(e.target.id==="lsFile"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ if(lsLoad(im)){ lsRerender(); toast("辨識完成，可以旋轉看看 ✨"); } }; im.onerror=()=>toast("這個檔案打不開，換一張圖試試"); im.src=rd.result; }; rd.readAsDataURL(f); return; }
   if(e.target.id!=="tbgAlbum"&&e.target.id!=="tbgCam") return;
-  const f=e.target.files&&e.target.files[0], member=e.target.dataset.m; if(!f) return;
+  const f0=e.target.files&&e.target.files[0], member=e.target.dataset.m; if(!f0) return; const f=await cropImg(f0,{ratio:cropPhone(),max:1400}); e.target.value=""; if(!f) return;
   const rd=new FileReader(); rd.onload=()=>{ const img=new Image(); img.onload=()=>{
     const k=Math.min(1,900/Math.max(img.width,img.height)), c=document.createElement("canvas");
     c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
     saveTieSet(member,{bgMode:"photo",bgImage:c.toDataURL("image/jpeg",.8)}); layer.innerHTML=""; render(); toast("已換上新背景"); };
     img.src=rd.result; }; rd.readAsDataURL(f);
 });
+/* TIE 傳照片：先看原圖，想裁再按「裁剪」 */
+function tiePhPrev(){ const p=ui.tiePh; if(!p) return; if(p.url) URL.revokeObjectURL(p.url); p.url=URL.createObjectURL(p.blob);
+  setLayer(`<div class="tph" role="dialog" aria-label="傳送照片"><header class="tph-h"><button data-a="tPhX" aria-label="取消">${XI}</button><b>傳送照片</b><span></span></header><div class="tph-im"><img src="${p.url}" alt=""></div>
+    <footer class="tph-f"><button class="tph-c" data-a="tPhCrop">${CROP_IC}<span>裁剪</span></button><button class="tph-s" data-a="tPhSend">傳送</button></footer></div>`,"tph"); }
 /* 長按訊息：複製 */
 let lpTimer=null;
 function showCopyMenu(el,x,y){
@@ -11155,7 +11237,7 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }
   /* 在 Safari／Chrome 瀏覽器裡：最左邊那一條是瀏覽器自己的返回手勢，讓給它（兩個一起動就會出現兩層畫面）；加到主畫面的 App 才由這裡處理 */
   const STANDALONE=navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;
-  document.addEventListener("touchstart",e=>{ if(e.touches.length!==1){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
+  document.addEventListener("touchstart",e=>{ if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
     if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
