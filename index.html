@@ -2685,14 +2685,14 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .lav.img img{width:100%;height:100%;object-fit:cover}
 .lav.sm{width:32px;height:32px;box-shadow:none}
 .lav.big{width:84px;height:84px;box-shadow:none}.lav.big i{font-size:36px}
-.cmx-hero{position:relative;height:calc(300px + env(safe-area-inset-top,0px));margin-top:calc(-1 * env(safe-area-inset-top,0px));overflow:hidden;background:var(--gt)}
+.cmx-hero{position:relative;height:calc(min(120vw,560px) + env(safe-area-inset-top,0px));margin-top:calc(-1 * env(safe-area-inset-top,0px));overflow:hidden;background:var(--gt)}
 .cmx-hero>img,.cmx-hbg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}
 .cmx-hbg{display:grid;place-items:center;background:linear-gradient(160deg,color-mix(in srgb,var(--gt) 55%,#fff),var(--gt))}
 .cmx-hbg i{font-style:normal;font-weight:800;font-size:44px;color:rgba(255,255,255,.28);letter-spacing:.08em;transform:translateY(-30px)}
 .cmx-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.28) 0%,transparent 26%,transparent 46%,rgba(0,0,0,.55) 100%)}
 .cmx-hi{position:absolute;left:16px;right:16px;bottom:18px;display:flex;flex-direction:column;align-items:center;gap:2px;color:#fff;text-align:center}
 .cmx-hi small{font-size:12px;font-weight:600;opacity:.95;text-shadow:0 1px 6px rgba(0,0,0,.45)}
-.cmx-hi b{font-size:34px;font-weight:800;letter-spacing:.01em;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 14px rgba(0,0,0,.3);text-wrap:balance}
+.cmx-hi b{font-size:46px;font-weight:800;letter-spacing:.01em;line-height:1.15;text-shadow:0 1px 3px rgba(0,0,0,.35),0 2px 14px rgba(0,0,0,.3);text-wrap:balance}
 .cmx-ms{margin-top:10px;border:0;border-radius:999px;padding:8px 18px;font-weight:700;font-size:13.5px;font-family:inherit;background:var(--wk);color:#1D1A24}
 .cmx-hero.sk{background:linear-gradient(180deg,var(--s3),var(--s2));animation:skp 1.2s ease-in-out infinite}
 .cmx-tabs{top:calc(env(safe-area-inset-top,0px) + 52px)}
@@ -2741,41 +2741,44 @@ html[data-theme="dark"] .cmx-fab{background:#F3F1F7;color:#1D1A24}
 @keyframes fabSpinOut{to{transform:rotate(-135deg)}}
 @media (prefers-reduced-motion:reduce){.cmx-fabm *,.cmx-fabw{animation-duration:.01s!important}}
 /* ===== 藝人個人頁（照 Weverse） ===== */
-.ap2-hero{position:relative;min-height:410px;padding:calc(env(safe-area-inset-top,0px) + 64px) 20px 26px;background-size:cover;background-position:center;display:flex;align-items:flex-end;justify-content:center;color:#fff;text-align:center;overflow:hidden}
-.ap2-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,0) 0%,rgba(0,0,0,.06) 40%,rgba(0,0,0,.34) 100%);pointer-events:none}
+.ap2-hero{position:relative;min-height:min(150vw,660px);padding:calc(env(safe-area-inset-top,0px) + 64px) 20px 26px;background-size:cover;background-position:center;display:flex;align-items:flex-end;justify-content:center;color:#fff;text-align:center;overflow:hidden}
+.ap2-shade{position:absolute;inset:0;background:linear-gradient(180deg,rgba(0,0,0,.08) 0%,rgba(0,0,0,0) 30%,rgba(0,0,0,.18) 58%,rgba(0,0,0,.5) 100%);pointer-events:none}
 .ap2-c{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;width:100%}
 .ap2-av{position:relative;width:90px;height:90px;border-radius:50%;border:2.5px solid rgba(255,255,255,.92);box-shadow:0 6px 20px -8px rgba(0,0,0,.45);display:grid;place-items:center;color:#fff;font-size:32px;font-weight:800;padding:0;margin-bottom:8px;font-family:inherit}
 .ap2-av .av-img{width:100%;height:100%;border-radius:50%;object-fit:cover}
 .ap2-av i{position:absolute;right:-3px;bottom:0;width:28px;height:28px;border-radius:50%;background:#fff;color:#1C1530;display:grid;place-items:center}
 .ap2-av i svg{width:14px;height:14px}
 .ap2-bd{font-size:13px;font-weight:600;opacity:.95}
-.ap2-n{margin:0;font-size:26px;font-weight:800;display:flex;align-items:center;gap:6px;text-shadow:0 1px 10px rgba(0,0,0,.18);text-wrap:balance}
+.ap2-n{margin:2px 0 0;font-size:30px;font-weight:800;display:flex;align-items:center;gap:6px;text-shadow:0 1px 10px rgba(0,0,0,.18);text-wrap:balance}
 .ap2-vf{display:inline-grid;place-items:center;color:#2FC8E8}.ap2 .ap2-vf svg{color:#2FC8E8!important}.ap2-vf svg{width:18px;height:18px}
 .ap2-bio{margin:2px 0 0;font-size:13px;line-height:1.55;white-space:pre-line;opacity:.92;max-width:300px}
 
 
-.ap2-fo{margin-top:18px;height:36px;padding:0 18px;border-radius:999px;border:1.5px solid #fff;background:#fff;color:#6A2BE0;font:inherit;font-size:14px;font-weight:800}
+.ap2-fo{margin-top:20px;height:40px;padding:0 22px;border-radius:999px;border:1.5px solid #fff;background:#fff;color:#16121F;font:inherit;font-size:15px;font-weight:800}
 .ap2-fo.on,.own .ap2-fo{background:rgba(255,255,255,.14);color:#fff;-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
 .ap2-ib{width:38px;height:38px;border-radius:50%;border:0;background:rgba(0,0,0,.24);color:#fff;display:grid;place-items:center;padding:0;flex:none}
 .ap2-ib svg{width:20px;height:20px}
 .ap2-back{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 10px);z-index:2}
 .ap2-pen{position:absolute;right:14px;bottom:14px;z-index:2;width:40px;height:40px;border-radius:50%;border:0;background:rgba(0,0,0,.4);color:#fff;display:grid;place-items:center}
 .ap2-pen svg{width:17px;height:17px}
-.ap2-bar{position:sticky;top:0;margin-bottom:calc(-50px - env(safe-area-inset-top,0px));height:calc(50px + env(safe-area-inset-top,0px));box-sizing:border-box;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 6px;background:var(--bg);border-bottom:1px solid var(--line);transform:translateY(-102%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
+.ap2-bar{position:sticky;top:0;margin-bottom:calc(-58px - env(safe-area-inset-top,0px));height:calc(58px + env(safe-area-inset-top,0px));overflow:hidden;isolation:isolate;box-sizing:border-box;z-index:40;display:flex;align-items:center;justify-content:space-between;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 6px) 12px 6px;background:color-mix(in srgb,var(--bg) 70%,transparent);-webkit-backdrop-filter:blur(22px) saturate(160%);backdrop-filter:blur(22px) saturate(160%);border-bottom:0;box-shadow:none;transform:translateY(-102%);transition:transform .25s cubic-bezier(.2,.8,.2,1)}
 .ap2-bar:not(.on){visibility:hidden;transition:transform .2s,visibility 0s .2s}
 .ap2-bar.on{transform:none;visibility:visible}
-.ap2-bar .ap2-ib{background:transparent;color:var(--ink)}
+.ap2-bar .ap2-ib{background:transparent;color:#fff}
+.ap2-bar::before{content:"";position:absolute;inset:-40px;z-index:-1;background:var(--apbg) center/cover;filter:blur(26px) saturate(120%)}.ap2-bar::after{content:"";position:absolute;inset:0;z-index:-1;background:rgba(30,26,36,.38)}
+.ap2-bar.on{background:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;border:0!important;box-shadow:none!important}
+.ap2-bar .ap2-bt{color:#fff;font-size:18.5px}.ap2-bar .ap2-bav{width:30px;height:30px}
 .ap2-bsp{width:38px;height:38px;flex:none}
-.ap2-bt{display:flex;align-items:center;gap:7px;font-size:15px;font-weight:800;min-width:0;color:var(--ink)}
+.ap2-bt{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;min-width:0;color:var(--ink)}
 .ap2-bt b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.ap2-bav{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;overflow:hidden;flex:none}
+.ap2-bav{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;color:#fff;font-size:12px;font-weight:800;overflow:hidden;flex:none}
 .ap2-bav .av-img,.ap2-cav .av-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .ap2-bt .ap2-vf svg{width:15px;height:15px}
 
 
 
 
-.ap2-hero+.ap2-tabs{margin-top:0}.ap2-tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 50px);z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--bg);border-bottom:1px solid var(--line);margin-top:8px}
+.ap2-hero+.ap2-tabs{margin-top:0}.ap2-tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--bg);border-bottom:1px solid var(--line);margin-top:8px}
 .ap2-tabs button{position:relative;height:46px;border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--ink-3)}
 .ap2-tabs button.on{color:var(--violet)}
 .ap2-tabs button.on::after{content:"";position:absolute;left:16%;right:16%;bottom:-1px;height:2.5px;border-radius:2px;background:var(--violet)}
@@ -2794,6 +2797,7 @@ html[data-theme="dark"] .cmx-fab{background:#F3F1F7;color:#1D1A24}
 .cm-bar.plain{background:var(--bg);color:var(--ink)}
 .cm-bar.plain .icon-btn{background:transparent;border-color:transparent;color:var(--ink)}
 .cm-abc{padding:14px 0 0;overflow:hidden}
+.cm-abs{display:flex;flex-direction:column;align-items:center;gap:10px;width:100%;border:0;background:none;padding:14px 16px 20px;font:inherit;color:var(--ink)}.cm-abs i{width:150px;height:150px;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#fff;font-style:normal;font-size:48px;font-weight:800}.cm-abs i .av-img{width:100%;height:100%;border-radius:50%}.cm-abs b{font-size:16px;font-weight:700}
 .cm-abc .cm-ab{margin-inline:0;padding:2px 14px 14px}
 .cm-ab i{overflow:hidden}.cm-ab i .av-img,.ab-mh i .av-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
 .cm-abm{display:block;width:100%;height:46px;border:0;border-top:1px solid var(--line);background:none;font:inherit;font-size:14px;font-weight:600;color:var(--ink-2)}
@@ -4729,7 +4733,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022125009";
+const BUILD="20261022140844";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4978,14 +4982,14 @@ function cropImg(src,{ratio=1,round=false,max=1600,free=false}={}){ return new P
   /* 手勢 */
   const P=new Map(); let g0=null;
   const start=()=>{ const ps=[...P.values()]; if(ps.length===1) g0={x:ps[0].x,y:ps[0].y,ox:x,oy:y,s}; else if(ps.length>=2){ const [a,b]=ps, mx=(a.x+b.x)/2, my=(a.y+b.y)/2; g0={d:Math.hypot(a.x-b.x,a.y-b.y),mx,my,ox:x,oy:y,s}; } };
-  st.addEventListener("pointerdown",e=>{ st.setPointerCapture(e.pointerId); P.set(e.pointerId,{x:e.clientX,y:e.clientY}); start(); });
-  st.addEventListener("pointermove",e=>{ if(!P.has(e.pointerId)||!g0) return; P.set(e.pointerId,{x:e.clientX,y:e.clientY}); const ps=[...P.values()], rc=st.getBoundingClientRect();
+  st.addEventListener("pointerdown",e=>{ st.setPointerCapture(e.pointerId); const rc=st.getBoundingClientRect(), kz=st.clientWidth/Math.max(1,rc.width); P.set(e.pointerId,{x:e.clientX*kz,y:e.clientY*kz}); start(); });
+  st.addEventListener("pointermove",e=>{ if(!P.has(e.pointerId)||!g0) return; const rc=st.getBoundingClientRect(), kz=st.clientWidth/Math.max(1,rc.width); P.set(e.pointerId,{x:e.clientX*kz,y:e.clientY*kz}); const ps=[...P.values()]; rc.left0=rc.left*kz; rc.top0=rc.top*kz;
     if(ps.length===1&&g0.d==null){ x=g0.ox+(ps[0].x-g0.x); y=g0.oy+(ps[0].y-g0.y); }
     else if(ps.length>=2&&g0.d){ const [a,b]=ps, d=Math.hypot(a.x-b.x,a.y-b.y), mx=(a.x+b.x)/2, my=(a.y+b.y)/2, ns=Math.max(minS(),Math.min(minS()*6,g0.s*d/g0.d)), k=ns/g0.s;
-      const px=g0.mx-rc.left, py=g0.my-rc.top; x=px-(px-g0.ox)*k+(mx-g0.mx); y=py-(py-g0.oy)*k+(my-g0.my); s=ns; }
+      const px=g0.mx-rc.left0, py=g0.my-rc.top0; x=px-(px-g0.ox)*k+(mx-g0.mx); y=py-(py-g0.oy)*k+(my-g0.my); s=ns; }
     clamp(); paint(); });
   const up=e=>{ P.delete(e.pointerId); start(); }; st.addEventListener("pointerup",up); st.addEventListener("pointercancel",up);
-  st.addEventListener("wheel",e=>{ e.preventDefault(); const rc=st.getBoundingClientRect(), px=e.clientX-rc.left, py=e.clientY-rc.top, ns=Math.max(minS(),Math.min(minS()*6,s*(1-e.deltaY*.0015))), k=ns/s; x=px-(px-x)*k; y=py-(py-y)*k; s=ns; clamp(); paint(); },{passive:false});
+  st.addEventListener("wheel",e=>{ e.preventDefault(); const rc=st.getBoundingClientRect(), kz=st.clientWidth/Math.max(1,rc.width), px=(e.clientX-rc.left)*kz, py=(e.clientY-rc.top)*kz, ns=Math.max(minS(),Math.min(minS()*6,s*(1-e.deltaY*.0015))), k=ns/s; x=px-(px-x)*k; y=py-(py-y)*k; s=ns; clamp(); paint(); },{passive:false});
   w.addEventListener("touchmove",e=>{ if(e.cancelable) e.preventDefault(); },{passive:false});
   const close=v=>{ removeEventListener("resize",onRs); w.classList.add("out"); setTimeout(()=>{ w.remove(); URL.revokeObjectURL(url); },200); done(v); };
   w.querySelector(".crp-x").onclick=()=>close(null);
@@ -4996,7 +5000,7 @@ function cropImg(src,{ratio=1,round=false,max=1600,free=false}={}){ return new P
 }); }
 /* 各個位置的比例 */
 const CROP_IC=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/></svg>`;
-const CROP_COVER=3/2, CROP_PROF=390/363;
+const CROP_COVER=1/1.2, CROP_PROF=1/1.5;   // 社群封面、個人頁背景的實際比例
 const cropPhone=()=>Math.min(.75,Math.max(.4,innerWidth/innerHeight));
 /* 選檔案：iPhone 上要把 <input> 放進頁面裡，選好的檔案才一定收得到 */
 function pickClick(inp){ try{ inp.style.cssText="position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0"; document.body.appendChild(inp); inp.addEventListener("change",()=>setTimeout(()=>inp.remove(),3000)); inp.addEventListener("cancel",()=>inp.remove()); }catch(e){} inp.click(); }
@@ -7661,7 +7665,7 @@ function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid
       <button class="cm-go" data-a="cmNotices">確認 ${esc(g.name)} 的公告 <span>→</span></button></section>
     ${cmSec("Calendar")}<section class="card cm-card">${up?`<div class="cm-up"><small>${evWhen(up.ts)}</small><b>${up.ic} ${esc(up.t)}</b></div>`:""}<button class="cm-go" data-a="cmCal">確認 ${esc(g.name)} 的行程 <span>→</span></button></section>
     ${prods.length?`${cmSec("Merch","查看更多","cmShop")}<div class="cm-merch">${prods.map(prodCard).join("")}</div>`:""}
-    ${cmSec("About")}<section class="card cm-abc"><div class="cm-ab">${ms.map(m=>`<button data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${mAvIn(m)}</i><small>${esc(artName(m,"feed"))}</small></button>`).join("")}</div><button class="cm-abm" data-a="cmAbout">查看更多 ›</button></section>`; }
+    ${cmSec("About")}<section class="card cm-abc">${g.solo&&ms[0]?(()=>{ const m=ms[0], gp=gPhoto(gid); return `<button class="cm-abs" data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${gp?`<span class="av-img av-bgi" role="img" aria-label="${esc(MEMBERS[m].name)}" style="background-image:url('${gp}')"></span>`:mAvIn(m)}</i><b>${esc(MEMBERS[m].name)}</b></button>`; })():`<div class="cm-ab">${ms.map(m=>`<button data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${mAvIn(m)}</i><small>${esc(MEMBERS[m].name)}</small></button>`).join("")}</div>`}<button class="cm-abm" data-a="cmAbout">查看更多 ›</button></section>`; }
 function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt);
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" data-a="${n.shop?"snOpen":"gnOpen"}" data-v="${n.id}"><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
@@ -12012,7 +12016,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
     :tab==="media"?(vsecHtml(M.group,own)||`<p class="me-none">還沒有影片</p>`)
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own})).join(""):`<p class="me-none">還沒有貼文</p>`);
-  return `<header class="ap2-bar" id="apBar">${own?`<span class="ap2-bsp"></span>`:`<button class="ap2-ib" data-a="back" aria-label="返回">${I.back}</button>`}<span class="ap2-bt"><span class="ap2-bav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span></span><span class="ap2-bsp"></span></header>
+  return `<header class="ap2-bar" id="apBar" style="--apbg:${p.cover?`url('${p.cover}')`:grad(M.g)}">${own?`<span class="ap2-bsp"></span>`:`<button class="ap2-ib" data-a="back" aria-label="返回">${I.back}</button>`}<span class="ap2-bt"><span class="ap2-bav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span></span><span class="ap2-bsp"></span></header>
   <section class="ap2-hero" id="apHero" style="${p.cover?`background-image:url('${p.cover}')`:`background:${grad(M.g)}`}"><span class="ap2-shade"></span>
     ${own?"":`<button class="ap2-ib ap2-back" data-a="back" aria-label="返回">${I.back}</button>`}
     ${own?`<button class="ap2-pen" data-a="artCoverEd" aria-label="更換背景">${UI_S.pen}</button><button class="ap2-ib ap2-bell" data-a="artNotifs" aria-label="通知">${I.bell}${artNUnread(mid)?'<span class="dot"></span>':""}</button>`:""}
