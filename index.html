@@ -4619,7 +4619,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261022021802";
+const BUILD="20261022022425";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8292,7 +8292,7 @@ function viewTieArtist(mid){
   }).join("");
   const draft=ui.wDraft||"";
   const QUICK=["謝謝大家，今天也在努力練習中 ♡","大家吃過晚餐了嗎？記得保暖喔～","今晚文字直播見！期待和你們相聚 ✨"];
-  return `<div class="t-bgl t-default"></div><header class="t-rh t-rh-art">
+  return `${thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`}<header class="t-rh t-rh-art">
       <div class="t-rh-row"><button class="t-ib" data-a="tab" data-v="home" aria-label="返回">${TI.back}</button><h3>${esc(artName(mid,"tie"))}</h3><div class="t-rh-r"><button class="t-ib t-dots" data-a="tArtDrawer" data-m="${mid}" aria-label="更多"><i></i><i></i><i></i></button></div></div>
     </header>
     <main class="t-msgs">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}<div id="chat-end"></div></main>
