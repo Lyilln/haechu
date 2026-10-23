@@ -4394,6 +4394,7 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .ac-go svg{width:16px;height:16px}
 .ac-pw{font-size:16px;letter-spacing:.06em;-webkit-user-select:text;user-select:text}
 .db-row{display:flex;align-items:center;gap:12px;padding:12px 4px}.db-row+.db-row{border-top:1px solid var(--line,rgba(0,0,0,.06))}.db-av{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}.db-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.db-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.db-tx small{font-size:12px;opacity:.6}.db-act{display:flex;gap:6px;flex:none}.db-b{min-width:0!important;padding:0 12px!important;height:32px!important;margin:0!important}
+.nw-acts{display:flex;gap:6px;flex:none}
 </style>
 </head>
 <body>
@@ -4454,7 +4455,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide",
+  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4736,7 +4737,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261023053017";
+const BUILD="20261023053253";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9757,7 +9758,7 @@ function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.
   const now=Date.now(); return L.map(x=>({...x,auto:true,ts:Math.min(x.ts,now)})); }
 const getNewsM=()=>S.get(K.news,[])||[];
 function newsAll(withHidden){ const H=S.get(K.newsHide,{})||{}, cut=Date.now()-120*864e5;
-  return [...getNewsM().map(x=>({...x,tag:"off"})),...newsAuto().filter(x=>x.ts>cut)].filter(x=>withHidden||!H[x.id]).sort((a,b)=>b.ts-a.ts); }
+  return [...getNewsM().map(x=>({...x,tag:"off"})),...newsAuto().filter(x=>x.ts>cut).map(x=>{ const e=(S.get(K.newsEd,{})||{})[x.id]; return e?{...x,...e,auto:true}:x; })].filter(x=>withHidden||!H[x.id]).sort((a,b)=>b.ts-a.ts); }
 const newsOf=id=>newsAll(true).find(x=>x.id===id);
 const newsTag=n=>{ const [l,c]=NEWS_TAG[n.tag]||NEWS_TAG.off; return `<em class="nw-tag" style="--c:${c}">${n.auto?"快訊・":""}${l}</em>`; };
 const newsThumb=n=>{ const g=groupOf((n.gids||[])[0]); return n.img?`<img src="${esc(n.img)}" alt="">`:`<span class="nw-ph" style="--gt:${g?gTheme(g.id):"#8843FB"}"><b>${esc(g?g.name:"HAECHU")}</b></span>`; };
@@ -9773,14 +9774,14 @@ function newsDetailHtml(id){ const n=newsOf(id), H=S.get(K.newsHide,{})||{}; if(
     <div class="nw-body">${esc(n.body||"").split(/\n{2,}/).map(x=>`<p>${x.replace(/\n/g,"<br>")}</p>`).join("")}</div></main>`; }
 const newsSub=()=>{ const n=newsAll()[0]; return n?esc(n.title):"還沒有新聞"; };
 function newsAdminHtml(){ const d=ui.nwDraft||(ui.nwDraft={title:"",body:"",gids:[],img:""}), H=S.get(K.newsHide,{})||{}, L=newsAll(true);
-  return `<section class="card studio"><div class="foc-cfg-h"><h3>發新聞</h3></div>
+  return `<section class="card studio" id="nwForm"><div class="foc-cfg-h"><h3>${d.editId?"編輯新聞":"發新聞"}</h3></div>
     <span class="fld-lab">標題</span><label class="field"><input id="nwTi" maxlength="60" placeholder="輸入文字" value="${esc(d.title)}"></label>
     <span class="fld-lab">內容</span><label class="field ann-ta"><textarea id="nwBo" rows="5" maxlength="2000" placeholder="輸入文字">${esc(d.body)}</textarea></label>
     <span class="fld-lab">相關藝人</span><div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${d.gids.includes(g.id)?"on":""}" data-a="nwG" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
     <span class="fld-lab">圖片</span>${d.img?`<div class="nw-adimg"><img src="${esc(d.img)}" alt=""><button data-a="nwImgDel" aria-label="移除">${XI}</button></div>`:`<button class="btn btn-soft btn-block" data-a="nwImg" ${ui.nwBusy?"disabled":""}>${ui.nwBusy?"上傳中…":"選一張圖"}</button>`}
-    <button class="btn btn-main btn-block" data-a="nwPost" ${ui.nwBusy?"disabled":""}>發布</button></section>
+    <button class="btn btn-main btn-block" data-a="nwPost" ${ui.nwBusy?"disabled":""}>${d.editId?"更新":"發布"}</button>${d.editId?`<button class="btn btn-soft btn-block" style="margin-top:8px" data-a="nwEdX">取消編輯</button>`:""}</section>
     <div class="section-h">全部新聞<span class="muted">${L.length} 則</span></div>
-    ${L.length?`<section class="card">${L.map(n=>`<div class="uni-an ${H[n.id]?"is-hidden":""}"><p>${newsTag(n)}<span>${esc(n.title)}</span><small>${ago(n.ts)}${H[n.id]?"・已撤下":""}</small></p><button class="btn btn-soft btn-sm" data-a="${n.auto?"nwHide":"nwDel"}" data-v="${esc(n.id)}">${n.auto?(H[n.id]?"恢復":"撤下"):"刪除"}</button></div>`).join("")}</section>`:`<p class="me-none">還沒有新聞</p>`}`; }
+    ${L.length?`<section class="card">${L.map(n=>`<div class="uni-an ${H[n.id]?"is-hidden":""}"><p>${newsTag(n)}<span>${esc(n.title)}</span><small>${ago(n.ts)}${H[n.id]?"・已撤下":""}</small></p><span class="nw-acts"><button class="btn btn-soft btn-sm" data-a="nwEd" data-v="${esc(n.id)}">編輯</button><button class="btn btn-soft btn-sm" data-a="${n.auto?"nwHide":"nwDel"}" data-v="${esc(n.id)}">${n.auto?(H[n.id]?"恢復":"撤下"):"刪除"}</button></span></div>`).join("")}</section>`:`<p class="me-none">還沒有新聞</p>`}`; }
 const nwKeep=()=>{ const d=ui.nwDraft; if(!d) return; const a=document.getElementById("nwTi"), b=document.getElementById("nwBo"); if(a) d.title=a.value; if(b) d.body=b.value; };
 /* ===== 應援餐車：先做佔位頁（3D 版之後做進來）。粉絲 FEST、藝人 FOC 都有入口 ===== */
 function truckPhHtml(){ return `<main class="page tk-ph"><div class="tk-stage"><svg viewBox="0 0 360 300" role="img" aria-label="應援餐車">
@@ -10673,8 +10674,14 @@ document.addEventListener("click",e=>{
       inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:16/9}); if(!f) return; ui.nwBusy=true; lsRerender();
         try{ const b=await shrinkImg(f,1600); const url=(HB_ON&&await hbImgUrl("gph_news_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); if(ui.nwDraft) ui.nwDraft.img=url; }catch(e){ toast("這張圖讀不出來"); }
         ui.nwBusy=false; lsRerender(); }; pickClick(inp); break; }
-    case "nwImgDel": { nwKeep(); const d=ui.nwDraft; if(d){ mediaDel(d.img); d.img=""; } lsRerender(); break; }
+    case "nwEd": { const n=newsOf(t.dataset.v); if(!n) break; ui.nwDraft={title:n.title||"",body:n.body||"",gids:(n.gids||[]).filter(groupOf),img:n.img||"",editId:n.id,auto:!!n.auto,img0:n.img||""}; lsRerender(); setTimeout(()=>{ const f=document.getElementById("nwForm"); if(f) f.scrollIntoView({behavior:"smooth",block:"start"}); },30); break; }
+    case "nwEdX": { const d=ui.nwDraft; if(d&&d.img&&d.img!==d.img0) mediaDel(d.img); ui.nwDraft=null; lsRerender(); break; }
+    case "nwImgDel": { nwKeep(); const d=ui.nwDraft; if(d){ if(!d.editId||d.img!==d.img0) mediaDel(d.img); d.img=""; } lsRerender(); break; }
     case "nwPost": { nwKeep(); const d=ui.nwDraft; if(!d||!d.title.trim()||!d.body.trim()){ toast("標題和內容都要填"); break; }
+      if(d.editId){ const up={title:d.title.trim(),body:d.body.trim(),img:d.img||"",gids:d.gids.filter(groupOf)};
+        if(d.auto){ if(up.img===d.img0) delete up.img; const E={...(S.get(K.newsEd,{})||{})}; E[d.editId]=up; S.set(K.newsEd,E); }
+        else { S.set(K.news,getNewsM().map(x=>x.id===d.editId?{...x,...up}:x)); if(d.img0&&d.img0!==up.img) mediaDel(d.img0); }
+        ui.nwDraft=null; lsRerender(); toast("已更新"); break; }
       const n={id:"nw"+Date.now(),title:d.title.trim(),body:d.body.trim(),img:d.img||"",gids:d.gids.filter(groupOf),ts:Date.now()};
       S.set(K.news,[n,...getNewsM()].slice(0,200)); feedPush({kind:"news",group:n.gids[0]||"",text:n.title.slice(0,80),newsId:n.id,direct:true},n.gids.length?"gs:"+n.gids.join(","):"all");
       ui.nwDraft=null; lsRerender(); toast("已發布"); break; }
