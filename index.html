@@ -4737,7 +4737,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261023053253";
+const BUILD="20261024080328";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5030,7 +5030,7 @@ function getNotifications(){ return S.get(K.notifs,[]).filter(n=>!selfSaid(n)).s
 function hasUnread(){ return S.get(K.unread,"0")==="1"; }
 function markAllRead(){ S.set(K.unread,"0"); }
 function getSettings(){ return {post:true,comment:true,live:true,whisper:true,event:true,...S.get(K.settings,{})}; }
-function followed(){ return S.get(K.fanArtists,[]); }
+function followed(){ const L=S.get(K.fanArtists,[])||[]; return GROUPS.length?L.filter(id=>groupOf(id)):L; }   // 已刪除的團不算追蹤
 function pushNotification({kind,member,group,text,postId,color,commentId,direct=false,liveId,eventId,evKind,liveReply}){
   if(!getSettings()[kind]) return false;                 // 粉絲關掉這類通知 → 不推
   const list=getNotifications();
@@ -7458,7 +7458,7 @@ function pwTry(id){ const p=getPosts().find(x=>x.id===id), i=document.getElement
   if(String(i.value).trim()===String(p.pw)){ const L=S.get(K.pwOpen,[]); L.push(id); S.set(K.pwOpen,L); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); toast("🔓 打開了！"); return; }
   const e=document.getElementById("pwErr"); if(e){ e.hidden=false; e.classList.remove("pop"); void e.offsetWidth; e.classList.add("pop"); clearTimeout(ui.pwT); ui.pwT=setTimeout(()=>{ e.hidden=true; },1600); } i.select(); }
 function postCard(p,{mine=false}={}){
-  const m=MEMBERS[p.member], g=groupOf(p.group), liked=likedSet().has(p.id);
+  const m=MEMBERS[p.member], g=groupOf(p.group), liked=likedSet().has(p.id); if(!m||!g) return "";   // 發文的藝人或團已刪除：跳過，不要讓整頁卡住
   const long=p.text.length>90 && !ui.expanded.has(p.id);
   return `<article class="card post" id="post-${p.id}">
     <div class="post-head">
@@ -8020,7 +8020,7 @@ function viewFan(tab){
   if(tab==="home"){
     const fa=followed(), f=scopeF(); let body=""; const q=srchQ("love"); if(ui.feedTab!=="discover"&&ui.feedTab!=="live") ui.feedTab="feed"; if(ui.feedTab==="live") return viewFanLive();
     if(ui.feedTab==="feed"){
-      const posts=getPosts().filter(p=>fa.includes(p.group)&&!p.hidden&&postHit(q,p));
+      const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p));
       body=(q?"":myFeedTop())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+
         srchLabel("love")+(posts.length?posts.map(p=>postCard(p)).join(""):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
     } else if(ui.feedTab==="discover"){
