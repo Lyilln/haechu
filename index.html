@@ -4395,6 +4395,7 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .ac-pw{font-size:16px;letter-spacing:.06em;-webkit-user-select:text;user-select:text}
 .db-row{display:flex;align-items:center;gap:12px;padding:12px 4px}.db-row+.db-row{border-top:1px solid var(--line,rgba(0,0,0,.06))}.db-av{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}.db-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.db-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.db-tx small{font-size:12px;opacity:.6}.db-act{display:flex;gap:6px;flex:none}.db-b{min-width:0!important;padding:0 12px!important;height:32px!important;margin:0!important}
 .db-up{display:flex;gap:10px;margin-top:12px}.db-slot{position:relative;flex:1;aspect-ratio:4/5;border-radius:14px;border:1.5px dashed rgba(139,92,246,.35);background:rgba(139,92,246,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;color:var(--violet,#8B5CF6)}.db-slot b{font-size:26px;font-weight:400}.db-slot small{font-size:12px;opacity:.8}.db-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.db-slot img~small{white-space:nowrap;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.45);color:#fff;padding:2px 8px;border-radius:999px;opacity:1}.db-slot i,.db-th i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-style:normal;display:grid;place-items:center;font-size:13px}.db-busy{margin:8px 0 0;font-size:12px;opacity:.7;text-align:center}
+.me-lv{display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:8px}.me-lv b{font-size:22px;font-weight:700;letter-spacing:.02em}.me-lv span{font-size:13px;font-weight:700}.me-lv small{flex-basis:100%;font-size:12px;opacity:.6}
 .db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
 .nw-acts{display:flex;gap:6px;flex:none}
 </style>
@@ -4457,7 +4458,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4475,10 +4476,10 @@ const store = {
   del(k){try{localStorage.removeItem(k)}catch{}}
 };
 const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
-/* 每個粉絲帳號自己的資料（追蹤、TIE 券、點數、小卡、通知…）分開存：新註冊的帳號從空白開始。
+/* 每個粉絲帳號自己的資料（追蹤、TIE 券、積分、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
-const PK_SET=new Set(["tourTix","tourStamp","online","ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
+const PK_SET=new Set(["gcPity","lvMax","tourTix","tourStamp","online","ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
   get(k,fb){k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
@@ -4739,7 +4740,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026103522";
+const BUILD="20261026104608";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4926,13 +4927,15 @@ function logSelf(kind,member,text,extra={}){
 /* 多人版通知：藝人／管理員做的事放進共用的「通知動態」，每位粉絲打開 App 時，把跟自己有關的收進自己的通知
    對象：g:團（追蹤這團的粉絲）、tie:成員（有這位成員 TIE 券的粉絲）、u:帳號（指定的那位粉絲） */
 function feedPush(n,aud){ try{ const F=S.get(K.feed,[]); F.unshift({...n,id:"f"+Date.now()+Math.random().toString(36).slice(2,6),aud,ts:Date.now()}); S.set(K.feed,F.slice(0,300)); }catch(e){} return true; }
-/* 管理員加／扣點數：管理員寫進共用的「點數發放紀錄」，粉絲打開 App 時把給自己的那幾筆加進自己的點數（每筆只算一次） */
+/* 管理員加／扣積分：管理員寫進共用的「積分發放紀錄」，粉絲打開 App 時把給自己的那幾筆加進自己的積分（每筆只算一次） */
 const ptGrants=()=>(S.get(K.ptGrants,[])||[]).filter(g=>g&&g.id);
 function ptCollect(){ try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(); if(!me) return; const got=new Set(S.get(K.ptGot,[])||[]);
   const mine=ptGrants().filter(g=>g.to===me&&!got.has(g.id)); if(!mine.length) return;
-  let sum=0; const list=S.get(K.notifs,[]); mine.forEach(g=>{ sum+=g.n; got.add(g.id); list.unshift({id:"pt"+g.id,kind:"core",direct:true,text:`${g.n>=0?"獲得":"扣除"} ${fmt(Math.abs(g.n))} 點${g.why?"・"+g.why:""}`,ts:g.ts}); });
-  S.set(K.ptGot,[...got]); S.set(K.points,Math.max(0,points()+sum)); S.set(K.notifs,list.slice(0,100)); S.set(K.unread,"1");
-  if(mine.length===1) toast(`${sum>=0?"獲得":"扣除"} ${fmt(Math.abs(sum))} 點${mine[0].why?"・"+mine[0].why:""}`); else toast(`點數 ${sum>=0?"+":"−"}${fmt(Math.abs(sum))}`); }catch(e){} }
+  let sum=0, cur=points(), hasSet=false; const list=S.get(K.notifs,[]); mine.slice().sort((a,b)=>a.ts-b.ts).forEach(g=>{ got.add(g.id);
+    if(g.set){ hasSet=true; cur=Math.max(0,g.n); } else { cur=Math.max(0,cur+g.n); sum+=g.n; }
+    list.unshift({id:"pt"+g.id,kind:"core",direct:true,text:g.set?`積分更新為 ${fmt(g.n)}${g.why?"・"+g.why:""}`:`${g.n>=0?"獲得":"扣除"} ${fmt(Math.abs(g.n))} 積分${g.why?"・"+g.why:""}`,ts:g.ts}); });
+  S.set(K.ptGot,[...got]); S.set(K.points,cur); if(hasSet) S.set(K.lvMax,0); S.set(K.notifs,list.slice(0,100)); S.set(K.unread,"1");   // 管理員「設定為」：等級的字母保底重新計算
+  if(hasSet) toast(`積分更新為 ${fmt(cur)}`); else if(mine.length===1) toast(`${sum>=0?"獲得":"扣除"} ${fmt(Math.abs(sum))} 積分${mine[0].why?"・"+mine[0].why:""}`); else toast(`積分 ${sum>=0?"+":"−"}${fmt(Math.abs(sum))}`); }catch(e){} }
 function viewPtAdd(){ const d=ui.ptD||(ui.ptD={to:[],n:"",why:"",q:"",sign:1}), q=nz(d.q.trim());
   const L=Object.entries(ACCOUNTS).filter(([e,a])=>e!==DEMO_FAN).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e)));
   const hist=ptGrants().slice().sort((a,b)=>b.ts-a.ts).slice(0,40);
@@ -4943,12 +4946,12 @@ function viewPtAdd(){ const d=ui.ptD||(ui.ptD={to:[],n:"",why:"",q:"",sign:1}), 
       ${d.to.length?`<div class="pta-sel">${d.to.map(e=>`<button class="chip on" data-a="ptTo" data-v="${esc(e)}">${esc(acctUser(e))} ✕</button>`).join("")}</div>`:""}
       <div class="pta-list">${L.map(([e,a])=>`<button class="pta-r ${d.to.includes(e)?"on":""}" data-a="ptTo" data-v="${esc(e)}"><b>${esc(acctUser(e))}</b><small>${esc(a.name||"")}${realName(e)?"・"+esc(realName(e)):""}・${ROLE_ZH[a.role]||"粉絲"}</small><i>${d.to.includes(e)?"✓":""}</i></button>`).join("")||`<p class="me-none">找不到</p>`}</div>
       <span class="fld-lab">加或扣</span>
-      <div class="chips"><button class="chip ${d.sign>0?"on":""}" data-a="ptSign" data-v="1">＋ 加點數</button><button class="chip ${d.sign<0?"on":""}" data-a="ptSign" data-v="-1">− 扣點數</button></div>
-      <span class="fld-lab">點數</span><label class="field"><input id="ptN" inputmode="numeric" placeholder="輸入文字" value="${esc(d.n)}" autocomplete="off"></label>
+      <div class="chips"><button class="chip ${d.sign>0?"on":""}" data-a="ptSign" data-v="1">＋ 加積分</button><button class="chip ${d.sign<0?"on":""}" data-a="ptSign" data-v="-1">− 扣積分</button><button class="chip ${d.sign===0?"on":""}" data-a="ptSign" data-v="0">＝ 設定為</button></div>
+      <span class="fld-lab">積分</span><label class="field"><input id="ptN" inputmode="numeric" placeholder="輸入文字" value="${esc(d.n)}" autocomplete="off"></label>
       <span class="fld-lab">原因（粉絲會看到）</span><label class="field"><input id="ptWhy" maxlength="30" placeholder="輸入文字" value="${esc(d.why)}" autocomplete="off"></label>
       <button class="btn btn-main btn-block" data-a="ptGo">${d.to.length?`送出給 ${d.to.length} 個帳號`:"送出"}</button></section>
     <div class="section-h">最近的紀錄</div>
-    <section class="card pta-h">${hist.length?hist.map(g=>`<div class="pta-hr"><b class="${g.n<0?"neg":""}">${g.n>=0?"+":"−"}${fmt(Math.abs(g.n))}</b><span><em>${esc(acctUser(g.to))}</em>${g.why?`<small>${esc(g.why)}</small>`:""}</span><small>${ymd(g.ts)}・${esc(acctUser(g.by))}</small></div>`).join(""):`<p class="me-none">還沒有紀錄</p>`}</section></main>`; }
+    <section class="card pta-h">${hist.length?hist.map(g=>`<div class="pta-hr"><b class="${g.n<0&&!g.set?"neg":""}">${g.set?"＝":g.n>=0?"+":"−"}${fmt(Math.abs(g.n))}</b><span><em>${esc(acctUser(g.to))}</em>${g.why?`<small>${esc(g.why)}</small>`:""}</span><small>${ymd(g.ts)}・${esc(acctUser(g.by))}</small></div>`).join(""):`<p class="me-none">還沒有紀錄</p>`}</section></main>`; }
 document.addEventListener("input",e=>{ const id=e.target.id; if(!ui.ptD||!["ptQ","ptN","ptWhy"].includes(id)) return; const k={ptQ:"q",ptN:"n",ptWhy:"why"}[id]; ui.ptD[k]=e.target.value;
   if(id==="ptQ"){ const pos=e.target.selectionStart; lsRerender(); const i=document.getElementById("ptQ"); if(i){ i.focus(); i.setSelectionRange(pos,pos); } } });
 function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fan") return false; const F=S.get(K.feed,[]); let seen=S.get(K.feedSeen,null);
@@ -5111,16 +5114,32 @@ function markRoomRead(member){ const r=S.get(K.wRead,{}); r[member]=Date.now(); 
      舊對話先收起來，可在聊天室設定「載入歷史對話」找回
    ========================================================= */
 const GRACE=DAY;
-const PLANS=[{id:"d7",days:7,pts:120,name:"7 天"},{id:"d30",days:30,pts:450,name:"30 天"},{id:"d365",days:365,pts:4500,name:"365 天"}];
+const PLANS=[{id:"d7",days:7,pts:1000,name:"7 天"},{id:"d30",days:30,pts:3500,name:"30 天"},{id:"d365",days:365,pts:38000,name:"365 天"}];
 /* 管理員自己的藝人身分：粉絲訂 TIE 免費 */
 const tieFree=mid=>Object.keys(ACCOUNTS).some(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid&&ACCOUNTS[k].role==="admin");
 const planPts=(mid,p)=>tieFree(mid)?0:p.pts;
+/* TIE 全團方案：一次訂整團每位成員 30 天，價格＝成員人數 × 2,500（免費的成員不算錢） */
+const TIE_GRP=2500;
+const grpTie=mid=>{ const m=MEMBERS[mid], ids=m?groupArtists(m.group):[]; return ids.length>1?{id:"grp",days:30,name:"全團 30 天",ids,pts:ids.reduce((a,id)=>a+(tieFree(id)?0:TIE_GRP),0)}:null; };
+const tiePlans=mid=>{ const g=grpTie(mid); return g?[...PLANS,g]:PLANS; };
 const subs=()=>S.get(K.tieSubs,{});
 const isActive=id=>{const r=subs()[id];return !!r&&Date.now()<=r.expires};
 // seenUntil：示範用「模擬到期」時，已經收到的訊息不會因此消失
 function inPeriod(rec,ts){ return rec.periods.some(p=>ts>=p.start&&ts<=(p.end!=null?p.end:Math.max(rec.expires,rec.seenUntil||0))); }
 const welcomeOf=mid=>S.get(K.tieWelcome,{})[mid]||"歡迎來到我的 TIE 💜 以後我會常常在這裡跟你說悄悄話，有空也要回我喔！";
-const points=()=>S.get(K.points,5000);
+const points=()=>S.get(K.points,0);
+/* 等級（#SUN）：由積分算；練習生（還沒出道）最高 T5，出道後至少 R1；已經升到的字母不會掉回去（字母保底） */
+const LV_TBL=[["T",[0,500,1500,3000,5000]],["R",[8000,11000,14000,17000,20000]],["E",[24000,29000,34000,39000,44000]],["D",[50000,58000,66000,74000,82000]],["C",[92000,104000,116000,128000,140000]],["B",[155000,173000,191000,209000,227000]],["A",[250000,280000,310000,340000,370000]],["S",[410000,460000,510000,560000,610000]],["L",[680000,800000,1000000]]];
+const LV_FONT={T:[0x1D5D4,0x1D7EC],R:[0x1D63C,0x1D7EC],E:[0x1D400,0x1D7CE],D:[0x1D468,0x1D7CE],C:[0x1D670,0x1D7F6],B:[0x1D538,0x1D7D8],A:[0,0x1D7CE],S:[0x1D49C,0x1D7CE],L:[0x1D4D0,0x1D7CE]};
+const lvCode=(li,si)=>{ const L=LV_TBL[li][0], f=LV_FONT[L]; return (L==="A"?"Λ":String.fromCodePoint(f[0]+L.charCodeAt(0)-65))+String.fromCodePoint(f[1]+si+1); };
+function myLevel(){ const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home), p=points(); let li=0,si=0;
+  LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } }));
+  if(!art&&li>0){ li=0; si=4; }   // 還沒出道：最高 T5
+  if(art&&li<1){ li=1; si=0; }    // 出道後：至少 R1
+  const fl=+S.get(K.lvMax,0)||0; if(li<fl){ li=fl; si=0; } else if(li>fl) S.set(K.lvMax,li);
+  const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
+  return {li,si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],art,next:nx&&(!art&&nx[0]>0?null:{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)})}; }
+function lvLine(){ try{ const v=myLevel(), p=points(); return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${v.next?`再 ${fmt(v.next.need)} 分升到 ${v.next.code}`:!v.art?(p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
 function buyTie(mid,days,pts){
   if(points()<pts) return {type:"nopts"};
   S.set(K.points,points()-pts); if(pts) recordSale("tie",{mid,pts,label:`${WHISPER_NAME} 券・${MEMBERS[mid].name}（${days} 天）`});
@@ -6004,7 +6023,7 @@ const NICK_TK="@@@";
 /* 購買紀錄的名稱：Membership 一律顯示現在的藝名／團名（舊紀錄可能存到社群名字） */
 const saleLbl=x=>{ const g=x&&x.gid&&groupOf(x.gid); return x&&x.type==="membership"&&g?String(x.label||"").replace(/^.*? Membership/,g.name+" Membership"):String((x&&x.label)||""); };
 function recordSale(type,{gid=null,mid=null,pts=0,label=""}={}){ const l=S.get(K.sales,[]); l.unshift({id:"s"+Date.now()+Math.random().toString(36).slice(2,5),type,gid:gid||(mid&&MEMBERS[mid]?MEMBERS[mid].group:null),mid,pts,label,ts:Date.now(),buyer:myEmail()||"me"}); /* 記下是哪個帳號買的：購買紀錄只看得到自己的 */ S.set(K.sales,l.slice(0,2000)); }
-const MS_PLANS=[{id:"m30",days:30,pts:300,name:"30 天"},{id:"m365",days:365,pts:3000,name:"365 天"}];
+const MS_PLANS=[{id:"m30",days:30,pts:3500,name:"30 天"},{id:"m365",days:365,pts:35000,name:"365 天"}];
 const getMS=()=>S.get(K.membership,{});
 const isMember=gid=>{ const r=getMS()[gid]; return !!(r&&r.expires>Date.now()); };
 /* 藝人的手機看不到粉絲自己的 Membership，所以每個粉絲把「哪一團、到期日」公開記一份（只有到期日，沒有別的資料） */
@@ -6092,11 +6111,11 @@ function viewRevenue(){
   const groups=GROUPS.map(g=>({g,total:all.byGroup[g.id]||0,ms:groupArtists(g.id)})).sort((a,b)=>b.total-a.total);
   return adminHead("REVENUE")+`<main class="page rev">
     <button class="rev-back" data-a="tab" data-v="home">‹ 回到總覽</button>
-    <section class="card rev-sum"><div><span>近 7 天</span><b>${fmt(wk.total)}<i> 點</i></b></div><div><span>累積</span><b>${fmt(all.total)}<i> 點</i></b></div></section>
+    <section class="card rev-sum"><div><span>近 7 天</span><b>${fmt(wk.total)}<i> 積分</i></b></div><div><span>累積</span><b>${fmt(all.total)}<i> 積分</i></b></div></section>
     <div class="rev-types">${Object.keys(T).map(k=>`<div class="card"><span>${T[k]}</span><b>${fmt(all.byType[k]||0)}</b><small>近 7 天 ${fmt(wk.byType[k]||0)}</small></div>`).join("")}</div>
     <section class="card rev-share"><div><b>藝人分潤比例</b><small>收成的幾成分給藝人，其餘歸平台</small></div><label><input id="revShare" type="number" min="0" max="100" value="${sh}">%</label><button class="btn btn-sm btn-main" data-a="revSave">儲存</button></section>
     <p class="rev-rule">算法：${WHISPER_NAME} 券算給那位成員；Membership 和周邊算給整個團，再平均分給團裡的成員（官方帳號不分）。藝人應得＝分到的金額 × ${sh}%。</p>
-    <div class="section-h">各團與成員<span class="muted">累積・點數</span></div>
+    <div class="section-h">各團與成員<span class="muted">累積・積分</span></div>
     ${groups.map(({g,total,ms})=>`<section class="card rev-g"><div class="rev-gh"><span class="rev-dot" style="background:${grad(g.g)}"></span><b>${esc(g.name)}</b><em>${fmt(total)}</em></div>
       ${ms.map(id=>{const v=Math.round(all.byMember[id]||0);return `<div class="rev-m"><span>${esc(artName(id,"feed"))}</span><small>分到 ${fmt(v)}</small><b>應得 ${fmt(Math.round(v*sh/100))}</b></div>`}).join("")}</section>`).join("")}
     <div class="section-h">最近的購買<span class="muted">${all.sales.length} 筆</span></div>
@@ -6236,7 +6255,7 @@ function seedBday(){ if(S.get(K.seed15,false)) return; S.set(K.seed15,true); con
    ・從 NSY 留下：抽卡前的光門過場、翻卡音效、要全部翻開才收下、「翻開其餘 N 張」、
      卡池一覽、抽卡紀錄、會跟著手指／手機傾斜的光澤
    ・自己加的：NEW 標記、稀有卡背面先透光、卡號與首次獲得日、代表卡、每張卡的機率
-   ・沒有留下：每日免費領點數、另一種貨幣、隨機覆蓋卡冊格子、手機震動（iPhone 不支援）、
+   ・沒有留下：每日免費領積分、另一種貨幣、隨機覆蓋卡冊格子、手機震動（iPhone 不支援）、
      「第 n 格／預覽占位」這種後台用語、每抽一次就發一則通知
    ========================================================= */
 const TIERS={1:{name:"日常",rate:.82},2:{name:"舞台",rate:.15},3:{name:"流光",rate:.03}};
@@ -6268,10 +6287,11 @@ const getCards=()=>S.get(K.cards,{});
 const cardMeta=()=>S.get(K.cardMeta,{});
 const cardNo=no=>"No."+String(no).padStart(4,"0");
 function rollTier(){ const r=Math.random(); return r<TIERS[3].rate?3:r<TIERS[3].rate+TIERS[2].rate?2:1; }
+const GC_COST=n=>n===1?1200:11000, GC_PITY=50;   // 單抽 1,200、十連 11,000；50 抽保底 ★★★
 function drawCards(n){
-  const pool=cardPool(), cost=n===1?100:900; if(!pool.length) return {err:"先追蹤藝人才有卡池喔"}; if(points()<cost) return {err:"點數不夠，先補充點數吧"};
+  const pool=cardPool(), cost=GC_COST(n); if(!pool.length) return {err:"先追蹤藝人才有卡池喔"}; if(points()<cost) return {err:"積分不夠，先補充積分吧"};
   S.set(K.points,points()-cost); recordSale("gacha",{pts:cost,label:n===1?"PHOTOCARD 單抽":"PHOTOCARD 十連"});
-  const got=[]; for(let i=0;i<n;i++) got.push(pool[Math.random()*pool.length|0]+":"+rollTier());
+  let pity=+S.get(K.gcPity,0)||0; const got=[]; for(let i=0;i<n;i++){ pity++; let tr=rollTier(); if(pity>=GC_PITY) tr=3; if(tr===3) pity=0; got.push(pool[Math.random()*pool.length|0]+":"+tr); } S.set(K.gcPity,pity);
   if(n===10&&!got.some(c=>+c.split(":")[1]>=2)){ const i=Math.random()*10|0; got[i]=got[i].split(":")[0]+":2"; }   // 十連保底
   const own=getCards(), meta=cardMeta(), fresh=[];
   got.forEach((c,i)=>{ if(!own[c]){ fresh.push(i); meta[c]={ts:Date.now(),no:1+(Math.random()*9999|0)}; } own[c]=(own[c]||0)+1; });
@@ -6393,7 +6413,7 @@ function gcSum(){
   document.getElementById("gcSt").innerHTML=`<div class="gc-sum"><b class="gc-sh">${n===1?"單抽":"十連抽"}結果</b>
     <div class="gd-grid n${n}">${got.map((c,i)=>`<span class="gd-card open ${gcTier(c)===3?"rare":""}" style="animation-delay:${i*.05}s"><span class="gd-face">${cardFace(c)}${fresh.has(i)?'<em class="gd-new">NEW</em>':""}</span></span>`).join("")}</div>
     <p class="gd-sum">${[nw?`NEW ${nw} 張`:"",r3?`★★★ ${r3} 張`:"",r2?`★★ ${r2} 張`:""].filter(Boolean).join("・")||"都是收過的卡，張數 +1"}</p>
-    <div class="gc-sb"><button class="btn btn-soft" data-a="gcAgain" data-v="${n}">再抽${n===1?"一次":"十連"}・${n===1?100:900} 點</button><button class="btn btn-main" data-a="gdDone">收進卡冊</button></div></div>`;
+    <div class="gc-sb"><button class="btn btn-soft" data-a="gcAgain" data-v="${n}">再抽${n===1?"一次":"十連"}・${fmt(GC_COST(n))} 積分</button><button class="btn btn-main" data-a="gdDone">收進卡冊</button></div></div>`;
   if(r3) setTimeout(()=>gcBurst(innerWidth/2,innerHeight*.35,3,90,9),200);
 }
 
@@ -6418,7 +6438,7 @@ function openPool(){
   setLayer(`<div class="t-sheet-w" data-a="tCloseLayer"><div class="t-sheet pl" role="dialog" aria-label="卡池一覽"><div class="grab"></div>
     <div class="pl-h"><b>卡池一覽</b><small>共 ${N*3} 張・你收集了 ${have} 張</small></div>
     <div class="pl-rate">${[3,2,1].map(t=>`<div class="t${t}"><i>${"★".repeat(t)}</i><b>${TIERS[t].name} ${Math.round(TIERS[t].rate*100)}%</b><small>每張 ${per(t)}%</small></div>`).join("")}</div>
-    <p class="pl-note">卡池是你追蹤的團（${gs}）的成員。十連保底一張 ★★ 以上。</p>
+    <p class="pl-note">卡池是你追蹤的團（${gs}）的成員。十連保底一張 ★★ 以上，${GC_PITY} 抽內保底一張 ★★★（還差 ${GC_PITY-(+S.get(K.gcPity,0)||0)} 抽）。</p>
     <div class="pl-tg"><button class="${only?"":"on"}" data-a="poolMiss" data-v="0">全部</button><button class="${only?"on":""}" data-a="poolMiss" data-v="1">只看還沒有的</button></div>
     ${secs||`<p class="me-none">全部都收集到了！🎉</p>`}
   </div></div>`,"pool");
@@ -6519,13 +6539,13 @@ function seedAlbums(){ if(S.get(K.seedAlb2,false)) return; S.set(K.seedAlb2,true
   const pool=(gid,each,sp)=>groupArtists(gid).flatMap(mid=>Array.from({length:each},(_,i)=>({id:uid("p"),mid,sp:sp&&i===each-1})));
   S.set(K.albums2,GROUPS.map((g,gi)=>{ const t=T[g.id]||[g.name,"A","B"], pre=n+(gi%3===2?-1:6-gi%3)*D;
     return {id:"ab_"+g.id,gid:g.id,title:t[0],ord:"The 1st Mini Album",ts:n-(gi*2+1)*D,
-      vers:[{id:uid("v"),name:t[1]+" Ver.",shape:"book",w:19,h:25,t:2.2,pts:900,preEnd:pre,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:pool(g.id,2,true)},{id:uid("i"),k:"postcard",name:"明信片",w:10,h:15,n:1,pool:pool(g.id,1)}]},
-            {id:uid("v"),name:t[2]+" Ver.",shape:"cd",w:14.2,h:12.5,t:1,pts:600,preEnd:pre,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:pool(g.id,2,true)},{id:uid("i"),k:"selfie",name:"自拍卡",w:5.5,h:8.5,n:1,pool:pool(g.id,1)}]}],
+      vers:[{id:uid("v"),name:t[1]+" Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:pre,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:pool(g.id,2,true)},{id:uid("i"),k:"postcard",name:"明信片",w:10,h:15,n:1,pool:pool(g.id,1)}]},
+            {id:uid("v"),name:t[2]+" Ver.",shape:"cd",w:14.2,h:12.5,t:1,pts:7000,preEnd:pre,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:pool(g.id,2,true)},{id:uid("i"),k:"selfie",name:"自拍卡",w:5.5,h:8.5,n:1,pool:pool(g.id,1)}]}],
       ex:[{id:uid("i"),rule:"pob",k:"pc",name:"預購特典",w:5.5,h:8.5,pool:pool(g.id,1)},{id:uid("i"),rule:"ld",k:"pc",name:"Lucky Draw",w:5.5,h:8.5,pool:pool(g.id,1,true)},{id:uid("i"),rule:"fs",k:"pc",name:"簽售卡",w:5.5,h:8.5,pool:pool(g.id,1,true)}]}; })); }
 /* 抽：珠光照片比較難抽到（權重 1/4）；照片夠多時一張專輯裡不重複 */
 function drawFrom(it,n){ const P=[...(it.pool||[])], out=[]; for(let k=0;k<n&&P.length;k++){ const tot=P.reduce((s,p)=>s+(p.sp?.25:1),0); let r=Math.random()*tot, i=0; for(;i<P.length;i++){ r-=P[i].sp?.25:1; if(r<=0) break; } i=Math.min(i,P.length-1); out.push(P[i]); if(P.length>1) P.splice(i,1); } return out; }
 function giveItem(ids){ const own=getCards(), meta=cardMeta(), fresh=[]; ids.forEach((c,i)=>{ if(!own[c]){ fresh.push(i); meta[c]={ts:Date.now(),no:1+(Math.random()*9999|0)}; } own[c]=(own[c]||0)+1; }); S.set(K.cards,own); S.set(K.cardMeta,meta); return fresh; }
-function buyAlbumV(aid,vid,qty,sid){ const a=albumOf(aid), v=a&&verOf(a,vid); if(!v) return {err:"找不到這個版本"}; qty=Math.max(1,Math.min(20,qty|0)); const cost=v.pts*qty; if(points()<cost) return {err:`點數不夠，${qty} 張要 ${fmt(cost)} 點`};
+function buyAlbumV(aid,vid,qty,sid){ const a=albumOf(aid), v=a&&verOf(a,vid); if(!v) return {err:"找不到這個版本"}; qty=Math.max(1,Math.min(20,qty|0)); const cost=v.pts*qty; if(points()<cost) return {err:`積分不夠，${qty} 張要 ${fmt(cost)} 積分`};
   if(!storeOf(sid)) sid=(getStores()[0]||{}).id;
   const g=groupOf(a.gid), stn=storeOf(sid)?storeOf(sid).name:""; S.set(K.points,points()-cost); recordSale("album",{gid:a.gid,pts:cost,label:`${g.name}《${a.title}》${v.name} ×${qty}${stn?"（"+stn+"）":""}`});
   const cnt=S.get(K.albBuy,{}), opens=[], ldG=S.get(K.ldGiven,{}), exs=storeEx(a,sid), pob=exs.filter(e=>e.rule==="pob"), ld=exs.filter(e=>e.rule==="ld");
@@ -6593,7 +6613,7 @@ function abDone(){ const st=ui.ab, r=st.r, o=r.opens[st.idx], a=albumOf(r.aid), 
   document.getElementById("abHint").innerHTML=`${nw?`新的 ${nw} 樣`:"都是收過的，張數 +1"}${sp?`・珠光 ${sp} 張`:""}${!xs.length&&o.ldTry?"・這張沒抽中 Lucky Draw":""}<br><small>點東西可以拿到眼前轉著看</small>`;
   const xb=document.getElementById("abXs"); if(xb&&xs.length) xb.innerHTML=`<button class="ab-env" data-a="abEnv"><span class="ab-env-i" aria-hidden="true"></span><span><b>${esc(stn)} 的信封</b><small>店家附送・不在專輯裡・點一下打開</small></span></button>`;
   document.getElementById("abFoot").innerHTML=more?`<button class="btn btn-soft" data-a="abClose">先收起來</button><button class="btn btn-main" data-a="abNext">拆下一張（${st.idx+2} / ${r.opens.length}）</button>`
-    :`<button class="btn btn-soft" data-a="abAgain">再買一張・${fmt(v.pts)} 點</button><button class="btn btn-main" data-a="abClose">收進卡冊</button>`; }
+    :`<button class="btn btn-soft" data-a="abAgain">再買一張・${fmt(v.pts)} 積分</button><button class="btn btn-main" data-a="abClose">收進卡冊</button>`; }
 function abEnv(){ const st=ui.ab; if(!st) return; const o=st.r.opens[st.idx], xb=document.getElementById("abXs"); if(!xb) return; sfx(o.ldWin?"t3":"flip");
   xb.innerHTML=`<div class="ab-xh">${o.ldWin?"✨ 抽中 Lucky Draw！":esc((parseIt(o.extra[0])||{it:{name:"預購特典"}}).it.name)}</div><div class="ab-xr">${(o.extra||[]).map((c,i)=>{ const x=parseIt(c); return x?`<button class="ab-xc ${x.p.sp?"sp":""}" data-a="abSumV" data-v="${c}" style="aspect-ratio:${x.it.w}/${x.it.h}">${itemFace(c)}${(o.xfresh||[]).includes(i)?'<em class="gd-new">NEW</em>':""}</button>`:""; }).join("")}</div>`;
   if(o.ldWin){ const b=xb.getBoundingClientRect(); gcBurst(b.left+b.width/2,b.top+b.height/2,3,90,9); } }
@@ -6818,7 +6838,7 @@ function ccTick(){
   const mb=document.getElementById("ccMis");
   if(mb){ if(cmd&&cmd.type==="mission"){ const el2=(Date.now()-cmd.ts)/1000, others=Math.floor(cmd.target*.86*Math.min(1,el2/28)), mine=(ui.swings||0)-(ui.misBase||0), v=Math.min(cmd.target,others+mine*12);
       mb.hidden=false; mb.querySelector("i").style.width=(v/cmd.target*100)+"%"; mb.querySelector("b").textContent=`${fmt(v)} / ${fmt(cmd.target)}・你揮了 ${mine} 下`;
-      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; S.set(K.points,points()+20); confetti(innerWidth/2,innerHeight/3); toast("任務達成！獲得 20 點 ✨"); } }
+      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; S.set(K.points,points()+20); confetti(innerWidth/2,innerHeight/3); toast("任務達成！獲得 20 積分 ✨"); } }
     else mb.hidden=true; }
 }
 function concertOn(){
@@ -7291,7 +7311,7 @@ function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g
 let _genStick=null;
 const genericStick=()=>_genStick||(_genStick=Object.assign(LS3D.analyze(LS3D.sample("round","#E9E3F7","#FCE7F3","★")),{glow:"#C7AEFF"}));
 const stickOf=gid=>gid==="generic"?genericStick():getSticks()[gid]||defaultStick(gid);
-const MERCH=[{k:"stick",name:"官方應援棒",pts:1200,ic:"✦",d:"演唱會燈海裡舉起這一團的官方應援棒。Membership 會員直接擁有"},{k:"album",name:"最新專輯",pts:800,ic:"💿",d:"收藏在 ME 的「我的周邊」"},{k:"limited",name:"限定周邊組",pts:600,ic:"🎀",d:"數量限定的小卡與貼紙"}];
+const MERCH=[{k:"stick",name:"官方應援棒",pts:6000,ic:"✦",d:"演唱會燈海裡舉起這一團的官方應援棒。Membership 會員直接擁有"},{k:"album",name:"最新專輯",pts:8000,ic:"💿",d:"收藏在 ME 的「我的周邊」"},{k:"limited",name:"限定周邊組",pts:1500,ic:"🎀",d:"數量限定的小卡與貼紙"}];
 const owns=(gid,k)=>!!(S.get(K.owned,{})[gid]||{})[k];
 function mountSticks(scope){
   scope.querySelectorAll(".ls-box:not([data-mounted])").forEach(el=>{
@@ -7566,7 +7586,7 @@ function openTieIntro(mid){ if(MEMBERS[mid]&&isSelfGid(MEMBERS[mid].group)){ toa
         <li>券到期後，之前的對話會先收起來；重新購買後可以繼續聊天。</li>
         <li>藝人不一定每天傳訊息，也不保證會回覆你的每一則訊息。</li>
         <li>請不要截圖、錄影或外流聊天室內容，外流會被停權。</li>
-        <li>購買使用的是 App 內的點數，不會另外收費。</li></ul></details>
+        <li>購買使用的是 App 內的積分，不會另外收費。</li></ul></details>
     </div>
     <footer class="tiei-foot"><label class="tiei-ok"><input type="checkbox" id="tieiChk"><span>已確認並同意所有注意事項</span></label><button class="btn btn-main btn-block" id="tieiGo" data-a="tieIntroGo" data-m="${mid}" disabled>開始 ${c}</button></footer></div>`,"tiei");
   const car=document.getElementById("tieiCar"); if(car) car.addEventListener("scroll",()=>{ const i=Math.round(car.scrollLeft/car.clientWidth); layer.querySelectorAll(".tiei-dots i").forEach((d,k)=>d.classList.toggle("on",k===i)); },{passive:true});
@@ -8054,8 +8074,8 @@ function viewFan(tab){
     return fanHeader(false)+`<main class="page">
       <section class="card me-card">
         <div class="av lg" style="margin:0 auto;background:${grad(3)}">${esc((ME.name||"棉")[0])}</div>
-        <button class="me-nm" data-a="meNickEd" aria-label="修改名稱"><h2>${esc(ME.name)}</h2>${UI_S.pen}</button><span class="muted" style="font-size:13px">粉絲帳號</span>
-        <div class="stats"><div><b>${f.length}</b><span>追蹤中</span></div><div><b>${fmt(points())}</b><span>點數</span></div><div><b>${Object.keys(subs()).filter(isActive).length}</b><span>${WHISPER_NAME} 券</span></div></div>
+        <button class="me-nm" data-a="meNickEd" aria-label="修改名稱"><h2>${esc(ME.name)}</h2>${UI_S.pen}</button><span class="muted" style="font-size:13px">粉絲帳號</span>${lvLine()}
+        <div class="stats"><div><b>${f.length}</b><span>追蹤中</span></div><div><b>${fmt(points())}</b><span>積分</span></div><div><b>${Object.keys(subs()).filter(isActive).length}</b><span>${WHISPER_NAME} 券</span></div></div>
         ${(()=>{const rc=S.get(K.repCard,""), it=rc.startsWith("it|"), m=rc&&(it?parseIt(rc):MEMBERS[rc.split(":")[0]]); return rc&&m&&getCards()[rc]?`<button class="me-rep" data-a="cardView" data-v="${rc}"><span class="me-rep-c">${cardFace(rc)}</span><span><small>我的代表卡</small><b>${esc(it?itemName(rc):m.name)}</b></span><i>›</i></button>`:""})()}
       </section>
       ${secH("star","我的")}
@@ -8195,7 +8215,7 @@ function viewArtist(tab){
   const head=tab==="foc"?`<header class="top"><div class="top-row"><span class="sh-sp"></span><div class="foc-title"><b>FOC</b><small>本週：${esc(sc.stage)}／任務結算：${esc(sc.deadline)}</small></div><button class="icon-btn" data-a="focInfo" aria-label="資訊面板"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9.5"/><path d="M12 16v-4.5M12 8h.01"/></svg></button></div></header>`
     :`<header class="top"><div class="top-row"><div class="logo">${APP_NAME}<small>藝人端</small></div><div class="spacer"></div><span class="art-sub">本週：${esc(sc.stage)}</span><button class="icon-btn art-bell" data-a="artNotifs" aria-label="通知">${I.bell}${artNUnread(mid)?'<span class="dot"></span>':""}</button></div></header>`;
   if(isUni()){
-    if(tab==="points"){ const pm=route().id&&MEMBERS[route().id]?route().id:mid; return uniHead(pm===mid?"我的點數收入":esc(artName(pm,"feed"))+" 的點數")+viewPointsOne(pm); } }
+    if(tab==="points"){ const pm=route().id&&MEMBERS[route().id]?route().id:mid; return uniHead(pm===mid?"我的積分收入":esc(artName(pm,"feed"))+" 的積分")+viewPointsOne(pm); } }
   if(tab==="points") return head+viewPointsOne(mid);
   if(tab==="foc"){ const fp=route().p; return FOC_PAGES[fp]?viewArtistFoc(mid,fp):head+viewArtistFoc(mid); }
   if(tab==="home"){ setTimeout(apBarSync,0);
@@ -8209,7 +8229,7 @@ function viewArtist(tab){
       <section class="card">
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
-        <button class="list-btn" data-a="tab" data-v="points">${I.star}點數收入</button>
+        <button class="list-btn" data-a="tab" data-v="points">${I.star}積分收入</button>
       </section>
       <div class="section-h">App</div>
       <section class="card">
@@ -9271,7 +9291,7 @@ function fsJoin(id,mid){ const ev=fsGet(id); if(!ev||ev.status!=="open") return 
   logSelf("core",null,`你報名了「${ev.title}」${mid?"（"+artName(mid,"feed")+"）":""}`); return true; }
 function fsBuy(id,mid){
   const ev=fsGet(id); if(!ev||ev.status!=="open") return false; const it=MERCH.find(x=>x.k==="album"), g=groupOf(ev.group), ent=ev.type==="solo"?ev.entries[mid]:ev.entries; if(!ent) return false;
-  if(points()<it.pts){ toast("點數不夠，先補充點數吧"); return false; }
+  if(points()<it.pts){ toast("積分不夠，先補充積分吧"); return false; }
   S.set(K.points,points()-it.pts); recordSale("merch",{gid:g.id,pts:it.pts,label:`${g.name}・${it.name}（${ev.title} 應募${mid?"・"+MEMBERS[mid].name:""}）`});
   const o=S.get(K.owned,{}); o[g.id]={...(o[g.id]||{}),album:Date.now()}; S.set(K.owned,o);
   ent[FS_ME]=(ent[FS_ME]||0)+1; fsSave(ev); return true;
@@ -9375,7 +9395,7 @@ function fsFanCards(){
       else { const my=ev.entries[FS_ME]||0, ppl=Object.keys(ev.entries).length;
         body=`<div class="fs-st"><span>報名中・${fsWhen(ev.closeTs)} 截止抽籤</span><span>${ppl} 人報名／抽 ${ev.quota} 名</span></div>
         <p class="fs-tip">${my?`已報名・目前 <b>${my}</b> 次機會`:"抽中後全體成員會輪流跟你通話。免費報名＝1 次機會，買專輯每張再多 1 次"}</p>
-        ${my?`<button class="btn btn-soft btn-block" data-a="fsBuy" data-v="${ev.id}">💿 買專輯多 1 次機會・800 點</button>`:`<button class="btn btn-main btn-block" data-a="fsJoin" data-v="${ev.id}">免費報名</button>`}`; } }
+        ${my?`<button class="btn btn-soft btn-block" data-a="fsBuy" data-v="${ev.id}">💿 買專輯多 1 次機會・${fmt(MERCH.find(x=>x.k==="album").pts)} 積分</button>`:`<button class="btn btn-main btn-block" data-a="fsJoin" data-v="${ev.id}">免費報名</button>`}`; } }
     else if(!mine.length){ const w=Object.entries(ev.wait||{}).map(([k,l])=>({k,i:l.findIndex(x=>x.fk===FS_ME)})).find(x=>x.i>=0);
       body=`<p class="fs-tip">${w&&ev.status!=="done"?`你在${w.k!=="all"&&MEMBERS[w.k]?" "+esc(artName(w.k,"feed"))+" 的":""}候補第 ${w.i+1} 位，有人缺席就會遞補你`:ev.status==="live"?"簽售進行中":"這次沒有抽中，下次再試試 💜"}</p>`; }
     else { const nx=fsMyNext(ev);
@@ -9568,7 +9588,7 @@ const COACH={
     [".nav-btn[data-v=whisper]","TIE","跟藝人的私訊。在 SHOP 買 TIE 券後，藝人傳的訊息會出現在這裡，你也可以回覆。"],
     [".nav-btn[data-v=core]","CORE","抽小卡、幫打歌中的歌投票、演唱會時進燈海揮應援棒、報名簽售，都在這裡。"],
     [".nav-btn[data-v=shop]","SHOP","買 Membership、TIE 券和周邊（應援棒、專輯）。"],
-    [".nav-btn[data-v=me]","ME","你的收藏、點數、設定和外觀（深色模式）。想再看一次教學，也在這裡。"],
+    [".nav-btn[data-v=me]","ME","你的收藏、積分、設定和外觀（深色模式）。想再看一次教學，也在這裡。"],
     ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播、輪到你簽售，都會在這裡通知你。"]],
   artist:[[".nav-btn[data-v=home]","LOVE","發動態給粉絲（可以放照片或影片），也在這裡回覆粉絲的留言。"],
     [".nav-btn[data-v=live]","MEET","開文字直播。粉絲的留言會出現在旁邊，點一下就能回覆他。"],
@@ -9761,7 +9781,7 @@ function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.
       body:`【${NW_BY}】${g.name} 的《${s.title}》連續 4 個排名週都拿下音樂節目一位，達成 Perfect All-Kill（PAK）。\n\n${g.name} 因此獲得 ${fmt(MSP.pak)} 打歌積分。\n\n${tail(id,g)}`}); } });
   getTours().filter(t=>t.status==="approved").forEach(t=>{ const g=groupOf(t.gid), Ls=tourStops(t).filter(st=>stopState(st)!=="off"); if(!g||!Ls.length) return; const id0="au_tr_"+t.id;
     L.push({id:id0,tag:"tour",ts:t.okTs||t.ts,gids:[t.gid],title:`${g.name} 世界巡演「${t.title}」確定…${Ls.length} 個城市`,
-      body:`【${NW_BY}】${g.name} 的世界巡演「${t.title}」正式確定，將從 ${nwMD(Ls[0].startTs)} 的${Ls[0].city}站開始，走訪 ${Ls.map(x=>x.city).join("、")} 共 ${Ls.length} 個城市。\n\n每一站都是一場演唱會燈海，粉絲可以到 FEST →「世巡」用 ${TOUR_TIX} 點購票，進場後就能在巡演地圖上蓋章。\n\n${tail(id0,g)}`});
+      body:`【${NW_BY}】${g.name} 的世界巡演「${t.title}」正式確定，將從 ${nwMD(Ls[0].startTs)} 的${Ls[0].city}站開始，走訪 ${Ls.map(x=>x.city).join("、")} 共 ${Ls.length} 個城市。\n\n每一站都是一場演唱會燈海，粉絲可以到 FEST →「世巡」用 ${fmt(TOUR_TIX)} 積分購票，進場後就能在巡演地圖上蓋章。\n\n${tail(id0,g)}`});
     Ls.forEach((st,i)=>{ if(stopState(st)!=="done") return; const c=stopCC(st), id=`au_trs_${st.id}`;
       L.push({id,tag:"tour",ts:c.endTs,gids:[t.gid],title:`${g.name}「${t.title}」${st.city}站圓滿落幕`,body:`【${NW_BY}】${g.name} 的世界巡演「${t.title}」第 ${i+1} 站${st.city}站，於 ${nwMD(c.endTs)} 圓滿落幕。\n\n${i+1<Ls.length?`下一站是 ${nwMD(Ls[i+1].startTs)} 的${Ls[i+1].city}站。`:"這也是這次巡演的最後一站。"}\n\n${tail(id,g)}`}); });
     if(wtDone(t)){ const last=stopCC(Ls[Ls.length-1]), id=`au_trd_${t.id}`; L.push({id,tag:"tour",ts:last.endTs+60e3,gids:[t.gid],title:`${g.name}「${t.title}」全 ${Ls.length} 站巡演圓滿落幕`,
@@ -9817,7 +9837,7 @@ const TOUR_LAND="M670 188l3 1 2 0 1-1 2-1 1-1 1-2 2-1 1-1 1 1 2 0 2 0 1 1 2-1 2-
    ・開場前藝人可以說一句話，推播給買票的粉絲
    ・核准、每站結束、全部結束都會自動出一則娛樂新聞
    ========================================================= */
-const TOUR_TIX=500, TOUR_STOP_PTS=2000, TOUR_DONE_PTS=10000, TOUR_MINS=120;
+const TOUR_TIX=3500, TOUR_STOP_PTS=2000, TOUR_DONE_PTS=10000, TOUR_MINS=120;
 const TOUR_CITIES=[["首爾",37.57,126.98],["釜山",35.18,129.08],["東京",35.68,139.69],["大阪",34.69,135.5],["名古屋",35.18,136.91],["福岡",33.59,130.4],["台北",25.03,121.56],["高雄",22.63,120.3],["香港",22.32,114.17],["澳門",22.2,113.54],["曼谷",13.76,100.5],["新加坡",1.35,103.82],["吉隆坡",3.14,101.69],["馬尼拉",14.6,120.98],["雅加達",-6.21,106.85],["胡志明市",10.82,106.63],["雪梨",-33.87,151.21],["墨爾本",-37.81,144.96],["奧克蘭",-36.85,174.76],["洛杉磯",34.05,-118.24],["舊金山",37.77,-122.42],["西雅圖",47.61,-122.33],["拉斯維加斯",36.17,-115.14],["達拉斯",32.78,-96.8],["芝加哥",41.88,-87.63],["紐約",40.71,-74.01],["亞特蘭大",33.75,-84.39],["多倫多",43.65,-79.38],["溫哥華",49.28,-123.12],["墨西哥城",19.43,-99.13],["聖保羅",-23.55,-46.63],["布宜諾斯艾利斯",-34.6,-58.38],["聖地牙哥",-33.45,-70.67],["倫敦",51.51,-0.13],["巴黎",48.86,2.35],["柏林",52.52,13.4],["阿姆斯特丹",52.37,4.9],["馬德里",40.42,-3.7],["米蘭",45.46,9.19],["杜拜",25.2,55.27]];
 const cityOf=n=>TOUR_CITIES.find(c=>c[0]===n);
 /* 地圖投影（Miller）：跟 TOUR_LAND 的陸地是同一套，寬 1000、高 474 */
@@ -9861,7 +9881,7 @@ function viewTourFan(id){ const fol=followed(), tix=myTix(), stamps=myStamps();
   return coreHead("世巡")+`<main class="page tr" style="--gt:${gTheme(t.gid)}"><div class="tr-hero"><span class="tr-g">${esc(g.name)}</span><h2>${esc(t.title)}</h2><small>${L.length} 站・${wtDone(t)?"巡演完成":`已完成 ${d} 站`}</small></div>
     ${tourMapHtml(t,{stamps})}
     <section class="card tr-list">${L.map((st,i)=>{ const s=stopState(st), has=!!tix[st.id], c=stopCC(st);
-      const act=s==="off"?`<span class="tr-st off">取消</span>`:s==="done"?`<span class="tr-st done">${stamps[st.id]?"已蓋章":"已結束"}</span>`:s==="live"?(has?`<button class="tr-btn on" data-a="concertOn">進場</button>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${TOUR_TIX} 點</button>`):(has?`<span class="tr-st have">已購票</span>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${TOUR_TIX} 點</button>`);
+      const act=s==="off"?`<span class="tr-st off">取消</span>`:s==="done"?`<span class="tr-st done">${stamps[st.id]?"已蓋章":"已結束"}</span>`:s==="live"?(has?`<button class="tr-btn on" data-a="concertOn">進場</button>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`):(has?`<span class="tr-st have">已購票</span>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`);
       return `<div class="tr-row ${s}"><span class="tr-n">${i+1}</span><div class="tr-i"><b>${esc(st.city)}</b><small>${c?evWhen(c.startTs):tourMD(st.startTs)}${s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>${act}</div>`; }).join("")}</section></main>`; }
 /* ---------- 藝人端 ---------- */
 function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=getTours().filter(t=>t.gid===gid), d=ui.trDraft;
@@ -9897,7 +9917,10 @@ function tourApprove(id){ const all=S.get(K.wtours,[])||[], t=all.find(x=>x.id==
 function tourGate(){ const c=liveConcert(); if(!c||!c.stop) return true; if(myTix()[c.stop]){ const s=myStamps(); if(!s[c.stop]){ s[c.stop]=Date.now(); S.set(K.tourStamp,s); } return true; }
   const t=tourOf(c.tour); if(t) tourBuyAsk(t.id,c.stop); return false; }
 function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===sid); if(!st) return; if(isSelfGid(t.gid)){ toast(selfBuyMsg()); return; }
-  iosAlert(`${esc(st.city)}站門票`,`${esc(t.title)}<br>${TOUR_TIX} 點・目前有 ${fmt(points())} 點`,`<button data-a="tCloseLayer">取消</button><button data-a="tourBuyOk" data-v="${tid}" data-s="${sid}">購買</button>`); }
+  const rest=tourRest(t), all=rest.length>1?Math.round(rest.length*TOUR_TIX*.9):0;
+  iosAlert(`${esc(st.city)}站門票`,`${esc(t.title)}<br>${fmt(TOUR_TIX)} 積分・目前有 ${fmt(points())} 積分${all?`<br>一次買剩下 ${rest.length} 站打 9 折：${fmt(all)} 積分`:""}`,`<button data-a="tCloseLayer">取消</button>${all?`<button data-a="tourBuyAll" data-v="${tid}">全部站</button>`:""}<button data-a="tourBuyOk" data-v="${tid}" data-s="${sid}">購買</button>`); }
+/* 世巡還沒買、還沒結束的站（一次全買打 9 折） */
+const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id]&&(s.startTs||0)+120*60e3>Date.now()); };
 function viewCoreSub(page,id){
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return coreHead("應援餐車")+truckPhHtml();
@@ -9940,12 +9963,12 @@ function passStatus(mid){
 function shopProducts(gid){ const g=groupOf(gid); if(!g) return []; const L=[], mn=Math.min(...MS_PLANS.map(p=>p.pts));
   L.push({id:"ms:"+gid,kind:"ms",gid,cat:"ms",ic:"💎",name:`${g.name} Membership`,pts:mn,from:true,own:isMember(gid),
     det:["加入後，對這個團的所有藝人都有效。","演唱會時直接擁有這一團的官方應援棒。","在藝人那邊會顯示你的會員愛稱，名字也會有流光。","到期後 24 小時內續訂，可以保留會員資歷。"],
-    note:["Membership 從購買當天開始計算天數。","同一個團只能有一張 Membership，續訂會接在原本的天數後面。","購買使用的是 App 內的點數，不會另外收費。"]});
+    note:["Membership 從購買當天開始計算天數。","同一個團只能有一張 Membership，續訂會接在原本的天數後面。","購買使用的是 App 內的積分，不會另外收費。"]});
   getAlbums().filter(a=>a.gid===gid).forEach(a=>a.vers.forEach(v=>L.push({id:"v:"+a.id+":"+v.id,kind:"album",aid:a.id,vid:v.id,gid,k:"album",cat:"album",ic:"💿",name:`${a.title} (${v.name})`,pts:v.pts,pre:vPre(v),own:false,
     det:[`${a.ord}《${a.title}》${v.name}・${shapeOf(v.shape).n}・${v.w} × ${v.h} × ${v.t} 公分`,...v.inc.map(it=>`${it.name} ${it.n||1} 張（${it.w} × ${it.h} 公分，共 ${(it.pool||[]).length} 種隨機）`),vPre(v)?`現在是預購期間（到 ${fsWhen(v.preEnd)}）：每家店附送的預購特典、Lucky Draw 都不一樣，下面選店家。`:"預購期已經結束，店家不再附送特典。"].filter(Boolean),
-    note:["裡面的東西是隨機的，不能指定成員。","不同版本放的東西不一樣。","預購特典、Lucky Draw 是店家另外附送的，不在專輯裡；Lucky Draw 是抽獎，不一定抽得到，抽完就沒了。","購買使用的是 App 內的點數，不會另外收費。"]})));
+    note:["裡面的東西是隨機的，不能指定成員。","不同版本放的東西不一樣。","預購特典、Lucky Draw 是店家另外附送的，不在專輯裡；Lucky Draw 是抽獎，不一定抽得到，抽完就沒了。","購買使用的是 App 內的積分，不會另外收費。"]})));
   MERCH.filter(it=>it.k!=="album").forEach(it=>L.push({id:"m:"+gid+":"+it.k,kind:"merch",gid,k:it.k,cat:"merch",ic:it.ic,name:`${g.name} ${it.name}`,pts:it.pts,own:owns(gid,it.k)||(it.k==="stick"&&isMember(gid)),ownTxt:it.k==="stick"&&isMember(gid)&&!owns(gid,it.k)?"會員已擁有":"已擁有",
-    det:[it.d],note:["買過的周邊會收在 ME 的「我的周邊」。","購買使用的是 App 內的點數，不會另外收費。"]}));
+    det:[it.d],note:["買過的周邊會收在 ME 的「我的周邊」。","購買使用的是 App 內的積分，不會另外收費。"]}));
   groupArtists(gid).forEach(mid=>{ const m=MEMBERS[mid], st=passStatus(mid); L.push({id:"t:"+mid,kind:"tie",gid,mid,cat:"tie",ic:ini(m.name),g2:m.g,name:`${WHISPER_NAME} 券・${artName(mid,"tie")}`,pts:tieFree(mid)?0:Math.min(...PLANS.map(p=>p.pts)),from:true,own:isActive(mid),ownTxt:st?st.txt:"",
     det:[`收 ${artName(mid,"tie")} 傳給你的訊息，你也可以回覆。`,"訂閱越久，能傳的字數越多。"],note:["券有效期間內才能收到訊息、也才能回覆。","請不要截圖或外流聊天室內容，外流會被停權。"]}); });
   return L; }
@@ -9980,7 +10003,7 @@ function viewShop(){
     ${q?(all.length?`<div class="wsp-grid">${all.map(prodCard).join("")}</div>`:srchEmpty("商品")):`
     ${ban.length?`<div class="ws-hero" id="spBan">${ban.map(p=>{const g=groupOf(p.gid), C=GRADS[g.g%GRADS.length];return `<button class="ws-sl" data-a="pOpen" data-v="${p.id}" style="background:${mixHex(C[0],"#ffffff",.78)}"><span class="ws-art">${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span><b>${esc(p.name)}</b><small>HAECHU SHOP ${p.pre?"現正預購中！":"現正販售中！"}</small></button>`}).join("")}</div>
     <div class="ws-pg"><span class="ws-track"><i id="spThumb" style="width:${100/ban.length}%"></i></span><span class="ws-cnt"><b id="spCnt">01</b><i></i>${String(ban.length).padStart(2,"0")}</span><button class="ws-plus" data-a="wsPlus" aria-label="看更多">＋</button></div>`:""}
-    <section class="ws-pts"><span>我的點數</span><b>${fmt(points())}<i>✦</i></b>${demoOn()?`<button data-a="addPts">示範：補充點數</button>`:""}</section>
+    <section class="ws-pts"><span>我的積分</span><b>${fmt(points())}<i>✦</i></b>${demoOn()?`<button data-a="addPts">示範：補充積分</button>`:""}</section>
     <section class="ws-my"><h2>My Artist</h2>
       ${f.length?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}"><span>${esc(g.name)}</span></i><small>${esc(g.name)}</small></button>`:""}).join("")}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
       <button class="ws-find" data-a="shOpen" data-k="shop">${I.search||"🔍"}<b>藝人</b></button></section>
@@ -10005,11 +10028,11 @@ function openProd(id){ const p=prodBy(id); if(!p) return; if(isSelfGid(p.gid)){ 
   setLayer(`<div class="tiei wsp-pg"><header class="tiei-top"><button class="icon-btn" data-a="pClose" aria-label="返回">${I.back}</button><b>${esc(g.name)}</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${p.kind==="album"?`<div class="s3 s3-alb" id="s3A">${albumBox(albumOf(p.aid),verOf(albumOf(p.aid),p.vid),{maxPx:210})}</div><small class="s3-tip c">拖動專輯，轉一圈看看封面和封底</small>`:prodThumb(p,true)}
       <button class="wsp-pg-g" data-a="pGroup" data-v="${p.gid}">${esc(g.name)} ›</button><h2 class="wsp-pg-n">${esc(p.name)}</h2>
-      <div class="wsp-pg-p">${p.kind==="album"?`<b>${fmt(p.pts)} 點</b><div class="qty"><span>數量</span><button data-a="pQty" data-v="-1" aria-label="少一張">−</button><b id="pQ">${ui.pQty||1}</b><button data-a="pQty" data-v="1" aria-label="多一張">＋</button></div>`+storePick(p):p.kind==="ms"?`<div class="wsp-plans">${MS_PLANS.map(x=>`<button class="${plan===x.id?"on":""}" data-a="pPlan" data-v="${x.id}">${x.name}<b>${fmt(x.pts)} 點</b></button>`).join("")}</div>`:`<b>${fmt(p.pts)} 點${p.from?" 起":""}</b>`}</div>
+      <div class="wsp-pg-p">${p.kind==="album"?`<b>${fmt(p.pts)} 積分</b><div class="qty"><span>數量</span><button data-a="pQty" data-v="-1" aria-label="少一張">−</button><b id="pQ">${ui.pQty||1}</b><button data-a="pQty" data-v="1" aria-label="多一張">＋</button></div>`+storePick(p):p.kind==="ms"?`<div class="wsp-plans">${MS_PLANS.map(x=>`<button class="${plan===x.id?"on":""}" data-a="pPlan" data-v="${x.id}">${x.name}<b>${fmt(x.pts)} 積分</b></button>`).join("")}</div>`:`<b>${fmt(p.pts)} 積分${p.from?" 起":""}</b>`}</div>
       ${p.own?`<p class="wsp-pg-own">✓ ${esc(p.ownTxt||"已擁有")}</p>`:""}
       <div class="wsp-tabs"><button class="${tab==="det"?"on":""}" data-a="pTab" data-v="det">詳情</button><button class="${tab==="note"?"on":""}" data-a="pTab" data-v="note">注意事項</button></div>
       <ul class="wsp-li">${(tab==="det"?p.det:p.note).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
-    <footer class="tiei-foot">${isSelfGid(p.gid)?`<button class="btn btn-soft btn-block" disabled>${selfBuyMsg()}</button>`:p.kind==="merch"&&p.own?`<button class="btn btn-soft btn-block" disabled>${esc(p.ownTxt||"已擁有")}</button>`:`<button class="btn btn-main btn-block" data-a="pBuy" data-v="${p.id}">${p.kind==="album"?`${storeOf(ui.pStore)?"在 "+esc(storeOf(ui.pStore).name)+" 買":"買"} ${ui.pQty||1} 張・${fmt(p.pts*(ui.pQty||1))} 點`:p.kind==="ms"&&p.own?"續訂":p.kind==="tie"&&p.own?"續訂":"購買"}</button>`}</footer></div>`,"prod"); if(p.kind==="album"){ const h=document.getElementById("s3A"); if(h) ui.s3=spin3d(h.querySelector(".ab-box"),h,{auto:true,rx:-12,ry:-24}); } }
+    <footer class="tiei-foot">${isSelfGid(p.gid)?`<button class="btn btn-soft btn-block" disabled>${selfBuyMsg()}</button>`:p.kind==="merch"&&p.own?`<button class="btn btn-soft btn-block" disabled>${esc(p.ownTxt||"已擁有")}</button>`:`<button class="btn btn-main btn-block" data-a="pBuy" data-v="${p.id}">${p.kind==="album"?`${storeOf(ui.pStore)?"在 "+esc(storeOf(ui.pStore).name)+" 買":"買"} ${ui.pQty||1} 張・${fmt(p.pts*(ui.pQty||1))} 積分`:p.kind==="ms"&&p.own?"續訂":p.kind==="tie"&&p.own?"續訂":"購買"}</button>`}</footer></div>`,"prod"); if(p.kind==="album"){ const h=document.getElementById("s3A"); if(h) ui.s3=spin3d(h.querySelector(".ab-box"),h,{auto:true,rx:-12,ry:-24}); } }
 function openBuySheet(mid){ if(MEMBERS[mid]&&isSelfGid(MEMBERS[mid].group)){ toast(selfBuyMsg()); return; }
   const m=MEMBERS[mid], st=passStatus(mid), plan=ui.buyPlan||"d30";
   const note=!st?"這是你第一次訂閱，買完會立刻收到藝人的歡迎語。"
@@ -10017,10 +10040,10 @@ function openBuySheet(mid){ if(MEMBERS[mid]&&isSelfGid(MEMBERS[mid].group)){ toa
     :`這次算連續訂閱，愛心天數會保留（目前 +${subDays(mid)} 天），不會重發歡迎語。`;
   setLayer(`<div class="scrim" data-a="tCloseLayer"><div class="sheet" role="dialog" aria-label="購買 TIE 券"><div class="grab"></div>
     <div class="buy-h"><div class="av" style="background:${grad(m.g)}">${mAvIn(mid,"tie")}</div><div><h3>${WHISPER_NAME} 券・${esc(artName(mid,"tie"))}</h3><p>${groupOf(m.group).name}</p></div></div>
-    <div class="plans">${PLANS.map(x=>`<button class="plan ${plan===x.id?"on":""}" data-a="buyPlan" data-m="${mid}" data-v="${x.id}"><b>${x.name}</b><span>${tieFree(mid)?"免費":fmt(x.pts)+" 點"}</span></button>`).join("")}</div>
+    <div class="plans">${tiePlans(mid).map(x=>`<button class="plan ${plan===x.id?"on":""}" data-a="buyPlan" data-m="${mid}" data-v="${x.id}"><b>${x.name}</b><span>${(x.id==="grp"?!x.pts:tieFree(mid))?"免費":fmt(x.pts)+" 積分"}</span></button>`).join("")}</div>
     ${!st||st.cls==="off"?`<label class="buy-nick"><span>你的暱稱</span><input id="buyNick" maxlength="12" placeholder="輸入文字" value="${esc(ui.buyNick!=null?ui.buyNick:(S.get(K.tieSet,{})[mid]||{}).nickname||"")}"></label>`:""}
-    <button class="btn btn-main btn-block" data-a="buyOk" data-m="${mid}">${tieFree(mid)?"免費訂閱":`用 ${fmt(PLANS.find(x=>x.id===plan).pts)} 點購買`}</button>
-    <p class="buy-pts">目前點數 ${fmt(points())}</p>
+    <button class="btn btn-main btn-block" data-a="buyOk" data-m="${mid}">${(()=>{ const p=tiePlans(mid).find(x=>x.id===plan)||PLANS[1]; return (p.id==="grp"?!p.pts:tieFree(mid))?"免費訂閱":`用 ${fmt(p.pts)} 積分購買`; })()}</button>
+    <p class="buy-pts">目前積分 ${fmt(points())}</p>
   </div></div>`,"buy");
 }
 
@@ -10035,7 +10058,7 @@ const ANAV={
 ANAV.foc=`<svg viewBox="0 0 24 24" ${NS}><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/><path d="M12 12.4l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z"/></svg>`;
 const adminNav=a=>navBar([["home","HOME",ANAV.home],["foc","FOC",ANAV.foc],["reports","REPORT",ANAV.report],["posts","POST",ANAV.post],["announce","NEWS",ANAV.news],["me","ME",ANAV.me]],a,{reports:openReports().length});
 
-const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人與團",REVENUE:"點數統計","AI FANS":"AI 粉絲",ME:"管理"};
+const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人與團",REVENUE:"積分統計","AI FANS":"AI 粉絲",ME:"管理"};
 function adminHead(title,sk=null,ph=""){ if(isUni()){ if(title==="FOC") return uniMainHead("活動"); if(["REPORT","POST"].includes(title)&&!(sk&&srchOn(sk))) return uniMainHead("內容"); if(sk&&srchOn(sk)) return `<header class="top uni-top sh-head"><div class="top-row">${srchBar(ph)}</div></header>`; return uniHead(UNI_T[title]||title,sk?srchBtn(sk):""); }
   return `<header class="top sh-head"><div class="top-row">${sk&&srchOn(sk)?srchBar(ph):`<div class="logo">${APP_NAME}<small>管理員</small></div><div class="spacer"></div>${sk?srchBtn(sk):""}<span class="art-sub">${title}</span>`}</div></header>`; }
 function reportCard(r){
@@ -10102,11 +10125,11 @@ function segSwitch(btn,apply,dir){ const seg=btn.closest(".seg2"); if(!seg||btn.
 function lsRerender(){ const y=window.scrollY; render(); window.scrollTo(0,y); }
 function viewAdmin(tab){
   if(isUni()){
-    if(tab==="revenue") return uniHead("點數統計")+viewPointsAdmin();
+    if(tab==="revenue") return uniHead("積分統計")+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
     if(tab==="people") return viewUniPeople();
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
-    if(tab==="ptadd") return uniHead("加點數")+viewPtAdd();
+    if(tab==="ptadd") return uniHead("加積分")+viewPtAdd();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
     if(tab==="debut") return uniHead("出道申請")+debutAdmHtml();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
@@ -10217,7 +10240,7 @@ function viewAdmin(tab){
   const stat=(n,l,tab)=>`<button class="stat" ${tab?`data-a="tab" data-v="${tab}"`:""}><b>${fmt(n)}</b><span>${l}</span></button>`;
   return adminHead("HOME")+`<main class="page">
     <div class="stat-grid">${stat(open.length,"待處理檢舉","reports")}${stat(on.length,"直播中")}${stat(posts.length,"貼文","posts")}${stat(comments.length,"留言")}${stat(up.length,"即將舉辦的活動")}${stat(getWhispers().filter(w=>w.from==="artist").length,WHISPER_NAME+" 訊息")}</div>
-    ${(()=>{const wk=revenueOf(Date.now()-7*864e5);return `<button class="card rev-card" data-a="tab" data-v="revenue"><span><b>營收</b><small>近 7 天・${fmt(wk.sales.length)} 筆購買</small></span><em>${fmt(wk.total)} 點</em><i>›</i></button>`})()}
+    ${(()=>{const wk=revenueOf(Date.now()-7*864e5);return `<button class="card rev-card" data-a="tab" data-v="revenue"><span><b>營收</b><small>近 7 天・${fmt(wk.sales.length)} 筆購買</small></span><em>${fmt(wk.total)} 積分</em><i>›</i></button>`})()}
     <div class="section-h">直播監控<span class="muted">${on.length?on.length+" 場進行中":"目前沒有"}</span></div>
     ${on.length?on.map(l=>{const m=MEMBERS[l.member];return `<section class="adm-live"><div class="al-top"><span><i></i>直播狀態：ON AIR（即時連動中）</span><button class="btn btn-sm btn-danger" data-a="admEndLive" data-id="${l.id}">強制關閉直播</button></div>
       <h3>${esc(l.title)}</h3><p>藝人：${esc(m.name)}</p><div class="al-stat"><span>👥 ${fmt(liveViewers(l))} 在線觀看</span><span>💬 ${l.msgs.length} 則彈幕</span></div>
@@ -10413,7 +10436,7 @@ document.addEventListener("click",e=>{
       logSelf("core",id,`你送了生日祝福給 ${artName(id,"feed")} 🎂`); const b=t.getBoundingClientRect(); confetti(b.left+b.width/2,b.top); const y=window.scrollY; render(); window.scrollTo(0,y); if(layer.querySelector(".mf-sh")) openSched(); toast("祝福送出了 🎂"); break; }
     case "passDay99": { const all=subs(), r2=all[t.dataset.m]; if(!r2) break; const nowT=Date.now(); r2.since=nowT-99*DAY-60e3; if(r2.expires<nowT+5*DAY) r2.expires=nowT+5*DAY; if(r2.periods&&r2.periods.length) r2.periods[r2.periods.length-1].start=Math.min(r2.periods[r2.periods.length-1].start,r2.since); S.set(K.tieSubs,all);
       const d=S.get(K.msDone,{}); d[t.dataset.m]=(d[t.dataset.m]||[]).filter(x=>x<100); S.set(K.msDone,d); render(); toast("示範：已經連續訂閱第 100 天，去 TIE 看看紀念日訊息","去看看","openChatFromToast"); ui.toastMember=t.dataset.m; break; }
-    case "gacha": { const n=+t.dataset.v; ask(`${n===1?"單抽":"十連抽"} PHOTOCARD，使用 ${n===1?100:900} 點。`,()=>{ const r=drawCards(n); if(r.err){ toast(r.err); return; } gcStart(r); },{title:"抽卡",ok:"抽！",danger:false}); break; }
+    case "gacha": { const n=+t.dataset.v; ask(`${n===1?"單抽":"十連抽"} PHOTOCARD，使用 ${fmt(GC_COST(n))} 積分。`,()=>{ const r=drawCards(n); if(r.err){ toast(r.err); return; } gcStart(r); },{title:"抽卡",ok:"抽！",danger:false}); break; }
     case "gcTap": gcTap(); break;
     case "gcLaunch": gcLaunch(); break;
     case "gcSkip": gcSum(); break;
@@ -10600,8 +10623,8 @@ document.addEventListener("click",e=>{
     case "pBuy": { const p=prodBy(t.dataset.v); if(!p) break; const g=groupOf(p.gid); if(isSelfGid(p.gid)){ toast(selfBuyMsg()); break; }
       if(p.kind==="tie"){ ui.prod=null; layer.innerHTML=""; openBuySheet(p.mid); break; }
       if(p.kind==="album"){ const r=buyAlbumV(p.aid,p.vid,ui.pQty||1,ui.pStore); if(r.err){ toast(r.err); break; } ui.prod=null; ui.pQty=1; abStart(r,0); break; }
-      if(p.kind==="ms"){ const pid=ui.prodPlan||MS_PLANS[0].id; if(!buyMS(p.gid,pid)){ toast("點數不夠，先補充點數吧"); break; } toast(`已加入 ${g.name} Membership 💎`); }
-      else { const it=MERCH.find(x=>x.k===p.k); if(points()<it.pts){ toast("點數不夠，先補充點數吧"); break; } S.set(K.points,points()-it.pts); recordSale("merch",{gid:p.gid,pts:it.pts,label:`${g.name}・${it.name}`}); const o=S.get(K.owned,{}); o[p.gid]={...(o[p.gid]||{}),[it.k]:Date.now()}; S.set(K.owned,o);
+      if(p.kind==="ms"){ const pid=ui.prodPlan||MS_PLANS[0].id; if(!buyMS(p.gid,pid)){ toast("積分不夠，先補充積分吧"); break; } toast(`已加入 ${g.name} Membership 💎`); }
+      else { const it=MERCH.find(x=>x.k===p.k); if(points()<it.pts){ toast("積分不夠，先補充積分吧"); break; } S.set(K.points,points()-it.pts); recordSale("merch",{gid:p.gid,pts:it.pts,label:`${g.name}・${it.name}`}); const o=S.get(K.owned,{}); o[p.gid]={...(o[p.gid]||{}),[it.k]:Date.now()}; S.set(K.owned,o);
         logSelf("core",null,`你買了 ${g.name} 的${it.name}`); toast(it.k==="stick"?`已擁有 ${g.name} 官方應援棒，演唱會時可以舉起來了 ✨`:`已購買 ${g.name}・${it.name}`); }
       { const y=window.scrollY; render(); window.scrollTo(0,y); } openProd(p.id); break; }
     case "apDel": { e.preventDefault(); const key=t.dataset.v; PIMG.del(key).then(()=>{ if(layer.querySelector(".ae")) openAlbumEditor(ui.aeId); toast("已刪除照片"); }); break; }
@@ -10616,11 +10639,11 @@ document.addEventListener("click",e=>{
     case "stDel": { const id=t.dataset.v, st=storeOf(id); ask(`要刪除「${st?st.name:""}」嗎？這家店的預購特典和 Lucky Draw 也會一起刪掉。`,()=>{ S.set(K.stores,getStores().filter(x=>x.id!==id)); const L=S.get(K.albums2,[]); L.forEach(a=>a.ex=(a.ex||[]).filter(e=>e.store!==id)); S.set(K.albums2,L); render(); toast("已刪除店家"); },{title:"刪除店家",ok:"刪除"}); break; }
     case "abNext": { const st=ui.ab; if(!st) break; abStart(st.r,st.idx+1); break; }
     case "abSumV": { const w=document.getElementById("abW"); if(!w) break; const v=document.createElement("div"); v.className="s3v"; v.innerHTML=`<button class="ph-x" data-a="s3Close" aria-label="關閉">${XI}</button><div class="s3">${item3d(t.dataset.v,Math.min(260,innerWidth*.62))}</div><p class="s3-l">${esc(itemName(t.dataset.v))}</p><div class="s3-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button></div>`; w.appendChild(v); ui.s3=spin3d(v.querySelector(".s3-obj"),v.querySelector(".s3"),{rx:-4,ry:-18}); break; }
-    case "pQty": { ui.pQty=Math.max(1,Math.min(20,(ui.pQty||1)+(+t.dataset.v))); const p=prodBy(ui.prod); const q=document.getElementById("pQ"); if(q) q.textContent=ui.pQty; const b=layer.querySelector('[data-a="pBuy"]'); if(b&&p) b.textContent=`${storeOf(ui.pStore)?"在 "+storeOf(ui.pStore).name+" 買":"買"} ${ui.pQty} 張・${fmt(p.pts*ui.pQty)} 點`; break; }
-    case "aeNew": { const gid=ui.albG||GROUPS[0].id, a={id:uid("ab"),gid,title:"新專輯",ord:"The 1st Mini Album",ts:Date.now(),vers:[{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:800,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}],ex:[]}; saveAlbum(a); openAlbumEditor(a.id); break; }
+    case "pQty": { ui.pQty=Math.max(1,Math.min(20,(ui.pQty||1)+(+t.dataset.v))); const p=prodBy(ui.prod); const q=document.getElementById("pQ"); if(q) q.textContent=ui.pQty; const b=layer.querySelector('[data-a="pBuy"]'); if(b&&p) b.textContent=`${storeOf(ui.pStore)?"在 "+storeOf(ui.pStore).name+" 買":"買"} ${ui.pQty} 張・${fmt(p.pts*ui.pQty)} 積分`; break; }
+    case "aeNew": { const gid=ui.albG||GROUPS[0].id, a={id:uid("ab"),gid,title:"新專輯",ord:"The 1st Mini Album",ts:Date.now(),vers:[{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}],ex:[]}; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
     case "aeClose": ui.aeId=null; layer.innerHTML=""; render(); break;
-    case "aeVAdd": { const a=aeA(); a.vers.push({id:uid("v"),name:`${String.fromCharCode(65+a.vers.length)} Ver.`,shape:"cd",w:14.2,h:12.5,t:1,pts:600,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}); saveAlbum(a); openAlbumEditor(a.id); break; }
+    case "aeVAdd": { const a=aeA(); a.vers.push({id:uid("v"),name:`${String.fromCharCode(65+a.vers.length)} Ver.`,shape:"cd",w:14.2,h:12.5,t:1,pts:7000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}); saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeVDel": { const a=aeA(); if(a.vers.length<=1){ toast("至少要留一個版本"); break; } ask("要刪除這個版本嗎？",()=>{ a.vers=a.vers.filter(v=>v.id!==t.dataset.v); saveAlbum(a); openAlbumEditor(a.id); },{title:"刪除版本",ok:"刪除"}); break; }
     case "aeShape": { const a=aeA(), v=verOf(a,t.dataset.i), sh=shapeOf(t.dataset.v); v.shape=sh.k; if(sh.k!=="custom"){ v.w=sh.w; v.h=sh.h; v.t=sh.t; } saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeIAdd": { const a=aeA(), v=verOf(a,t.dataset.v); v.inc.push({id:uid("i"),k:"postcard",name:"明信片",w:10,h:15,n:1,pool:[]}); saveAlbum(a); openAlbumEditor(a.id); break; }
@@ -10666,8 +10689,11 @@ document.addEventListener("click",e=>{
     case "openTour": location.hash="#/fan/core?p=tour"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
     case "tourBuy": tourBuyAsk(t.dataset.v,t.dataset.s); break;
     case "tourBuyOk": { const tr=tourOf(t.dataset.v), st=tr&&tr.stops.find(x=>x.id===t.dataset.s); layer.innerHTML=""; if(!st) break; const tx=myTix(); if(tx[st.id]){ toast("已經有這一站的票了"); break; }
-      if(points()<TOUR_TIX){ toast("點數不夠，先補充點數吧"); break; } S.set(K.points,points()-TOUR_TIX); tx[st.id]=Date.now(); S.set(K.tourTix,tx); recordSale("tour",{gid:tr.gid,pts:TOUR_TIX,label:`${tr.title}・${st.city}站門票`});
+      if(points()<TOUR_TIX){ toast("積分不夠，先補充積分吧"); break; } S.set(K.points,points()-TOUR_TIX); tx[st.id]=Date.now(); S.set(K.tourTix,tx); recordSale("tour",{gid:tr.gid,pts:TOUR_TIX,label:`${tr.title}・${st.city}站門票`});
       toast(`買到${st.city}站的票了，時間到就能進場`); lsRerender(); break; }
+    case "tourBuyAll": { const tr=tourOf(t.dataset.v); layer.innerHTML=""; if(!tr) break; if(isSelfGid(tr.gid)){ toast(selfBuyMsg()); break; } const rest=tourRest(tr); if(rest.length<2) break; const cost=Math.round(rest.length*TOUR_TIX*.9);
+      if(points()<cost){ toast("積分不夠，先補充積分吧"); break; } S.set(K.points,points()-cost); const tx=myTix(); rest.forEach(s=>tx[s.id]=Date.now()); S.set(K.tourTix,tx); recordSale("tour",{gid:tr.gid,pts:cost,label:`${tr.title}・全部站門票（${rest.length} 站）`});
+      toast(`買到 ${rest.length} 站的票了，時間到就能進場`); lsRerender(); break; }
     case "trNew": ui.trDraft={title:"",stops:[],city:TOUR_CITIES[0][0],when:""}; lsRerender(); break;
     case "trCancel": ui.trDraft=null; lsRerender(); break;
     case "trStopAdd": { trKeep(); const d=ui.trDraft; if(!d) break; const ts=d.when?new Date(d.when).getTime():NaN; if(!ts||isNaN(ts)){ toast("請選日期和時間"); break; } if(ts<Date.now()+36e5){ toast("時間要在一小時後"); break; }
@@ -10852,7 +10878,7 @@ document.addEventListener("click",e=>{
     case "thOpen": ui.thPvDark=document.documentElement.getAttribute("data-theme")==="dark"; location.hash="#/"+session().role+"/tint?id="+t.dataset.v; break;
     case "thPv": ui.thPvDark=t.dataset.v==="1"; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "thLook": location.hash="#/"+session().role+"/look"; break;
-    case "thBuy": { const x=thById(t.dataset.v); if(!x) break; if(!x.price){ thBuy(x.id); break; } iosAlert("購買主題",`用 ${fmt(x.price)} 點購買「${esc(x.name)}」？`,`<button data-a="tCloseLayer">取消</button><button data-a="thBuyOk" data-v="${x.id}">購買</button>`); break; }
+    case "thBuy": { const x=thById(t.dataset.v); if(!x) break; if(!x.price){ thBuy(x.id); break; } iosAlert("購買主題",`用 ${fmt(x.price)} 積分購買「${esc(x.name)}」？`,`<button data-a="tCloseLayer">取消</button><button data-a="thBuyOk" data-v="${x.id}">購買</button>`); break; }
     case "thBuyOk": thBuy(t.dataset.v); break;
     case "thUse": thUse(t.dataset.v); break;
     case "thDel": { const id=t.dataset.v, x=thById(id); iosAlert("刪除主題",`要刪除「${esc(x?x.name:"")}」嗎？刪除後要重新到 ${TH_STORE} 下載。`,`<button data-a="tCloseLayer">取消</button><button data-a="thDelOk" data-v="${id}" class="danger">刪除</button>`); break; }
@@ -10912,7 +10938,7 @@ document.addEventListener("click",e=>{
       ui.annDraft=null; layer.innerHTML=""; render(); toast("已用HAECHU官方發布"); break; }
     case "uniLives": { const L=getLives().filter(l=>!l.endTs&&l.member!==uniMe()); iosSheet(L.map(l=>[`強制結束・${esc(artName(l.member,"feed"))}「${esc(l.title)}」`,"admEndLive",`data-id="${l.id}"`])); break; }
     case "ptP": ui.ptP=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
-    case "ptShare": iosAlert("藝人分得比例","藝人收到的點數裡，有幾 % 歸藝人（其餘是扣除的部分）",`<button data-a="tCloseLayer">取消</button><button data-a="ptShareOk">儲存</button>`,`<label class="pt-in"><input id="ptShareIn" type="number" inputmode="numeric" min="0" max="100" value="${revShare()}"><span>%</span></label>`); break;
+    case "ptShare": iosAlert("藝人分得比例","藝人收到的積分裡，有幾 % 歸藝人（其餘是扣除的部分）",`<button data-a="tCloseLayer">取消</button><button data-a="ptShareOk">儲存</button>`,`<label class="pt-in"><input id="ptShareIn" type="number" inputmode="numeric" min="0" max="100" value="${revShare()}"><span>%</span></label>`); break;
     case "ptShareOk": { const v=Math.max(0,Math.min(100,parseInt((document.getElementById("ptShareIn")||{}).value,10)||0)); S.set(K.revShare,v); layer.innerHTML=""; render(); toast(`已改成 ${v}%`); break; }
     case "postMod": { const p=getPosts().find(x=>x.id===t.dataset.id); if(!p) break; iosSheet([[p.hidden?"恢復顯示":"隱藏這則","hide",`data-id="${p.id}"`],["刪除","admDel",`data-id="${p.id}"`]]); break; }
     case "thGuide": openThGuide(); break;
@@ -10924,7 +10950,7 @@ document.addEventListener("click",e=>{
     case "fsDemoFan": fsDemoLive(false); location.hash="#/fan/core?p=fansign&id=fsshow"; window.scrollTo(0,0); break;
     case "fsDemoDesk": fsDemoLive(true); location.hash="#/artist?tab=foc&p=fansign&id=fsshow"; window.scrollTo(0,0); break;
     case "fsJoin": if(fsJoin(t.dataset.v,t.dataset.m)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`報名成功${t.dataset.m?"（"+artName(t.dataset.m,"feed")+"）":""}！目前 1 次機會 💜`); } break;
-    case "fsBuy": { const ev=fsGet(t.dataset.v), mid=t.dataset.m; if(!ev) break; ask(`買一張 ${esc(fsName(ev))} 專輯（800 點），${mid?esc(artName(mid,"feed"))+" 的":""}抽籤機會多 1 次。`,()=>{ if(fsBuy(ev.id,mid)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`目前 ${fsEntries(fsGet(ev.id),mid)[FS_ME]} 次機會 💿`); } },{title:"買專輯增加機會",ok:"買專輯",danger:false}); break; }
+    case "fsBuy": { const ev=fsGet(t.dataset.v), mid=t.dataset.m; if(!ev) break; ask(`買一張 ${esc(fsName(ev))} 專輯（${fmt(MERCH.find(x=>x.k==="album").pts)} 積分），${mid?esc(artName(mid,"feed"))+" 的":""}抽籤機會多 1 次。`,()=>{ if(fsBuy(ev.id,mid)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`目前 ${fsEntries(fsGet(ev.id),mid)[FS_ME]} 次機會 💿`); } },{title:"買專輯增加機會",ok:"買專輯",danger:false}); break; }
     case "fsNote": { const ev=fsGet(t.dataset.v); if(!ev) break; const x=(fsMySlots(ev)[0]||{}).s||{}; ui.fsGreet=[...(x.greet||[])];
       tieModal(ev.toSign?"簽售資料":"想問的話",`${ev.toSign?`<span class="fs-f-lab">To 簽的名字（只能用韓文或英文，不能有符號）</span><input id="fsToIn" class="a-nick-in" maxlength="12" placeholder="輸入文字" value="${esc(x.toName||"")}">
         <span class="fs-f-lab">想要的祝福語（最多選 2 個，不選就交給成員發揮）</span><span class="fs-greets">${FS_GREETS.map(g=>`<button class="chip ${ui.fsGreet.includes(g)?"on":""}" data-a="fsGreet" data-v="${g}">${g}</button>`).join("")}</span>`:""}
@@ -11034,13 +11060,16 @@ document.addEventListener("click",e=>{
     case "concertOff": concertOff(); break;
     case "goSubs": layer.innerHTML=""; ui.srch=null; go("fan",null,"shop"); window.scrollTo(0,0); break;
     case "buyOpen": openBuySheet(t.dataset.m); break;
-    case "buyPlan": { ui.buyPlan=t.dataset.v; const pl=PLANS.find(x=>x.id===ui.buyPlan);
+    case "buyPlan": { ui.buyPlan=t.dataset.v; const pl=tiePlans(t.dataset.m).find(x=>x.id===ui.buyPlan)||PLANS[1];
       layer.querySelectorAll(".plan").forEach(b=>{ const on=b.dataset.v===ui.buyPlan; b.classList.toggle("on",on); b.setAttribute("aria-pressed",on); });
-      const ok=layer.querySelector('[data-a="buyOk"]'); if(ok) ok.textContent=tieFree(t.dataset.m)?"免費訂閱":`用 ${fmt(pl.pts)} 點購買`; break; }
-    case "buyOk": { const pl=PLANS.find(x=>x.id===(ui.buyPlan||"d30")), mid=t.dataset.m, m=MEMBERS[mid]; if(m&&isSelfGid(m.group)){ layer.innerHTML=""; toast(selfBuyMsg()); break; }
+      const ok=layer.querySelector('[data-a="buyOk"]'); if(ok) ok.textContent=(pl.id==="grp"?!pl.pts:tieFree(t.dataset.m))?"免費訂閱":`用 ${fmt(pl.pts)} 積分購買`; break; }
+    case "buyOk": { const mid=t.dataset.m, m=MEMBERS[mid], pl=tiePlans(mid).find(x=>x.id===(ui.buyPlan||"d30"))||PLANS[1]; if(m&&isSelfGid(m.group)){ layer.innerHTML=""; toast(selfBuyMsg()); break; }
       const ni=document.getElementById("buyNick"); if(ni){ const v=ni.value.trim(); if(!v){ toast("請先設定你的暱稱"); ni.focus(); break; } if(nameBlock(v)) break; saveTieSet(mid,{nickname:v}); } ui.buyNick=null;
+      if(pl.id==="grp"){ if(points()<pl.pts){ layer.innerHTML=""; toast("積分不足，先補充積分吧"); break; } const nick=(S.get(K.tieSet,{})[mid]||{}).nickname;
+        pl.ids.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,30,tieFree(id)?0:TIE_GRP); });
+        layer.innerHTML=""; render(); toast(`已訂閱 ${groupOf(m.group).name} 全團 TIE（30 天）💜`); break; }
       const res=buyTie(mid,pl.days,planPts(mid,pl)); layer.innerHTML="";
-      if(res.type==="nopts"){ toast("點數不足，先補充點數吧"); break; }
+      if(res.type==="nopts"){ toast("積分不足，先補充積分吧"); break; }
       render();
       if(res.type==="renew") toast(`已續訂 ${artName(mid,"tie")}，愛心天數保留 +${res.days} 💜`);
       break; }
@@ -11050,7 +11079,7 @@ document.addEventListener("click",e=>{
     case "wsPlus": ui.banF="all"; openAllBan(); break;
     case "banF": ui.banF=t.dataset.v; openAllBan(); break;
     case "banGo": layer.innerHTML=""; openProd(t.dataset.v); break;
-    case "addPts": S.set(K.points,points()+3000); render(); toast("示範：已補充 3,000 點"); break;
+    case "addPts": S.set(K.points,points()+3000); render(); toast("示範：已補充 3,000 積分"); break;
     case "tWelcome": { const cur=welcomeOf(session().member||uniMe());
       tieModal("TIE歡迎語","粉絲新訂閱你的 TIE 時，系統會立刻用你的名義送出這句話。打 @@@ 的地方，每位粉絲看到的會是自己的暱稱。",`<textarea id="welTxt" class="t-wel-ta" maxlength="200" placeholder="輸入文字">${esc(cur)}</textarea><button type="button" class="t-nick wel-nick" data-a="welNick">@@@ 插入粉絲暱稱</button><button class="t-mbtn main" data-a="tWelcomeSave">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "welNick": { const ta=document.getElementById("welTxt"); if(!ta) break; const a0=ta.selectionStart??ta.value.length, b0=ta.selectionEnd??a0; ta.value=ta.value.slice(0,a0)+"@@@"+ta.value.slice(b0); ta.focus(); ta.selectionStart=ta.selectionEnd=a0+3; break; }
@@ -11111,10 +11140,10 @@ document.addEventListener("click",e=>{
       L.push(id); S.set(K.boxKeep,L); toast(`已收藏到 ${WHISPER_NAME} BOX`); break; }
     case "ptTo": { const d=ui.ptD; if(!d) break; const v=t.dataset.v; d.to=d.to.includes(v)?d.to.filter(x=>x!==v):[...d.to,v]; lsRerender(); break; }
     case "ptSign": if(ui.ptD){ ui.ptD.sign=+t.dataset.v; lsRerender(); } break;
-    case "ptGo": { const d=ui.ptD; if(!d) break; const n=Math.round(+String(d.n).replace(/[^\d]/g,"")); if(!d.to.length){ toast("先選要給誰"); break; } if(!n){ toast("點數要填數字"); break; }
-      const amt=n*d.sign, by=myEmail(), now=Date.now(), L=S.get(K.ptGrants,[])||[];
-      d.to.forEach((e,i)=>L.push({id:"g"+now.toString(36)+i+Math.random().toString(36).slice(2,5),to:e,n:amt,why:d.why.trim(),by,ts:now}));
-      S.set(K.ptGrants,L.slice(-2000)); toast(`已${amt>=0?"加":"扣"} ${fmt(n)} 點給 ${d.to.length} 個帳號`); ui.ptD={to:[],n:"",why:"",q:"",sign:1}; lsRerender(); break; }
+    case "ptGo": { const d=ui.ptD; if(!d) break; const n=Math.round(+String(d.n).replace(/[^\d]/g,"")); if(!d.to.length){ toast("先選要給誰"); break; } if(!n){ toast("積分要填數字"); break; }
+      const set=d.sign===0, amt=set?n:n*d.sign, by=myEmail(), now=Date.now(), L=S.get(K.ptGrants,[])||[];
+      d.to.forEach((e,i)=>L.push({id:"g"+now.toString(36)+i+Math.random().toString(36).slice(2,5),to:e,n:amt,why:d.why.trim(),by,ts:now,...(set?{set:true}:{})}));
+      S.set(K.ptGrants,L.slice(-2000)); toast(set?`已把 ${d.to.length} 個帳號的積分設定為 ${fmt(n)}`:`已${amt>=0?"加":"扣"} ${fmt(n)} 積分給 ${d.to.length} 個帳號`); ui.ptD={to:[],n:"",why:"",q:"",sign:1}; lsRerender(); break; }
     case "boxEdit": ui.boxEdit=!ui.boxEdit; render(); break;
     case "boxDel": { if(t.closest(".ph-view,.ios-w")) layer.innerHTML=""; S.set(K.boxKeep,(S.get(K.boxKeep,[])||[]).filter(x=>x!==t.dataset.id)); if(!(S.get(K.boxKeep,[])||[]).length) ui.boxEdit=false; render(); break; }
     case "tTrSheet": { layer.innerHTML=""; const b=document.querySelector(`[data-a="tTranslate"][data-id="${t.dataset.id}"]`); if(b) b.click(); else { const s2=new Set(S.get(K.tieTr,[])); s2.add(t.dataset.id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
@@ -11507,7 +11536,7 @@ function viewTint(id){
   if(id&&thById(id)){ const t=thById(id), mine=own.includes(id), both=t.modes==="both", dk=both?!!ui.thPvDark:t.modes==="dark";
     return head+`<main class="page th-det">
       <div class="thd-top">${thCover(t,"big")}<div class="thd-info"><small>${esc(thFor(t))}${t.by==="admin"&&t.scope!=="app"?" 官方":""}</small><h2>${esc(t.name)}</h2><small>有效期間・無期限</small>
-        <b class="thd-price">${t.price?`<i>✦</i>${fmt(t.price)}`:"免費"}</b><small>我的點數：${fmt(points())}</small></div></div>
+        <b class="thd-price">${t.price?`<i>✦</i>${fmt(t.price)}`:"免費"}</b><small>我的積分：${fmt(points())}</small></div></div>
       <div class="thd-btns">${mine?(cur===id?`<button class="btn btn-soft btn-block" disabled>使用中</button>`:`<button class="btn btn-main btn-block" data-a="thUse" data-v="${id}">套用</button>`)
         :`<button class="btn btn-main btn-block" data-a="thBuy" data-v="${id}">${t.price?"購買":"免費下載"}</button>`}</div>
       ${t.desc?`<p class="thd-desc">${esc(t.desc)}</p>`:""}
@@ -11519,14 +11548,14 @@ function viewTint(id){
   const sort=L=>L.slice().sort((a,b)=>(f.includes(b.gid)-f.includes(a.gid))||(b.ts-a.ts));
   const grid=L=>L.length?`<div class="th-grid">${sort(L).map(t=>`<button class="th-it" data-a="thOpen" data-v="${t.id}">${thCover(t)}${own.includes(t.id)?`<em class="th-own">${cur===t.id?"使用中":t.scope==="app"?"已下載":"已擁有"}</em>`:""}<b>${esc(t.name)}</b><small>${t.price?`✦ ${fmt(t.price)}`:"免費"}</small></button>`).join("")}</div>`:`<p class="me-none">還沒有主題</p>`;
   return head+`<main class="page">
-    <section class="card pts"><div><span>我的點數</span><b>${fmt(points())} <i>✦</i></b></div><button class="btn btn-soft btn-sm" data-a="thLook">我的主題</button></section>
+    <section class="card pts"><div><span>我的積分</span><b>${fmt(points())} <i>✦</i></b></div><button class="btn btn-soft btn-sm" data-a="thLook">我的主題</button></section>
     <h2 class="mf-h">HAECHU官方・免費</h2>${grid(on.filter(t=>t.scope==="app"))}
     <h2 class="mf-h">團體主題</h2>${grid(on.filter(t=>t.scope==="group"))}
     <h2 class="mf-h">藝人主題</h2>${grid(on.filter(t=>t.scope==="member"))}
   </main>`;
 }
 function thBuy(id){ const t=thById(id); if(!t) return;
-  if(t.price&&points()<t.price){ layer.innerHTML=""; toast("點數不夠"); return; }
+  if(t.price&&points()<t.price){ layer.innerHTML=""; toast("積分不夠"); return; }
   if(t.price) S.set(K.points,points()-t.price);
   S.set(acK(K.thOwned),[...new Set([...S.get(acK(K.thOwned),[]),id])]);
   recordSale("theme",{gid:t.scope==="member"?null:t.gid,mid:t.scope==="member"?t.mid:null,pts:t.price||0,label:`主題・${t.name}`});
@@ -11598,7 +11627,7 @@ function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id),
       ${lab("介紹")}<label class="field th-ta"><textarea class="th-in" data-f="desc" maxlength="200" rows="3" placeholder="輸入文字">${esc(d.desc||"")}</textarea></label>
       ${lab("對象")}<div class="chips wrap">${adm?`<button class="chip ${d.scope==="app"?"on":""}" data-a="thScope" data-v="app">HAECHU官方</button>`:""}<button class="chip ${d.scope==="group"?"on":""}" data-a="thScope" data-v="group">團</button><button class="chip ${d.scope==="member"?"on":""}" data-a="thScope" data-v="member">藝人</button></div>
       <div class="chips wrap">${d.scope==="app"?"":d.scope==="group"?groups.map(g=>`<button class="chip ${d.gid===g.id?"on":""}" data-a="thWho" data-v="${g.id}">${esc(g.name)}</button>`).join(""):members.map(([mid,m])=>`<button class="chip ${d.mid===mid?"on":""}" data-a="thWho" data-v="${mid}">${esc(m.name)}</button>`).join("")}</div>
-      ${lab("價格（點數，0 是免費）")}<label class="field"><input class="th-in" data-f="price" type="number" inputmode="numeric" min="0" max="99999" placeholder="輸入文字" value="${d.price||0}"></label>
+      ${lab("價格（積分，0 是免費）")}<label class="field"><input class="th-in" data-f="price" type="number" inputmode="numeric" min="0" max="99999" placeholder="輸入文字" value="${d.price||0}"></label>
       ${lab("淺色／深色")}<div class="chips wrap">${[["both","淺色＋深色"],["light","只有淺色"],["dark","只有深色"]].map(([k,l])=>`<button class="chip ${d.modes===k?"on":""}" data-a="thModes" data-v="${k}">${l}</button>`).join("")}</div>
     </section>
     <section class="card studio"><div class="th-edh"><h3>配色</h3>${d.modes==="both"?`<div class="seg2 th-seg sm" style="--i:${ev==="dark"?1:0}"><i class="seg2-ind"></i><button class="${ev==="dark"?"":"on"}" data-a="thEdV" data-v="light">淺色版</button><button class="${ev==="dark"?"on":""}" data-a="thEdV" data-v="dark">深色版</button></div>`:""}</div>
@@ -11627,7 +11656,7 @@ function thSave(id){ const s=session(), adm=s.role==="admin", d=thDraft(id);
   }catch(e){ toast("圖片太大，存不下來，請換小一點的圖"); return; }
   ui.thDraft=null; applyTheme(); toast(adm?"已上架到 "+TH_STORE:"已送出，等管理員審核"); navBack(); }
 const TH_ST={on:"上架中",off:"已下架",pending:"審核中",rejected:"沒有通過"};
-function thAdminRow(t,mine){ return `<div class="th-ar">${thCover(t,"row")}<div class="th-ar-b"><b>${esc(t.name)}</b><small>${t.scope==="member"?"藝人":"團"}・${esc(thFor(t))}・${thModeTxt(t)}・${t.price?fmt(t.price)+" 點":"免費"}</small><span class="th-st ${t.status}">${TH_ST[t.status]||""}${t.by==="artist"&&!mine?"・藝人申請":""}</span>${(()=>{ const n=thCheck(t).length; return n?`<span class="th-warn">⚠ ${n} 個提醒</span>`:`<span class="th-good">✓ 自動檢查沒問題</span>`; })()}
+function thAdminRow(t,mine){ return `<div class="th-ar">${thCover(t,"row")}<div class="th-ar-b"><b>${esc(t.name)}</b><small>${t.scope==="member"?"藝人":"團"}・${esc(thFor(t))}・${thModeTxt(t)}・${t.price?fmt(t.price)+" 積分":"免費"}</small><span class="th-st ${t.status}">${TH_ST[t.status]||""}${t.by==="artist"&&!mine?"・藝人申請":""}</span>${(()=>{ const n=thCheck(t).length; return n?`<span class="th-warn">⚠ ${n} 個提醒</span>`:`<span class="th-good">✓ 自動檢查沒問題</span>`; })()}
   <div class="th-ar-a"><button class="btn btn-soft btn-sm" data-a="thOpen" data-v="${t.id}">預覽</button>${mine?(t.status!=="on"?`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button>`:""):t.status==="pending"?`<button class="btn btn-main btn-sm" data-a="thOk" data-v="${t.id}">通過</button><button class="btn btn-soft btn-sm" data-a="thNo" data-v="${t.id}">退回</button>`
     :`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button><button class="btn btn-soft btn-sm" data-a="thOnOff" data-v="${t.id}">${t.status==="on"?"下架":"上架"}</button>`}</div></div></div>`; }
 function viewThAdmin(){ const L=getThemes().filter(t=>t.status!=="deleted"), pend=L.filter(t=>t.status==="pending"), rest=L.filter(t=>t.status!=="pending");
@@ -11980,7 +12009,7 @@ function uniAnnOpen(){ const d=ui.annDraft||(ui.annDraft={to:"all",title:"",body
     <button class="ann-mg" data-a="uniGo" data-v="#/admin?tab=announce">管理已發布的公告 ›</button></div></div>`,"ann"); }
 const uniAnnKeep=()=>{ const d=ui.annDraft; if(!d) return; const ti=document.getElementById("annTi"), bo=document.getElementById("annBo"); if(ti) d.title=ti.value; if(bo) d.body=bo.value; };
 
-/* ---------- 點數統計（每位藝人：收到、扣除、實得；粉絲端買的、藝人端的都算） ---------- */
+/* ---------- 積分統計（每位藝人：收到、扣除、實得；粉絲端買的、藝人端的都算） ---------- */
 const PT_T={tour:"世巡門票",tie:WHISPER_NAME+" 券",membership:"Membership",merch:"周邊",gacha:"抽卡",theme:"主題"};
 function ptSince(){ const p=ui.ptP||"30"; return p==="all"?0:Date.now()-(+p)*864e5; }
 function ptPeriodChips(){ const p=ui.ptP||"30"; return `<div class="seg2 pt-seg" style="--i:${["7","30","all"].indexOf(p)}"><i class="seg2-ind"></i>${[["7","7 天"],["30","30 天"],["all","全部"]].map(([k,l])=>`<button class="${p===k?"on":""}" data-a="ptP" data-v="${k}">${l}</button>`).join("")}</div>`; }
@@ -12000,7 +12029,7 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
     <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
     <p class="pt-rule">${WHISPER_NAME} 券全部算給這位藝人；Membership、周邊、主題等算給整個團，再平均分給團裡的藝人。實得是收到的 ${sh}%。</p>
     <div class="section-h">明細<span class="muted">${L.length} 筆</span></div>
-    ${L.length?`<section class="card pt-list">${L.map(x=>`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(saleLbl(x))}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`).join("")}</section>`:`<p class="me-none">這段時間還沒有點數</p>`}
+    ${L.length?`<section class="card pt-list">${L.map(x=>`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(saleLbl(x))}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`).join("")}</section>`:`<p class="me-none">這段時間還沒有積分</p>`}
   </main>`; }
 /* 還沒有任何團：要團才能做的設定，先帶去新增團 */
 const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增藝人</button></div>`;
@@ -12290,19 +12319,19 @@ const TOURS={
     [".cmx-fab","＋","寫信給藝人，或發一則貼文。"]],
   "fan:grpfab":[['.cmx-fabm [data-a="cmLetterTo"]',"粉絲信","寫一封信給整個團，或給你最喜歡的那一位 💌"],
     ['.cmx-fabm [data-a="cmGo"]',"貼文","在社群發一則貼文，跟其他粉絲分享。"]],
-  "fan:core":[['[data-a="coreGo"][data-v="cards"]',"小卡","用點數抽小卡，收進你的卡冊。"],
+  "fan:core":[['[data-a="coreGo"][data-v="cards"]',"小卡","用積分抽小卡，收進你的卡冊。"],
     ['[data-a="coreGo"][data-v="promo"]',"打歌","藝人打歌的時候，幫他投票衝一位！"],
     ['[data-a="coreGo"][data-v="concert"]',"演唱會","演唱會開始時進場，舉起應援棒一起變成燈海。開演前可以先做應援板，互動歌的時候舉起來，藝人可能會回應你！"],
     ['[data-a="coreGo"][data-v="sns"]',"SNS","發照片和限時動態、追蹤朋友、傳私訊。"],
     ['[data-a="coreLocked"],[data-a="coreGo"][data-v="survival"]',"選秀","選秀開始後，每天都能幫喜歡的練習生投票。"],
     ['[data-a="coreGo"][data-v="fsl"]',"簽售","報名簽售，抽中就能跟藝人視訊聊天！"]],
-  "fan:shop":[[".ws-pts","點數","你的點數還有多少。"],
+  "fan:shop":[[".ws-pts","積分","你的積分還有多少。"],
     [".th-shop","TINT","換一套主題，整個 App 都跟著變。"],
     [".ws-sl","推薦","現在買得到的 Membership 和專輯，左右滑看更多。"],
     [".ws-my","My Artist","看你喜歡的團有哪些商品。"],
     [".wsp-pc","商品","Membership、專輯、應援棒、周邊和 TIE 券。"],
     [".pass","我的 TIE 券","還剩幾天一目瞭然，快到期可以直接續訂。"]],
-  "fan:me":[[".me-card","我的檔案","你的名字、追蹤的團、點數和 TIE 券。"],
+  "fan:me":[[".me-card","我的檔案","你的名字、追蹤的團、積分和 TIE 券。"],
     ['[data-a="meNickEd"]',"名稱","點筆可以改名字。TIE 聊天室裡的暱稱要到聊天室設定改。"],
     ['[data-a="meSec"][data-v="ms"]',"會員","你加入的 Membership。"],
     ['[data-a="meSec"][data-v="tie"]',"TIE 券","你正在訂閱的 TIE。"],
@@ -12355,7 +12384,7 @@ const TOURS={
   "artist:me":[
     ['[data-a="aNick"]',"粉絲的愛稱","幫 Membership 粉絲取一個專屬的愛稱。"],
     ['[data-a="thMine"]',"做主題","設計一套你自己的 App 主題，通過審核後就會上架。"],
-    ['[data-a="tab"][data-v="points"]',"點數收入","你收到了多少點數。"],
+    ['[data-a="tab"][data-v="points"]',"積分收入","你收到了多少積分。"],
     ['[data-a="swapRole"]',"切換到粉絲","回到你的粉絲帳號，去追其他藝人。"],
     ['[data-a="theme"]',"外觀","淺色、深色，還有主題。"],
     ['[data-a="coachAgain"]',"重看教學","想再看一次，隨時點這裡。"]],
@@ -12373,7 +12402,7 @@ const TOURS={
     ["#focStage","本週階段","宣傳週、排名週或打歌週。不設定就照日期走。"],
     ['[data-a="focSave"]',"儲存","按儲存，藝人和粉絲那邊馬上更新。"]],
   "admin:shopadm":[['[data-v="#/admin?tab=albums"]',"專輯與店家","專輯、版本、特典和店家。"],['[data-v="#/admin/themes"]',"主題","審核藝人做的主題，也可以自己上架。"]],
-  "admin:people":[['[data-v="#/admin?tab=banned"]',"禁用字詞","不想在 HAECHU 看到的字，放進來就傳不出去。"],['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],['[data-v="#/admin?tab=revenue"]',"點數統計","每位藝人的點數收入。"],['[data-v="#/admin?tab=translate"]',"翻譯","翻譯服務的設定。"],['[data-a="theme"]',"外觀","淺色、深色，還有主題。"]]};
+  "admin:people":[['[data-v="#/admin?tab=banned"]',"禁用字詞","不想在 HAECHU 看到的字，放進來就傳不出去。"],['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],['[data-v="#/admin?tab=revenue"]',"積分統計","每位藝人的積分收入。"],['[data-v="#/admin?tab=translate"]',"翻譯","翻譯服務的設定。"],['[data-a="theme"]',"外觀","淺色、深色，還有主題。"]]};
 function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="fan"&&r.sub==="chat"&&!r.p) return "fan:chat";
   if(r.role==="fan"&&r.sub==="grp"&&!r.p) return "fan:grp";
@@ -12486,8 +12515,8 @@ function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").l
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${I.user}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=debut">${I.star}出道申請<span class="r">${debutWait()?`<i class="seg-dot"></i>${debutWait()} 件待審核`:"沒有新申請"}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${I.user}藝人與團<span class="r">${GROUPS.length} 團</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${I.star}加點數</button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${I.star}點數統計</button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${I.star}加積分</button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${I.star}積分統計</button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=translate">${I.gear}翻譯服務<span class="r">${trEngine()}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=banned">${I.gear}禁用字詞<span class="r">${bannedList().length} 個</span></button></section>
     <div class="section-h">App</div>
@@ -12569,7 +12598,7 @@ document.addEventListener("input",e=>{ if(e.target&&e.target.id==="bdText"&&ui.b
 setInterval(()=>{ const w=document.getElementById("bdWall"); if(!w) return; const s=session(); if(!s||s.role!=="artist") return; const c=curConcert(); if(!c) return; if(!c.id) c.id="demo-cc"; const tl=ccTimeline(c); if(tl&&!tl.ia) return; bdSim(c); w.innerHTML=bdWallHtml(c,s.member); },4000);
 setInterval(()=>{ const s=session(); if(!s||s.role!=="fan") return; const L=bdAll(), x=L.find(y=>y.mine&&y.ans&&!y.seen); if(!x) return; x.seen=true; bdSave(L);
   const c=bdFind(x.cid), by=MEMBERS[x.ans.by], nm=by?artName(x.ans.by,"feed"):"", msg=x.act?nm+x.ans.text:`${nm}：${x.ans.text}`; S.set(K.points,points()+30);
-  const d=document.createElement("div"); d.className="bd-ans"; d.innerHTML=`${bdHtml(x,c?c.gid:"",true)}<b>${esc(msg)}</b><small>被藝人回應了，+30 點</small>`; document.body.appendChild(d); try{ confetti(innerWidth/2,innerHeight/3); }catch(e){} setTimeout(()=>d.remove(),5000); },1500);
+  const d=document.createElement("div"); d.className="bd-ans"; d.innerHTML=`${bdHtml(x,c?c.gid:"",true)}<b>${esc(msg)}</b><small>被藝人回應了，+30 積分</small>`; document.body.appendChild(d); try{ confetti(innerWidth/2,innerHeight/3); }catch(e){} setTimeout(()=>d.remove(),5000); },1500);
 </script>
 </body>
 </html>
