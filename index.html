@@ -4394,6 +4394,8 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .ac-go svg{width:16px;height:16px}
 .ac-pw{font-size:16px;letter-spacing:.06em;-webkit-user-select:text;user-select:text}
 .db-row{display:flex;align-items:center;gap:12px;padding:12px 4px}.db-row+.db-row{border-top:1px solid var(--line,rgba(0,0,0,.06))}.db-av{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}.db-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.db-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.db-tx small{font-size:12px;opacity:.6}.db-act{display:flex;gap:6px;flex:none}.db-b{min-width:0!important;padding:0 12px!important;height:32px!important;margin:0!important}
+.db-up{display:flex;gap:10px;margin-top:12px}.db-slot{position:relative;flex:1;aspect-ratio:4/5;border-radius:14px;border:1.5px dashed rgba(139,92,246,.35);background:rgba(139,92,246,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;color:var(--violet,#8B5CF6)}.db-slot b{font-size:26px;font-weight:400}.db-slot small{font-size:12px;opacity:.8}.db-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.db-slot img~small{white-space:nowrap;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.45);color:#fff;padding:2px 8px;border-radius:999px;opacity:1}.db-slot i,.db-th i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-style:normal;display:grid;place-items:center;font-size:13px}.db-busy{margin:8px 0 0;font-size:12px;opacity:.7;text-align:center}
+.db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
 .nw-acts{display:flex;gap:6px;flex:none}
 </style>
 </head>
@@ -4737,7 +4739,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261024080328";
+const BUILD="20261026103522";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6246,9 +6248,18 @@ function debutSync(){ try{ const s=session(), d=myDebut(); if(!s||s.home||!d||d.
 function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="no"?"未通過":"";
   return `<div class="section-h">出道</div><section class="card"><button class="list-btn" data-a="debutAsk">${I.star}申請出道<span class="r">${st}</span></button></section>`; }
 function debutAdmHtml(){ const L=getDebut().slice().sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
-  const row=x=>`<div class="db-row"><span class="db-av" style="background:${grad(x.g||0)}">${esc((x.name||"?")[0])}</span><span class="db-tx"><b>${esc(x.name)}</b><small>${esc(acctUser(x.email))}・${ago(x.ts)}</small></span>${x.status==="wait"?`<span class="db-act"><button class="btn btn-sm btn-main db-b" data-a="dbOk" data-v="${x.id}">核准</button><button class="btn btn-sm btn-soft db-b" data-a="dbNo" data-v="${x.id}">不核准</button></span>`:`<span class="r muted">${x.status==="ok"?"已出道":"未通過"}</span>`}</div>`;
+  const row=x=>`<div class="db-row"><span class="db-av" style="background:${grad(x.g||0)}">${esc((x.name||"?")[0])}</span><span class="db-tx"><b>${esc(x.name)}</b><small>${esc(acctUser(x.email))}・${ago(x.ts)}</small>${dbMedia(x)}</span>${x.status==="wait"?`<span class="db-act"><button class="btn btn-sm btn-main db-b" data-a="dbOk" data-v="${x.id}">核准</button><button class="btn btn-sm btn-soft db-b" data-a="dbNo" data-v="${x.id}">不核准</button></span>`:`<span class="r muted">${x.status==="ok"?"已出道":"未通過"}</span>`}</div>`;
   return `<main class="page">${W.length?`<section class="card">${W.map(row).join("")}</section>`:`<div class="t-empty"><span class="t-empty-ico">${I.star}</span><p>目前沒有申請</p></div>`}${H.length?`<div class="section-h">紀錄</div><section class="card">${H.slice(0,30).map(row).join("")}</section>`:""}</main>`; }
 const debutWait=()=>getDebut().filter(x=>x.status==="wait").length;
+/* 申請出道的表單：藝名＋Teaser 照片＋MV（兩個都必填，選了就先上傳） */
+const dbKeep=()=>{ const f=ui.dbF, i=document.getElementById("dbName"); if(f&&i) f.name=i.value; };
+function debutForm(){ const f=ui.dbF||(ui.dbF={name:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""});
+  const tp=f.tPrev||f.teaser, t=tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`, m=f.mv?(f.mPrev?`<img src="${esc(f.mPrev)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
+  tieModal("申請出道",`<span class="fs-f-lab">藝名</span><input id="dbName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(f.name)}">
+    <div class="db-up"><button class="db-slot t" data-a="dbTeaser" aria-label="Teaser 照片">${t}<small>Teaser 照片</small></button><button class="db-slot v" data-a="dbMv" aria-label="MV">${m}<small>MV</small></button></div>${f.busy?`<p class="db-busy">${f.busy}</p>`:""}`,
+    `<button class="t-mbtn main" data-a="debutOk" ${f.busy?"disabled":""}>送出</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
+const dbReform=()=>{ if(document.getElementById("dbName")){ dbKeep(); debutForm(); } };
+const dbMedia=x=>x.teaser||x.mv?`<span class="db-media">${x.teaser?`<button class="db-th" data-a="dbTsr" data-v="${x.id}" aria-label="Teaser 照片"><img src="${esc(x.teaser)}" alt=""></button>`:""}${x.mv?`<button class="db-th v" data-a="dbMvPlay" data-v="${esc(x.mv.mid)}" aria-label="播放 MV">${x.mv.thumb?`<img data-mid="${esc(x.mv.thumb)}" alt="">`:""}<i>▶</i></button>`:""}</span>`:"";
 function selfGroup(){ const s=session(); if(!s) return null; const a=ACCOUNTS[s.email], mid=isUni()?uniMe():(a&&a.member||s.home||null); return mid&&MEMBERS[mid]?MEMBERS[mid].group:null; }
 const isSelfGid=gid=>!!gid&&gid===selfGroup();
 const selfBuyMsg=()=>{ const g=groupOf(selfGroup()); return g&&g.solo?"不能購買自己的商品":"不能購買自己團的商品"; };
@@ -10347,16 +10358,31 @@ document.addEventListener("click",e=>{
       g.name=nm; g.g=c; if(itr) g.intro=itr; else delete g.intro; if(MEMBERS[g.id+"_o"]) MEMBERS[g.id+"_o"].name=nm+" 官方"; if(g.solo) Object.keys(MEMBERS).forEach(k=>{ if(MEMBERS[k].group===g.id&&!MEMBERS[k].official) MEMBERS[k].name=nm; });
       layer.innerHTML=""; lsRerender(); toast("已儲存"); break; }
     case "debutAsk": { const d=myDebut();
-      if(d&&d.status==="wait"){ tieModal("申請出道",`<span class="info-row"><em>藝名</em>${esc(d.name)}</span><span class="info-row"><em>狀態</em>審核中</span>`,`<button class="t-mbtn" data-a="debutCancel" data-v="${d.id}">撤回申請</button><button class="t-mbtn main" data-a="tCloseLayer">好</button>`); break; }
-      tieModal("申請出道",`<span class="fs-f-lab">藝名</span><input id="dbName" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn main" data-a="debutOk">送出</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); setTimeout(()=>{ const i=document.getElementById("dbName"); if(i) i.focus(); },60); break; }
-    case "debutOk": { const n=((document.getElementById("dbName")||{}).value||"").trim(), em=myEmail(); if(!em) break; if(!n){ toast("請輸入藝名"); break; }
+      if(d&&d.status==="wait"){ tieModal("申請出道",`<span class="info-row"><em>藝名</em>${esc(d.name)}</span><span class="info-row"><em>狀態</em>審核中</span>${dbMedia(d)}`,`<button class="t-mbtn" data-a="debutCancel" data-v="${d.id}">撤回申請</button><button class="t-mbtn main" data-a="tCloseLayer">好</button>`); hydrateMedia(layer); break; }
+      debutForm(); break; }
+    case "dbTeaser": { dbKeep(); const f=ui.dbF; if(!f||f.busy) break; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:4/5,max:1350}); if(!c) return;
+        try{ const b=await shrinkImg(c,1350); f.tPrev=URL.createObjectURL(b); f.busy="上傳中…"; dbReform();
+          const url=(HB_ON&&await hbImgUrl("debut_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
+          if(f.teaser&&f.teaser!==url) mediaDel(f.teaser); f.teaser=url; f.busy=""; dbReform(); }catch(e){ f.busy=""; dbReform(); toast("這張圖讀不出來"); } }; pickClick(inp); break; }
+    case "dbMv": { dbKeep(); const f=ui.dbF; if(!f||f.busy) break; const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
+      inp.onchange=async()=>{ const file=inp.files&&inp.files[0]; if(!file) return; if(file.size>48*1024*1024){ toast("影片太大了，請小於 48MB"); return; }
+        f.busy="影片處理中…"; dbReform();
+        try{ const id="vv"+Date.now().toString(36), th=await videoThumb(file); await MDB.put(id,file); let thumb=null; if(th&&th.blob){ thumb=id+"_t"; await MDB.put(thumb,th.blob); }
+          f.mv={mid:id,thumb,dur:th&&th.dur||0}; f.mPrev=th&&th.blob?URL.createObjectURL(th.blob):""; f.busy=""; dbReform(); }catch(e){ f.busy=""; dbReform(); toast("這部影片讀不出來，換一部試試"); } }; pickClick(inp); break; }
+    case "dbTsr": { const x=getDebut().find(y=>y.id===t.dataset.v); if(!x||!x.teaser) break; setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="Teaser 照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><img src="${esc(x.teaser)}" alt=""></div>`,"photo"); break; }
+    case "dbMvPlay": playVideo(t.dataset.v); break;
+    case "debutOk": { dbKeep(); const f=ui.dbF||{}, n=(f.name||"").trim(), em=myEmail(); if(!em) break; if(f.busy){ toast(f.busy); break; } if(!n){ toast("請輸入藝名"); break; } if(!f.teaser){ toast("請放上 Teaser 照片"); break; } if(!f.mv){ toast("請放上 MV"); break; }
       const low=n.toLowerCase(); if(GROUPS.some(g=>g.name.toLowerCase()===low)||Object.values(MEMBERS).some(m=>!m.official&&String(m.name).toLowerCase()===low)||getDebut().some(x=>x.status==="wait"&&x.name.toLowerCase()===low)){ toast("已經有這個藝名了"); break; }
-      S.set(K.debut,[...getDebut(),{id:"db"+Date.now(),email:em,name:n,g:Math.floor(Math.random()*8),ts:Date.now(),status:"wait"}]); layer.innerHTML=""; render(); toast("已送出，等管理員核准"); break; }
-    case "debutCancel": { S.set(K.debut,getDebut().filter(x=>x.id!==t.dataset.v)); layer.innerHTML=""; render(); toast("已撤回申請"); break; }
+      S.set(K.debut,[...getDebut(),{id:"db"+Date.now(),email:em,name:n,g:Math.floor(Math.random()*8),ts:Date.now(),status:"wait",teaser:f.teaser,mv:f.mv}]); ui.dbF=null; layer.innerHTML=""; render(); toast("已送出，等管理員核准"); break; }
+    case "debutCancel": { const x0=getDebut().find(x=>x.id===t.dataset.v); if(x0&&x0.teaser) mediaDel(x0.teaser); S.set(K.debut,getDebut().filter(x=>x.id!==t.dataset.v)); layer.innerHTML=""; render(); toast("已撤回申請"); break; }
     case "dbOk": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x||x.status!=="wait") break; const n=x.name;
       if(GROUPS.some(g=>g.name===n)){ toast("已經有這個名字了"); break; } if(!ACCOUNTS[x.email]){ toast("找不到這個帳號"); break; } if(ACCOUNTS[x.email].member){ toast("這個帳號已經是藝人了"); break; }
       const id="g"+Date.now(), gc=x.g||0, g={id,name:n,g:gc,isNew:true,solo:true}, off={name:n+" 官方",group:id,g:gc,official:true}, mid="m"+Date.now(), m={name:n,group:id,g:gc};
       saveRoster(r=>{ r.groups.push(g); r.members[id+"_o"]=off; r.members[mid]=m; }); GROUPS.push(g); MEMBERS[id+"_o"]=off; MEMBERS[mid]=m; bindArtist(x.email,mid);
+      if(x.teaser){ const M={...(S.get(K.mPhoto,{})||{})}; M[mid]=x.teaser; S.set(K.mPhoto,M); const G={...(S.get(K.gPhoto,{})||{})}; G[id]=x.teaser; S.set(K.gPhoto,G); }   // Teaser 照＝藝人的 Teaser 照，也當出道照
+      if(x.mv){ const sid=uid("s"), VS=S.get(K.vsec,{})||{}; VS[id]=[...(VS[id]||[]),{id:sid,title:"MV"}]; S.set(K.vsec,VS);
+        S.set(K.vods,[...S.get(K.vods,[]),{id:uid("v"),gid:id,sec:sid,title:`${n}｜出道 MV`,mid:x.mv.mid,thumb:x.mv.thumb,dur:x.mv.dur||0,ts:Date.now(),views:0,by:mid}]); }
       x.status="ok"; x.mid=mid; x.done=Date.now(); S.set(K.debut,L);
       feedPush({kind:"core",self:true,text:`🎉 恭喜出道！「${n}」的出道申請通過了，到 ME 切換到藝人端吧`},"u:"+x.email); render(); toast(`已核准「${n}」出道`); break; }
     case "dbNo": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x) break; ask(`不核准「${x.name}」的出道申請嗎？`,()=>{ x.status="no"; x.done=Date.now(); S.set(K.debut,L); feedPush({kind:"core",self:true,text:`「${x.name}」的出道申請這次沒有通過`},"u:"+x.email); render(); }); break; }
