@@ -4485,7 +4485,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", bgm:"daisuki_live_bgm", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4767,7 +4767,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026114824";
+const BUILD="20261026120512";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5120,8 +5120,12 @@ const fanRoom=member=>{
 function tieSet(member){
   const m=MEMBERS[member];
   const sv={...(S.get(K.tieSet,{})[member]||{})}; if(m&&sv.chatName===m.name) delete sv.chatName;
-  return {chatName:m?artName(member,"tie"):"",nickname:ME.name,badge:true,translate:true,muted:false,fav:false,bgMode:"default",bgColor:"#E6E6FA",bgPattern:1,bgImage:null,...sv};
+  const st={chatName:m?artName(member,"tie"):"",nickname:ME.name,badge:true,translate:true,muted:false,fav:false,bgMode:"default",bgColor:"#E6E6FA",bgPattern:1,bgImage:null,...sv};
+  /* 粉絲沒自己換過背景（或選回「預設」）：跟著藝人設的背景走 */
+  const ab=artTieBg(member); if(ab&&(!sv.bgMode||sv.bgMode==="default")){ Object.assign(st,ab); st._art=true; }
+  return st;
 }
+const artTieBg=mid=>{ const b=(S.get(K.tieArtBg,{})||{})[mid]; return b&&b.bgMode&&b.bgMode!=="default"?b:null; };
 function saveTieSet(member,u){ const all=S.get(K.tieSet,{}); all[member]={...(all[member]||{}),...u}; S.set(K.tieSet,all); }
 const artistReadTs=mid=>(S.get(K.tieReadBy,{})||{})[mid]||0;   // 藝人讀到哪裡（每位藝人分開、所有手機同步）
 const DAY=864e5;
@@ -8605,8 +8609,8 @@ function openTieBgMenu(member){
   setLayer(`<div class="t-sheet-w" data-a="tCloseLayer"><div class="t-sheet" role="dialog" aria-label="變更背景"><div class="grab"></div>
     <button class="t-sb" data-a="tPickAlbum">從相簿中選擇照片</button><button class="t-sb" data-a="tPickCam">相機拍照</button>
     <div class="t-tabs"><button class="${tab==="color"?"on":""}" data-a="tBgTab" data-v="color" data-m="${member}">顏色</button><button class="${tab==="pattern"?"on":""}" data-a="tBgTab" data-v="pattern" data-m="${member}">圖案</button></div>
-    <div class="t-swg">${tab==="color"?`<button class="t-swc def ${st.bgMode==="default"?"sel":""}" data-a="tBgSet" data-m="${member}" data-mode="default">預設</button>`+TIE_COLORS.map(c=>`<button class="t-swc ${st.bgMode==="color"&&st.bgColor===c?"sel":""}" style="background:${c}" data-a="tBgSet" data-m="${member}" data-mode="color" data-v="${c}" aria-label="顏色 ${c}"></button>`).join("")
-      :[1,2,3,4,5,6,7,8].map(n=>`<button class="t-swc tp-${n} ${st.bgMode==="pattern"&&st.bgPattern===n?"sel":""}" data-a="tBgSet" data-m="${member}" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div>
+    <div class="t-swg">${tab==="color"?`<button class="t-swc def ${st.bgMode==="default"||st._art?"sel":""}" data-a="tBgSet" data-m="${member}" data-mode="default">預設</button>`+TIE_COLORS.map(c=>`<button class="t-swc ${!st._art&&st.bgMode==="color"&&st.bgColor===c?"sel":""}" style="background:${c}" data-a="tBgSet" data-m="${member}" data-mode="color" data-v="${c}" aria-label="顏色 ${c}"></button>`).join("")
+      :[1,2,3,4,5,6,7,8].map(n=>`<button class="t-swc tp-${n} ${!st._art&&st.bgMode==="pattern"&&st.bgPattern===n?"sel":""}" data-a="tBgSet" data-m="${member}" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div>
     <button class="t-sb cancel" data-a="tCloseLayer">取消</button></div></div>`,"bgmenu");
 }
 /* ---------- 藝人端 TIE ---------- */
@@ -8626,7 +8630,7 @@ function viewTieArtist(mid){
   }).join("");
   const draft=ui.wDraft||"";
   const QUICK=["謝謝大家，今天也在努力練習中 ♡","大家吃過晚餐了嗎？記得保暖喔～","今晚文字直播見！期待和你們相聚 ✨"];
-  return `${thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`}<header class="t-rh t-rh-art">
+  return `${artTieBg(mid)?tieBgLayer(artTieBg(mid)):(thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`)}<header class="t-rh t-rh-art">
       <div class="t-rh-row"><button class="t-ib" data-a="tab" data-v="home" aria-label="返回">${TI.back}</button><h3>${esc(artName(mid,"tie"))}</h3><div class="t-rh-r"><button class="t-ib t-dots" data-a="tArtDrawer" data-m="${mid}" aria-label="更多"><i></i><i></i><i></i></button></div></div>
     </header>
     <main class="t-msgs">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}<div id="chat-end"></div></main>
@@ -8648,7 +8652,15 @@ function eventCard(e,{artist=false,canDelete=false}={}){
         ${artist?(canDelete?`<button class="del" data-a="delEvent" data-id="${e.id}">刪除</button>`:"")
           :past?"":`<button class="btn btn-sm ${e.mine?"btn-soft":"btn-main"}" data-a="reserve" data-id="${e.id}" aria-pressed="${e.mine}">${e.mine?"已預約":"預約"}</button>`}</div>
     </div></article>`;
-}
+}/* 藝人設定 TIE 聊天室背景：沒自己換過背景的粉絲會跟著變 */
+function openArtTieBg(){ const mid=session().member, ab=artTieBg(mid), tab=ui.tieBgTab||"color";
+  setLayer(`<div class="t-sheet-w" data-a="tCloseLayer"><div class="t-sheet" role="dialog" aria-label="聊天室背景"><div class="grab"></div>
+    <button class="t-sb" data-a="aBgAlbum">從相簿中選擇照片</button>
+    <div class="t-tabs"><button class="${tab==="color"?"on":""}" data-a="aBgTab" data-v="color">顏色</button><button class="${tab==="pattern"?"on":""}" data-a="aBgTab" data-v="pattern">圖案</button></div>
+    <div class="t-swg">${tab==="color"?`<button class="t-swc def ${!ab?"sel":""}" data-a="aBgSet" data-mode="default">預設</button>`+TIE_COLORS.map(c=>`<button class="t-swc ${ab&&ab.bgMode==="color"&&ab.bgColor===c?"sel":""}" style="background:${c}" data-a="aBgSet" data-mode="color" data-v="${c}" aria-label="顏色 ${c}"></button>`).join("")
+      :[1,2,3,4,5,6,7,8].map(n=>`<button class="t-swc tp-${n} ${ab&&ab.bgMode==="pattern"&&ab.bgPattern===n?"sel":""}" data-a="aBgSet" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div>
+    <button class="t-sb cancel" data-a="tCloseLayer">取消</button></div></div>`,"bgmenu"); }
+
 /* =========================================================
    MEET（照 NSY 的直播規則）
    ・列表：今日狀態列 → 直播大卡 → 重播
@@ -11272,6 +11284,17 @@ document.addEventListener("click",e=>{
     case "tBgSet": { const mode=t.dataset.mode, u={bgMode:mode};
       if(mode==="color") u.bgColor=t.dataset.v; if(mode==="pattern") u.bgPattern=Number(t.dataset.v);
       saveTieSet(t.dataset.m,u); layer.innerHTML=""; render(); break; }
+    case "aTieBg": openArtTieBg(); break;
+    case "aBgTab": ui.tieBgTab=t.dataset.v; openArtTieBg(); break;
+    case "aBgSet": { const mid=session().member, A=S.get(K.tieArtBg,{})||{}, mode=t.dataset.mode;
+      if(mode==="default") delete A[mid]; else A[mid]={bgMode:mode,...(mode==="color"?{bgColor:t.dataset.v}:{bgPattern:Number(t.dataset.v)})};
+      S.set(K.tieArtBg,A); layer.innerHTML=""; render(); toast("已變更聊天室背景"); break; }
+    case "aBgAlbum": { const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:cropPhone(),max:1400}); if(!f) return;
+        const rd=new FileReader(); rd.onload=()=>{ const img=new Image(); img.onload=()=>{ const k=Math.min(1,900/Math.max(img.width,img.height)), c=document.createElement("canvas");
+          c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
+          const A=S.get(K.tieArtBg,{})||{}; A[session().member]={bgMode:"photo",bgImage:c.toDataURL("image/jpeg",.78)}; S.set(K.tieArtBg,A); layer.innerHTML=""; render(); toast("已變更聊天室背景"); }; img.src=rd.result; }; rd.readAsDataURL(f); };
+      pickClick(inp); break; }
     case "tPickAlbum": document.getElementById("tbgAlbum").click(); break;
     case "tPickCam": document.getElementById("tbgCam").click(); break;
     case "tBadge": { const m2=t.dataset.m, st=tieSet(m2);
@@ -12281,6 +12304,7 @@ function openTieArtDrawer(mid,still){ const m=MEMBERS[mid], p=tieProf(mid); ui.t
         <button class="ad-row" data-a="artNameEd" data-v="tie">${TI.tag}<span>TIE 聊天室名稱</span><em>${esc(artName(mid,"tie"))}</em><i>›</i></button>
         <button class="ad-row" data-a="artAvEd" data-v="tie">${I.camera}<span>頭貼</span><i>›</i></button>
         <button class="ad-row" data-a="artBioEd" data-v="tie">${TI.star}<span>個人簡介</span><em>${esc(p.bio||"還沒寫")}</em><i>›</i></button>
+        <button class="ad-row" data-a="aTieBg">${TI.star}<span>聊天室背景</span><i>›</i></button>
         <button class="ad-row" data-a="tWelcome">${TI.bell}<span>TIE歡迎語</span><i>›</i></button>
         <button class="ad-row" data-a="artColorEd">${TI.star}<span>我的顏色</span><em><i class="ac-dot" style="background:${artColor(mid)}"></i>${ART_COLORS.find(x=>x[0]===artColor(mid))[1]}</em><i>›</i></button>
       </div></div></aside></div>`,"drawer");
@@ -12513,6 +12537,7 @@ const TOURS={
     [".ad-av","頭貼","換一張 TIE 的頭貼，只有 TIE 會換，其他地方不會變。"],
     ['[data-a="artNameEd"]',"TIE 名稱","粉絲聊天室上方顯示的名字，可以跟動態的名字不一樣。"],
     ['[data-a="artBioEd"]',"個人簡介","寫幾句話介紹自己。"],
+    ['[data-a="aTieBg"]',"聊天室背景","換聊天室的背景，粉絲那邊也會一起換（自己換過背景的粉絲不會變）。"],
     ['[data-a="tWelcome"]',"TIE 歡迎語","新粉絲訂閱時，第一則收到的話。"]],
   "artist:foc":[[".foc-c.hero","舞台演出","這週是宣傳週、排名週還是打歌週，你們拿了幾個一位。"],
     ['[data-a="focTip"]',"賽制","三種週怎麼算分，看這裡。"],
@@ -12561,7 +12586,7 @@ function tourKey(){ const s=session(), r=route(); if(!s) return "";
   return r.role+":"+(r.tab||"home"); }
 const tourDone=k=>{ const s=session()||{}; return !!(S.get(K.tours,{})[(s.email||"")+"|"+k]); };
 function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getElementById("coach")||!welcomeDone()) return;
-  { const ro=route().role; if(document.querySelector(".nav .nav-btn")&&!tourDone("full:"+ro)){ fullTourStart(); return; } }
+  { const ro=route().role; if(document.querySelector(".nav .nav-btn")&&!tourDone("full:"+ro)&&tourDone("_new")){ fullTourStart(); return; } }
   const k=tourKey(); if(!k||!TOURS[k]||tourDone(k)||!tourDone("_new")) return; /* 分頁小教學只給新帳號自動跳；舊帳號要到 ME 按「重看教學」 */
   const steps=TOURS[k].filter(([sel])=>{ const el=document.querySelector(sel); return el&&el.getBoundingClientRect().height>0; }); if(!steps.length) return;
   ui.coach={kind:"tour",key:k,steps,i:0}; coachShow(); }
