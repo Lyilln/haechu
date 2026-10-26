@@ -1021,6 +1021,15 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 .tq-m .t-b{max-width:78vw}
 .tq-f{display:grid;grid-template-columns:1fr 2fr;padding-bottom:env(safe-area-inset-bottom,0px);background:#2A2830}
 .tq-f button{height:56px;border:0;background:none;color:#fff;font:inherit;font-size:15px;font-weight:700}.tq-f button:first-child{background:#45424D}
+/* 通知（照 Weverse）：頭貼、內容、團名・時間、右邊縮圖 */
+.nz-card.nz2{display:flex;align-items:flex-start;gap:12px;padding:14px 16px;border-radius:22px}
+.nz2 .nz-av{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:800}
+.nz2 .nz-av .av-img{width:100%;height:100%;object-fit:cover;border-radius:50%}
+.nz2 .nz-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:5px}
+.nz2 .nz-tx p{margin:0;font-size:14.5px;line-height:1.5;font-weight:600;color:var(--ink);display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.nz2 .nz-tx small{font-size:12px;color:var(--ink-3);font-weight:600}
+.nz2 .nz-vf{display:inline-grid;vertical-align:-2px;color:#2FC8E8;margin:0 2px}.nz2 .nz-vf svg{width:14px;height:14px}
+.nz2 .nz-th{flex:none;width:58px;height:58px;border-radius:12px;overflow:hidden;background:var(--s2)}.nz2 .nz-th img{width:100%;height:100%;object-fit:cover}
 
 /* ===== 應援棒 3D ===== */
 .ls-box{position:relative;width:100%;height:300px}
@@ -4480,6 +4489,10 @@ html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 5
 .trk-empty{text-align:center;padding:28px 16px!important;color:var(--ink-3)}
 .trk-adm{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.trk-adm>div{flex:1;min-width:0}.trk-adm b{display:flex;gap:8px;align-items:center;font-size:14.5px}.trk-adm b em{font-style:normal;font-size:11.5px;color:var(--violet);font-weight:800}.trk-adm small{font-size:12px;color:var(--ink-3)}
 .pt-orig[data-k]{font-size:12px}span+.pt-orig{display:inline;margin:0 0 0 6px}
+/* 寬封面：頭貼完整放中間，兩邊模糊補滿 */
+.cv-fit{position:relative;isolation:isolate;overflow:hidden}
+.cv-fit::before{content:"";position:absolute;inset:-24px;z-index:-1;background:var(--cv,none) center/cover no-repeat;filter:blur(18px) brightness(.78) saturate(1.1)}
+.cv-fit::after{content:"";position:absolute;inset:0;z-index:-1;background:var(--cv,none) center/contain no-repeat;pointer-events:none}
 
 </style>
 </head>
@@ -4541,7 +4554,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", cmTr:"daisuki_cm_tr", trucks:"daisuki_trucks", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", bdPush:"daisuki_bd_push", cmTr:"daisuki_cm_tr", trucks:"daisuki_trucks", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4823,7 +4836,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026151340";
+const BUILD="20261026151800";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5009,7 +5022,7 @@ function logSelf(kind,member,text,extra={}){
 }
 /* 多人版通知：藝人／管理員做的事放進共用的「通知動態」，每位粉絲打開 App 時，把跟自己有關的收進自己的通知
    對象：g:團（追蹤這團的粉絲）、tie:成員（有這位成員 TIE 券的粉絲）、u:帳號（指定的那位粉絲） */
-function feedPush(n,aud){ try{ const F=S.get(K.feed,[]); F.unshift({...n,id:"f"+Date.now()+Math.random().toString(36).slice(2,6),aud,ts:Date.now()}); S.set(K.feed,F.slice(0,300)); }catch(e){} return true; }
+function feedPush(n,aud){ try{ try{ const g=n.group&&groupOf(n.group); if(n.kind!=="whisper"&&n.kind!=="system"){ n={...n,pt:g?g.name:"HAECHU",pb:notifMsg({...n,self:false})}; if(n.vis==="ms") n.pbMs=notifMsg({...n,text:"查看Membership貼文"}); } }catch(e){} const F=S.get(K.feed,[]); F.unshift({...n,id:"f"+Date.now()+Math.random().toString(36).slice(2,6),aud,ts:Date.now()}); S.set(K.feed,F.slice(0,300)); }catch(e){} return true; }
 /* 管理員加／扣積分：管理員寫進共用的「積分發放紀錄」，粉絲打開 App 時把給自己的那幾筆加進自己的積分（每筆只算一次） */
 const ptGrants=()=>(S.get(K.ptGrants,[])||[]).filter(g=>g&&g.id);
 /* 10/26：所有粉絲帳號的積分歸零重新開始（買過的東西都留著）。每個帳號第一次打開新版時歸零一次 */
@@ -6007,7 +6020,7 @@ function viewStudio(mid){
   const m=MEMBERS[mid], g=groupOf(m.group), fans=followed().includes(g.id), c=GRADS[m.g%GRADS.length];
   const myPlans=getPlans().filter(p=>p.member===mid), past=getLives().filter(x=>x.member===mid&&x.endTs);
   return `<main class="page prep">
-    <section class="prep-card lvh-prep" style="${lvCover(mid)}"><span class="lvh-shade"></span>
+    <section class="prep-card lvh-prep cv-fit" style="${lvCoverFit(mid)}"><span class="lvh-shade"></span>
       <span class="lvh-live off">LIVE<i></i></span>
       <h2>準備開播</h2>
       <span class="fld-lab">直播標題</span><label class="field">${I.live}<input id="ltitle" placeholder="輸入文字" value="${esc(ui.lTitle||"")}"><button type="button" class="bgm-open ${(S.get(K.bgm,{})[mid]||[]).length?"on":""}" data-a="bgmOpen" aria-label="背景音樂">${BGM_IC}${(S.get(K.bgm,{})[mid]||[]).length?`<b>${(S.get(K.bgm,{})[mid]||[]).length}</b>`:""}</button></label>
@@ -6371,7 +6384,12 @@ function tieQuietFine(){ try{ if(!isAdminAcct()||(HB_ON&&(HB.ver[K.whispers]==nu
   tieQuiet().forEach(q=>{ if(q.days<4) return; const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===q.mid); if(!em) return; const b0=calDay(q.at)-3;
     for(let d=4;d<=q.days;d++){ const id=`tqf_${q.mid}_${b0}_${d}`; if(have.has(id)) continue; L.push({id,to:em,n:-TIE_QUIET_FINE(),why:`${WHISPER_NAME} 連續 ${d} 天沒傳訊息`,by:"auto",ts:q.at+(d-3)*864e5}); have.add(id); add++; } });
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
-setTimeout(()=>{ revBSettle(); tieQ0Mark(); tieQuietFine(); },6000); setInterval(()=>{ revBSettle(); tieQ0Mark(); tieQuietFine(); },30*60e3);
+/* 藝人生日：當天送「🎂 今天是 ○○ 的生日。留下生日祝福吧！」給追蹤的粉絲（一年一次，由管理員的手機送） */
+function bdayPush(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.feed]==null)) return; const now=new Date(), md=(now.getMonth()+1)+"-"+now.getDate(), y=now.getFullYear(), B=getBdays(), P=S.get(K.bdPush,{})||{}; let ch=false;
+  Object.keys(MEMBERS).forEach(mid=>{ const m=MEMBERS[mid]; if(!m||m.official||!groupOf(m.group)) return; const b=String(B[mid]||m.bday||"").replace(/^0/,"").replace(/-0/,"-"); if(b!==md||P[mid]===y) return;
+    P[mid]=y; ch=true; feedPush({kind:"bday",member:mid,group:m.group,text:"",color:null},"g:"+m.group); });
+  if(ch) S.set(K.bdPush,P); }catch(e){} }
+setTimeout(()=>{ revBSettle(); tieQ0Mark(); tieQuietFine(); bdayPush(); },6000); setInterval(()=>{ revBSettle(); tieQ0Mark(); tieQuietFine(); bdayPush(); },30*60e3);
 
 /* =========================================================
    PHOTOCARD 抽卡 v2（參考 NSY 取精華去糟粕）
@@ -7432,7 +7450,7 @@ function viewStubs(){
 /* 應援棒：管理員上傳的設計圖 → 3D；沒上傳的團用預設款 */
 const getSticks=()=>S.get(K.sticks,{});
 const _defStick={};
-function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g.g%GRADS.length]; _defStick[gid]=Object.assign(LS3D.analyze(LS3D.sample("round",c[0],c[1],ini(g.name))),{_letter:ini(g.name),_c1:c[0],_c2:c[1]}); } return _defStick[gid]; }
+function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g.g%GRADS.length]; _defStick[gid]=Object.assign(LS3D.analyze(LS3D.sample(["round","heart","star"][strHash(gid)%3],c[0],c[1],ini(g.name))),{_letter:ini(g.name),_c1:c[0],_c2:c[1]}); } return _defStick[gid]; }
 let _genStick=null;
 const genericStick=()=>_genStick||(_genStick=Object.assign(LS3D.analyze(LS3D.sample("round","#E9E3F7","#FCE7F3","★")),{glow:"#C7AEFF"}));
 const stickOf=gid=>gid==="generic"?genericStick():getSticks()[gid]||defaultStick(gid);
@@ -7996,7 +8014,7 @@ function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.grou
     
     ${cmSec(`${esc(groupOf(gid).name)} 的評論`,fans.length?"查看更多":"","cmFan")}${fans.slice(0,3).map(fanCard).join("")||`<p class="me-none">還沒有粉絲貼文</p>`}`; }
 /* MEET 卡片：正在直播的排前面（點進直播間），結束的是重播 */
-function meetCards(lv){ return `<div class="cm-lv">${lv.slice(0,12).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length], on=!l.endTs;return `<button class="cm-lc" data-a="${on?"openLive":"openReplay"}" data-id="${l.id}" data-lv="${l.id}"><span class="cm-lt ${on?"on":""}" style="${lvCover(l.member)}"><em>${on?"● LIVE":"REPLAY"}</em>${on?"":`<i>${mmss(l)}</i>`}</span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${on?"直播中":relDay(l.startTs)}</small></button>`}).join("")}</div>`; }
+function meetCards(lv){ return `<div class="cm-lv">${lv.slice(0,12).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length], on=!l.endTs;return `<button class="cm-lc" data-a="${on?"openLive":"openReplay"}" data-id="${l.id}" data-lv="${l.id}"><span class="cm-lt cv-fit ${on?"on":""}" style="${lvCoverFit(l.member)}"><em>${on?"● LIVE":"REPLAY"}</em>${on?"":`<i>${mmss(l)}</i>`}</span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${on?"直播中":relDay(l.startTs)}</small></button>`}).join("")}</div>`; }
 const meetOf=f=>getLives().filter(l=>MEMBERS[l.member]&&f(l)).sort((a,b)=>(!a.endTs?0:1)-(!b.endTs?0:1)||b.startTs-a.startTs);
 function grpMedia(gid){ const ch=ui.cmMed||"all", lv=meetOf(l=>MEMBERS[l.member].group===gid), vd=vodList(gid), g=groupOf(gid), vc=ui.cmVc||"all";
   const chips=`<div class="cm-chips">${[["all","全部"],["live","MEET"],["vod","影音"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmMed" data-v="${k}">${l}</button>`).join("")}</div>`;
@@ -8311,9 +8329,12 @@ function notifMsg(n){
   if(n.self) return n.text;
   const m=MEMBERS[n.member], nm=m?artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed"):"";
   if(n.kind==="core") return (nm?nm+" ":"")+n.text;
-  if(n.kind==="news") return "新聞："+n.text;
-  if(n.kind==="tour") return `${nm}：${n.text}`;
-  return {post:`📝 ${nm} 發表了貼文：${n.text}`,comment:`${nm} 回覆了你的留言：「${n.text}」`,live:n.liveReply?`${nm} ${n.text} 💬`:`${nm} 開始直播了：${n.text} 🔥`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${String(n.text||"").split(NICK_TK).join(nickFor(n.member)).split("{愛稱}").join(nickFor(n.member))}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
+  if(n.kind==="news") return "📰 "+n.text;
+  if(n.kind==="tour") return `✈️ ${nm}：${n.text}`;
+  if(n.kind==="bday") return `🎂 今天是 ${nm} 的生日。留下生日祝福吧！`;
+  if(n.kind==="acomment"){ const hm=MEMBERS[n.host]?artName(n.host,"feed"):nm; return `💬 ${nm}在 ${hm} 的貼文中發表了留言：${n.text}`; }
+  if(n.kind==="live"&&n.guest){ const gn=MEMBERS[n.guest]?artName(n.guest,"live"):""; return `🔴 ${gn}已參與${nm}的直播：${n.text}`; }
+  return {post:`📝 ${nm}發表了貼文：${n.text}`,comment:`💬 ${nm}回覆了你的留言：${n.text}`,live:n.liveReply?`💬 ${nm}${n.text}`:`🔴 ${nm}已開始直播：${n.text}`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${String(n.text||"").split(NICK_TK).join(nickFor(n.member)).split("{愛稱}").join(nickFor(n.member))}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
 }
 function pinnedHtml(){
   const anns=getAnns(); if(!anns.length) return "";
@@ -8336,9 +8357,13 @@ function viewNotifs(){
   const groups=f.map(groupOf).filter(Boolean);
   const card=n=>{const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"];
     const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
-    return `<button class="nz-card ${n.self?"self":""}" data-a="${act}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||n.newsId||n.tourId||""}" data-c="${n.commentId||""}">
-      <span class="nz-type"><i style="background:${col}"></i>${lab}${n.self?"・你的動態":""}</span>
-      <p>${esc(notifMsg(n))}</p><span class="nz-time">${ago(n.ts)}</span></button>`};
+    const m=MEMBERS[n.member], g=groupOf(n.group||(m&&m.group)), p0=n.postId&&getPosts().find(x=>x.id===n.postId), th=p0&&p0.vis!=="ms"&&(p0.media||[])[0];
+    const vf=`<span class="nz-vf">${I.verified}</span>`, nm=m?esc(artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed")):"";
+    let tx=esc(notifMsg(n)); if(nm) tx=tx.split(nm).join(nm+vf);
+    return `<button class="nz-card nz2 ${n.self?"self":""}" data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?(n.group||""):""}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||n.newsId||n.tourId||""}" data-c="${n.commentId||""}">
+      <span class="nz-av" style="background:${m?grad(m.g):"var(--s3)"}">${m?mAvIn(n.member):`<b>H</b>`}</span>
+      <span class="nz-tx"><p>${tx}</p><small>${esc(g?g.name:APP_NAME)} · ${ymdhm(n.ts)}</small></span>
+      ${th?`<span class="nz-th"><img data-mid="${esc(th.kind==="video"?th.thumb||"":th.mid)}" alt=""></span>`:""}</button>`};
   return `<header class="top"><div class="top-row">
       <button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button>
       <div class="top-title">通知</div>
@@ -8801,7 +8826,7 @@ function leftTxt(ts){ const d=ts-Date.now(); if(d<=0) return "隨時開播"; con
 /* ---------- MEET 列表（卡片模式） ---------- */
 function nowCard(l){   // 直播中：大張卡片（藝人的背景圖），左上 LIVE，左下名字、標題、心心
   const m=MEMBERS[l.member];
-  return `<button class="nc lvh" data-a="openLive" data-id="${l.id}" style="${lvCover(l.member)}">
+  return `<button class="nc lvh cv-fit" data-a="openLive" data-id="${l.id}" style="${lvCoverFit(l.member)}">
     <span class="lvh-shade"></span><span class="lvh-live">LIVE<i></i></span>
     <span class="lvh-b"><b>${esc(artName(l.member,"live"))}<em class="dl-vf">${I.verified}</em></b><span class="lvh-t">${esc(l.title)}</span><span class="lvh-h">${LV_IC.heartO}${kfmt(l.hearts)}</span></span></button>`;
 }
@@ -8814,7 +8839,7 @@ function planRow(p,artist=false){
 }
 function replayRow(l){
   const d=new Date(l.startTs);
-  return `<div class="rr lvr"><button class="rr-th lvr-th" data-a="openReplay" data-id="${l.id}" style="${lvCover(l.member)}" aria-label="${esc(artName(l.member,"live"))} 的重播"><em>${mmss(l)}</em></button>
+  return `<div class="rr lvr"><button class="rr-th lvr-th cv-fit" data-a="openReplay" data-id="${l.id}" style="${lvCoverFit(l.member)}" aria-label="${esc(artName(l.member,"live"))} 的重播"><em>${mmss(l)}</em></button>
     <button class="rr-i lvr-i" data-a="openReplay" data-id="${l.id}"><b>${esc(artName(l.member,"live"))}<em class="dl-vf">${I.verified}</em></b><span>${esc(l.title)}</span><small>${d.getMonth()+1}月${d.getDate()}日</small></button></div>`;
 }
 const rpSorted=L=>L.slice().sort((a,b)=>ui.rpSort==="old"?a.startTs-b.startTs:b.startTs-a.startTs);
@@ -8902,7 +8927,10 @@ const LV_IC={exit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
   heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.6s-8.4-5.1-8.4-11.2A4.8 4.8 0 0 1 12 6.4a4.8 4.8 0 0 1 8.4 3c0 6.1-8.4 11.2-8.4 11.2z"/></svg>',
   heartO:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.2s-8-4.9-8-10.9A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8 2.7c0 6-8 10.9-8 10.9z"/></svg>'};
 const lvCover=mid=>{ const p=artProf(mid), m=MEMBERS[mid], c=GRADS[m.g%GRADS.length], u=p.avatar||mPhoto(mid);   // 直播、重播封面：跟著個人社群頭貼（沒換過就用 Teaser 照）
+  if(u&&lvCover._fit) return `--cv:url('${u}');background:#16131A`;
   return u?`background:#000 url('${u}') center/cover no-repeat`:`background:radial-gradient(90% 60% at 70% 25%,${c[1]}cc,transparent 70%),radial-gradient(80% 60% at 20% 80%,${c[0]}cc,transparent 70%),#140B2E`; };
+/* 寬的封面（直播卡、重播、開播準備）：整張頭貼（藝人裁切的範圍）都放進來，兩邊用同一張照片模糊補滿，臉才不會被切掉 */
+const lvCoverFit=mid=>{ lvCover._fit=1; try{ return lvCover(mid); } finally{ lvCover._fit=0; } };
 function lvShell(l,host,inner){ const m=MEMBERS[l.member], g=groupOf(m.group);
   return `<div class="mr cm dl ${host?"host":""} ${ui.dlUi?"ui-on":""} ${ui.dlChatOff?"chat-off":""}" data-a="dlTap">
     <div class="dl-bg" style="${lvCover(l.member)}"></div><span class="dl-shade"></span>
@@ -12579,7 +12607,7 @@ document.addEventListener("scroll",e=>{ const c=e.target; if(!c||!c.classList||!
 /* 藝人在自己的動態下留言（不是回覆某位粉絲） */
 function addArtistComment(postId,text){ const p=getPosts().find(x=>x.id===postId); if(!p) return; const m=MEMBERS[p.member];
   const c={id:"c"+Date.now(),postId,author:"artist",member:p.member,by:myEmail(),name:m.name,g:m.g,text,ts:Date.now(),reply:null};
-  S.set(K.comments,[...S.get(K.comments,[]),c]); return c; }
+  S.set(K.comments,[...S.get(K.comments,[]),c]); try{ feedPush({kind:"acomment",member:p.member,host:p.member,group:p.group,text:text.slice(0,80),postId:p.id,commentId:c.id,color:null},"g:"+p.group); }catch(e){} return c; }
 
 /* ---------- 新手教學 ---------- */
 const COACH_INTRO_UNI=["你是管理員","你同時也是藝人和粉絲。最上面的「粉絲｜藝人｜管理」可以隨時切換，不用換帳號。"];
@@ -13240,6 +13268,22 @@ const STICK3D=(()=>{
     const ring2=new THREE.Mesh(new THREE.TorusGeometry(.6,.012,12,96),gold); ring2.position.y=.95; g.add(ring2);
     lathe([[0,1.53],[.05,1.53],[.075,1.57],[.06,1.62],[0,1.66]],gold,32);
     const out={g,core,btn,headY:.95,c}; models.set(key,out); g.visible=false; scene.add(g); return out; }
+  /* 照設計圖做的模型：用辨識出來的輪廓（圓的做旋轉體、愛心星星做成鼓起來的立體板），表面貼設計圖本身，燈頭會發光 */
+  const dsKey=ds=>ds._k||(ds._k="ds"+Math.random().toString(36).slice(2,9));
+  const building=new Set();
+  function modelDs(ds){ const key=dsKey(ds); if(models.has(key)) return models.get(key); if(building.has(key)) return null; building.add(key);
+    const go=mask=>{ try{ const m=LS3D.buildMesh(ds,mask); if(!m||!m.I||!m.I.length) throw 0;
+        const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.BufferAttribute(m.P,3)); geo.setAttribute("normal",new THREE.BufferAttribute(m.NM,3)); geo.setAttribute("uv",new THREE.BufferAttribute(m.U,2)); geo.setAttribute("g",new THREE.BufferAttribute(m.G,1)); geo.setIndex(new THREE.BufferAttribute(m.I,1));
+        const tex=new THREE.TextureLoader().load(ds.tex); tex.flipY=false; tex.encoding=THREE.sRGBEncoding; tex.anisotropy=8;
+        const mat=new THREE.MeshPhysicalMaterial({map:tex,roughness:.28,metalness:0,clearcoat:1,clearcoatRoughness:.06,envMapIntensity:.95,side:THREE.DoubleSide});
+        const out={g:new THREE.Group(),headY:m.headY,k:1,uni:null,mat};
+        mat.onBeforeCompile=sh=>{ sh.uniforms.glowC={value:new THREE.Color(1,1,1)}; sh.uniforms.glowK={value:1}; out.uni=sh.uniforms;
+          sh.vertexShader="attribute float g;\nvarying float vG;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvG=g;");
+          sh.fragmentShader="uniform vec3 glowC;\nuniform float glowK;\nvarying float vG;\n"+sh.fragmentShader.replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"); };
+        out.g.add(new THREE.Mesh(geo,mat)); out.g.visible=false; scene.add(out.g); models.set(key,out); }catch(e){ models.set(key,null); } building.delete(key); };
+    if(ds.mode==="plate"&&ds.cut){ const im=new Image(); im.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=ds.bw; c.height=ds.bh; const x=c.getContext("2d"); x.drawImage(im,0,0,ds.bw,ds.bh); const d=x.getImageData(0,0,ds.bw,ds.bh).data, a=new Uint8Array(ds.bw*ds.bh); for(let i=0;i<a.length;i++) a[i]=d[i*4+3]; go({w:ds.bw,h:ds.bh,a}); }catch(e){ go(null); } }; im.onerror=()=>go(null); im.src=ds.cut; }
+    else go(null);
+    return null; }
   /* 燈頭裡的圖樣：團名第一個字（襯線字＋光暈） */
   function emblem(c){ return X3.ctex(256,256,(x,w,h)=>{ x.clearRect(0,0,w,h); x.textAlign="center"; x.textBaseline="middle"; x.shadowColor="rgba(255,255,255,.9)"; x.shadowBlur=18; x.fillStyle="rgba(255,255,255,.95)";
       x.font=`italic 700 150px ${SERIF}`; x.fillText(c.letter||"✦",w/2,h/2+8); }); }
@@ -13257,7 +13301,7 @@ const STICK3D=(()=>{
     const api={el,cv,ctx,halo,st,ds,o,m:null,set(k,v){ if(k==="rv"){ st.rv+=v; return; } st[k]=v; if(k==="glow") applyGlow(); }, update(nd){ api.ds=nd; ready(); }, destroy(){ st.dead=true; live.delete(api); }};
     function applyGlow(){ halo.style.background=`radial-gradient(circle,${st.glow}cc 0%,${st.glow}55 35%,transparent 68%)`; }
     applyGlow();
-    function ready(){ const d=api.ds; sampleColors(d,()=>{ if(st.dead) return; const c=colorsOf(d); api.m={key:[c.glow,c.handle,c.letter].join("|"),c}; }); }
+    function ready(){ const d=api.ds; if(d&&d.rows&&d.tex){ api.m={ds:d}; return; } sampleColors(d,()=>{ if(st.dead) return; const c=colorsOf(d); api.m={key:[c.glow,c.handle,c.letter].join("|"),c}; }); }
     loadThree().then(()=>{ if(st.dead) return; init(); ready(); live.add(api); kick(); }).catch(()=>{ if(ds.cut) el.innerHTML=`<img class="ls-fb" src="${ds.cut}" alt="應援棒">`; });
     // 手勢：一指旋轉（或移動）、雙擊重設；揮動模式跟著手指甩
     const pts=new Map(); let lastTap=0; const reset=()=>{ st.yaw=-.5; st.pitch=.12; st.sc=1; st.px=0; st.py=0; st.vy=0; };
@@ -13281,11 +13325,13 @@ const STICK3D=(()=>{
         else if(!a.pts.size){ st.yaw+=st.vy; st.vy*=.93; if(st.auto&&idle) st.yaw+=.008; }
         let pw=1; if(st.pulse===1) pw=.55+.45*Math.sin(t*5); else if(st.pulse===2) pw=(Math.sin(t*12)>0?1:.25); else if(st.pulse===3) pw=.6+.4*Math.sin(t*2.2);
         const wave=st.swing?-(st.roll+(idle?Math.sin(t*1.9)*.1:0)):st.wave?Math.sin(t*4.2)*.32:0, swp=st.swing?st.sw:0;
-        const M=model(a.m.key,{...a.m.c,glow:a.m.c.glow}); models.forEach(x=>x.g.visible=false); M.g.visible=true;
-        const col=X3.C(st.glow); M.core.material.color.copy(col); M.core.material.emissive.copy(col); M.core.material.emissiveIntensity=(.22+.5*pw)*(st.em?1.35:1); M.btn.material.emissive.copy(col); M.btn.material.color.copy(col);
+        const M=a.m.ds?modelDs(a.m.ds):model(a.m.key,{...a.m.c,glow:a.m.c.glow}); if(!M) return; models.forEach(x=>{ if(x) x.g.visible=false; }); M.g.visible=true;
+        const col=X3.C(st.glow);
+        if(M.core){ M.core.material.color.copy(col); M.core.material.emissive.copy(col); M.core.material.emissiveIntensity=(.22+.5*pw)*(st.em?1.35:1); M.btn.material.emissive.copy(col); M.btn.material.color.copy(col); }
+        else if(M.uni){ M.uni.glowC.value.copy(col); M.uni.glowK.value=(.35+.75*pw)*(st.em?1.35:1); }
         // 跟原本一樣的轉法：位置→縮放→以握把底為支點擺動→上下翻→左右轉
         const g=M.g; g.position.set(0,0,0); g.rotation.set(0,0,0); g.scale.set(1,1,1); g.updateMatrix();
-        const m4=new THREE.Matrix4().makeTranslation(st.px,st.py,0).multiply(new THREE.Matrix4().makeScale(st.sc*.88,st.sc*.88,st.sc*.88)).multiply(new THREE.Matrix4().makeTranslation(0,-.8,0)).multiply(new THREE.Matrix4().makeRotationZ(wave)).multiply(new THREE.Matrix4().makeRotationX(swp)).multiply(new THREE.Matrix4().makeTranslation(0,.8,0)).multiply(new THREE.Matrix4().makeRotationX(st.pitch)).multiply(new THREE.Matrix4().makeRotationY(st.yaw));
+        const m4=new THREE.Matrix4().makeTranslation(st.px,st.py,0).multiply(new THREE.Matrix4().makeScale(st.sc*(M.core?.88:1.05),st.sc*(M.core?.88:1.05),st.sc*(M.core?.88:1.05))).multiply(new THREE.Matrix4().makeTranslation(0,-.8,0)).multiply(new THREE.Matrix4().makeRotationZ(wave)).multiply(new THREE.Matrix4().makeRotationX(swp)).multiply(new THREE.Matrix4().makeTranslation(0,.8,0)).multiply(new THREE.Matrix4().makeRotationX(st.pitch)).multiply(new THREE.Matrix4().makeRotationY(st.yaw));
         g.matrixAutoUpdate=false; g.matrix.copy(m4); g.updateMatrixWorld(true);
         cam.aspect=w/h; cam.updateProjectionMatrix();
         R.setViewport(0,RH-h,w,h); R.setScissor(0,RH-h,w,h); R.setScissorTest(true); R.setClearColor(0x000000,0); R.clear(); R.render(scene,cam);
