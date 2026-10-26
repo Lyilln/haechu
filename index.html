@@ -1001,6 +1001,26 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 
 
 
+/* 藝人 TIE（照 Bubble）：回覆箭頭、待發送訊息、預覽 */
+.has-arw .t-arw{position:absolute;right:-34px;top:50%;transform:translateY(-50%)}.has-arw .t-time{right:-78px}.has-arw .t-rep{right:-66px}
+.t-arw{width:26px;height:26px;border:0;border-radius:50%;background:rgba(255,255,255,.55);color:#9A96A3;display:grid;place-items:center;padding:0;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.t-arw svg{width:15px;height:15px}
+.t-qsep{display:flex;justify-content:center;margin:14px 0 6px}.t-qsep span{font-size:11.5px;color:#fff;background:rgba(0,0,0,.28);padding:4px 12px;border-radius:999px}
+.t-q{opacity:.6}
+.t-wait{text-align:center;font-size:11.5px;color:#8E8A99;margin:12px 0 4px}
+.t-qgo{position:fixed;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 78px);z-index:31;display:flex;align-items:center;gap:6px;height:38px;padding:0 14px;border:0;border-radius:12px;background:#FF7A2F;color:#fff;font:inherit;font-size:13.5px;font-weight:800;box-shadow:0 6px 18px -6px rgba(255,122,47,.6)}
+.t-qgo svg{width:16px;height:16px}.t-qgo small{position:absolute;right:4px;top:100%;margin-top:3px;font-size:10px;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.4)}
+.tq-pv{position:fixed;inset:0;z-index:70;display:flex;flex-direction:column;background:#000}
+.tq-h{display:flex;align-items:center;justify-content:space-between;height:calc(52px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 8px 0;background:#fff;color:#111}
+.tq-h b{font-size:16px}.tq-sp{width:38px}
+.tq-b{position:relative;flex:1;min-height:0;overflow:auto}
+.tq-bg{position:absolute;inset:0}.tq-bg img{width:100%;height:100%;object-fit:cover}
+.tq-l{position:relative;display:flex;flex-direction:column;gap:12px;padding:14px 14px 30px}
+.tq-m{display:flex;gap:8px;align-items:flex-start}.tq-av{width:40px!important;height:40px!important;flex:none}
+.tq-n{display:flex;align-items:center;gap:6px;margin-bottom:4px;font-size:13px;color:#2A2830}
+.tq-m .t-b{max-width:78vw}
+.tq-f{display:grid;grid-template-columns:1fr 2fr;padding-bottom:env(safe-area-inset-bottom,0px);background:#2A2830}
+.tq-f button{height:56px;border:0;background:none;color:#fff;font:inherit;font-size:15px;font-weight:700}.tq-f button:first-child{background:#45424D}
 
 /* ===== 應援棒 3D ===== */
 .ls-box{position:relative;width:100%;height:300px}
@@ -4459,6 +4479,7 @@ html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 5
 @keyframes trkIn{from{opacity:0;transform:translateY(10px)}}
 .trk-empty{text-align:center;padding:28px 16px!important;color:var(--ink-3)}
 .trk-adm{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.trk-adm>div{flex:1;min-width:0}.trk-adm b{display:flex;gap:8px;align-items:center;font-size:14.5px}.trk-adm b em{font-style:normal;font-size:11.5px;color:var(--violet);font-weight:800}.trk-adm small{font-size:12px;color:var(--ink-3)}
+.pt-orig[data-k]{font-size:12px}span+.pt-orig{display:inline;margin:0 0 0 6px}
 
 </style>
 </head>
@@ -4520,7 +4541,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", trucks:"daisuki_trucks", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", cmTr:"daisuki_cm_tr", trucks:"daisuki_trucks", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4802,7 +4823,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026125114";
+const BUILD="20261026151340";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6344,7 +6365,13 @@ function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) r
       const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===mid); if(!em) return; const id="rb"+key+"_"+mid; res[mid]=n;
       if(!have.has(id)) L.push({id,to:em,n,why:`${mon} 月分潤`,by:"auto",ts:b}); });
     S.set(K.ptGrants,L.slice(-2000)); done[key]={ts:Date.now(),res}; S.set(K.revB,done); }catch(e){} }
-setTimeout(()=>{ revBSettle(); tieQ0Mark(); },6000); setInterval(()=>{ revBSettle(); tieQ0Mark(); },30*60e3);
+/* 連續第 4 天起：每多一天扣一次，扣 30 天 TIE 券價格的 30%（ion 10%、Kirin 50% 的中間） */
+const TIE_QUIET_FINE=()=>Math.round(((PLANS.find(p=>p.id==="d30")||{pts:3500}).pts)*.3);
+function tieQuietFine(){ try{ if(!isAdminAcct()||(HB_ON&&(HB.ver[K.whispers]==null||HB.ver[K.ptGrants]==null&&Object.keys(HB.ver).length<3))) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)); let add=0;
+  tieQuiet().forEach(q=>{ if(q.days<4) return; const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===q.mid); if(!em) return; const b0=calDay(q.at)-3;
+    for(let d=4;d<=q.days;d++){ const id=`tqf_${q.mid}_${b0}_${d}`; if(have.has(id)) continue; L.push({id,to:em,n:-TIE_QUIET_FINE(),why:`${WHISPER_NAME} 連續 ${d} 天沒傳訊息`,by:"auto",ts:q.at+(d-3)*864e5}); have.add(id); add++; } });
+  if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
+setTimeout(()=>{ revBSettle(); tieQ0Mark(); tieQuietFine(); },6000); setInterval(()=>{ revBSettle(); tieQ0Mark(); tieQuietFine(); },30*60e3);
 
 /* =========================================================
    PHOTOCARD 抽卡 v2（參考 NSY 取精華去糟粕）
@@ -7629,6 +7656,21 @@ function postTrNeed(p){ if(!p||!p.text||postTrGet(p.id)||ptrBusy.has(p.id)||!pos
   translateMany([hasHangul(p.text)?koPre(p.text):p.text],"zh").then(out=>{ const t=out&&String(out[0]||"").trim(); if(!t||t===p.text.trim()) return;
     const all={...(S.get(K.postTr,{})||{})}; all[p.id]=t; try{ S.set(K.postTr,all); }catch(e){}
     document.querySelectorAll(`[data-ptx="${p.id}"]`).forEach(el=>{ const pc=el.closest(".post"); el.outerHTML=postTextHtml(p,false,el.classList.contains("clamp")); }); }).catch(()=>{}).finally(()=>ptrBusy.delete(p.id)); }
+/* ===== 所有留言區的翻譯：中文以外都翻成中文，下面「查看原文」。翻好的大家共用（K.cmTr），一次收集一批再送去翻 ===== */
+const anyLang=t=>{ const s=String(t||""), pl=postLang(s); if(pl) return pl; if(/\p{Script=Han}/u.test(s)) return ""; const o=s.replace(/[A-Za-z0-9\s\p{P}\p{S}\p{Extended_Pictographic}]/gu,""); return /\p{L}{2,}/u.test(o)?"外語":""; };
+const cmTrGet=k=>(S.get(K.cmTr,{})||{})[k]||"";
+const trQ=new Map(), trBusyK=new Set(); let trQT=0; ui.trSrc=ui.trSrc||{};
+function trNeedT(k,text){ if(trBusyK.has(k)||cmTrGet(k)) return; trBusyK.add(k); trQ.set(k,text); clearTimeout(trQT); trQT=setTimeout(trFlush,120); }
+function trFlush(){ const ks=[...trQ.keys()].slice(0,40), tx=ks.map(k=>{ const t=trQ.get(k); trQ.delete(k); return hasHangul(t)?koPre(t):t; }); if(!ks.length) return;
+  translateMany(tx,"zh").then(out=>{ const all={...(S.get(K.cmTr,{})||{})}; let ch=false; ks.forEach((k,i)=>{ const t=out&&String(out[i]||"").trim(); if(t&&t!==String(ui.trSrc[k]&&ui.trSrc[k].text||"").trim()){ all[k]=t; ch=true; } });
+    if(ch){ const keys=Object.keys(all); if(keys.length>3000) keys.slice(0,keys.length-3000).forEach(x=>delete all[x]); try{ S.set(K.cmTr,all); }catch(e){} ks.forEach(trPaint); } })
+  .catch(()=>{}).finally(()=>{ ks.forEach(k=>trBusyK.delete(k)); if(trQ.size) trQT=setTimeout(trFlush,200); }); }
+function trPaint(k){ const s=ui.trSrc[k]; if(!s) return; document.querySelectorAll(`[data-trk="${CSS.escape(k)}"]`).forEach(el=>{ const nx=el.nextElementSibling; if(nx&&nx.classList.contains("pt-orig")&&nx.dataset.k===k) nx.remove(); el.outerHTML=s.plain?trPlain(k,s.text,s.cls,s.tag):trT(k,s.text,s.cls,s.tag); }); }
+/* 文字＋「查看原文」按鈕 */
+function trT(k,text,cls="",tag="p"){ const lg=anyLang(text), tr=lg&&cmTrGet(k), orig=ui.ptOrig&&ui.ptOrig.has(k); ui.trSrc[k]={text,cls,tag}; if(lg&&!tr) setTimeout(()=>trNeedT(k,text),0);
+  return `<${tag} class="${cls}" data-trk="${esc(k)}">${esc(tr&&!orig?tr:text)}</${tag}>${tr?`<button class="pt-orig" data-a="trOrig" data-k="${esc(k)}">${orig?"查看翻譯":`查看原文 (${lg})`}</button>`:""}`; }
+/* 只放翻好的字（在按鈕裡面，不能再放按鈕） */
+function trPlain(k,text,cls="",tag="span"){ const lg=anyLang(text), tr=lg&&cmTrGet(k); ui.trSrc[k]={text,cls,tag,plain:1}; if(lg&&!tr) setTimeout(()=>trNeedT(k,text),0); return `<${tag} class="${cls}" data-trk="${esc(k)}">${esc(tr||text)}</${tag}>`; }
 function postTextHtml(p,mine,long){ const lg=!mine&&postLang(p.text), tr=lg&&postTrGet(p.id), orig=ui.ptOrig&&ui.ptOrig.has(p.id);
   if(lg&&!tr) setTimeout(()=>postTrNeed(p),0);
   return `<p class="post-text ${long?"clamp":""}" data-ptx="${p.id}">${esc(tr&&!orig?tr:p.text)}</p>${tr?`<button class="pt-orig" data-a="ptOrig" data-id="${p.id}">${orig?"查看翻譯":`查看原文 (${lg})`}</button>`:""}`; }
@@ -7873,7 +7915,7 @@ function viewCmWrite(gid){ const g=groupOf(gid), hide=!!ui.cwHide;
 function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"post", bg=PCI[`cmbg|${gid}`];
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
   const fol=grpMembers(gid).filter(m=>(S.get(K.mFollow,{}))[m]).length, bms=S.get(K.bm,[]).length;
-  const list=tab==="post"?(posts.length?posts.map(fanCard).join(""):`<p class="cmx-empty">尚未發表貼文。</p>`):tab==="cm"?(cms.length?cms.map(c=>`<section class="card fp"><p>${esc(c.text)}</p><small class="fp-sm">${ago(c.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未發表留言。</p>`)
+  const list=tab==="post"?(posts.length?posts.map(fanCard).join(""):`<p class="cmx-empty">尚未發表貼文。</p>`):tab==="cm"?(cms.length?cms.map(c=>`<section class="card fp">${trT("c:"+c.id,c.text,"")}<small class="fp-sm">${ago(c.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未發表留言。</p>`)
     :(lts.length?lts.map(l=>`<section class="card fp lt-card" style="background:${(LT_TPL[l.tpl]||LT_TPL[0])[0]};color:${(LT_TPL[l.tpl]||LT_TPL[0])[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name)}</b><p>${esc(l.text)}</p><small class="fp-sm">${ymd(l.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未有撰寫的粉絲信。</p>`);
   return `<div class="gcm cmx-me" style="--gt:${gTheme(gid)}"><header class="cmx-top"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><span></span></header>
     <section class="me-hero" ${bg?`style="background-image:linear-gradient(transparent,rgba(0,0,0,.45)),url(${bg})"`:""}>${cmAvatar(gid,"big")}<small>${ymd(P.joined)} 已加入</small><b>${esc(P.nick)}</b>${P.intro&&!P.hide?`<p>${esc(P.intro)}</p>`:""}
@@ -7921,7 +7963,7 @@ const mineX=x=>!!x&&x.from==="me"&&(!x.by||x.by===myEmail());
 /* 留言是不是「我」寫的：新帳號看示範帳號的留言，要當成別人的 */
 const isMeC=c=>c.author==="me"&&(c.by?c.by===myEmail():(((session()||{}).role!=="fan"||(session()||{}).admin)?true:myEmail()===DEMO_FAN));
 const isMine=p=>p.mine&&(p.by?p.by===myEmail():myEmail()===DEMO_FAN);
-const fanCard=p=>`<section class="card fp"><div class="fp-h">${isMine(p)?cmAvatar(p.gid,"sm"):`<i style="background:${grad(p.g||3)}">${esc((p.name||"粉")[0])}</i>`}<b>${esc(shownName(p))}</b><small>${ago(p.ts)}</small>${isAdminAcct()&&!isMine(p)?`<button class="uni-more fp-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div><p>${esc(p.text)}</p><div class="fp-f">${p.hideArt?'<span class="fp-hid">藝人看不到</span>':""}${bmBtn("f:"+p.id)}</div></section>`;
+const fanCard=p=>`<section class="card fp"><div class="fp-h">${isMine(p)?cmAvatar(p.gid,"sm"):`<i style="background:${grad(p.g||3)}">${esc((p.name||"粉")[0])}</i>`}<b>${esc(shownName(p))}</b><small>${ago(p.ts)}</small>${isAdminAcct()&&!isMine(p)?`<button class="uni-more fp-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>${isMine(p)?`<p>${esc(p.text)}</p>`:trT("f:"+p.id,p.text,"")}<div class="fp-f">${p.hideArt?'<span class="fp-hid">藝人看不到</span>':""}${bmBtn("f:"+p.id)}</div></section>`;
 function grpSched(gid){ const now=Date.now(), D=864e5, it=[];
   grpMembers(gid).forEach(id=>{ const d=bdayLeft(id); if(d!=null) it.push({ts:now+d*D,ic:"🎂",t:`${MEMBERS[id].name} 生日`,k:"紀念日"}); });
   getConcerts().filter(c=>c.gid===gid&&!c.ended&&c.endTs>now).forEach(c=>it.push({ts:c.startTs,ic:"🎤",t:c.title,k:"演唱會"}));
@@ -8125,7 +8167,7 @@ function snNotif(d){ const me=snMeId(), L=snNotifList(d); (d.ntSeen=d.ntSeen||{}
 /* 留言 */
 function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) return; const me=snMeId(), L=d.cms[id]||[];
   setLayer(`<div class="sn-shw" data-a="tCloseLayer"><div class="sn-sh" role="dialog" aria-label="留言"><i class="sn-grab"></i><b class="sn-sht">留言</b>
-    <div class="sn-cl">${L.length?L.map(c=>{ const u=snUser(c.uid); return u?`<div class="sn-cr">${snAv(u,34)}<div><p><b>${esc(u.u)}</b> ${esc(c.text)}</p><small>${snsAgo(c.ts)}${c.uid===me||isAdminAcct()||p.uid===me?` ・ <button data-a="snCmDel" data-id="${id}" data-v="${c.id}">刪除</button>`:""}</small></div></div>`:""; }).join(""):`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
+    <div class="sn-cl">${L.length?L.map(c=>{ const u=snUser(c.uid); return u?`<div class="sn-cr">${snAv(u,34)}<div><p><b>${esc(u.u)}</b> ${c.uid===me?esc(c.text):trT("s:"+c.id,c.text,"","span")}</p><small>${snsAgo(c.ts)}${c.uid===me||isAdminAcct()||p.uid===me?` ・ <button data-a="snCmDel" data-id="${id}" data-v="${c.id}">刪除</button>`:""}</small></div></div>`:""; }).join(""):`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
     <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),32)}<input id="snCmIn" placeholder="新增留言…" autocomplete="off"><button type="submit">發佈</button></form></div></div>`,"sncm");
   requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 /* 限時動態 */
@@ -8402,11 +8444,11 @@ function renderComments(first=false){
   const nRep=c=>cReps(c).length+(c.reply?1:0);
   const item=(c,top)=>`<div class="pd-c ${c.id===focusC?"flash":""} ${top?"top":""}" id="cm-${c.id}">${av(c)}<div class="pd-cb">
       <div class="pd-ch"><b>${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}</div>
-      <p class="pd-ct">${esc(c.text)}</p>${tr(c)}
+      ${isMeC(c)?`<p class="pd-ct">${esc(c.text)}</p>`:trT("c:"+c.id,c.text,"pd-ct")}
       <div class="pd-ca"><button class="pd-lk ${cLiked(c)?"on":""}" data-a="pdCLike" data-c="${c.id}" aria-label="喜歡">${I.heart}${(c.likedBy||[]).length?`<span>${fmt(c.likedBy.length)}</span>`:""}</button>
         ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:""}</div></div></div>`;
   const repItem=r=>`<div class="pd-c" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):`<span class="pd-av" style="background:${grad(r.g)}">${esc(ini(r.name))}</span>`}<div class="pd-cb">
-      <div class="pd-ch"><b>${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div><p class="pd-ct">${esc(r.text)}</p></div></div>`;
+      <div class="pd-ch"><b>${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct")}</div></div>`;
   const sec=(t,n,body,k)=>`<section class="pd-sec"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";
@@ -8689,17 +8731,21 @@ function viewTieArtist(mid){
     const d=dayLabel(w.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
     if(w.from==="artist") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-mecol">${w.reply?tieRq(w.reply,true,true):""}${w.kind?mediaBubble(w):`<div class="t-b me">${nickTag(esc(w.kt?(w.ko||w.text):w.text))}</div>`}</div></div>`;
     const sh=fanShown(w,mid);
-    return sep+`<div class="t-art" data-sw="${w.id}"><span class="fan-av">${mascot("msg:"+w.id)}</span>
+    return sep+`<div class="t-art"><span class="fan-av">${mascot("msg:"+w.id)}</span>
       <div class="t-art-c"><div class="t-art-n"><span class="from-fan">FROM FAN</span>${sh.member?(sh.name?`<b class="a-nick">${esc(sh.name)}</b>`:`<span class="a-dia" title="Membership">💎</span>`):""}${w.from==="me"&&isAdminAcct()&&!isUni()?`<span class="t-badge soft">示範粉絲</span>`:""}</div>
-      <div class="t-bw"><div class="t-b">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:""}</div><span class="t-time">${timeHM(w.ts)}</span><button class="t-rep" data-a="tieRep" data-id="${w.id}" aria-label="檢舉這則訊息">⋯</button></div></div></div>`;
+      <div class="t-bw has-arw"><div class="t-b">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:""}</div><button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-time">${timeHM(w.ts)}</span><button class="t-rep" data-a="tieRep" data-id="${w.id}" aria-label="檢舉這則訊息">⋯</button></div></div></div>`;
   }).join("");
-  const draft=ui.wDraft||"";
+  const draft=ui.wDraft||"", Q=tieQ(mid);
+  /* 待發送的訊息（照 Bubble：先排好，預覽後一次送出） */
+  const qHtml=Q.length?`<div class="t-qsep"><span>待發送的訊息</span></div>${Q.map((q,i)=>`<div class="t-me t-q" data-a="tqItem" data-i="${i}"><div class="t-mecol">${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),true,true):""}<div class="t-b me">${nickTag(esc(q.text))}</div></div></div>`).join("")}`:"";
   const QUICK=["謝謝大家，今天也在努力練習中 ♡","大家吃過晚餐了嗎？記得保暖喔～","今晚文字直播見！期待和你們相聚 ✨"];
   return `${artTieBg(mid)?tieBgLayer(artTieBg(mid)):(thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`)}<header class="t-rh t-rh-art">
       <div class="t-rh-row"><button class="t-ib" data-a="tab" data-v="home" aria-label="返回">${TI.back}</button><h3>${esc(artName(mid,"tie"))}</h3><div class="t-rh-r"><button class="t-ib t-dots" data-a="tArtDrawer" data-m="${mid}" aria-label="更多"><i></i><i></i><i></i></button></div></div>
     </header>
-    <main class="t-msgs">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}<div id="chat-end"></div></main>
-    <form class="t-foot" id="wform">${(()=>{ const rw=ui.tReply&&getWhispers().find(x=>x.id===ui.tReply); return rw?`<div class="t-rq"><span class="t-rq-i">${TI_REPLY}</span><div class="t-rq-b"><b>回覆粉絲的訊息</b><p>${esc(rw.text)}</p></div><button type="button" data-a="tReplyX" aria-label="取消回覆">${I3.x}</button></div>`:""; })()}<button type="button" class="t-plus" data-a="tAttach" aria-label="傳照片或語音">＋</button><button type="button" class="t-nick" data-a="tNickTk" aria-label="插入 @@@（粉絲的愛稱）">@@@</button><div class="t-inp"><input id="win" maxlength="300" autocomplete="off" value="${esc(draft)}" aria-label="輸入訊息"></div>
+    <main class="t-msgs">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}${qHtml}<p class="t-wait">粉絲們正在等你的訊息</p><div id="chat-end"></div></main>
+    ${Q.length?`<button type="button" class="t-qgo" data-a="tqPreview">傳送待發訊息<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l2.2 7.2L15 12l-9.4 1.2z"/></svg><small>${Q.length}／${TQ_MAX}</small></button>`:""}
+    ${ui.tieEmoji?`<div class="t-emoji">${TIE_EMOJI.map(e=>`<button data-a="tEmoji" data-v="${e}">${e}</button>`).join("")}</div>`:""}
+    <form class="t-foot" id="wform">${(()=>{ const rw=ui.tReply&&getWhispers().find(x=>x.id===ui.tReply); return rw?`<div class="t-rq"><span class="t-rq-i">${TI_REPLY}</span><div class="t-rq-b"><b>回覆粉絲的訊息</b><p>${esc(rw.text)}</p></div><button type="button" data-a="tReplyX" aria-label="取消回覆">${I3.x}</button></div>`:""; })()}<button type="button" class="t-plus" data-a="tAttach" aria-label="傳照片或語音">＋</button><button type="button" class="t-nick" data-a="tNickTk" aria-label="插入 @@@（粉絲的愛稱）">@@@</button><div class="t-inp"><input id="win" maxlength="300" autocomplete="off" value="${esc(draft)}" placeholder="叫叫粉絲的愛稱 @@@ 吧 :)" aria-label="輸入訊息"><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
       <button class="t-send ${draft.trim()?"on":""}" id="wsend" type="submit" aria-label="送出">${TI.send}</button></form>`;
 }
 
@@ -8725,6 +8771,14 @@ function openArtTieBg(){ const mid=session().member, ab=artTieBg(mid), tab=ui.ti
     <div class="t-swg">${tab==="color"?`<button class="t-swc def ${!ab?"sel":""}" data-a="aBgSet" data-mode="default">預設</button>`+TIE_COLORS.map(c=>`<button class="t-swc ${ab&&ab.bgMode==="color"&&ab.bgColor===c?"sel":""}" style="background:${c}" data-a="aBgSet" data-mode="color" data-v="${c}" aria-label="顏色 ${c}"></button>`).join("")
       :[1,2,3,4,5,6,7,8].map(n=>`<button class="t-swc tp-${n} ${ab&&ab.bgMode==="pattern"&&ab.bgPattern===n?"sel":""}" data-a="aBgSet" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div>
     <button class="t-sb cancel" data-a="tCloseLayer">取消</button></div></div>`,"bgmenu"); }
+/* ===== 藝人 TIE：待發送的訊息（照 Bubble）：先排好最多 10 則，預覽後一次送出。只存在這支手機 ===== */
+const TQ_MAX=10;
+const tieQ=mid=>{ try{ return JSON.parse(localStorage.getItem("hc_tq_"+mid)||"[]")||[]; }catch(e){ return ui["tq_"+mid]||[]; } };
+const tieQSet=(mid,Q)=>{ ui["tq_"+mid]=Q; try{ localStorage.setItem("hc_tq_"+mid,JSON.stringify(Q)); }catch(e){} };
+function openTieQPreview(){ const mid=session().member, m=MEMBERS[mid], Q=tieQ(mid); if(!Q.length) return; const ab=artTieBg(mid);
+  setLayer(`<div class="tq-pv" role="dialog" aria-label="預覽"><header class="tq-h"><button class="t-ib" data-a="tqBack" aria-label="返回">${TI.back}</button><b>預覽</b><span class="tq-sp"></span></header>
+    <div class="tq-b">${ab?tieBgLayer(ab,"tq-bg"):(thChatBg("tq-bg")||`<div class="tq-bg t-default"></div>`)}<div class="tq-l">${Q.map(q=>`<div class="tq-m">${tieAv(m,"tq-av")}<div><div class="tq-n">${artBadge(mid)}<b>${esc(artName(mid,"tie"))}</b></div>${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),false,true):""}<div class="t-b">${esc(q.text).split(NICK_TK).join(esc(ME.name||"愛稱"))}</div></div></div>`).join("")}</div></div>
+    <footer class="tq-f"><button data-a="tqBack">返回</button><button class="go" data-a="tqSend">傳送</button></footer></div>`,"tqpv"); }
 
 /* =========================================================
    MEET（照 NSY 的直播規則）
@@ -8888,8 +8942,8 @@ function viewReplay(id){
   const ss=session()||{}, artV=ss.role==="artist"&&ss.member===l.member;
   const mine=x=>artV?x.from==="artist":mineX(x);
   const row=x=>mine(x)?`<div class="rp2-me"><time>${timeHM(x.ts)}</time><div>${x.reply?`<q>${repQ(x.reply)}</q>`:""}<p>${esc(x.text)}</p></div></div>`
-    :x.from==="artist"?`<div class="rp2-a"><span class="rp2-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</span><div><b>${esc(artName(l.member,"live"))} <span class="rp2-vf">${I.verified}</span></b>${x.reply?`<q>${repQ(x.reply)}</q>`:""}<p>${esc(x.text)}</p></div><time>${timeHM(x.ts)}</time></div>`
-    :`<div class="rp2-f"><p><b>${esc(mineX(x)?"你":x.name||"粉絲")}</b>${esc(x.text)}</p><time>${timeHM(x.ts)}</time></div>`;
+    :x.from==="artist"?`<div class="rp2-a"><span class="rp2-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</span><div><b>${esc(artName(l.member,"live"))} <span class="rp2-vf">${I.verified}</span></b>${x.reply?`<q>${repQ(x.reply)}</q>`:""}${trT("lv:"+l.id+":"+x.ts,x.text,"")}</div><time>${timeHM(x.ts)}</time></div>`
+    :`<div class="rp2-f"><p><b>${esc(mineX(x)?"你":x.name||"粉絲")}</b>${mineX(x)?esc(x.text):trT("lv:"+l.id+":"+x.ts+":"+(x.name||""),x.text,"","span")}</p><time>${timeHM(x.ts)}</time></div>`;
   return `<div class="rp2"><div class="cm-bg"><span class="cm-blob b1" style="background:${c[0]}"></span><span class="cm-blob b2" style="background:${c[1]}"></span><span class="cm-blob b3"></span></div>
     <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${ymd(l.startTs)}・${mmss(l)}</small></span><span class="rp2-sp"></span></header>
     <div class="seg2 rp2-seg" style="--i:${art?1:0}"><i class="seg2-ind"></i><button class="${art?"":"on"}" data-a="rpMode" data-v="all">全部留言</button><button class="${art?"on":""}" data-a="rpMode" data-v="art">${artV?"只看我說的話":"只看藝人說的話"}</button></div>
@@ -11362,6 +11416,14 @@ document.addEventListener("click",e=>{
       if(mode==="color") u.bgColor=t.dataset.v; if(mode==="pattern") u.bgPattern=Number(t.dataset.v);
       saveTieSet(t.dataset.m,u); layer.innerHTML=""; render(); break; }
     case "aTieBg": openArtTieBg(); break;
+    case "trOrig": { ui.ptOrig=ui.ptOrig||new Set(); const k=t.dataset.k; if(ui.ptOrig.has(k)) ui.ptOrig.delete(k); else ui.ptOrig.add(k); trPaint(k); break; }
+    case "tieArw": { ui.tReply=t.dataset.id; render(); const i=document.getElementById("win"); if(i) i.focus(); break; }
+    case "tqItem": { const i=+t.dataset.i; iosSheet([["刪除這則","tqDel",`data-i="${i}"`]]); break; }
+    case "tqDel": { const mid=session().member, Q=tieQ(mid); Q.splice(+t.dataset.i,1); tieQSet(mid,Q); layer.innerHTML=""; render(); break; }
+    case "tqPreview": openTieQPreview(); break;
+    case "tqBack": layer.innerHTML=""; break;
+    case "tqSend": iosAlert(`要傳送 ${WHISPER_NAME} 嗎？`,"確認後，訊息會一起傳送。",`<button data-a="tCloseLayer">取消</button><button data-a="tqSendOk">確認</button>`); break;
+    case "tqSendOk": { const mid=session().member, Q=tieQ(mid); layer.innerHTML=""; if(!Q.length) break; Q.forEach((q,k)=>{ sendWhisper(mid,q.text,q.rid); }); try{ aiOnTie(mid,Q.map(q=>q.text).join("\n")); }catch(_){} tieQSet(mid,[]); ui.scrollChat=true; render(); tieToast("已傳送"); break; }
     case "tkNew": { const f=followed(), ms=f.flatMap(gid=>isSelfGid(gid)?[]:grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:ME.name||""}}; render(); window.scrollTo(0,0); break; }
     case "tkMid": tkKeep(); ui.tkD.mid=t.dataset.v; render(); break;
     case "tkPal": tkKeep(); ui.tkD.deco.pal=+t.dataset.v; render(); break;
@@ -11431,7 +11493,8 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="snDmForm"){ e.preventDefault(); const to=e.target.dataset.id, inp=document.getElementById("snDmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; const d=snDB(); (d.dm[to]=d.dm[to]||[]).push({from:snMeId(),text,ts:Date.now()}); snSave(d); render(); const n=document.getElementById("snDmIn"); if(n) n.focus(); snFakeReply(to); return; }
   if(e.target.id==="wform"){ e.preventDefault();
     const text=(ui.wDraft||"").trim(); if(!text) return;
-    if(session().role==="artist"){ ask(`「${text.split(NICK_TK).join("（粉絲的愛稱）").split("{愛稱}").join("（粉絲的愛稱）")}」`,()=>{ ui.wDraft=""; ui.scrollChat=true; const rid=ui.tReply; ui.tReply=null; const reached=sendWhisper(session().member,text,rid); aiOnTie(session().member,text); ui.tieEmoji=false; render(); tieToast("已傳送"); },{title:"要傳送給所有訂閱的粉絲嗎？",ok:"傳送",danger:false}); }
+    if(session().role==="artist"){ const mid=session().member, Q=tieQ(mid); if(Q.length>=TQ_MAX){ toast(`一次最多 ${TQ_MAX} 則，先把待發訊息送出去吧`); return; }
+      Q.push({text,rid:ui.tReply||null}); tieQSet(mid,Q); ui.wDraft=""; ui.tReply=null; ui.scrollChat=true; ui.tieEmoji=false; render(); const i=document.getElementById("win"); if(i) i.focus(); }
     else { const m2=route().m; if(meBlocked()) return; if(banBlock(text)) return; if(fanQuota(m2).left<=0){ quotaBar(); return; }
       const lastMine=[...fanRoom(m2)].reverse().find(w=>w.from==="me");
       if(lastMine&&lastMine.text.trim()===text){ toast("不要重複傳一樣的訊息喔"); return; }
@@ -12374,7 +12437,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);
-  const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b><span>${esc(x.fan.text)}</span></span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span><span class="ap2-ct">${esc(x.text)}</span></button>`).join(""):`<p class="me-none">還沒有留言</p>`)
+  const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
     :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own,prof:true})).join(""):`<p class="me-none">還沒有貼文</p>`);   // 個人社群：點貼文任何地方進貼文、頭貼不再重進個人社群
@@ -12503,7 +12566,7 @@ function artNotifList(mid){ const m=MEMBERS[mid]; if(!m) return []; const L=[], 
   cmNoticesOf&&cmNoticesOf(m.group,"c").slice(0,5).forEach(n=>L.push({ts:n.ts,k:"gn",t:`${groupOf(m.group).name} 公告`,b:n.title,a:"gnOpen",v:n.id}));
   S.get(K.comments,[]).filter(c=>my.has(c.postId)&&c.author!=="artist").slice(-30).forEach(c=>L.push({ts:c.ts,k:"cm",t:"新留言",b:`${c.name}：${c.text}`,a:"comments",v:c.postId}));
   const tw=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"); if(tw.length){ const last=tw[tw.length-1]; L.push({ts:last.ts,k:"tie",t:`${WHISPER_NAME} 粉絲回覆`,b:`共 ${tw.length} 則，最新：${last.text}`,a:"tab",v:"whisper"}); }
-  { const q=tieQuiet().find(x=>x.mid===mid); if(q) L.push({ts:q.at,k:"tie",t:`${WHISPER_NAME} 提醒`,b:`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，連續 4 天沒傳會扣積分。`,a:"tab",v:"whisper"}); }
+  { const q=tieQuiet().find(x=>x.mid===mid); if(q) L.push({ts:q.at,k:"tie",t:`${WHISPER_NAME} 提醒`,b:q.days>=4?`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，每多一天扣 ${fmt(TIE_QUIET_FINE())} 積分。`:`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，明天再沒傳會扣 ${fmt(TIE_QUIET_FINE())} 積分。`,a:"tab",v:"whisper"}); }
   return L.sort((a,b)=>b.ts-a.ts).slice(0,40); }
 const artNUnread=mid=>{ const seen=(S.get(K.artNSeen,{})[mid])||0; return artNotifList(mid).some(x=>x.ts>seen); };
 function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=artNotifList(mid), seen=(S.get(K.artNSeen,{})[mid])||0, IC={ann:I.bell,gn:I.bell,cm:I.chat,tie:TI.send};
@@ -12642,7 +12705,8 @@ const TOURS={
   "artist:foc:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
   "artist:whisper":[[".t-dots","選單","點這裡打開選單，等等帶你看看。"],
     ['[aria-label="檢舉這則訊息"]',"粉絲的回覆","粉絲回你的話會在左邊。遇到不舒服的訊息，點「⋯」檢舉。"],
-    [".t-art[data-sw]","往左滑回覆","把粉絲的訊息往左滑，就能回覆那一句。大家都看得到你的回覆，但不會知道原本是誰說的。"],
+    [".t-arw","回覆","按粉絲訊息旁邊的箭頭，就能回覆那一句。大家都看得到你的回覆，但不會知道原本是誰說的。"],
+    [".t-wait","待發送","寫好的訊息會先排著（最多 10 則），按右下角的「傳送待發訊息」預覽後，再一次送出。"],
     [".t-plus","照片／語音","傳照片或語音給粉絲。"],
     [".t-nick","@@@","打 @@@，每位粉絲看到的都會是自己的名字。"],
     ["#win","傳訊息","寫給所有訂閱你的粉絲，每個人都會收到。"]],
