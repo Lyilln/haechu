@@ -4493,7 +4493,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4775,7 +4775,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026121434";
+const BUILD="20261026122147";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -4965,7 +4965,7 @@ function feedPush(n,aud){ try{ const F=S.get(K.feed,[]); F.unshift({...n,id:"f"+
 /* 管理員加／扣積分：管理員寫進共用的「積分發放紀錄」，粉絲打開 App 時把給自己的那幾筆加進自己的積分（每筆只算一次） */
 const ptGrants=()=>(S.get(K.ptGrants,[])||[]).filter(g=>g&&g.id);
 function ptCollect(){ try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(); if(!me) return; const got=new Set(S.get(K.ptGot,[])||[]);
-  const mine=ptGrants().filter(g=>g.to===me&&!got.has(g.id)); if(!mine.length) return;
+  const seen=new Set(), mine=ptGrants().filter(g=>g.to===me&&!got.has(g.id)&&!seen.has(g.id)&&seen.add(g.id)); if(!mine.length) return;
   let sum=0, cur=points(), hasSet=false; const list=S.get(K.notifs,[]); mine.slice().sort((a,b)=>a.ts-b.ts).forEach(g=>{ got.add(g.id);
     if(g.set){ hasSet=true; cur=Math.max(0,g.n); } else { cur=Math.max(0,cur+g.n); sum+=g.n; }
     list.unshift({id:"pt"+g.id,kind:"core",direct:true,text:g.set?`積分更新為 ${fmt(g.n)}${g.why?"・"+g.why:""}`:`${g.n>=0?"獲得":"扣除"} ${fmt(Math.abs(g.n))} 積分${g.why?"・"+g.why:""}`,ts:g.ts}); });
@@ -6288,6 +6288,30 @@ const wishKey=mid=>mid+":"+new Date().getFullYear();
 function seedBday(){ if(S.get(K.seed15,false)) return; S.set(K.seed15,true); const t=new Date(Date.now()+3*864e5);
   S.set(K.bdays,{...S.get(K.bdays,{}),luna:`${t.getMonth()+1}-${t.getDate()}`,qing:"3-21",yu:"7-8",xing:"11-2",che:"5-17",meng:"12-24",sora:"8-30",tang:"2-14",yin:"9-9",bo:"6-6",shui:"4-1"});
   const w=S.get(K.bdayWish,{}); w[wishKey("luna")]={n:1284}; S.set(K.bdayWish,w); }
+
+/* ===== 藝人 TIE 沒傳訊息：連續 3 天提醒藝人、通知管理員；連續 4 天扣積分 ===== */
+const artistMids=()=>Object.keys(MEMBERS).filter(id=>MEMBERS[id]&&!MEMBERS[id].official&&Object.values(ACCOUNTS).some(a=>a&&a.member===id));
+function tieLastArt(mid){ let t=0; getWhispers().forEach(w=>{ if(w.member===mid&&w.from==="artist"&&w.ts>t) t=w.ts; }); return t; }
+function tieQuiet(){ const now=Date.now(), Q0=S.get(K.tieQ0,{})||{}, out=[];
+  artistMids().forEach(mid=>{ const last=tieLastArt(mid), base=last||Q0[mid]; if(!base) return; const days=calDay(now)-calDay(base);
+    if(days>=3){ const d0=new Date(base); d0.setHours(0,0,0,0); out.push({mid,days,last,at:d0.getTime()+3*DAY}); } });
+  return out; }
+/* 還沒傳過 TIE 的藝人：從第一次被看到的那天開始算 */
+function tieQ0Mark(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.whispers]==null)) return; const Q=S.get(K.tieQ0,{})||{}; let ch=false; artistMids().forEach(mid=>{ if(!Q[mid]&&!tieLastArt(mid)){ Q[mid]=Date.now(); ch=true; } }); if(ch) S.set(K.tieQ0,Q); }catch(e){} }
+
+/* ===== 分潤（做法 B）：每月 1 號結算上個月，藝人分到的積分的 10% 變成積分，每人每月最多 1 萬 ===== */
+const REVB_RATE=.1, REVB_CAP=10000, REVB_FIRST="2026-10";
+const ymKey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
+function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) return;   /* 雲端資料還沒載入就先不結算 */ const now=new Date(), last=new Date(now.getFullYear(),now.getMonth()-1,1), key=ymKey(last); if(key<REVB_FIRST) return;
+    const done=S.get(K.revB,{})||{}; if(done[key]) return;
+    const a=last.getTime(), b=new Date(now.getFullYear(),now.getMonth(),1).getTime(), sh=revShare(), by={};
+    S.get(K.sales,[]).filter(x=>x.ts>=a&&x.ts<b).forEach(x=>{ if(x.type==="tie"&&x.mid) by[x.mid]=(by[x.mid]||0)+x.pts; else if(x.gid){ const ids=groupArtists(x.gid); ids.forEach(id=>{ by[id]=(by[id]||0)+x.pts/Math.max(1,ids.length); }); } });
+    const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), res={}, mon=last.getMonth()+1;
+    Object.keys(by).forEach(mid=>{ const n=Math.min(REVB_CAP,Math.round(by[mid]*sh/100*REVB_RATE)); if(n<=0) return;
+      const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===mid); if(!em) return; const id="rb"+key+"_"+mid; res[mid]=n;
+      if(!have.has(id)) L.push({id,to:em,n,why:`${mon} 月分潤`,by:"auto",ts:b}); });
+    S.set(K.ptGrants,L.slice(-2000)); done[key]={ts:Date.now(),res}; S.set(K.revB,done); }catch(e){} }
+setTimeout(()=>{ revBSettle(); tieQ0Mark(); },6000); setInterval(()=>{ revBSettle(); tieQ0Mark(); },30*60e3);
 
 /* =========================================================
    PHOTOCARD 抽卡 v2（參考 NSY 取精華去糟粕）
@@ -7686,7 +7710,7 @@ function exploreTop(){
     ${ban.length?`<div class="ex-ban" id="exBan">${ban.map(g=>`<button class="ex-b" data-a="gOpen" data-v="${g.id}" style="background:${grad(g.g)}"><b>OPEN! ${esc(g.name)}</b><small>立即前往查看</small><span>${esc(ini(g.name))}</span></button>`).join("")}</div>${ban.length>1?`<div class="tiei-dots ex-dots">${ban.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
     <h2 class="mf-h">全部社群</h2>
     <div class="ex-cat">${[["all","全部"],["group","Group"],["solo","Solo"],["new","New"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="exCat" data-v="${k}">${l}</button>`).join("")}</div>
-    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>artName(id,"feed")), on=fa.includes(g.id);return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${gNew(g)?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
+    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>MEMBERS[id].name), on=fa.includes(g.id);   /* 社群外面一律顯示藝名（個人社群改的名字只在個人社群裡） */return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"feed")+" "+artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${gNew(g)?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
     ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}`;
 }
 /* 搜尋：直接在全部社群裡篩選（不重畫，才不會收鍵盤） */
@@ -11303,6 +11327,7 @@ document.addEventListener("click",e=>{
       if(mode==="color") u.bgColor=t.dataset.v; if(mode==="pattern") u.bgPattern=Number(t.dataset.v);
       saveTieSet(t.dataset.m,u); layer.innerHTML=""; render(); break; }
     case "aTieBg": openArtTieBg(); break;
+    case "tieQuietList": { const L=tieQuiet(); tieModal("TIE 3 天沒傳訊息","",`${L.map(x=>`<span class="info-row"><em>${esc(MEMBERS[x.mid].name)}</em>${x.days} 天${x.last?"・最後一則 "+ymd(x.last):"・還沒傳過"}</span>`).join("")}<button class="t-mbtn" data-a="tCloseLayer">關閉</button>`); break; }
     case "aBgTab": ui.tieBgTab=t.dataset.v; openArtTieBg(); break;
     case "aBgSet": { const mid=session().member, A=S.get(K.tieArtBg,{})||{}, mode=t.dataset.mode;
       if(mode==="default") delete A[mid]; else A[mid]={bgMode:mode,...(mode==="color"?{bgColor:t.dataset.v}:{bgPattern:Number(t.dataset.v)})};
@@ -12428,6 +12453,7 @@ function artNotifList(mid){ const m=MEMBERS[mid]; if(!m) return []; const L=[], 
   cmNoticesOf&&cmNoticesOf(m.group,"c").slice(0,5).forEach(n=>L.push({ts:n.ts,k:"gn",t:`${groupOf(m.group).name} 公告`,b:n.title,a:"gnOpen",v:n.id}));
   S.get(K.comments,[]).filter(c=>my.has(c.postId)&&c.author!=="artist").slice(-30).forEach(c=>L.push({ts:c.ts,k:"cm",t:"新留言",b:`${c.name}：${c.text}`,a:"comments",v:c.postId}));
   const tw=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"); if(tw.length){ const last=tw[tw.length-1]; L.push({ts:last.ts,k:"tie",t:`${WHISPER_NAME} 粉絲回覆`,b:`共 ${tw.length} 則，最新：${last.text}`,a:"tab",v:"whisper"}); }
+  { const q=tieQuiet().find(x=>x.mid===mid); if(q) L.push({ts:q.at,k:"tie",t:`${WHISPER_NAME} 提醒`,b:`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，連續 4 天沒傳會扣積分。`,a:"tab",v:"whisper"}); }
   return L.sort((a,b)=>b.ts-a.ts).slice(0,40); }
 const artNUnread=mid=>{ const seen=(S.get(K.artNSeen,{})[mid])||0; return artNotifList(mid).some(x=>x.ts>seen); };
 function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=artNotifList(mid), seen=(S.get(K.artNSeen,{})[mid])||0, IC={ann:I.bell,gn:I.bell,cm:I.chat,tie:TI.send};
@@ -12713,10 +12739,10 @@ const UNI_ATABGO={home:"#/admin",content:"#/admin?tab=reports",foc:"#/admin?tab=
 const uniMainHead=title=>`<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">${title}</div><span class="sh-sp"></span></div></header>`;
 const uniContentSeg=i=>`<div class="seg2 mod-seg three" style="--i:${i}"><i class="seg2-ind"></i>${[["檢舉","reports"],["全部貼文","posts"],["公告","announce"]].map(([l,t],k)=>`<button class="${k===i?"on":""}" data-a="uniSeg" data-v="#/admin?tab=${t}">${l}</button>`).join("")}</div>`;
 function viewUniTodo(){ const T=uniTodo(), on=getLives().filter(l=>!l.endTs), cm=S.get(K.comments,[]).filter(c=>c.ts>Date.now()-864e5).length, ev=getEvents().filter(e=>e.ts>=Date.now()).length;
-  const rows=[[T.rep,"待處理檢舉","#/admin?tab=reports"],[T.th,"待審核主題","#/admin/themes"]].filter(x=>x[0]);
+  const rows=[[T.rep,"待處理檢舉","#/admin?tab=reports"],[T.th,"待審核主題","#/admin/themes"],[tieQuiet().length,"TIE 3 天沒傳訊息","tieQuiet"]].filter(x=>x[0]);
   return uniMainHead("待辦")+`<main class="page">
     <div class="section-h">要處理的事<span class="muted">${rows.length?rows.reduce((a,b)=>a+b[0],0)+" 件":""}</span></div>
-    ${rows.length?`<section class="card">${rows.map(([n,l,h])=>`<button class="list-btn" data-a="uniGo" data-v="${h}">${l}<span class="r"><em class="t-cnt">${n}</em></span></button>`).join("")}</section>`:`<section class="card uni-empty">都處理完了 ✓</section>`}
+    ${rows.length?`<section class="card">${rows.map(([n,l,h])=>`<button class="list-btn" ${h==="tieQuiet"?'data-a="tieQuietList"':`data-a="uniGo" data-v="${h}"`}>${l}<span class="r"><em class="t-cnt">${n}</em></span></button>`).join("")}</section>`:`<section class="card uni-empty">都處理完了 ✓</section>`}
     <div class="section-h">今天</div>
     <div class="uni-stats"><button class="card" data-a="uniLives"><b>${on.length}</b><span>直播中</span></button><div class="card"><b>${fmt(cm)}</b><span>24 小時新留言</span></div><button class="card" data-a="uniGo" data-v="#/admin?tab=foc"><b>${ev}</b><span>即將舉辦的活動</span></button></div>
     <button class="btn btn-block ann-go uni-ann" data-a="uniAnn">${UI_S.mega} 以HAECHU官方發公告</button>
