@@ -4751,7 +4751,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026112234";
+const BUILD="20261026112402";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -12443,13 +12443,19 @@ const TOURS={
     ["#focStage","本週階段","宣傳週、排名週或打歌週。不設定就照日期走。"],
     ['[data-a="focSave"]',"儲存","按儲存，藝人和粉絲那邊馬上更新。"]],
   "admin:shopadm":[['[data-v="#/admin?tab=albums"]',"專輯與店家","專輯、版本、特典和店家。"],['[data-v="#/admin/themes"]',"主題","審核藝人做的主題，也可以自己上架。"]],
-  "admin:people":[['[data-v="#/admin?tab=banned"]',"禁用字詞","不想在 HAECHU 看到的字，放進來就傳不出去。"],['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],['[data-v="#/admin?tab=revenue"]',"積分統計","每位藝人的積分收入。"],['[data-v="#/admin?tab=translate"]',"翻譯","翻譯服務的設定。"],['[data-a="theme"]',"外觀","淺色、深色，還有主題。"]]};
+  "admin:people":[['[data-v="#/admin?tab=banned"]',"禁用字詞","不想在 HAECHU 看到的字，放進來就傳不出去。"],['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],['[data-v="#/admin?tab=revenue"]',"積分統計","每位藝人的積分收入。"],['[data-v="#/admin?tab=translate"]',"翻譯","翻譯服務的設定。"],['[data-a="theme"]',"外觀","淺色、深色，還有主題。"],
+    ['[data-v="#/admin?tab=accounts"]',"帳號","幫新人建立帳號、看所有帳號的地方。"],['[data-v="#/admin?tab=debut"]',"出道申請","粉絲申請出道會出現在這裡，看完 Teaser 和 MV 再按核准。"],['[data-v="#/admin?tab=ptadd"]',"加積分","每個月結算積分用：可以加、扣，或直接設定成某個數字。"],['[data-a="maintToggle"]',"維修模式","打開後只有管理員能進 App，其他人會被請出去。要更新或修東西的時候用。"]],
+  "admin:accounts":[["#acUser","帳號","填他們給你的帳號。"],["#acReal","本名","填他們真正的本名，只有管理員看得到。"],["#acName","暱稱","隨便填，本人之後可以自己改。"],["#acPw","密碼","填他們給你的密碼。"],['[data-a="acCreate"]',"建立帳號","四格都填好就按這裡。這裡建的都是一般粉絲帳號。"],[".ac-list","目前的帳號","大家的帳號都在這裡，點進去可以改名字、重設密碼。"]],
+  "admin:roster":[['[data-v="#/admin?tab=roster&p=new"]',"新增","按右上角的「＋」新增團體或個人藝人。"],[".rs-row","團和藝人","點進去可以加成員、綁帳號、上傳出道照和 Teaser 照。"]],
+  "admin:rosternew":[[".rs-type","團體或個人","團體：先建團，再一個一個加成員。個人（SOLOIST）：一次就建好。"],["#rgName","名字","團體就填團名，個人就填藝名。"],['[data-a="rsColor"]',"代表色","社群、卡片都會用這個顏色。"],["#rsAcc","綁定帳號","選這位藝人登入用的帳號。還沒有就選「之後再選」。"],["#rsBday","生日","月-日，例如 3-14。可以之後再填。"],['[data-a="rgAdd"]',"建立","按這裡就建好了。"]],
+  "admin:ptadd":[["#ptQ","找人","打帳號或名字找人，可以一次選很多個。"],['[data-a="ptSign"]',"加、扣、設定為","加積分、扣積分，或直接把積分設定成某個數字（每月結算用這個最方便）。"],["#ptN","積分","填數字就好。"],["#ptWhy","原因","對方會看到，例如「10 月積分結算」。"],['[data-a="ptGo"]',"送出","按下去就送出了，對方打開 App 就會收到。"]],
+  "admin:banned":[["#banTa","禁用字詞","大家不想看到的字，一行放一個。放進來的字，在 App 裡就傳不出去。"],['[data-a="banSave"]',"儲存","改完記得按儲存。"]]};
 function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="fan"&&r.sub==="chat"&&!r.p) return "fan:chat";
   if(r.role==="fan"&&r.sub==="grp"&&!r.p) return "fan:grp";
   if(r.role==="artist"&&r.sub==="write") return "artist:write";
   if(r.sub) return "";
-  if(r.role==="admin"){ const t=r.tab||"home"; return "admin:"+(["reports","posts","announce","foc","shopadm","people"].includes(t)?t:t==="home"?"home":"x"); }
+  if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
   return r.role+":"+(r.tab||"home"); }
 const tourDone=k=>{ const s=session()||{}; return !!(S.get(K.tours,{})[(s.email||"")+"|"+k]); };
 function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getElementById("coach")||!welcomeDone()) return;
@@ -12467,7 +12473,8 @@ function fullTourStart(){ const ro=route().role, navs=[...document.querySelector
     if(ro==="fan"&&v==="home"){ seq.push({open:"ftLive",key:"fan:live",lbl:"live"}); seq.push({open:"cm",key:"fan:cm",lbl:"home"}); const g=followed()[0]; if(g&&groupOf(g)){ seq.push({hash:"#/fan/grp?id="+g,lbl:"grp"}); seq.push({open:"grpfab",key:"fan:grpfab",lbl:"grp"}); } }
     if(ro==="fan"&&v==="whisper"){ const id=Object.keys(subs()).find(x=>MEMBERS[x]&&!roomHidden(x)); if(id){ seq.push({hash:"#/fan/chat?m="+id,lbl:"chat"}); seq.push({open:"drawer",key:"fan:drawer",lbl:"chat"}); } }
     if(ro==="artist"&&v==="home"){ seq.push({open:"fab",key:"artist:fab",lbl:"home"}); seq.push({hash:"#/artist/write?p=all",lbl:"write"}); }
-    if(ro==="artist"&&v==="whisper") seq.push({open:"artdrawer",key:"artist:drawer",lbl:"whisper"}); });
+    if(ro==="artist"&&v==="whisper") seq.push({open:"artdrawer",key:"artist:drawer",lbl:"whisper"});
+    if(ro==="admin"&&v==="people"){ [["accounts","帳號"],["roster","藝人與團"],["roster&p=new","新增藝人"],["ptadd","加積分"],["banned","禁用字詞"]].forEach(([t,l])=>seq.push({hash:"#/admin?tab="+t,key:"admin:"+(t==="roster&p=new"?"rosternew":t),lbl:l})); } });
   ui.coach={kind:"full",role:ro,seq,si:0,steps:[],i:0,home:location.hash}; fullNext(); }
 /* 教學時打開抽屜、留言、直播分頁 */
 const TOUR_OPEN={ ftLive:()=>{ ui.feedTab="live"; render(); },
@@ -12509,7 +12516,7 @@ function fullNext(){ const c=ui.coach; if(!c||c.kind!=="full") return;
   if(c.si>=c.seq.length){ fullMarkDone(c.role); tourDemoOff(); ui.coach=null; if(c.home&&location.hash!==c.home) location.hash=c.home; setTimeout(()=>{ window.scrollTo(0,0); ui.coach={kind:"done"}; coachDone(); },350); return; }
   const it=c.seq[c.si++]; coachMount(`<div class="coach-dim soft"></div>`);
   if(it.nav){ const ro=c.role, v=it.nav, h=ro==="admin"&&isUni()?(UNI_ATABGO[v]||"#/admin"):ro==="fan"&&isUni()?(UNI_ROUTE[v]||"#/fan"):(v==="home"?"#/"+ro+(ro==="artist"?"?tab=home":""):"#/"+ro+"?tab="+v); navRoot(h); c.label=TOUR_LBL[v]||v; }
-  else if(it.hash){ location.hash=it.hash; c.label=TOUR_LBL[it.lbl]||""; }
+  else if(it.hash){ location.hash=it.hash; c.label=TOUR_LBL[it.lbl]||it.lbl||""; }
   else if(it.open){ try{ TOUR_OPEN[it.open](); }catch(e){} c.opened=it.open!=="ftLive"||true; c.label=TOUR_LBL[it.lbl]||c.label||""; }
   setTimeout(()=>{ if(ui.coach!==c) return; if(!it.open) window.scrollTo(0,0); const k=it.key||tourKey(); const steps=(TOURS[k]||[]).filter(([sel])=>{ const el=document.querySelector(sel); return el&&el.getBoundingClientRect().height>0; });
     if(!steps.length) return fullNext(); c.steps=steps; c.i=0; c.key=k; c._scI=-1; coachShow(); },650); }
