@@ -4424,6 +4424,14 @@ html.no-scroll,html.no-scroll body{overflow:hidden!important;overscroll-behavior
 @keyframes bgmBob{50%{transform:translateY(-2px) rotate(-6deg)}}
 .dl-song{font-size:12px;font-weight:700;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .dl-song:empty{display:none}
+.lvh-prep .field{position:relative}
+.bgm-open{flex:none;margin-left:auto;position:relative;width:38px;height:38px;border:0;border-radius:50%;background:none;color:var(--ink-3);display:grid;place-items:center;padding:0}
+.bgm-open svg{width:20px;height:20px}.bgm-open.on{color:var(--violet)}
+.bgm-open b{position:absolute;top:2px;right:0;min-width:16px;height:16px;padding:0 4px;border-radius:8px;background:var(--violet);color:#fff;font-size:10px;font-weight:800;display:grid;place-items:center}
+.bgm-sh .bgm-prep{margin:6px 0 4px}
+.bgm-sh .bgm-row{background:var(--s2);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
+.bgm-sh .bgm-row i{color:var(--violet)}
+.bgm-sh .bgm-add{border-color:var(--line);color:var(--violet)}
 
 </style>
 </head>
@@ -4767,7 +4775,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026120512";
+const BUILD="20261026121434";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5948,8 +5956,7 @@ function viewStudio(mid){
     <section class="prep-card lvh-prep" style="${lvCover(mid)}"><span class="lvh-shade"></span>
       <span class="lvh-live off">LIVE<i></i></span>
       <h2>準備開播</h2>
-      <span class="fld-lab">直播標題</span><label class="field">${I.live}<input id="ltitle" placeholder="輸入文字" value="${esc(ui.lTitle||"")}"></label>
-      ${bgmPrepHtml(mid)}
+      <span class="fld-lab">直播標題</span><label class="field">${I.live}<input id="ltitle" placeholder="輸入文字" value="${esc(ui.lTitle||"")}"><button type="button" class="bgm-open ${(S.get(K.bgm,{})[mid]||[]).length?"on":""}" data-a="bgmOpen" aria-label="背景音樂">${BGM_IC}${(S.get(K.bgm,{})[mid]||[]).length?`<b>${(S.get(K.bgm,{})[mid]||[]).length}</b>`:""}</button></label>
       <button class="btn btn-main btn-block prep-go" data-a="startLive">開始直播</button>
     </section>
     ${rpHead()}
@@ -8855,6 +8862,7 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
       for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nudge(f,d); }
       if(h) for(let i=0;i<3;i++){ const d=-h.getBoundingClientRect().top; if(Math.abs(d)<1) break; nudge(h,d); }
       if(bg) bg.style.transform=h?h.style.transform:"";
+      if(f.style.opacity==="0") f.style.opacity="";
       /* 訊息區：鍵盤開著時變成標題列和輸入列中間自己捲的一塊（不靠整頁捲動，才不會亂跳、最新一則才不會被擋住） */
       if(ms&&h){ const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, first=!ms.classList.contains("kbbox"), keep=first?null:keep0; ms.classList.add("kbbox");
         const hb=h.getBoundingClientRect().bottom, ft=f.getBoundingClientRect().top; ms.style.height=Math.max(60,(ft-hb)/z)+"px";
@@ -8880,7 +8888,12 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;
   /* 打字時往上滑看訊息：先收起鍵盤（像 LINE、iMessage），畫面回到正常，不會亂跳 */
   let ty=null; document.addEventListener("touchstart",e=>{ ty=document.activeElement&&document.activeElement.id==="win"&&!e.target.closest(".t-foot,.kbbox")?e.touches[0].clientY:null; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(ty==null) return; if(Math.abs(e.touches[0].clientY-ty)>12){ ty=null; const w=document.getElementById("win"); if(w) w.blur(); } },{passive:true});
-  document.addEventListener("focusout",e=>{ if(e.target.id!=="win") return; q(); setTimeout(q,80); setTimeout(q,300); }); }
+  document.addEventListener("focusout",e=>{ if(e.target.id!=="win") return; q(); setTimeout(q,80); setTimeout(q,300); });
+  /* iPhone：點輸入框時，系統會先把整個畫面往上推（看起來一閃）。先把輸入列暫時藏到上面再叫出鍵盤，系統就不會推畫面，鍵盤出來後再放回鍵盤上方 */
+  let kbHideT=0; document.addEventListener("touchend",e=>{ const w=e.target.closest&&e.target.closest("#win"); if(!w||!isIOS||document.activeElement===w) return; const f=document.querySelector(".t-foot"); if(!f) return;
+    if(e.cancelable) e.preventDefault(); const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
+    f.style.opacity="0"; nudge(f,-(f.getBoundingClientRect().top-80)); try{ w.focus({preventScroll:true}); }catch(_){ w.focus(); }
+    clearTimeout(kbHideT); kbHideT=setTimeout(()=>{ f.style.opacity=""; q(); },900); },{passive:false,capture:true}); }
 /* App 內的小視窗：縮小直播後，在其他頁面也看得到藝人最新一句話 */
 function lvMiniMount(){ let el=document.getElementById("lvMini"); const l=ui.lvMini&&getLive(ui.lvMini);
   if(!l||l.endTs||document.querySelector(".dl")||!session()){ if(l&&l.endTs) ui.lvMini=null; if(el) el.remove(); return; }
@@ -9612,17 +9625,21 @@ setInterval(()=>{
    手機規定要使用者自己點一下才能出聲，所以粉絲要按一次 ♪ */
 const BGM_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5.5l11-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>';
 const BGM_MAX=8, BGM_OK=/\.(mp3|m4a|aac|wav)$/i;
+function bgmRefresh(){ if(layer.querySelector(".bgm-sh")) openBgmSheet(); else render(); }
+function openBgmSheet(){ const mid=session().member;
+  setLayer(`<div class="scrim" data-a="closeSheet"><div class="sheet bgm-sh" role="dialog" aria-label="背景音樂"><div class="grab"></div>
+    <div class="cs-h"><h3>背景音樂</h3><div class="spacer"></div><button class="icon-btn sm" data-a="closeSheet" aria-label="關閉">${XI}</button></div>${bgmPrepHtml(mid)}</div></div>`,"bgm"); }
 function bgmPrepHtml(mid){ const L=S.get(K.bgm,{})[mid]||[];
-  return `<span class="fld-lab">背景音樂</span><div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small><button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
+  return `<div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small><button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
     ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button>`:""}</div>`; }
 function bgmAdd(){ if(ui.bgmBusy) return; const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=".mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/aac,audio/x-m4a,audio/wav";
   inp.onchange=async()=>{ const fs=[...(inp.files||[])]; if(!fs.length) return; const mid=session().member; let bad=0, big=0;
     for(const f of fs){ const A=S.get(K.bgm,{}), L=A[mid]||[]; if(L.length>=BGM_MAX) break;
       if(!BGM_OK.test(f.name||"")){ bad++; continue; } if(f.size>20*1024*1024){ big++; continue; }
-      ui.bgmBusy="上傳中…"; render();
+      ui.bgmBusy="上傳中…"; bgmRefresh();
       try{ const dur=await audioDur(f); if(!dur){ bad++; continue; } const id="bg"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await MDB.put(id,f);
         const A2=S.get(K.bgm,{}); A2[mid]=[...(A2[mid]||[]),{mid:id,name:(f.name||"").replace(/\.[^.]+$/,"").slice(0,40)||"音樂",dur}]; S.set(K.bgm,A2); }catch(e){ bad++; } }
-    ui.bgmBusy=null; render(); if(bad) toast("請換成 MP3 或 M4A 檔"); else if(big) toast("檔案太大了，請小於 20MB"); };
+    ui.bgmBusy=null; bgmRefresh(); if(bad) toast("請換成 MP3 或 M4A 檔"); else if(big) toast("檔案太大了，請小於 20MB"); };
   pickClick(inp); }
 const BG={a:null,on:false,lid:null,idx:-1,url:{}};
 function bgmIsOn(l,host){ return host?!l.bgmOff:(BG.on&&BG.lid===l.id); }
@@ -11115,7 +11132,8 @@ document.addEventListener("click",e=>{
     case "dlTap": { const ev=window.event, tg=ev&&ev.target; if(tg&&tg.closest&&tg.closest("form,input,.cm-tick,.host-feed,.sp-card,.dl-ask")) break; t.classList.toggle("ui-on"); ui.dlUi=t.classList.contains("ui-on"); break; }
     case "bgmTap": bgmTap(t.dataset.id); break;
     case "bgmAdd": bgmAdd(); break;
-    case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); render(); break; }
+    case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); bgmRefresh(); break; }
+    case "bgmOpen": openBgmSheet(); break;
     case "dlChat": { ui.dlChatOff=!ui.dlChatOff; const r0=document.querySelector(".dl"); if(r0) r0.classList.toggle("chat-off",ui.dlChatOff); break; }
     case "dlLeave": { const host=!!document.querySelector(".dl.host"), r0=document.querySelector(".dl"); if(!r0) break; r0.querySelector(".dl-ask")?.remove();
       const w=document.createElement("div"); w.className="dl-ask"; w.innerHTML=`<div class="dl-ask-c"><b>${host?"結束直播":"離開直播"}</b><p>${host?"要結束直播嗎？":"要離開直播嗎？"}</p><div><button data-a="dlAskX">取消</button><button class="on" data-a="${host?"dlEnd":"dlOut"}" data-id="${t.dataset.id}">${host?"結束":"離開"}</button></div></div>`; r0.appendChild(w); break; }
@@ -11475,6 +11493,7 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
   document.addEventListener("touchmove",e=>{ if(!d) return; const dy=e.touches[0].clientY-d.y0; if(dy<0&&!d.on){ d=null; return; } if(!d.on&&dy<6) return; d.on=true; d.dy=Math.max(0,dy); d.sh.style.transition="none"; d.sh.style.transform=`translateY(${d.dy}px)`; if(e.cancelable) e.preventDefault(); },{passive:false});
   document.addEventListener("touchend",()=>{ if(!d) return; const x=d; d=null; if(!x.on) return; const v=x.dy/Math.max(1,performance.now()-x.t), close=x.dy>x.sh.offsetHeight*.3||v>.6&&x.dy>40;
     x.sh.style.transition="transform .25s cubic-bezier(.2,.8,.3,1)"; x.sh.style.transform=close?"translateY(110%)":"";
+    if(close){ const w=x.sh.closest(".scrim,.t-sheet-w,.mu2-shw,.ios-w,.cmx-shw"); if(w){ w.style.transition="background-color .25s,backdrop-filter .25s"; w.style.backgroundColor="transparent"; w.style.backdropFilter="none"; } }
     if(close) setTimeout(()=>{ ui.sheet=null; layer.innerHTML=""; if(x.sh.classList.contains("sheet")) render(); },230); },{passive:true});
 })();
 
@@ -11523,6 +11542,19 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
   document.addEventListener("touchend",e=>{ if(!st) return; const t=e.changedTouches[0], dx=t.clientX-st.x, dy=t.clientY-st.y, s0=st; st=null;
     if(Math.abs(dx)<50||Math.abs(dx)<Math.abs(dy)*1.5||performance.now()-s0.t>700) return; const seg=document.querySelector(".seg2"); if(!seg) return; const bs=[...seg.querySelectorAll("button")], i=bs.findIndex(b=>b.classList.contains("on"));
     const j=dx<0?i+1:i-1; if(j<0||j>=bs.length) return; bs[j].click(); },{passive:true});
+})();
+
+/* ===== 側邊抽屜：手指往右拉，抽屜跟著手走；放開時拉超過 1/3 或甩得快就關，不然彈回去 ===== */
+(function drawerDrag(){ let d=null;
+  document.addEventListener("touchstart",e=>{ const w=e.target.closest&&e.target.closest(".t-drawer-w.open"); if(!w||e.touches.length!==1){ d=null; return; } const dr=w.querySelector(".t-drawer"); if(!dr){ d=null; return; } const t=e.touches[0]; d={w,dr,x0:t.clientX,y0:t.clientY,t:performance.now(),dx:0,on:false,no:false}; },{passive:true});
+  document.addEventListener("touchmove",e=>{ if(!d||d.no) return; const t=e.touches[0], dx=t.clientX-d.x0, dy=t.clientY-d.y0;
+    if(!d.on){ if(Math.abs(dx)<8&&Math.abs(dy)<8) return; if(Math.abs(dy)>Math.abs(dx)||dx<0){ d.no=true; return; } d.on=true; d.dr.style.transition="none"; d.w.style.transition="none"; }
+    const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, W=d.dr.offsetWidth; d.dx=Math.max(0,dx/z);
+    d.dr.style.transform=`translateX(${d.dx}px)`; d.w.style.background=`rgba(0,0,0,${(.4*(1-Math.min(1,d.dx/W))).toFixed(3)})`; if(e.cancelable) e.preventDefault(); },{passive:false});
+  document.addEventListener("touchend",()=>{ if(!d) return; const x=d; d=null; if(!x.on) return; const W=x.dr.offsetWidth, v=x.dx/Math.max(1,performance.now()-x.t), close=x.dx>W*.3||(v>.5&&x.dx>30);
+    x.dr.style.transition="transform .28s cubic-bezier(.2,.8,.3,1)"; x.w.style.transition="background .28s";
+    if(close){ x.dr.style.transform="translateX(100%)"; x.w.style.background="rgba(0,0,0,0)"; ui.tieDrw=null; setTimeout(()=>{ if(layer.contains(x.w)) layer.innerHTML=""; },280); }
+    else { x.dr.style.transform=""; x.w.style.background=""; setTimeout(()=>{ x.dr.style.transition=""; x.w.style.transition=""; },300); } },{passive:true});
 })();
 
 /* =========================================================
@@ -12281,8 +12313,11 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
   <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${tab!=="media"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
-function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0; b.classList.toggle("on",h.getBoundingClientRect().bottom<=bb+b.offsetHeight+1); }
-addEventListener("scroll",apBarSync,{passive:true});
+function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0; b.classList.toggle("on",h.getBoundingClientRect().bottom<=bb+b.offsetHeight+90); }
+/* 滑動中每一格畫面都檢查（iPhone 快速滑時 scroll 事件來得慢，照片會先透出來一下）；提早一點點出現 */
+let apRaf=0, apLast=0; function apLoop(){ apBarSync(); apRaf=performance.now()-apLast<700?requestAnimationFrame(apLoop):0; }
+const apKick=()=>{ apLast=performance.now(); if(!apRaf&&document.getElementById("apBar")) apRaf=requestAnimationFrame(apLoop); };
+addEventListener("scroll",apKick,{passive:true}); addEventListener("touchmove",apKick,{passive:true}); addEventListener("touchstart",apKick,{passive:true});
 /* 生日當天：打開 App 時全螢幕慶祝（一年一次） */
 function artBdayCheck(mid){ if(!mid||layer.innerHTML||document.getElementById("coach")) return; if(bdayLeft(mid)!==0) return;
   const k=(session()||{}).email+"|"+wishKey(mid), seen=S.get(K.artBday,{}); if(seen[k]) return; seen[k]=Date.now(); S.set(K.artBday,seen);
@@ -12510,7 +12545,7 @@ const TOURS={
     ["#pubBtn","發布","寫好就發布，粉絲會收到通知。"]],
   "artist:live":[[".prep-card","準備開播","這是你的直播間。你說的每一句話，粉絲都會在畫面中間看到。"],
     ["#ltitle","直播標題","幫這場直播取個名字。"],
-    [".bgm-prep","背景音樂","先放幾首歌（MP3 或 M4A，最多 8 首）。開播後按右邊的 ♪，粉絲那邊會一起聽到同一段。"],
+    ['[data-a="bgmOpen"]',"背景音樂","先放幾首歌（MP3 或 M4A，最多 8 首）。開播後按右邊的 ♪，粉絲那邊會一起聽到同一段。"],
     ['[data-a="startLive"]',"開始直播","按下去就開播！開播後點粉絲的留言，就能直接回覆他。"],
     [".lvr-h","重播","以前的直播都留在這裡，可以照時間排。"]],
   "artist:room":[[".dl-title","直播間","你正在直播！上面是標題和你的名字。"],
