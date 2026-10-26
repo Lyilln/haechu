@@ -2779,7 +2779,14 @@ html[data-theme="dark"] .cmx-fab{background:#F3F1F7;color:#1D1A24}
 
 
 
-.ap2-hero+.ap2-tabs{margin-top:0}.ap2-tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--bg);border-bottom:1px solid var(--line);margin-top:8px}
+.ap2-hero+.ap2-tabs{margin-top:0}
+/* 照 Weverse：往下滑後上面是一條實心的小標題列（頭貼＋名字），不再透出照片；管理員的「粉絲｜藝人｜管理」下面接著排 */
+.ap2-bar,.ap2-bar.on{top:var(--uniH,0px)!important;background:var(--bg)!important;border-bottom:1px solid var(--line)!important}
+.ap2-bar::before,.ap2-bar::after{display:none!important}
+.ap2-bar .ap2-ib{color:var(--ink)!important}.ap2-bar .ap2-bt{color:var(--ink)!important;font-size:16px!important}.ap2-bar .ap2-bav{width:26px!important;height:26px!important}
+.ap2-tabs{top:calc(var(--uniH,0px) + env(safe-area-inset-top,0px) + 58px)!important}
+.ap2-strip{display:flex;gap:6px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ap2-strip::-webkit-scrollbar{display:none}
+.ap2-strip button{flex:none;width:68px;height:68px;border-radius:12px;overflow:hidden;border:0;padding:0;background:var(--line)}.ap2-strip img,.ap2-strip span{display:block;width:100%;height:100%;object-fit:cover}.ap2-tabs{position:sticky;top:calc(env(safe-area-inset-top,0px) + 58px);z-index:20;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));background:var(--bg);border-bottom:1px solid var(--line);margin-top:8px}
 .ap2-tabs button{position:relative;height:46px;border:0;background:none;font:inherit;font-size:15px;font-weight:700;color:var(--ink-3)}
 .ap2-tabs button.on{color:var(--violet)}
 .ap2-tabs button.on::after{content:"";position:absolute;left:16%;right:16%;bottom:-1px;height:2.5px;border-radius:2px;background:var(--violet)}
@@ -4744,7 +4751,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026112055";
+const BUILD="20261026112234";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7407,7 +7414,7 @@ function paint(html,hasNav,navHtml=""){
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ L.classList.remove("go"); L.style.transform=""; L.style.setProperty("--i",i); L.style.setProperty("--f",i); }
   } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
-  hydrateMedia(root); tieFootPad(); try{ lvLockSync(); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
+  hydrateMedia(root); tieFootPad(); try{ lvLockSync(); }catch(e){} try{ const sw=document.querySelector(".uni-sw"); document.documentElement.style.setProperty("--uniH",sw?sw.offsetHeight+"px":"0px"); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
   const tev=document.getElementById("tev"); if(tev){ tev.focus(); tev.setSelectionRange(tev.value.length,tev.value.length); }
   { const hs=document.getElementById("hostFeed"); if(hs) hs.scrollTop=hs.scrollHeight; const ms=document.getElementById("mrStream"); if(ms) ms.scrollTop=ms.scrollHeight; }
   mountSticks(root);
@@ -12170,6 +12177,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
+  ${med.length?`<div class="ap2-strip">${med.slice(0,12).map(x=>`<button data-a="comments" data-id="${x.id}" aria-label="查看貼文">${x.mid?`<img data-mid="${esc(x.mid)}" alt="">`:`<span style="background:${grad(x.c||0)}"></span>`}</button>`).join("")}</div>`:""}
   <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${tab!=="media"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
 function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; b.classList.toggle("on",window.scrollY>h.offsetHeight-70); }
