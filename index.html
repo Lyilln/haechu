@@ -4397,6 +4397,8 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .db-up{display:flex;gap:10px;margin-top:12px}.db-slot{position:relative;flex:1;aspect-ratio:4/5;border-radius:14px;border:1.5px dashed rgba(139,92,246,.35);background:rgba(139,92,246,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;color:var(--violet,#8B5CF6)}.db-slot b{font-size:26px;font-weight:400}.db-slot small{font-size:12px;opacity:.8}.db-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.db-slot img~small{white-space:nowrap;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.45);color:#fff;padding:2px 8px;border-radius:999px;opacity:1}.db-slot i,.db-th i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-style:normal;display:grid;place-items:center;font-size:13px}.db-busy{margin:8px 0 0;font-size:12px;opacity:.7;text-align:center}
 .me-lv{display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:8px}.me-lv b{font-size:22px;font-weight:700;letter-spacing:.02em}.me-lv span{font-size:13px;font-weight:700}.me-lv small{flex-basis:100%;font-size:12px;opacity:.6}
 .post-tap{cursor:pointer}
+.dl .sp-t.has-tr{-webkit-line-clamp:2}.dl .sp-tr{margin:4px 0 0;font-size:14px;line-height:1.45;opacity:.72;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:none}
+html.no-scroll,html.no-scroll body{overflow:hidden!important;overscroll-behavior:none;height:100%}
 .pt-orig{display:block;margin:6px 0 2px;font-size:13px;color:var(--sub,#8E8A99);text-decoration:underline;text-underline-offset:3px;background:none;padding:0}
 .db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
 .nw-acts{display:flex;gap:6px;flex:none}
@@ -4460,7 +4462,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4622,8 +4624,8 @@ function hbMark(k){ try{ if(!HB_ON||!(HB.tok||HB.ref)||HB.applying||!hbSyncable(
   const p=hbPendGet(); if(!(k in p)){ p[k]=HB.base[k]!=null?HB.base[k]:null; hbPendSet(p); }
   clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,500); }catch(e){} }
 async function hbFlush(){ if(HB.busy||!HB.tok) return; HB.busy=true; let again=false;
-  try{ for(const k of [...HB.dirty]){ HB.dirty.delete(k); try{ await hbPush(k); HB.fail=0; }catch(e){ HB.dirty.add(k); again=true; HB.fail++; if(!e.net&&e.status>=400&&e.status<500&&e.status!==401&&e.status!==409){ HB.dirty.delete(k); try{ console.warn("hbPush",e.status,k); const L=JSON.parse(localStorage.getItem("hc_pushfail")||"[]"); L.unshift({k,s:e.status,t:Date.now()}); localStorage.setItem("hc_pushfail",JSON.stringify(L.slice(0,30))); }catch(x){} if(isAdminAcct()) toast(`有一筆資料沒有存到伺服器（${e.status}・${k.replace(/^daisuki_/,"")}）`); } break; } } }
-  finally{ HB.busy=false; }
+  try{ for(const k of [...HB.dirty]){ HB.dirty.delete(k); HB.inflight=k; try{ await hbPush(k); HB.fail=0; }catch(e){ HB.dirty.add(k); again=true; HB.fail++; if(!e.net&&e.status>=400&&e.status<500&&e.status!==401&&e.status!==409){ HB.dirty.delete(k); try{ console.warn("hbPush",e.status,k); const L=JSON.parse(localStorage.getItem("hc_pushfail")||"[]"); L.unshift({k,s:e.status,t:Date.now()}); localStorage.setItem("hc_pushfail",JSON.stringify(L.slice(0,30))); }catch(x){} if(isAdminAcct()) toast(`有一筆資料沒有存到伺服器（${e.status}・${k.replace(/^daisuki_/,"")}）`); } break; } } }
+  finally{ HB.busy=false; HB.inflight=null; }
   if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,again?Math.min(15e3,1000*2**Math.min(4,HB.fail)):300); } }
 const hbPendDone=k=>{ if(HB.dirty.has(k)) return; const p=hbPendGet(); if(k in p){ delete p[k]; hbPendSet(p); } };
 async function hbPush(k){ await hbPush0(k); hbPendDone(k); }
@@ -4642,7 +4644,7 @@ async function hbPush0(k){ let local=hbReadLocal(k); if(local===null&&HB.ver[k]=
 /* 讀取：每幾秒問一次有沒有別人改過的資料 */
 async function hbPoll(){ if(!HB.tok||document.hidden) return; let ch=false;
   try{ const rows=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&updated_at=gt.${encodeURIComponent(HB.since||"1970-01-01T00:00:00Z")}&order=updated_at.asc&limit=500`);
-    (Array.isArray(rows)?rows:[]).forEach(row=>{ if(HB.ver[row.k]!=null&&row.ver<=HB.ver[row.k]){ if(row.updated_at>HB.since) HB.since=row.updated_at; return; }
+    (Array.isArray(rows)?rows:[]).forEach(row=>{ if(row.k===HB.inflight) return; /* 這份正在送出：先不套用別人的版本，送出時會自己合併（不然會把別人的新訊息吃掉） */ if(HB.ver[row.k]!=null&&row.ver<=HB.ver[row.k]){ if(row.updated_at>HB.since) HB.since=row.updated_at; return; }
       if(HB.dirty.has(row.k)){ const m=hbMerge(JSON.parse(HB.base[row.k]||"null"),hbReadLocal(row.k),row.v); hbRow(row); hbWriteLocal(row.k,m); }
       else { hbRow(row); hbWriteLocal(row.k,row.v); }
       if(row.k===K.roster) applyRoster(); ch=true; });
@@ -4742,7 +4744,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026111645";
+const BUILD="20261026112055";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7326,7 +7328,7 @@ function mountSticks(scope){
 function render(){
   try{ debutSync(); }catch(e){}
   const r=route(), s=session(); if(s) sessTouch();
-  const hashChanged=ui._h!==location.hash; ui._h=location.hash;
+  const hashChanged=ui._h!==location.hash; if(hashChanged) ui._prevH=ui._h; ui._h=location.hash;
   if(s&&suspendOf(s.email)){ const sp=suspendOf(s.email); SS.del(); ui.loginErr=`這個帳號因為外流 TIE 內容，${suspendText(sp)}`; return go("auth"); }
   if(!s){ if(r.role!=="auth") return go("auth"); return paint(viewAuth(),false); }
   if(s.uni&&["fan","artist","admin"].includes(r.role)&&r.role!==s.role){ SS.set({...s,role:r.role,member:r.role==="artist"?(uniMe()||null):null}); return render(); }
@@ -7359,7 +7361,8 @@ function render(){
       if(r.p==="gallery") return paint(viewTieGallery(r.m),false);
       if(r.p==="bg") return paint(viewTieBg(r.m),false);
       if(r.p==="name"||r.p==="nick") return paint(viewTieEdit(r.m,r.p),false);
-      if(hashChanged) ui.scrollChat=true;
+      if(hashChanged){ const pv=ui._prevH||"", cp=ui.chatPos; /* 從這個聊天室的設定、抽屜、TIE BOX 回來：停在原本看的位置 */
+        if(cp&&cp.m===r.m&&!cp.bottom&&pv.startsWith("#/fan/chat")&&/[?&]p=/.test(pv)&&pv.includes("m="+r.m)) ui.restoreChatY=cp.y; else ui.scrollChat=true; }
       markRoomRead(r.m); return paint(viewTieRoom(r.m),false); }
     return paint(viewFan(r.tab||"home"),true,fanNav(r.tab==="live"?"home":(r.tab||"home")));
   }
@@ -7372,6 +7375,14 @@ function render(){
 }
 const SNAP=new Map(), NAVSTK=[];
 /* TIE 聊天室：最後一則訊息貼在輸入列上面（照 LINE），下面留的空間＝輸入列的高度＋一點點 */
+/* 直播間：整頁不能被拖動（不會一直晃）；鍵盤打開時，直播間縮到鍵盤上方，輸入框貼著鍵盤 */
+function lvLockSync(){ const on=!!document.querySelector(".mr.dl"); document.documentElement.classList.toggle("no-scroll",on); if(on) lvFit(); }
+function lvFit(){ const mr=document.querySelector(".mr.dl"), vv=window.visualViewport; if(!mr||!vv) return; const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, kb=window.innerHeight-vv.height>80;
+  if(kb){ mr.style.top=(vv.offsetTop/z)+"px"; mr.style.bottom="auto"; mr.style.height=(vv.height/z)+"px"; } else { mr.style.top=""; mr.style.bottom=""; mr.style.height=""; } }
+if(window.visualViewport){ visualViewport.addEventListener("resize",lvFit); visualViewport.addEventListener("scroll",lvFit); }
+document.addEventListener("touchmove",e=>{ const mr=e.target.closest&&e.target.closest(".mr.dl"); if(!mr||!e.cancelable) return; const sc=e.target.closest("#cmTick,.cm-tick"); if(sc&&sc.scrollHeight>sc.clientHeight+2) return; e.preventDefault(); },{passive:false});
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="lin") setTimeout(()=>{ window.scrollTo(0,0); lvFit(); },60); });
+addEventListener("scroll",()=>{ try{ const r=route(); if(r.sub==="chat"&&!r.p&&document.getElementById("chat-end")){ const de=document.documentElement; ui.chatPos={m:r.m,y:window.scrollY,bottom:window.scrollY+window.innerHeight>=de.scrollHeight-60}; } }catch(e){} },{passive:true});
 function tieFootPad(){ const ms=document.querySelector(".t-msgs"), f=document.querySelector(".t-foot"), end=document.getElementById("chat-end"); if(!ms||!f||!end||ms.classList.contains("kbbox")) return;
   const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, last=[...ms.querySelectorAll(":scope > .t-me,:scope > .t-art,:scope > .t-anniv")].pop();
   /* 量：聊天區下面還多了多少（頁面底部的留白）、最後一則下面本來就有的間距；扣掉後，最後一則剛好在輸入列上面 12 */
@@ -7396,14 +7407,15 @@ function paint(html,hasNav,navHtml=""){
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ L.classList.remove("go"); L.style.transform=""; L.style.setProperty("--i",i); L.style.setProperty("--f",i); }
   } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
-  hydrateMedia(root); tieFootPad(); if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
+  hydrateMedia(root); tieFootPad(); try{ lvLockSync(); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
   const tev=document.getElementById("tev"); if(tev){ tev.focus(); tev.setSelectionRange(tev.value.length,tev.value.length); }
   { const hs=document.getElementById("hostFeed"); if(hs) hs.scrollTop=hs.scrollHeight; const ms=document.getElementById("mrStream"); if(ms) ms.scrollTop=ms.scrollHeight; }
   mountSticks(root);
+  if(ui.restoreChatY!=null){ const y=ui.restoreChatY; ui.restoreChatY=null; ui.scrollChat=false; ui._restored=true; const go=()=>window.scrollTo(0,y); go(); requestAnimationFrame(go); setTimeout(go,120); }
   if(ui.scrollChat){ if(document.getElementById("chat-end")) window.scrollTo(0,document.documentElement.scrollHeight); ui.scrollChat=false; }
   /* 聊天室（藝人端 TIE 等用整頁捲動的）：剛打開就在最底下；畫面更新時停在原本的位置，原本在最底就留在最底 */
   if(document.getElementById("chat-end")&&!document.querySelector(".t-page")){ const toEnd=()=>window.scrollTo(0,document.documentElement.scrollHeight);
-    if(pgChg||prevBottom){ toEnd(); requestAnimationFrame(toEnd); setTimeout(toEnd,120); } else window.scrollTo(0,prevY); }
+    if(ui._restored) ui._restored=false; else if(pgChg||prevBottom){ toEnd(); requestAnimationFrame(toEnd); setTimeout(toEnd,120); } else window.scrollTo(0,prevY); }
   if(ui.focusEv){ const el=document.getElementById("ev-"+ui.focusEv); if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); setTimeout(()=>el.classList.remove("flash"),1600);} ui.focusEv=null; }
   if(ui.focusPost){
     const el=document.getElementById("post-"+ui.focusPost);
@@ -8692,13 +8704,20 @@ function lvSplit(t){ t=String(t||"").trim(); if(t.length<=LV_MAX) return [t];
 function lvPieces(l){ const out=[], now=Date.now(); liveArt(l).forEach(a=>{ const P=lvSplit(a.text); P.forEach((p,k)=>{ if(a.ts+k*LV_GAP<=now||k===0) out.push({...a,text:p,reply:k?null:a.reply,k,n:P.length,ts:a.ts+k*LV_GAP}); }); }); return out; }
 const lvLast=l=>{ const P=lvPieces(l); return P[P.length-1]||null; };
 function spotKey(l){ const cur=lvLast(l), typing=!!(l.typingTs&&Date.now()-l.typingTs<4500), fresh=!!(cur&&Date.now()-cur.ts<HERO_MS); return [cur?cur.ts:0,typing,fresh,cur?ago(cur.ts):""].join("|"); }
+/* 直播：藝人說的韓文附上中文翻譯（卡片大小不變：原文縮成 2 行、翻譯 2 行） */
+const lvTrKey=(l,c)=>l.id+"|"+c.ts;
+const lvTrGet=(l,c)=>(S.get(K.liveTr,{})||{})[lvTrKey(l,c)]||"";
+const lvTrBusy=new Set();
+function lvTrNeed(l,c){ const k=lvTrKey(l,c); if(lvTrGet(l,c)||lvTrBusy.has(k)) return; lvTrBusy.add(k);
+  translateMany([koPre(c.text)],"zh").then(out=>{ const t=out&&String(out[0]||"").trim(); if(!t) return; const all={...(S.get(K.liveTr,{})||{})}; all[k]=t; const ks=Object.keys(all); if(ks.length>400) ks.slice(0,ks.length-400).forEach(x=>delete all[x]); try{ S.set(K.liveTr,all); }catch(e){}
+    const sp=document.getElementById("cmSpot"); const L=getLive(l.id); if(sp&&L&&!L.endTs) sp.innerHTML=spotHtml(L); }).catch(()=>{}).finally(()=>lvTrBusy.delete(k)); }
 function spotHtml(l,host=false){
   const m=MEMBERS[l.member], arts=lvPieces(l), cur=arts[arts.length-1], toMe=!host&&cur&&mineX(cur.reply);
   const typing=l.typingTs&&Date.now()-l.typingTs<4500, fresh=cur&&Date.now()-cur.ts<HERO_MS, prev=arts.slice(Math.max(0,arts.length-3),-1);
   return `<div class="sp-deck n${prev.length}">${prev.map((x,i)=>`<div class="sp-back b${prev.length-i}" aria-hidden="true"><p>${esc(x.text)}</p></div>`).join("")}
     <div class="sp-card ${toMe?"to-me":""}">
       <div class="sp-h"><span class="sp-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</span><div><b>${esc(artName(l.member,"live"))} ${I.verified}</b><span>${cur?ago(cur.ts):"準備中"}</span></div>${toMe?'<span class="sp-me">回覆你 💜</span>':fresh?'<span class="sp-now">NOW</span>':""}</div>
-      ${cur?`${cur.reply?`<div class="sp-rep">${toMe?`回覆 @你：「${esc(cur.reply.text)}」`:repQ(cur.reply)}</div>`:""}<p class="sp-t">${esc(cur.text)}</p>`:`<p class="sp-t wait">${host?esc(l.title||""):esc(artName(l.member,"live"))+" 馬上就來，先跟大家打聲招呼吧 ✨"}</p>`}
+      ${cur?`${cur.reply?`<div class="sp-rep">${toMe?`回覆 @你：「${esc(cur.reply.text)}」`:repQ(cur.reply)}</div>`:""}${(()=>{ const ko=!host&&hasHangul(cur.text), tr=ko&&lvTrGet(l,cur); if(ko&&!tr) setTimeout(()=>lvTrNeed(l,cur),0); return tr?`<p class="sp-t has-tr">${esc(cur.text)}</p><p class="sp-tr">${esc(tr)}</p>`:`<p class="sp-t">${esc(cur.text)}</p>`; })()}`:`<p class="sp-t wait">${host?esc(l.title||""):esc(artName(l.member,"live"))+" 馬上就來，先跟大家打聲招呼吧 ✨"}</p>`}
       <div class="sp-typing ${typing&&!host?"on":""}"><b><i></i><i></i><i></i></b>${esc(artName(l.member,"live"))} 正在寫下一句…</div>
     </div></div>`;
 }
