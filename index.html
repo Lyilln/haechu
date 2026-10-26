@@ -4493,6 +4493,26 @@ html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 5
 .cv-fit{position:relative;isolation:isolate;overflow:hidden}
 .cv-fit::before{content:"";position:absolute;inset:-24px;z-index:-1;background:var(--cv,none) center/cover no-repeat;filter:blur(18px) brightness(.78) saturate(1.1)}
 .cv-fit::after{content:"";position:absolute;inset:0;z-index:-1;background:var(--cv,none) center/contain no-repeat;pointer-events:none}
+/* ===== 直播連線 ===== */
+.sp-duo{display:flex;flex-direction:column;gap:6px}
+.dl .sp-duo .sp-deck{margin-top:6px!important}
+.dl .sp-duo .sp-card{height:132px;padding:12px 16px!important}
+.dl .sp-duo .sp-back{display:none}
+.dl .sp-duo .sp-t{-webkit-line-clamp:2!important}.dl .sp-duo .sp-t.has-tr{-webkit-line-clamp:1!important}.dl .sp-duo .sp-tr{-webkit-line-clamp:1}
+.dl-x{font-style:normal;opacity:.75;margin:0 2px}
+.dl-side .dl-co{position:relative}.dl-side .dl-co .dl-av{width:32px;height:32px;border-radius:50%;display:grid;place-items:center;overflow:hidden;border:2px solid #fff}
+.dl-side .dl-co .dl-av .av-img{width:100%;height:100%;object-fit:cover}
+.dl-side .dl-co.on:not(:has(.dl-av)) svg{color:#FFB3D1}
+.co-inv{display:flex;align-items:center;gap:12px;padding:14px!important;margin-bottom:12px}
+.co-inv .dl-av,.co-r .dl-av{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;overflow:hidden;color:#fff;font-weight:800}
+.co-inv .dl-av .av-img,.co-r .dl-av .av-img{width:100%;height:100%;object-fit:cover}
+.co-inv>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.co-inv b{font-size:14px}.co-inv small{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.co-btns{display:flex;gap:6px;flex:none}
+.co-l{display:flex;flex-direction:column;max-height:50vh;overflow:auto;margin:4px 0 10px}
+.co-r{display:flex;align-items:center;gap:10px;padding:10px 4px;border:0;background:none;font:inherit;text-align:left;border-bottom:1px solid rgba(0,0,0,.06)}
+.co-r b{font-size:14.5px}.co-r small{margin-left:auto;font-size:12px;color:#8E8A99}
+.rp2-a.rp2-g2>div{background:#FFF0F6!important;border-color:#FFD6E7!important}
+.rp2-a.rp2-g2 q{border-left-color:#F9A8D4}
 
 </style>
 </head>
@@ -4836,7 +4856,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026151800";
+const BUILD="20261026152057";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5348,9 +5368,9 @@ function toggleRemind(id){ const list=S.get(K.plans,[]), p=list.find(x=>x.id===i
   if(p.mine) logSelf("live",p.member,`你設定了《${p.title}》的開播提醒 ⏰`); return p.mine; }
 function delPlan(id){ S.set(K.plans,S.get(K.plans,[]).filter(p=>p.id!==id)); }
 function endLive(id){ const l=getLive(id); if(l){ l.endTs=Date.now(); saveLive(l);} }
-function liveSay(id,from,text,{reply=null,react=false}={}){
+function liveSay(id,from,text,{reply=null,react=false,mid=null}={}){
   const l=getLive(id); if(!l||l.endTs) return;
-  l.msgs.push(from==="me"?{from,name:ME.name,by:myEmail(),g:ME.g,text,ts:Date.now()}:{from,text,ts:Date.now(),...(reply?{reply}:{})}); saveLive(l);
+  l.msgs.push(from==="me"?{from,name:ME.name,by:myEmail(),g:ME.g,text,ts:Date.now()}:{from,text,ts:Date.now(),...(reply?{reply}:{}),...(mid?{mid}:{})}); saveLive(l);
   if(from==="artist"&&reply&&reply.from==="me"&&reply.by) feedPush({kind:"live",member:l.member,group:l.group,text:`在直播中回覆了你：「${text}」`,liveId:l.id,color:null,direct:true,liveReply:true},"u:"+reply.by);
 }
 const FAKE=[["星光應援團 🌟",4,["好可愛！！","我來了我來了","💜💜💜","今天的聲音好溫柔"]],["小月亮粉 🌙",2,["今天也好喜歡你","哈哈哈哈","真的假的！","下次直播什麼時候～"]],["晚安露露",6,["有在聽喔～","記得喝水！","螢幕前尖叫","晚餐吃了什麼？"]],["晴天娃娃",5,["第一次搶到直播！","可以唱一小段嗎","好療癒","從台中來報到"]],["棉被裡的粉絲",1,["躲在被子裡看 🫣","明天要考試但我在這","今天心情變好了"]],["奶茶少冰",7,["推薦一下最近在聽的歌！","好想去演唱會","愛你愛你"]]];
@@ -6019,7 +6039,9 @@ async function seedMedia(){
 function viewStudio(mid){
   const m=MEMBERS[mid], g=groupOf(m.group), fans=followed().includes(g.id), c=GRADS[m.g%GRADS.length];
   const myPlans=getPlans().filter(p=>p.member===mid), past=getLives().filter(x=>x.member===mid&&x.endTs);
+  const inv=coInvites(mid);
   return `<main class="page prep">
+    ${inv.map(l=>{ const hm=MEMBERS[l.member], hg=groupOf(hm.group); return `<section class="card co-inv"><i class="dl-av" style="background:${grad(hm.g)}">${mAvIn(l.member)}</i><div><b>${esc(hm.name)}${hg&&!hg.solo?`（${esc(hg.name)}）`:""} 邀請你連線直播</b><small>${esc(l.title||"")}</small></div><span class="co-btns"><button class="btn btn-soft btn-sm" data-a="coNo" data-id="${l.id}">拒絕</button><button class="btn btn-main btn-sm" data-a="coYes" data-id="${l.id}">接受</button></span></section>`; }).join("")}
     <section class="prep-card lvh-prep cv-fit" style="${lvCoverFit(mid)}"><span class="lvh-shade"></span>
       <span class="lvh-live off">LIVE<i></i></span>
       <h2>準備開播</h2>
@@ -7506,7 +7528,7 @@ function render(){
     return paint(viewFan(r.tab||"home"),true,fanNav(r.tab==="live"?"home":(r.tab||"home")));
   }
   if(s.role==="artist"&&r.sub==="write") return paint(viewArtWrite(r.p),false);
-  if(s.role==="artist"&&r.tab==="live"){ const hl=liveNow(s.member); if(hl){ hostSig=""; return paint(viewHostRoom(hl),false); } }
+  if(s.role==="artist"&&r.tab==="live"){ const hl=myLive(s.member); if(hl){ hostSig=""; return paint(viewHostRoom(hl),false); } }
   if(s.role==="artist"&&r.tab==="foc"&&r.p==="fansign"){ const v=viewFsDesk(r.id); if(v) return paint(v,false); }
   if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); artReadSet(Date.now()); const mid0=s.member, RB=S.get(K.tieReadBy,{})||{}; if(mid0&&getWhispers().some(w=>w.member===mid0&&w.from!=="artist"&&w.ts>(RB[mid0]||0))){ S.set(K.tieReadBy,{...RB,[mid0]:Date.now()}); } return paint(v,false); }
   if(s.role==="artist") return paint(viewArtist(r.tab||"home"),true,artistNav(r.tab||"home"));
@@ -8321,7 +8343,7 @@ const NAV={
 };
 const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","CORE",NAV.core],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
 NAV.foc=`<svg viewBox="0 0 24 24" ${NS}><path d="M7 4h5l-.6 5.2a3.5 3.5 0 0 1-7 0L4 4h3z"/><path d="M7.9 12.4V16c0 .8-.4 1.4-1.1 1.8L6 18.4h4M17 4h3l-.4 5.2a3.5 3.5 0 0 1-7 0L12 4h5z"/><path d="M16.1 12.4V16c0 .8.4 1.4 1.1 1.8l.8.6h-4"/><path d="M12 1.6v1.4"/></svg>`;
-const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)?"dot":0});
+const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)||liveGuestOf(session().member)||coInvites(session().member).length?"dot":0});
 
 /* ---------- 粉絲：通知頁 ---------- */
 const NK={tour:["TOUR","#10B981"],news:["NEWS","#0EA5E9"],core:["CORE","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
@@ -8816,6 +8838,12 @@ const mmss=l=>{const s0=Math.max(60,Math.round(((l.endTs||Date.now())-l.startTs)
 const kfmt=n=>n>=10000?(n/1000).toFixed(1).replace(/\.0$/,"")+"k":fmt(n);
 const hfmt=n=>n>=1000?(n/1000).toFixed(1).replace(/\.0$/,"")+"k":String(n);
 const liveArt=l=>l.msgs.filter(x=>x.from==="artist");
+/* ===== 直播連線（串台）：開播的藝人可以邀請一位別團（或 SOLOIST）的藝人一起直播 ===== */
+const lvWho=(x,l)=>x.mid||l.member;
+const coOn=l=>!!(l&&l.co&&l.co.st==="on"&&MEMBERS[l.co.mid]);
+const liveGuestOf=mid=>getLives().find(l=>!l.endTs&&l.co&&l.co.mid===mid&&l.co.st==="on");
+const myLive=mid=>liveNow(mid)||liveGuestOf(mid);
+const coInvites=mid=>getLives().filter(l=>!l.endTs&&l.co&&l.co.mid===mid&&l.co.st==="inv"&&MEMBERS[l.member]);
 
 const repQ=r=>`回覆 @${esc(r.name)}：「${esc(r.text)}」`;
 function relDay(ts){ const d0=new Date();d0.setHours(0,0,0,0); const dd=Math.round((d0-new Date(ts).setHours(0,0,0,0))/864e5); return dd<=0?"今天":dd===1?"昨天":dd<7?dd+" 天前":ymd(ts); }
@@ -8882,9 +8910,9 @@ function lvSplit(t){ t=String(t||"").trim(); if(t.length<=LV_MAX) return [t];
   parts.forEach(p=>{ if(p.length>LV_MAX){ if(cur){ out.push(cur); cur=""; } const n=Math.ceil(p.length/LV_MAX), sz=Math.ceil(p.length/n); for(let i=0;i<p.length;i+=sz) out.push(p.slice(i,i+sz)); return; }
     if((cur+p).length>LV_MAX){ out.push(cur); cur=p; } else cur+=p; });
   if(cur) out.push(cur); return out.length?out:[t]; }
-function lvPieces(l){ const out=[], now=Date.now(); liveArt(l).forEach(a=>{ const P=lvSplit(a.text); P.forEach((p,k)=>{ if(a.ts+k*LV_GAP<=now||k===0) out.push({...a,text:p,reply:k?null:a.reply,k,n:P.length,ts:a.ts+k*LV_GAP}); }); }); return out; }
+function lvPieces(l,mid){ const out=[], now=Date.now(); liveArt(l).filter(a=>!mid||lvWho(a,l)===mid).forEach(a=>{ const P=lvSplit(a.text); P.forEach((p,k)=>{ if(a.ts+k*LV_GAP<=now||k===0) out.push({...a,text:p,reply:k?null:a.reply,k,n:P.length,ts:a.ts+k*LV_GAP}); }); }); return out; }
 const lvLast=l=>{ const P=lvPieces(l); return P[P.length-1]||null; };
-function spotKey(l){ const cur=lvLast(l), typing=!!(l.typingTs&&Date.now()-l.typingTs<4500), fresh=!!(cur&&Date.now()-cur.ts<HERO_MS); return [cur?cur.ts:0,typing,fresh,cur?ago(cur.ts):""].join("|"); }
+function spotKey(l){ const cur=lvLast(l), typing=!!(l.typingTs&&Date.now()-l.typingTs<4500), tg=!!(l.typingG&&Date.now()-l.typingG<4500), fresh=!!(cur&&Date.now()-cur.ts<HERO_MS); return [cur?cur.ts:0,typing,tg,fresh,cur?ago(cur.ts):"",coOn(l)?l.co.mid:""].join("|"); }
 /* 直播：藝人說的韓文附上中文翻譯（卡片大小不變：原文縮成 2 行、翻譯 2 行） */
 const lvTrKey=(l,c)=>l.id+"|"+c.ts;
 const lvTrGet=(l,c)=>(S.get(K.liveTr,{})||{})[lvTrKey(l,c)]||"";
@@ -8892,14 +8920,16 @@ const lvTrBusy=new Set();
 function lvTrNeed(l,c){ const k=lvTrKey(l,c); if(lvTrGet(l,c)||lvTrBusy.has(k)) return; lvTrBusy.add(k);
   translateMany([koPre(c.text)],"zh").then(out=>{ const t=out&&String(out[0]||"").trim(); if(!t) return; const all={...(S.get(K.liveTr,{})||{})}; all[k]=t; const ks=Object.keys(all); if(ks.length>400) ks.slice(0,ks.length-400).forEach(x=>delete all[x]); try{ S.set(K.liveTr,all); }catch(e){}
     const sp=document.getElementById("cmSpot"); const L=getLive(l.id); if(sp&&L&&!L.endTs) sp.innerHTML=spotHtml(L); }).catch(()=>{}).finally(()=>lvTrBusy.delete(k)); }
-function spotHtml(l,host=false){
-  const m=MEMBERS[l.member], arts=lvPieces(l), cur=arts[arts.length-1], toMe=!host&&cur&&mineX(cur.reply);
-  const typing=l.typingTs&&Date.now()-l.typingTs<4500, fresh=cur&&Date.now()-cur.ts<HERO_MS, prev=arts.slice(Math.max(0,arts.length-3),-1);
+/* 連線中：兩位藝人各自一疊卡片，不共用 */
+function spotHtml(l,host=false){ return coOn(l)?`<div class="sp-duo">${spotOne(l,host,l.member)}${spotOne(l,host,l.co.mid)}</div>`:spotOne(l,host,l.member); }
+function spotOne(l,host,who){
+  const m=MEMBERS[who], arts=lvPieces(l,who), cur=arts[arts.length-1], toMe=!host&&cur&&mineX(cur.reply);
+  const typing=who===l.member?l.typingTs&&Date.now()-l.typingTs<4500:l.typingG&&Date.now()-l.typingG<4500, fresh=cur&&Date.now()-cur.ts<HERO_MS, prev=arts.slice(Math.max(0,arts.length-3),-1);
   return `<div class="sp-deck n${prev.length}">${prev.map((x,i)=>`<div class="sp-back b${prev.length-i}" aria-hidden="true"><p>${esc(x.text)}</p></div>`).join("")}
     <div class="sp-card ${toMe?"to-me":""}">
-      <div class="sp-h"><span class="sp-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</span><div><b>${esc(artName(l.member,"live"))} ${I.verified}</b><span>${cur?ago(cur.ts):"準備中"}</span></div>${toMe?'<span class="sp-me">回覆你 💜</span>':fresh?'<span class="sp-now">NOW</span>':""}</div>
-      ${cur?`${cur.reply?`<div class="sp-rep">${toMe?`回覆 @你：「${esc(cur.reply.text)}」`:repQ(cur.reply)}</div>`:""}${(()=>{ const ko=!host&&hasHangul(cur.text), tr=ko&&lvTrGet(l,cur); if(ko&&!tr) setTimeout(()=>lvTrNeed(l,cur),0); return tr?`<p class="sp-t has-tr">${esc(cur.text)}</p><p class="sp-tr">${esc(tr)}</p>`:`<p class="sp-t">${esc(cur.text)}</p>`; })()}`:`<p class="sp-t wait">${host?esc(l.title||""):esc(artName(l.member,"live"))+" 馬上就來，先跟大家打聲招呼吧 ✨"}</p>`}
-      <div class="sp-typing ${typing&&!host?"on":""}"><b><i></i><i></i><i></i></b>${esc(artName(l.member,"live"))} 正在寫下一句…</div>
+      <div class="sp-h"><span class="sp-av" style="background:${grad(m.g)}">${mAvIn(who)}</span><div><b>${esc(artName(who,"live"))} ${I.verified}</b><span>${cur?ago(cur.ts):"準備中"}</span></div>${toMe?'<span class="sp-me">回覆你 💜</span>':fresh?'<span class="sp-now">NOW</span>':""}</div>
+      ${cur?`${cur.reply?`<div class="sp-rep">${toMe?`回覆 @你：「${esc(cur.reply.text)}」`:repQ(cur.reply)}</div>`:""}${(()=>{ const ko=!host&&hasHangul(cur.text), tr=ko&&lvTrGet(l,cur); if(ko&&!tr) setTimeout(()=>lvTrNeed(l,cur),0); return tr?`<p class="sp-t has-tr">${esc(cur.text)}</p><p class="sp-tr">${esc(tr)}</p>`:`<p class="sp-t">${esc(cur.text)}</p>`; })()}`:`<p class="sp-t wait">${host&&who===l.member?esc(l.title||""):esc(artName(who,"live"))+(who===l.member?" 馬上就來，先跟大家打聲招呼吧 ✨":" 加入連線了 ✨")}</p>`}
+      <div class="sp-typing ${typing&&!host?"on":""}"><b><i></i><i></i><i></i></b>${esc(artName(who,"live"))} 正在寫下一句…</div>
     </div></div>`;
 }
 function tlHtml(l){ return liveArt(l).slice(0,-1).slice(-2).reverse().map(x=>`<div class="tl"><em>${timeHM(x.ts)}</em><span>${esc(x.text)}</span></div>`).join(""); }
@@ -8936,8 +8966,8 @@ function lvShell(l,host,inner){ const m=MEMBERS[l.member], g=groupOf(m.group);
     <div class="dl-bg" style="${lvCover(l.member)}"></div><span class="dl-shade"></span>
     <header class="dl-top"><span class="dl-live">LIVE<i></i></span><span class="dl-hearts">${LV_IC.heartO}<b id="mrHearts">${fmt(l.hearts)}</b></span></header>
     <div class="dl-ui"><button class="dl-exit" data-a="dlLeave" data-id="${l.id}" aria-label="${host?"結束直播":"離開直播"}">${LV_IC.exit}</button>
-      <div class="dl-title"><b>${esc(l.title||"")}</b><span><i class="dl-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</i>${esc(artName(l.member,"live"))}<em class="dl-vf">${I.verified}</em></span>${(l.bgm||[]).length?`<small class="dl-song" id="dlSong"></small>`:""}</div>
-      <div class="dl-side">${(l.bgm||[]).length?`<button class="dl-bgm ${bgmIsOn(l,host)?"on":""}" data-a="bgmTap" data-id="${l.id}" aria-label="背景音樂">${BGM_IC}</button>`:""}<button data-a="dlChat" aria-label="聊天開關">${LV_IC.chat}</button><button data-a="dlMini" data-id="${l.id}" aria-label="縮小">${LV_IC.mini}</button></div></div>
+      <div class="dl-title"><b>${esc(l.title||"")}</b><span><i class="dl-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</i>${esc(artName(l.member,"live"))}<em class="dl-vf">${I.verified}</em>${coOn(l)?`<em class="dl-x">×</em><i class="dl-av" style="background:${grad(MEMBERS[l.co.mid].g)}">${mAvIn(l.co.mid)}</i>${esc(artName(l.co.mid,"live"))}<em class="dl-vf">${I.verified}</em>`:""}</span>${(l.bgm||[]).length?`<small class="dl-song" id="dlSong"></small>`:""}</div>
+      <div class="dl-side">${host&&session().member===l.member?`<button class="dl-co ${l.co&&(l.co.st==="inv"||l.co.st==="on")?"on":""}" data-a="coMenu" data-id="${l.id}" aria-label="連線">${l.co&&l.co.st==="on"&&MEMBERS[l.co.mid]?`<i class="dl-av" style="background:${grad(MEMBERS[l.co.mid].g)}">${mAvIn(l.co.mid)}</i>`:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><circle cx="8" cy="9" r="3.2"/><circle cx="16" cy="9" r="3.2"/><path d="M2.8 19c.6-3 2.6-4.6 5.2-4.6 1.5 0 2.8.5 3.8 1.5M21.2 19c-.6-3-2.6-4.6-5.2-4.6-1.5 0-2.8.5-3.8 1.5"/></svg>'}</button>`:""}${(l.bgm||[]).length?`<button class="dl-bgm ${bgmIsOn(l,host)?"on":""}" data-a="bgmTap" data-id="${l.id}" aria-label="背景音樂">${BGM_IC}</button>`:""}<button data-a="dlChat" aria-label="聊天開關">${LV_IC.chat}</button><button data-a="dlMini" data-id="${l.id}" aria-label="縮小">${LV_IC.mini}</button></div></div>
     ${inner}
     <div id="heartRain" class="heart-rain"></div><div id="cmMile" class="cm-mile"></div>
   </div>`; }
@@ -8967,13 +8997,13 @@ function viewMeetEnd(l){
 function viewReplay(id){
   const l=getLive(id), m=MEMBERS[l.member], arts=liveArt(l), art=!!ui.rpArt, c=GRADS[m.g%GRADS.length];
   const log=(art?arts:l.msgs).slice().sort((a,b)=>a.ts-b.ts);
-  const ss=session()||{}, artV=ss.role==="artist"&&ss.member===l.member;
-  const mine=x=>artV?x.from==="artist":mineX(x);
+  const ss=session()||{}, artV=ss.role==="artist"&&(ss.member===l.member||!!(l.co&&l.co.was&&l.co.mid===ss.member));
+  const mine=x=>artV?x.from==="artist"&&lvWho(x,l)===ss.member:mineX(x);
   const row=x=>mine(x)?`<div class="rp2-me"><time>${timeHM(x.ts)}</time><div>${x.reply?`<q>${repQ(x.reply)}</q>`:""}<p>${esc(x.text)}</p></div></div>`
-    :x.from==="artist"?`<div class="rp2-a"><span class="rp2-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</span><div><b>${esc(artName(l.member,"live"))} <span class="rp2-vf">${I.verified}</span></b>${x.reply?`<q>${repQ(x.reply)}</q>`:""}${trT("lv:"+l.id+":"+x.ts,x.text,"")}</div><time>${timeHM(x.ts)}</time></div>`
+    :x.from==="artist"?`<div class="rp2-a ${lvWho(x,l)!==l.member?"rp2-g2":""}"><span class="rp2-av" style="background:${grad((MEMBERS[lvWho(x,l)]||m).g)}">${mAvIn(lvWho(x,l))}</span><div><b>${esc(artName(lvWho(x,l),"live"))} <span class="rp2-vf">${I.verified}</span></b>${x.reply?`<q>${repQ(x.reply)}</q>`:""}${trT("lv:"+l.id+":"+x.ts,x.text,"")}</div><time>${timeHM(x.ts)}</time></div>`
     :`<div class="rp2-f"><p><b>${esc(mineX(x)?"你":x.name||"粉絲")}</b>${mineX(x)?esc(x.text):trT("lv:"+l.id+":"+x.ts+":"+(x.name||""),x.text,"","span")}</p><time>${timeHM(x.ts)}</time></div>`;
   return `<div class="rp2"><div class="cm-bg"><span class="cm-blob b1" style="background:${c[0]}"></span><span class="cm-blob b2" style="background:${c[1]}"></span><span class="cm-blob b3"></span></div>
-    <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${ymd(l.startTs)}・${mmss(l)}</small></span><span class="rp2-sp"></span></header>
+    <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}${l.co&&l.co.was&&MEMBERS[l.co.mid]?" × "+esc(artName(l.co.mid,"live")):""}・${ymd(l.startTs)}・${mmss(l)}</small></span><span class="rp2-sp"></span></header>
     <div class="seg2 rp2-seg" style="--i:${art?1:0}"><i class="seg2-ind"></i><button class="${art?"":"on"}" data-a="rpMode" data-v="all">全部留言</button><button class="${art?"on":""}" data-a="rpMode" data-v="art">${artV?"只看我說的話":"只看藝人說的話"}</button></div>
     <main class="rp2-log seg2-pane ${ui.segAnim||""}">${log.length?log.map(row).join(""):`<p class="rp2-none">${art?"這場直播藝人還沒說話":"這場直播沒有留言"}</p>`}</main></div>`;
 }
@@ -9050,7 +9080,7 @@ function checkMile(l){
 }
 function updateMeetRoom(){
   const r=route(), ss=session();
-  if(ss&&ss.role==="artist"&&r.tab==="live"&&document.querySelector(".cm.host")){ const hl=liveNow(ss.member); if(hl) updateHost(hl); else render(); return; }
+  if(ss&&ss.role==="artist"&&r.tab==="live"&&document.querySelector(".cm.host")){ const hl=myLive(ss.member); if(hl) updateHost(hl); else render(); return; }
   if(r.sub!=="live") return; const l=getLive(r.id); if(!l) return;
   if(l.endTs){ if(!document.querySelector(".mr-end")){ ui.endFor=l.id; render(); } return; }
   if(!document.getElementById("cmSpot")) return;
@@ -10630,7 +10660,7 @@ document.addEventListener("click",e=>{
       const ts=new Date(wh).getTime(); if(!ts||ts<Date.now()){ toast("請選一個之後的時間"); break; }
       addPlan(session().member,ti,ts); render(); if(layer.querySelector(".plan-sheet")||true) openPlanSheet(); toast("已公布預告，粉絲可以按提醒我了 ✨"); break; }
     case "delPlan": ask("要刪除這個直播預告嗎？",()=>{ delPlan(t.dataset.id); render(); openPlanSheet(); toast("已刪除預告"); }); break;
-    case "hostReplyTo": { const l=liveNow(session().member); if(!l) break; const i=+t.dataset.i, x=l.msgs[i]; if(!x) break;
+    case "hostReplyTo": { const l=myLive(session().member); if(!l) break; const i=+t.dataset.i, x=l.msgs[i]; if(!x) break;
       ui.hostReply=ui.hostReply&&ui.hostReply.i===i?null:{i,name:x.name||"粉絲",text:x.text,from:x.from,by:x.by,ts:x.ts};
       { const hs=document.getElementById("hostFeed"), hy=hs?hs.scrollTop:0; render(); const h2=document.getElementById("hostFeed"); if(h2) h2.scrollTop=hy; }
       if(ui.hostReply){ const n=document.getElementById("lin"); if(n) n.focus({preventScroll:true}); } break; }
@@ -10798,7 +10828,7 @@ document.addEventListener("click",e=>{
     case "liveRep": { const l=getLive(route().id); if(!l) break; const x=l.msgs.find(m=>String(m.ts)===t.dataset.ts); if(!x) break;
       if(isAdminAcct()){ admQuick({kind:"live",ref:{liveId:l.id,ts:x.ts,by:x.by},text:x.text,name:x.name,by:x.by,who:x.from==="me"?"fan:me":"fan:"+(x.name||"")}); break; }
       ask(`檢舉「${x.name||"粉絲"}」的留言：「${x.text}」？管理員會審核。`,()=>{ reportItem("live",{liveId:l.id,ts:x.ts,text:x.text,name:x.name,by:x.by,who:x.from==="me"?"fan:me":"fan:"+(x.name||"")}); toast("已送出檢舉，謝謝你"); },{title:"檢舉留言",ok:"檢舉"}); break; }
-    case "hostRep": { const l=liveNow(session().member), hr=ui.hostReply; if(!l||!hr) break; const x=l.msgs[hr.i]; if(!x) break;
+    case "hostRep": { const l=myLive(session().member), hr=ui.hostReply; if(!l||!hr) break; const x=l.msgs[hr.i]; if(!x) break;
       if(isAdminAcct()){ ui.hostReply=null; admQuick({kind:"live",ref:{liveId:l.id,ts:x.ts,by:x.by},text:x.text,name:x.name,by:x.by,who:x.from==="me"?"fan:me":"fan:"+(x.name||"")}); break; }
       ask(`檢舉「${x.name||"粉絲"}」的留言：「${x.text}」？管理員會審核。`,()=>{ reportItem("live",{liveId:l.id,ts:x.ts,text:x.text,name:x.name,who:x.from==="me"?"fan:me":"fan:"+(x.name||"")}); ui.hostReply=null; render(); toast("已送出檢舉"); },{title:"檢舉留言",ok:"檢舉"}); break; }
     case "tieRep": { const w=getWhispers().find(x=>x.id===t.dataset.id); if(!w) break; const mid=session().member, sh=fanShown(w,mid);
@@ -11276,8 +11306,18 @@ document.addEventListener("click",e=>{
     case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); bgmRefresh(); break; }
     case "bgmOpen": openBgmSheet(); break;
     case "dlChat": { ui.dlChatOff=!ui.dlChatOff; const r0=document.querySelector(".dl"); if(r0) r0.classList.toggle("chat-off",ui.dlChatOff); break; }
-    case "dlLeave": { const host=!!document.querySelector(".dl.host"), r0=document.querySelector(".dl"); if(!r0) break; r0.querySelector(".dl-ask")?.remove();
-      const w=document.createElement("div"); w.className="dl-ask"; w.innerHTML=`<div class="dl-ask-c"><b>${host?"結束直播":"離開直播"}</b><p>${host?"要結束直播嗎？":"要離開直播嗎？"}</p><div><button data-a="dlAskX">取消</button><button class="on" data-a="${host?"dlEnd":"dlOut"}" data-id="${t.dataset.id}">${host?"結束":"離開"}</button></div></div>`; r0.appendChild(w); break; }
+    case "dlLeave": { const host=!!document.querySelector(".dl.host"), r0=document.querySelector(".dl"); if(!r0) break; r0.querySelector(".dl-ask")?.remove(); const l0=getLive(t.dataset.id), gst=host&&l0&&l0.member!==session().member;
+      const w=document.createElement("div"); w.className="dl-ask"; w.innerHTML=`<div class="dl-ask-c"><b>${gst?"離開連線":host?"結束直播":"離開直播"}</b><p>${gst?"要離開這場連線嗎？":host?"要結束直播嗎？":"要離開直播嗎？"}</p><div><button data-a="dlAskX">取消</button><button class="on" data-a="${gst?"coLeave":host?"dlEnd":"dlOut"}" data-id="${t.dataset.id}">${gst?"離開":host?"結束":"離開"}</button></div></div>`; r0.appendChild(w); break; }
+    case "coLeave": { const l=getLive(t.dataset.id); if(l&&l.co){ l.co.st="left"; saveLive(l); } ui.hostReply=null; ui.dlUi=false; render(); toast("已離開連線"); break; }
+    case "coMenu": { const l=getLive(t.dataset.id); if(!l) break; if(l.co&&(l.co.st==="inv"||l.co.st==="on")){ iosSheet([[l.co.st==="on"?`結束和 ${MEMBERS[l.co.mid]?MEMBERS[l.co.mid].name:""} 的連線`:"取消邀請","coStop",`data-id="${l.id}"`]]); break; }
+      const me=session().member, L=Object.keys(MEMBERS).filter(id=>id!==me&&MEMBERS[id]&&!MEMBERS[id].official&&groupOf(MEMBERS[id].group)&&Object.values(ACCOUNTS).some(a=>a&&a.member===id));
+      if(!L.length){ toast("還沒有其他藝人可以連線"); break; }
+      tieModal("邀請連線","",`<div class="co-l">${L.map(id=>`<button class="co-r" data-a="coPick" data-id="${l.id}" data-v="${id}"><i class="dl-av" style="background:${grad(MEMBERS[id].g)}">${mAvIn(id)}</i><b>${esc(MEMBERS[id].name)}</b><small>${esc(groupOf(MEMBERS[id].group).name)}</small></button>`).join("")}</div><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "coPick": { const l=getLive(t.dataset.id); if(!l||l.endTs) break; l.co={mid:t.dataset.v,st:"inv",ts:Date.now()}; saveLive(l); layer.innerHTML=""; toast(`已邀請 ${MEMBERS[t.dataset.v].name}，等對方接受`); render(); break; }
+    case "coStop": { const l=getLive(t.dataset.id); if(l&&l.co){ l.co.st="left"; saveLive(l); } layer.innerHTML=""; render(); break; }
+    case "coYes": { const me=session().member, l=getLive(t.dataset.id); if(!l||l.endTs||!l.co||l.co.mid!==me){ toast("這場直播已經結束了"); render(); break; } if(liveNow(me)){ toast("你正在直播，先結束自己的直播"); break; }
+      l.co.st="on"; l.co.was=1; l.co.at=Date.now(); saveLive(l); const gm=MEMBERS[me]; try{ feedPush({kind:"live",member:l.member,guest:me,group:gm.group,text:l.title,liveId:l.id,color:null},"g:"+gm.group); }catch(e){} go("artist",null,"live"); break; }
+    case "coNo": { const l=getLive(t.dataset.id); if(l&&l.co&&l.co.mid===session().member){ l.co.st="no"; saveLive(l); } render(); break; }
     case "dlAskX": document.querySelector(".dl-ask")?.remove(); break;
     case "dlOut": ui.dlUi=false; navBack(); break;
     case "dlEnd": endLive(t.dataset.id); ui.hostReply=null; ui.dlUi=false; render(); window.scrollTo(0,0); toast("直播已結束，可以在重播裡回顧"); break;
@@ -11513,8 +11553,8 @@ document.addEventListener("submit",e=>{
     if(!desk&&meBlocked()) return; if(desk&&fsTalking(ev)!==session().member) return; fsSay(ev.id,desk?sl.fk:FS_ME,desk?"artist":"fan",text,desk?session().member:null); i.value=""; i.focus(); return; }
   if(e.target.id==="lform"){ e.preventDefault();
     const text=(ui.lDraft||"").trim(); if(!text) return; if(session().role==="fan"&&banBlock(text)) return; ui.lDraft="";
-    const s=session(), r=route(), id=s.role==="artist"?(liveNow(s.member)||{}).id:r.id; if(!id) return;
-    if(s.role==="artist"){ const l=getLive(id); if(l){ l.typingTs=0; saveLive(l); } liveSay(id,"artist",text,{reply:hostRep()}); ui.hostReply=null; render(); const n=document.getElementById("lin"); if(n) n.focus(); if(aiReady()) aiOnLive(id,"artist"); else scheduleFake(id); }
+    const s=session(), r=route(), id=s.role==="artist"?(myLive(s.member)||{}).id:r.id; if(!id) return;
+    if(s.role==="artist"){ const l=getLive(id), gst=l&&l.member!==s.member; if(l){ if(gst) l.typingG=0; else l.typingTs=0; saveLive(l); } liveSay(id,"artist",text,{reply:hostRep(),mid:gst?s.member:null}); ui.hostReply=null; render(); const n=document.getElementById("lin"); if(n) n.focus(); if(!gst){ if(aiReady()) aiOnLive(id,"artist"); else scheduleFake(id); } }
     else { if(meBlocked()){ ui.lDraft=text; return; } if(!slowOk(text)){ ui.lDraft=text; return; } liveSay(id,"me",text); demoReplyToMe(id,text); aiOnLive(id,"me"); const i=document.getElementById("lin"); i.value=""; document.getElementById("lsend").classList.remove("on"); updateMeetRoom(); i.focus(); }
     return; }
   if(e.target.id==="snCmForm"){ e.preventDefault(); const id=e.target.dataset.id, inp=document.getElementById("snCmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; const d=snDB(); (d.cms[id]=d.cms[id]||[]).push({id:"sc"+Date.now(),uid:snMeId(),text,ts:Date.now()}); snSave(d); snOpenCm(id); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
@@ -11558,7 +11598,7 @@ document.addEventListener("input",e=>{
   if(e.target.id==="lsSplit"&&ui.lsDraft){ const v=+e.target.value; ui.lsDraft.ds.split=v/100; document.getElementById("lsSplitV").textContent=v+"%"; const el=document.querySelector('.ls-box[data-ls="draft"]'); if(el&&el._ls) el._ls.update(ui.lsDraft.ds); }
   if(e.target.id==="lsThr"&&ui.lsDraft){ document.getElementById("lsThrV").textContent=e.target.value; }
   if(e.target.id==="lin"){ ui.lDraft=e.target.value; const sb=document.getElementById("lsend"); if(sb){ sb.disabled=session().role==="artist"?!e.target.value.trim():false; sb.classList.toggle("on",!!e.target.value.trim()); }
-    if(session().role==="artist"){ const l=liveNow(session().member); if(l&&(!l.typingTs||Date.now()-l.typingTs>2000)){ l.typingTs=Date.now(); saveLive(l); } } }
+    if(session().role==="artist"){ const me=session().member, l=myLive(me); if(l){ const k=l.member===me?"typingTs":"typingG"; if(!l[k]||Date.now()-l[k]>2000){ l[k]=Date.now(); saveLive(l); } } } }
   if(e.target.id==="win"){ ui.wDraft=e.target.value; document.getElementById("wsend").classList.toggle("on",!!e.target.value.trim()); }
   if(e.target.id==="tev"){ ui.tieEditVal=e.target.value; const st=tieSet(route().m), val=route().p==="name"?st.chatName:st.nickname; document.getElementById("teOk").classList.toggle("on",e.target.value!==val); }
   if(e.target.id==="cin"){ ui.cDraft=e.target.value; document.getElementById("csend").disabled=!e.target.value.trim(); }
@@ -12594,6 +12634,7 @@ function artNotifList(mid){ const m=MEMBERS[mid]; if(!m) return []; const L=[], 
   cmNoticesOf&&cmNoticesOf(m.group,"c").slice(0,5).forEach(n=>L.push({ts:n.ts,k:"gn",t:`${groupOf(m.group).name} 公告`,b:n.title,a:"gnOpen",v:n.id}));
   S.get(K.comments,[]).filter(c=>my.has(c.postId)&&c.author!=="artist").slice(-30).forEach(c=>L.push({ts:c.ts,k:"cm",t:"新留言",b:`${c.name}：${c.text}`,a:"comments",v:c.postId}));
   const tw=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"); if(tw.length){ const last=tw[tw.length-1]; L.push({ts:last.ts,k:"tie",t:`${WHISPER_NAME} 粉絲回覆`,b:`共 ${tw.length} 則，最新：${last.text}`,a:"tab",v:"whisper"}); }
+  coInvites(mid).forEach(l=>L.push({ts:l.co.ts,k:"live",t:"連線邀請",b:`${MEMBERS[l.member].name} 邀請你一起直播：${l.title||""}`,a:"tab",v:"live"}));
   { const q=tieQuiet().find(x=>x.mid===mid); if(q) L.push({ts:q.at,k:"tie",t:`${WHISPER_NAME} 提醒`,b:q.days>=4?`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，每多一天扣 ${fmt(TIE_QUIET_FINE())} 積分。`:`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，明天再沒傳會扣 ${fmt(TIE_QUIET_FINE())} 積分。`,a:"tab",v:"whisper"}); }
   return L.sort((a,b)=>b.ts-a.ts).slice(0,40); }
 const artNUnread=mid=>{ const seen=(S.get(K.artNSeen,{})[mid])||0; return artNotifList(mid).some(x=>x.ts>seen); };
@@ -12717,6 +12758,7 @@ const TOURS={
     ['[data-a="startLive"]',"開始直播","按下去就開播！開播後點粉絲的留言，就能直接回覆他。"],
     [".lvr-h","重播","以前的直播都留在這裡，可以照時間排。"]],
   "artist:room":[[".dl-title","直播間","你正在直播！上面是標題和你的名字。"],
+    [".dl-co","連線","邀請一位別團或 SOLOIST 的藝人一起直播（一次一位）。對方在 MEET 按接受就會加入，你們各自有一疊卡片。"],
     ["#cmSpot","你說的話","你傳的每一句話，都會出現在畫面中間給粉絲看。"],
     [".host-feed","粉絲留言","粉絲的留言在這裡。點一則就能回覆他，大家都看得到。"],
     [".dl-bgm","背景音樂","按一下開始放音樂，粉絲按 ♪ 就能一起聽；再按一下就停，下次從停的地方接著放。"],
