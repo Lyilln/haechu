@@ -4575,6 +4575,58 @@ html[data-theme="dark"] .sn-vbusy>div{background:#262626;color:#F5F5F5}html[data
 .cu-bar{display:block;height:8px;border-radius:4px;background:rgba(127,127,127,.18);overflow:hidden}.cu-bar u{display:block;height:100%;background:#34C759}.cu-bar.warm u{background:#FF9F0A}.cu-bar.hot u{background:#FF3B30}
 .cu-r{display:flex;justify-content:space-between;gap:12px;font-size:14px}.cu-r span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cu-r b{font-variant-numeric:tabular-nums;font-weight:600}
 .cu-re{display:block;margin:14px auto 24px}
+/* ===== 私人帳號 ===== */
+.sn-lk{font-style:normal;margin-right:4px;display:inline-flex;vertical-align:-2px}
+.sn-lock{padding:40px 24px;border-top:.5px solid var(--sn-l,#DBDBDB)}.sn-lock small{color:#737373;font-size:13px}
+.sn-prv{display:flex;align-items:center;justify-content:space-between;width:100%;border:0;background:none;color:inherit;font:inherit;padding:12px 0}
+.sn-sw{position:relative;width:46px;height:28px;border-radius:14px;background:#C7C7CC;transition:background .2s}.sn-sw::after{content:"";position:absolute;left:2px;top:2px;width:24px;height:24px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .2s}
+.sn-sw.on{background:#34C759}.sn-sw.on::after{transform:translateX(18px)}
+.sn-ntr .sn-fb+.sn-fb{margin-left:6px}
+
+/* ===== 綜藝 ===== */
+.vs .section-h{margin-top:14px}
+.vs-none{text-align:center;padding:60px 20px;color:var(--muted,#888)}
+.vs-av{position:relative;flex:none;width:var(--s);height:var(--s);border-radius:50%;overflow:hidden;display:inline-grid;place-items:center;color:#fff;font-weight:700;font-size:calc(var(--s)*.42)}
+.vs-av .av-img{position:absolute;inset:0;background-size:cover;background-position:center}
+.vs-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;border:0;background:var(--card,#fff);color:inherit;font:inherit;border-radius:18px;padding:12px;margin-bottom:10px;box-shadow:0 1px 3px rgba(0,0,0,.06);position:relative}
+.vs-logo{flex:none;width:76px;height:76px;border-radius:14px;background:var(--vg);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:6px;gap:2px;text-shadow:0 1px 6px rgba(0,0,0,.25)}
+.vs-logo b{font-size:13px;line-height:1.15;font-weight:900}.vs-logo small{font-size:10px;opacity:.9}
+.vs-logo.big{width:auto;height:auto;padding:10px 18px;border-radius:16px;margin:0 auto 10px;display:inline-flex}.vs-logo.big b{font-size:20px}.vs-logo.big small{font-size:12px}
+.vs-ci{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.vs-ci b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vs-ci small{color:var(--muted,#888);font-size:12px}
+.vs-avs{display:flex;margin-top:4px}.vs-avs .vs-av{box-shadow:0 0 0 2px var(--card,#fff)}.vs-avs .vs-av+.vs-av{margin-left:-6px}
+.vs-st{font-style:normal;font-size:11px;font-weight:700;padding:3px 8px;border-radius:10px;background:rgba(127,127,127,.15);color:var(--muted,#888);white-space:nowrap}
+.vs-card .vs-st{position:absolute;right:12px;top:12px}
+.vs-st.on{background:#FF3B30;color:#fff}
+.vs-hero{text-align:center;padding:22px 16px 18px;margin:-4px -4px 12px;border-radius:22px;background:linear-gradient(180deg,color-mix(in srgb,var(--card,#fff) 82%,transparent),var(--card,#fff)),var(--vg);display:flex;flex-direction:column;align-items:center;gap:6px}
+.vs-hero h2{margin:4px 0 0;font-size:20px;text-wrap:balance}.vs-hero p{margin:0;color:var(--muted,#888);font-size:13px}
+.vs-cast{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin-top:10px}.vs-cast>span{display:flex;flex-direction:column;align-items:center;gap:4px;width:58px}.vs-cast small{font-size:12px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.vs-sec{text-align:left;padding:14px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:10px}
+.vs-sec h3,.vs-res h3{margin:0;font-size:16px;display:flex;align-items:baseline;justify-content:space-between;gap:8px}.vs-sec h3 small{font-size:12px;color:var(--muted,#888);font-weight:500}
+.vs-res{text-align:left;padding:14px 16px;margin-bottom:12px;display:flex;flex-direction:column;gap:8px}
+.vs-rr{display:flex;align-items:center;gap:10px;font-size:14px}.vs-rr em{font-style:normal;width:22px;text-align:center;font-weight:800;color:var(--muted,#888)}.vs-rr b{flex:1;min-width:0}.vs-rr span{font-variant-numeric:tabular-nums;color:var(--muted,#888);font-size:13px}
+.vs-rr.win b{color:var(--accent,#8843FB)}
+.vs-pun{margin-top:6px;padding:10px 12px;border-radius:12px;background:rgba(255,59,48,.1)}.vs-pun b{font-size:13px;color:#FF3B30}.vs-pun p{margin:4px 0 0;font-size:14px}
+.vs-wait{margin:0;color:var(--muted,#888);font-size:13px}
+.vs-ta,.vs-in{width:100%;box-sizing:border-box;border:1px solid var(--line,#ddd);border-radius:12px;padding:10px 12px;font:inherit;font-size:16px;background:transparent;color:inherit;resize:vertical}
+.vs-ans{padding:10px 12px;border-radius:12px;background:rgba(127,127,127,.08)}.vs-ans b{font-size:13px}.vs-ans p{margin:4px 0 0;white-space:pre-wrap;font-size:14px}
+.vs-lyr{padding:10px 12px;border-radius:12px;background:rgba(52,199,89,.12)}.vs-lyr small{font-size:12px;color:#34C759;font-weight:700}.vs-lyr p{margin:4px 0 0;white-space:pre-wrap}
+.vs-q{padding:12px;border-radius:14px;background:rgba(127,127,127,.07);display:flex;flex-direction:column;gap:8px}
+.vs-qh{display:flex;align-items:center;gap:8px;font-size:14px}.vs-qt{margin:0;font-size:15px;font-weight:600}
+.vs-gr{display:flex;gap:8px}.vs-gr .vs-in{flex:1;min-width:0}
+.vs-gl{display:flex;align-items:center;gap:8px;font-size:14px}.vs-gl b{flex:none}.vs-gl span{flex:1;min-width:0;color:var(--muted,#888)}.vs-gl i{font-style:normal}
+.vs-mk{border:0;background:none;font-size:16px;padding:2px 6px}
+.vs-tags{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:10px}
+.vs-tag{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px 8px;border-radius:12px;background:#FF9500;color:#fff;box-shadow:inset 0 -3px 0 rgba(0,0,0,.15)}
+.vs-tag b{font-size:13px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vs-tag small{font-size:11px;opacity:.9}
+.vs-tag.out{background:#8E8E93;opacity:.7}.vs-tag.out em{position:absolute;top:6px;right:6px;font-style:normal;font-weight:900;color:#FF3B30;background:#fff;border-radius:6px;padding:0 4px;font-size:12px;transform:rotate(12deg)}
+.vs-lab{margin:4px 0 0;font-size:13px;font-weight:600}
+.vs-pick{display:flex;flex-wrap:wrap;gap:8px}.vs-pick button{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line,#ddd);background:none;color:inherit;font:inherit;font-size:14px;padding:7px 12px;border-radius:18px}
+.vs-pick button small{color:var(--muted,#888);font-size:11px;font-variant-numeric:tabular-nums}
+.vs-pick button.on{border-color:var(--accent,#8843FB);background:color-mix(in srgb,var(--accent,#8843FB) 14%,transparent);font-weight:700}
+.vs-log{display:flex;flex-direction:column;gap:8px;font-size:13px}.vs-log b{font-size:12px;color:var(--muted,#888)}.vs-log p{margin:2px 0 0}
+.vs-cf{display:flex;gap:8px}.vs-cf input{flex:1;min-width:0;border:1px solid var(--line,#ddd);border-radius:18px;padding:8px 14px;font:inherit;font-size:16px;background:transparent;color:inherit}.vs-cf button{border:0;background:none;color:var(--accent,#8843FB);font:inherit;font-weight:700}
+.vs-cm{display:flex;gap:8px;align-items:flex-start}.vs-cm p{flex:1;min-width:0;margin:0;font-size:14px;line-height:1.4}.vs-cm p b{margin-right:6px}.vs-cm p small{display:block;color:var(--muted,#888);font-size:11px}.vs-cm>button{border:0;background:none;color:var(--muted,#888);font-size:16px}
+.vs-ar{gap:6px;flex-wrap:wrap}.vs-ar>span{flex:1;min-width:160px}
 
 </style>
 </head>
@@ -4756,7 +4808,7 @@ const hbPendGet=()=>{ try{ return JSON.parse(localStorage.getItem(HB_PEND)||"{}"
 function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PEND,JSON.stringify(o)); else localStorage.removeItem(HB_PEND); }catch(e){} }
 /* ===== 防止資料被吃掉：聊天、留言、貼文這些「只會越來越多」的資料，
    如果雲端突然變成空的、或少了一大半，而這支手機還留著完整的，就把兩邊合起來送回去（自動救回） ===== */
-const HB_GUARD=()=>new Set([K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts",K.trucks,K.sales,K.ptGrants].filter(Boolean));
+const HB_GUARD=()=>new Set([K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts",K.trucks,K.sales,K.ptGrants,"daisuki_varshow"].filter(Boolean));
 function hbGuard(k,local,remote){ if(!HB_GUARD().has(k)||local==null) return null;
   if(remote==null) return local;
   if(Array.isArray(local)&&Array.isArray(remote)&&local.length>=8&&remote.length<local.length*.6) return hbMergeArr([],local,remote);
@@ -4930,7 +4982,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026160958";
+const BUILD="20261026164220";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8359,6 +8411,11 @@ function viewArtist(tab){
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="tab" data-v="points">${I.star}積分收入</button>
       </section>
+      <div class="section-h">團體</div>
+      <section class="card">
+        <button class="list-btn" data-a="focGo" data-v="honor">${I.star}榮譽與職務</button>
+        <button class="list-btn" data-a="focGo" data-v="stick">${I.star}官方應援棒<span class="r">${g.solo?"":esc(g.name)}</span></button>
+      </section>
       <div class="section-h">App</div>
       <section class="card">
         ${!isAdminAcct()?`<button class="list-btn" data-a="swapRole">${I.swap}切換到粉絲端<span class="r">追其他藝人、互串</span></button>`:""}
@@ -9867,7 +9924,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
-const FOC_PAGES={tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
+const FOC_PAGES={show:"綜藝",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
   const sc=getSched(), ls=lightsea(), gid=MEMBERS[mid].group, mine=ls&&ls.gid===gid, nc=nextConcert(gid), g=groupOf(gid);
@@ -9879,6 +9936,7 @@ function viewArtistFoc(mid,p){
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:nc?(canCtl(nc,mid)?`<button class="btn btn-main btn-block cc-ctl" data-a="ccNow" data-id="${nc.id}">現在開始演唱會</button>`:""):acOpenCard(mid)}
       ${!mine&&demoOn()?`<button class="btn btn-soft btn-block" data-a="lsDemo">示範：打開燈控台看看</button>`:""}</section></main>`;
   if(p==="truck") return focHead("應援餐車")+viewTruckArtist(mid);
+  if(p==="show") return focHead(route().id?vsTitle(route().id):"綜藝")+viewShowArtist(mid,route().id);
   if(p==="tour"){ setTimeout(trmScroll,0); return focHead("世巡")+viewTourArtist(mid); }
   if(p==="news"){ const nid=route().id; return focHead("新聞")+(nid?newsDetailHtml(nid):newsListHtml("#/artist?tab=foc&p=news",[gid],g.solo?"我的":"我們團")); }
   if(p==="sign") return focHead("簽售")+`<main class="page foc">${fsArtistCard(mid)}</main>`;
@@ -9896,9 +9954,9 @@ function viewArtistFoc(mid,p){
       <div class="foc-week"><span>✦</span><div><b>${wt==="宣傳週"?"宣傳週不排名，先好好準備舞台":wonShows.length?`本週拿下 ${wonShows.length} 個一位（+${fmt(wonShows.length*MSP.win)}）`:"本週還沒有一位，一起加油！"}</b><small>${wonShows.length?esc(wonShows.map(x=>x.name).join("・"))+"・":""}${left?`本週剩 ${left} 天`:"今天結算"}・結算 ${esc(sc.deadline)}</small></div></div>
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     </section>
-    ${secH("live","現場")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}</div>
-    ${secH("trophy","舞台")}<div class="tiles">${tile("focGo","honor","trophy","榮譽與職務",`今年 ${fmt(yearPts)} 分`)}${tile("focGo","stick","bolt","官方應援棒",`${esc(g.name)}`)}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
-    ${secH("cam","社群")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
+    ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
+    ${secH("star","檔期")}<div class="tiles">${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
+    ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}</div>
   </main>`;
 }
 const FIC={
@@ -9927,12 +9985,12 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
     ${!q&&now.length?`${secH("live","正在發生")}<div class="now-list">${now.join("")}</div>`:""}
-    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["現場",["concert","fsl","tour"]],["應援",["promo","survival","truck"]],["收藏與社群",["cards","sns"]],["娛樂",["news"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
+    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["每天",["promo","cards","sns","news"]],["檔期",["show","fsl","truck"]],["大型活動",["concert","tour","survival"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
   </main>`;
 }
 function vodList(gid){ return getVods(gid).filter(v=>!v.sec).map(v=>({id:v.id,type:vcatName(v.cat),title:v.title,ts:v.ts,v})); }
@@ -10155,6 +10213,7 @@ const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id
 function viewCoreSub(page,id){
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return viewTruckFan();
+  if(page==="show") return coreHead(id?vsTitle(id):"綜藝")+viewShowFan(id);
   if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
   if(false) return `<main class="page"><div class="vod-grid">${GROUPS.map(g=>`<button class="vod-g" data-a="coreGallery" data-v="${g.id}" style="background:${grad(g.g)}"><span class="vod-play">${PLAY}</span><span class="vod-bar">${esc(g.name)}</span></button>`).join("")}</div></main>`;
@@ -10388,7 +10447,7 @@ function viewAdmin(tab){
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
     const seg=ui.focSeg||"sched", lsOn=!!liveConcert();
-    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["sv","選秀"],["news","新聞"]];
+    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>當前活動階段配置</h3><span class="badge">即時同步中</span></div>
         <label class="foc-lab">本週階段</label>
         <label class="field"><input id="focStage" value="${esc(st)}"></label>
@@ -10400,7 +10459,7 @@ function viewAdmin(tab){
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml())+adminVodHtml()+adminMusicHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
         <div class="ls-btns"><button class="btn ${svOpen()?"btn-soft":"btn-main"}" data-a="svToggle">${svOpen()?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
-`}[seg]||"";
+`}[seg]||(seg==="show"?vsAdminHtml():"");
     return adminHead("FOC")+`<main class="page">
       <div class="shop-tabs foc-seg">${SEG.map(([k,l])=>`<button class="${seg===k?"on":""}" data-a="focSeg" data-v="${k}">${l}${k==="concert"&&lsOn||k==="tour"&&getTours().some(x=>x.status==="pending")?'<i class="seg-dot"></i>':""}</button>`).join("")}</div>
       ${body}
@@ -13361,7 +13420,7 @@ const SNS_FANS=[];   // 正式版：沒有假的粉絲帳號
 const SNS_CAPS=["今天的天空好美 ☁️","練習結束，回家路上 🌙","咖啡續命中 ☕","週末小確幸 🍰","新買的手機殼 💜","彩排後的宵夜 🍜","雨天聽歌最對味 🎧","今日穿搭 👗"];
 /* SNS 資料分開存（貼文、按讚、留言、追蹤…各一份）：按一個讚不用整包重存，人多也不會互相蓋掉
    私訊：每兩個人一份（daisuki_dm:甲~乙），只有這兩個人的對話，不再混在一起 */
-const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{}};
+const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{}};
 const snKey=p=>"daisuki_sn_"+p;
 function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&HB.ver[K.sns]==null&&!Object.keys(HB.ver||{}).length) return;
   const old=S.get(K.sns,null); if(old&&typeof old==="object"){ Object.keys(SN_PARTS).forEach(p=>{ if(old[p]!=null&&S.get(snKey(p),null)==null) S.set(snKey(p),old[p]); });
@@ -13403,6 +13462,10 @@ function snFolFix(d){ const me=snMeId(), k="daisuki_sn_folfix", done=S.get(k,{})
   const all=Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).map(id=>"m:"+id); if(L.length===all.length&&all.every(x=>L.includes(x))){ d.fol[me]=snFolDef(); snSave(d); } }
 /* 推薦追蹤：還沒追蹤的藝人，粉絲多的排前面 */
 function snSuggest(d){ const me=snMeId(), fol=snFol(d,me); return Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&"m:"+id!==me&&!fol.includes("m:"+id)).map(id=>"m:"+id).sort((a,b)=>snFollowers(d,b)-snFollowers(d,a)).slice(0,12); }
+/* 私人帳號：要對方按「確認」才能追蹤；沒追蹤的人看不到貼文、限時動態 */
+const snPriv=(d,uid)=>!!((d.prof[uid]||{}).priv);
+const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid)||isAdminAcct(); };
+const snReqd=(d,uid)=>((d.req||{})[uid]||[]).includes(snMeId());
 const snFollowers=(d,uid)=>Object.keys(d.fol).filter(k=>(d.fol[k]||[]).includes(uid)).length;
 const snLikes=(d,p)=>(d.likes[p.id]||[]).length;
 const snAv=(u,sz=32,ring=false,seen=false)=>u?`<span class="sn-av ${ring?"ring":""} ${seen?"seen":""}" style="--s:${sz}px"><i style="background:${grad(u.g||0)}">${u.av?`<span class="av-img av-bgi" style="background-image:url('${u.av}')"></span>`:u.mid?mAvIn(u.mid):esc((u.name||u.u||"?")[0])}</i></span>`:"";
@@ -13433,25 +13496,25 @@ function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u) return ""; const me=s
     <div class="sn-meta">${p.cap?`<p><b>${esc(u.u)}</b> ${esc(p.cap)}</p>`:""}${cms.length?`<button class="sn-more" data-a="snCm" data-id="${p.id}">查看全部 ${fmt(cms.length)} 則留言</button>`:""}<small>${snsAgo(p.ts)}</small></div></article>`; }
 
 function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me), mode=ui.snFeed||"all";
-  const items=d.posts.filter(p=>mode==="all"||p.uid===me||fol.includes(p.uid)).map(p=>({p,ts:p.ts}));
-  [me,...fol].forEach(uid=>snRp(d,uid).forEach(x=>{ const p=d.posts.find(y=>y.id===x.id); if(p&&p.uid!==uid) items.push({p,by:uid,ts:x.ts}); }));
+  const items=d.posts.filter(p=>(mode==="all"||p.uid===me||fol.includes(p.uid))&&snCanSee(d,p.uid)).map(p=>({p,ts:p.ts}));
+  [me,...fol].forEach(uid=>snRp(d,uid).forEach(x=>{ const p=d.posts.find(y=>y.id===x.id); if(p&&p.uid!==uid&&snCanSee(d,p.uid)&&snCanSee(d,uid)) items.push({p,by:uid,ts:x.ts}); }));
   items.sort((a,b)=>b.ts-a.ts);
   const sids=[...new Set(snActiveStories(d).filter(s=>s.uid!==me&&fol.includes(s.uid)).sort((a,b)=>b.ts-a.ts).map(s=>s.uid))].sort((a,b)=>snStorySeen(d,a)-snStorySeen(d,b));
-  const nt=snNotifList(d).filter(x=>x.ts>((d.ntSeen||{})[me]||0)).length;
+  const nt=snNotifList(d).filter(x=>x.ts>((d.ntSeen||{})[me]||0)).length+((d.req||{})[me]||[]).length;
   return `<header class="sn-top"><button class="sn-ib" data-a="snsExit" aria-label="離開">${si("back")}</button><button class="sn-ib" data-a="snCreate" aria-label="新增">${si("plusP")}</button><button class="sn-logo sn-feedsw" data-a="snFeedSw">${SNS_NAME}${si("chev","sm")}</button><button class="sn-ib" data-a="snsGo" data-v="notif" aria-label="通知">${si("heart")}${nt?`<i class="sn-dot2"></i>`:""}</button></header>
     ${mode==="following"?`<div class="sn-fmode">追蹤中</div>`:""}
     <div class="sn-stories"><button class="sn-st me" data-a="${snHasStory(d,me)?"snStory":"snsGo"}" data-v="${snHasStory(d,me)?me:"new"}" data-id="${snHasStory(d,me)?me:"story"}">${snAv(U,62,snHasStory(d,me),snStorySeen(d,me))}${snHasStory(d,me)?"":`<span class="sn-add">+</span>`}<small>你的限時動態</small></button>${sids.map(id=>{ const u=snUser(id); return u?`<button class="sn-st" data-a="snStory" data-v="${id}">${snAv(u,62,true,snStorySeen(d,id))}<small>${esc(u.u)}</small></button>`:""; }).join("")}</div>
     <main class="sn-feed">${(()=>{ const sg=snSuggest(d), row=sg.length?`<section class="sn-sug"><div class="sn-sugh"><b>推薦追蹤</b></div><div class="sn-sugl">${sg.map(id=>{ const u=snUser(id); return u?`<div class="sn-sugc"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${id}">${snAv(u,64)}<b>${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><small>${esc(u.name)}</small></button><button class="pri" data-a="snFollow" data-v="${id}">追蹤</button></div>`:""; }).join("")}</div></section>`:"";
       if(!items.length) return row+`<div class="sn-empty"><b>還沒有貼文</b></div>`; const h=items.map(x=>snPostCard(d,x.p,x.by)); h.splice(Math.min(2,h.length),0,row); return h.join(""); })()}</main>`; }
 
-function snPostPage(d,id){ const p=d.posts.find(x=>x.id===id); return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>貼文</b><span class="sn-sp"></span></header><main class="sn-feed">${p?snPostCard(d,p):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
+function snPostPage(d,id){ let p=d.posts.find(x=>x.id===id); if(p&&!snCanSee(d,p.uid)) p=null; return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>貼文</b><span class="sn-sp"></span></header><main class="sn-feed">${p?snPostCard(d,p):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
 function snExplore(d){ const q=nz((ui.snQ||"").trim()), me=snMeId();
   const hits=q?snAllUsers().filter(u=>u.id!==me&&(nz(u.u).includes(q)||nz(u.name).includes(q))):[];
-  const P=d.posts.filter(p=>p.uid!==me).sort((a,b)=>snLikes(d,b)-snLikes(d,a));
+  const P=d.posts.filter(p=>p.uid!==me&&!snPriv(d,p.uid)).sort((a,b)=>snLikes(d,b)-snLikes(d,a));
   return `<header class="sn-top"><label class="sn-q">${si("search")}<input id="snQ" placeholder="搜尋" autocomplete="off" value="${esc(ui.snQ||"")}"></label></header>
     ${q?`<main class="sn-ul">${hits.length?hits.map(u=>`<button class="sn-ur" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}<span><b>${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><small>${esc(u.name)}</small></span></button>`).join(""):`<p class="sn-none">找不到「${esc(q)}」</p>`}</main>`
       :`<main class="sn-grid ex">${P.map((p,i)=>{ const u=snUser(p.uid); return `<button class="${i%10===2?"tall":""}" data-a="snsGo" data-v="post" data-id="${p.id}">${snThumb(p,u)}</button>`; }).join("")}</main>`}`; }
-function snReels(d,id){ const me=snMeId(), V=d.posts.filter(snIsVid).sort((a,b)=>b.ts-a.ts), i0=id?V.findIndex(p=>p.id===id):-1, P=i0>0?V.slice(i0).concat(V.slice(0,i0)):V;
+function snReels(d,id){ const me=snMeId(), V=d.posts.filter(p=>snIsVid(p)&&snCanSee(d,p.uid)).sort((a,b)=>b.ts-a.ts), i0=id?V.findIndex(p=>p.id===id):-1, P=i0>0?V.slice(i0).concat(V.slice(0,i0)):V;
   return `<header class="sn-top clear"><b>Reels</b><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("cam")}</button></header>
     <main class="sn-reels">${P.length?"":`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b><button data-a="snNewP" data-v="post">上傳影片</button></div>`}${P.map(p=>{ const u=snUser(p.uid); if(!u) return ""; const liked=(d.likes[p.id]||[]).includes(me), fo=snFol(d,me).includes(u.id);
       return `<section class="sn-reel1"><div class="sn-rbg" data-a="snTap" data-id="${p.id}">${snMedia(p,u,0)}</div><i class="sn-heart">${si("heart")}</i>
@@ -13463,23 +13526,24 @@ function snStThumb(d,s,g){ if(s.mid) return `<img class="sn-img" data-mid="${s.m
 function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=u.id===me, P=d.posts.filter(x=>x.uid===u.id).sort((a,b)=>b.ts-a.ts), tab=ui.snTab||"grid", fo=snFol(d,me).includes(u.id);
   const base=0;
   const list=tab==="reels"?P.filter(snIsVid):tab==="saved"&&mine?(d.saved[me]||[]).map(x=>d.posts.find(p=>p.id===x)).filter(Boolean):tab==="reposts"?snRp(d,u.id).map(x=>d.posts.find(p=>p.id===x.id)).filter(Boolean):tab==="tagged"?[]:P;
-  const hls=snHls(d,u.id);
+  const see=snCanSee(d,u.id), hls=see?snHls(d,u.id):[], lockH=`<div class="sn-empty sn-lock"><span>${si("lock")}</span><b>這是私人帳號</b><small>追蹤這個帳號即可查看相片和影片。</small></div>`;
   const empty=tab==="reels"?`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b>${mine?`<button data-a="snNewP" data-v="post">上傳影片</button>`:""}</div>`:tab==="tagged"?`<div class="sn-empty"><span>${si("tag")}</span><b>${mine?"有你的相片和影片":"還沒有相片"}</b></div>`:tab==="reposts"?`<div class="sn-empty"><span>${si("repost")}</span><b>還沒有轉發</b></div>`:tab==="saved"?`<div class="sn-empty"><span>${si("save")}</span><b>還沒有收藏</b></div>`
     :mine?`<div class="sn-empty"><span>${si("cam")}</span><b>分享相片</b><button data-a="snCreate">分享你的第一張相片</button></div>`:`<div class="sn-empty"><b>還沒有貼文</b></div>`;
-  return `<header class="sn-top">${mine?`<button class="sn-ib" data-a="snsExit" aria-label="離開">${si("x")}</button><button class="sn-ib" data-a="snCreate" aria-label="新增">${si("plusP")}</button><b class="sn-un c">${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><button class="sn-ib" data-a="snMenu" aria-label="選單">${si("menu")}</button>`
-      :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><span class="sn-sp"></span>${isAdminAcct()&&!u.mid?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
-    <section class="sn-ph"><button class="sn-hu" data-a="${snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,86,snHasStory(d,u.id),snStorySeen(d,u.id))}</button><div class="sn-stat"><span><b>${P.length}</b>貼文</span><span><b>${fmtW(base+snFollowers(d,u.id))}</b>粉絲</span><span><b>${snFol(d,u.id).length}</b>追蹤中</span></div></section>
+  return `<header class="sn-top">${mine?`<button class="sn-ib" data-a="snsExit" aria-label="離開">${si("x")}</button><button class="sn-ib" data-a="snCreate" aria-label="新增">${si("plusP")}</button><b class="sn-un c">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><button class="sn-ib" data-a="snMenu" aria-label="選單">${si("menu")}</button>`
+      :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><span class="sn-sp"></span>${isAdminAcct()&&!u.mid?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
+    <section class="sn-ph"><button class="sn-hu" data-a="${see&&snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,86,snHasStory(d,u.id),snStorySeen(d,u.id))}</button><div class="sn-stat"><span><b>${P.length}</b>貼文</span><span><b>${fmtW(base+snFollowers(d,u.id))}</b>粉絲</span><span><b>${snFol(d,u.id).length}</b>追蹤中</span></div></section>
     <div class="sn-bio"><b>${esc(u.name)}</b>${u.bio?`<p>${esc(u.bio)}</p>`:""}</div>
-    <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button>`:`<button class="${fo?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button>`}</div>
+    <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":snReqd(d,u.id)?"已要求":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button>`}</div>
     ${hls.length||mine?`<div class="sn-hls">${hls.map(h=>`<button data-a="snHl" data-v="${u.id}" data-id="${h.id}"><span class="sn-hlc">${snStThumb(d,h.items[0],u.g)}</span><small>${esc(h.title)}</small></button>`).join("")}${mine?`<button data-a="snHlNew"><span class="sn-hlc add">${si("plusP")}</span><small>新增</small></button>`:""}</div>`:""}
-    <nav class="sn-pt">${[["grid","grid","貼文"],["reels","reels2","Reels"],["reposts","repost","轉發"],["tagged","tag","被標註"]].map(([k,ic,l])=>`<button class="${tab===k?"on":""}" data-a="snsPTab" data-v="${k}" aria-label="${l}">${si(ic)}</button>`).join("")}</nav>
+    ${see?"":lockH}${see?`<nav class="sn-pt">${[["grid","grid","貼文"],["reels","reels2","Reels"],["reposts","repost","轉發"],["tagged","tag","被標註"]].map(([k,ic,l])=>`<button class="${tab===k?"on":""}" data-a="snsPTab" data-v="${k}" aria-label="${l}">${si(ic)}</button>`).join("")}</nav>
     ${tab==="saved"?`<div class="sn-fmode">已儲存</div>`:""}
-    <main class="sn-grid ${tab==="reels"?"reels":""}">${list.length?list.map(p=>`<button data-a="snsGo" data-v="${tab==="reels"?"reels":"post"}" data-id="${p.id}">${tab==="reels"?`<img class="sn-img" data-mid="${(p.media[0]||{}).poster||""}" alt=""><i class="sn-rv">${si("heart","sm")} ${fmtW(snLikes(d,p))}</i>`:snThumb(p,snUser(p.uid))}</button>`).join(""):empty}</main>`; }
+    <main class="sn-grid ${tab==="reels"?"reels":""}">${list.length?list.map(p=>`<button data-a="snsGo" data-v="${tab==="reels"?"reels":"post"}" data-id="${p.id}">${tab==="reels"?`<img class="sn-img" data-mid="${(p.media[0]||{}).poster||""}" alt=""><i class="sn-rv">${si("heart","sm")} ${fmtW(snLikes(d,p))}</i>`:snThumb(p,snUser(p.uid))}</button>`).join(""):empty}</main>`:""}`; }
 
 function snEdit(d){ const me=snMeId(), u=snUser(me);
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="取消">${si("back")}</button><b>編輯個人檔案</b><span class="sn-sp"></span><button class="sn-next" data-a="snEditOk">完成</button></header>
     <div class="sn-edav"><label>${snAv(u,86)}<span>更換大頭貼照</span><input type="file" accept="image/*" id="snAvIn"></label></div>
-    <div class="sn-edf"><label><span>名稱</span><em>${esc(u.name)}</em></label><label><span>用戶名稱</span><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label><label><span>個人簡介</span><textarea id="snBioIn" rows="3" placeholder="輸入文字">${esc(u.bio||"")}</textarea></label></div>`; }
+    <div class="sn-edf"><label><span>名稱</span><em>${esc(u.name)}</em></label><label><span>用戶名稱</span><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label><label><span>個人簡介</span><textarea id="snBioIn" rows="3" placeholder="輸入文字">${esc(u.bio||"")}</textarea></label></div>
+    <div class="sn-edf"><button class="sn-prv" data-a="snPrivT"><span>私人帳號</span><i class="sn-sw ${snPriv(d,me)?"on":""}"></i></button></div>`; }
 function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":"post"}), n=dr.media.length;
   return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n?"":"disabled"}>分享</button></header>
     ${n?`<div class="sn-media"><div class="sn-car">${dr.media.map(x=>`<div class="sn-sl">${x.type==="video"?`<video class="sn-img" src="${x.url||""}" playsinline muted loop autoplay></video><em class="sn-vdur">${fmtDur(x.dur)}</em>`:`<img class="sn-img" data-mid="${x.mid}" alt="">`}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}</div>`:`<label class="sn-pick">${si("cam")}<b>從相簿選擇</b><small>${dr.mode==="story"?"選一張":`最多 10 張・影片 ${SN_VMAX} 秒內`}</small><input type="file" accept="${dr.mode==="story"?"image/*":"image/*,video/*"}" ${dr.mode==="story"?"":"multiple"} id="snFile"></label>`}
@@ -13507,9 +13571,9 @@ function snNotifList(d){ const me=snMeId(), mine=d.posts.filter(p=>p.uid===me), 
   return L.sort((a,b)=>b.ts-a.ts); }
 function snNotif(d){ const me=snMeId(), L=snNotifList(d); (d.ntSeen=d.ntSeen||{})[me]=Date.now(); snSave(d);
   const day=Date.now()-864e5, wk=Date.now()-7*864e5, grp=[["今天",L.filter(x=>x.ts>=day)],["這週",L.filter(x=>x.ts<day&&x.ts>=wk)],["更早",L.filter(x=>x.ts<wk)]].filter(g=>g[1].length);
-  const row=x=>{ const u=snUser(x.uid); if(!u) return ""; return `<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> ${esc(x.t)} <small>${snsAgo(x.ts||Date.now())}</small></p>${x.p?`<button class="sn-ntp" data-a="snsGo" data-v="post" data-id="${x.p}">${snMedia(d.posts.find(p=>p.id===x.p)||{id:x.p},u,0)}</button>`:x.t==="開始追蹤你。"?`<button class="sn-fb ${snFol(d,me).includes(u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${snFol(d,me).includes(u.id)?"追蹤中":"回追"}</button>`:""}</div>`; };
+  const row=x=>{ const u=snUser(x.uid); if(!u) return ""; return `<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> ${esc(x.t)} <small>${snsAgo(x.ts||Date.now())}</small></p>${x.p?`<button class="sn-ntp" data-a="snsGo" data-v="post" data-id="${x.p}">${(()=>{ const pp=d.posts.find(p=>p.id===x.p); return pp?snThumb(pp,snUser(pp.uid)):snPic(x.p,u.g,"fill"); })()}</button>`:x.t==="開始追蹤你。"?`<button class="sn-fb ${snFol(d,me).includes(u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${snFol(d,me).includes(u.id)?"追蹤中":"回追"}</button>`:""}</div>`; };
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>通知</b><span class="sn-sp"></span></header>
-    <main class="sn-nt">${grp.length?grp.map(([t,g])=>`<h3 class="sn-nth">${t}</h3>${g.map(row).join("")}`).join(""):`<p class="sn-none">還沒有通知</p>`}</main>`; }
+    <main class="sn-nt">${(()=>{ const R=((d.req||{})[me]||[]).map(snUser).filter(Boolean); return R.length?`<h3 class="sn-nth">追蹤要求</h3>${R.map(u=>`<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> 想要追蹤你。</p><button class="sn-fb pri" data-a="snReqOk" data-v="${u.id}">確認</button><button class="sn-fb" data-a="snReqNo" data-v="${u.id}">刪除</button></div>`).join("")}`:""; })()}${grp.length?grp.map(([t,g])=>`<h3 class="sn-nth">${t}</h3>${g.map(row).join("")}`).join(""):`<p class="sn-none">還沒有通知</p>`}</main>`; }
 
 /* 留言 */
 function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) return; const me=snMeId(), L=d.cms[id]||[];
@@ -13543,6 +13607,20 @@ let snTapT=0;
 function snHeartPop(id){ const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 function snToggleLike(id,force){ const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
 
+/* ===== 一次性整理（管理員的手機做一次，大家共用）：
+   藝人帳號：名稱、簡介、追蹤、精選全部恢復預設（藝人自己發的貼文留著）
+   一般帳號：用戶名稱是登入帳號的換掉、追蹤清單拿掉不存在的帳號；發過的東西都留著
+   有藝人身分的帳號 → 以前的一般帳號變成私帳（私人帳號） */
+function snFix1(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix1",false)) return; if(HB_ON&&HB.ver[snKey("posts")]==null&&HB.ver[snKey("fol")]==null) return;
+  const d=snDB(), ok=id=>!!(id&&!id.startsWith("f:")&&snUser(id));
+  Object.keys(d.prof).forEach(id=>{ if(id.startsWith("m:")) delete d.prof[id]; else if(id.startsWith("u:")){ const e=id.slice(2), pr=d.prof[id]; if(pr&&pr.u&&(pr.u===e||pr.u===e.split("@")[0]||pr.u===e.replace(/[^a-z0-9._]/g,""))) delete pr.u; } });
+  Object.keys(d.fol).forEach(id=>{ if(!ok(id)){ delete d.fol[id]; return; } if(id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; d.fol[id]=m?Object.keys(MEMBERS).filter(x=>!MEMBERS[x].official&&MEMBERS[x].group===m.group&&"m:"+x!==id).map(x=>"m:"+x):[]; } else d.fol[id]=[...new Set(d.fol[id].filter(ok))]; });
+  Object.keys(d.hl||{}).forEach(id=>{ if(id.startsWith("m:")||!ok(id)) delete d.hl[id]; });
+  d.posts=d.posts.filter(p=>ok(p.uid)).map(p=>{ const q={...p}; delete q.base; return q; }); d.stories=d.stories.filter(s=>ok(s.uid));
+  const pid=new Set(d.posts.map(p=>p.id)); Object.keys(d.rp||{}).forEach(k=>{ d.rp[k]=(d.rp[k]||[]).filter(x=>pid.has(x.id)); });
+  Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.member&&MEMBERS[a.member]){ const id="u:"+String(e).toLowerCase(); (d.prof[id]=d.prof[id]||{}).priv=true; } });
+  snSave(d); S.set("daisuki_sn_fix1",Date.now()); }catch(e){} }
+setTimeout(function snFixGo(){ if(typeof session==="function"&&session()&&(!HB_ON||HB.tok&&Object.keys(HB.ver||{}).length)) snFix1(); else setTimeout(snFixGo,5000); },7000);
 
 /* =========================================================
    SNS 的按鈕（從 10-點擊互動 拆出來：SNS 自己一個檔案，改 SNS 不會動到別的地方）
@@ -13565,20 +13643,24 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(p.uid!==me) items.push([fo?"取消追蹤":"追蹤","snFollow",`data-v="${p.uid}"`]);
       items.push(["前往這則貼文","snsGo",`data-v="post" data-id="${p.id}"`]); iosSheet(items); break; }
     case "snDelP": { const id=t.dataset.id; ask("要刪除這則貼文嗎？",()=>{ const d=snDB(); d.posts=d.posts.filter(x=>x.id!==id); delete d.likes[id]; delete d.cms[id]; Object.values(d.saved).forEach(L=>{ const i=L.indexOf(id); if(i>=0) L.splice(i,1); }); snSave(d); layer.innerHTML=""; if(route().p==="post") navBack(); else render(); toast("已刪除"); }); break; }
-    case "snFollow": { const d=snDB(), me=snMeId(), L=snFol(d,me), i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else L.push(t.dataset.v); (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
+    case "snFollow": { const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, i=L.indexOf(v); d.req=d.req||{};
+      if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
+      if(i>=0) L.splice(i,1); else L.push(v); (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "snShareMe": { const u=snUser(snMeId()); try{ navigator.clipboard.writeText("@"+u.u).then(()=>toast("已複製你的用戶名稱"),()=>toast("@"+u.u)); }catch(e){ toast("@"+u.u); } break; }
     case "snEditOk": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; const u=((document.getElementById("snUIn")||{}).value||"").trim().toLowerCase().replace(/[^a-z0-9._]/g,""), b=((document.getElementById("snBioIn")||{}).value||"").trim();
       if(u&&snAllUsers().some(x=>x.id!==me&&x.u===u)){ toast("這個用戶名稱有人用了"); break; } if(u&&nameBlock(u)) break; if(b&&!isAdminAcct()&&banBlock(b)) break; if(u) pr.u=u; pr.bio=b; snSave(d); navBack(); toast("已更新個人檔案"); break; }
     case "snMode": { const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:"post"}); dr.mode=t.dataset.v; if(dr.mode==="story") dr.media=dr.media.slice(0,1); render(); break; }
     case "snNewX": ui.snDraft=null; location.hash="#/"+session().role+"/sns?p=home"; break;
     case "snPost": { const dr=ui.snDraft; if(!dr||!dr.media.length||dr.busy) break; const cap=((document.getElementById("snCap")||{}).value||dr.cap||"").trim(); if(cap&&!isAdminAcct()&&banBlock(cap)) break;
-      const vm=dr.media.find(m=>m.type==="video"); if(vm&&vm.file){ if(snVidToday()>=SN_VDAY){ toast(`一天最多發 ${SN_VDAY} 支影片`); break; } dr.cap=cap; dr.busy=1; snVidReady(vm).then(ok=>{ dr.busy=0; if(ok){ const b=document.querySelector('[data-a="snPost"]'); if(b) b.click(); else { ui.snDraft=dr; } } }); break; }
+      const vm=dr.media.find(m=>m.type==="video"); if(vm&&vm.file){ dr.cap=cap; dr.busy=1; snVidReady(vm).then(ok=>{ dr.busy=0; if(ok){ const b=document.querySelector('[data-a="snPost"]'); if(b) b.click(); else { ui.snDraft=dr; } } }); break; }
       const d=snDB(), me=snMeId();
       if(dr.mode==="story"){ d.stories.push({id:"st"+Date.now(),uid:me,mid:dr.media[0].mid,ts:Date.now()}); toast("已分享到限時動態"); }
       else { d.posts.push({id:"sp"+Date.now(),uid:me,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap,ts:Date.now()}); toast("已分享"); }
       snSave(d); ui.snDraft=null; location.replace("#/"+session().role+"/sns?p=home"); window.scrollTo(0,0); break; }
     case "snStory": if(t.dataset.v) snOpenStory(t.dataset.v,t.dataset.o==="1"); break;
     case "snSnd": snSndToggle(); break;
+    case "snReqOk": case "snReqNo": { const d=snDB(), me=snMeId(), v=t.dataset.v; d.req=d.req||{}; d.req[me]=(d.req[me]||[]).filter(x=>x!==v); if(a==="snReqOk"){ const F=snFol(d,v); if(!F.includes(me)) F.push(me); } snSave(d); render(); break; }
+    case "snPrivT": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; pr.priv=!pr.priv; if(!pr.priv&&d.req&&d.req[me]&&d.req[me].length){ d.req[me].forEach(x=>{ const F=snFol(d,x); if(!F.includes(me)) F.push(me); }); d.req[me]=[]; } snSave(d); render(); toast(pr.priv?"已改成私人帳號":"已改成公開帳號"); break; }
     case "snToStory": { const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; d.stories.push({id:"st"+Date.now(),uid:me,post:p.id,ts:Date.now()}); snSave(d); layer.innerHTML=""; render(); toast("已加到你的限時動態"); break; }
     case "snStoryPost": { clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); location.hash="#/"+session().role+"/sns?p="+(p&&snIsVid(p)?"reels":"post")+"&id="+encodeURIComponent(t.dataset.id); break; }
     case "snHlPick": t.classList.toggle("on"); break;
@@ -13608,12 +13690,12 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
 
 /* =========================================================
    SNS 影片（Reels）＋ 雲端用量 ＋ 把 kv 裡的大圖片搬到 R2
-   ・影片：60 秒以內、每人每天 3 支；太大或 iPhone 的 HEVC 會先在手機上壓成 H.264（約 720p、5–10MB）再上傳
+   ・影片：60 秒以內（不限支數）；太大或 iPhone 的 HEVC 會先在手機上壓成 H.264（約 720p、5–10MB）再上傳
    ・看影片：滑到畫面上才下載、自動播放（預設靜音，點喇叭開聲音）
    ・kv 裡的 data:image（餐車照片、聊天室背景、應援棒圖、主題圖）→ 上傳到 R2，kv 只留網址
      （kv 每台手機每次打開都要整包下載，圖片放在裡面會把 Supabase 的流量吃光）
    ========================================================= */
-const SN_VMAX=60, SN_VDAY=3, SN_VKEEP=10*1024*1024;
+const SN_VMAX=60, SN_VKEEP=10*1024*1024;
 const snSndIc=()=>ui.snMute===false?`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15.5 8.5a5 5 0 0 1 0 7M18.5 5.5a9 9 0 0 1 0 13"/></svg>`
   :`<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="m16 9 5 6M21 9l-5 6"/></svg>`;
 function snSndToggle(){ ui.snMute=ui.snMute===false; document.querySelectorAll("video.sn-vid").forEach(v=>{ v.muted=ui.snMute!==false; }); document.querySelectorAll(".sn-snd").forEach(b=>{ b.innerHTML=snSndIc(); b.classList.add("show"); clearTimeout(b._t); b._t=setTimeout(()=>b.classList.remove("show"),900); }); }
@@ -13639,7 +13721,6 @@ async function vidPoster(v){ try{ await new Promise(r=>{ let done=false; const f
 async function snAddVideo(f){ const dr=ui.snDraft; if(!dr) return;
   if(dr.mode==="story"){ toast("限時動態只能放照片"); return; }
   if(dr.media.length){ toast("影片要單獨發一則貼文"); return; }
-  if(snVidToday()>=SN_VDAY){ toast(`一天最多發 ${SN_VDAY} 支影片`); return; }
   const url=URL.createObjectURL(f); let v; try{ v=await vidLoad(url); }catch(e){ URL.revokeObjectURL(url); toast("這支影片讀不出來"); return; }
   const dur=v.duration; if(!isFinite(dur)||dur>SN_VMAX+.5){ URL.revokeObjectURL(url); toast(`影片要 ${SN_VMAX} 秒以內`); return; }
   const pb=await vidPoster(v), id="snv"+Date.now(), pid=id+"p"; if(pb) await MDB.put(pid,pb);
@@ -13708,6 +13789,198 @@ function viewCloud(){ const c=ui.cloud||{}; if(!c.at&&!c.busy) setTimeout(cloudL
     <button class="btn btn-soft cu-re" data-a="cloudRe" ${c.busy?"disabled":""}>${c.busy?"讀取中…":"重新整理"}</button></main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="cloudRe"]'); if(t) cloudLoad(); });
 hbRxOpen();
+
+/* =========================================================
+   綜藝（真實節目原名）：只有出道藝人能上節目，粉絲看、押積分猜誰贏、留言
+   ・놀라운 토요일 驚人的星期六：받아쓰기（聽一段歌，寫下歌詞，越接近分數越高）
+   ・아는 형님 認識的哥哥：나를 맞혀봐（每人出一題關於自己的題目，其他人來猜）
+   ・Running Man 런닝맨：撕名牌（每回合同時選「要撕誰」和「防誰」，被防到的人反被撕）
+   管理員在 FOC → 綜藝 開一集（選節目、來賓、截止時間）
+   ========================================================= */
+const VS_KEY="daisuki_varshow";
+const VSHOW={
+  nolto:{name:"驚人的星期六",ko:"놀라운 토요일",seg:"받아쓰기",tip:"聽歌寫歌詞",g:3},
+  knowing:{name:"認識的哥哥",ko:"아는 형님",seg:"나를 맞혀봐",tip:"猜猜我是誰",g:1},
+  rm:{name:"Running Man",ko:"런닝맨",seg:"이름표 떼기",tip:"撕名牌",g:5}};
+const VS_PUN=["在 SNS 發一張自己的醜照","直播時唱一首童謠","發一則限時動態跳 10 秒可愛舞","用三種語言跟粉絲說「我愛你」","錄一段模仿團員的語音","今天在 TIE 用撒嬌語氣傳三則訊息","把 SNS 大頭貼換成粉絲指定的照片一天","寫一封手寫信給粉絲並拍照上傳"];
+const VS_BETS=[100,300,500,1000];
+const vsAll=()=>(S.get(VS_KEY,[])||[]).filter(e=>e&&e.id&&VSHOW[e.show]);
+const vsGet=id=>vsAll().find(e=>e.id===id);
+function vsPut(ep){ const L=S.get(VS_KEY,[])||[], i=L.findIndex(x=>x.id===ep.id); if(i>=0) L[i]=ep; else L.unshift(ep); S.set(VS_KEY,L.slice(0,200)); }
+const vsTitle=id=>{ const e=vsGet(id); return e?VSHOW[e.show].name:"綜藝"; };
+const vsName=mid=>MEMBERS[mid]?MEMBERS[mid].name:"";
+const vsAv=(mid,sz=40)=>{ const m=MEMBERS[mid]; if(!m) return ""; const u=mPhoto(mid); return `<span class="vs-av" style="--s:${sz}px;background:${grad(m.g||0)}">${u?`<span class="av-img av-bgi" style="background-image:url('${u}')"></span>`:esc((m.name||"?")[0])}</span>`; };
+const vsNorm=s=>String(s||"").normalize("NFKC").toLowerCase().replace(/[\s\p{P}\p{S}]/gu,"");
+function vsSim(a,b){ a=vsNorm(a); b=vsNorm(b); if(!a||!b) return 0; if(a===b) return 1; const n=a.length, m=b.length; let prev=new Array(m+1).fill(0);
+  for(let i=1;i<=n;i++){ const cur=new Array(m+1).fill(0); for(let j=1;j<=m;j++) cur[j]=a[i-1]===b[j-1]?prev[j-1]+1:Math.max(prev[j],cur[j-1]); prev=cur; } return 2*prev[m]/(n+m); }
+const vsOk=(g,ans)=>{ const a=vsNorm(g), b=vsNorm(ans); return !!a&&!!b&&(a===b||(b.length>=2&&a.includes(b))||vsSim(a,b)>=.8); };
+
+/* ===== 進度、結果 ===== */
+function vsNeed(ep,mid){ if(ep.st!=="on"||!ep.mids.includes(mid)) return false; const a=(ep.a||{})[mid]||{};
+  if(ep.show==="nolto") return !a.txt;
+  if(ep.show==="knowing") return !a.q||ep.mids.some(o=>o!==mid&&((ep.a||{})[o]||{}).q&&!((a.g||{})[o]));
+  if(ep.show==="rm") return (ep.rm.alive||[]).includes(mid)&&!((ep.rm.mv||{})[ep.rm.round]||{})[mid];
+  return false; }
+function vsScores(ep){ const S2={}, A=ep.a||{}; ep.mids.forEach(m=>S2[m]=0);
+  if(ep.show==="nolto") ep.mids.forEach(m=>{ S2[m]=A[m]&&A[m].txt?Math.round(vsSim(A[m].txt,ep.nolto.lyric)*100):0; });
+  if(ep.show==="knowing") ep.mids.forEach(o=>{ const q=A[o]; if(!q||!q.q) return; ep.mids.forEach(g=>{ if(g===o) return; const gs=((A[g]||{}).g||{})[o]; if(gs==null) return; const mk=(q.mark||{})[g]; if(mk!=null?mk:vsOk(gs,q.ans)) S2[g]++; }); });
+  if(ep.show==="rm"){ const out=ep.rm.out||[]; ep.mids.forEach(m=>{ const o=out.find(x=>x.mid===m); S2[m]=o?o.r:999; }); }
+  return S2; }
+function vsRank(ep){ const sc=vsScores(ep); return ep.mids.slice().sort((a,b)=>sc[b]-sc[a]); }
+function vsFinish(ep){ if(ep.st!=="on") return ep; const sc=vsScores(ep), rk=vsRank(ep), top=sc[rk[0]];
+  let win=rk.filter(m=>sc[m]===top); if(ep.show==="rm"&&(ep.rm.alive||[]).length) win=ep.rm.alive.slice();
+  if(ep.show!=="rm"&&!top) win=[];
+  const last=rk[rk.length-1], pun=VS_PUN[strHash(ep.id+last)%VS_PUN.length];
+  ep.st="done"; ep.res={rank:rk,win,sc,pun:{mid:last,t:pun},at:Date.now()}; return ep; }
+/* 時間到、或大家都做完了 → 收工（誰的手機先看到誰收，結果每台算出來都一樣） */
+function vsCheck(ep){ if(!ep||ep.st!=="on") return ep; let fin=Date.now()>=ep.end;
+  if(ep.show==="nolto") fin=fin||ep.mids.every(m=>((ep.a||{})[m]||{}).txt);
+  if(ep.show==="knowing") fin=fin||ep.mids.every(m=>!vsNeed(ep,m));
+  if(ep.show==="rm"){ if(Date.now()>=ep.end&&(ep.rm.alive||[]).length>1){ /* 時間到還沒分出勝負：活著的一起贏 */ } else fin=fin||(ep.rm.alive||[]).length<=1||!!ep.rm.tie; }
+  if(fin){ vsFinish(ep); vsPut(ep); } return ep; }
+/* Running Man：大家都選好了就結算這一回合 */
+function vsRmResolve(ep,force){ const r=ep.rm, mv=(r.mv||{})[r.round]||{}, alive=r.alive||[];
+  if(!force&&!alive.every(m=>mv[m])) return false;
+  const out=new Map(); alive.forEach(a=>{ const x=mv[a]; if(!x||!x.t||!alive.includes(x.t)||x.t===a) return; const b=x.t, gb=(mv[b]||{}).g;
+    if(gb===a){ if(!out.has(a)) out.set(a,{by:b,c:1}); } else { if(!out.has(b)) out.set(b,{by:a}); } });
+  const log=[]; out.forEach((o,m)=>{ log.push(`${vsName(o.by)} 撕下了 ${vsName(m)} 的名牌${o.c?"（反撕）":""}`); (r.out=r.out||[]).push({mid:m,r:r.round,by:o.by}); });
+  if(!out.size) log.push("這回合沒有人被撕");
+  (r.log=r.log||[]).push({r:r.round,t:log}); r.alive=alive.filter(m=>!out.has(m));
+  if(!r.alive.length){ r.alive=[...out.keys()].filter(m=>(r.out||[]).some(o=>o.mid===m&&o.r===r.round)); r.out=(r.out||[]).filter(o=>o.r!==r.round); r.log[r.log.length-1].t.push("最後的人同時被撕，一起獲勝"); r.tie=1; }
+  r.round++; return true; }
+
+/* ===== 押積分（粉絲） ===== */
+function vsBet(id,mid,n){ const ep=vsGet(id); if(!ep||ep.st!=="on") return; const me=myEmail(); if(!me) return; if((ep.bets||{})[me]){ toast("這集你已經押過了"); return; }
+  if(points()<n){ toast("積分不夠，先補充積分吧"); return; }
+  ask(`押 ${fmt(n)} 積分猜 ${vsName(mid)} 會贏？猜中的人平分全部的積分。`,()=>{ const e=vsGet(id); if(!e||e.st!=="on") return; S.set(K.points,points()-n); (e.bets=e.bets||{})[me]={mid,n,ts:Date.now(),name:ME.name}; vsPut(e); render(); toast("押好了，等結果吧！"); },{ok:"押下去",danger:false}); }
+/* 結算：管理員的手機發積分（每筆有固定編號，不會重複發） */
+function vsPayAll(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[VS_KEY]==null) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)); let add=0, dirty=false;
+  vsAll().forEach(ep0=>{ const ep=vsCheck(ep0); if(ep.st!=="done"||ep.paid) return; const res=ep.res||{}, win=res.win||[], B=Object.entries(ep.bets||{}), pool=B.reduce((s,[,b])=>s+b.n,0), wp=B.filter(([,b])=>win.includes(b.mid)).reduce((s,[,b])=>s+b.n,0);
+    B.forEach(([em,b])=>{ const id=`vs_${ep.id}_${em}`; if(have.has(id)) return; let n=0, why="";
+      if(!wp){ n=b.n; why=`${VSHOW[ep.show].name}・沒有人猜中，退回`; } else if(win.includes(b.mid)){ n=Math.floor(b.n*pool/wp); why=`${VSHOW[ep.show].name}・猜中了！`; } else return;
+      L.push({id,to:em,n,why,by:"auto",ts:Date.now()}); have.add(id); add++; });
+    ep.mids.forEach(m=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return; const id=`vsa_${ep.id}_${m}`; if(have.has(id)) return; const w=win.includes(m);
+      L.push({id,to:em,n:w?500:100,why:`${VSHOW[ep.show].name}・${w?"冠軍":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; });
+    ep.paid=Date.now(); vsPut(ep); dirty=true; });
+  if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
+setInterval(vsPayAll,60e3); setTimeout(vsPayAll,12e3);
+
+/* ===== 畫面 ===== */
+const vsLeft=ts=>{ const s=Math.max(0,ts-Date.now()), h=Math.floor(s/36e5); return h>=24?`剩 ${Math.floor(h/24)} 天`:h>=1?`剩 ${h} 小時`:`剩 ${Math.max(1,Math.ceil(s/6e4))} 分鐘`; };
+function vsCard(ep,base,mid){ const S0=VSHOW[ep.show], need=mid&&vsNeed(ep,mid);
+  return `<button class="vs-card" data-a="uniGo" data-v="${base}&id=${ep.id}" style="--vg:${grad(S0.g)}"><span class="vs-logo"><b>${esc(S0.name)}</b><small>${esc(S0.ko)}</small></span>
+    <span class="vs-ci"><b>${esc(ep.title)}</b><small>${esc(S0.seg)}・${esc(S0.tip)}</small><span class="vs-avs">${ep.mids.map(m=>vsAv(m,26)).join("")}</span></span>
+    <em class="vs-st ${ep.st==="on"?"on":""}">${need?"輪到你":ep.st==="on"?`錄影中・${vsLeft(ep.end)}`:"已播出"}</em></button>`; }
+function vsListHtml(base,mid,eps){ const on=eps.filter(e=>e.st==="on"), done=eps.filter(e=>e.st!=="on");
+  return `<main class="page vs">${eps.length?"":`<div class="vs-none"><b>還沒有節目</b></div>`}${on.length?`<div class="section-h">錄影中</div>${on.map(e=>vsCard(e,base,mid)).join("")}`:""}${done.length?`<div class="section-h">已播出</div>${done.map(e=>vsCard(e,base,mid)).join("")}`:""}</main>`; }
+function vsHero(ep){ const S0=VSHOW[ep.show]; return `<section class="vs-hero" style="--vg:${grad(S0.g)}"><span class="vs-logo big"><b>${esc(S0.name)}</b><small>${esc(S0.ko)}</small></span><h2>${esc(ep.title)}</h2><p>${esc(S0.seg)}・${esc(S0.tip)}</p>
+  <span class="vs-st ${ep.st==="on"?"on":""}">${ep.st==="on"?`錄影中・${vsLeft(ep.end)}`:"已播出"}</span><div class="vs-cast">${ep.mids.map(m=>`<span>${vsAv(m,46)}<small>${esc(vsName(m))}</small></span>`).join("")}</div></section>`; }
+function vsResult(ep){ if(ep.st!=="done"||!ep.res) return ""; const r=ep.res, unit=ep.show==="nolto"?"%":ep.show==="knowing"?" 題":"";
+  return `<section class="card vs-res"><h3>結果</h3>${r.rank.map((m,i)=>`<div class="vs-rr ${r.win.includes(m)?"win":""}"><em>${r.win.includes(m)?"👑":i+1}</em>${vsAv(m,32)}<b>${esc(vsName(m))}</b><span>${ep.show==="rm"?(r.win.includes(m)?"存活":`第 ${r.sc[m]} 回合出局`):fmt(r.sc[m])+unit}</span></div>`).join("")}
+    ${r.pun&&MEMBERS[r.pun.mid]?`<div class="vs-pun"><b>懲罰・${esc(vsName(r.pun.mid))}</b><p>${esc(r.pun.t)}</p></div>`:""}</section>`; }
+/* 各節目的內容：who＝自己是來賓的藝人 id（粉絲是空的） */
+function vsBody(ep,who){ const A=ep.a||{}, on=ep.st==="on", me=who&&ep.mids.includes(who)?who:null;
+  if(ep.show==="nolto"){ const mine=me&&A[me]||{}, left=(ep.nolto.plays||3)-(mine.plays||0);
+    return `<section class="card vs-sec"><h3>받아쓰기</h3>
+      ${me&&on?(mine.txt?`<p class="vs-wait">已交出答案，等其他人</p><div class="vs-ans"><p>${esc(mine.txt)}</p></div>`:`<button class="btn btn-main btn-block" data-a="vsPlay" data-id="${ep.id}" ${left>0?"":"disabled"}>▶ 播放這段歌（剩 ${Math.max(0,left)} 次）</button>
+        <textarea id="vsTxt" class="vs-ta" rows="4" placeholder="輸入文字">${esc(ui.vsTxt&&ui.vsTxt[ep.id]||"")}</textarea><button class="btn btn-soft btn-block" data-a="vsSubmit" data-id="${ep.id}">交出答案</button>`)
+      :on?ep.mids.map(m=>`<div class="vs-rr">${vsAv(m,28)}<b>${esc(vsName(m))}</b><span>${(A[m]||{}).txt?"已作答 ✓":"聽歌中…"}</span></div>`).join("")
+      :`<button class="btn btn-soft btn-block" data-a="vsPlay" data-id="${ep.id}">▶ 聽題目</button><div class="vs-lyr"><small>正確歌詞</small><p>${esc(ep.nolto.lyric)}</p></div>${ep.mids.map(m=>`<div class="vs-ans"><b>${esc(vsName(m))}・${fmt(ep.res.sc[m]||0)}%</b><p>${esc((A[m]||{}).txt||"（沒有作答）")}</p></div>`).join("")}`}</section>`; }
+  if(ep.show==="knowing"){ const qs=ep.mids.filter(o=>(A[o]||{}).q);
+    return `<section class="card vs-sec"><h3>나를 맞혀봐</h3>
+      ${me&&on&&!(A[me]||{}).q?`<p class="vs-wait">先出一題關於自己的題目</p><input id="vsQ" class="vs-in" maxlength="80" placeholder="輸入文字"><input id="vsAns" class="vs-in" maxlength="40" placeholder="輸入文字"><button class="btn btn-main btn-block" data-a="vsQSet" data-id="${ep.id}">出題</button>`:""}
+      ${qs.length?qs.map(o=>{ const q=A[o], my=me&&((A[me]||{}).g||{})[o];
+        return `<div class="vs-q"><div class="vs-qh">${vsAv(o,30)}<b>${esc(vsName(o))}</b></div><p class="vs-qt">${esc(q.q)}</p>
+          ${on&&me&&me!==o?(my!=null?`<small class="vs-wait">你的答案：${esc(my)}</small>`:`<span class="vs-gr"><input id="vsG_${o}" class="vs-in" maxlength="40" placeholder="輸入文字"><button class="btn btn-soft btn-sm" data-a="vsGuess" data-id="${ep.id}" data-v="${o}">回答</button></span>`):""}
+          ${on&&me===o?`<small class="vs-wait">答案：${esc(q.ans)}</small>${ep.mids.filter(g=>g!==o&&((A[g]||{}).g||{})[o]!=null).map(g=>{ const gs=A[g].g[o], mk=(q.mark||{})[g], ok=mk!=null?mk:vsOk(gs,q.ans); return `<div class="vs-gl"><b>${esc(vsName(g))}</b><span>${esc(gs)}</span><button class="vs-mk ${ok?"ok":""}" data-a="vsMark" data-id="${ep.id}" data-v="${g}">${ok?"⭕":"❌"}</button></div>`; }).join("")}`:""}
+          ${!on?`<small class="vs-wait">答案：${esc(q.ans)}</small>${ep.mids.filter(g=>g!==o).map(g=>{ const gs=((A[g]||{}).g||{})[o], mk=(q.mark||{})[g], ok=gs!=null&&(mk!=null?mk:vsOk(gs,q.ans)); return `<div class="vs-gl"><b>${esc(vsName(g))}</b><span>${esc(gs==null?"—":gs)}</span><i>${ok?"⭕":"❌"}</i></div>`; }).join("")}`:""}</div>`; }).join(""):`<p class="vs-wait">還沒有人出題</p>`}</section>`; }
+  if(ep.show==="rm"){ const r=ep.rm, alive=r.alive||[], mv=(r.mv||{})[r.round]||{}, mine=me&&mv[me], d=ui.vsRm||{};
+    return `<section class="card vs-sec"><h3>이름표 떼기・第 ${r.round} 回合</h3>
+      <div class="vs-tags">${ep.mids.map(m=>{ const o=(r.out||[]).find(x=>x.mid===m); return `<span class="vs-tag ${o?"out":""}">${vsAv(m,40)}<b>${esc(vsName(m))}</b>${o?`<em>撕</em>`:on?`<small>${mv[m]?"已出手":"考慮中"}</small>`:""}</span>`; }).join("")}</div>
+      ${on&&me&&alive.includes(me)?(mine?`<p class="vs-wait">已出手，等其他人</p>`:`<p class="vs-lab">要撕誰的名牌？</p><div class="vs-pick">${alive.filter(m=>m!==me).map(m=>`<button class="${d.t===m?"on":""}" data-a="vsRmT" data-v="${m}">${esc(vsName(m))}</button>`).join("")}</div>
+        <p class="vs-lab">要防誰？（他來撕你會被反撕）</p><div class="vs-pick">${alive.filter(m=>m!==me).map(m=>`<button class="${d.g===m?"on":""}" data-a="vsRmG" data-v="${m}">${esc(vsName(m))}</button>`).join("")}</div>
+        <button class="btn btn-main btn-block" data-a="vsRmGo" data-id="${ep.id}" ${d.t&&d.g?"":"disabled"}>出手</button>`):on&&me?`<p class="vs-wait">你已經出局了</p>`:""}
+      ${(r.log||[]).length?`<div class="vs-log">${r.log.slice().reverse().map(l=>`<div><b>第 ${l.r} 回合</b>${l.t.map(x=>`<p>${esc(x)}</p>`).join("")}</div>`).join("")}</div>`:""}</section>`; }
+  return ""; }
+function vsBetHtml(ep){ const me=myEmail(), my=(ep.bets||{})[me], B=Object.values(ep.bets||{}), pool=B.reduce((s,b)=>s+b.n,0);
+  if(ep.st!=="on") return my?`<section class="card vs-sec"><h3>你的預測</h3><p class="vs-wait">押 ${fmt(my.n)} 積分在 ${esc(vsName(my.mid))}・${(ep.res&&ep.res.win||[]).includes(my.mid)?"猜中了！":"沒猜中"}</p></section>`:"";
+  const d=ui.vsBet||{};
+  return `<section class="card vs-sec"><h3>猜誰會贏<small>獎金池 ${fmt(pool)}</small></h3>${my?`<p class="vs-wait">你押了 ${fmt(my.n)} 積分在 ${esc(vsName(my.mid))}</p>`:`
+    <div class="vs-pick">${ep.mids.map(m=>`<button class="${d.mid===m?"on":""}" data-a="vsBetM" data-v="${m}">${vsAv(m,22)}${esc(vsName(m))}<small>${fmt(B.filter(b=>b.mid===m).reduce((s,b)=>s+b.n,0))}</small></button>`).join("")}</div>
+    <div class="vs-pick amt">${VS_BETS.map(n=>`<button class="${d.n===n?"on":""}" data-a="vsBetN" data-v="${n}">${fmt(n)}</button>`).join("")}</div>
+    <button class="btn btn-main btn-block" data-a="vsBetGo" data-id="${ep.id}" ${d.mid&&d.n?"":"disabled"}>押積分（你有 ${fmt(points())}）</button>`}</section>`; }
+function vsCmHtml(ep){ const L=ep.cm||[], me=myEmail(), mm=(session()||{}).role==="artist"?(session()||{}).member:"";
+  return `<section class="card vs-sec"><h3>留言<small>${fmt(L.length)}</small></h3><form class="vs-cf" id="vsCmForm" data-id="${ep.id}"><input id="vsCmIn" maxlength="200" placeholder="輸入文字" autocomplete="off"><button type="submit">發佈</button></form>
+    ${L.slice().reverse().slice(0,80).map(c=>`<div class="vs-cm">${c.mid?vsAv(c.mid,28):`<span class="vs-av" style="--s:28px;background:${grad(strHash(c.by)%6)}">${esc((c.name||"?")[0])}</span>`}<p><b>${esc(c.mid?vsName(c.mid):c.name)}</b>${c.by===me||c.mid&&c.mid===mm?esc(c.text):trT("vs:"+c.id,c.text,"","span")}<small>${snsAgo(c.ts)}</small></p>${c.by===me||isAdminAcct()?`<button data-a="vsCmDel" data-id="${ep.id}" data-v="${c.id}" aria-label="刪除">×</button>`:""}</div>`).join("")}</section>`; }
+function viewShowFan(id){ if(id){ const ep=vsCheck(vsGet(id)); if(!ep) return `<main class="page vs"><div class="vs-none"><b>這集已下架</b></div></main>`; return `<main class="page vs">${vsHero(ep)}${vsResult(ep)}${vsBetHtml(ep)}${vsBody(ep,null)}${vsCmHtml(ep)}</main>`; }
+  const f=followed(); return vsListHtml("#/fan/core?p=show",null,vsAll().map(vsCheck).sort((a,b)=>(b.st==="on")-(a.st==="on")||b.ts-a.ts).sort((a,b)=>(b.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))-a.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))))); }
+function viewShowArtist(mid,id){ if(id){ const ep=vsCheck(vsGet(id)); if(!ep) return `<main class="page vs"><div class="vs-none"><b>這集已下架</b></div></main>`; return `<main class="page vs">${vsHero(ep)}${vsResult(ep)}${vsBody(ep,mid)}${vsCmHtml(ep)}</main>`; }
+  const E=vsAll().map(vsCheck), mine=E.filter(e=>e.mids.includes(mid)), other=E.filter(e=>!e.mids.includes(mid));
+  return vsListHtml("#/artist?tab=foc&p=show",mid,[...mine,...other].sort((a,b)=>(b.st==="on")-(a.st==="on")||b.ts-a.ts)); }
+const vsArtTodo=mid=>vsAll().some(e=>vsNeed(vsCheck(e),mid));
+const vsArtSub=mid=>{ if(vsArtTodo(mid)) return "● 輪到你了"; const n=vsAll().filter(e=>e.st==="on"&&e.mids.includes(mid)).length; return n?`${n} 集錄影中`:"等節目邀請"; };
+const vsFanSub=()=>{ const n=vsAll().filter(e=>e.st==="on").length; return n?`${n} 集錄影中`:"看藝人上綜藝"; };
+
+/* ===== 管理員：開一集 ===== */
+function vsAdminHtml(){ const d=ui.vsD||(ui.vsD={show:"nolto",mids:[],days:3,plays:3}), S0=VSHOW[d.show], AM=Object.keys(MEMBERS).filter(m=>!MEMBERS[m].official&&groupOf(MEMBERS[m].group));
+  const n=vsAll().filter(e=>e.show===d.show).length+1, E=vsAll();
+  return `<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>開一集綜藝</h3></div>
+    <div class="chips wrap">${Object.entries(VSHOW).map(([k,v])=>`<button class="chip ${d.show===k?"on":""}" data-a="vsDShow" data-v="${k}">${esc(v.name)}</button>`).join("")}</div>
+    <label class="foc-lab">標題</label><label class="field"><input id="vsDTitle" value="${esc(d.title||`EP.${n}`)}" placeholder="輸入文字"></label>
+    <label class="foc-lab">來賓（已出道藝人）<span class="muted">${d.mids.length} 位</span></label>
+    <div class="chips wrap">${AM.map(m=>`<button class="chip ${d.mids.includes(m)?"on":""}" data-a="vsDMid" data-v="${m}">${esc(vsName(m))}<small class="muted"> ${esc((groupOf(MEMBERS[m].group)||{}).name||"")}</small></button>`).join("")}</div>
+    <label class="foc-lab">錄影時間</label><div class="chips">${[1,2,3,5,7].map(x=>`<button class="chip ${d.days===x?"on":""}" data-a="vsDDays" data-v="${x}">${x} 天</button>`).join("")}</div>
+    ${d.show==="nolto"?`<label class="foc-lab">題目音檔</label><label class="field">🎵<input type="file" accept="audio/*,video/*" id="vsAud"><span id="vsAudN" class="muted">${d.audN?esc(d.audN):""}</span></label>
+      <label class="foc-lab">正確歌詞</label><textarea id="vsLyr" class="vs-ta" rows="4" placeholder="輸入文字">${esc(d.lyric||"")}</textarea>
+      <label class="foc-lab">每人可以聽幾次</label><div class="chips">${[1,2,3,5].map(x=>`<button class="chip ${d.plays===x?"on":""}" data-a="vsDPlays" data-v="${x}">${x} 次</button>`).join("")}</div>`:""}
+    <button class="btn btn-main btn-block" data-a="vsDGo">開錄（通知來賓）</button></section>
+    ${E.length?`<div class="section-h">節目</div><section class="card">${E.map(e=>`<div class="vd-r vs-ar"><span><b>${esc(VSHOW[e.show].name)}・${esc(e.title)}</b><small>${e.st==="on"?`錄影中・${vsLeft(e.end)}${e.show==="rm"?`・第 ${e.rm.round} 回合`:""}`:"已播出"}・${e.mids.map(vsName).join("、")}</small></span>
+      ${e.st==="on"?`${e.show==="rm"?`<button class="btn btn-soft btn-sm" data-a="vsRmForce" data-id="${e.id}">結算回合</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsEnd" data-id="${e.id}">收工</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsDel" data-id="${e.id}">刪除</button></div>`).join("")}</section>`:""}`; }
+
+/* ===== 點擊 ===== */
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^vs/.test(a)) return;
+  const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
+  switch(a){
+    case "vsDShow": ui.vsD.show=t.dataset.v; ui.vsD.title=""; rr(); break;
+    case "vsDMid": { const L=ui.vsD.mids, i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=8) toast("一集最多 8 位"); else L.push(t.dataset.v); ui.vsD.title=(document.getElementById("vsDTitle")||{}).value; vsKeepD(); rr(); break; }
+    case "vsDDays": ui.vsD.days=+t.dataset.v; vsKeepD(); rr(); break;
+    case "vsDPlays": ui.vsD.plays=+t.dataset.v; vsKeepD(); rr(); break;
+    case "vsDGo": { vsKeepD(); const d=ui.vsD; if(d.mids.length<2){ toast("至少要 2 位來賓"); break; }
+      if(d.show==="nolto"&&(!d.aud||!(d.lyric||"").trim())){ toast("要放題目音檔和正確歌詞"); break; }
+      const id="vs"+Date.now().toString(36), ep={id,show:d.show,title:(d.title||"").trim()||"EP",mids:d.mids.slice(),ts:Date.now(),end:Date.now()+d.days*864e5,st:"on",a:{},bets:{},cm:[]};
+      if(d.show==="nolto") ep.nolto={audio:d.aud,lyric:d.lyric.trim(),plays:d.plays};
+      if(d.show==="rm") ep.rm={round:1,alive:d.mids.slice(),mv:{},log:[],out:[]};
+      vsPut(ep);
+      ui.vsD={show:d.show,mids:[],days:d.days,plays:d.plays}; render(); toast("開錄了！來賓的 FOC 會出現「輪到你了」"); break; }
+    case "vsEnd": { const id=t.dataset.id; ask("現在收工，直接公布結果？",()=>{ const ep=vsGet(id); if(!ep) return; if(ep.show==="rm"&&ep.rm.alive.length>1){ /* 活著的一起贏 */ } vsFinish(ep); vsPut(ep); vsPayAll(); render(); }); break; }
+    case "vsDel": { const id=t.dataset.id; ask("刪除這集？押的積分會退回。",()=>{ const ep=vsGet(id); if(ep&&ep.st==="on"&&isAdminAcct()){ const L=S.get(K.ptGrants,[])||[]; Object.entries(ep.bets||{}).forEach(([em,b])=>L.push({id:`vsr_${ep.id}_${em}`,to:em,n:b.n,why:"節目取消，退回積分",by:"auto",ts:Date.now()})); S.set(K.ptGrants,L.slice(-2000)); }
+      S.set(VS_KEY,(S.get(VS_KEY,[])||[]).filter(x=>x.id!==id)); render(); }); break; }
+    case "vsRmForce": { const ep=vsGet(t.dataset.id); if(!ep) break; vsRmResolve(ep,true); vsPut(ep); vsCheck(ep); rr(); break; }
+    case "vsPlay": { const ep=vsGet(t.dataset.id); if(!ep) break; const mid=(session()||{}).member, me=ep.st==="on"&&ep.mids.includes(mid)?mid:null;
+      if(me){ const A=ep.a=ep.a||{}, x=A[me]=A[me]||{}; if((x.plays||0)>=(ep.nolto.plays||3)){ toast("聽的次數用完了"); break; } x.plays=(x.plays||0)+1; vsPut(ep); }
+      t.disabled=true; mediaSrc(ep.nolto.audio).then(u=>{ if(!u){ toast("音檔讀不到"); t.disabled=false; return; } const au=new Audio(u); au.onended=()=>rr(); au.play().catch(()=>toast("播放失敗")); }); break; }
+    case "vsSubmit": { const v=((document.getElementById("vsTxt")||{}).value||"").trim(); if(!v){ toast("先寫下聽到的歌詞"); break; } const ep=vsGet(t.dataset.id), mid=(session()||{}).member; if(!ep||ep.st!=="on"||!ep.mids.includes(mid)) break;
+      ask("交出去就不能改了，確定嗎？",()=>{ const e2=vsGet(ep.id); const x=(e2.a=e2.a||{})[mid]=e2.a[mid]||{}; x.txt=v; x.ts=Date.now(); vsPut(e2); vsCheck(e2); rr(); },{danger:false}); break; }
+    case "vsQSet": { const q=((document.getElementById("vsQ")||{}).value||"").trim(), an=((document.getElementById("vsAns")||{}).value||"").trim(); if(!q||!an){ toast("題目和答案都要寫"); break; } if(!isAdminAcct()&&(banBlock(q)||banBlock(an))) break;
+      const ep=vsGet(t.dataset.id), mid=(session()||{}).member; if(!ep||!ep.mids.includes(mid)) break; const x=(ep.a=ep.a||{})[mid]=ep.a[mid]||{}; x.q=q; x.ans=an; vsPut(ep); rr(); break; }
+    case "vsGuess": { const o=t.dataset.v, g=((document.getElementById("vsG_"+o)||{}).value||"").trim(); if(!g){ toast("先寫答案"); break; } const ep=vsGet(t.dataset.id), mid=(session()||{}).member; if(!ep||!ep.mids.includes(mid)) break;
+      const x=(ep.a=ep.a||{})[mid]=ep.a[mid]||{}; (x.g=x.g||{})[o]=g; vsPut(ep); vsCheck(ep); rr(); break; }
+    case "vsMark": { const ep=vsGet(t.dataset.id), mid=(session()||{}).member; if(!ep) break; const q=(ep.a||{})[mid]; if(!q) break; const g=t.dataset.v, gs=((ep.a[g]||{}).g||{})[mid], cur=(q.mark||{})[g]!=null?q.mark[g]:vsOk(gs,q.ans); (q.mark=q.mark||{})[g]=!cur; vsPut(ep); rr(); break; }
+    case "vsRmT": ui.vsRm={...(ui.vsRm||{}),t:t.dataset.v}; rr(); break;
+    case "vsRmG": ui.vsRm={...(ui.vsRm||{}),g:t.dataset.v}; rr(); break;
+    case "vsRmGo": { const ep=vsGet(t.dataset.id), mid=(session()||{}).member, d=ui.vsRm||{}; if(!ep||ep.st!=="on"||!ep.rm.alive.includes(mid)||!d.t||!d.g) break;
+      const mv=ep.rm.mv=ep.rm.mv||{}; (mv[ep.rm.round]=mv[ep.rm.round]||{})[mid]={t:d.t,g:d.g,ts:Date.now()}; ui.vsRm=null; vsRmResolve(ep,false); vsPut(ep); vsCheck(ep); rr(); toast("出手了！"); break; }
+    case "vsBetM": ui.vsBet={...(ui.vsBet||{}),mid:t.dataset.v}; rr(); break;
+    case "vsBetN": ui.vsBet={...(ui.vsBet||{}),n:+t.dataset.v}; rr(); break;
+    case "vsBetGo": { const d=ui.vsBet||{}; if(d.mid&&d.n) vsBet(t.dataset.id,d.mid,d.n); ui.vsBet=null; break; }
+    case "vsCmDel": { const ep=vsGet(t.dataset.id); if(!ep) break; ep.cm=(ep.cm||[]).filter(c=>c.id!==t.dataset.v); vsPut(ep); rr(); break; }
+  } });
+function vsKeepD(){ const d=ui.vsD; if(!d) return; const ti=document.getElementById("vsDTitle"), ly=document.getElementById("vsLyr"); if(ti) d.title=ti.value; if(ly) d.lyric=ly.value; }
+document.addEventListener("input",e=>{ if(e.target.id==="vsTxt"){ const m=location.hash.match(/id=([^&]+)/); if(m) (ui.vsTxt=ui.vsTxt||{})[decodeURIComponent(m[1])]=e.target.value; } if(e.target.id==="vsLyr"||e.target.id==="vsDTitle") vsKeepD(); });
+document.addEventListener("change",async e=>{ if(e.target.id!=="vsAud") return; const f=e.target.files&&e.target.files[0]; if(!f||!ui.vsD) return; if(f.size>15*1024*1024){ toast("音檔太大，剪短一點（15MB 以內）"); return; } const id="vsa"+Date.now(); await MDB.put(id,f.slice(0,f.size,f.type||"audio/mpeg")); ui.vsD.aud=id; ui.vsD.audN=f.name; const n=document.getElementById("vsAudN"); if(n) n.textContent=f.name; });
+document.addEventListener("submit",e=>{ if(e.target.id!=="vsCmForm") return; e.preventDefault(); const inp=document.getElementById("vsCmIn"), v=(inp&&inp.value||"").trim(); if(!v) return; if(!isAdminAcct()&&banBlock(v)) return;
+  const ep=vsGet(e.target.dataset.id); if(!ep) return; const s=session()||{}, mid=s.role==="artist"&&MEMBERS[s.member]?s.member:"";
+  (ep.cm=ep.cm||[]).push({id:"c"+Date.now().toString(36),by:myEmail(),name:ME.name,mid,text:v,ts:Date.now()}); ep.cm=ep.cm.slice(-300); vsPut(ep); inp.value=""; const y=window.scrollY; render(); window.scrollTo(0,y); });
 
 </script>
 </body>
