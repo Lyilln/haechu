@@ -2783,6 +2783,7 @@ html[data-theme="dark"] .cmx-fab{background:#F3F1F7;color:#1D1A24}
 /* 照 Weverse：往下滑後上面是一條實心的小標題列（頭貼＋名字），不再透出照片；管理員的「粉絲｜藝人｜管理」下面接著排 */
 .ap2-bar,.ap2-bar.on{top:var(--uniH,0px)!important;background:var(--bg)!important;border-bottom:1px solid var(--line)!important}
 .ap2-bar::before,.ap2-bar::after{display:none!important}
+.ap2-bar,.ap2-bar.on,.ap2-bar:not(.on){transition:none!important}
 .ap2-bar .ap2-ib{color:var(--ink)!important}.ap2-bar .ap2-bt{color:var(--ink)!important;font-size:16px!important}.ap2-bar .ap2-bav{width:26px!important;height:26px!important}
 .ap2-tabs{top:calc(var(--uniH,0px) + env(safe-area-inset-top,0px) + 58px)!important}
 .ap2-strip{display:flex;gap:6px;overflow-x:auto;padding:12px 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch}.ap2-strip::-webkit-scrollbar{display:none}
@@ -4405,6 +4406,7 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .me-lv{display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:8px}.me-lv b{font-size:22px;font-weight:700;letter-spacing:.02em}.me-lv span{font-size:13px;font-weight:700}.me-lv small{flex-basis:100%;font-size:12px;opacity:.6}
 .post-tap{cursor:pointer}
 .dl .sp-t.has-tr{-webkit-line-clamp:2}.dl .sp-tr{margin:4px 0 0;font-size:14px;line-height:1.45;opacity:.72;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:none}
+html.coach-lock,html.coach-lock body{overscroll-behavior:none}
 html.no-scroll,html.no-scroll body{overflow:hidden!important;overscroll-behavior:none;height:100%}
 .pt-orig{display:block;margin:6px 0 2px;font-size:13px;color:var(--sub,#8E8A99);text-decoration:underline;text-underline-offset:3px;background:none;padding:0}
 .db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
@@ -4751,7 +4753,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026113411";
+const BUILD="20261026114414";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9652,15 +9654,16 @@ function coachEnd(){ const c0=ui.coach, s=session()||{};
   ui.coach=null; const c=document.getElementById("coach"); if(c) c.remove(); window.scrollTo(0,0);
   if(!c0||c0.kind!=="tour") setTimeout(tourCheck,450); }
 function coachWelcome(){
+  { const s0=session()||{}, T=S.get(K.tours,{}); if(!T[(s0.email||"")+"|_new"]){ T[(s0.email||"")+"|_new"]=true; S.set(K.tours,T); } }
   const s=session(), role=s.role, [t,d]=s.uni?COACH_INTRO_UNI:(COACH_INTRO[role]||COACH_INTRO.fan); ui.coach={kind:"welcome",role,steps:s.uni?COACH_UNI:(COACH[role]||[]),i:-1};
   coachMount(`<div class="coach-dim"></div><div class="coach-card"><div class="coach-logo">${I.heart}</div><b>歡迎來到 ${esc(APP_NAME)}</b>
     <p>這裡是跟現實平行的舞台，每個人都能成為想成為的人，寫下屬於自己的故事。</p>
     <div class="coach-role"><em>${t}</em><span>${d}</span></div>
     <div class="coach-btns"><button class="btn btn-soft" data-a="coachSkip">跳過</button><button class="btn btn-main" data-a="coachNext">帶我看看 ›</button></div></div>`);
 }
-function coachMount(html){ let c=document.getElementById("coach"); if(!c){ c=document.createElement("div"); c.id="coach"; c.className="coach"; document.body.appendChild(c); } c.innerHTML=html; document.documentElement.classList.add("no-scroll"); coachWatch(); }
+function coachMount(html){ let c=document.getElementById("coach"); if(!c){ c=document.createElement("div"); c.id="coach"; c.className="coach"; document.body.appendChild(c); } c.innerHTML=html; document.documentElement.classList.add("coach-lock"); coachWatch(); }
 /* 新手教學進行中：畫面不能滑；點亮起來的地方＝下一步（照著指引操作） */
-function coachWatch(){ clearInterval(coachWatch.t); coachWatch.t=setInterval(()=>{ if(!document.getElementById("coach")){ clearInterval(coachWatch.t); if(!document.querySelector(".mr.dl")) document.documentElement.classList.remove("no-scroll"); } },300); }
+function coachWatch(){ clearInterval(coachWatch.t); coachWatch.t=setInterval(()=>{ if(!document.getElementById("coach")){ clearInterval(coachWatch.t); document.documentElement.classList.remove("coach-lock"); } },300); }
 document.addEventListener("touchmove",e=>{ if(document.getElementById("coach")&&e.cancelable) e.preventDefault(); },{passive:false});
 document.addEventListener("wheel",e=>{ if(document.getElementById("coach")) e.preventDefault(); },{passive:false});
 document.addEventListener("click",e=>{ const c=document.getElementById("coach"); if(!c||!c.contains(e.target)||e.target.closest("button")) return; const h=c.querySelector(".coach-hole"); if(!h) return; const r=h.getBoundingClientRect();
@@ -12183,10 +12186,9 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
-  ${med.length?`<div class="ap2-strip">${med.slice(0,12).map(x=>`<button data-a="comments" data-id="${x.id}" aria-label="查看貼文">${x.mid?`<img data-mid="${esc(x.mid)}" alt="">`:`<span style="background:${grad(x.c||0)}"></span>`}</button>`).join("")}</div>`:""}
   <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${tab!=="media"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
-function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; b.classList.toggle("on",window.scrollY>h.offsetHeight-70); }
+function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0; b.classList.toggle("on",h.getBoundingClientRect().bottom<=bb+b.offsetHeight+1); }
 addEventListener("scroll",apBarSync,{passive:true});
 /* 生日當天：打開 App 時全螢幕慶祝（一年一次） */
 function artBdayCheck(mid){ if(!mid||layer.innerHTML||document.getElementById("coach")) return; if(bdayLeft(mid)!==0) return;
@@ -12473,7 +12475,7 @@ function tourKey(){ const s=session(), r=route(); if(!s) return "";
 const tourDone=k=>{ const s=session()||{}; return !!(S.get(K.tours,{})[(s.email||"")+"|"+k]); };
 function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getElementById("coach")||!welcomeDone()) return;
   { const ro=route().role; if(document.querySelector(".nav .nav-btn")&&!tourDone("full:"+ro)){ fullTourStart(); return; } }
-  const k=tourKey(); if(!k||!TOURS[k]||tourDone(k)) return;
+  const k=tourKey(); if(!k||!TOURS[k]||tourDone(k)||!tourDone("_new")) return; /* 分頁小教學只給新帳號自動跳；舊帳號要到 ME 按「重看教學」 */
   const steps=TOURS[k].filter(([sel])=>{ const el=document.querySelector(sel); return el&&el.getBoundingClientRect().height>0; }); if(!steps.length) return;
   ui.coach={kind:"tour",key:k,steps,i:0}; coachShow(); }
 
