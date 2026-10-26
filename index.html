@@ -4410,7 +4410,21 @@ html.coach-lock,html.coach-lock body{overscroll-behavior:none}
 html.no-scroll,html.no-scroll body{overflow:hidden!important;overscroll-behavior:none;height:100%}
 .pt-orig{display:block;margin:6px 0 2px;font-size:13px;color:var(--sub,#8E8A99);text-decoration:underline;text-underline-offset:3px;background:none;padding:0}
 .db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
-.nw-acts{display:flex;gap:6px;flex:none}
+.nw-acts{display:flex;gap:6px;flex:none}/* 直播背景音樂 */
+.bgm-prep{display:flex;flex-direction:column;gap:6px;margin:0 0 14px}
+.bgm-row{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 6px 0 12px;border-radius:14px;background:rgba(255,255,255,.14);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px)}
+.bgm-row i{display:grid;place-items:center;flex:none}.bgm-row i svg{width:18px;height:18px}
+.bgm-row b{flex:1;min-width:0;font-size:14px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;text-align:left}
+.bgm-row small{font-size:12px;opacity:.8;font-variant-numeric:tabular-nums}
+.bgm-row button{width:36px;height:36px;border:0;background:none;color:inherit;display:grid;place-items:center;padding:0}.bgm-row button svg{width:16px;height:16px}
+.bgm-row.busy b{text-align:center;opacity:.85}
+.bgm-add{height:44px;border-radius:14px;border:1.5px dashed rgba(255,255,255,.6);background:none;color:#fff;font:inherit;font-size:14px;font-weight:700}
+.dl-side .dl-bgm{opacity:.5;transition:opacity .2s}.dl-side .dl-bgm.on{opacity:1}
+.dl-side .dl-bgm.on svg{animation:bgmBob 1.6s ease-in-out infinite}
+@keyframes bgmBob{50%{transform:translateY(-2px) rotate(-6deg)}}
+.dl-song{font-size:12px;font-weight:700;opacity:.9;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.dl-song:empty{display:none}
+
 </style>
 </head>
 <body>
@@ -4471,7 +4485,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", bgm:"daisuki_live_bgm", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4753,7 +4767,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026114414";
+const BUILD="20261026114824";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5242,6 +5256,7 @@ function startLive(mid,title){
   const pl=S.get(K.plans,[]).filter(p=>p.member===mid).sort((a,b)=>a.ts-b.ts)[0];   // 有預告的話：開播就把預告收掉
   if(pl) S.set(K.plans,S.get(K.plans,[]).filter(p=>p.id!==pl.id));
   const l={id:"lv"+Date.now(),member:mid,group:m.group,title:title||(pl&&pl.title)||"正在分享生活與音樂... ✨",startTs:Date.now(),endTs:null,hearts:0,msgs:[]};
+  { const bg=(S.get(K.bgm,{})[mid]||[]).filter(x=>x&&x.mid&&x.dur>0); if(bg.length){ l.bgm=bg; l.bgmOff=true; l.bgmAt=0; l.bgmT0=l.startTs; } }
   S.set(K.lives,[l,...getLives()]);
   const reminded=!!(pl&&pl.mine);   // 粉絲按過「提醒我」→ 收到專屬提醒（就算沒追蹤這團也會收到）
   const reached=feedPush({kind:"live",member:mid,group:m.group,text:l.title,liveId:l.id,color:null},"g:"+m.group);
@@ -5930,6 +5945,7 @@ function viewStudio(mid){
       <span class="lvh-live off">LIVE<i></i></span>
       <h2>準備開播</h2>
       <span class="fld-lab">直播標題</span><label class="field">${I.live}<input id="ltitle" placeholder="輸入文字" value="${esc(ui.lTitle||"")}"></label>
+      ${bgmPrepHtml(mid)}
       <button class="btn btn-main btn-block prep-go" data-a="startLive">開始直播</button>
     </section>
     ${rpHead()}
@@ -8761,8 +8777,8 @@ function lvShell(l,host,inner){ const m=MEMBERS[l.member], g=groupOf(m.group);
     <div class="dl-bg" style="${lvCover(l.member)}"></div><span class="dl-shade"></span>
     <header class="dl-top"><span class="dl-live">LIVE<i></i></span><span class="dl-hearts">${LV_IC.heartO}<b id="mrHearts">${fmt(l.hearts)}</b></span></header>
     <div class="dl-ui"><button class="dl-exit" data-a="dlLeave" data-id="${l.id}" aria-label="${host?"結束直播":"離開直播"}">${LV_IC.exit}</button>
-      <div class="dl-title"><b>${esc(l.title||"")}</b><span><i class="dl-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</i>${esc(artName(l.member,"live"))}<em class="dl-vf">${I.verified}</em></span></div>
-      <div class="dl-side"><button data-a="dlChat" aria-label="聊天開關">${LV_IC.chat}</button><button data-a="dlMini" data-id="${l.id}" aria-label="縮小">${LV_IC.mini}</button></div></div>
+      <div class="dl-title"><b>${esc(l.title||"")}</b><span><i class="dl-av" style="background:${grad(m.g)}">${mAvIn(l.member)}</i>${esc(artName(l.member,"live"))}<em class="dl-vf">${I.verified}</em></span>${(l.bgm||[]).length?`<small class="dl-song" id="dlSong"></small>`:""}</div>
+      <div class="dl-side">${(l.bgm||[]).length?`<button class="dl-bgm ${bgmIsOn(l,host)?"on":""}" data-a="bgmTap" data-id="${l.id}" aria-label="背景音樂">${BGM_IC}</button>`:""}<button data-a="dlChat" aria-label="聊天開關">${LV_IC.chat}</button><button data-a="dlMini" data-id="${l.id}" aria-label="縮小">${LV_IC.mini}</button></div></div>
     ${inner}
     <div id="heartRain" class="heart-rain"></div><div id="cmMile" class="cm-mile"></div>
   </div>`; }
@@ -9577,6 +9593,57 @@ setInterval(()=>{
     const al=document.getElementById("fsAlb"); if(al&&desk){ al.innerHTML=fsAlbum(ev,sg,{sm:true,to:fsToOf(s)}); const st=document.getElementById("fsSignTxt"); if(st) st.innerHTML=fsSignTxt(ev,key); }
     const ab=document.getElementById("fsAlbBar"); if(ab&&!desk){ const n0=ab.querySelectorAll(".fs-sig").length; ab.innerHTML=fsAlbBar(ev,sg,ev.type==="solo"?1:ev.members.length); if(ab.querySelectorAll(".fs-sig").length>n0){ ab.classList.add("lit"); const b=ab.getBoundingClientRect(); confetti(b.left+40,b.top+20); setTimeout(()=>ab.classList.remove("lit"),1500); } } }
 },500);
+
+/* ===== 直播背景音樂 =====
+   藝人開播前先放幾首歌（MP3／M4A／AAC／WAV，每支手機都能播）；開播後藝人按 ♪ 開始放
+   每個人的手機照「開始放的時間」自己算現在播到哪一首、第幾秒，大家聽到的是同一段
+   手機規定要使用者自己點一下才能出聲，所以粉絲要按一次 ♪ */
+const BGM_IC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5.5l11-2V16"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/></svg>';
+const BGM_MAX=8, BGM_OK=/\.(mp3|m4a|aac|wav)$/i;
+function bgmPrepHtml(mid){ const L=S.get(K.bgm,{})[mid]||[];
+  return `<span class="fld-lab">背景音樂</span><div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small><button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
+    ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button>`:""}</div>`; }
+function bgmAdd(){ if(ui.bgmBusy) return; const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=".mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/aac,audio/x-m4a,audio/wav";
+  inp.onchange=async()=>{ const fs=[...(inp.files||[])]; if(!fs.length) return; const mid=session().member; let bad=0, big=0;
+    for(const f of fs){ const A=S.get(K.bgm,{}), L=A[mid]||[]; if(L.length>=BGM_MAX) break;
+      if(!BGM_OK.test(f.name||"")){ bad++; continue; } if(f.size>20*1024*1024){ big++; continue; }
+      ui.bgmBusy="上傳中…"; render();
+      try{ const dur=await audioDur(f); if(!dur){ bad++; continue; } const id="bg"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await MDB.put(id,f);
+        const A2=S.get(K.bgm,{}); A2[mid]=[...(A2[mid]||[]),{mid:id,name:(f.name||"").replace(/\.[^.]+$/,"").slice(0,40)||"音樂",dur}]; S.set(K.bgm,A2); }catch(e){ bad++; } }
+    ui.bgmBusy=null; render(); if(bad) toast("請換成 MP3 或 M4A 檔"); else if(big) toast("檔案太大了，請小於 20MB"); };
+  pickClick(inp); }
+const BG={a:null,on:false,lid:null,idx:-1,url:{}};
+function bgmIsOn(l,host){ return host?!l.bgmOff:(BG.on&&BG.lid===l.id); }
+function bgmPos(l){ const L=l.bgm||[], tot=L.reduce((s,x)=>s+(x.dur||0),0); if(!tot) return null;
+  let p=(l.bgmOff?(l.bgmAt||0):((Date.now()-(l.bgmT0||l.startTs))/1000))%tot; if(p<0) p=0;
+  for(let i=0;i<L.length;i++){ if(p<L[i].dur) return {i,off:p}; p-=L[i].dur; } return {i:0,off:0}; }
+async function bgmPrep(l){ for(const x of l.bgm||[]){ if(!BG.url[x.mid]){ try{ BG.url[x.mid]=await mediaSrc(x.mid); }catch(e){} } } }
+function bgmEl(){ if(!BG.a){ const a=new Audio(); a.preload="auto"; a.setAttribute("playsinline",""); a.setAttribute("webkit-playsinline",""); a.onended=()=>{ BG.idx=-1; bgmSync(); }; BG.a=a; } return BG.a; }
+function bgmSeek(a,l){ const go=()=>{ const p=bgmPos(l); if(p) try{ a.currentTime=Math.min(p.off,Math.max(0,(a.duration||p.off+1)-.3)); }catch(e){} };
+  if(a.readyState>=1) go(); else a.addEventListener("loadedmetadata",go,{once:true}); }
+function bgmSync(){ const a=BG.a, room=document.querySelector(".mr.dl"), l=BG.lid?getLive(BG.lid):null;
+  if(BG.on&&(!room||!l||l.endTs)){ BG.on=false; BG.idx=-1; }
+  if(!a){ bgmUI(); return; }
+  if(!BG.on||!l||l.bgmOff){ if(!a.paused) a.pause(); bgmUI(); return; }
+  const p=bgmPos(l); if(!p){ bgmUI(); return; } const x=l.bgm[p.i], u=BG.url[x.mid];
+  if(!u){ bgmPrep(l).then(()=>{ if(BG.url[x.mid]) bgmSync(); }); bgmUI(); return; }
+  if(BG.idx!==p.i){ BG.idx=p.i; a.src=u; a.play().catch(()=>{}); bgmSeek(a,l); bgmUI(); return; }
+  if(a.readyState>=1&&!a.seeking&&Math.abs(a.currentTime-p.off)>2.5) bgmSeek(a,l);
+  if(a.paused) a.play().catch(()=>{});
+  bgmUI(); }
+function bgmUI(){ const room=document.querySelector(".mr.dl"); if(!room) return; const host=room.classList.contains("host"), b=room.querySelector(".dl-bgm"), s=document.getElementById("dlSong");
+  const l=b?getLive(b.dataset.id):null; if(!l) return; const on=bgmIsOn(l,host); b.classList.toggle("on",on);
+  if(s){ const p=bgmPos(l), playing=!l.bgmOff&&(host||BG.on); s.textContent=playing&&p?"♪ "+l.bgm[p.i].name:""; } }
+function bgmTap(id){ const l=getLive(id); if(!l||!(l.bgm||[]).length) return; const a=bgmEl(), host=!!document.querySelector(".mr.dl.host");
+  if(host){ if(l.bgmOff){ l.bgmT0=Date.now()-(l.bgmAt||0)*1000; l.bgmOff=false; BG.on=true; } else { const p=bgmPos(l); let at=0; for(let i=0;i<(p?p.i:0);i++) at+=l.bgm[i].dur; l.bgmAt=at+(p?p.off:0); l.bgmOff=true; BG.on=false; } saveLive(l); }
+  else BG.on=!(BG.on&&BG.lid===id);
+  BG.lid=id;
+  if(BG.on){ const p=bgmPos(l), u=p&&!l.bgmOff&&BG.url[l.bgm[p.i].mid];
+    if(u){ BG.idx=p.i; a.src=u; a.muted=false; a.play().catch(()=>{}); bgmSeek(a,l); }
+    else { BG.idx=-1; a.muted=true; a.src=toneWav(); const pr=a.play(); const fin=()=>{ a.pause(); a.muted=false; bgmPrep(l).then(bgmSync); }; if(pr&&pr.then) pr.then(fin,fin); else fin(); } }
+  else a.pause();
+  bgmUI(); }
+setInterval(()=>{ if(BG.on||(BG.a&&!BG.a.paused)) bgmSync(); else bgmUI(); },2000);
 
 /* =========================================================
    外觀：淺色／深色／跟隨系統
@@ -11034,6 +11101,9 @@ document.addEventListener("click",e=>{
     case "coreTip": tieModal("打歌規則",MUSIC_RULES()+`<br>本週：${esc(weekType())}・結算 ${esc(getSched().deadline)}`,`<button class="t-mbtn main" data-a="tCloseLayer">我知道了</button>`); break;
     case "concertOn": concertOn(); break;
     case "dlTap": { const ev=window.event, tg=ev&&ev.target; if(tg&&tg.closest&&tg.closest("form,input,.cm-tick,.host-feed,.sp-card,.dl-ask")) break; t.classList.toggle("ui-on"); ui.dlUi=t.classList.contains("ui-on"); break; }
+    case "bgmTap": bgmTap(t.dataset.id); break;
+    case "bgmAdd": bgmAdd(); break;
+    case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); render(); break; }
     case "dlChat": { ui.dlChatOff=!ui.dlChatOff; const r0=document.querySelector(".dl"); if(r0) r0.classList.toggle("chat-off",ui.dlChatOff); break; }
     case "dlLeave": { const host=!!document.querySelector(".dl.host"), r0=document.querySelector(".dl"); if(!r0) break; r0.querySelector(".dl-ask")?.remove();
       const w=document.createElement("div"); w.className="dl-ask"; w.innerHTML=`<div class="dl-ask-c"><b>${host?"結束直播":"離開直播"}</b><p>${host?"要結束直播嗎？":"要離開直播嗎？"}</p><div><button data-a="dlAskX">取消</button><button class="on" data-a="${host?"dlEnd":"dlOut"}" data-id="${t.dataset.id}">${host?"結束":"離開"}</button></div></div>`; r0.appendChild(w); break; }
@@ -12416,8 +12486,23 @@ const TOURS={
     ["#pubBtn","發布","寫好就發布，粉絲會收到通知。"]],
   "artist:live":[[".prep-card","準備開播","這是你的直播間。你說的每一句話，粉絲都會在畫面中間看到。"],
     ["#ltitle","直播標題","幫這場直播取個名字。"],
+    [".bgm-prep","背景音樂","先放幾首歌（MP3 或 M4A，最多 8 首）。開播後按右邊的 ♪，粉絲那邊會一起聽到同一段。"],
     ['[data-a="startLive"]',"開始直播","按下去就開播！開播後點粉絲的留言，就能直接回覆他。"],
     [".lvr-h","重播","以前的直播都留在這裡，可以照時間排。"]],
+  "artist:room":[[".dl-title","直播間","你正在直播！上面是標題和你的名字。"],
+    ["#cmSpot","你說的話","你傳的每一句話，都會出現在畫面中間給粉絲看。"],
+    [".host-feed","粉絲留言","粉絲的留言在這裡。點一則就能回覆他，大家都看得到。"],
+    [".dl-bgm","背景音樂","按一下開始放音樂，粉絲按 ♪ 就能一起聽；再按一下就停，下次從停的地方接著放。"],
+    ['.dl-side [data-a="dlChat"]',"留言開關","把留言收起來，畫面比較乾淨。"],
+    ['.dl-side [data-a="dlMini"]',"縮小","把直播縮小，去看別的地方，直播不會斷。"],
+    ["#lin","說話","寫下想跟粉絲說的話，按送出。"],
+    [".dl-exit","結束直播","說完再見，按這裡結束直播。"]],
+  "artist:foc:concert":[["#acTitle","演唱會名稱","幫這場演唱會取個名字。"],[".lsp-songs","歌單","照順序點歌名，前面的數字就是第幾首。"],[".ls-seg","互動歌","前幾首是互動歌，粉絲會在燈海裡舉起應援板。"],['[data-a="acLater"]',"10 分鐘後開演","先通知粉絲，讓大家有時間做應援板。"],['[data-a="acNow"]',"現在開演","不用等，馬上開始。"],['[data-a="ccNow"]',"現在開始","時間到了就按這裡開始。"],['[data-a="stOn"]',"進入現場","走進燈海，拖動麥克風跟大家一起揮；點一下舉著應援板的粉絲就能回應他。"]],
+  "artist:foc:tour":[['[data-a="trNew"]',"申請世巡","想辦世界巡演，從這裡開始。"],["#trTi","巡演名稱","幫這次巡演取個名字。"],["#trCity","城市","選一個城市。"],["#trWhen","時間","這一站什麼時候開演。"],['[data-a="trStopAdd"]',"加入","按一下加進站點，可以加很多站。"],['[data-a="trSubmit"]',"送出申請","送給管理員審核，核准後粉絲就能買票。"],[".tr-a","你的世巡","審核結果和每一站都在這裡。"],['[data-a="trSay"]',"說一句話","開演前留一句話給這一站的粉絲。"]],
+  "artist:foc:sign":[[".fs-row","簽售","公司排好的簽售在這裡，報名人數和名單都看得到。"],['[data-a="fsDesk"]',"進簽售台","開場後按這裡，一位一位跟粉絲視訊、簽名。"]],
+  "artist:foc:honor":[[".foc-row","MC 與積分","這個月主持了哪些節目，和今年的打歌積分。"],[".foc-ms","獎項","拿過的一位、AK、PAK，都會亮起來。"]],
+  "artist:foc:stick":[[".ls-box","官方應援棒","你們團的應援棒，可以轉來轉去看。"]],
+  "artist:foc:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
   "artist:whisper":[[".t-dots","選單","點這裡打開選單，等等帶你看看。"],
     ['[aria-label="檢舉這則訊息"]',"粉絲的回覆","粉絲回你的話會在左邊。遇到不舒服的訊息，點「⋯」檢舉。"],
     [".t-art[data-sw]","往左滑回覆","把粉絲的訊息往左滑，就能回覆那一句。大家都看得到你的回覆，但不會知道原本是誰說的。"],
@@ -12469,6 +12554,8 @@ function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="fan"&&r.sub==="grp"&&!r.p) return "fan:grp";
   if(r.role==="fan"&&r.sub==="core"&&r.p&&!r.id) return "fan:core:"+r.p;
   if(r.role==="artist"&&r.sub==="write") return "artist:write";
+  if(r.role==="artist"&&!r.sub&&r.tab==="foc"&&r.p&&!r.id) return "artist:foc:"+r.p;
+  if(r.role==="artist"&&!r.sub&&r.tab==="live"&&document.querySelector(".mr.dl.host")) return "artist:room";
   if(r.sub) return "";
   if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
   return r.role+":"+(r.tab||"home"); }
@@ -12489,6 +12576,8 @@ function fullTourStart(){ const ro=route().role, navs=[...document.querySelector
     if(ro==="fan"&&v==="whisper"){ const id=Object.keys(subs()).find(x=>MEMBERS[x]&&!roomHidden(x)); if(id){ seq.push({hash:"#/fan/chat?m="+id,lbl:"chat"}); seq.push({open:"drawer",key:"fan:drawer",lbl:"chat"}); } }
     if(ro==="artist"&&v==="home"){ seq.push({open:"fab",key:"artist:fab",lbl:"home"}); seq.push({hash:"#/artist/write?p=all",lbl:"write"}); }
     if(ro==="artist"&&v==="whisper") seq.push({open:"artdrawer",key:"artist:drawer",lbl:"whisper"});
+    if(ro==="fan"&&v==="core") [["promo","打歌"],["concert","演唱會"],["fsl","簽售"],["tour","世巡"],["cards","卡冊"],["news","新聞"]].forEach(([p,l])=>seq.push({hash:"#/fan/core?p="+p,key:"fan:core:"+p,lbl:l}));
+    if(ro==="artist"&&v==="foc") [["concert","演唱會"],["tour","世巡"],["sign","簽售"],["honor","榮譽與職務"],["stick","官方應援棒"]].forEach(([p,l])=>seq.push({hash:"#/artist?tab=foc&p="+p,key:"artist:foc:"+p,lbl:l}));
     if(ro==="admin"&&v==="people"){ [["accounts","帳號"],["roster","藝人與團"],["roster&p=new","新增藝人"],["ptadd","加積分"],["banned","禁用字詞"]].forEach(([t,l])=>seq.push({hash:"#/admin?tab="+t,key:"admin:"+(t==="roster&p=new"?"rosternew":t),lbl:l})); } });
   ui.coach={kind:"full",role:ro,seq,si:0,steps:[],i:0,home:location.hash}; fullNext(); }
 /* 教學時打開抽屜、留言、直播分頁 */
