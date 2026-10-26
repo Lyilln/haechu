@@ -4751,7 +4751,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026112402";
+const BUILD="20261026113411";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8495,7 +8495,7 @@ function tieModal(title,text,buttons,cls=""){
 }
 /* ===== TIE 照 Bubble 對標：紀念日全螢幕、第一次傳訊息要同意、系統樣式的選單 ===== */
 /* 粉絲名（每團不一樣，管理員在「藝人與團管理」改）；沒填就顯示 my */
-const fandomOf=gid=>((S.get(K.fandom,{}))[gid]||"").trim()||"my";
+const fandomOf=gid=>((S.get(K.fandom,{}))[gid]||"").trim()||"\u{1D439}\u{1D44E}\u{1D45B}";   /* 粉絲名還沒設定：顯示 𝐹𝑎𝑛 */
 /* 這一段 TIE 券的開始時間（第一次買、或斷掉後重新買，都算新的一段） */
 const tiePeriod=member=>{ const r=subs()[member]; if(!r) return 0; const p=(r.periods||[]).slice(-1)[0]; return p&&p.start||r.since||0; };
 /* iOS 系統樣式：底部選單、置中提示框 */
@@ -9658,7 +9658,13 @@ function coachWelcome(){
     <div class="coach-role"><em>${t}</em><span>${d}</span></div>
     <div class="coach-btns"><button class="btn btn-soft" data-a="coachSkip">跳過</button><button class="btn btn-main" data-a="coachNext">帶我看看 ›</button></div></div>`);
 }
-function coachMount(html){ let c=document.getElementById("coach"); if(!c){ c=document.createElement("div"); c.id="coach"; c.className="coach"; document.body.appendChild(c); } c.innerHTML=html; }
+function coachMount(html){ let c=document.getElementById("coach"); if(!c){ c=document.createElement("div"); c.id="coach"; c.className="coach"; document.body.appendChild(c); } c.innerHTML=html; document.documentElement.classList.add("no-scroll"); coachWatch(); }
+/* 新手教學進行中：畫面不能滑；點亮起來的地方＝下一步（照著指引操作） */
+function coachWatch(){ clearInterval(coachWatch.t); coachWatch.t=setInterval(()=>{ if(!document.getElementById("coach")){ clearInterval(coachWatch.t); if(!document.querySelector(".mr.dl")) document.documentElement.classList.remove("no-scroll"); } },300); }
+document.addEventListener("touchmove",e=>{ if(document.getElementById("coach")&&e.cancelable) e.preventDefault(); },{passive:false});
+document.addEventListener("wheel",e=>{ if(document.getElementById("coach")) e.preventDefault(); },{passive:false});
+document.addEventListener("click",e=>{ const c=document.getElementById("coach"); if(!c||!c.contains(e.target)||e.target.closest("button")) return; const h=c.querySelector(".coach-hole"); if(!h) return; const r=h.getBoundingClientRect();
+  if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){ const b=c.querySelector('[data-a="coachNext"]'); if(b) b.click(); } });
 function coachShow(){
   const c=ui.coach; if(!c) return; const steps=c.steps||COACH[c.role]||[]; if(c.i>=steps.length){ if(c.kind==="full") return fullNext(); if(c.kind==="tour") coachEnd(); else coachDone(); return; }
   const [sel,title,text]=steps[c.i], el=document.querySelector(sel); if(!el||!el.getBoundingClientRect().height){ c.i++; return coachShow(); }
@@ -12384,6 +12390,12 @@ const TOURS={
     ['[data-a="acctInfo"]',"帳號","你的登入帳號。"],
     ['[data-a="theme"]',"外觀","淺色、深色，還有主題。"],
     ['[data-a="coachAgain"]',"重看教學","想再看一次，隨時點這裡。"]],
+  "fan:core:cards":[[".cb-tabs","卡冊","拆專輯拿到的小卡都收在這裡。左邊是卡冊，右邊是開箱紀錄。"],[".cb-al","專輯","每張專輯一格，點進去看收集了幾張。"]],
+  "fan:core:promo":[['[data-a="coreTip"]',"賽制","宣傳週、排名週、打歌週怎麼算，看這裡。"],[".mu-wins","一位","這週每個節目拿到一位的歌。"],['[data-a="muVote"]',"投票","幫喜歡的歌投一票，排名週的票最重要。"],['[data-a="promoPick"]',"看這首歌","點進去看 MV 和成績。"]],
+  "fan:core:concert":[['[data-a="concertOn"]',"進場","演唱會開始後按這裡進場，跟大家一起變成燈海。"],['[data-a="coreStick"]',"應援棒","買了官方應援棒，進場就會舉這一支。"],["#bdText","應援板","寫一句想對藝人說的話。互動歌的時候舉起來，藝人可能會回應你！"],['[data-a="bdSave"]',"做好了","寫完按這裡存起來。"]],
+  "fan:core:fsl":[[".fs-card","簽售","正在報名的簽售都在這裡。"],['[data-a="fsJoin"]',"報名","按這裡報名，等抽籤結果。"],['[data-a="fsBuy"]',"多一次機會","多買一張專輯，抽籤機會就多一次。"],['[data-a="fsRoom"]',"進入簽售","抽中後，時間到按這裡進去跟藝人視訊。"]],
+  "fan:core:tour":[[".tr-card","世巡","藝人的世界巡演，每一站都是一場演唱會。"],['[data-a="tourBuy"]',"買票","每一站要先買票才能進場。剩兩站以上可以一次全買，打 9 折。"],[".tr-st","蓋章","去過的站會蓋章，集滿就是一整趟巡演的回憶。"]],
+  "fan:core:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
   /* ---------- 藝人 ---------- */
   "artist:home":[[".ap2-hero","你的個人頁","粉絲看到的你，就是這個樣子。"],
     [".ap2-pen","換背景","選一張喜歡的照片當背景。"],
@@ -12453,6 +12465,7 @@ const TOURS={
 function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="fan"&&r.sub==="chat"&&!r.p) return "fan:chat";
   if(r.role==="fan"&&r.sub==="grp"&&!r.p) return "fan:grp";
+  if(r.role==="fan"&&r.sub==="core"&&r.p&&!r.id) return "fan:core:"+r.p;
   if(r.role==="artist"&&r.sub==="write") return "artist:write";
   if(r.sub) return "";
   if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
