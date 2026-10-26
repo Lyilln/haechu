@@ -4791,20 +4791,61 @@ const K = {
   posts:"daisuki_posts", session:"daisuki_session", settings:"daisuki_notif_settings",
   likes:"daisuki_liked", comments:"daisuki_comments", whispers:"daisuki_whispers", wRead:"daisuki_whisper_read", wArtistRead:"daisuki_whisper_artist_read", wSubs:"daisuki_whisper_subs", tieSubs:"daisuki_tie_passes", tieWelcome:"daisuki_tie_welcome", tieReadBy:"daisuki_tie_read_by", msPub:"daisuki_ms_public", points:"daisuki_points", seed9:"daisuki_seed_pass_v1", anns:"daisuki_announcements", seed10:"daisuki_seed_ann_v1", pick:"daisuki_promo_pick", sched:"daisuki_schedule", lightsea:"daisuki_lightsea", tieSet:"daisuki_tie_settings", tieCleared:"daisuki_tie_cleared", tieTr:"daisuki_tie_translated", tieNotice:"daisuki_tie_notice", lives:"daisuki_lives", events:"daisuki_events", seed5:"daisuki_seed_live_v1", sticks:"daisuki_lightsticks", seed12:"daisuki_seed_media_v1", seed13:"daisuki_seed_comments_v1", membership:"daisuki_membership", owned:"daisuki_owned", sales:"daisuki_sales", revShare:"daisuki_rev_share", seed14:"daisuki_seed_sales_v1", mutes:"daisuki_mutes", roster:"daisuki_roster", tieMs:"daisuki_tie_milestone_msg", msDone:"daisuki_milestones_done", bdays:"daisuki_birthdays", bdayWish:"daisuki_bday_wish", seed15:"daisuki_seed_bday_v1", cards:"daisuki_cards", gachaLog:"daisuki_gacha_log", svOpen:"daisuki_survival_open", svVotes:"daisuki_survival_votes", svMine:"daisuki_survival_mine", stubs:"daisuki_stubs", artistNick:"daisuki_artist_nick", lastEmail:"daisuki_last_email", plans:"daisuki_live_plans", seed11:"daisuki_seed_meet_v2", reports:"daisuki_reports", announce:"daisuki_announce", annSeen:"daisuki_announce_seen", seed6:"daisuki_seed_admin_v1", seeded:"daisuki_seed_v4", mshow:"daisuki_music_show", msVotes:"daisuki_music_votes", msMine:"daisuki_music_my_votes", mvLike:"daisuki_mv_like", seed16:"daisuki_seed_music_v1", aiCfg:"daisuki_ai_cfg", aiFans:"daisuki_ai_fans", aiMem:"daisuki_ai_memory", aiQ:"daisuki_ai_queue", tieTrX:"daisuki_tie_translated_x", trCfg:"daisuki_translate_cfg", fs:"daisuki_fansign", signedAlbums:"daisuki_signed_albums", seed17:"daisuki_seed_fansign_v1", demoOn:"daisuki_demo_buttons", seed18:"daisuki_seed_fansign_v3", theme:"daisuki_theme", leaks:"daisuki_tie_leaks", suspends:"daisuki_suspends", leakPolicy:"daisuki_leak_policy", onboard:"daisuki_onboard", selDone:"daisuki_select_done", cardMeta:"daisuki_card_meta", gachaSnd:"daisuki_gacha_sound", repCard:"daisuki_rep_card", annSeenA:"daisuki_announce_seen_artist", concerts:"daisuki_concerts", curGrp:"daisuki_current_group", tracks:"daisuki_tracks", rgBest:"daisuki_rhythm_best", rgLv:"daisuki_rhythm_level"
 };
+/* ===== 大資料（TIE 聊天室、SNS、私訊）放手機的大空間（IndexedDB，可以存幾百 MB）=====
+   localStorage 只有 5MB，以前塞滿了就存不進去 → 聊天記錄整包讀不到。現在大資料只放記憶體＋大空間 */
+const BIGK=k=>typeof k==="string"&&(/^daisuki_(tie:|dm:|sn_)/.test(k)||k==="daisuki_whispers");
+const KVX={db:null,ok:false,ready:false,want:false,t:{},q:{}};
+KVX.open=()=>KVX.db||(KVX.db=new Promise((res,rej)=>{ try{ const r=indexedDB.open("daisuki_kv",1); r.onupgradeneeded=()=>r.result.createObjectStore("kv"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); r.onblocked=()=>rej(new Error("blocked")); }catch(e){ rej(e); } }));
+function kvxPut(k,v){ KVX.q[k]={v}; clearTimeout(KVX.t[k]); KVX.t[k]=setTimeout(async()=>{ const it=KVX.q[k]; delete KVX.q[k]; if(!it) return; try{ const d=await KVX.open(), st=d.transaction("kv","readwrite").objectStore("kv"); if(it.v===undefined||it.v===null) st.delete(k); else st.put(JSON.stringify(it.v),k); }catch(e){} },250); }
+async function kvxLoad(){ try{ const d=await Promise.race([KVX.open(),new Promise((_,r)=>setTimeout(()=>r(new Error("slow")),2000))]);
+    await new Promise(res=>{ const to=setTimeout(res,3000); try{ const rq=d.transaction("kv").objectStore("kv").openCursor(); rq.onsuccess=()=>{ const c=rq.result; if(c){ if(!(c.key in mem)) try{ mem[c.key]=JSON.parse(c.value); }catch(e){} c.continue(); } else { clearTimeout(to); res(); } }; rq.onerror=()=>{ clearTimeout(to); res(); }; }catch(e){ clearTimeout(to); res(); } });
+    KVX.ok=true;
+    /* 以前放在小空間的大資料、照片語音的備份：搬到大空間後從小空間拿掉，騰出空間 */
+    try{ Object.keys(localStorage).forEach(k=>{ if(BIGK(k)){ try{ if(!(k in mem)) mem[k]=JSON.parse(localStorage.getItem(k)); kvxPut(k,mem[k]); }catch(e){} localStorage.removeItem(k); } else if(k.startsWith("daisuki_m_")) localStorage.removeItem(k); }); }catch(e){}
+  }catch(e){ KVX.ok=false; }
+  KVX.ready=true; if(KVX.want){ KVX.want=false; try{ render(); }catch(e){} } }
 const store = {
-  get(k,fb){try{const v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch{return fb}},
-  set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch{ try{localStorage.removeItem(k)}catch{} }},   /* 手機空間滿了存不進去：把舊的那份拿掉，改用記憶體裡的新資料（不然會一直讀到舊的） */
-  del(k){try{localStorage.removeItem(k)}catch{}}
+  get(k,fb){ if(KVX.ok&&BIGK(k)) return fb; try{const v=localStorage.getItem(k);return v==null?fb:JSON.parse(v)}catch{return fb}},
+  set(k,v){ if(KVX.ok&&BIGK(k)){ kvxPut(k,v); return; } try{localStorage.setItem(k,JSON.stringify(v))}catch{ if(BIGK(k)) return; try{localStorage.removeItem(k)}catch{} }},   /* 小資料存不進去：把舊的那份拿掉，改用記憶體裡的新資料；大資料絕不拿掉 */
+  del(k){ if(KVX.ok&&BIGK(k)){ kvxPut(k,null); return; } try{localStorage.removeItem(k)}catch{}}
 };
 const mem = {}; // 如果瀏覽器擋住 storage，就退回記憶體
+kvxLoad();
+/* ===== TIE 聊天室分開存：daisuki_tie:<藝人>，一間一份 =====
+   搬家前（daisuki_tie_v2 還沒設）照舊用整包 daisuki_whispers；搬家後讀寫 K.whispers 會自動拆成一間一間
+   程式其他地方完全不用改 */
+const TIE_FLAG="daisuki_tie_v2", tieKey=mid=>"daisuki_tie:"+mid;
+const tieRaw=k=>{ if(k in mem) return mem[k]; return store.get(k,null); };
+const tie2On=()=>!!tieRaw(TIE_FLAG);
+function tieRoomKeys(){ const s=new Set(Object.keys(mem).filter(k=>k.startsWith("daisuki_tie:"))); if(!KVX.ok) try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_tie:")) s.add(k); }); }catch(e){} return [...s]; }
+function tieAllGet(){ const out=[]; tieRoomKeys().forEach(k=>{ const L=tieRaw(k); if(Array.isArray(L)) L.forEach(w=>out.push(w)); }); return out; }
+function tieAllSet(L){ if(!Array.isArray(L)) return; const G={}; L.forEach(w=>{ if(w&&w.member) (G[w.member]=G[w.member]||[]).push(w); });
+  const mids=new Set([...Object.keys(G),...tieRoomKeys().map(k=>k.slice(12))]);
+  mids.forEach(mid=>{ const k=tieKey(mid), cur=tieRaw(k)||[], nxt=G[mid]||[]; if(JSON.stringify(cur)===JSON.stringify(nxt)) return;
+    /* 保險：一次少掉很多則（例如讀到空的）就不存，不會把聊天室洗掉 */
+    if(nxt.length<cur.length&&cur.length-nxt.length>5&&nxt.length<cur.length*.6){ try{ console.warn("TIE 保護：略過",mid,cur.length,"→",nxt.length); }catch(e){} return; }
+    mem[k]=nxt; store.set(k,nxt); hbMark(k); }); }
+/* 搬家：管理員的手機、維修模式開著時做一次 */
+function tieMigrate(){ try{ if(tie2On()||!isAdminAcct()||!maintOn()) return false; if(HB_ON&&(!HB.pulled||HB.ver[K.whispers]==null)) return false;
+  const L=tieRaw(K.whispers)||[], G={}; L.forEach(w=>{ if(w&&w.member) (G[w.member]=G[w.member]||[]).push(w); });
+  Object.keys(G).forEach(mid=>{ const k=tieKey(mid), cur=tieRaw(k)||[], ids=new Set(cur.map(x=>x.id)), m=cur.concat(G[mid].filter(x=>!ids.has(x.id))).sort((a,b)=>a.ts-b.ts); mem[k]=m; store.set(k,m); hbMark(k); });
+  const f={ts:Date.now(),n:L.length,rooms:Object.keys(G).length}; mem[TIE_FLAG]=f; store.set(TIE_FLAG,f); hbMark(TIE_FLAG);
+  toast(`TIE 搬家完成：${f.rooms} 間聊天室、${f.n} 則訊息`); return true; }catch(e){ return false; } }
+/* 還在用舊版的人傳到舊包裡的訊息：自動搬進新的聊天室（用 id 去重，誰的手機做都一樣） */
+function tieForward(){ try{ if(!tie2On()) return; const f=tieRaw(TIE_FLAG)||{}, L=tieRaw(K.whispers)||[]; if(!L.length) return;
+  const fresh=L.filter(w=>w&&w.member&&w.ts>=(f.ts||0)-60e3); if(!fresh.length) return; const G={}; fresh.forEach(w=>(G[w.member]=G[w.member]||[]).push(w));
+  Object.keys(G).forEach(mid=>{ const k=tieKey(mid), cur=tieRaw(k)||[], ids=new Set(cur.map(x=>x.id)), add=G[mid].filter(x=>!ids.has(x.id)); if(!add.length) return; const m=cur.concat(add).sort((a,b)=>a.ts-b.ts); mem[k]=m; store.set(k,m); hbMark(k); }); }catch(e){} }
+/* 舊包保留 30 天當備份，之後清空（管理員的手機做） */
+function tieOldClear(){ try{ if(!tie2On()||!isAdminAcct()) return; const f=tieRaw(TIE_FLAG)||{}; if(!f.ts||Date.now()-f.ts<30*864e5) return; const L=tieRaw(K.whispers); if(!Array.isArray(L)||!L.length) return; tieForward(); mem[K.whispers]=[]; store.set(K.whispers,[]); hbMark(K.whispers); }catch(e){} }
+setInterval(()=>{ if(tieMigrate()) try{ render(); }catch(e){} tieForward(); tieOldClear(); },15e3);
 /* 每個粉絲帳號自己的資料（追蹤、TIE 券、積分、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
 const PK_SET=new Set(["lvFix","ptRst","gcPity","lvMax","tourTix","tourStamp","online","ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
-  get(k,fb){k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
-  set(k,v){ try{ if(typeof kvImgSoon==="function") kvImgSoon(k); }catch(e){} k=pk(k);mem[k]=v;store.set(k,v);hbMark(k)},
+  get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
+  set(k,v){ if(k===K.whispers&&tie2On()){ tieAllSet(v); return; } try{ if(typeof kvImgSoon==="function") kvImgSoon(k); }catch(e){} k=pk(k);mem[k]=v;store.set(k,v);hbMark(k)},
   del(k){k=pk(k);delete mem[k];store.del(k);hbMark(k)}
 };
 
@@ -4891,16 +4932,16 @@ function applyRoster(){ try{ const r=S.get(K.roster,{groups:[],members:{}})||{};
     GROUPS.push(g); }); keepT.forEach(g=>GROUPS.push(g));
   Object.keys(MEMBERS).forEach(k=>delete MEMBERS[k]); Object.assign(MEMBERS,r.members||{}); if(mT) MEMBERS.tdm_m=mT;
   if(!HB_ON) Object.assign(ACCOUNTS,r.accounts||{}); }catch(e){} }
-function hbWriteLocal(k,v){ HB.applying=true; try{ if(v===null||v===undefined){ delete mem[k]; localStorage.removeItem(k); } else { mem[k]=v; try{ localStorage.setItem(k,JSON.stringify(v)); }catch(x){ try{ localStorage.removeItem(k); }catch(y){} } } }catch(e){} HB.applying=false; }
-function hbReadLocal(k){ try{ const t=localStorage.getItem(k); return t==null?(k in mem?mem[k]:null):JSON.parse(t); }catch(e){ return null; } }
+function hbWriteLocal(k,v){ HB.applying=true; try{ if(KVX.ok&&BIGK(k)){ if(v===null||v===undefined) delete mem[k]; else mem[k]=v; kvxPut(k,v); } else if(v===null||v===undefined){ delete mem[k]; localStorage.removeItem(k); } else { mem[k]=v; try{ localStorage.setItem(k,JSON.stringify(v)); }catch(x){ if(!BIGK(k)) try{ localStorage.removeItem(k); }catch(y){} } } }catch(e){} HB.applying=false; }
+function hbReadLocal(k){ if(KVX.ok&&BIGK(k)) return k in mem?mem[k]:null; try{ const t=localStorage.getItem(k); return t==null?(k in mem?mem[k]:null):JSON.parse(t); }catch(e){ return null; } }
 /* 還沒送上雲端的修改：記在手機上，就算 App 被關掉、重新整理也不會不見，下次打開會合併後再送 */
 const HB_PEND="daisuki_hb_pend";
 const hbPendGet=()=>{ try{ return JSON.parse(localStorage.getItem(HB_PEND)||"{}")||{}; }catch(e){ return {}; } };
 function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PEND,JSON.stringify(o)); else localStorage.removeItem(HB_PEND); }catch(e){} }
 /* ===== 防止資料被吃掉：聊天、留言、貼文這些「只會越來越多」的資料，
    如果雲端突然變成空的、或少了一大半，而這支手機還留著完整的，就把兩邊合起來送回去（自動救回） ===== */
-const HB_GUARD=()=>new Set([K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
-function hbGuard(k,local,remote){ if(!HB_GUARD().has(k)||local==null) return null;
+const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
+function hbGuard(k,local,remote){ if(!(HB_GUARD().has(k)||String(k).startsWith("daisuki_tie:"))||local==null) return null;
   if(remote==null) return local;
   if(Array.isArray(local)&&Array.isArray(remote)&&local.length>=8&&remote.length<local.length*.6) return hbMergeArr([],local,remote);
   if(k===K.sns&&local&&typeof local==="object"&&remote&&typeof remote==="object"){ const n=o=>((o.posts||[]).length+Object.keys(o.dm||{}).length); if(n(local)>=6&&n(remote)<n(local)*.6) return hbMerge({},local,remote); }
@@ -4910,13 +4951,15 @@ async function hbPullAll(){ const rows=[]; for(let off=0;off<20000;off+=1000){ c
   try{ let tot=0; const sz=rows.map(r=>{ const n=JSON.stringify(r.v==null?null:r.v).length; tot+=n; return [r.k,n]; }); HB.kvSz=tot; HB.kvTop=sz.sort((a,b)=>b[1]-a[1]).slice(0,12); }catch(e){}
   const pend=hbPendGet(), keep={}; Object.keys(pend).forEach(k=>{ if(hbSyncable(k)) keep[k]=hbReadLocal(k); });
   const snap={}; HB_GUARD().forEach(k=>{ const v=hbReadLocal(k); if(v!=null) snap[k]=v; });
+  const bigBefore=Object.keys(mem).filter(k=>BIGK(k)&&hbSyncable(k));
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]);
   HB.base={}; HB.ver={}; HB.dirty.clear(); HB.since="";
   const seen=new Set();
   rows.forEach(r=>{ seen.add(r.k); hbRow(r); const gd=hbGuard(r.k,snap[r.k],r.v); if(gd!=null&&!(r.k in keep)){ hbWriteLocal(r.k,gd); HB.dirty.add(r.k); return; } if(r.k in keep&&keep[r.k]==null){ hbWriteLocal(r.k,gd!=null?gd:r.v); if(gd!=null) HB.dirty.add(r.k); return; } if(r.k in keep){ const b=pend[r.k]; hbWriteLocal(r.k,hbMerge(b==null?null:JSON.parse(b),keep[r.k],r.v)); HB.dirty.add(r.k); } else hbWriteLocal(r.k,r.v); });
   Object.keys(keep).forEach(k=>{ if(!seen.has(k)&&keep[k]!=null){ hbWriteLocal(k,keep[k]); HB.dirty.add(k); } });
   Object.keys(snap).forEach(k=>{ if(!seen.has(k)&&!(k in keep)){ hbWriteLocal(k,snap[k]); HB.dirty.add(k); } });
-  applyRoster(); if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,200); } }
+  if(KVX.ok) bigBefore.forEach(k=>{ if(!seen.has(k)&&!(k in keep)&&!(k in snap)) kvxPut(k,null); });
+  HB.pulled=Date.now(); applyRoster(); if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,200); } }
 /* 兩個人同時改同一份資料：用上次同步的版本當基準，各自改的地方都留下 */
 const hbJ=x=>JSON.stringify(x===undefined?null:x);
 const hbT=x=>Array.isArray(x)?"arr":x&&typeof x==="object"?"obj":typeof x==="number"?"num":"x";
@@ -5047,7 +5090,7 @@ async function hbAuth(u,pw,signup,name){ const un=normAcct(u); ui.loginErr=""; u
     ui.loginErr=hbErrText(e,signup); try{ render(); }catch(x){} } }
 async function hbLogout(){ try{ clearTimeout(HB.ft); if(HB.dirty.size) await hbFlush(); }catch(e){} hbPendSet({}); try{ await pushLogout(); }catch(e){} const t=HB.tok; HB.tok=null; HB.ref=null; hbStop();
   try{ if(t) fetch(HB_URL+"/auth/v1/logout",{method:"POST",headers:{apikey:HB_KEY,Authorization:"Bearer "+t}}); }catch(e){}
-  try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]); applyRoster(); }
+  try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>{ if(KVX.ok&&BIGK(k)) kvxPut(k,null); delete mem[k]; }); applyRoster(); }
 /* 照片、語音、影片：上傳到雲端，別人的手機找不到就從雲端下載 */
 /* 手機推播通知：iPhone 要先「加入主畫面」從主畫面打開；Android 用 Chrome 就可以 */
 const VAPID_PUBLIC="BDU4YWn1PFmL7oeDwVj7flX9sAnHF_GpGuwk-jAcJ-cYpELabm4hX4FkJk-6fMCH-Lv4RpbHM3W5-H8eSEI-bJk";
@@ -5073,7 +5116,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026234922";
+const BUILD="20261026235336";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6148,7 +6191,7 @@ const memBlobs={};
 const MDB={
   db:null,
   open(){ if(!this.db) this.db=new Promise((res,rej)=>{ try{ const r=indexedDB.open("daisuki_media",1); r.onupgradeneeded=()=>r.result.createObjectStore("m"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); return this.db; },
-  async put(id,blob,noUp){ memBlobs[id]=blob; if(!noUp) hbUpload(id,blob); if(blob&&blob.size<900e3){ try{ const du=await blobDU(blob); if(du) localStorage.setItem("daisuki_m_"+id,du); }catch(e){} } try{ const val={ab:await blob.arrayBuffer(),type:blob.type||""};   // 存成原始資料：iPhone 上直接存檔案，重開後會讀不出來
+  async put(id,blob,noUp){ memBlobs[id]=blob; if(!noUp) hbUpload(id,blob);  try{ const val={ab:await blob.arrayBuffer(),type:blob.type||""};   // 存成原始資料：iPhone 上直接存檔案，重開後會讀不出來
       const d=await this.open(); await new Promise((res,rej)=>{ const tx=d.transaction("m","readwrite"); tx.objectStore("m").put(val,id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }catch(e){} },
   async get(id){ if(memBlobs[id]) return memBlobs[id];
     let b=null; try{ const d=await this.open(); b=await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){}
@@ -7704,6 +7747,7 @@ function mountSticks(scope){
   });
 }
 function render(){
+  if(!KVX.ready){ KVX.want=true; return; }   /* 手機的大空間還在讀：讀完才畫，不會先畫出空白的聊天室 */
   try{ debutSync(); }catch(e){}
   const r=route(), s=session(); if(s) sessTouch();
   const hashChanged=ui._h!==location.hash; if(hashChanged) ui._prevH=ui._h; ui._h=location.hash;
