@@ -4704,19 +4704,30 @@ function hbReadLocal(k){ try{ const t=localStorage.getItem(k); return t==null?(k
 const HB_PEND="daisuki_hb_pend";
 const hbPendGet=()=>{ try{ return JSON.parse(localStorage.getItem(HB_PEND)||"{}")||{}; }catch(e){ return {}; } };
 function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PEND,JSON.stringify(o)); else localStorage.removeItem(HB_PEND); }catch(e){} }
+/* ===== 防止資料被吃掉：聊天、留言、貼文這些「只會越來越多」的資料，
+   如果雲端突然變成空的、或少了一大半，而這支手機還留著完整的，就把兩邊合起來送回去（自動救回） ===== */
+const HB_GUARD=()=>new Set([K.whispers,K.comments,K.posts,K.lives,K.fanPosts,K.sns,K.trucks,K.sales,K.ptGrants].filter(Boolean));
+function hbGuard(k,local,remote){ if(!HB_GUARD().has(k)||local==null) return null;
+  if(remote==null) return local;
+  if(Array.isArray(local)&&Array.isArray(remote)&&local.length>=8&&remote.length<local.length*.6) return hbMergeArr([],local,remote);
+  if(k===K.sns&&local&&typeof local==="object"&&remote&&typeof remote==="object"){ const n=o=>((o.posts||[]).length+Object.keys(o.dm||{}).length); if(n(local)>=6&&n(remote)<n(local)*.6) return hbMerge({},local,remote); }
+  return null; }
 function hbRow(row,adv=true){ HB.base[row.k]=JSON.stringify(row.v===undefined?null:row.v); HB.ver[row.k]=row.ver; if(adv&&row.updated_at&&row.updated_at>HB.since) HB.since=row.updated_at; }
 async function hbPullAll(){ const rows=[]; for(let off=0;off<20000;off+=1000){ const part=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&order=k.asc&offset=${off}&limit=1000`); if(!Array.isArray(part)) break; rows.push(...part); if(part.length<1000) break; }
   const pend=hbPendGet(), keep={}; Object.keys(pend).forEach(k=>{ if(hbSyncable(k)) keep[k]=hbReadLocal(k); });
+  const snap={}; HB_GUARD().forEach(k=>{ const v=hbReadLocal(k); if(v!=null) snap[k]=v; });
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]);
   HB.base={}; HB.ver={}; HB.dirty.clear(); HB.since="";
   const seen=new Set();
-  rows.forEach(r=>{ seen.add(r.k); hbRow(r); if(r.k in keep){ const b=pend[r.k]; hbWriteLocal(r.k,hbMerge(b==null?null:JSON.parse(b),keep[r.k],r.v)); HB.dirty.add(r.k); } else hbWriteLocal(r.k,r.v); });
+  rows.forEach(r=>{ seen.add(r.k); hbRow(r); const gd=hbGuard(r.k,snap[r.k],r.v); if(gd!=null&&!(r.k in keep)){ hbWriteLocal(r.k,gd); HB.dirty.add(r.k); return; } if(r.k in keep&&keep[r.k]==null){ hbWriteLocal(r.k,gd!=null?gd:r.v); if(gd!=null) HB.dirty.add(r.k); return; } if(r.k in keep){ const b=pend[r.k]; hbWriteLocal(r.k,hbMerge(b==null?null:JSON.parse(b),keep[r.k],r.v)); HB.dirty.add(r.k); } else hbWriteLocal(r.k,r.v); });
   Object.keys(keep).forEach(k=>{ if(!seen.has(k)&&keep[k]!=null){ hbWriteLocal(k,keep[k]); HB.dirty.add(k); } });
+  Object.keys(snap).forEach(k=>{ if(!seen.has(k)&&!(k in keep)){ hbWriteLocal(k,snap[k]); HB.dirty.add(k); } });
   applyRoster(); if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,200); } }
 /* 兩個人同時改同一份資料：用上次同步的版本當基準，各自改的地方都留下 */
 const hbJ=x=>JSON.stringify(x===undefined?null:x);
 const hbT=x=>Array.isArray(x)?"arr":x&&typeof x==="object"?"obj":typeof x==="number"?"num":"x";
 function hbMerge(b,l,r){
+  if(l==null&&r!=null) return r;   /* 這支手機讀不到（空間滿了被清掉、剛打開還沒載入）≠ 刪掉：一律用雲端的，絕不拿「沒有」去蓋掉 */
   if(hbJ(l)===hbJ(r)) return l; if(hbJ(b)===hbJ(l)) return r; if(hbJ(b)===hbJ(r)) return l;
   const t=hbT(l); if(t!==hbT(r)) return l;
   if(t==="num"){ if(l>1e12||r>1e12) return Math.max(l,r); const bb=typeof b==="number"?b:0; return r+(l-bb); }   // 計數（愛心、留言數…）兩邊加的都算
@@ -4753,7 +4764,7 @@ async function hbFlush(){ if(HB.busy||!HB.tok) return; HB.busy=true; let again=f
   if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,again?Math.min(15e3,1000*2**Math.min(4,HB.fail)):300); } }
 const hbPendDone=k=>{ if(HB.dirty.has(k)) return; const p=hbPendGet(); if(k in p){ delete p[k]; hbPendSet(p); } };
 async function hbPush(k){ await hbPush0(k); hbPendDone(k); }
-async function hbPush0(k){ let local=hbReadLocal(k); if(local===null&&HB.ver[k]==null) return; if(HB.ver[k]!=null&&hbJ(local)===HB.base[k]) return;   // 沒有真的改，就不送（避免兩支手機互相觸發）
+async function hbPush0(k){ let local=hbReadLocal(k); if(local==null) return;   /* 讀不到就不送，避免把雲端整份清空 */ if(HB.ver[k]!=null&&hbJ(local)===HB.base[k]) return;   // 沒有真的改，就不送（避免兩支手機互相觸發）
   for(let i=0;i<5;i++){
     if(HB.ver[k]==null){
       try{ const r=await hbFetch("/rest/v1/kv",{method:"POST",body:{k,v:local},prefer:"return=representation"}); if(Array.isArray(r)&&r[0]){ hbRow(r[0],false); return; } }
@@ -4770,7 +4781,7 @@ async function hbPoll(){ if(!HB.tok||document.hidden) return; let ch=false;
   try{ const rows=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&updated_at=gt.${encodeURIComponent(HB.since||"1970-01-01T00:00:00Z")}&order=updated_at.asc&limit=500`);
     (Array.isArray(rows)?rows:[]).forEach(row=>{ if(row.k===HB.inflight) return; /* 這份正在送出：先不套用別人的版本，送出時會自己合併（不然會把別人的新訊息吃掉） */ if(HB.ver[row.k]!=null&&row.ver<=HB.ver[row.k]){ if(row.updated_at>HB.since) HB.since=row.updated_at; return; }
       if(HB.dirty.has(row.k)){ const m=hbMerge(JSON.parse(HB.base[row.k]||"null"),hbReadLocal(row.k),row.v); hbRow(row); hbWriteLocal(row.k,m); }
-      else { hbRow(row); hbWriteLocal(row.k,row.v); }
+      else { const gd=hbGuard(row.k,hbReadLocal(row.k),row.v); hbRow(row); if(gd!=null){ hbWriteLocal(row.k,gd); HB.dirty.add(row.k); clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,400); } else hbWriteLocal(row.k,row.v); }
       if(row.k===K.roster) applyRoster(); ch=true; });
     HB.n++;
     if(HB.n%30===0||/tab=(roster|accounts)/.test(location.hash)){ const before=JSON.stringify(ACCOUNTS); await hbLoadProfiles(); if(JSON.stringify(ACCOUNTS)!==before) ch=true; }
@@ -4868,7 +4879,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026153429";
+const BUILD="20261026153948";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
