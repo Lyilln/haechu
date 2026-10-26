@@ -2170,6 +2170,9 @@ html:not([data-theme="dark"]) .a-nick,html:not([data-theme="dark"]) .nick-me.glo
 .coach-tip small{font-size:11.5px;font-weight:800;color:var(--ink-3)}.coach-tip b{display:block;font-size:17px;color:var(--violet);margin:2px 0 4px}.coach-tip p{margin:0 0 10px;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
 .coach-arrow{position:absolute;width:14px;height:14px;background:var(--card-solid);transform:translateX(-50%) rotate(45deg)}.coach-tip.above .coach-arrow{bottom:-6px}.coach-tip.below .coach-arrow{top:-6px}
 
+.ls-views{display:flex;gap:10px;margin:8px 0}.ls-views span,.ls-vadd{flex:1;min-width:0;height:96px;border-radius:14px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;overflow:hidden}
+.ls-views img{max-height:64px;max-width:100%;object-fit:contain}.ls-views small{font-size:11px;color:var(--ink-3)}
+.ls-vadd{border:1.5px dashed var(--line);font-size:12.5px;font-weight:700;color:var(--violet);cursor:pointer}.ls-vadd input{display:none}
 
 /* ===== v55 對比修正（兩種模式都套用） ===== */
 
@@ -4879,7 +4882,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026154251";
+const BUILD="20261026154657";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10456,18 +10459,19 @@ function lsAdminHtml(){
     <div class="ls-stage"><span class="ls-tag ${ds?"draft":""}">${ds?"預覽・還沒發布":has?"目前使用中":"預設款・還沒上傳設計圖"}</span><div class="ls-box" data-ls="${ds?"draft":gid}" data-o="ctl"></div></div>
     ${ds?`<div class="ls-det"><img src="${ds.cut}" alt="去背結果"><div><b>辨識結果</b><ul>
         <li>✓ 已自動去背${ds.turned?"・圖是橫的，已轉正":""}${ds.flipped?"・已上下翻正":""}</li>
-        <li>造型：${ds.mode==="lathe"?"旋轉立體（左右對稱的燈頭）":"立體造型（愛心、星星這類）"}</li>
+        <li>造型：${ds.side?`三視圖立體重建（照正面＋側面${ds.back?"＋背面":""}雕出來）`:ds.mode==="lathe"?"旋轉立體（左右對稱的燈頭）":"立體造型（愛心、星星這類）"}</li>
         <li>燈頭：上方 ${Math.round(ds.split*100)}%</li>
         <li>燈光色：${ds.detGlow?`<i style="background:${ds.detGlow}"></i> 從燈頭抓到的顏色`:"燈頭偏白，先用團色"}</li></ul></div></div>
-      <div class="ls-row"><span>造型</span><div class="ls-seg"><button class="${ds.mode==="lathe"?"on":""}" data-a="lsMode" data-v="lathe">旋轉立體</button><button class="${ds.mode==="plate"?"on":""}" data-a="lsMode" data-v="plate">立體造型</button></div></div>
+      <div class="ls-views"><span><img src="${ds.cut}" alt=""><small>正面</small></span>${ds.side?`<span><img src="${ds.side}" alt=""><small>側面</small></span>`:`<label class="ls-vadd">＋ 側面圖<input type="file" id="lsSide" accept="image/*"></label>`}${ds.side?(ds.back?`<span><img src="${ds.back}" alt=""><small>背面</small></span>`:`<label class="ls-vadd">＋ 背面圖<input type="file" id="lsBack" accept="image/*"></label>`):""}</div>
+      ${ds.side?"":`<div class="ls-row"><span>造型</span><div class="ls-seg"><button class="${ds.mode==="lathe"?"on":""}" data-a="lsMode" data-v="lathe">旋轉立體</button><button class="${ds.mode==="plate"?"on":""}" data-a="lsMode" data-v="plate">立體造型</button></div></div>`}
       <div class="ls-row"><span>燈頭範圍</span><input type="range" id="lsSplit" min="10" max="85" value="${Math.round(ds.split*100)}"><output id="lsSplitV">${Math.round(ds.split*100)}%</output></div>
       <div class="ls-row"><span>燈光顏色</span><div class="ls-sw">${sw.map(h=>`<button class="${(ds.glow||"").toLowerCase()===h.toLowerCase()?"on":""}" style="background:${h}" data-a="lsGlow" data-v="${h}" aria-label="燈光色 ${h}"></button>`).join("")}</div></div>
       <div class="ls-row"><span>去背強度</span><input type="range" id="lsThr" min="12" max="90" value="${dr.thr}"><output id="lsThrV">${dr.thr}</output></div>
       <div class="ls-btns"><button class="btn btn-soft" data-a="lsCancel">取消</button><button class="btn btn-main" data-a="lsPublish">發布到 ${esc(g.name)}</button></div>
       <p class="ls-tip">背景沒去乾淨就把「去背強度」調高；燈頭的發光範圍不對就拉「燈頭範圍」。</p>`
-    :`<div class="ls-btns"><label class="btn btn-main ls-file">上傳設計圖<input type="file" id="lsFile" accept="image/*"></label>${has?`<button class="btn btn-soft" data-a="lsRemove">恢復預設款</button>`:""}</div>
+    :`<div class="ls-btns"><label class="btn btn-main ls-file">上傳三視圖<input type="file" id="lsSheet" accept="image/*"></label><label class="btn btn-soft ls-file">只有正面圖<input type="file" id="lsFile" accept="image/*"></label>${has?`<button class="btn btn-soft" data-a="lsRemove">恢復預設款</button>`:""}</div>
       <div class="ls-samp">沒有圖？用範例試試：<button data-a="lsSample" data-v="round">圓球款</button><button data-a="lsSample" data-v="heart">愛心款</button><button data-a="lsSample" data-v="star">星星款</button></div>
-      <p class="ls-tip">建議用白色或單色背景、整支應援棒完整入鏡的正面圖。去背 PNG 最準。</p>`}
+      <p class="ls-tip">三視圖：正面、側面、背面由左到右排在同一張圖（單色背景），會照三個角度雕出立體的應援棒，造型再複雜都可以。只有正面圖的話，會用正面的輪廓做。</p>`}
   </section>`;
 }
 function lsLoad(src,thr=40){   // 設計圖 → 辨識 → 草稿
@@ -11688,6 +11692,11 @@ document.addEventListener("change",async e=>{
     }catch(err){ toast(isP?"這張照片讀不出來，換一張試試":"這個音檔讀不出來，換成 m4a 或 mp3 試試"); }
     return; }
   if(e.target.id==="lsThr"&&ui.lsDraft){ lsLoad(ui.lsDraft.src,+e.target.value); lsRerender(); return; }
+  if(e.target.id==="lsSheet"||e.target.id==="lsSide"||e.target.id==="lsBack"){ const f=e.target.files&&e.target.files[0], which=e.target.id; e.target.value=""; if(!f) return; const rd=new FileReader();
+    rd.onload=()=>{ const im=new Image(); im.onload=()=>{ const V=lsSplitSheet(im); if(!V.length){ toast("找不到應援棒，換一張背景單純的圖試試"); return; }
+      if(which==="lsSheet"){ if(!lsLoad(V[0])){ return; } const d=ui.lsDraft; if(V[1]){ d.ds.side=lsViewURL(V[1]); if(V[2]) d.ds.back=lsViewURL(V[2]); d.ds._k=null; } lsRerender(); toast(V[1]?`找到 ${V.length} 個視圖，立體重建完成 ✨`:"只找到一個視圖，先用正面做；可以再加側面圖"); }
+      else { const d=ui.lsDraft; if(!d) return; const big=V.slice().sort((a,b)=>b.width*b.height-a.width*a.height)[0]; if(which==="lsSide") d.ds.side=lsViewURL(big); else d.ds.back=lsViewURL(big); d.ds._k=null; lsRerender(); toast("已加上，轉轉看 ✨"); } };
+      im.onerror=()=>toast("這個檔案打不開，換一張圖試試"); im.src=rd.result; }; rd.readAsDataURL(f); return; }
   if(e.target.id==="lsFile"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ if(lsLoad(im)){ lsRerender(); toast("辨識完成，可以旋轉看看 ✨"); } }; im.onerror=()=>toast("這個檔案打不開，換一張圖試試"); im.src=rd.result; }; rd.readAsDataURL(f); return; }
   if(e.target.id!=="tbgAlbum"&&e.target.id!=="tbgCam") return;
   const f0=e.target.files&&e.target.files[0], member=e.target.dataset.m; if(!f0) return; const f=await cropImg(f0,{ratio:cropPhone(),max:1400}); e.target.value=""; if(!f) return;
@@ -13359,7 +13368,16 @@ const STICK3D=(()=>{
   /* 照設計圖做的模型：用辨識出來的輪廓（圓的做旋轉體、愛心星星做成鼓起來的立體板），表面貼設計圖本身，燈頭會發光 */
   const dsKey=ds=>ds._k||(ds._k="ds"+Math.random().toString(36).slice(2,9));
   const building=new Set();
+  function modelHull(ds,key){ Promise.all([lsImg(ds.cut),lsImg(ds.side),lsImg(ds.back)]).then(([f,s,b])=>{ try{ if(!f||!s) throw 0; const m=lsHullMesh(toCanvas(f),toCanvas(s),b?toCanvas(b):null,ds.split||.45);
+        const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.BufferAttribute(m.P,3)); geo.setAttribute("normal",new THREE.BufferAttribute(m.N,3)); geo.setAttribute("color",new THREE.BufferAttribute(m.C,3)); geo.setAttribute("g",new THREE.BufferAttribute(m.G,1)); geo.setIndex(new THREE.BufferAttribute(m.I,1));
+        const mat=new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.26,metalness:0,clearcoat:1,clearcoatRoughness:.06,envMapIntensity:.95});
+        const out={g:new THREE.Group(),headY:m.headY,uni:null,mat};
+        mat.onBeforeCompile=sh=>{ sh.uniforms.glowC={value:new THREE.Color(1,1,1)}; sh.uniforms.glowK={value:1}; out.uni=sh.uniforms;
+          sh.vertexShader="attribute float g;\nvarying float vG;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvG=g;");
+          sh.fragmentShader="uniform vec3 glowC;\nuniform float glowK;\nvarying float vG;\n"+sh.fragmentShader.replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"); };
+        out.g.add(new THREE.Mesh(geo,mat)); out.g.visible=false; scene.add(out.g); models.set(key,out); }catch(e){ models.set(key,null); } building.delete(key); }); }
   function modelDs(ds){ const key=dsKey(ds); if(models.has(key)) return models.get(key); if(building.has(key)) return null; building.add(key);
+    if(ds.side){ modelHull(ds,key); return null; }
     const go=mask=>{ try{ const m=LS3D.buildMesh(ds,mask); if(!m||!m.I||!m.I.length) throw 0;
         const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.BufferAttribute(m.P,3)); geo.setAttribute("normal",new THREE.BufferAttribute(m.NM,3)); geo.setAttribute("uv",new THREE.BufferAttribute(m.U,2)); geo.setAttribute("g",new THREE.BufferAttribute(m.G,1)); geo.setIndex(new THREE.BufferAttribute(m.I,1));
         const tex=new THREE.TextureLoader().load(ds.tex); tex.flipY=false; tex.encoding=THREE.sRGBEncoding; tex.anisotropy=8;
@@ -13432,6 +13450,77 @@ const STICK3D=(()=>{
 })();
 /* 預設款：團名第一個字放進燈頭；換成新的高級 3D */
 LS3D.mount=(el,ds,o)=>{ try{ return STICK3D.mount(el,ds,o); }catch(e){ return {set(){},update(){},destroy(){}}; } };
+
+/* =========================================================
+   應援棒「三視圖」立體重建：不管造型多複雜都能做
+   ・管理員上傳一張三視圖（正面、側面、背面排在一起）或分開上傳
+   ・自動把每個視圖切出來 → 正面的輪廓 × 側面的輪廓，一格一格雕出立體的形狀（visual hull）
+   ・表面顏色：朝前的地方用正面圖、朝後用背面圖、側邊用側面圖；燈頭的地方會發光
+   ========================================================= */
+/* 一張圖裡找出每一個視圖（由左到右），各自去背、裁好 */
+function lsSplitSheet(img,thr=22){
+  let W=img.naturalWidth||img.width, H=img.naturalHeight||img.height; const k=Math.min(1,1100/Math.max(W,H)); W=Math.max(8,Math.round(W*k)); H=Math.max(8,Math.round(H*k));
+  const cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d",{willReadFrequently:true}); x.drawImage(img,0,0,W,H); const d=x.getImageData(0,0,W,H).data, n=W*H;
+  const border=[]; for(let i=0;i<W;i++) border.push(i,(H-1)*W+i); for(let j=1;j<H-1;j++) border.push(j*W,j*W+W-1);
+  const alphaMode=border.filter(i=>d[i*4+3]<24).length>border.length*.5, med=c=>{ const a=border.map(i=>d[i*4+c]).sort((p,q)=>p-q); return a[a.length>>1]; }, bg=[med(0),med(1),med(2)], t2=thr*thr;
+  const isBg=new Uint8Array(n), st=[]; const bgLike=i=>{ if(d[i*4+3]<24) return true; if(alphaMode) return false; const r=d[i*4]-bg[0],g=d[i*4+1]-bg[1],b=d[i*4+2]-bg[2]; return r*r+g*g+b*b<t2; };
+  border.forEach(i=>{ if(!isBg[i]&&bgLike(i)){ isBg[i]=1; st.push(i); } });
+  while(st.length){ const i=st.pop(), px=i%W, py=(i/W)|0; for(const j of [px>0?i-1:-1,px<W-1?i+1:-1,py>0?i-W:-1,py<H-1?i+W:-1]) if(j>=0&&!isBg[j]&&bgLike(j)){ isBg[j]=1; st.push(j); } }
+  const lab=new Int32Array(n), comps=[]; let cur=0;
+  for(let s=0;s<n;s++){ if(isBg[s]||lab[s]) continue; cur++; let a=0,x0=W,x1=0,y0=H,y1=0; lab[s]=cur; st.push(s);
+    while(st.length){ const i=st.pop(), px=i%W, py=(i/W)|0; a++; if(px<x0)x0=px; if(px>x1)x1=px; if(py<y0)y0=py; if(py>y1)y1=py;
+      for(const j of [px>0?i-1:-1,px<W-1?i+1:-1,py>0?i-W:-1,py<H-1?i+W:-1]) if(j>=0&&!isBg[j]&&!lab[j]){ lab[j]=cur; st.push(j); } }
+    comps.push({id:cur,a,x0,x1,y0,y1}); }
+  if(!comps.length) return [];
+  const big=Math.max(...comps.map(c=>c.a));
+  /* 同一個視圖裡分開的零件（燈頭和握把中間有縫）：x 範圍重疊的就併成同一個視圖 */
+  let parts=comps.filter(c=>c.a>=big*.04).sort((a,b)=>a.x0-b.x0), views=[];
+  parts.forEach(c=>{ const v=views.find(v=>Math.min(v.x1,c.x1)-Math.max(v.x0,c.x0)>Math.min(v.x1-v.x0,c.x1-c.x0)*.3); if(v){ v.ids.push(c.id); v.a+=c.a; v.x0=Math.min(v.x0,c.x0); v.x1=Math.max(v.x1,c.x1); v.y0=Math.min(v.y0,c.y0); v.y1=Math.max(v.y1,c.y1); } else views.push({ids:[c.id],a:c.a,x0:c.x0,x1:c.x1,y0:c.y0,y1:c.y1}); });
+  const vbig=Math.max(...views.map(v=>v.a)); views=views.filter(v=>v.a>=vbig*.12).sort((a,b)=>a.x0-b.x0).slice(0,4);
+  return views.map(v=>{ const bw=v.x1-v.x0+1, bh=v.y1-v.y0+1, c=document.createElement("canvas"); c.width=bw; c.height=bh; const cx=c.getContext("2d"), o=cx.createImageData(bw,bh), ids=new Set(v.ids);
+    for(let yy=0;yy<bh;yy++) for(let xx=0;xx<bw;xx++){ const i=(v.y0+yy)*W+v.x0+xx, q=i*4, p=(yy*bw+xx)*4; o.data[p]=d[q]; o.data[p+1]=d[q+1]; o.data[p+2]=d[q+2]; o.data[p+3]=ids.has(lab[i])?255:0; }
+    cx.putImageData(o,0,0); return c; }); }
+/* 輪廓 × 輪廓 → 立體（Surface Nets：表面圓滑、不會一格一格） */
+function lsHullMesh(front,side,back,split){
+  const NY=120, rd=c=>{ const w=Math.max(4,Math.round(c.width*NY/c.height)), t=document.createElement("canvas"); t.width=w; t.height=NY; const x=t.getContext("2d",{willReadFrequently:true}); x.drawImage(c,0,0,w,NY); return {w,h:NY,d:x.getImageData(0,0,w,NY).data}; };
+  const F=rd(front), Sd=rd(side), B=back?rd(back):null, P=2, NX=F.w+P*2, NZ=Sd.w+P*2, NYp=NY+P*2, idx=(x,y,z)=>(z*NYp+y)*NX+x;
+  let v=new Float32Array(NX*NYp*NZ);
+  for(let z=P;z<NZ-P;z++) for(let y=P;y<NYp-P;y++){ const sa=Sd.d[((y-P)*Sd.w+(z-P))*4+3]; if(sa<128) continue; for(let x=P;x<NX-P;x++){ if(F.d[((y-P)*F.w+(x-P))*4+3]>=128) v[idx(x,y,z)]=1; } }
+  /* 輕輕模糊兩次：邊角變圓潤 */
+  const blur=(a)=>{ const o=new Float32Array(a.length); for(let z=0;z<NZ;z++) for(let y=0;y<NYp;y++) for(let x=0;x<NX;x++){ let s=0,c=0; for(let dz=-1;dz<=1;dz++){ const zz=z+dz; if(zz<0||zz>=NZ) continue; for(let dy=-1;dy<=1;dy++){ const yy=y+dy; if(yy<0||yy>=NYp) continue; for(let dx=-1;dx<=1;dx++){ const xx=x+dx; if(xx<0||xx>=NX) continue; s+=a[idx(xx,yy,zz)]; c++; } } } o[idx(x,y,z)]=s/c; } return o; };
+  v=blur(blur(v));
+  const T=.5, vid=new Int32Array(NX*NYp*NZ).fill(-1), pos=[], nor=[], col=[], gg=[], ind=[], sc=2.4/NY, cx=NX/2, cz=NZ/2;
+  const samp=(V,u,w)=>{ const xx=Math.max(0,Math.min(V.w-1,Math.round(u))), yy=Math.max(0,Math.min(V.h-1,Math.round(w))), q=(yy*V.w+xx)*4; return V.d[q+3]>40?[V.d[q],V.d[q+1],V.d[q+2]]:null; };
+  const at=(x,y,z)=>v[idx(Math.max(0,Math.min(NX-1,x)),Math.max(0,Math.min(NYp-1,y)),Math.max(0,Math.min(NZ-1,z)))];
+  for(let z=0;z<NZ-1;z++) for(let y=0;y<NYp-1;y++) for(let x=0;x<NX-1;x++){ let m=0, sx=0,sy=0,sz=0,ne=0; const c=[];
+      for(let k=0;k<8;k++){ const val=v[idx(x+(k&1),y+((k>>1)&1),z+((k>>2)&1))]; c.push(val); if(val>T) m|=1<<k; }
+      if(m===0||m===255) continue;
+      [[0,1],[2,3],[4,5],[6,7],[0,2],[1,3],[4,6],[5,7],[0,4],[1,5],[2,6],[3,7]].forEach(([a,b])=>{ if((c[a]>T)!==(c[b]>T)){ const t=(T-c[a])/(c[b]-c[a]); sx+=(a&1)+(((b&1)-(a&1))*t); sy+=((a>>1)&1)+((((b>>1)&1)-((a>>1)&1))*t); sz+=((a>>2)&1)+((((b>>2)&1)-((a>>2)&1))*t); ne++; } });
+      const px=x+sx/ne, py=y+sy/ne, pz=z+sz/ne; vid[idx(x,y,z)]=pos.length/3;
+      pos.push((px-cx)*sc,1.2-(py-P)*sc,(pz-cz)*sc);
+      let gx=at(Math.round(px)+1,Math.round(py),Math.round(pz))-at(Math.round(px)-1,Math.round(py),Math.round(pz)), gy=at(Math.round(px),Math.round(py)+1,Math.round(pz))-at(Math.round(px),Math.round(py)-1,Math.round(pz)), gz=at(Math.round(px),Math.round(py),Math.round(pz)+1)-at(Math.round(px),Math.round(py),Math.round(pz)-1);
+      let nx=-gx, ny=gy, nz=-gz; const l=Math.hypot(nx,ny,nz)||1; nx/=l; ny/=l; nz/=l; nor.push(nx,ny,nz);
+      /* 顏色：照表面朝的方向混合三張圖 */
+      const fy=py-P, cf=samp(F,px-P,fy), cs=samp(Sd,pz-P,fy), cb=B?samp(B,(B.w-1)-(px-P)*B.w/F.w,fy):null;
+      const wf=Math.max(0,nz), wb=Math.max(0,-nz), ws=Math.abs(nx)+Math.abs(ny)*.3; let r=0,g=0,bb=0,wt=0;
+      const addc=(cc,w)=>{ if(cc&&w>0){ r+=cc[0]*w; g+=cc[1]*w; bb+=cc[2]*w; wt+=w; } }; addc(cf,wf+.05); addc(cb||cf,wb+.05); addc(cs,ws);
+      col.push(wt?r/wt/255:.9,wt?g/wt/255:.9,wt?bb/wt/255:.9);
+      const yn=fy/NY; gg.push(Math.max(0,Math.min(1,(split-yn)/.04+.5))); }
+  /* 每一條穿過表面的邊，接成一個四邊形 */
+  const quad=(a,b,c,d,flip)=>{ if(a<0||b<0||c<0||d<0) return; if(flip) ind.push(a,c,b,a,d,c); else ind.push(a,b,c,a,c,d); };
+  for(let z=1;z<NZ-1;z++) for(let y=1;y<NYp-1;y++) for(let x=1;x<NX-1;x++){ const s0=v[idx(x,y,z)]>T;
+      if(s0!==(v[idx(x+1,y,z)]>T)) quad(vid[idx(x,y-1,z-1)],vid[idx(x,y,z-1)],vid[idx(x,y,z)],vid[idx(x,y-1,z)],!s0);
+      if(s0!==(v[idx(x,y+1,z)]>T)) quad(vid[idx(x-1,y,z-1)],vid[idx(x,y,z-1)],vid[idx(x,y,z)],vid[idx(x-1,y,z)],s0);
+      if(s0!==(v[idx(x,y,z+1)]>T)) quad(vid[idx(x-1,y-1,z)],vid[idx(x,y-1,z)],vid[idx(x,y,z)],vid[idx(x-1,y,z)],!s0); }
+  /* 三角形方向統一朝外（跟表面法線同一邊） */
+  for(let i=0;i<ind.length;i+=3){ const a=ind[i]*3,b=ind[i+1]*3,c=ind[i+2]*3, ux=pos[b]-pos[a],uy=pos[b+1]-pos[a+1],uz=pos[b+2]-pos[a+2], vx=pos[c]-pos[a],vy=pos[c+1]-pos[a+1],vz=pos[c+2]-pos[a+2];
+    const fx=uy*vz-uz*vy, fy=uz*vx-ux*vz, fz=ux*vy-uy*vx, nx=nor[a]+nor[b]+nor[c], ny=nor[a+1]+nor[b+1]+nor[c+1], nz=nor[a+2]+nor[b+2]+nor[c+2];
+    if(fx*nx+fy*ny+fz*nz<0){ const t=ind[i+1]; ind[i+1]=ind[i+2]; ind[i+2]=t; } }
+  return {P:new Float32Array(pos),N:new Float32Array(nor),C:new Float32Array(col),G:new Float32Array(gg),I:pos.length/3>65000?new Uint32Array(ind):new Uint16Array(ind),headY:1.2-split*.5*2.4}; }
+/* 縮小到最高 480px 的去背 PNG（存起來不會太大） */
+function lsViewURL(c){ const k=Math.min(1,480/c.height), w=Math.max(4,Math.round(c.width*k)), h=Math.max(4,Math.round(c.height*k)), t=document.createElement("canvas"); t.width=w; t.height=h; t.getContext("2d").drawImage(c,0,0,w,h); return t.toDataURL("image/png"); }
+const lsImg=src=>new Promise(res=>{ if(!src){ res(null); return; } const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; });
+const toCanvas=im=>{ const c=document.createElement("canvas"); c.width=im.naturalWidth||im.width; c.height=im.naturalHeight||im.height; c.getContext("2d").drawImage(im,0,0); return c; };
 
 </script>
 </body>
