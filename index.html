@@ -29,7 +29,7 @@
 <script>(function(){function z(){var w=Math.min(window.innerWidth||390,screen.width||9999);var v=Math.max(.8,Math.min(.92,w/440));document.documentElement.style.zoom=v;document.documentElement.style.setProperty("--zm",v);}z();addEventListener("resize",z);addEventListener("orientationchange",function(){setTimeout(z,300)});})();</script>
 <script>try{var m=JSON.parse(localStorage.getItem("daisuki_theme")||'"system"');var d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light");document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Huninn&family=Jua&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Huninn&family=Jua&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* 新風格：底色中性（白／深灰），淺紫只用在按鈕、選中狀態、小圖示 */
@@ -4432,6 +4432,33 @@ html.no-scroll,html.no-scroll body{overflow:hidden!important;overscroll-behavior
 .bgm-sh .bgm-row{background:var(--s2);color:var(--ink);-webkit-backdrop-filter:none;backdrop-filter:none}
 .bgm-sh .bgm-row i{color:var(--violet)}
 .bgm-sh .bgm-add{border-color:var(--line);color:var(--violet)}
+/* ===== 應援餐車 3D ===== */
+.trk .trk-stage{position:relative;height:min(58vh,420px);margin:0 -16px 6px;border-radius:0 0 28px 28px;overflow:hidden;background:radial-gradient(120% 80% at 50% 30%,#FFFFFF 0%,#F3EEE8 55%,#E7DFD6 100%)}
+html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 50% 30%,#3A3540 0%,#24212A 60%,#17151B 100%)}
+.trk-cv{position:absolute;inset:0;width:100%!important;height:100%!important;display:block;touch-action:none;cursor:grab}
+.trk-load,.trk-fail{position:absolute;inset:0;display:grid;place-items:center;font-size:13px;color:var(--ink-3);margin:0}
+.trk-new{margin:8px 0 4px}
+.trk-list{padding:4px 0!important}
+.trk-row{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;border:0;background:none;text-align:left;font:inherit;color:var(--ink)}
+.trk-row+.trk-row{border-top:1px solid var(--line)}
+.trk-row.on{background:var(--s2)}
+.trk-dot{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px rgba(255,255,255,.6),0 0 0 1px var(--line)}
+.trk-ri{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.trk-ri b{font-size:15px}.trk-ri small{font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.trk-join{flex:none;padding:7px 12px;border-radius:999px;background:var(--violet);color:#fff;font-size:12.5px;font-weight:800}
+.trk-ed{display:flex;flex-direction:column;gap:8px}
+.trk-ed .fld-lab{margin-top:6px}
+.trk-sw{display:flex;gap:10px;flex-wrap:wrap}
+.trk-sw button{width:38px;height:38px;border-radius:50%;border:4px solid;padding:0}.trk-sw button.on{outline:2.5px solid var(--ink);outline-offset:2px}
+.trk-ph{display:flex;gap:10px;align-items:center}.trk-ph .field{flex:1;min-width:0}
+.trk-pb{flex:none;width:64px;height:64px;border-radius:14px;border:1.5px dashed var(--line);background:var(--s2);color:var(--ink-3);font:inherit;font-size:12px;font-weight:700;overflow:hidden;padding:0}
+.trk-pb.has{border-style:solid}.trk-pb img{width:100%;height:100%;object-fit:cover;display:block}
+.trk-mi{height:46px}
+.trk-sh{align-self:flex-start}
+.trk-arrive{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0 10px;animation:trkIn .6s cubic-bezier(.2,.8,.3,1)}
+.trk-arrive b{font-family:"Playfair Display",serif;font-style:italic;font-size:26px;color:var(--violet)}.trk-arrive small{font-size:13px;color:var(--ink-3)}
+@keyframes trkIn{from{opacity:0;transform:translateY(10px)}}
+.trk-empty{text-align:center;padding:28px 16px!important;color:var(--ink-3)}
+.trk-adm{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid var(--line)}.trk-adm>div{flex:1;min-width:0}.trk-adm b{display:flex;gap:8px;align-items:center;font-size:14.5px}.trk-adm b em{font-style:normal;font-size:11.5px;color:var(--violet);font-weight:800}.trk-adm small{font-size:12px;color:var(--ink-3)}
 
 </style>
 </head>
@@ -4493,7 +4520,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", trucks:"daisuki_trucks", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4775,7 +4802,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026123331";
+const BUILD="20261026125114";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6138,7 +6165,7 @@ const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
   sales.forEach(x=>{ byType[x.type]=(byType[x.type]||0)+x.pts; if(x.gid) byGroup[x.gid]=(byGroup[x.gid]||0)+x.pts;
-    if(x.type==="tie"&&x.mid){ byMember[x.mid]=(byMember[x.mid]||0)+x.pts; }
+    if((x.type==="tie"||x.type==="truck")&&x.mid){ byMember[x.mid]=(byMember[x.mid]||0)+x.pts; }
     else if(x.gid){ const ids=groupArtists(x.gid); ids.forEach(id=>{ byMember[id]=(byMember[id]||0)+x.pts/Math.max(1,ids.length); }); } });
   const total=Object.values(byType).reduce((a,b)=>a+b,0);
   return {sales,byType,byMember,byGroup,total};
@@ -6311,7 +6338,7 @@ const ymKey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
 function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) return;   /* 雲端資料還沒載入就先不結算 */ const now=new Date(), last=new Date(now.getFullYear(),now.getMonth()-1,1), key=ymKey(last); if(key<REVB_FIRST) return;
     const done=S.get(K.revB,{})||{}; if(done[key]) return;
     const a=last.getTime(), b=new Date(now.getFullYear(),now.getMonth(),1).getTime(), sh=revShare(), by={};
-    S.get(K.sales,[]).filter(x=>x.ts>=a&&x.ts<b).forEach(x=>{ if(x.type==="tie"&&x.mid) by[x.mid]=(by[x.mid]||0)+x.pts; else if(x.gid){ const ids=groupArtists(x.gid); ids.forEach(id=>{ by[id]=(by[id]||0)+x.pts/Math.max(1,ids.length); }); } });
+    S.get(K.sales,[]).filter(x=>x.ts>=a&&x.ts<b).forEach(x=>{ if((x.type==="tie"||x.type==="truck")&&x.mid) by[x.mid]=(by[x.mid]||0)+x.pts; else if(x.gid){ const ids=groupArtists(x.gid); ids.forEach(id=>{ by[id]=(by[id]||0)+x.pts/Math.max(1,ids.length); }); } });
     const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), res={}, mon=last.getMonth()+1;
     Object.keys(by).forEach(mid=>{ const n=Math.min(REVB_CAP,Math.round(by[mid]*sh/100*REVB_RATE)); if(n<=0) return;
       const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===mid); if(!em) return; const id="rb"+key+"_"+mid; res[mid]=n;
@@ -7378,7 +7405,7 @@ function viewStubs(){
 /* 應援棒：管理員上傳的設計圖 → 3D；沒上傳的團用預設款 */
 const getSticks=()=>S.get(K.sticks,{});
 const _defStick={};
-function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g.g%GRADS.length]; _defStick[gid]=LS3D.analyze(LS3D.sample("round",c[0],c[1],ini(g.name))); } return _defStick[gid]; }
+function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g.g%GRADS.length]; _defStick[gid]=Object.assign(LS3D.analyze(LS3D.sample("round",c[0],c[1],ini(g.name))),{_letter:ini(g.name),_c1:c[0],_c2:c[1]}); } return _defStick[gid]; }
 let _genStick=null;
 const genericStick=()=>_genStick||(_genStick=Object.assign(LS3D.analyze(LS3D.sample("round","#E9E3F7","#FCE7F3","★")),{glow:"#C7AEFF"}));
 const stickOf=gid=>gid==="generic"?genericStick():getSticks()[gid]||defaultStick(gid);
@@ -7388,6 +7415,7 @@ function mountSticks(scope){
   scope.querySelectorAll(".ls-box:not([data-mounted])").forEach(el=>{
     el.dataset.mounted="1"; const k=el.dataset.ls, o=(el.dataset.o||"").split(",");
     const ds=k==="draft"?(ui.lsDraft&&ui.lsDraft.ds):k==="generic"||groupOf(k)?stickOf(k):null; if(!ds) return;
+    if(!ds._letter){ const gg=groupOf(k==="draft"?(ui.lsGid||""):k); if(gg) ds._letter=ini(gg.name); }
     try{ el._ls=LS3D.mount(el,ds,{controls:o.includes("ctl"),wave:o.includes("wave"),pulse:o.includes("pulse")?3:0,auto:!o.includes("still"),swing:o.includes("swing"),bright:o.includes("bright"),onSwing:o.includes("swing")?onSwingMove:null}); }catch(e){ el.innerHTML=""; }
   });
 }
@@ -7473,7 +7501,7 @@ function paint(html,hasNav,navHtml=""){
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ L.classList.remove("go"); L.style.transform=""; L.style.setProperty("--i",i); L.style.setProperty("--f",i); }
   } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
-  hydrateMedia(root); tieFootPad(); try{ lvLockSync(); }catch(e){} try{ const sw=document.querySelector(".uni-sw"); document.documentElement.style.setProperty("--uniH",sw?sw.offsetHeight+"px":"0px"); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
+  hydrateMedia(root); try{ truckAttach(); }catch(e){} tieFootPad(); try{ lvLockSync(); }catch(e){} try{ const sw=document.querySelector(".uni-sw"); document.documentElement.style.setProperty("--uniH",sw?sw.offsetHeight+"px":"0px"); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
   const tev=document.getElementById("tev"); if(tev){ tev.focus(); tev.setSelectionRange(tev.value.length,tev.value.length); }
   { const hs=document.getElementById("hostFeed"); if(hs) hs.scrollTop=hs.scrollHeight; const ms=document.getElementById("mrStream"); if(ms) ms.scrollTop=ms.scrollHeight; }
   mountSticks(root);
@@ -9823,7 +9851,7 @@ function viewArtistFoc(mid,p){
       ${mine||nc?`<div class="foc-cc ${mine?"on":""}"><b>${mine?`✺ 進行中・${esc(ls.title)}`:`下一場：${esc(nc.title)}`}</b><small>${mine?`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`:`${evWhen(nc.startTs)} 開始`}</small></div>`:""}
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:nc?(canCtl(nc,mid)?`<button class="btn btn-main btn-block cc-ctl" data-a="ccNow" data-id="${nc.id}">現在開始演唱會</button>`:""):acOpenCard(mid)}
       ${!mine&&demoOn()?`<button class="btn btn-soft btn-block" data-a="lsDemo">示範：打開燈控台看看</button>`:""}</section></main>`;
-  if(p==="truck") return focHead("應援餐車")+truckPhHtml();
+  if(p==="truck") return focHead("應援餐車")+viewTruckArtist(mid);
   if(p==="tour"){ setTimeout(trmScroll,0); return focHead("世巡")+viewTourArtist(mid); }
   if(p==="news"){ const nid=route().id; return focHead("新聞")+(nid?newsDetailHtml(nid):newsListHtml("#/artist?tab=foc&p=news",[gid],g.solo?"我的":"我們團")); }
   if(p==="sign") return focHead("簽售")+`<main class="page foc">${fsArtistCard(mid)}</main>`;
@@ -9842,7 +9870,7 @@ function viewArtistFoc(mid,p){
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     </section>
     ${secH("live","現場")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}</div>
-    ${secH("trophy","舞台")}<div class="tiles">${tile("focGo","honor","trophy","榮譽與職務",`今年 ${fmt(yearPts)} 分`)}${tile("focGo","stick","bolt","官方應援棒",`${esc(g.name)}`)}${tile("focGo","truck","truck","應援餐車","即將開放")}</div>
+    ${secH("trophy","舞台")}<div class="tiles">${tile("focGo","honor","trophy","榮譽與職務",`今年 ${fmt(yearPts)} 分`)}${tile("focGo","stick","bolt","官方應援棒",`${esc(g.name)}`)}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
     ${secH("cam","社群")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
   </main>`;
 }
@@ -9872,7 +9900,7 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["truck","truck","應援餐車","即將開放"],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
@@ -10099,7 +10127,7 @@ function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===
 const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id]&&(s.startTs||0)+120*60e3>Date.now()); };
 function viewCoreSub(page,id){
   if(page==="tour") return viewTourFan(id);
-  if(page==="truck") return coreHead("應援餐車")+truckPhHtml();
+  if(page==="truck") return viewTruckFan();
   if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
   if(false) return `<main class="page"><div class="vod-grid">${GROUPS.map(g=>`<button class="vod-g" data-a="coreGallery" data-v="${g.id}" style="background:${grad(g.g)}"><span class="vod-play">${PLAY}</span><span class="vod-bar">${esc(g.name)}</span></button>`).join("")}</div></main>`;
@@ -10331,7 +10359,7 @@ function viewAdmin(tab){
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
     const seg=ui.focSeg||"sched", lsOn=!!liveConcert();
-    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["sv","選秀"],["news","新聞"]];
+    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>當前活動階段配置</h3><span class="badge">即時同步中</span></div>
         <label class="foc-lab">本週階段</label>
         <label class="field"><input id="focStage" value="${esc(st)}"></label>
@@ -10341,7 +10369,7 @@ function viewAdmin(tab){
         <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
         ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}</section>
 `,
-      music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml())+adminVodHtml()+adminMusicHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
+      music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml())+adminVodHtml()+adminMusicHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
         <div class="ls-btns"><button class="btn ${svOpen()?"btn-soft":"btn-main"}" data-a="svToggle">${svOpen()?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
 `}[seg]||"";
     return adminHead("FOC")+`<main class="page">
@@ -11334,6 +11362,21 @@ document.addEventListener("click",e=>{
       if(mode==="color") u.bgColor=t.dataset.v; if(mode==="pattern") u.bgPattern=Number(t.dataset.v);
       saveTieSet(t.dataset.m,u); layer.innerHTML=""; render(); break; }
     case "aTieBg": openArtTieBg(); break;
+    case "tkNew": { const f=followed(), ms=f.flatMap(gid=>isSelfGid(gid)?[]:grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:ME.name||""}}; render(); window.scrollTo(0,0); break; }
+    case "tkMid": tkKeep(); ui.tkD.mid=t.dataset.v; render(); break;
+    case "tkPal": tkKeep(); ui.tkD.deco.pal=+t.dataset.v; render(); break;
+    case "tkTog": tkKeep(); ui.tkD.deco[t.dataset.v]=!ui.tkD.deco[t.dataset.v]; render(); break;
+    case "tkShares": tkKeep(); ui.tkD.shares=Math.max(1,Math.min(5,ui.tkD.shares+(+t.dataset.v))); render(); break;
+    case "tkCancel": ui.tkD=null; render(); break;
+    case "tkImg": { tkKeep(); const k=t.dataset.v, inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0||!ui.tkD) return; const f=await cropImg(f0,{ratio:k==="banner"?3/4:1,max:1200}); if(!f) return; const b=await shrinkImg(f,560), du=b&&await blobDU(b); if(du&&ui.tkD){ ui.tkD.deco[k]=du; render(); } };
+      pickClick(inp); break; }
+    case "tkGo": { tkKeep(); const d=ui.tkD; if(!d||!d.mid){ toast("先選要送給誰"); break; } const share=Math.ceil(TRUCK_PRICE/d.shares), m=MEMBERS[d.mid];
+      ask(d.shares>1?`發起 ${d.shares} 人分攤，送餐車給 ${m.name}？你先付 ${fmt(share)} 積分，其他人可以在「一起出錢」加入。`:`送一台應援餐車給 ${m.name}？要 ${fmt(share)} 積分。`,()=>{ const tk=tkBuy(d.deco,d.mid,d.shares); if(!tk) return; ui.tkD=null; ui.tkView=tk.id; render(); window.scrollTo(0,0);
+        toast(tkFunded(tk)?(tkState(tk)==="done"?"餐車送到了！":"餐車準備好了，等回歸那天送到"):"發起分攤了，等大家一起出錢"); },{title:"應援餐車",ok:"確定",danger:false}); break; }
+    case "tkView": { if(e.target.closest('[data-a="tkJoin"]')) break; ui.tkView=t.dataset.v; render(); window.scrollTo({top:0,behavior:"smooth"}); break; }
+    case "tkJoin": { const tk=getTrucks().find(x=>x.id===t.dataset.v); if(!tk) break; ask(`一起出錢送餐車給 ${MEMBERS[tk.mid].name}？要 ${fmt(tkShare(tk))} 積分。`,()=>{ if(tkJoin(tk.id)){ ui.tkView=tk.id; render(); toast(tkFunded(getTrucks().find(x=>x.id===tk.id))?"湊齊了！":"出錢成功"); } },{title:"應援餐車",ok:"確定",danger:false}); break; }
+    case "tkDel": ask("要刪除這台餐車嗎？",()=>{ S.set(K.trucks,(S.get(K.trucks,[])||[]).filter(x=>x.id!==t.dataset.v)); render(); toast("已刪除"); }); break;
     case "tieQuietList": { const L=tieQuiet(); tieModal("TIE 3 天沒傳訊息","",`${L.map(x=>`<span class="info-row"><em>${esc(MEMBERS[x.mid].name)}</em>${x.days} 天${x.last?"・最後一則 "+ymd(x.last):"・還沒傳過"}</span>`).join("")}<button class="t-mbtn" data-a="tCloseLayer">關閉</button>`); break; }
     case "aBgTab": ui.tieBgTab=t.dataset.v; openArtTieBg(); break;
     case "aBgSet": { const mid=session().member, A=S.get(K.tieArtBg,{})||{}, mode=t.dataset.mode;
@@ -12559,6 +12602,7 @@ const TOURS={
   "fan:core:concert":[['[data-a="concertOn"]',"進場","演唱會開始後按這裡進場，跟大家一起變成燈海。"],['[data-a="coreStick"]',"應援棒","買了官方應援棒，進場就會舉這一支。"],["#bdText","應援板","寫一句想對藝人說的話。互動歌的時候舉起來，藝人可能會回應你！"],['[data-a="bdSave"]',"做好了","寫完按這裡存起來。"]],
   "fan:core:fsl":[[".fs-card","簽售","正在報名的簽售都在這裡。"],['[data-a="fsJoin"]',"報名","按這裡報名，等抽籤結果。"],['[data-a="fsBuy"]',"多一次機會","多買一張專輯，抽籤機會就多一次。"],['[data-a="fsRoom"]',"進入簽售","抽中後，時間到按這裡進去跟藝人視訊。"]],
   "fan:core:tour":[[".tr-card","世巡","藝人的世界巡演，每一站都是一場演唱會。"],['[data-a="tourBuy"]',"買票","每一站要先買票才能進場。剩兩站以上可以一次全買，打 9 折。"],[".tr-st","蓋章","去過的站會蓋章，集滿就是一整趟巡演的回憶。"]],
+  "fan:core:truck":[[".trk-stage","應援餐車","手指拖一拖可以轉來轉去看，兩指可以放大。"],['[data-a="tkNew"]',"訂一台","選要送給誰、車身顏色、橫幅照片和標語、菜單、杯套、裝飾，再決定自己買或找大家分攤。"],[".trk-join","一起出錢","別人發起的分攤，按這裡就能一起出。"]],
   "fan:core:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
   /* ---------- 藝人 ---------- */
   "artist:home":[[".ap2-hero","你的個人頁","粉絲看到的你，就是這個樣子。"],
@@ -12594,6 +12638,7 @@ const TOURS={
   "artist:foc:sign":[[".fs-row","簽售","公司排好的簽售在這裡，報名人數和名單都看得到。"],['[data-a="fsDesk"]',"進簽售台","開場後按這裡，一位一位跟粉絲視訊、簽名。"]],
   "artist:foc:honor":[[".foc-row","MC 與積分","這個月主持了哪些節目，和今年的打歌積分。"],[".foc-ms","獎項","拿過的一位、AK、PAK，都會亮起來。"]],
   "artist:foc:stick":[[".ls-box","官方應援棒","你們團的應援棒，可以轉來轉去看。"]],
+  "artist:foc:truck":[[".trk-stage","應援餐車","粉絲送你的餐車！在出道或回歸那天才會送到，之前都是秘密。"],[".trk-list","收到的餐車","每一台都留在這裡，點一下就能再看一次。"]],
   "artist:foc:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
   "artist:whisper":[[".t-dots","選單","點這裡打開選單，等等帶你看看。"],
     ['[aria-label="檢舉這則訊息"]',"粉絲的回覆","粉絲回你的話會在左邊。遇到不舒服的訊息，點「⋯」檢舉。"],
@@ -12844,6 +12889,352 @@ setInterval(()=>{ const w=document.getElementById("bdWall"); if(!w) return; cons
 setInterval(()=>{ const s=session(); if(!s||s.role!=="fan") return; const L=bdAll(), x=L.find(y=>y.mine&&y.ans&&!y.seen); if(!x) return; x.seen=true; bdSave(L);
   const c=bdFind(x.cid), by=MEMBERS[x.ans.by], nm=by?artName(x.ans.by,"feed"):"", msg=x.act?nm+x.ans.text:`${nm}：${x.ans.text}`; S.set(K.points,points()+30);
   const d=document.createElement("div"); d.className="bd-ans"; d.innerHTML=`${bdHtml(x,c?c.gid:"",true)}<b>${esc(msg)}</b><small>被藝人回應了，+30 積分</small>`; document.body.appendChild(d); try{ confetti(innerWidth/2,innerHeight/3); }catch(e){} setTimeout(()=>d.remove(),5000); },1500);
+/* =========================================================
+   3D（three.js，要用的時候才載入）
+   ・應援餐車：高級亮面（車漆、香檳金、鍍鉻），粉絲裝飾＋自己買或分攤，送到前保密，藝人出道／回歸開箱
+   ・演唱會應援棒：重做成高級款（珍珠白握把、香檳金環、玻璃燈頭、裡面發光）
+   ========================================================= */
+let _threeP=null;
+function loadThree(){ if(window.THREE) return Promise.resolve(window.THREE); if(_threeP) return _threeP;
+  _threeP=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"; s.async=true;
+    s.onload=()=>window.THREE?res(window.THREE):rej(new Error("three")); s.onerror=()=>{ _threeP=null; s.remove(); rej(new Error("three")); }; document.head.appendChild(s); });
+  return _threeP; }
+
+/* ---------- 共用：攝影棚燈光、材質、小工具 ---------- */
+const X3={
+  C:h=>new THREE.Color(h).convertSRGBToLinear(),
+  /* 攝影棚環境：暗灰的房間＋幾片很亮的柔光箱，亮面材質才會有漂亮的反光 */
+  env(R){ const s=new THREE.Scene(), room=new THREE.Mesh(new THREE.BoxGeometry(12,12,12),new THREE.MeshBasicMaterial({color:new THREE.Color(.16,.15,.17),side:THREE.BackSide})); s.add(room);
+    [[0,5.9,0,7,.1,4,5.5],[5.9,1.6,1,.1,3,7,3.2],[-5.9,1.2,-1,.1,2.4,6,2.2],[0,1.4,5.9,5,2.6,.1,2.6],[1,-1,-5.9,6,1.2,.1,1.2]].forEach(([x,y,z,w,h,d,i])=>{ const m=new THREE.Mesh(new THREE.BoxGeometry(w,h,d),new THREE.MeshBasicMaterial({color:new THREE.Color(i,i*.97,i*.94)})); m.position.set(x,y,z); s.add(m); });
+    const pm=new THREE.PMREMGenerator(R), t=pm.fromScene(s,.035).texture; pm.dispose(); return t; },
+  /* 圓角方塊 */
+  rbox(w,h,d,r,seg=6){ r=Math.min(r,w/2-.001,h/2-.001,d/2-.001); const iw=w-2*r, ih=h-2*r, cr=Math.min(r*.6,iw/2,ih/2), s=new THREE.Shape(), x=-iw/2, y=-ih/2;
+    s.moveTo(x+cr,y); s.lineTo(x+iw-cr,y); s.quadraticCurveTo(x+iw,y,x+iw,y+cr); s.lineTo(x+iw,y+ih-cr); s.quadraticCurveTo(x+iw,y+ih,x+iw-cr,y+ih); s.lineTo(x+cr,y+ih); s.quadraticCurveTo(x,y+ih,x,y+ih-cr); s.lineTo(x,y+cr); s.quadraticCurveTo(x,y,x+cr,y);
+    const g=new THREE.ExtrudeGeometry(s,{depth:Math.max(.001,d-2*r),bevelEnabled:true,bevelThickness:r,bevelSize:r,bevelSegments:seg,curveSegments:10}); g.center(); g.computeVertexNormals(); return g; },
+  ctex(w,h,draw){ const c=document.createElement("canvas"); c.width=w; c.height=h; const x=c.getContext("2d"); draw(x,w,h); const t=new THREE.CanvasTexture(c); t.encoding=THREE.sRGBEncoding; t.anisotropy=8; return t; },
+  rr(x,X,Y,W,H,r){ x.beginPath(); x.moveTo(X+r,Y); x.arcTo(X+W,Y,X+W,Y+H,r); x.arcTo(X+W,Y+H,X,Y+H,r); x.arcTo(X,Y+H,X,Y,r); x.arcTo(X,Y,X+W,Y,r); x.closePath(); },
+  glowTex(){ if(X3._g) return X3._g; const c=document.createElement("canvas"); c.width=c.height=64; const x=c.getContext("2d"), gr=x.createRadialGradient(32,32,0,32,32,32); gr.addColorStop(0,"rgba(255,255,255,1)"); gr.addColorStop(.3,"rgba(255,255,255,.5)"); gr.addColorStop(1,"rgba(255,255,255,0)"); x.fillStyle=gr; x.fillRect(0,0,64,64); return X3._g=new THREE.CanvasTexture(c); },
+  /* 材質：車漆（亮面＋透明漆）、香檳金、鍍鉻、玻璃、珍珠、布料 */
+  paint:(hex,o={})=>new THREE.MeshPhysicalMaterial({color:X3.C(hex),metalness:o.metal??.15,roughness:o.rough??.32,clearcoat:1,clearcoatRoughness:.04,envMapIntensity:1}),
+  gold:(hex="#D8B98A",rough=.22)=>new THREE.MeshStandardMaterial({color:X3.C(hex),metalness:1,roughness:rough,envMapIntensity:1.15}),
+  chrome:()=>new THREE.MeshStandardMaterial({color:X3.C("#E9ECF1"),metalness:1,roughness:.08,envMapIntensity:1.3}),
+  glass:(hex="#1E2230",op=.82)=>new THREE.MeshPhysicalMaterial({color:X3.C(hex),metalness:0,roughness:.02,clearcoat:1,clearcoatRoughness:0,transparent:true,opacity:op,envMapIntensity:1.4}),
+  matte:(hex,rough=.75)=>new THREE.MeshStandardMaterial({color:X3.C(hex),metalness:0,roughness:rough,envMapIntensity:.6}),
+  emit:(hex,k=1.4)=>new THREE.MeshStandardMaterial({color:X3.C(hex),emissive:X3.C(hex),emissiveIntensity:k,roughness:.35}),
+  renderer(alpha=true){ const R=new THREE.WebGLRenderer({antialias:true,alpha}); R.setPixelRatio(Math.min(window.devicePixelRatio||1,2)); R.outputEncoding=THREE.sRGBEncoding;
+    R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.05; R.physicallyCorrectLights=false; return R; }
+};
+const SERIF='"Playfair Display","Noto Serif TC","Songti TC",serif', SANS='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+
+/* =========================================================
+   應援餐車 3D
+   ========================================================= */
+const TRUCK_PAL=[{n:"珍珠白",body:"#F2EEE8",trim:"#D9BC8C",deep:"#2C2733",soft:"#FBF8F3"},{n:"玫瑰霧",body:"#E7C2C6",trim:"#D2A77E",deep:"#4A2E36",soft:"#F8ECEC"},{n:"香檳",body:"#E6D5B5",trim:"#B48E5C",deep:"#3B3022",soft:"#F7F0E2"},
+  {n:"午夜藍",body:"#1F2742",trim:"#D9BC8C",deep:"#141A2E",soft:"#E9ECF5"},{n:"鼠尾草",body:"#B7C4B1",trim:"#C6A271",deep:"#2E3A2C",soft:"#EEF2EB"},{n:"薰衣草",body:"#CBBFE3",trim:"#C9A57A",deep:"#352C4A",soft:"#F1EDF8"}];
+const TRUCK_DECO0=()=>({pal:0,slogan:"",from:"",menu:["","",""],banner:null,sleeve:null,balloons:true,lights:true,flowers:true,ribbon:true});
+const TRUCK3D=(()=>{
+  let inst=null;   /* 同一時間只有一台在畫（換頁時把畫布搬到新的位置，不重新載入） */
+  function photo(x,img,X,Y,W,H,P,r){ X3.rr(x,X,Y,W,H,r); x.fillStyle=P.soft; x.fill(); x.save(); X3.rr(x,X,Y,W,H,r); x.clip();
+    if(img){ const s=Math.max(W/img.width,H/img.height), w=img.width*s, h=img.height*s; x.drawImage(img,X+(W-w)/2,Y+(H-h)/2,w,h); }
+    else { const g=x.createLinearGradient(X,Y,X+W,Y+H); g.addColorStop(0,P.soft); g.addColorStop(1,P.body); x.fillStyle=g; x.fillRect(X,Y,W,H); x.fillStyle=P.trim; x.globalAlpha=.45; x.beginPath(); x.arc(X+W/2,Y+H*.42,W*.17,0,7); x.fill(); x.beginPath(); x.ellipse(X+W/2,Y+H*1.04,W*.38,H*.34,0,0,7); x.fill(); x.globalAlpha=1; }
+    x.restore(); }
+  const loadImg=src=>new Promise(res=>{ if(!src){ res(null); return; } const i=new Image(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; });
+  async function build(I){ const d=I.deco, P=TRUCK_PAL[d.pal]||TRUCK_PAL[0], my=++I.ver;
+    const [ban,slv]=await Promise.all([loadImg(d.banner),loadImg(d.sleeve)]); if(my!==I.ver||I.dead) return;
+    try{ await Promise.race([document.fonts.load(`700 40px "Playfair Display"`),new Promise(r=>setTimeout(r,1200))]); }catch(e){}
+    if(I.truck){ I.scene.remove(I.truck); I.truck.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } }); }
+    const g=new THREE.Group(), A=I.anim={balloons:[],glows:[],steam:[]};
+    const add=(geo,m,x,y,z,o={})=>{ const me=new THREE.Mesh(geo,m); me.position.set(x,y,z); if(o.rx) me.rotation.x=o.rx; if(o.ry) me.rotation.y=o.ry; if(o.rz) me.rotation.z=o.rz; if(o.s) me.scale.set(...o.s); me.castShadow=o.shadow!==false; me.receiveShadow=true; (o.to||g).add(me); return me; };
+    const plane=(w,h,tex,x,y,z,ry=0,o={})=>{ const m=new THREE.MeshPhysicalMaterial({map:tex,roughness:o.rough??.45,clearcoat:o.coat??.3,clearcoatRoughness:.1,transparent:!!o.alpha,alphaTest:o.alpha?.5:0,side:o.ds?THREE.DoubleSide:THREE.FrontSide,envMapIntensity:.5});
+      const me=new THREE.Mesh(new THREE.PlaneGeometry(w,h),m); me.position.set(x,y,z); me.rotation.y=ry; if(o.rx!=null){ me.rotation.order="YXZ"; me.rotation.x=o.rx; } me.castShadow=!!o.cast; me.receiveShadow=true; g.add(me); return me; };
+    const body=X3.paint(P.body), gold=X3.gold(P.trim), chrome=X3.chrome(), glass=X3.glass(), ink=P.deep;
+    const name=d.name||"HAECHU", title=d.title||name, slogan=(d.slogan||"").trim()||"一起加油！", from=(d.from||"").trim()||"粉絲", menu=(d.menu||[]).map(s=>(s||"").trim());
+    const M=[menu[0]||`${name} 拿鐵`,menu[1]||"香草可頌",menu[2]||"草莓氣泡飲"];
+    // 車身、車頭（車漆）
+    add(X3.rbox(3.2,1.9,1.9,.24),body,-.4,1.47,0);
+    add(X3.rbox(1.05,1.45,1.86,.3),body,1.62,1.24,0);
+    // 金色腰線、鍍鉻保險桿
+    add(X3.rbox(3.24,.07,1.93,.03),gold,-.4,1.02,0); add(X3.rbox(1.09,.07,1.89,.03),gold,1.62,1.02,0);
+    add(X3.rbox(3.26,.26,1.95,.12),X3.paint(ink,{rough:.4}),-.4,.68,0); add(X3.rbox(1.1,.26,1.9,.12),X3.paint(ink,{rough:.4}),1.62,.68,0);
+    add(X3.rbox(.18,.2,1.8,.09),chrome,2.18,.62,0);
+    // 車窗（深色玻璃）、車燈
+    add(X3.rbox(.06,.62,1.46,.03),glass,2.14,1.58,0,{shadow:false});
+    [.94,-.94].forEach(z=>add(X3.rbox(.62,.5,.04,.02),glass,1.6,1.62,z,{shadow:false}));
+    [.62,-.62].forEach(z=>{ add(new THREE.CylinderGeometry(.13,.13,.06,32),chrome,2.17,.98,z,{rz:Math.PI/2,shadow:false}); add(new THREE.SphereGeometry(.1,24,16),X3.emit("#FFF6DD",1.1),2.19,.98,z,{s:[.4,1,1],shadow:false}); });
+    // 輪子：黑色輪胎＋鍍鉻輪框
+    [-1.35,1.55].forEach(x=>[.96,-.96].forEach(z=>{ add(new THREE.CylinderGeometry(.4,.4,.3,40),X3.matte("#1E1C22",.85),x,.4,z,{rx:Math.PI/2}); add(new THREE.CylinderGeometry(.24,.24,.32,32),chrome,x,.4,z,{rx:Math.PI/2}); add(new THREE.CylinderGeometry(.08,.08,.34,20),gold,x,.4,z,{rx:Math.PI/2}); }));
+    // 出餐窗口（+z）
+    add(X3.rbox(1.6,.94,.06,.05),gold,-.78,1.6,.95);
+    plane(1.46,.8,X3.ctex(320,176,(x,w,h)=>{ const gr=x.createLinearGradient(0,0,0,h); gr.addColorStop(0,"#3A3038"); gr.addColorStop(1,"#1C171D"); x.fillStyle=gr; x.fillRect(0,0,w,h); x.fillStyle="rgba(255,226,170,.85)"; for(let i=0;i<4;i++){ x.beginPath(); x.arc(40+i*80,26,7,0,7); x.fill(); } x.fillStyle="rgba(255,255,255,.07)"; x.fillRect(0,h*.55,w,3); }),-.78,1.6,.985,0,{coat:.6});
+    add(X3.rbox(1.78,.06,.42,.03),X3.paint("#EFE6DA",{rough:.2}),-.78,1.15,1.13);
+    // 杯子（杯套照片）
+    const sleeveT=X3.ctex(256,128,(x,w,h)=>{ x.fillStyle=P.soft; x.fillRect(0,0,w,h); photo(x,slv,w*.3,8,w*.4,h-16,P,10); x.fillStyle=P.trim; x.fillRect(0,0,w,6); x.fillRect(0,h-6,w,6); });
+    [-1.3,-1.02,-.74].forEach(cx=>{ add(new THREE.CylinderGeometry(.075,.058,.24,32),X3.paint("#FBFAF7",{rough:.25}),cx,1.31,1.13);
+      const sl=add(new THREE.CylinderGeometry(.078,.072,.1,32,1,true),new THREE.MeshPhysicalMaterial({map:sleeveT,roughness:.5,clearcoat:.2}),cx,1.3,1.13); sl.rotation.y=Math.PI/2;
+      add(new THREE.CylinderGeometry(.082,.082,.025,32),X3.paint(ink,{rough:.3}),cx,1.44,1.13);
+      for(let k=0;k<2;k++){ const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:X3.glowTex(),color:0xffffff,transparent:true,opacity:0,depthWrite:false})); sp.position.set(cx,1.52,1.13); sp.scale.set(.18,.18,1); g.add(sp); A.steam.push({sp,cx,ph:Math.random()*3+k*1.5}); } });
+    // 遮陽棚（布紋條紋）
+    { const t=X3.ctex(640,200,(x,w,h)=>{ const n=9, sw=w/n; for(let i=0;i<n;i++){ x.fillStyle=i%2?P.soft:P.body; x.fillRect(i*sw,0,sw,150); x.beginPath(); x.arc(i*sw+sw/2,148,sw/2,0,Math.PI); x.fill(); } x.fillStyle=P.trim; x.fillRect(0,0,w,8); });
+      plane(1.94,.64,t,-.78,2.15,1.22,0,{alpha:1,ds:1,rx:-Math.PI/2+.5,cast:1,rough:.85,coat:0}); add(new THREE.CylinderGeometry(.018,.018,1.96,12),gold,-.78,2.42,.96,{rz:Math.PI/2}); }
+    // 燈串（暖白燈泡）
+    if(d.lights){ for(let i=0;i<10;i++){ const u=i/9, x=-1.7+u*1.84, y=1.9-Math.sin(u*Math.PI)*.1;
+        add(new THREE.SphereGeometry(.042,16,12),X3.emit("#FFE3A8",2.2),x,y,1.5,{shadow:false});
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:X3.glowTex(),color:X3.C("#FFD58A"),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); sp.position.set(x,y,1.5); sp.scale.set(.18,.18,1); g.add(sp); A.glows.push({sp,ph:i*.9}); } }
+    // 側面直式橫幅（+z）：照片＋標語＋From.
+    { const t=X3.ctex(440,500,(x,w,h)=>{ x.fillStyle=P.soft; X3.rr(x,0,0,w,h,26); x.fill(); x.strokeStyle=P.trim; x.lineWidth=6; X3.rr(x,14,14,w-28,h-28,20); x.stroke(); photo(x,ban,40,40,w-80,260,P,14);
+        x.fillStyle=ink; x.textAlign="center"; x.font=`600 40px ${SANS}`; x.fillText(slogan.slice(0,10),w/2,358); if(slogan.length>10) x.fillText(slogan.slice(10,20),w/2,406);
+        x.fillStyle=P.trim; x.font=`italic 600 28px ${SERIF}`; x.fillText(`From. ${from}`.slice(0,22),w/2,458); });
+      plane(.86,.98,t,.62,1.5,.962); }
+    // 另一側大橫幅（-z）
+    { const t=X3.ctex(1200,480,(x,w,h)=>{ const gr=x.createLinearGradient(0,0,w,0); gr.addColorStop(0,P.soft); gr.addColorStop(1,"#FFFFFF"); x.fillStyle=gr; X3.rr(x,0,0,w,h,34); x.fill(); x.strokeStyle=P.trim; x.lineWidth=7; X3.rr(x,18,18,w-36,h-36,26); x.stroke();
+        photo(x,ban,50,50,340,h-100,P,18); x.textAlign="left"; x.fillStyle=ink; x.font=`700 104px ${SERIF}`; let nm=name; while(x.measureText(nm).width>w-500&&nm.length>1) nm=nm.slice(0,-1); x.fillText(nm,440,186);
+        x.fillStyle=P.trim; x.fillRect(444,214,120,4); x.fillStyle=ink; x.font=`600 56px ${SANS}`; x.fillText(slogan.slice(0,13),442,300); x.fillStyle=P.trim; x.font=`italic 600 38px ${SERIF}`; x.fillText(`From. ${from}`.slice(0,26),444,386); });
+      plane(2.72,1.09,t,-.42,1.5,-.962,Math.PI); }
+    // 車尾菜單（黑板＋金字）
+    { const t=X3.ctex(560,460,(x,w,h)=>{ x.fillStyle="#211D24"; X3.rr(x,0,0,w,h,26); x.fill(); x.strokeStyle=P.trim; x.lineWidth=5; X3.rr(x,16,16,w-32,h-32,18); x.stroke();
+        x.fillStyle=P.trim; x.textAlign="center"; x.font=`italic 700 64px ${SERIF}`; x.fillText("Menu",w/2,100); x.fillRect(w/2-50,122,100,3);
+        x.textAlign="left"; x.fillStyle="#F4EDE2"; x.font=`500 38px ${SANS}`; M.forEach((s,i)=>{ x.fillText(s.slice(0,11),60,206+i*80); x.fillStyle=P.trim; x.beginPath(); x.arc(w-66,194+i*80,7,0,7); x.fill(); x.fillStyle="#F4EDE2"; }); });
+      plane(1.38,1.12,t,-2.01,1.5,0,-Math.PI/2,{coat:.7}); }
+    // 車頂招牌（金框＋襯線字）
+    [-1.05,.25].forEach(x=>add(new THREE.CylinderGeometry(.03,.03,.34,16),gold,x,2.58,0));
+    add(X3.rbox(2.02,.5,.14,.07),gold,-.4,2.94,0);
+    { const t=X3.ctex(1000,220,(x,w,h)=>{ x.fillStyle=ink; X3.rr(x,0,0,w,h,60); x.fill(); x.fillStyle=P.trim; x.textAlign="center"; x.textBaseline="middle"; let s=`${title} Café`; x.font=`italic 700 104px ${SERIF}`; while(x.measureText(s).width>w-80){ const f=parseInt(x.font.match(/(\d+)px/)[1])-6; x.font=`italic 700 ${f}px ${SERIF}`; } x.fillText(s,w/2,h/2+6); });
+      plane(1.9,.42,t,-.4,2.94,.073,0,{coat:.8}); plane(1.9,.42,t,-.4,2.94,-.073,Math.PI,{coat:.8}); }
+    // 氣球（珍珠金屬感）
+    if(d.balloons){ [[P.body,-1.75,3.55,.25],[P.trim,-2.05,3.25,-.2],["#F7F3EC",-1.5,3.15,-.45]].forEach(([c,x,y,z],i)=>{ const bg=new THREE.Group(); g.add(bg);
+        add(new THREE.SphereGeometry(.27,40,28),new THREE.MeshPhysicalMaterial({color:X3.C(c),metalness:.55,roughness:.18,clearcoat:1,clearcoatRoughness:.05}),x,y,z,{s:[1,1.15,1],to:bg});
+        add(new THREE.ConeGeometry(.045,.07,12),X3.paint(c),x,y-.33,z,{to:bg,rx:Math.PI});
+        const pts=[new THREE.Vector3(x,y-.36,z),new THREE.Vector3((x-1.6)/2-.1,(y+2.42)/2,z/2),new THREE.Vector3(-1.65,2.42,0)];
+        bg.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),16,.006,6),X3.gold(P.trim,.4)));
+        A.balloons.push({g:bg,ph:i*1.7}); }); }
+    // 花（白玫瑰＋霧粉）
+    if(d.flowers){ const fl=(x,y,z,c)=>{ for(let k=0;k<6;k++){ const a=k/6*Math.PI*2; add(new THREE.SphereGeometry(.065,16,12),X3.paint(c,{rough:.5}),x,y+Math.sin(a)*.075,z+Math.cos(a)*.075,{s:[.55,1,1]}); } add(new THREE.SphereGeometry(.05,16,12),X3.paint(P.trim,{rough:.4}),x+.02,y,z); };
+      fl(2.29,.66,.55,"#FBF6F0"); fl(2.29,.66,-.55,P.body); fl(2.29,.7,.06,"#F3D9DC"); }
+    // 緞帶（緞面）
+    if(d.ribbon){ const m=new THREE.MeshPhysicalMaterial({color:X3.C(P.trim),roughness:.3,metalness:.3,clearcoat:.6}); [1,-1].forEach(s=>{ const r=add(new THREE.ConeGeometry(.13,.26,4),m,.62+s*.13,.7,1.03,{rz:s*Math.PI/2,s:[1,1,.35]}); });
+      add(new THREE.SphereGeometry(.055,16,12),m,.62,.7,1.04); }
+    g.position.set(-.1,0,0); I.truck=new THREE.Group(); I.truck.add(g); I.scene.add(I.truck); I.truck.rotation.y=I.yaw; I.truck.position.x=I.drive?-9:0; if(I.drive) I.dt0=performance.now(); }
+  async function mount(el,deco,o={}){
+    if(inst&&!inst.dead){ el.appendChild(inst.R.domElement); inst.el=el; if(o.drive) { inst.drive=true; inst.dt0=performance.now(); } set(deco); resume(); return inst; }
+    let T; try{ T=await loadThree(); }catch(e){ el.innerHTML=`<p class="trk-fail">3D 載入失敗，請重新整理</p>`; return null; }
+    if(!el.isConnected) return null;
+    const R=X3.renderer(); R.shadowMap.enabled=true; R.shadowMap.type=THREE.PCFSoftShadowMap;
+    const scene=new THREE.Scene(), cam=new THREE.PerspectiveCamera(30,1,.1,100); scene.environment=X3.env(R);
+    const hemi=new THREE.HemisphereLight(0xFFF8F0,0x3A3238,.35); scene.add(hemi);
+    const key=new THREE.DirectionalLight(0xFFF4E8,1.15); key.position.set(4,8,6); key.castShadow=true; key.shadow.mapSize.set(2048,2048); Object.assign(key.shadow.camera,{left:-5,right:5,top:5,bottom:-5,near:1,far:25}); key.shadow.radius=5; key.shadow.bias=-.0005; scene.add(key);
+    const rim=new THREE.DirectionalLight(0xE8EEFF,.45); rim.position.set(-6,4,-5); scene.add(rim);
+    // 地面：只留柔和的影子（背景用頁面的顏色）＋一圈淡淡的展示台
+    const sh=new THREE.Mesh(new THREE.CircleGeometry(4.2,64),new THREE.ShadowMaterial({opacity:.22})); sh.rotation.x=-Math.PI/2; sh.receiveShadow=true; scene.add(sh);
+    const disc=new THREE.Mesh(new THREE.CylinderGeometry(3.3,3.4,.06,96),new THREE.MeshPhysicalMaterial({color:X3.C("#FFFFFF"),roughness:.18,clearcoat:1,transparent:true,opacity:.18,envMapIntensity:1})); disc.position.y=-.03; scene.add(disc);
+    inst={R,scene,cam,el,deco:{...TRUCK_DECO0(),...deco},ver:0,yaw:-.55,pitch:.3,dist:12.6,vy:0,idle:0,dead:false,paused:false,drive:!!o.drive,dt0:performance.now(),anim:{balloons:[],glows:[],steam:[]}};
+    el.appendChild(R.domElement); R.domElement.className="trk-cv";
+    // 拖曳旋轉、兩指縮放；放開後慢慢自己轉
+    const cv=R.domElement, ptr=new Map(); let pinch0=0, dist0=12.6;
+    cv.addEventListener("pointerdown",e=>{ try{ cv.setPointerCapture(e.pointerId); }catch(_){} ptr.set(e.pointerId,{x:e.clientX,y:e.clientY}); if(ptr.size===2){ const [a,b]=[...ptr.values()]; pinch0=Math.hypot(a.x-b.x,a.y-b.y); dist0=inst.dist; } inst.idle=0; });
+    cv.addEventListener("pointermove",e=>{ const p=ptr.get(e.pointerId); if(!p) return; const dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY;
+      if(ptr.size===1){ inst.yaw+=dx*.011; inst.vy=dx*.011; inst.pitch=Math.max(0,Math.min(.85,inst.pitch+dy*.006)); }
+      else if(ptr.size===2){ const [a,b]=[...ptr.values()], dd=Math.hypot(a.x-b.x,a.y-b.y); if(pinch0) inst.dist=Math.max(8,Math.min(18,dist0*pinch0/dd)); } inst.idle=0; });
+    const up=e=>{ ptr.delete(e.pointerId); if(ptr.size<2) pinch0=0; }; cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up);
+    cv.addEventListener("wheel",e=>{ e.preventDefault(); inst.dist=Math.max(8,Math.min(18,inst.dist*(1+e.deltaY*.001))); },{passive:false});
+    inst.ptr=ptr; await build(inst); loop(); return inst; }
+  function set(deco){ if(!inst) return; const nd={...TRUCK_DECO0(),...deco}; if(JSON.stringify(nd)===JSON.stringify(inst.deco)&&inst.truck) return; inst.deco=nd; build(inst); }
+  function resume(){ if(inst&&inst.paused){ inst.paused=false; loop(); } }
+  function loop(){ const I=inst; if(!I||I.dead) return; let last=performance.now();
+    const f=now=>{ if(I.dead||I!==inst) return; const cv=I.R.domElement; if(!cv.isConnected){ I.paused=true; return; }
+      const dt=Math.min(.05,(now-last)/1000); last=now; const t=now/1000;
+      const w=cv.clientWidth||I.el.clientWidth, h=cv.clientHeight||I.el.clientHeight; if(w&&h&&(I._w!==w||I._h!==h)){ I._w=w; I._h=h; I.R.setSize(w,h,false); I.cam.aspect=w/h; I.cam.fov=w/h<.8?36:28; I.cam.updateProjectionMatrix(); }
+      if(!I.ptr.size){ I.idle+=dt; I.yaw+=I.vy; I.vy*=.93; if(I.idle>2.5) I.yaw+=dt*.22; }
+      if(I.truck){ I.truck.rotation.y=I.yaw;
+        if(I.drive){ const u=Math.min(1,(now-I.dt0)/2200), e=1-Math.pow(1-u,3); I.truck.position.x=-9*(1-e); I.truck.position.y=u<1?Math.abs(Math.sin(u*20))*.03*(1-u):0; if(u>=1) I.drive=false; } }
+      const ty=1.45; I.cam.position.set(0,ty+Math.sin(I.pitch)*I.dist,Math.cos(I.pitch)*I.dist); I.cam.lookAt(0,ty-.05,0);
+      I.anim.balloons.forEach(b=>{ b.g.position.y=Math.sin(t*1.3+b.ph)*.05; b.g.rotation.z=Math.sin(t*.9+b.ph)*.02; });
+      I.anim.glows.forEach(gl=>{ const k=.75+.25*Math.sin(t*3+gl.ph); gl.sp.material.opacity=k*.75; gl.sp.scale.setScalar(.15+.06*k); });
+      I.anim.steam.forEach(s=>{ const u=((t*.45+s.ph)%1.6)/1.6; s.sp.position.y=1.48+u*.42; s.sp.position.x=s.cx+Math.sin(u*6+s.ph)*.03; s.sp.material.opacity=Math.sin(u*Math.PI)*.3; s.sp.scale.setScalar(.12+u*.18); });
+      I.R.render(I.scene,I.cam); requestAnimationFrame(f); };
+    requestAnimationFrame(f); }
+  function drive(){ if(inst){ inst.drive=true; inst.dt0=performance.now(); } }
+  return {mount,set,drive,get inst(){ return inst; }};
+})();
+
+/* =========================================================
+   應援餐車：資料與規則
+   ・粉絲送給「一位藝人」；一個人買，或發起分攤（2～5 人，每人付一樣多）
+   ・錢湊齊後：如果這團正在出道／回歸的第一週，馬上送到；不然等下一次回歸那天送到
+   ・同一位藝人同一次出道／回歸最多 3 台；送到前藝人看不到（保密），但每天 +100 積分
+   ========================================================= */
+const TRUCK_PRICE=30000, TRUCK_MAX=3, TRUCK_ERA=7*864e5;
+const getTrucks=()=>(S.get(K.trucks,[])||[]).filter(t=>t&&t.id&&MEMBERS[t.mid]);
+const tkFunded=t=>(t.paid||[]).length>=(t.shares||1);
+function grpOccs(gid){ const L=[], g0=idTs(gid,/^g/); if(g0) L.push(g0); const m=getMShow(); [...m.songs,...(m.ended||[])].forEach(s=>{ if(s.gid===gid){ const t=idTs(s.id,/^s/); if(t) L.push(t); } }); return L.sort((a,b)=>a-b); }
+/* 什麼時候送到：湊齊時正在出道／回歸第一週 → 馬上；不然等下一次回歸 */
+function tkDeliverTs(t){ if(!tkFunded(t)) return 0; const ft=Math.max(...t.paid.map(p=>p.ts||0)), gid=MEMBERS[t.mid]?MEMBERS[t.mid].group:null; if(!gid) return 0;
+  const O=grpOccs(gid), prev=O.filter(x=>x<=ft).pop(); if(prev&&ft-prev<=TRUCK_ERA) return ft; return O.find(x=>x>ft)||0; }
+const tkDelivered=t=>{ const d=tkDeliverTs(t); return !!d&&d<=Date.now(); };
+function tkState(t){ if(!tkFunded(t)) return "fund"; return tkDelivered(t)?"done":"wait"; }
+/* 這一次出道／回歸已經有幾台（還沒送到的＋這一次送到的） */
+function tkCount(mid){ const gid=MEMBERS[mid].group, O=grpOccs(gid), cur=O.filter(x=>x<=Date.now()).pop()||0;
+  return getTrucks().filter(t=>t.mid===mid&&(tkState(t)!=="done"||tkDeliverTs(t)>=cur)).length; }
+const tkShare=t=>Math.ceil(TRUCK_PRICE/(t.shares||1));
+function tkBuy(deco,mid,shares){ const share=Math.ceil(TRUCK_PRICE/shares); if(points()<share){ toast("積分不夠，先補充積分吧"); return null; }
+  if(tkCount(mid)>=TRUCK_MAX){ toast(`${MEMBERS[mid].name} 這次已經有 ${TRUCK_MAX} 台餐車了`); return null; }
+  const me=myEmail(), t={id:"tk"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mid,gid:MEMBERS[mid].group,by:me,byName:ME.name,shares,deco,ts:Date.now(),paid:[{em:me,name:ME.name,ts:Date.now()}]};
+  S.set(K.points,points()-share); recordSale("truck",{mid,pts:share,label:`應援餐車・${MEMBERS[mid].name}${shares>1?`（${shares} 人分攤）`:""}`});
+  S.set(K.trucks,[...(S.get(K.trucks,[])||[]),t]); return t; }
+function tkJoin(id){ const L=S.get(K.trucks,[])||[], t=L.find(x=>x.id===id), me=myEmail(); if(!t) return false; if(tkFunded(t)){ toast("已經湊齊了"); return false; }
+  if(t.paid.some(p=>p.em===me)){ toast("你已經出過錢了"); return false; } const share=tkShare(t); if(points()<share){ toast("積分不夠，先補充積分吧"); return false; }
+  S.set(K.points,points()-share); recordSale("truck",{mid:t.mid,pts:share,label:`應援餐車・${MEMBERS[t.mid].name}（分攤）`});
+  t.paid.push({em:me,name:ME.name,ts:Date.now()}); S.set(K.trucks,L); return true; }
+/* 送到前：藝人每天 +100（每台最多 30 天）。由管理員的手機每天結算一次，不會重複 */
+function tkDaily(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.trucks]==null)) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), now=Date.now(); let add=0;
+  getTrucks().forEach(t=>{ if(!tkFunded(t)) return; const ft=Math.max(...t.paid.map(p=>p.ts||0)), dv=tkDeliverTs(t), end=Math.min(now,dv&&dv>ft?dv:now), em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===t.mid); if(!em) return;
+    const days=Math.min(30,calDay(end)-calDay(ft)); for(let i=1;i<=days;i++){ const id=`tk_${t.id}_${i}`; if(have.has(id)) continue; L.push({id,to:em,n:100,why:"有粉絲正在為你準備驚喜",by:"auto",ts:ft+i*864e5}); have.add(id); add++; } });
+  if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
+setTimeout(tkDaily,7000); setInterval(tkDaily,30*60e3);
+
+/* ---------- 粉絲：CORE → 應援餐車 ---------- */
+const TK_ST={fund:"集資中",wait:"準備中・等回歸那天送到",done:"已經送到"};
+function tkDraftDeco(){ const d=ui.tkD; if(!d) return null; const m=MEMBERS[d.mid], g=m&&groupOf(m.group); return {...d.deco,name:m?m.name:"",title:g?g.name:""}; }
+function tkDecoOf(t){ const m=MEMBERS[t.mid], g=m&&groupOf(m.group); return {...TRUCK_DECO0(),...(t.deco||{}),name:m?m.name:"",title:g?g.name:""}; }
+function viewTruckFan(){ const me=myEmail(), f=followed(), all=getTrucks(), mine=all.filter(t=>(t.paid||[]).some(p=>p.em===me)), open=all.filter(t=>f.includes(t.gid)&&!tkFunded(t)&&!(t.paid||[]).some(p=>p.em===me)&&!isSelfGid(t.gid));
+  const d=ui.tkD, view=!d&&ui.tkView&&all.find(t=>t.id===ui.tkView)||(!d&&mine[mine.length-1])||null;
+  const row=(t,act)=>{ const st=tkState(t), m=MEMBERS[t.mid]; return `<button class="trk-row ${ui.tkView===t.id&&!d?"on":""}" data-a="tkView" data-v="${t.id}"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>${esc(m.name)}</b><small>From. ${esc((t.deco&&t.deco.from)||t.byName||"粉絲")}・${t.shares>1?`${t.paid.length}／${t.shares} 人`:"一個人送"}・${TK_ST[st]}</small></span>${act?`<span class="trk-join" data-a="tkJoin" data-v="${t.id}">${fmt(tkShare(t))} 一起出</span>`:""}</button>`; };
+  ui._tkDeco=d?tkDraftDeco():view?tkDecoOf(view):{...TRUCK_DECO0(),name:"HAECHU",title:"HAECHU"};
+  return coreHead("應援餐車")+`<main class="page trk">
+    <div class="trk-stage" id="tk3d"><span class="trk-load">載入中…</span></div>
+    ${d?tkEditor(d):`<button class="btn btn-main btn-block trk-new" data-a="tkNew">訂一台應援餐車・${fmt(TRUCK_PRICE)} 積分</button>
+      ${open.length?`<div class="section-h">一起出錢</div><section class="card trk-list">${open.map(t=>row(t,true)).join("")}</section>`:""}
+      <div class="section-h">我的餐車</div>${mine.length?`<section class="card trk-list">${mine.slice().reverse().map(t=>row(t,false)).join("")}</section>`:`<p class="me-none">還沒有餐車</p>`}`}
+  </main>`; }
+function tkEditor(d){ const f=followed(), ms=f.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official&&!isSelfGid(gid))), D=d.deco, share=Math.ceil(TRUCK_PRICE/d.shares);
+  const tog=(k,l)=>`<button class="chip ${D[k]?"on":""}" data-a="tkTog" data-v="${k}">${l}</button>`;
+  return `<section class="card trk-ed">
+    <span class="fld-lab">送給誰</span><div class="chips wrap">${ms.length?ms.map(id=>`<button class="chip ${d.mid===id?"on":""}" data-a="tkMid" data-v="${id}">${esc(MEMBERS[id].name)}</button>`).join(""):`<p class="me-none">先加入一個社群</p>`}</div>
+    <span class="fld-lab">車身</span><div class="trk-sw">${TRUCK_PAL.map((p,i)=>`<button class="${D.pal===i?"on":""}" data-a="tkPal" data-v="${i}" aria-label="${p.n}" style="background:${p.body};border-color:${p.trim}"></button>`).join("")}</div>
+    <span class="fld-lab">橫幅</span><div class="trk-ph"><button class="trk-pb ${D.banner?"has":""}" data-a="tkImg" data-v="banner">${D.banner?`<img src="${D.banner}" alt="">`:"＋ 照片"}</button><label class="field"><input id="tkSlogan" maxlength="20" placeholder="輸入文字" value="${esc(D.slogan)}"></label></div>
+    <span class="fld-lab">菜單</span>${[0,1,2].map(i=>`<label class="field trk-mi"><input id="tkM${i}" maxlength="11" placeholder="輸入文字" value="${esc(D.menu[i]||"")}"></label>`).join("")}
+    <span class="fld-lab">杯套</span><div class="trk-ph"><button class="trk-pb ${D.sleeve?"has":""}" data-a="tkImg" data-v="sleeve">${D.sleeve?`<img src="${D.sleeve}" alt="">`:"＋ 照片"}</button></div>
+    <span class="fld-lab">裝飾</span><div class="chips wrap">${tog("balloons","氣球")}${tog("lights","燈串")}${tog("flowers","花")}${tog("ribbon","緞帶")}</div>
+    <span class="fld-lab">From.</span><label class="field"><input id="tkFrom" maxlength="16" placeholder="輸入文字" value="${esc(D.from)}"></label>
+    <span class="fld-lab">付款</span><div class="ls-seg trk-sh"><button data-a="tkShares" data-v="-1">－</button><button class="on">${d.shares>1?`${d.shares} 人分攤`:"一個人買"}</button><button data-a="tkShares" data-v="1">＋</button></div>
+    <div class="ls-btns"><button class="btn btn-soft" data-a="tkCancel">取消</button><button class="btn btn-main" data-a="tkGo">${d.shares>1?`先付 ${fmt(share)}`:`${fmt(share)} 積分`}</button></div></section>`; }
+function tkKeep(){ const d=ui.tkD; if(!d) return; const v=id=>{ const e=document.getElementById(id); return e?e.value:null; }; const s=v("tkSlogan"), fr=v("tkFrom"); if(s!=null) d.deco.slogan=s; if(fr!=null) d.deco.from=fr; [0,1,2].forEach(i=>{ const m=v("tkM"+i); if(m!=null) d.deco.menu[i]=m; }); }
+/* 換頁後：把 3D 放進新的位置 */
+let _tkT=0;
+function truckAttach(){ const el=document.getElementById("tk3d")||document.getElementById("tkA3d"); if(!el) return; const deco=ui._tkDeco||TRUCK_DECO0(), drive=!!ui.tkDrive; ui.tkDrive=false;
+  TRUCK3D.mount(el,deco,{drive}).then(I=>{ const l=el.querySelector(".trk-load"); if(I&&l) l.remove(); }); }
+function truckLive(){ clearTimeout(_tkT); _tkT=setTimeout(()=>{ tkKeep(); const dd=tkDraftDeco(); if(dd){ ui._tkDeco=dd; TRUCK3D.set(dd); } },260); }
+document.addEventListener("input",e=>{ if(e.target&&/^tk(Slogan|From|M\d)$/.test(e.target.id||"")) truckLive(); });
+
+/* ---------- 藝人：FOC → 應援餐車（送到了才看得到；第一次打開有「餐車到了」） ---------- */
+function viewTruckArtist(mid){ const L=getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").sort((a,b)=>tkDeliverTs(b)-tkDeliverTs(a)), seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]), fresh=L.filter(t=>!seen.has(t.id));
+  const cur=L.find(t=>t.id===ui.tkView)||fresh[0]||L[0];
+  if(!L.length) return `<main class="page foc trk"><section class="card trk-empty"><b>還沒有應援餐車</b></section></main>`;
+  ui._tkDeco=tkDecoOf(cur); if(fresh.some(t=>t.id===cur.id)){ ui.tkDrive=true; const S2=S.get(K.tkSeen,{})||{}; S2[mid]=[...new Set([...(S2[mid]||[]),cur.id])]; setTimeout(()=>S.set(K.tkSeen,S2),2500); }
+  return `<main class="page foc trk">${fresh.length?`<div class="trk-arrive"><b>餐車到了！</b><small>From. ${esc((cur.deco&&cur.deco.from)||cur.byName||"粉絲")}</small></div>`:""}
+    <div class="trk-stage" id="tkA3d"><span class="trk-load">載入中…</span></div>
+    <div class="section-h">收到的餐車<span class="muted">${L.length} 台</span></div>
+    <section class="card trk-list">${L.map(t=>`<button class="trk-row ${t.id===cur.id?"on":""}" data-a="tkView" data-v="${t.id}"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>From. ${esc((t.deco&&t.deco.from)||t.byName||"粉絲")}</b><small>${ymd(tkDeliverTs(t))}・${t.shares>1?`${t.paid.length} 位粉絲一起送`:"一位粉絲送"}</small></span></button>`).join("")}</section></main>`; }
+const tkArtNew=mid=>{ const seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]); return getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done"&&!seen.has(t.id)).length; };
+
+/* ---------- 管理員：活動 → 餐車（全部都看得到） ---------- */
+function truckAdminHtml(){ const L=getTrucks().slice().sort((a,b)=>b.ts-a.ts);
+  return `<section class="card studio"><div class="foc-cfg-h"><h3>應援餐車</h3><span class="badge">${L.length} 台</span></div>
+    ${L.length?L.map(t=>{ const st=tkState(t), dv=tkDeliverTs(t); return `<div class="trk-adm"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><div><b>${esc(MEMBERS[t.mid].name)}<em>${TK_ST[st]}</em></b><small>From. ${esc((t.deco&&t.deco.from)||t.byName||"")}・${(t.paid||[]).map(p=>esc(p.name||"")).join("、")}（${t.paid.length}／${t.shares}）${dv?`・${ymd(dv)} 送到`:""}</small></div><button class="btn btn-soft btn-sm" data-a="tkDel" data-v="${t.id}">刪除</button></div>`; }).join(""):`<p class="me-none">還沒有餐車</p>`}</section>`; }
+
+/* =========================================================
+   演唱會應援棒 3D（高級款）：珍珠白握把、香檳金環、玻璃燈頭、裡面的光跟著燈色
+   ・所有應援棒共用一個畫筆（手機同時開太多 3D 會當掉），每一支畫在自己的小畫布上
+   ・保留原本的用法：LS3D.mount(el, ds, {controls, wave, pulse, auto, swing, bright, onSwing})
+   ========================================================= */
+const STICK3D=(()=>{
+  let R=null, cam=null, scene=null, env=null, RW=0, RH=0; const live=new Set(), models=new Map();
+  const hex2rgb=h=>{ h=(h||"#C7AEFF").replace("#",""); return [0,2,4].map(i=>parseInt(h.slice(i,i+2),16)); };
+  const mix=(a,b,k)=>{ const A=hex2rgb(a), B=hex2rgb(b); return "#"+A.map((v,i)=>Math.round(v+(B[i]-v)*k).toString(16).padStart(2,"0")).join(""); };
+  function init(){ if(R) return; R=X3.renderer(); R.toneMappingExposure=1.1; scene=new THREE.Scene(); env=X3.env(R); scene.environment=env;
+    cam=new THREE.PerspectiveCamera(35.5,1,.1,50); cam.position.set(0,0,6.4); cam.lookAt(0,0,0);
+    const key=new THREE.DirectionalLight(0xFFF6EE,1.1); key.position.set(3,5,6); scene.add(key); const rim=new THREE.DirectionalLight(0xE6ECFF,.6); rim.position.set(-4,2,-4); scene.add(rim); scene.add(new THREE.HemisphereLight(0xFFFFFF,0x403848,.35)); }
+  /* 一支應援棒的模型（同一個設計只做一次）。高約 3.1，燈頭中心在 y=.95 */
+  function model(key,c){ if(models.has(key)) return models.get(key);
+    const g=new THREE.Group(), pearl=new THREE.MeshPhysicalMaterial({color:X3.C(c.handle),roughness:.28,metalness:.05,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1}), gold=X3.gold(c.metal,.2);
+    const lathe=(pts,m,seg=64)=>{ const me=new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r,y])=>new THREE.Vector2(r,y)),seg),m); g.add(me); return me; };
+    // 握把：底部圓潤、往上慢慢變細
+    lathe([[0,-1.62],[.12,-1.61],[.17,-1.57],[.19,-1.5],[.19,-1.2],[.175,-.6],[.16,-.05],[.155,.2],[0,.2]],pearl);
+    // 底座金蓋、握把上的金環
+    lathe([[0,-1.66],[.14,-1.66],[.18,-1.63],[.195,-1.58],[.19,-1.55],[0,-1.55]],gold);
+    [-1.18,-1.04].forEach(y=>{ const t=new THREE.Mesh(new THREE.TorusGeometry(.19,.014,12,64),gold); t.rotation.x=Math.PI/2; t.position.y=y; g.add(t); });
+    // 按鈕（跟著燈色亮）
+    const btn=new THREE.Mesh(new THREE.CylinderGeometry(.035,.035,.14,16),X3.emit(c.glow,1.2)); btn.position.set(0,-.55,.165); g.add(btn);
+    // 燈頭底座：香檳金
+    lathe([[0,.14],[.17,.14],[.24,.2],[.27,.3],[.26,.38],[.22,.44],[0,.44]],gold);
+    // 玻璃燈頭＋裡面的光
+    const core=new THREE.Mesh(new THREE.SphereGeometry(.42,48,32),new THREE.MeshStandardMaterial({color:X3.C(c.glow),emissive:X3.C(c.glow),emissiveIntensity:1.2,roughness:.6})); core.position.y=.95; g.add(core);
+    const em=new THREE.Mesh(new THREE.PlaneGeometry(.62,.62),new THREE.MeshBasicMaterial({map:emblem(c),transparent:true,depthWrite:false})); em.position.set(0,.95,.43); g.add(em);
+    const em2=em.clone(); em2.rotation.y=Math.PI; em2.position.z=-.43; g.add(em2);
+    const shell=new THREE.Mesh(new THREE.SphereGeometry(.6,64,48),new THREE.MeshPhysicalMaterial({color:X3.C("#FFFFFF"),roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:0,transparent:true,opacity:.22,envMapIntensity:1.6,depthWrite:false})); shell.position.y=.95; g.add(shell);
+    // 燈頭的金色環＋頂端小皇冠
+    const ring=new THREE.Mesh(new THREE.TorusGeometry(.605,.02,16,96),gold); ring.position.y=.95; ring.rotation.x=Math.PI/2; g.add(ring);
+    const ring2=new THREE.Mesh(new THREE.TorusGeometry(.6,.012,12,96),gold); ring2.position.y=.95; g.add(ring2);
+    lathe([[0,1.53],[.05,1.53],[.075,1.57],[.06,1.62],[0,1.66]],gold,32);
+    const out={g,core,btn,headY:.95,c}; models.set(key,out); g.visible=false; scene.add(g); return out; }
+  /* 燈頭裡的圖樣：團名第一個字（襯線字＋光暈） */
+  function emblem(c){ return X3.ctex(256,256,(x,w,h)=>{ x.clearRect(0,0,w,h); x.textAlign="center"; x.textBaseline="middle"; x.shadowColor="rgba(255,255,255,.9)"; x.shadowBlur=18; x.fillStyle="rgba(255,255,255,.95)";
+      x.font=`italic 700 150px ${SERIF}`; x.fillText(c.letter||"✦",w/2,h/2+8); }); }
+  /* 管理員上傳的設計圖：取燈頭、握把的顏色 */
+  function colorsOf(ds){ const glow=ds.glow||"#C7AEFF"; const c={glow,handle:"#F4F1F6",metal:"#DCC29A",letter:ds._letter||"✦"};
+    if(ds._c1) { c.handle=mix("#FBF8FC",ds._c2||ds._c1,.12); }
+    return c; }
+  function sampleColors(ds,cb){ if(ds._c1||!ds.cut){ cb(); return; } const im=new Image(); im.onload=()=>{ try{ const cv=document.createElement("canvas"); cv.width=24; cv.height=48; const x=cv.getContext("2d"); x.drawImage(im,0,0,24,48); const d=x.getImageData(0,0,24,48).data; const avg=(y0,y1)=>{ let r=0,g=0,b=0,n=0; for(let y=y0;y<y1;y++) for(let i=0;i<24;i++){ const k=(y*24+i)*4; if(d[k+3]<40) continue; r+=d[k]; g+=d[k+1]; b+=d[k+2]; n++; } return n?"#"+[r,g,b].map(v=>Math.round(v/n).toString(16).padStart(2,"0")).join(""):null; };
+      ds._c1=avg(0,20)||ds.glow; ds._c2=avg(28,48)||ds._c1; }catch(e){} cb(); }; im.onerror=()=>cb(); im.src=ds.cut; }
+  function mount(el,ds,o={}){
+    el.classList.add("ls3d"); el.innerHTML=`<span class="ls-halo"></span><canvas></canvas>${o.controls?`<span class="ls-ctl"><button type="button" data-m="rot" class="on">↻ 旋轉</button><button type="button" data-m="move">✥ 移動</button><button type="button" data-m="reset">⟲ 重設</button></span>`:""}`;
+    const cv=el.querySelector("canvas"), halo=el.querySelector(".ls-halo"), ctx=cv.getContext("2d");
+    const st={yaw:o.yaw??-.5,pitch:.12,sc:1,px:0,py:0,vy:0,auto:o.auto!==false,wave:!!o.wave,pulse:o.pulse||0,glow:o.glow||ds.glow||"#C7AEFF",dead:false,mode:"rot",t0:performance.now(),touch:0,swing:!!o.swing,roll:0,rv:0,sw:0,sv:0,em:o.bright?1:0};
+    if(st.swing){ st.yaw=-.32; st.pitch=.08; st.sc=.84; }
+    const api={el,cv,ctx,halo,st,ds,o,m:null,set(k,v){ if(k==="rv"){ st.rv+=v; return; } st[k]=v; if(k==="glow") applyGlow(); }, update(nd){ api.ds=nd; ready(); }, destroy(){ st.dead=true; live.delete(api); }};
+    function applyGlow(){ halo.style.background=`radial-gradient(circle,${st.glow}cc 0%,${st.glow}55 35%,transparent 68%)`; }
+    applyGlow();
+    function ready(){ const d=api.ds; sampleColors(d,()=>{ if(st.dead) return; const c=colorsOf(d); api.m={key:[c.glow,c.handle,c.letter].join("|"),c}; }); }
+    loadThree().then(()=>{ if(st.dead) return; init(); ready(); live.add(api); kick(); }).catch(()=>{ if(ds.cut) el.innerHTML=`<img class="ls-fb" src="${ds.cut}" alt="應援棒">`; });
+    // 手勢：一指旋轉（或移動）、雙擊重設；揮動模式跟著手指甩
+    const pts=new Map(); let lastTap=0; const reset=()=>{ st.yaw=-.5; st.pitch=.12; st.sc=1; st.px=0; st.py=0; st.vy=0; };
+    if(o.interactive!==false){ cv.style.touchAction="none";
+      cv.addEventListener("pointerdown",e=>{ try{ cv.setPointerCapture(e.pointerId); }catch(_){} pts.set(e.pointerId,{x:e.clientX,y:e.clientY}); st.touch=performance.now(); const now=Date.now(); if(pts.size===1&&now-lastTap<300) reset(); lastTap=now; });
+      cv.addEventListener("pointermove",e=>{ if(!pts.has(e.pointerId)) return; const p=pts.get(e.pointerId), dx=e.clientX-p.x, dy=e.clientY-p.y; p.x=e.clientX; p.y=e.clientY; st.touch=performance.now(); const H=cv.clientHeight||300;
+        if(pts.size===1&&st.swing){ st.rv=dx*.006; st.roll=Math.max(-.6,Math.min(.6,st.roll+st.rv)); st.sv=dy*.005; st.sw=Math.max(-.6,Math.min(.6,st.sw+st.sv)); if(o.onSwing) o.onSwing(Math.abs(dx)+Math.abs(dy)); return; }
+        if(pts.size===1){ if(st.mode==="move"||e.shiftKey){ st.px+=dx/H*4.2; st.py-=dy/H*4.2; } else { st.yaw+=dx*.012; st.vy=dx*.012; st.pitch=Math.max(-1.1,Math.min(1.1,st.pitch+dy*.008)); } } });
+      const up=e=>{ pts.delete(e.pointerId); }; cv.addEventListener("pointerup",up); cv.addEventListener("pointercancel",up);
+      el.querySelectorAll(".ls-ctl button").forEach(b=>b.addEventListener("click",ev=>{ ev.stopPropagation(); const m=b.dataset.m; if(m==="reset"){ reset(); return; } st.mode=m; el.querySelectorAll(".ls-ctl button").forEach(x=>x.classList.toggle("on",x.dataset.m===m)); })); }
+    api.pts=pts; return api; }
+  let running=false; const V=()=>new THREE.Vector3();
+  function kick(){ if(running) return; running=true; requestAnimationFrame(frame); }
+  function frame(now){
+    if(!live.size){ running=false; return; }
+    const dpr=Math.min(2,window.devicePixelRatio||1); let needW=0, needH=0; const vis=[];
+    live.forEach(a=>{ if(a.st.dead) return; if(!a.cv.isConnected){ a.destroy(); return; } const w=Math.round(a.cv.clientWidth*dpr), h=Math.round(a.cv.clientHeight*dpr); if(!w||!h||!a.m) return; const r=a.cv.getBoundingClientRect(); if(r.bottom<-50||r.top>innerHeight+50) return; vis.push([a,w,h]); needW=Math.max(needW,w); needH=Math.max(needH,h); });
+    if(vis.length){ if(needW>RW||needH>RH){ RW=Math.max(RW,needW); RH=Math.max(RH,needH); R.setPixelRatio(1); R.setSize(RW,RH,false); }
+      vis.forEach(([a,w,h])=>{ const st=a.st, o=a.o, t=(now-st.t0)/1000, idle=now-st.touch>1500; if(a.cv.width!==w||a.cv.height!==h){ a.cv.width=w; a.cv.height=h; }
+        if(st.swing){ if(!a.pts.size){ st.rv+=-st.roll*.07; st.rv*=.9; st.roll+=st.rv; st.sv+=-st.sw*.07; st.sv*=.88; st.sw+=st.sv; } }
+        else if(!a.pts.size){ st.yaw+=st.vy; st.vy*=.93; if(st.auto&&idle) st.yaw+=.008; }
+        let pw=1; if(st.pulse===1) pw=.55+.45*Math.sin(t*5); else if(st.pulse===2) pw=(Math.sin(t*12)>0?1:.25); else if(st.pulse===3) pw=.6+.4*Math.sin(t*2.2);
+        const wave=st.swing?-(st.roll+(idle?Math.sin(t*1.9)*.1:0)):st.wave?Math.sin(t*4.2)*.32:0, swp=st.swing?st.sw:0;
+        const M=model(a.m.key,{...a.m.c,glow:a.m.c.glow}); models.forEach(x=>x.g.visible=false); M.g.visible=true;
+        const col=X3.C(st.glow); M.core.material.color.copy(col); M.core.material.emissive.copy(col); M.core.material.emissiveIntensity=(.22+.5*pw)*(st.em?1.35:1); M.btn.material.emissive.copy(col); M.btn.material.color.copy(col);
+        // 跟原本一樣的轉法：位置→縮放→以握把底為支點擺動→上下翻→左右轉
+        const g=M.g; g.position.set(0,0,0); g.rotation.set(0,0,0); g.scale.set(1,1,1); g.updateMatrix();
+        const m4=new THREE.Matrix4().makeTranslation(st.px,st.py,0).multiply(new THREE.Matrix4().makeScale(st.sc*.88,st.sc*.88,st.sc*.88)).multiply(new THREE.Matrix4().makeTranslation(0,-.8,0)).multiply(new THREE.Matrix4().makeRotationZ(wave)).multiply(new THREE.Matrix4().makeRotationX(swp)).multiply(new THREE.Matrix4().makeTranslation(0,.8,0)).multiply(new THREE.Matrix4().makeRotationX(st.pitch)).multiply(new THREE.Matrix4().makeRotationY(st.yaw));
+        g.matrixAutoUpdate=false; g.matrix.copy(m4); g.updateMatrixWorld(true);
+        cam.aspect=w/h; cam.updateProjectionMatrix();
+        R.setViewport(0,RH-h,w,h); R.setScissor(0,RH-h,w,h); R.setScissorTest(true); R.setClearColor(0x000000,0); R.clear(); R.render(scene,cam);
+        a.ctx.clearRect(0,0,w,h); a.ctx.drawImage(R.domElement,0,0,w,h,0,0,w,h);
+        // 光暈跟著燈頭
+        const p=V().set(0,M.headY,0).applyMatrix4(g.matrixWorld).project(cam), cw=a.cv.clientWidth, ch=a.cv.clientHeight, sx=(p.x*.5+.5)*cw, sy=(1-(p.y*.5+.5))*ch, size=ch*(st.em?.8:.62)*st.sc;
+        a.halo.style.width=a.halo.style.height=size+"px"; a.halo.style.transform=`translate(${sx-size/2}px,${sy-size/2}px)`; a.halo.style.opacity=(.35+.55*pw).toFixed(2); }); }
+    requestAnimationFrame(frame); }
+  return {mount};
+})();
+/* 預設款：團名第一個字放進燈頭；換成新的高級 3D */
+LS3D.mount=(el,ds,o)=>{ try{ return STICK3D.mount(el,ds,o); }catch(e){ return {set(){},update(){},destroy(){}}; } };
+
 </script>
 </body>
 </html>
