@@ -4396,6 +4396,8 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .db-row{display:flex;align-items:center;gap:12px;padding:12px 4px}.db-row+.db-row{border-top:1px solid var(--line,rgba(0,0,0,.06))}.db-av{width:42px;height:42px;border-radius:50%;flex:none;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}.db-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.db-tx b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.db-tx small{font-size:12px;opacity:.6}.db-act{display:flex;gap:6px;flex:none}.db-b{min-width:0!important;padding:0 12px!important;height:32px!important;margin:0!important}
 .db-up{display:flex;gap:10px;margin-top:12px}.db-slot{position:relative;flex:1;aspect-ratio:4/5;border-radius:14px;border:1.5px dashed rgba(139,92,246,.35);background:rgba(139,92,246,.06);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;overflow:hidden;color:var(--violet,#8B5CF6)}.db-slot b{font-size:26px;font-weight:400}.db-slot small{font-size:12px;opacity:.8}.db-slot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.db-slot img~small{white-space:nowrap;position:absolute;bottom:6px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.45);color:#fff;padding:2px 8px;border-radius:999px;opacity:1}.db-slot i,.db-th i{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:34px;height:34px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-style:normal;display:grid;place-items:center;font-size:13px}.db-busy{margin:8px 0 0;font-size:12px;opacity:.7;text-align:center}
 .me-lv{display:flex;align-items:baseline;justify-content:center;gap:6px;flex-wrap:wrap;margin-top:8px}.me-lv b{font-size:22px;font-weight:700;letter-spacing:.02em}.me-lv span{font-size:13px;font-weight:700}.me-lv small{flex-basis:100%;font-size:12px;opacity:.6}
+.post-tap{cursor:pointer}
+.pt-orig{display:block;margin:6px 0 2px;font-size:13px;color:var(--sub,#8E8A99);text-decoration:underline;text-underline-offset:3px;background:none;padding:0}
 .db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
 .nw-acts{display:flex;gap:6px;flex:none}
 </style>
@@ -4458,7 +4460,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -4498,7 +4500,7 @@ const HB_KEY="sb_publishable_4ZJ--hfIpHsZUtiUn8EWdw_rqTFC_Rg";
 const HB_HOSTS=[];   // 之後換成自己的網域，把網域加在這裡
 let HB_ON=(()=>{ try{ const o=localStorage.getItem("hc_backend"); if(o==="1") return true; if(o==="0") return false; }catch(e){} const h=location.hostname||""; if(HB_HOSTS.includes(h)) return true; return /^https?:$/.test(location.protocol)&&!!h&&!/claude|anthropic|localhost|127\.0\.0\.1/i.test(h); })();   // 放到自己的網站（pages.dev、workers.dev、自己的網域）就連後端
 /* 只留在這支手機的設定（外觀、音效、遊戲紀錄、登入相關） */
-const HB_LOCAL=new Set(["daisuki_session","daisuki_last_email","daisuki_clean_v1","daisuki_clean_v2","daisuki_theme","daisuki_gacha_sound","daisuki_rhythm_best","daisuki_rhythm_level","daisuki_whisper_artist_read"]);
+const HB_LOCAL=new Set(["daisuki_tours","daisuki_session","daisuki_last_email","daisuki_clean_v1","daisuki_clean_v2","daisuki_theme","daisuki_gacha_sound","daisuki_rhythm_best","daisuki_rhythm_level","daisuki_whisper_artist_read"]);
 const hbSyncable=k=>typeof k==="string"&&k.startsWith("daisuki_")&&!HB_LOCAL.has(k)&&!k.startsWith("daisuki_m_")&&!k.startsWith("daisuki_hb");
 const HB={tok:null,ref:null,exp:0,uid:null,base:{},ver:{},dirty:new Set(),since:"",busy:false,ft:null,pt:null,fans:{},applying:false,n:0,fail:0};
 /* 帳號名稱 → 登入用的內部 email（看不到也收不到信，只是後台需要 email 格式） */
@@ -4620,7 +4622,7 @@ function hbMark(k){ try{ if(!HB_ON||!(HB.tok||HB.ref)||HB.applying||!hbSyncable(
   const p=hbPendGet(); if(!(k in p)){ p[k]=HB.base[k]!=null?HB.base[k]:null; hbPendSet(p); }
   clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,500); }catch(e){} }
 async function hbFlush(){ if(HB.busy||!HB.tok) return; HB.busy=true; let again=false;
-  try{ for(const k of [...HB.dirty]){ HB.dirty.delete(k); try{ await hbPush(k); HB.fail=0; }catch(e){ HB.dirty.add(k); again=true; HB.fail++; if(!e.net&&e.status>=400&&e.status<500&&e.status!==401&&e.status!==409){ HB.dirty.delete(k); toast(`剛剛的修改沒有存到伺服器（${e.status}・${k.replace(/^daisuki_/,"")}），請截圖給管理員`); } break; } } }
+  try{ for(const k of [...HB.dirty]){ HB.dirty.delete(k); try{ await hbPush(k); HB.fail=0; }catch(e){ HB.dirty.add(k); again=true; HB.fail++; if(!e.net&&e.status>=400&&e.status<500&&e.status!==401&&e.status!==409){ HB.dirty.delete(k); try{ console.warn("hbPush",e.status,k); const L=JSON.parse(localStorage.getItem("hc_pushfail")||"[]"); L.unshift({k,s:e.status,t:Date.now()}); localStorage.setItem("hc_pushfail",JSON.stringify(L.slice(0,30))); }catch(x){} if(isAdminAcct()) toast(`有一筆資料沒有存到伺服器（${e.status}・${k.replace(/^daisuki_/,"")}）`); } break; } } }
   finally{ HB.busy=false; }
   if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,again?Math.min(15e3,1000*2**Math.min(4,HB.fail)):300); } }
 const hbPendDone=k=>{ if(HB.dirty.has(k)) return; const p=hbPendGet(); if(k in p){ delete p[k]; hbPendSet(p); } };
@@ -4740,7 +4742,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261026104608";
+const BUILD="20261026111645";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5021,7 +5023,8 @@ function onlinePing(){ try{ const s=session(); if(!s||s.role!=="fan"||!HB_ON) re
 setInterval(()=>{ if(!document.hidden) onlinePing(); },20e3); document.addEventListener("visibilitychange",onlinePing); setTimeout(onlinePing,1500);
 let iaT=0;
 let visSince=Date.now(); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) visSince=Date.now(); });
-function iaBanner(n){ try{ if(!n||document.hidden||n.self||Date.now()-visSince<2500||(n.ts&&n.ts<visSince)) return;   // 剛打開／剛從推播點進來：手機已經通知過了，不再跳一次 const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
+function iaBanner(n){ return;   // 她決定：在 App 裡一律不跳通知（通知只會出現在鈴鐺裡）
+  try{ if(!n||document.hidden||n.self||Date.now()-visSince<2500||(n.ts&&n.ts<visSince)) return; /* 剛打開／剛從推播點進來：手機已經通知過了，不再跳一次 */ const r=route(); if(n.kind==="whisper"&&r.sub==="chat"&&r.m===n.member) return;
   const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"], act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":n.kind==="system"?"goNotifs":"openPost", m=MEMBERS[n.member];
   document.querySelectorAll(".ia-ban").forEach(x=>x.remove()); const b=document.createElement("button"); b.className="ia-ban"; b.type="button";
   Object.entries({a:act,ek:n.evKind||"",ev:n.eventId||"",lv:n.liveId||"",m:n.member||"",id:n.postId||n.newsId||n.tourId||"",c:n.commentId||""}).forEach(([k,v])=>b.dataset[k]=v);
@@ -7488,19 +7491,19 @@ function openPwSheet(id){ setLayer(`<div class="pv-w sh" data-a="tCloseLayer"><d
 function pwTry(id){ const p=getPosts().find(x=>x.id===id), i=document.getElementById("pwIn"); if(!p||!i) return;
   if(String(i.value).trim()===String(p.pw)){ const L=S.get(K.pwOpen,[]); L.push(id); S.set(K.pwOpen,L); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); toast("🔓 打開了！"); return; }
   const e=document.getElementById("pwErr"); if(e){ e.hidden=false; e.classList.remove("pop"); void e.offsetWidth; e.classList.add("pop"); clearTimeout(ui.pwT); ui.pwT=setTimeout(()=>{ e.hidden=true; },1600); } i.select(); }
-function postCard(p,{mine=false}={}){
+function postCard(p,{mine=false,prof=false}={}){
   const m=MEMBERS[p.member], g=groupOf(p.group), liked=likedSet().has(p.id); if(!m||!g) return "";   // 發文的藝人或團已刪除：跳過，不要讓整頁卡住
   const long=p.text.length>90 && !ui.expanded.has(p.id);
-  return `<article class="card post" id="post-${p.id}">
+  return `<article class="card post ${prof?"post-tap":""}" id="post-${p.id}"${prof?` data-a="comments" data-id="${p.id}"`:""}>
     <div class="post-head">
-      ${viewerFan()&&!mine?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
-      <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${gTag(g)}${ago(p.ts)}</span></div>
+      ${viewerFan()&&!mine&&!prof?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
+      <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
       ${isAdminAcct()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
     </div>
     ${p.tag&&p.tag!=="日常"?`<span class="post-tag t-${POST_TAGS.indexOf(p.tag)}">${p.tag==="劇透"?"⚠ ":""}${esc(p.tag)}</span>`:""}
     ${!viewerFan()&&p.vis?`<span class="post-vis">${p.vis==="ms"?"💎 Membership 限定":`🔒 私密貼文・密碼 ${esc(p.pw||"")}`}</span>`:""}
     ${postLocked(p)?lockedBody(p,postLocked(p)):(()=>{ const hide=p.tag==="劇透"&&!mine&&session().role==="fan"&&!(ui.spoil&&ui.spoil.has(p.id)); return `<div class="post-body ${hide?"spoiler":""}">
-    <p class="post-text ${long?"clamp":""}">${esc(p.text)}</p>
+    ${postTextHtml(p,mine,long)}
     ${long?`<button class="more" data-a="expand" data-id="${p.id}">展開全文</button>`:""}
     ${p.media?postMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}
     ${p.poll?pollCard(p):""}
@@ -7512,6 +7515,17 @@ function postCard(p,{mine=false}={}){
     </div>
   </article>`;
 }
+/* 貼文翻譯（照 Weverse）：韓文、日文、英文的貼文直接顯示中文翻譯，下面「查看原文」；翻好的存在共用的 K.postTr，大家共用不重翻 */
+const postLang=t=>{ const s=String(t||""); if(hasHangul(s)) return "韓國語"; if(/[\u3040-\u30ff]/.test(s)) return "日本語"; if(/[A-Za-z]{3,}/.test(s)&&!/\p{Script=Han}/u.test(s)) return "English"; return ""; };
+const postTrGet=id=>(S.get(K.postTr,{})||{})[id]||"";
+const ptrBusy=new Set();
+function postTrNeed(p){ if(!p||!p.text||postTrGet(p.id)||ptrBusy.has(p.id)||!postLang(p.text)) return; ptrBusy.add(p.id);
+  translateMany([hasHangul(p.text)?koPre(p.text):p.text],"zh").then(out=>{ const t=out&&String(out[0]||"").trim(); if(!t||t===p.text.trim()) return;
+    const all={...(S.get(K.postTr,{})||{})}; all[p.id]=t; try{ S.set(K.postTr,all); }catch(e){}
+    document.querySelectorAll(`[data-ptx="${p.id}"]`).forEach(el=>{ const pc=el.closest(".post"); el.outerHTML=postTextHtml(p,false,el.classList.contains("clamp")); }); }).catch(()=>{}).finally(()=>ptrBusy.delete(p.id)); }
+function postTextHtml(p,mine,long){ const lg=!mine&&postLang(p.text), tr=lg&&postTrGet(p.id), orig=ui.ptOrig&&ui.ptOrig.has(p.id);
+  if(lg&&!tr) setTimeout(()=>postTrNeed(p),0);
+  return `<p class="post-text ${long?"clamp":""}" data-ptx="${p.id}">${esc(tr&&!orig?tr:p.text)}</p>${tr?`<button class="pt-orig" data-a="ptOrig" data-id="${p.id}">${orig?"查看翻譯":`查看原文 (${lg})`}</button>`:""}`; }
 const emptyBox=(icon,title,text,btn="")=>`<div class="empty"><div class="e-ico">${icon}</div><h3>${title}</h3><p>${text}</p>${btn}</div>`;
 
 /* ---------- 共用搜尋（規則對標首頁）：
@@ -7834,7 +7848,7 @@ function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.grou
     
     ${cmSec(`${esc(groupOf(gid).name)} 的評論`,fans.length?"查看更多":"","cmFan")}${fans.slice(0,3).map(fanCard).join("")||`<p class="me-none">還沒有粉絲貼文</p>`}`; }
 /* MEET 卡片：正在直播的排前面（點進直播間），結束的是重播 */
-function meetCards(lv){ return `<div class="cm-lv">${lv.slice(0,12).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length], on=!l.endTs;return `<button class="cm-lc" data-a="${on?"openLive":"openReplay"}" data-id="${l.id}" data-lv="${l.id}"><span class="cm-lt ${on?"on":""}" style="background:linear-gradient(135deg,${c[0]},${c[1]})"><em>${on?"● LIVE":"REPLAY"}</em>${on?"":`<i>${mmss(l)}</i>`}</span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${on?"直播中":relDay(l.startTs)}</small></button>`}).join("")}</div>`; }
+function meetCards(lv){ return `<div class="cm-lv">${lv.slice(0,12).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length], on=!l.endTs;return `<button class="cm-lc" data-a="${on?"openLive":"openReplay"}" data-id="${l.id}" data-lv="${l.id}"><span class="cm-lt ${on?"on":""}" style="${lvCover(l.member)}"><em>${on?"● LIVE":"REPLAY"}</em>${on?"":`<i>${mmss(l)}</i>`}</span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${on?"直播中":relDay(l.startTs)}</small></button>`}).join("")}</div>`; }
 const meetOf=f=>getLives().filter(l=>MEMBERS[l.member]&&f(l)).sort((a,b)=>(!a.endTs?0:1)-(!b.endTs?0:1)||b.startTs-a.startTs);
 function grpMedia(gid){ const ch=ui.cmMed||"all", lv=meetOf(l=>MEMBERS[l.member].group===gid), vd=vodList(gid), g=groupOf(gid), vc=ui.cmVc||"all";
   const chips=`<div class="cm-chips">${[["all","全部"],["live","MEET"],["vod","影音"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmMed" data-v="${k}">${l}</button>`).join("")}</div>`;
@@ -8151,7 +8165,7 @@ function notifMsg(n){
   if(n.kind==="core") return (nm?nm+" ":"")+n.text;
   if(n.kind==="news") return "新聞："+n.text;
   if(n.kind==="tour") return `${nm}：${n.text}`;
-  return {post:`📝 ${nm} 發表了貼文：${n.text}`,comment:`${nm} 回覆了你的留言：「${n.text}」`,live:n.liveReply?`${nm} ${n.text} 💬`:`${nm} 開始直播了：${n.text} 🔥`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${n.text}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
+  return {post:`📝 ${nm} 發表了貼文：${n.text}`,comment:`${nm} 回覆了你的留言：「${n.text}」`,live:n.liveReply?`${nm} ${n.text} 💬`:`${nm} 開始直播了：${n.text} 🔥`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${String(n.text||"").split(NICK_TK).join(nickFor(n.member)).split("{愛稱}").join(nickFor(n.member))}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
 }
 function pinnedHtml(){
   const anns=getAnns(); if(!anns.length) return "";
@@ -8712,7 +8726,8 @@ const LV_IC={exit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" st
   mini:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M20 4l-6 6M14 5.5V10h4.5M4 20l6-6M10 18.5V14H5.5"/></svg>',
   heart:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 20.6s-8.4-5.1-8.4-11.2A4.8 4.8 0 0 1 12 6.4a4.8 4.8 0 0 1 8.4 3c0 6.1-8.4 11.2-8.4 11.2z"/></svg>',
   heartO:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.2s-8-4.9-8-10.9A4.6 4.6 0 0 1 12 6.6a4.6 4.6 0 0 1 8 2.7c0 6-8 10.9-8 10.9z"/></svg>'};
-const lvCover=mid=>{ const p=artProf(mid), m=MEMBERS[mid], c=GRADS[m.g%GRADS.length]; return p.cover?`background:#000 url('${p.cover}') center/cover no-repeat`:`background:radial-gradient(90% 60% at 70% 25%,${c[1]}cc,transparent 70%),radial-gradient(80% 60% at 20% 80%,${c[0]}cc,transparent 70%),#140B2E`; };
+const lvCover=mid=>{ const p=artProf(mid), m=MEMBERS[mid], c=GRADS[m.g%GRADS.length], u=p.avatar||mPhoto(mid);   // 直播、重播封面：跟著個人社群頭貼（沒換過就用 Teaser 照）
+  return u?`background:#000 url('${u}') center/cover no-repeat`:`background:radial-gradient(90% 60% at 70% 25%,${c[1]}cc,transparent 70%),radial-gradient(80% 60% at 20% 80%,${c[0]}cc,transparent 70%),#140B2E`; };
 function lvShell(l,host,inner){ const m=MEMBERS[l.member], g=groupOf(m.group);
   return `<div class="mr cm dl ${host?"host":""} ${ui.dlUi?"ui-on":""} ${ui.dlChatOff?"chat-off":""}" data-a="dlTap">
     <div class="dl-bg" style="${lvCover(l.member)}"></div><span class="dl-shade"></span>
@@ -10331,6 +10346,7 @@ document.addEventListener("click",e=>{
       if(t.dataset.c){ ui.feedTab="feed"; go("fan"); openComments(t.dataset.id,{focusC:t.dataset.c}); }
       else { ui.feedTab="feed"; ui.focusPost=t.dataset.id; ui.expanded.add(t.dataset.id); go("fan"); } } break;
     case "comments": ui.cDraft=""; openComments(t.dataset.id); break;
+    case "ptOrig": { ui.ptOrig=ui.ptOrig||new Set(); const id=t.dataset.id; if(ui.ptOrig.has(id)) ui.ptOrig.delete(id); else ui.ptOrig.add(id); const p=getPosts().find(x=>x.id===id); const el=document.querySelector(`[data-ptx="${id}"]`); if(p&&el){ const cl=el.classList.contains("clamp"); t.remove(); el.outerHTML=postTextHtml(p,false,cl); } break; }
     case "replyTo": ui.cDraft=""; ui.sheet.replyTo=t.dataset.c; renderComments(true); break;
     case "cancelReply": ui.sheet.replyTo=null; ui.cDraft=""; renderComments(true); break;
     case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); aiOnLive(l.id,"enter"); } location.hash=(l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id; } else toast("這場直播已不存在"); break; }
@@ -10823,7 +10839,7 @@ document.addEventListener("click",e=>{
       if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!rn){ toast("請輸入本名"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       const key=un.toLowerCase(); if(acctKey(un)){ toast("這個帳號已經有人用了"); break; }
       ui.acBusy=true; ui.acDraft={un,rn,nm,pw}; lsRerender();
-      const role=ui.acRole==="admin"?"admin":"fan";
+      const role="fan";   // 只建一般帳號（不再從這裡新增管理員）
       acCall({action:"create",username:key,name:nm,password:pw,role}).then(async r=>{ ui.acBusy=false;
         if(r.error){ lsRerender(); toast(r.error); return; }
         if(r.local){ ACCOUNTS[key]={user:un,pw,role,name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
@@ -12038,8 +12054,6 @@ const ROLE_ZH={admin:"管理員",artist:"藝人",fan:"粉絲"};
 function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort((a,b)=>(a[1].role==="admin"?0:a[1].role==="artist"?1:2)-(b[1].role==="admin"?0:b[1].role==="artist"?1:2)||acctUser(a[0]).localeCompare(acctUser(b[0])));
   return `<main class="page roster">
     <section class="card studio"><h3>建立帳號</h3>
-      <span class="fld-lab">身分</span>
-      <div class="seg2 mod-seg" style="--i:${ui.acRole==="admin"?1:0}"><i class="seg2-ind"></i>${[["fan","粉絲"],["admin","管理員"]].map(([k,l])=>`<button class="${(ui.acRole||"fan")===k?"on":""}" data-a="acRole" data-v="${k}">${l}</button>`).join("")}</div>
       <span class="fld-lab">帳號</span><label class="field">${I.user}<input id="acUser" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).un||"")}"></label>
       <span class="fld-lab">本名（只有管理員看得到）</span><label class="field">${I.user}<input id="acReal" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).rn||"")}"></label>
       <span class="fld-lab">暱稱（大家看到的名字，本人之後可以改）</span><label class="field">${I.heart}<input id="acName" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).nm||"")}"></label>
@@ -12102,7 +12116,7 @@ async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=a
 const tieProf=mid=>{ const p=artProf(mid); return {avatar:p.av_tie||p.avatar||"",cover:p.cover_tie||p.cover||"",bio:p.bio_tie!=null?p.bio_tie:(p.bio||"")}; };
 /* 名字第一個字（花體字也轉回一般字，不會變成「?」） */
 const ini=x=>([...String(x||"").normalize("NFKC").trim()][0]||"").toUpperCase();
-const mAvIn=(mid,pl)=>{ const m=MEMBERS[mid], u=pl==="tie"?tieProf(mid).avatar:artProf(mid).avatar; return u?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${u}')"></span>`:(m?"H":""); };
+const mAvIn=(mid,pl)=>{ const m=MEMBERS[mid], u=pl==="tie"?tieProf(mid).avatar:(artProf(mid).avatar||mPhoto(mid)); /* 個人社群頭貼沒換過：用 Teaser 照 */ return u?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${u}')"></span>`:(m?"H":""); };
 const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
@@ -12128,7 +12142,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
   const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b><span>${esc(x.fan.text)}</span></span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span><span class="ap2-ct">${esc(x.text)}</span></button>`).join(""):`<p class="me-none">還沒有留言</p>`)
     :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
-    :(posts.length?posts.map(x=>postCard(x,{mine:own})).join(""):`<p class="me-none">還沒有貼文</p>`);
+    :(posts.length?posts.map(x=>postCard(x,{mine:own,prof:true})).join(""):`<p class="me-none">還沒有貼文</p>`);   // 個人社群：點貼文任何地方進貼文、頭貼不再重進個人社群
   return `<header class="ap2-bar" id="apBar" style="--apbg:${p.cover?`url('${p.cover}')`:grad(M.g)}">${own?`<span class="ap2-bsp"></span>`:`<button class="ap2-ib" data-a="back" aria-label="返回">${I.back}</button>`}<span class="ap2-bt"><span class="ap2-bav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span></span><span class="ap2-bsp"></span></header>
   <section class="ap2-hero" id="apHero" style="${p.cover?`background-image:url('${p.cover}')`:`background:${grad(M.g)}`}"><span class="ap2-shade"></span>
     ${own?"":`<button class="ap2-ib ap2-back" data-a="back" aria-label="返回">${I.back}</button>`}
