@@ -3744,6 +3744,9 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 .tr-st{flex:none;font-size:12px;font-weight:800;color:var(--ink-3)}.tr-st.have{color:var(--gt,var(--violet))}.tr-st.done{color:#E04F86}
 .tr-a{padding:6px 0;margin-bottom:12px}.tr-ah{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px}.tr-ah b{display:flex;flex-direction:column;gap:2px;font-size:16px}
 .tr-a .ls-btns{padding:10px 14px 8px}
+.tr-badge.rejected{background:#FEE2E2;color:#B91C1C}
+html[data-theme="dark"] .tr-badge.pending{background:rgba(251,191,36,.18)!important;color:#FCD34D!important}html[data-theme="dark"] .tr-badge.approved{background:rgba(16,185,129,.18)!important;color:#6EE7B7!important}html[data-theme="dark"] .tr-badge.rejected{background:rgba(248,113,113,.18)!important;color:#FCA5A5!important}
+.foc.tr>[data-a="trNew"],.foc.tr>.tr-form{margin-bottom:16px}
 .tr-badge{flex:none;font-size:11.5px;font-weight:800;padding:3px 10px;border-radius:999px;background:var(--line);color:var(--ink-3)}.tr-badge.approved{background:#D1FAE5;color:#047857}.tr-badge.pending{background:#FEF3C7;color:#B45309}
 .tr-why,.tr-fin{margin:0;padding:0 14px 10px;font-size:13px;color:var(--ink-3)}.tr-fin{color:#047857;font-weight:800}
 .tr-form{margin-bottom:12px}.tr-add{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:8px;align-items:center;margin-bottom:12px}.tr-add .field{margin:0;min-width:0}.tr-add .btn{grid-column:1/-1}.tr-add select,.tr-add input{display:block;width:100%;min-width:0;height:44px;border:0;background:none;font:inherit;font-size:15px;color:var(--ink);-webkit-appearance:none;appearance:none}
@@ -5539,7 +5542,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027154358";
+const BUILD="20261027154524";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
