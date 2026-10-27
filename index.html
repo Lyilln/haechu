@@ -4934,6 +4934,10 @@ html[data-theme="dark"] .bb-note{background:repeating-linear-gradient(180deg,tra
 .bb-empty{grid-column:1/-1;text-align:center;opacity:.5;font-family:Georgia,serif;font-style:italic;padding:20px 0}
 .wsp-stick{width:auto;height:82%;max-width:80%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(80,60,120,.18))}
 .wsp-ls{width:100%;height:360px;border-radius:20px;background:radial-gradient(circle at 50% 40%,#F6F2FF,#EEE9F8)}
+.wsp-th .wsp-stick{position:absolute;top:16%;bottom:6%;left:0;right:0;margin:auto;height:78%;width:auto;max-width:88%}
+.wsp-th .wsp-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit}.wsp-th:has(.wsp-ph) small{z-index:1;left:50%;right:auto;transform:translateX(-50%);padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.85);color:#6B6478}
+.wsp-phbig{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:20px;margin-bottom:12px}
+.ls-photo{display:block;width:120px;aspect-ratio:1;object-fit:cover;border-radius:14px;margin:10px auto 0}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5500,7 +5504,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027083225";
+const BUILD="20261027100542";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10802,7 +10806,7 @@ const prodBy=id=>{ const [k,x]=id.split(":"); const gid=k==="t"?(MEMBERS[x]||{})
 function prodArt(p){ const g=groupOf(p.gid), C=GRADS[(p.kind==="tie"?p.g2:g.g)%GRADS.length], c0=C[0], c1=C[1], id="pg"+p.id.replace(/\W/g,""), nm=esc(g.name);
   const defs=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c0}"/><stop offset="1" stop-color="${c1}"/></linearGradient></defs>`;
   if(p.kind==="ms") return `<svg viewBox="0 0 120 120">${defs}<rect x="18" y="34" width="84" height="54" rx="7" fill="url(#${id})"/><rect x="18" y="34" width="84" height="54" rx="7" fill="none" stroke="rgba(255,255,255,.5)"/><circle cx="60" cy="56" r="10" fill="rgba(255,255,255,.85)"/><text x="60" y="76" font-size="6" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif" textLength="${Math.min(70,nm.length*6)}" lengthAdjust="spacingAndGlyphs">${nm}</text><text x="60" y="83" font-size="4.5" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="Quicksand,sans-serif">OFFICIAL FANCLUB</text></svg>`;
-  if(p.k==="stick"){ const ds=getSticks()[p.gid]; if(ds&&(ds.cut||ds.front)) return `<img class="wsp-stick" src="${ds.cut||ds.front}" alt="">`; }   /* 管理員上傳過設計圖：用設計圖的去背正面 */
+  if(p.k==="stick"){ const ds=getSticks()[p.gid]; if(ds&&ds.photo) return `<img class="wsp-ph" src="${ds.photo}" alt="">`; if(ds&&(ds.cut||ds.front)) return `<img class="wsp-stick" src="${ds.cut||ds.front}" alt="">`; }   /* 管理員上傳過設計圖：用設計圖的去背正面 */
   if(p.k==="stick") return `<svg viewBox="0 0 120 120">${defs}<circle cx="60" cy="40" r="20" fill="url(#${id})" opacity=".95"/><circle cx="60" cy="40" r="20" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="54" cy="34" r="5" fill="rgba(255,255,255,.7)"/><rect x="55" y="60" width="10" height="44" rx="5" fill="#E9E6EF" stroke="#CFCAD9"/><rect x="55" y="62" width="10" height="6" fill="#CFCAD9"/></svg>`;
   if(p.k==="album") return `<svg viewBox="0 0 120 120">${defs}<rect x="30" y="24" width="64" height="72" rx="3" fill="#D9D5E2"/><rect x="24" y="20" width="64" height="72" rx="3" fill="url(#${id})"/><text x="56" y="44" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif">${nm}</text><text x="56" y="54" font-size="5" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="Quicksand,sans-serif">${p.kind==="album"?esc(albumOf(p.aid).title):"The 1st Mini Album"}</text>${p.kind==="album"?`<text x="56" y="88" font-size="5.5" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif">${esc(verOf(albumOf(p.aid),p.vid).name)}</text>`:""}<circle cx="56" cy="72" r="11" fill="rgba(255,255,255,.25)"/></svg>`;
   if(p.k==="limited") return `<svg viewBox="0 0 120 120">${defs}<rect x="24" y="30" width="34" height="50" rx="4" fill="#fff" stroke="#E2DEEA" transform="rotate(-10 41 55)"/><rect x="43" y="26" width="34" height="50" rx="4" fill="url(#${id})" stroke="#fff" stroke-width="2"/><rect x="62" y="30" width="34" height="50" rx="4" fill="#fff" stroke="#E2DEEA" transform="rotate(10 79 55)"/><circle cx="60" cy="92" r="6" fill="${c1}"/><circle cx="76" cy="94" r="4" fill="${c0}"/><circle cx="46" cy="94" r="4" fill="${c0}"/></svg>`;
@@ -10853,7 +10857,7 @@ function storePick(p){ const a=albumOf(p.aid), v=a&&verOf(a,p.vid); if(!v) retur
     return `<button class="stp-o ${ui.pStore===st.id?"on":""}" data-a="pStore" data-v="${st.id}"><b>${esc(st.name)}</b><small>${pre&&pob.length?(pob.some(e=>e.cap)&&!pob.some(e=>!e.cap||ldLeft(e)>0)?"特典已送完":`附送${esc(pob[0].name)}・${pob.reduce((n,e)=>n+(e.pool||[]).length,0)} 種隨機${pob.some(e=>e.cap)?`・限量，剩 ${pob.reduce((n,e)=>n+(e.cap?ldLeft(e):0),0)} 張`:""}`):"沒有預購特典"}</small>${ld.length?`<small>${pre&&left?`Lucky Draw 抽獎：每張 ${od}% 機會・剩 ${left} 張`:"Lucky Draw：已抽完"}</small>`:""}</button>`; }).join("")}</div>`; }
 function openProd(id){ const p=prodBy(id); if(!p) return; if(isSelfGid(p.gid)){ toast(selfBuyMsg()); return; } if(ui.s3) ui.s3.stop(); ui.prod=id; const g=groupOf(p.gid), tab=ui.prodTab||"det", plan=ui.prodPlan||MS_PLANS[0].id;
   setLayer(`<div class="tiei wsp-pg"><header class="tiei-top"><button class="icon-btn" data-a="pClose" aria-label="返回">${I.back}</button><b>${esc(g.name)}</b><span class="sh-sp"></span></header>
-    <div class="tiei-body">${p.kind==="album"?`<div class="s3 s3-alb" id="s3A">${albumBox(albumOf(p.aid),verOf(albumOf(p.aid),p.vid),{maxPx:210})}</div><small class="s3-tip c">拖動專輯，轉一圈看看封面和封底</small>`:p.k==="stick"&&getSticks()[p.gid]?(setTimeout(()=>mountSticks(layer),0),`<div class="ls-box wsp-ls" data-ls="${p.gid}" data-o="ctl"></div>`):prodThumb(p,true)}
+    <div class="tiei-body">${p.kind==="album"?`<div class="s3 s3-alb" id="s3A">${albumBox(albumOf(p.aid),verOf(albumOf(p.aid),p.vid),{maxPx:210})}</div><small class="s3-tip c">拖動專輯，轉一圈看看封面和封底</small>`:p.k==="stick"&&getSticks()[p.gid]?(setTimeout(()=>mountSticks(layer),0),`${getSticks()[p.gid].photo?`<img class="wsp-phbig" src="${getSticks()[p.gid].photo}" alt="">`:""}<div class="ls-box wsp-ls" data-ls="${p.gid}" data-o="ctl"></div>`):prodThumb(p,true)}
       <button class="wsp-pg-g" data-a="pGroup" data-v="${p.gid}">${esc(g.name)} ›</button><h2 class="wsp-pg-n">${esc(p.name)}</h2>
       <div class="wsp-pg-p">${p.kind==="album"?`<b>${fmt(p.pts)} 積分</b><div class="qty"><span>數量</span><button data-a="pQty" data-v="-1" aria-label="少一張">−</button><b id="pQ">${ui.pQty||1}</b><button data-a="pQty" data-v="1" aria-label="多一張">＋</button></div>`+storePick(p):p.kind==="ms"?`<div class="wsp-plans">${MS_PLANS.map(x=>`<button class="${plan===x.id?"on":""}" data-a="pPlan" data-v="${x.id}">${x.name}<b>${fmt(x.pts)} 積分</b></button>`).join("")}</div>`:`<b>${fmt(p.pts)} 積分${p.from?" 起":""}</b>`}</div>
       ${p.own?`<p class="wsp-pg-own">✓ ${esc(p.ownTxt||"已擁有")}</p>`:""}
@@ -10935,7 +10939,7 @@ function lsAdminHtml(){
       ${ds.v2?`<div class="ls-row ls-parts"><span>零件</span><div class="chips wrap" id="lsParts">${lsPartsUI(ds)}</div></div>`:`<div class="ls-row"><span>去背強度</span><input type="range" id="lsThr" min="12" max="90" value="${dr.thr}"><output id="lsThrV">${dr.thr}</output></div>`}
       <div class="ls-btns"><button class="btn btn-soft" data-a="lsCancel">取消</button><button class="btn btn-main" data-a="lsPublish">發布到 ${esc(g.name)}</button></div>
       `
-    :`<div class="ls-btns"><label class="btn btn-main ls-file">上傳設計圖<input type="file" id="lsSheet" accept="image/*"></label>${has?`<button class="btn btn-soft" data-a="lsRemove">恢復預設款</button>`:""}</div>
+    :`<div class="ls-btns"><label class="btn btn-main ls-file">上傳設計圖<input type="file" id="lsSheet" accept="image/*"></label>${has?`<label class="btn btn-soft ls-file">${getSticks()[gid].photo?"換商品照":"上傳商品照"}<input type="file" id="lsPhoto" accept="image/*"></label><button class="btn btn-soft" data-a="lsRemove">恢復預設款</button>`:""}</div>${has&&getSticks()[gid].photo?`<img class="ls-photo" src="${getSticks()[gid].photo}" alt="商品照">`:""}
       <div class="ls-samp">沒有圖？用範例試試：<button data-a="lsSample" data-v="round">圓球款</button><button data-a="lsSample" data-v="heart">愛心款</button><button data-a="lsSample" data-v="star">星星款</button></div>
       <p class="ls-tip">三視圖：正面、側面、背面由左到右排在同一張圖（單色背景），會照三個角度雕出立體的應援棒，造型再複雜都可以。只有正面圖的話，會用正面的輪廓做。</p>`}
   </section>`;
@@ -15638,6 +15642,11 @@ function lsEmbBuild(mask,w,h,X,Y,ps,col,o){ const M=new Uint8Array(w*h); let n=0
   const simp=(A,eps)=>{ if(A.length<3) return A; let dm=0,id=0; const [a,b]=[A[0],A[A.length-1]], L=Math.hypot(b[0]-a[0],b[1]-a[1])||1; for(let i=1;i<A.length-1;i++){ const d=Math.abs((b[0]-a[0])*(a[1]-A[i][1])-(a[0]-A[i][0])*(b[1]-a[1]))/L; if(d>dm){ dm=d; id=i; } } return dm>eps?[...simp(A.slice(0,id+1),eps).slice(0,-1),...simp(A.slice(id),eps)]:[a,b]; };
   let sp=simp(pts,.9); sp=sp.flatMap((p,i)=>{ const q=sp[(i+1)%sp.length]; return [[p[0]*.75+q[0]*.25,p[1]*.75+q[1]*.25],[p[0]*.25+q[0]*.75,p[1]*.25+q[1]*.75]]; });   // 圓滑一點
   return {...info,ext:1,shape:sp.map(([x,y])=>[(x-mx)*ps,-(y-my)*ps]),depth:Math.min(w,h)*ps*.22,bev:Math.min(w,h)*ps*.05,color:lin(base),g}; }
+/* 管理員：應援棒商品照（SHOP 用）。縮到 1200、存起來後會自動搬到 R2 */
+document.addEventListener("change",async e=>{ if(e.target.id!=="lsPhoto") return; const f=e.target.files&&e.target.files[0]; e.target.value=""; if(!f) return;
+  try{ const im=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=URL.createObjectURL(f); }); const k=Math.min(1,1200/Math.max(im.naturalWidth,im.naturalHeight)), c=document.createElement("canvas"); c.width=Math.round(im.naturalWidth*k); c.height=Math.round(im.naturalHeight*k);
+    const x=c.getContext("2d"); x.fillStyle="#fff"; x.fillRect(0,0,c.width,c.height); x.drawImage(im,0,0,c.width,c.height); const gid=ui.lsGid&&groupOf(ui.lsGid)?ui.lsGid:GROUPS[0].id, all=getSticks(); if(!all[gid]) return;
+    all[gid]={...all[gid],photo:c.toDataURL("image/jpeg",.86),updatedAt:Date.now()}; S.set(K.sticks,all); lsRerender(); toast("商品照換好了，SHOP 會用這張"); }catch(err){ toast("這張照片讀不出來"); } });
 
 /* =========================================================
    演唱會燈光段落：前奏暗、主歌呼吸、副歌閃、結尾慢慢暗
