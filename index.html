@@ -4932,6 +4932,8 @@ html[data-theme="dark"] .bb-note{background:repeating-linear-gradient(180deg,tra
 .bb-stamp{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#7A6754;opacity:.9}
 .bb-stamp time{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1.5px solid #C98E7A;color:#C98E7A;font-family:Georgia,serif;font-size:11px;transform:rotate(-12deg)}
 .bb-empty{grid-column:1/-1;text-align:center;opacity:.5;font-family:Georgia,serif;font-style:italic;padding:20px 0}
+.wsp-stick{width:auto;height:82%;max-width:80%;object-fit:contain;filter:drop-shadow(0 8px 14px rgba(80,60,120,.18))}
+.wsp-ls{width:100%;height:360px;border-radius:20px;background:radial-gradient(circle at 50% 40%,#F6F2FF,#EEE9F8)}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5315,10 +5317,11 @@ function hbGuard(k,local,remote){ if(!(HB_GUARD().has(k)||String(k).startsWith("
   if(k===K.sns&&local&&typeof local==="object"&&remote&&typeof remote==="object"){ const n=o=>((o.posts||[]).length+Object.keys(o.dm||{}).length); if(n(local)>=6&&n(remote)<n(local)*.6) return hbMerge({},local,remote); }
   return null; }
 function hbRow(row,adv=true){ HB.base[row.k]=JSON.stringify(row.v===undefined?null:row.v); HB.ver[row.k]=row.ver; if(adv&&row.updated_at&&row.updated_at>HB.since) HB.since=row.updated_at; }
-async function hbPullAll(){ const rows=[]; for(let off=0;off<20000;off+=1000){ const part=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&order=k.asc&offset=${off}&limit=1000`); if(!Array.isArray(part)) break; rows.push(...part); if(part.length<1000) break; }
+async function hbPullAll(opt={}){ const rows=[]; for(let off=0;off<20000;off+=1000){ const part=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&order=k.asc&offset=${off}&limit=1000`); if(!Array.isArray(part)) break; rows.push(...part); if(part.length<1000) break; }
   try{ let tot=0; const sz=rows.map(r=>{ const n=JSON.stringify(r.v==null?null:r.v).length; tot+=n; return [r.k,n]; }); HB.kvSz=tot; HB.kvTop=sz.sort((a,b)=>b[1]-a[1]).slice(0,12); }catch(e){}
+  if(opt.clean) hbPendSet({});   /* 試玩結束：手機上改過的全部不算，完全照雲端 */
   const pend=hbPendGet(), keep={}; Object.keys(pend).forEach(k=>{ if(hbSyncable(k)) keep[k]=hbReadLocal(k); });
-  const snap={}; HB_GUARD().forEach(k=>{ const v=hbReadLocal(k); if(v!=null) snap[k]=v; });
+  const snap={}; if(!opt.clean) HB_GUARD().forEach(k=>{ const v=hbReadLocal(k); if(v!=null) snap[k]=v; });
   const bigBefore=Object.keys(mem).filter(k=>BIGK(k)&&hbSyncable(k));
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]);
   HB.base={}; HB.ver={}; HB.dirty.clear(); HB.since="";
@@ -5364,8 +5367,15 @@ function hbMergeArr(b,l,r){
 function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true;   /* 管理員們也能試玩，幫忙給反饋 */
     const m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
 function sbxOn(){ try{ return localStorage.getItem("hc_sandbox")==="1"&&sbxWho(); }catch(e){ return false; } }
-async function sbxOff(){ try{ localStorage.removeItem("hc_sandbox"); }catch(e){} document.getElementById("sbxPill")?.remove(); toast("試玩結束，正在還原…"); ui.vsDemo=null; ui.bzDemo=null;
-  if(HB_ON&&HB.tok){ try{ await hbPullAll(); }catch(e){} } else { location.reload(); return; } render(); toast("已還原成真正的資料"); }
+/* 試玩開始：先把「只在這支手機、不上雲端」的設定備份起來（積分顯示、各種本機狀態）；雲端那些結束時直接重新抓 */
+function sbxStart(){ try{ const bak={}; Object.keys(localStorage).forEach(k=>{ if(k==="hc_sandbox"||k==="hc_sbx_bak"||hbSyncable(k)) return; bak[k]=localStorage.getItem(k); }); localStorage.setItem("hc_sbx_bak",JSON.stringify(bak)); localStorage.setItem("hc_sandbox","1"); }catch(e){} }
+async function sbxOff(){ if(!(HB_ON&&HB.tok)){ toast("要連上網路才能還原，等一下再按結束"); return; }
+  toast("試玩結束，正在還原…"); document.getElementById("sbxPill")?.remove();
+  try{ const raw=localStorage.getItem("hc_sbx_bak"), bak=JSON.parse(raw||"{}");
+    if(raw) Object.keys(localStorage).forEach(k=>{ if(k==="hc_sbx_bak"||hbSyncable(k)) return; if(!(k in bak)) localStorage.removeItem(k); });   // 試玩時才出現的本機資料：刪掉
+    Object.entries(bak).forEach(([k,v])=>{ try{ localStorage.setItem(k,v); }catch(_){} }); localStorage.removeItem("hc_sandbox"); }catch(e){}
+  try{ await hbPullAll({clean:1}); }catch(e){}   // 雲端上的：完全照雲端（試玩時沒有上傳任何東西）
+  try{ localStorage.removeItem("hc_sbx_bak"); }catch(e){} location.reload(); }
 function hbMark(k){ try{ if(sbxOn()) return; if(!HB_ON||!(HB.tok||HB.ref)||HB.applying||!hbSyncable(k)) return; HB.dirty.add(k);
   const p=hbPendGet(); if(!(k in p)){ p[k]=HB.base[k]!=null?HB.base[k]:null; hbPendSet(p); }
   clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,500); }catch(e){} }
@@ -5490,7 +5500,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027081958";
+const BUILD="20261027083225";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10792,6 +10802,7 @@ const prodBy=id=>{ const [k,x]=id.split(":"); const gid=k==="t"?(MEMBERS[x]||{})
 function prodArt(p){ const g=groupOf(p.gid), C=GRADS[(p.kind==="tie"?p.g2:g.g)%GRADS.length], c0=C[0], c1=C[1], id="pg"+p.id.replace(/\W/g,""), nm=esc(g.name);
   const defs=`<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c0}"/><stop offset="1" stop-color="${c1}"/></linearGradient></defs>`;
   if(p.kind==="ms") return `<svg viewBox="0 0 120 120">${defs}<rect x="18" y="34" width="84" height="54" rx="7" fill="url(#${id})"/><rect x="18" y="34" width="84" height="54" rx="7" fill="none" stroke="rgba(255,255,255,.5)"/><circle cx="60" cy="56" r="10" fill="rgba(255,255,255,.85)"/><text x="60" y="76" font-size="6" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif" textLength="${Math.min(70,nm.length*6)}" lengthAdjust="spacingAndGlyphs">${nm}</text><text x="60" y="83" font-size="4.5" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="Quicksand,sans-serif">OFFICIAL FANCLUB</text></svg>`;
+  if(p.k==="stick"){ const ds=getSticks()[p.gid]; if(ds&&(ds.cut||ds.front)) return `<img class="wsp-stick" src="${ds.cut||ds.front}" alt="">`; }   /* 管理員上傳過設計圖：用設計圖的去背正面 */
   if(p.k==="stick") return `<svg viewBox="0 0 120 120">${defs}<circle cx="60" cy="40" r="20" fill="url(#${id})" opacity=".95"/><circle cx="60" cy="40" r="20" fill="none" stroke="#fff" stroke-width="2.5"/><circle cx="54" cy="34" r="5" fill="rgba(255,255,255,.7)"/><rect x="55" y="60" width="10" height="44" rx="5" fill="#E9E6EF" stroke="#CFCAD9"/><rect x="55" y="62" width="10" height="6" fill="#CFCAD9"/></svg>`;
   if(p.k==="album") return `<svg viewBox="0 0 120 120">${defs}<rect x="30" y="24" width="64" height="72" rx="3" fill="#D9D5E2"/><rect x="24" y="20" width="64" height="72" rx="3" fill="url(#${id})"/><text x="56" y="44" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif">${nm}</text><text x="56" y="54" font-size="5" fill="rgba(255,255,255,.85)" text-anchor="middle" font-family="Quicksand,sans-serif">${p.kind==="album"?esc(albumOf(p.aid).title):"The 1st Mini Album"}</text>${p.kind==="album"?`<text x="56" y="88" font-size="5.5" font-weight="700" fill="#fff" text-anchor="middle" font-family="Quicksand,sans-serif">${esc(verOf(albumOf(p.aid),p.vid).name)}</text>`:""}<circle cx="56" cy="72" r="11" fill="rgba(255,255,255,.25)"/></svg>`;
   if(p.k==="limited") return `<svg viewBox="0 0 120 120">${defs}<rect x="24" y="30" width="34" height="50" rx="4" fill="#fff" stroke="#E2DEEA" transform="rotate(-10 41 55)"/><rect x="43" y="26" width="34" height="50" rx="4" fill="url(#${id})" stroke="#fff" stroke-width="2"/><rect x="62" y="30" width="34" height="50" rx="4" fill="#fff" stroke="#E2DEEA" transform="rotate(10 79 55)"/><circle cx="60" cy="92" r="6" fill="${c1}"/><circle cx="76" cy="94" r="4" fill="${c0}"/><circle cx="46" cy="94" r="4" fill="${c0}"/></svg>`;
@@ -10800,7 +10811,7 @@ function prodArt(p){ const g=groupOf(p.gid), C=GRADS[(p.kind==="tie"?p.g2:g.g)%G
   return `<span class="tkt" style="--c0:${c0};--c1:${c1}"><span class="tkt-ph">${ph?`<span class="tkt-img" style="background-image:url('${ph}')"></span>`:`<b class="tkt-ini">${esc((who||"?")[0])}</b>`}<small>HAECHU</small></span><span class="tkt-st"><b>${WHISPER_NAME}</b><span class="tkt-nm">${esc(who)}</span><i class="tkt-bar"></i></span></span>`; }
 const prodLabel=p=>p.kind==="ms"?"MEMBERSHIP":p.k==="stick"?"OFFICIAL":p.kind==="album"?(p.pre?"PRE-ORDER":"ALBUM"):p.k==="limited"?"LIMITED":"";
 const prodThumb=(p,big)=>`<span class="wsp-th ${big?"big":""}">${prodLabel(p)?`<small>${prodLabel(p)}</small>`:""}${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img class="wsp-cov" src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span>`;
-const prodCard=p=>`<button class="wsp-pc" data-a="pOpen" data-v="${p.id}">${prodThumb(p)}<span class="wsp-nm">${esc(p.name)}</span><span class="wsp-pr">${p.pts===0?"<b>免費</b>":`<b>${fmt(p.pts)}</b> 點${p.from?" 起":""}`}</span>${p.own?`<em class="wsp-tag on">${esc(p.ownTxt||"已擁有")}</em>`:p.kind==="ms"?`<em class="wsp-tag">送官方應援棒</em>`:p.pre?`<em class="wsp-tag on">預購特典中</em>`:""}</button>`;
+const prodCard=p=>`<button class="wsp-pc" data-a="pOpen" data-v="${p.id}">${prodThumb(p)}<span class="wsp-nm">${esc(p.name)}</span><span class="wsp-pr">${p.pts===0?"<b>免費</b>":`<b>${fmt(p.pts)}</b> 積分${p.from?" 起":""}`}</span>${p.own?`<em class="wsp-tag on">${esc(p.ownTxt||"已擁有")}</em>`:p.kind==="ms"?`<em class="wsp-tag">送官方應援棒</em>`:p.pre?`<em class="wsp-tag on">預購特典中</em>`:""}</button>`;
 /* 查看所有橫幅（照 Weverse Shop 的「＋」）：上面依藝人篩選，下面一張一張列出來 */
 function openAllBan(){ const f=followed().filter(g=>groupOf(g)&&!isSelfGid(g)), fl=ui.banF&&f.includes(ui.banF)?ui.banF:"all";
   const L=f.filter(g=>fl==="all"||g===fl).flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own));
@@ -10842,7 +10853,7 @@ function storePick(p){ const a=albumOf(p.aid), v=a&&verOf(a,p.vid); if(!v) retur
     return `<button class="stp-o ${ui.pStore===st.id?"on":""}" data-a="pStore" data-v="${st.id}"><b>${esc(st.name)}</b><small>${pre&&pob.length?(pob.some(e=>e.cap)&&!pob.some(e=>!e.cap||ldLeft(e)>0)?"特典已送完":`附送${esc(pob[0].name)}・${pob.reduce((n,e)=>n+(e.pool||[]).length,0)} 種隨機${pob.some(e=>e.cap)?`・限量，剩 ${pob.reduce((n,e)=>n+(e.cap?ldLeft(e):0),0)} 張`:""}`):"沒有預購特典"}</small>${ld.length?`<small>${pre&&left?`Lucky Draw 抽獎：每張 ${od}% 機會・剩 ${left} 張`:"Lucky Draw：已抽完"}</small>`:""}</button>`; }).join("")}</div>`; }
 function openProd(id){ const p=prodBy(id); if(!p) return; if(isSelfGid(p.gid)){ toast(selfBuyMsg()); return; } if(ui.s3) ui.s3.stop(); ui.prod=id; const g=groupOf(p.gid), tab=ui.prodTab||"det", plan=ui.prodPlan||MS_PLANS[0].id;
   setLayer(`<div class="tiei wsp-pg"><header class="tiei-top"><button class="icon-btn" data-a="pClose" aria-label="返回">${I.back}</button><b>${esc(g.name)}</b><span class="sh-sp"></span></header>
-    <div class="tiei-body">${p.kind==="album"?`<div class="s3 s3-alb" id="s3A">${albumBox(albumOf(p.aid),verOf(albumOf(p.aid),p.vid),{maxPx:210})}</div><small class="s3-tip c">拖動專輯，轉一圈看看封面和封底</small>`:prodThumb(p,true)}
+    <div class="tiei-body">${p.kind==="album"?`<div class="s3 s3-alb" id="s3A">${albumBox(albumOf(p.aid),verOf(albumOf(p.aid),p.vid),{maxPx:210})}</div><small class="s3-tip c">拖動專輯，轉一圈看看封面和封底</small>`:p.k==="stick"&&getSticks()[p.gid]?(setTimeout(()=>mountSticks(layer),0),`<div class="ls-box wsp-ls" data-ls="${p.gid}" data-o="ctl"></div>`):prodThumb(p,true)}
       <button class="wsp-pg-g" data-a="pGroup" data-v="${p.gid}">${esc(g.name)} ›</button><h2 class="wsp-pg-n">${esc(p.name)}</h2>
       <div class="wsp-pg-p">${p.kind==="album"?`<b>${fmt(p.pts)} 積分</b><div class="qty"><span>數量</span><button data-a="pQty" data-v="-1" aria-label="少一張">−</button><b id="pQ">${ui.pQty||1}</b><button data-a="pQty" data-v="1" aria-label="多一張">＋</button></div>`+storePick(p):p.kind==="ms"?`<div class="wsp-plans">${MS_PLANS.map(x=>`<button class="${plan===x.id?"on":""}" data-a="pPlan" data-v="${x.id}">${x.name}<b>${fmt(x.pts)} 積分</b></button>`).join("")}</div>`:`<b>${fmt(p.pts)} 積分${p.from?" 起":""}</b>`}</div>
       ${p.own?`<p class="wsp-pg-own">✓ ${esc(p.ownTxt||"已擁有")}</p>`:""}
@@ -10971,7 +10982,16 @@ function viewAdmin(tab){
   if(tab==="aifans") return viewAiFans();
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
-    const seg=ui.focSeg||"sched", lsOn=!!liveConcert();
+    const seg=ui.focSeg||"", lsOn=!!liveConcert();
+    /* 沒選子頁：模塊（跟藝人端 FOC 一樣分區） */
+    if(!seg){ const pend=getTours().filter(x=>x.status==="pending").length, bbW=Object.values(bbAll()).filter(b=>b.st==="wait").length;
+      const tl=(v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="focSeg" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
+      return adminHead("FOC")+`<main class="page foc">
+        ${secH("clock","每週")}<div class="tiles">${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","專輯・音樂・舞台")}${tl("news","news","新聞",newsSub())}</div>
+        ${secH("star","檔期")}<div class="tiles">${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}</div>
+        ${secH("trophy","大型活動")}<div class="tiles">${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}</div>
+        ${secH("gem","養成")}<div class="tiles">${tl("baby","gem","Hello Baby",bbW?`${bbW} 筆待核准`:"領養與照顧",bbW?"on":"")}</div></main>`; }
+    const SEGN={sched:"賽程",music:"打歌",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",baby:"Hello Baby",cafe:"生日咖啡廳"};
     const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>當前活動階段配置</h3><span class="badge">即時同步中</span></div>
         <label class="foc-lab">本週階段</label>
@@ -10984,9 +11004,8 @@ function viewAdmin(tab){
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml())+adminVodHtml()+adminMusicHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
         <div class="ls-btns"><button class="btn ${svOpen()?"btn-soft":"btn-main"}" data-a="svToggle">${svOpen()?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
-`}[seg]||(seg==="show"?vsAdminHtml():seg==="biz"?bzAdminHtml():"");
-    return adminHead("FOC")+`<main class="page">
-      <div class="shop-tabs foc-seg">${SEG.map(([k,l])=>`<button class="${seg===k?"on":""}" data-a="focSeg" data-v="${k}">${l}${k==="concert"&&lsOn||k==="tour"&&getTours().some(x=>x.status==="pending")?'<i class="seg-dot"></i>':""}</button>`).join("")}</div>
+`}[seg]||(seg==="show"?vsAdminHtml():seg==="biz"?bzAdminHtml():seg==="isac"?isAdminHtml():seg==="baby"?bbAdminHtml():seg==="cafe"?viewCafe().replace(/^<main[^>]*>|<\/main>$/g,""):"");
+    return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="focSegBack" aria-label="返回">${I.back}</button><div class="top-title">${SEGN[seg]||"FOC"}</div><span class="sh-sp"></span></div></header><main class="page">
       ${body}
     </main>`;
   }
@@ -11276,6 +11295,7 @@ document.addEventListener("click",e=>{
     case "chantStart": chantStart(); break;
     case "chantClose": { chantStop(); const b=document.getElementById("chant"); if(b){ b.hidden=true; b.innerHTML=""; } break; }
     case "focSeg": ui.focSeg=t.dataset.v; render(); window.scrollTo(0,0); break;
+    case "focSegBack": ui.focSeg=null; render(); window.scrollTo(0,0); break;
     case "msGate": msGate(t.dataset.g); break;
     case "msiClose": { const el=layer.querySelector(".msi"); if(el){ el.classList.add("out"); setTimeout(()=>{ if(layer.querySelector(".msi.out")) layer.innerHTML=""; },260); } break; }
     case "msIntro": { const g=t.dataset.g; layer.innerHTML=""; setTimeout(()=>openMsIntro(g),160); break; }
@@ -14745,7 +14765,7 @@ function vsAdminHtml(){ const d=ui.vsD||(ui.vsD={show:"nolto",mids:[],days:3,pla
       <label class="foc-lab">每人可以聽幾次</label><div class="chips">${[1,2,3,5].map(x=>`<button class="chip ${d.plays===x?"on":""}" data-a="vsDPlays" data-v="${x}">${x} 次</button>`).join("")}</div>`:""}
     <button class="btn btn-main btn-block" data-a="vsDGo">開錄（通知來賓）</button></section>
     ${E.length?`<div class="section-h">節目</div><section class="card">${E.map(e=>`<div class="vd-r vs-ar"><span><b>${esc(VSHOW[e.show].name)}・${esc(e.title)}</b><small>${e.st==="on"?`錄影中・${vsLeft(e.end)}${e.show==="rm"?`・第 ${e.rm.round} 回合`:""}`:"已播出"}・${e.mids.map(vsName).join("、")}</small></span>
-      ${e.st==="on"?`${e.show==="rm"?`<button class="btn btn-soft btn-sm" data-a="vsRmForce" data-id="${e.id}">結算回合</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsEnd" data-id="${e.id}">收工</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsDel" data-id="${e.id}">刪除</button></div>`).join("")}</section>`:""}`+isAdminHtml()+bbAdminHtml(); }
+      ${e.st==="on"?`${e.show==="rm"?`<button class="btn btn-soft btn-sm" data-a="vsRmForce" data-id="${e.id}">結算回合</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsEnd" data-id="${e.id}">收工</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsDel" data-id="${e.id}">刪除</button></div>`).join("")}</section>`:""}`; }
 
 /* ===== 點擊 ===== */
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^vs/.test(a)) return;
@@ -14795,7 +14815,7 @@ document.addEventListener("submit",e=>{ if(e.target.id!=="vsCmForm") return; e.p
 /* ===== 試玩模式：開關、畫面最上方的提示 ===== */
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="sbxT"],[data-a="sbxOff"]'); if(!t) return;
   if(sbxOn()){ ask("結束試玩？剛剛玩的東西都會清掉，換回真正的資料。",()=>sbxOff(),{ok:"結束試玩",danger:false}); return; }
-  ask("開始試玩？\n所有東西只在這支手機上，不會上傳、不會影響其他人。積分給你 999,999 讓你隨便玩。",()=>{ try{ localStorage.setItem("hc_sandbox","1"); }catch(_){} ui.vsDemo=null; ui.bzDemo=null; S.set(K.points,999999); sbxPill(); render(); toast("試玩開始 🎮"); },{ok:"開始",danger:false}); });
+  ask("開始試玩？\n所有東西只在這支手機上，不會上傳、不會影響其他人。積分給你 999,999 讓你隨便玩。",()=>{ sbxStart(); ui.vsDemo=null; ui.bzDemo=null; S.set(K.points,999999); sbxPill(); render(); toast("試玩開始 🎮"); },{ok:"開始",danger:false}); });
 function sbxPill(){ const on=sbxOn(), el=document.getElementById("sbxPill"); if(on&&!el) document.body.insertAdjacentHTML("beforeend",`<button id="sbxPill" data-a="sbxOff">🎮 試玩中・不影響其他人<b>結束</b></button>`); else if(!on&&el) el.remove(); }
 setInterval(sbxPill,1500); setTimeout(sbxPill,800);
 
