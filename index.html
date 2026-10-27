@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027141315";
+const BUILD="20261027141709";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5992,7 +5992,7 @@ const artistWhisperUnread=mid=>{const last=artReadGet();return getWhispers().fil
 function sendWhisper(memberId,text,replyId){
   const m=MEMBERS[memberId], wid="w"+Date.now(), rw=replyId&&getWhispers().find(x=>x.id===replyId);
   S.set(K.whispers,[...S.get(K.whispers,[]),{id:wid,member:memberId,from:"artist",text,ts:Date.now(),reply:rw?{text:rw.text,tr:rw.tr||""}:undefined}]);
-  setTimeout(()=>tieOriginal(wid),0);
+  setTimeout(()=>tieOriginal(wid),0); if(rw) setTimeout(()=>tieRqShare(wid),1500);
   return feedPush({kind:"whisper",member:memberId,group:m.group,text,color:null,direct:true},"tie:"+memberId);
 }
 function fanReply(memberId,text){
@@ -9992,6 +9992,10 @@ async function koToZh(t){ const pre=koPre(t); let out=await translateMany([pre],
   if(!r||stillKo(r)){ const m=/^([\s\S]*?)([~～!！?？.。\s\p{Extended_Pictographic}\uFE0F\u200D]*)$/u.exec(pre), core=m?m[1]:pre, tail=m?m[2]:"";   // 太短的句子（像「안녕~~」）會被原樣丟回來：去掉尾巴、補句號再翻一次
     if(core.trim()){ const o2=await translateMany([core+"。"],"zh"), r2=o2&&aiClean(o2[0]); if(r2&&!stillKo(r2)) r=r2.replace(/[。.]$/,"")+tail; } }
   return r&&!stillKo(r)?r:null; }
+/* 藝人回覆時引用的粉絲訊息不是中文：在藝人手機翻一次，存進那則訊息（w.reply.zh），所有粉絲共用，不會每個人各翻一次 */
+async function tieRqShare(wid){ const w0=getWhispers().find(x=>x.id===wid), r=w0&&w0.reply&&w0.reply.text; if(!r||w0.reply.zh||isZhText(r)) return;
+  const t=hasHangul(r)?await koToZh(r):await translateMany([r],"zh").then(o=>o&&aiClean(o[0])).catch(()=>null); if(!t) return;
+  const list=S.get(K.whispers,[]), w=list.find(x=>x.id===wid); if(!w||!w.reply||w.reply.zh) return; w.reply={...w.reply,zh:t}; S.set(K.whispers,list); }
 async function tieOriginal(wid){
   const w0=getWhispers().find(x=>x.id===wid); if(!w0||w0.ko||!w0.text) return;
   const ko=hasHangul(w0.text);
@@ -10004,10 +10008,11 @@ async function tieOriginal(wid){
 }
 /* 之前翻失敗的（翻譯和原文一樣、或翻出來還是韓文）：還原後再翻一次 */
 const tieFixed=new Set();
-function tieRepair(){ try{ if(!session()||!(useDeepL()||(SAMPLE&&!aiOff))) return; const list=S.get(K.whispers,[]); let ch=0; const redo=[];
+function tieRepair(){ try{ if(!session()||!(useDeepL()||(SAMPLE&&!aiOff))) return; const list=S.get(K.whispers,[]); let ch=0; const redo=[], rqFix=[];
   list.slice(-300).forEach(w=>{ if(w.from!=="artist"||w.kind||w.welcome||tieFixed.has(w.id)) return;
     const bad=(w.ko&&w.ko===w.text&&hasHangul(w.ko))||(w.kt&&w.ko&&stillKo(w.text)&&!/\p{Script=Han}/u.test(w.text));
-    if(!bad){ const s=session(); if(!w.ko&&hasHangul(w.text)&&s&&s.role==="artist"&&(s.member===w.member||uniMe&&uniMe()===w.member)&&Date.now()-w.ts<7*864e5){ tieFixed.add(w.id); redo.push(w.id); } return; } tieFixed.add(w.id); w.text=w.ko; delete w.ko; delete w.kt; ch++; redo.push(w.id); });
+    if(!bad){ const s=session(), mine=s&&s.role==="artist"&&(s.member===w.member||uniMe&&uniMe()===w.member)&&Date.now()-w.ts<7*864e5; if(mine&&w.reply&&w.reply.text&&!w.reply.zh&&!isZhText(w.reply.text)) rqFix.push(w.id); if(!w.ko&&hasHangul(w.text)&&s&&s.role==="artist"&&(s.member===w.member||uniMe&&uniMe()===w.member)&&Date.now()-w.ts<7*864e5){ tieFixed.add(w.id); redo.push(w.id); } return; } tieFixed.add(w.id); w.text=w.ko; delete w.ko; delete w.kt; ch++; redo.push(w.id); });
+  rqFix.slice(0,10).forEach((id,i)=>{ if(tieFixed.has("rq"+id)) return; tieFixed.add("rq"+id); setTimeout(()=>tieRqShare(id),2000+i*500); });
   if(ch) S.set(K.whispers,list); if(redo.length){ redo.slice(0,15).forEach((id,i)=>setTimeout(()=>tieOriginal(id),i*400)); } }catch(e){} }
 setTimeout(tieRepair,4000); setInterval(tieRepair,60e3);
 const welTr=(w,lang)=>(S.get(K.tieTrX,{})||{})[w.id+":w"+lang]||"";
@@ -10021,7 +10026,7 @@ const trText=(w,lang)=>lang==="zh"?(w.ko||isZhText(w.text)?w.text:((S.get(K.tieT
 const rqAutoTried=new Set();
 function tieRqAuto(wid,lang){ const k=wid+":"+lang; if(rqAutoTried.has(k)) return; rqAutoTried.add(k);
   setTimeout(()=>tieTrBoth(wid,lang).then(ok=>{ if(!ok||!rqTrGet(wid,lang)) return; const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName); if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }),300); }
-const rqTrGet=(wid,lang)=>(S.get(K.tieTrX,{})||{})[wid+":rq:"+lang]||"";
+const rqTrGet=(wid,lang)=>{ if(lang==="zh"){ const w=getWhispers().find(x=>x.id===wid); if(w&&w.reply&&w.reply.zh) return w.reply.zh; } return (S.get(K.tieTrX,{})||{})[wid+":rq:"+lang]||""; };
 /* 按 A：訊息本身＋引用的粉絲訊息，需要翻的都翻 */
 async function tieTrBoth(wid,lang){ const w=getWhispers().find(x=>x.id===wid); if(!w) return false; let ok=true;
   const mainN=w.ko||(!w.kind&&!isZhText(w.text)); if(mainN&&!trText(w,lang)) ok=await tieTranslateX(wid,lang);
