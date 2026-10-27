@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027142646";
+const BUILD="20261027154213";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10789,7 +10789,7 @@ function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=getTours().filt
   const form=d?`<section class="card studio tr-form"><div class="foc-cfg-h"><h3>申請世巡</h3></div>
       <span class="fld-lab">巡演名稱</span><label class="field"><input id="trTi" maxlength="40" placeholder="輸入文字" value="${esc(d.title)}"></label>
       <span class="fld-lab">站點</span>${d.stops.length?`<div class="tr-dl">${d.stops.slice().sort((a,b)=>a.startTs-b.startTs).map(st=>`<div class="tr-di"><b>${esc(st.city)}</b><small>${evWhen(st.startTs)}</small><button data-a="trStopDel" data-v="${st.id}" aria-label="刪掉這站">${XI}</button></div>`).join("")}</div>`:""}
-      <div class="tr-add"><label class="field"><select id="trCity">${TOUR_CITIES.map(c=>`<option ${d.city===c[0]?"selected":""}>${c[0]}</option>`).join("")}</select></label><label class="field"><input id="trWhen" type="datetime-local" value="${esc(d.when||"")}"></label><button class="btn btn-soft" data-a="trStopAdd">加入</button></div>
+      <div class="tr-add"><label class="field"><select id="trCity">${TOUR_CITIES.map(c=>`<option ${d.city===c[0]?"selected":""}>${c[0]}</option>`).join("")}</select></label><label class="field"><input id="trWhen" type="datetime-local" value="${esc(d.when||dtLocal(Math.ceil((Date.now()+2*36e5)/36e5)*36e5))}" min="${dtLocal(Date.now()+36e5)}"></label><button class="btn btn-soft" data-a="trStopAdd">加入</button></div>
       <div class="ls-btns"><button class="btn btn-soft" data-a="trCancel">取消</button><button class="btn btn-main" data-a="trSubmit">送出申請</button></div></section>`:`<button class="btn btn-main btn-block" data-a="trNew">申請世巡</button>`;
   const ST={pending:"審核中",approved:"已核准",rejected:"沒有通過"};
   return `<main class="page foc tr">${form}${mine.map(t=>{ const L=tourStops(t);
@@ -11167,6 +11167,9 @@ function viewAdmin(tab){
     ${open.length?`<div class="section-h">最新檢舉</div>${reportCard(open[0])}`:""}
   </main>`;
 }
+
+/* datetime-local 用的本地時間字串（YYYY-MM-DDTHH:MM） */
+function dtLocal(ts){ const d=new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
 
 /* =========================================================
    4. 互動
@@ -11619,7 +11622,7 @@ document.addEventListener("click",e=>{
       toast(`買到 ${rest.length} 站的票了，時間到就能進場`); lsRerender(); break; }
     case "trNew": ui.trDraft={title:"",stops:[],city:TOUR_CITIES[0][0],when:""}; lsRerender(); break;
     case "trCancel": ui.trDraft=null; lsRerender(); break;
-    case "trStopAdd": { trKeep(); const d=ui.trDraft; if(!d) break; const ts=d.when?new Date(d.when).getTime():NaN; if(!ts||isNaN(ts)){ toast("請選日期和時間"); break; } if(ts<Date.now()+36e5){ toast("時間要在一小時後"); break; }
+    case "trStopAdd": { trKeep(); const d=ui.trDraft; if(!d) break; const ts=d.when?new Date(d.when).getTime():NaN; if(!ts||isNaN(ts)){ toast("請選日期和時間"); break; } if(ts<Date.now()+36e5){ const m=new Date(Date.now()+36e5); toast(`要選 ${m.getMonth()+1}/${m.getDate()} ${pad(m.getHours())}:${pad(m.getMinutes())} 以後`); break; }
       if(d.stops.some(x=>Math.abs(x.startTs-ts)<TOUR_MINS*60e3)){ toast("跟另一站的時間太近了"); break; } d.stops.push({id:"ts"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),city:d.city,startTs:ts}); d.when=""; lsRerender(); break; }
     case "trStopDel": { trKeep(); const d=ui.trDraft; if(d) d.stops=d.stops.filter(x=>x.id!==t.dataset.v); lsRerender(); break; }
     case "trSubmit": { trKeep(); const d=ui.trDraft, mid=session().member||uniMe(); if(!d||!mid) break; if(!d.title.trim()){ toast("請輸入巡演名稱"); break; } if(!d.stops.length){ toast("至少要有一站"); break; }
