@@ -4859,6 +4859,20 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .trk-ed .field{box-sizing:border-box;width:100%;height:50px}
 .trk-ed .trk-ph .field{height:64px}
 .trk-ed .trk-mi+.trk-mi{margin-top:-2px}
+.sec-ed{display:flex;flex-direction:column;gap:8px;text-align:left}
+.sec-r{display:flex;align-items:center;gap:8px}.sec-r span{flex:1;font-size:13.5px;color:var(--ink-2)}
+.sec-r button{width:34px;height:34px;border-radius:50%;border:0;background:var(--s2);color:var(--ink);font-size:18px}.sec-r b{min-width:54px;text-align:center;font-variant-numeric:tabular-nums}
+.sec-x{align-self:flex-end;border:0;background:none;color:#E5484D;font-size:12px}
+.vs-dl{margin:-4px 0 8px;font-size:12.5px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+/* 兩天一夜：揭曉時一個一個翻開 */
+.ob-st.fresh .ob-cup,.ob-st.fresh .ob-card{animation:obFlip .7s cubic-bezier(.3,1.4,.5,1) both}
+.ob-st.fresh .ob-cup:nth-child(2),.ob-st.fresh .ob-card:nth-child(2){animation-delay:.35s}.ob-st.fresh .ob-cup:nth-child(3),.ob-st.fresh .ob-card:nth-child(3){animation-delay:.7s}
+.ob-st.fresh .ob-cup:nth-child(4),.ob-st.fresh .ob-card:nth-child(4){animation-delay:1.05s}.ob-st.fresh .ob-cup:nth-child(5),.ob-st.fresh .ob-card:nth-child(5){animation-delay:1.4s}.ob-st.fresh .ob-cup:nth-child(n+6){animation-delay:1.75s}
+.ob-st.fresh .ob-cap{animation:obCap .5s 2s both}
+.ob-st.fresh .ob-lad polyline,.ob-st.fresh .ob-lad path{stroke-dasharray:1200;stroke-dashoffset:1200;animation:obDraw 2.2s .3s ease-out forwards}
+@keyframes obFlip{0%{transform:rotateY(90deg) scale(.9);opacity:.3}100%{transform:none;opacity:1}}
+@keyframes obCap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes obDraw{to{stroke-dashoffset:0}}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5288,7 +5302,8 @@ function hbMergeArr(b,l,r){
   return [...extra.filter(x=>front.has(hbId(x))),...out,...extra.filter(x=>!front.has(hbId(x)))]; }
 /* 寫入：先存手機，再排隊送上雲端 */
 /* ===== 試玩模式（只有 HUSSEY）：在自己手機上玩，什麼都不上傳、不收別人的更新；結束時從雲端還原 ===== */
-function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
+function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true;   /* 管理員們也能試玩，幫忙給反饋 */
+    const m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
 function sbxOn(){ try{ return localStorage.getItem("hc_sandbox")==="1"&&sbxWho(); }catch(e){ return false; } }
 async function sbxOff(){ try{ localStorage.removeItem("hc_sandbox"); }catch(e){} document.getElementById("sbxPill")?.remove(); toast("試玩結束，正在還原…"); ui.vsDemo=null; ui.bzDemo=null;
   if(HB_ON&&HB.tok){ try{ await hbPullAll(); }catch(e){} } else { location.reload(); return; } render(); toast("已還原成真正的資料"); }
@@ -5416,7 +5431,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027065537";
+const BUILD="20261027081436";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7510,7 +7525,7 @@ function viewSurvival(){
    ========================================================= */
 const LS_FX={breath:"呼吸",wave:"波浪",flash:"閃爍",rainbow:"彩虹"};
 const LS_COLORS=["#C7AEFF","#F9A8D4","#93C5FD","#FDE68A","#86EFAC","#FFFFFF","#F472B6"];
-function lsCtl(patch){ const ls=lightsea(); if(!ls) return; const ctl=S.get(K.lightsea,null); S.set(K.lightsea,{...(ctl&&ctl.cid===ls.cid?ctl:{}),cid:ls.cid,...patch}); }
+function lsCtl(patch){ const ls=lightsea(); if(!ls) return; if(patch.fx) patch={...patch,fxTs:Date.now()}; const ctl=S.get(K.lightsea,null); S.set(K.lightsea,{...(ctl&&ctl.cid===ls.cid?ctl:{}),cid:ls.cid,...patch}); }
 function lsCmd(type,extra={}){ lsCtl({cmd:{type,ts:Date.now(),until:Date.now()+(type==="mission"?30e3:type==="text"?15e3:10e3),...extra}}); }
 const activeCmd=()=>{ const ls=lightsea(), c=ls&&ls.cmd; return c&&c.until>Date.now()?c:null; };
 
@@ -7534,7 +7549,7 @@ function seaRun(cv,color){
   (function f(now){
     if(!cv.isConnected) return;
     const dpr=Math.min(2,devicePixelRatio||1), W=cv.clientWidth*dpr, H=cv.clientHeight*dpr; if(cv.width!==W||cv.height!==H){ cv.width=W; cv.height=H; }
-    const t=(now-t0)/1000, ls=lightsea(), cmd=activeCmd(), fx=ls&&ls.fx||"breath", baseCol=SEA.color||color;
+    const t=(now-t0)/1000, ls=lightsea(), cmd=activeCmd(), cue=typeof lsCue==="function"?lsCue():null, fx=cue?cue.fx:ls&&ls.fx||"breath", baseCol=SEA.color||color; SEA.dim=cue?cue.dim:1;
     ctx.clearRect(0,0,W,H); ctx.globalCompositeOperation="lighter"; SEA.boost*=.965;
     const white=cmd&&cmd.type==="white", txt=cmd&&cmd.type==="text"?cmd.text:"";
     if(txt!==maskKey){ maskKey=txt; mask=txt?textMask(txt):null; }
@@ -7543,7 +7558,7 @@ function seaRun(cv,color){
       let a, col=white?"255,255,255":hex2rgbArr(fx==="rainbow"?LS_COLORS[Math.floor((p.x*6+t*.8))%LS_COLORS.length]:baseCol);
       if(fx==="flash") a=(Math.sin(t*9+p.ph*.2)>0?.85:.12); else if(fx==="wave") a=.15+.8*Math.max(0,Math.sin(t*2.4-p.x*9+p.d*2)); else a=.3+.3*(.5+.5*Math.sin(t*2.3+p.ph))+.25*Math.max(0,Math.sin(t*1.7-p.x*7));
       if(mask){ const mx=Math.floor(p.x*200), my=Math.floor(((y/H)-.5)/.5*100); const on=mx>=0&&mx<200&&my>=0&&my<100&&mask[(my*200+mx)*4+3]>80; a=on?1:.06; if(on) col="255,255,255"; }
-      a=Math.min(1,a+.5*SEA.boost)*(.35+.65*p.d);
+      a=Math.min(1,a+.5*SEA.boost)*(.35+.65*p.d)*(SEA.dim==null?1:SEA.dim);
       const g=ctx.createRadialGradient(x,y,0,x,y,r*3); g.addColorStop(0,`rgba(255,255,255,${a})`); g.addColorStop(.25,`rgba(${col},${a})`); g.addColorStop(1,`rgba(${col},0)`);
       ctx.fillStyle=g; ctx.beginPath(); ctx.arc(x,y,r*3,0,7); ctx.fill();
     }
@@ -7560,8 +7575,8 @@ function ccTick(){
   const box=layer.querySelector(".concert2"); if(!box){ clearInterval(ccTimer); return; } rgSync();
   const ls=lightsea(), cmd=activeCmd(), el=layer.querySelector(".concert-ls"), base=box.dataset.glow;
   const col=cmd&&cmd.type==="white"?"#FFFFFF":ls&&ls.color?ls.color:base; SEA.color=col;
-  if(el&&el._ls&&el._ls._col!==col){ el._ls._col=col; el._ls.set("glow",col); }
-  if(el&&el._ls){ const fx=ls&&ls.fx; el._ls.set("pulse",fx==="flash"?2:fx==="wave"?1:3); }
+  if(el&&el._ls&&!el._ls._dk&&el._ls._col!==col){ el._ls._col=col; el._ls.set("glow",col); }
+  if(el&&el._ls){ const cue=typeof lsCue==="function"?lsCue():null, fx=cue?cue.fx:ls&&ls.fx; el._ls.set("pulse",fx==="flash"?2:fx==="wave"?1:3); const dk=cue&&cue.dim<.3; if(el._ls._dk!==dk){ el._ls._dk=dk; el._ls.set("glow",dk?"#2A2430":col); el._ls._col=dk?"#2A2430":col; } }
   { const nw=document.getElementById("ccNow"); if(nw){ const tl=ls&&ls.tl; nw.textContent=tl?(tl.done?"演出結束，謝謝大家":`${tl.ia?"互動中":"純放中"}・現在播放《${trackName(tl.cur.sid)}》`):""; } }
   { const bb=document.getElementById("ccBd"); if(bb){ const tl=ls&&ls.tl; bb.hidden=!(!tl||tl.ia); } }
   const ban=document.getElementById("ccCmd"), k=cmd?cmd.ts:"";
@@ -7858,7 +7873,7 @@ function concertMusicHtml(){
     
     <div class="chips wrap">${GROUPS.map(x=>`<button class="chip ${x.id===gid?"on":""}" data-a="cmGroup" data-v="${x.id}">${esc(x.name)}</button>`).join("")}</div>
     ${songs.length?songs.map(s=>{ const t=T[s.id]; return `<div class="cm-row"><div class="cm-i"><b>《${esc(s.title)}》</b><small>${t?`${fmtDur(t.dur)}・${t.bpm?"BPM "+t.bpm:"<em class='cm-warn'>還沒對拍子</em>"}・應援詞 ${(t.chant||[]).length} 句`:"還沒有音樂"}</small></div>
-      <div class="cm-b"><label class="btn btn-soft btn-sm cm-up">${t?"換音樂":"上傳音樂"}<input type="file" class="cm-file" accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.mp4,.mov" data-sid="${s.id}"></label>${t?`<button class="btn btn-soft btn-sm" data-a="cmTap" data-v="${s.id}">對拍子</button><button class="btn btn-soft btn-sm" data-a="cmChant" data-v="${s.id}">錄應援詞</button><button class="btn btn-main btn-sm" data-a="cmTry" data-v="${s.id}">試玩</button>`:""}</div>
+      <div class="cm-b"><label class="btn btn-soft btn-sm cm-up">${t?"換音樂":"上傳音樂"}<input type="file" class="cm-file" accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.mp4,.mov" data-sid="${s.id}"></label>${t?`<button class="btn btn-soft btn-sm" data-a="cmTap" data-v="${s.id}">對拍子</button><button class="btn btn-soft btn-sm" data-a="cmChant" data-v="${s.id}">錄應援詞</button><button class="btn btn-soft btn-sm" data-a="secOpen" data-v="${s.id}">燈光段落</button><button class="btn btn-main btn-sm" data-a="cmTry" data-v="${s.id}">試玩</button>`:""}</div>
       ${t&&t.bpm?`<div class="cm-adj"><span>拍子速度</span><button data-a="cmBpm" data-v="${s.id}" data-d="-0.5">−</button><b>${t.bpm}</b><button data-a="cmBpm" data-v="${s.id}" data-d="0.5">＋</button><span>拍子位置</span><button data-a="cmOff" data-v="${s.id}" data-d="-0.03">提早</button><button data-a="cmOff" data-v="${s.id}" data-d="0.03">延後</button></div>`:""}</div>`; }).join("")
       :`<p class="me-none">這團還沒有歌。先在上面「打歌中的歌曲」新增歌名。</p>`}
     
@@ -12006,7 +12021,7 @@ document.addEventListener("change",async e=>{
     try{ const ab=await f.arrayBuffer(); step="解碼音樂"; const c=audioCtx(); if(!c) throw new Error("這台裝置不支援播放音樂");
       const buf=await decodeAu(c,ab); step="抓節拍"; const an=analyzeBeats(buf); step="存到手機";
       step="存到手機"; const keep=isVid||f.size>12*1024*1024?await compactWav(buf):f; try{ await MDB.put("au_"+sid,keep); }catch(err){} auBuf[sid]=buf; const kept=await idbHas("au_"+sid);
-      const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",bpm:an.bpm,offset:an.offset,dur:an.dur,chant:(T[sid]||{}).chant||[]}; S.set(K.tracks,T);
+      const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",bpm:an.bpm,offset:an.offset,dur:an.dur,sec:analyzeSections(buf,an.bpm),chant:(T[sid]||{}).chant||[]}; S.set(K.tracks,T);
       inp.value=""; ui.cmGid=sg?sg.gid:ui.cmGid; lsRerender();
       tieModal("上傳好了 🎵",`《${title}》<br>${fmtDur(an.dur)}・BPM ${an.bpm}<br><br>下一步：按「試玩」聽聽看音符有沒有對上拍子，再去「錄應援詞」。${kept?"":"<br><br><b>注意：這裡沒辦法把音樂長期存在手機上，關掉 App 再打開要重新上傳。</b>"}`,`<button class="t-mbtn main" data-a="cmTryM" data-v="${sid}">試玩</button><button class="t-mbtn" data-a="tCloseLayer">晚點再說</button>`);
     }catch(err){
@@ -12115,7 +12130,8 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }
   /* 在 Safari／Chrome 瀏覽器裡：最左邊那一條是瀏覽器自己的返回手勢，讓給它（兩個一起動就會出現兩層畫面）；加到主畫面的 App 才由這裡處理 */
   const STANDALONE=navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;
-  document.addEventListener("touchstart",e=>{ if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
+  document.addEventListener("touchstart",e=>{ if(!st) document.querySelectorAll(".sb-under").forEach(u=>u.remove());   // 上一次手勢留下的「上一頁」殘影清掉
+    if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
     if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
@@ -14561,19 +14577,25 @@ function vsFinish(ep){ if(ep.st!=="on") return ep; if(ep.show==="onetwo"){ obAdv
 function vsCheck(ep){ if(!ep||ep.st!=="on") return ep; let fin=Date.now()>=ep.end;
   if(ep.show==="nolto") fin=fin||ep.mids.every(m=>((ep.a||{})[m]||{}).txt);
   if(ep.show==="knowing") fin=fin||ep.mids.every(m=>!vsNeed(ep,m));
-  if(ep.show==="onetwo"){ if(!fin&&obAdvance(ep,false)) vsPut(ep); fin=fin||ep.ob.r>3; }
-  if(ep.show==="rm"){ if(Date.now()>=ep.end&&(ep.rm.alive||[]).length>1){ /* 時間到還沒分出勝負：活著的一起贏 */ } else fin=fin||(ep.rm.alive||[]).length<=1||!!ep.rm.tie; }
+  if(ep.show==="onetwo"){ if(!fin&&(obAdvance(ep,false)|obTimeUp(ep))) vsPut(ep); fin=fin||ep.ob.r>3; }
+  if(ep.show==="rm"){ if(!ep.rm.rt){ ep.rm.rt=ep.ts>1e12?ep.ts:Date.now(); } if(!String(ep.id).startsWith("demo_")&&(ep.rm.alive||[]).length>1&&Date.now()>=ep.rm.rt+RM_ROUND){ vsRmResolve(ep,true); vsPut(ep); }
+    if(Date.now()>=ep.end&&(ep.rm.alive||[]).length>1){ /* 時間到還沒分出勝負：活著的一起贏 */ } else fin=fin||(ep.rm.alive||[]).length<=1||!!ep.rm.tie; }
   if(fin){ vsFinish(ep); vsPut(ep); } return ep; }
 /* Running Man：大家都選好了就結算這一回合 */
 function vsRmResolve(ep,force){ const r=ep.rm, mv=(r.mv||{})[r.round]||{}, alive=r.alive||[];
   if(!force&&!alive.every(m=>mv[m])) return false;
   const out=new Map(); alive.forEach(a=>{ const x=mv[a]; if(!x||!x.t||!alive.includes(x.t)||x.t===a) return; const b=x.t, gb=(mv[b]||{}).g;
     if(gb===a){ if(!out.has(a)) out.set(a,{by:b,c:1}); } else { if(!out.has(b)) out.set(b,{by:a}); } });
-  const log=[]; out.forEach((o,m)=>{ log.push(`${vsName(o.by)} 撕下了 ${vsName(m)} 的名牌${o.c?"（反撕）":""}`); (r.out=r.out||[]).push({mid:m,r:r.round,by:o.by}); });
-  if(!out.size) log.push("這回合沒有人被撕");
+  /* 時間到還沒出手：第一次＝躲起來；連續兩回合沒出現＝名牌自動被撕 */
+  r.miss=r.miss||{}; alive.forEach(m=>{ if(mv[m]){ r.miss[m]=0; return; } r.miss[m]=(r.miss[m]||0)+1; if(r.miss[m]>=2&&!out.has(m)) out.set(m,{by:null,gone:1}); });
+  const log=[]; alive.forEach(m=>{ if(!mv[m]&&r.miss[m]===1) log.push(`${vsName(m)} 沒出現，這回合躲起來了`); });
+  out.forEach((o,m)=>{ log.push(o.gone?`${vsName(m)} 連續兩回合沒出現，名牌自動被撕`:`${vsName(o.by)} 撕下了 ${vsName(m)} 的名牌${o.c?"（反撕）":""}`); (r.out=r.out||[]).push({mid:m,r:r.round,by:o.by}); });
+  if(!out.size&&!log.length) log.push("這回合沒有人被撕");
   (r.log=r.log||[]).push({r:r.round,t:log}); r.alive=alive.filter(m=>!out.has(m));
   if(!r.alive.length){ r.alive=[...out.keys()].filter(m=>(r.out||[]).some(o=>o.mid===m&&o.r===r.round)); r.out=(r.out||[]).filter(o=>o.r!==r.round); r.log[r.log.length-1].t.push("最後的人同時被撕，一起獲勝"); r.tie=1; }
-  r.round++; return true; }
+  r.round++; r.rt=Date.now(); return true; }
+const RM_ROUND=12*36e5;   // 每回合 12 小時
+const rmLeft=r=>Math.max(0,(r.rt||0)+RM_ROUND-Date.now());
 
 /* ===== 押積分（粉絲） ===== */
 function vsBet(id,mid,n){ const ep=vsGet(id); if(!ep||ep.st!=="on") return; const me=myEmail(); if(!me) return; if((ep.bets||{})[me]){ toast("這集你已經押過了"); return; }
@@ -14623,7 +14645,7 @@ function vsBody(ep,who){ const A=ep.a||{}, on=ep.st==="on", me=who&&ep.mids.incl
           ${on&&me===o?`<small class="vs-wait">答案：${esc(q.ans)}</small>${ep.mids.filter(g=>g!==o&&((A[g]||{}).g||{})[o]!=null).map(g=>{ const gs=A[g].g[o], mk=(q.mark||{})[g], ok=mk!=null?mk:vsOk(gs,q.ans); return `<div class="vs-gl"><b>${esc(vsName(g))}</b><span>${esc(gs)}</span><button class="vs-mk ${ok?"ok":""}" data-a="vsMark" data-id="${ep.id}" data-v="${g}">${ok?"⭕":"❌"}</button></div>`; }).join("")}`:""}
           ${!on?`<small class="vs-wait">答案：${esc(q.ans)}</small>${ep.mids.filter(g=>g!==o).map(g=>{ const gs=((A[g]||{}).g||{})[o], mk=(q.mark||{})[g], ok=gs!=null&&(mk!=null?mk:vsOk(gs,q.ans)); return `<div class="vs-gl"><b>${esc(vsName(g))}</b><span>${esc(gs==null?"—":gs)}</span><i>${ok?"⭕":"❌"}</i></div>`; }).join("")}`:""}</div>`; }).join(""):`<p class="vs-wait">還沒有人出題</p>`}</section>`; }
   if(ep.show==="rm"){ const r=ep.rm, alive=r.alive||[], mv=(r.mv||{})[r.round]||{}, mine=me&&mv[me], d=ui.vsRm||{};
-    return `<section class="card vs-sec"><h3>이름표 떼기・第 ${r.round} 回合</h3>
+    return `<section class="card vs-sec"><h3>이름표 떼기・第 ${r.round} 回合</h3>${on&&r.rt?`<p class="vs-dl">⏱ 這回合還剩 ${Math.floor(rmLeft(r)/36e5)} 小時 ${Math.floor(rmLeft(r)%36e5/6e4)} 分</p>`:""}
       <div class="vs-tags">${ep.mids.map(m=>{ const o=(r.out||[]).find(x=>x.mid===m); return `<span class="vs-tag ${o?"out":""}">${vsAv(m,40)}<b>${esc(vsName(m))}</b>${o?`<em>撕</em>`:on?`<small>${mv[m]?"已出手":"考慮中"}</small>`:""}</span>`; }).join("")}</div>
       ${on&&me&&alive.includes(me)?(mine?`<p class="vs-wait">已出手，等其他人</p>`:`<p class="vs-lab">要撕誰的名牌？</p><div class="vs-pick">${alive.filter(m=>m!==me).map(m=>`<button class="${d.t===m?"on":""}" data-a="vsRmT" data-v="${m}">${esc(vsName(m))}</button>`).join("")}</div>
         <p class="vs-lab">要防誰？（他來撕你會被反撕）</p><div class="vs-pick">${alive.filter(m=>m!==me).map(m=>`<button class="${d.g===m?"on":""}" data-a="vsRmG" data-v="${m}">${esc(vsName(m))}</button>`).join("")}</div>
@@ -14918,7 +14940,7 @@ function cfFront(c,w,enter){ const m=MEMBERS[c.mid], g=groupOf(m.group), name=m.
     <div class="cfs-awn"></div>
     <div class="cfs-sign"><i class="cfs-lamp l"></i><i class="cfs-lamp r"></i><small>BIRTHDAY CAFÉ</small><b>${esc(name)}</b></div>
     <div class="cfs-front"><div class="cfs-win">${winIn}${posters}${c.art.selfie?`<span class="cf-pol cfs-pol">${cfImg(c.art.selfie)}<i>${esc(name)}</i></span>`:""}</div>
-      ${enter?`<button class="cfs-door" data-a="cfIn" data-v="${c.mid}" aria-label="進店">${door}</button>`:`<div class="cfs-door">${door}</div>`}
+      ${enter&&open?`<button class="cfs-door" data-a="cfIn" data-v="${c.mid}" aria-label="進店">${door}</button>`:`<div class="cfs-door">${door}</div>`}
       <i class="cfs-tree"></i></div>
     <div class="cfs-step"></div>
     <div class="cf-stat"><span><b>${fmt(Object.keys(c.visits).length)}</b>位來過</span><span><b>${fmt(tot)}</b>積分應援</span><span><b>${fmt(c.cards.length)}</b>張卡片</span></div>
@@ -14927,7 +14949,7 @@ function cfSec(t,sub,body,act=""){ return `<section class="cf-sec"><div class="c
 function viewCafe(mid){ const L=cfOpenNow();
   if(!mid){ const up=cfMids().map(m=>({m,w:cfWindow(m)})).filter(x=>x.w&&!x.w.open).sort((a,b)=>a.w.diff-b.w.diff).slice(0,6);
     return `<main class="page cf-list">${L.length?L.map(({m,w})=>{ const c=cfGet(m,w.y); return `<button class="cf-card" data-a="cfGo" data-v="${m}">${cfFront(c,w)}</button>`; }).join(""):`<div class="cf-none"><span>☕</span><b>現在沒有營業中的生日咖啡廳</b></div>`}
-      ${up.length?`<div class="section-h">即將開店</div><section class="card cf-up">${up.map(({m,w})=>`<div class="cf-upr">${vsAv(m,36)}<span><b>${esc(MEMBERS[m].name)}</b><small>${ymd(+w.day)} 生日</small></span><em>${Math.max(0,w.diff-CF_DAYS)} 天後</em></div>`).join("")}</section>`:""}</main>`; }
+      ${up.length?`<div class="section-h">即將開店</div><section class="card cf-up">${up.map(({m,w})=>`<div class="cf-upr">${vsAv(m,36)}<span><b>${esc(MEMBERS[m].name)}</b><small>${w.day.getMonth()+1} 月 ${w.day.getDate()} 日生日</small></span><em>${Math.max(0,w.diff-CF_DAYS)} 天後</em></div>`).join("")}</section>`:""}</main>`; }
   const w=cfWindow(mid); if(!w) return `<main class="page"><div class="cf-none"><b>這位藝人還沒設定生日</b></div></main>`;
   const c=cfGet(mid,w.y), em=cfMe(), fan=cfFan(), mine=!fan&&(session()||{}).member===mid, on=w.open, A=c.art||{};
   if(fan&&on&&em&&!c.visits[em]){ c.visits[em]=Date.now(); cfPut(c); }
@@ -15035,17 +15057,28 @@ function obRes(ep){ const o=ep.ob, R={}; ep.mids.forEach(m=>{ const c1=o.pk[1][m
     R[m]={fish,lad,tent,luck:(fish==null?0:fish?-2:1)+(lad||0)+(tent==null?0:tent?-3:1)}; }); return R; }
 function obPick(id,k){ const ep=vsGet(id), mid=(session()||{}).member; if(!ep||ep.st!=="on"||!obNeed(ep,mid)) return; const o=ep.ob, P=o.pk[o.r]; if(Object.values(P).includes(k)){ toast("這個被選走了，換一個"); return; }
   P[mid]=k;
-  if(String(ep.id).startsWith("demo_")){ /* 示範：其他人自動選 */ const N=o.r===1?o.cups.n:o.r===2?o.ladder.n:o.cards.n, taken=new Set(Object.values(P)); ep.mids.forEach(m=>{ if(P[m]!=null) return; const free=[...Array(N).keys()].filter(i=>!taken.has(i)), c=free[Math.floor(Math.random()*free.length)]; P[m]=c; taken.add(c); }); }
-  obAdvance(ep,false); vsPut(ep); vsCheck(ep); }
+  if(String(ep.id).startsWith("demo_")){ /* 示範：其他人過幾秒才一個一個選（像真的有人在想） */ const N=o.r===1?o.cups.n:o.r===2?o.ladder.n:o.cards.n, rnd=o.r;
+    ep.mids.filter(m=>P[m]==null).forEach((m,i)=>setTimeout(()=>{ const e2=vsGet(id); if(!e2||e2.ob.r!==rnd||e2.ob.pk[rnd][m]!=null) return; const P2=e2.ob.pk[rnd], taken=new Set(Object.values(P2)), free=[...Array(N).keys()].filter(j=>!taken.has(j)); P2[m]=free[Math.floor(Math.random()*free.length)];
+      const adv=obAdvance(e2,false); if(adv) e2.ob.rt=Date.now(); vsPut(e2); vsCheck(e2); if(e2.st!=="on"){ const y=window.scrollY; render(); window.scrollTo(0,y); } else obPatch(id); },1600+i*1400+Math.random()*900)); }
+  if(obAdvance(ep,false)) o.rt=Date.now(); vsPut(ep); vsCheck(ep); }
+/* 一關給 12 小時；時間到還沒選的人，系統幫他隨便選，揭曉進下一關（大家不用同時在線） */
+const OB_ROUND=12*36e5;
+function obTimeUp(ep){ const o=ep.ob; if(ep.st!=="on"||o.r>3||String(ep.id).startsWith("demo_")) return false; o.rt=o.rt||ep.ts||Date.now(); if(Date.now()<o.rt+OB_ROUND) return false;
+  const P=o.pk[o.r], N=o.r===1?o.cups.n:o.r===2?o.ladder.n:o.cards.n, r=obRng(ep.id+"f"+o.r), taken=new Set(Object.values(P)); ep.mids.forEach(m=>{ if(P[m]!=null) return; const free=[...Array(N).keys()].filter(i=>!taken.has(i)), c=free[Math.floor(r()*free.length)]; P[m]=c; taken.add(c); });
+  obAdvance(ep,false); o.rt=Date.now(); return true; }
+/* 只換掉節目那一塊（不整頁重畫，就不會閃） */
+function obPatch(id){ const ep=vsGet(id), el=document.querySelector(".card.ob"); if(!ep||!el||!ep.ob){ const y=window.scrollY; render(); window.scrollTo(0,y); return; } const w=document.createElement("div"); w.innerHTML=obBody(ep,(session()||{}).member); el.replaceWith(w.firstElementChild); }
 /* 復古字幕 */
 const obCap=(t,cls="")=>`<div class="ob-cap ${cls}">${esc(t)}</div>`;
 function obBody(ep,me){ const o=ep.ob, on=ep.st==="on", R=obRes(ep), mine=me&&ep.mids.includes(me), P=o.pk;
   const who=(round,k)=>{ const m=Object.keys(P[round]).find(x=>P[round][x]===k); return m?vsName(m):""; };
-  const stage=(n,title,pd,body,doneTxt)=>`<section class="ob-st ${o.r>n?"done":o.r===n&&on?"cur":"lock"}"><div class="ob-sh"><b>${n}</b><span>${title}</span>${o.r>n?`<em>揭曉</em>`:o.r===n&&on?`<em class="on">進行中</em>`:""}</div>${o.r>=n?`<div class="ob-pd"><i>PD</i><p>${esc(pd)}</p></div>${body}`:""}${o.r>n&&doneTxt?doneTxt:""}</section>`;
+  const left=Math.max(0,(o.rt||ep.ts||Date.now())+OB_ROUND-Date.now()), demo=String(ep.id).startsWith("demo_");
+  const wait=n=>o.r===n&&on?`<p class="ob-wait">${ep.mids.filter(m=>P[n][m]!=null).length}/${ep.mids.length} 人選好了${mine&&P[n][me]!=null?"・等其他人…":""}${demo?"":`・剩 ${Math.floor(left/36e5)} 小時 ${Math.floor(left%36e5/6e4)} 分`}</p>`:"";
+  const stage=(n,title,pd,body,doneTxt)=>`<section class="ob-st ${o.r>n?"done":o.r===n&&on?"cur":"lock"} ${o.rev[n]&&Date.now()-o.rev[n]<6000?"fresh":""}"><div class="ob-sh"><b>${n}</b><span>${title}</span>${o.r>n?`<em>揭曉</em>`:o.r===n&&on?`<em class="on">進行中</em>`:""}</div>${o.r>=n?`<div class="ob-pd"><i>PD</i><p>${esc(pd)}</p></div>${body}${wait(n)}`:""}${o.r>n&&doneTxt?doneTxt:""}</section>`;
   /* 1 晚餐杯子 */
   const cups=[...Array(o.cups.n).keys()].map(i=>{ const tk=who(1,i), rev=!!o.rev[1], bad=o.cups.bad.includes(i), my=mine&&P[1][me]===i;
     return `<button class="ob-cup ${rev?(bad?"bad":"ok"):""} ${tk?"tk":""} ${my?"my":""}" ${mine&&on&&o.r===1&&!tk&&P[1][me]==null?`data-a="obPick" data-id="${ep.id}" data-k="${i}"`:"disabled"}><span class="ob-cupb">${rev?(bad?"🐟":"🍖"):"🥤"}</span><small>${tk?esc(tk):i+1}</small></button>`; }).join("");
-  const s1=stage(1,"晚餐복불복",o.pd||OB_PD[0],`<div class="ob-cups">${cups}</div>${o.r===1&&on?`<p class="ob-wait">${ep.mids.filter(m=>P[1][m]!=null).length}/${ep.mids.length} 人選好了</p>`:""}`,
+  const s1=stage(1,"晚餐복불복",o.pd||OB_PD[0],`<div class="ob-cups">${cups}</div>`,
     o.rev[1]?obCap(ep.mids.filter(m=>R[m].fish).map(vsName).join("、")+" 喝到魚露，今晚沒有晚餐！","bad"):"");
   /* 2 爬梯子 */
   const L=o.ladder, W=Math.max(220,L.n*56), H=200, x=c=>28+c*((W-56)/Math.max(1,L.n-1)), yy=y=>24+y*(H-48)/8;
@@ -15065,7 +15098,7 @@ function obFinish(ep){ const R=obRes(ep), rk=ep.mids.slice().sort((a,b)=>R[b].lu
 function obResult(ep){ const r=ep.res, R=r.ob||{};
   return `<section class="card vs-res ob-res"><h3>今晚的結果</h3>${r.rank.map(m=>`<div class="vs-rr ${r.win.includes(m)?"win":""} ${r.worst.includes(m)?"worst":""}"><em>${r.win.includes(m)?"👑":r.worst.includes(m)?"💀":""}</em>${vsAv(m,32)}<b>${esc(vsName(m))}</b><span class="ob-tags">${R[m].fish?"🐟 沒晚餐":"🍖 有晚餐"}・${R[m].tent?"⛺ 帳篷":"🏠 室內"}</span></div>`).join("")}
     ${r.pun&&MEMBERS[r.pun.mid]?`<div class="vs-pun"><b>${esc(r.worst.map(vsName).join("、"))}・運氣最差</b><p>${esc(r.pun.t)}</p></div>`:""}</section>`; }
-document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="obPick"]'); if(!t) return; obPick(t.dataset.id,+t.dataset.k); const y=window.scrollY; render(); window.scrollTo(0,y); });
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="obPick"]'); if(!t) return; obPick(t.dataset.id,+t.dataset.k); const ep=vsGet(t.dataset.id); if(ep&&ep.st==="on") obPatch(t.dataset.id); else { const y=window.scrollY; render(); window.scrollTo(0,y); } });
 
 /* =========================================================
    偶像運動會（아육대）：一年兩次，中秋、過年前後由管理員開幕
@@ -15535,6 +15568,42 @@ function lsEmbBuild(mask,w,h,X,Y,ps,col,o){ const M=new Uint8Array(w*h); let n=0
   const simp=(A,eps)=>{ if(A.length<3) return A; let dm=0,id=0; const [a,b]=[A[0],A[A.length-1]], L=Math.hypot(b[0]-a[0],b[1]-a[1])||1; for(let i=1;i<A.length-1;i++){ const d=Math.abs((b[0]-a[0])*(a[1]-A[i][1])-(a[0]-A[i][0])*(b[1]-a[1]))/L; if(d>dm){ dm=d; id=i; } } return dm>eps?[...simp(A.slice(0,id+1),eps).slice(0,-1),...simp(A.slice(id),eps)]:[a,b]; };
   let sp=simp(pts,.9); sp=sp.flatMap((p,i)=>{ const q=sp[(i+1)%sp.length]; return [[p[0]*.75+q[0]*.25,p[1]*.75+q[1]*.25],[p[0]*.25+q[0]*.75,p[1]*.25+q[1]*.75]]; });   // 圓滑一點
   return {...info,ext:1,shape:sp.map(([x,y])=>[(x-mx)*ps,-(y-my)*ps]),depth:Math.min(w,h)*ps*.22,bev:Math.min(w,h)*ps*.05,color:lin(base),g}; }
+
+/* =========================================================
+   演唱會燈光段落：前奏暗、主歌呼吸、副歌閃、結尾慢慢暗
+   ・管理員上傳歌曲時，手機自己聽一次：抓前奏結束、副歌（整首最響、最密、會重複的段落）
+   ・結果只是幾個秒數，跟著歌存一次（tr.sec），之後每場都用；管理員可以微調
+   ・演唱會中不額外上傳：粉絲手機照「這首從幾點開始播」自己算現在是哪一段
+   ========================================================= */
+function analyzeSections(buf,bpm){ try{
+    const sr=buf.sampleRate, a=buf.getChannelData(0), b=buf.numberOfChannels>1?buf.getChannelData(1):null, hop=Math.round(sr*.5), n=Math.floor(a.length/hop), E=new Float32Array(n);
+    for(let i=0;i<n;i++){ let e=0; const s=i*hop; for(let j=0;j<hop;j+=8){ const v=b?(a[s+j]+b[s+j])*.5:a[s+j]; e+=v*v; } E[i]=Math.sqrt(e/(hop/8)); }
+    const S=E.map((_,i)=>{ let s=0,c=0; for(let k=-4;k<=4;k++){ const v=E[i+k]; if(v!=null){ s+=v; c++; } } return s/c; });   // 4 秒平均
+    const q=p=>{ const x=Array.from(S).sort((m,k)=>m-k); return x[Math.floor(x.length*p)]||0; }, mid=q(.5), hi=q(.72), dur=buf.duration;
+    let intro=0; for(let i=0;i<n;i++){ if(S[i]>=mid*.92){ intro=i*.5; break; } } intro=Math.min(intro,30);
+    const bar=bpm?240/bpm:2, snap=t=>Math.round(t/bar)*bar, ch=[]; let s0=-1;
+    for(let i=0;i<=n;i++){ const on=i<n&&S[i]>=hi; if(on&&s0<0) s0=i; if(!on&&s0>=0){ const st=s0*.5, en=i*.5; if(en-st>=8) ch.push([snap(st),snap(en)]); s0=-1; } }
+    const M=[]; ch.forEach(c=>{ const l=M[M.length-1]; if(l&&c[0]-l[1]<4) l[1]=c[1]; else M.push(c.slice()); });
+    return {intro:Math.round(intro*10)/10,ch:M.filter(c=>c[0]>intro).slice(0,6),dur:Math.round(dur)}; }catch(e){ return null; } }
+DEMO_TRACK.sec={intro:6,ch:[[22,38],[48,60]],dur:64};
+/* 現在這一刻的燈：{fx, dim}；藝人在燈控台手動換過效果，這首歌就聽藝人的 */
+function lsCue(){ const ls=lightsea(), tl=ls&&ls.tl; if(!tl||!tl.cur) return null; if(ls.fxTs&&ls.fxTs>tl.cur.at) return null;
+  const tr=trackOf(tl.cur.sid), sec=tr&&tr.sec; if(!sec) return null; const t=(Date.now()-tl.cur.at)/1000, dur=tr.dur||sec.dur||180;
+  if(t<sec.intro) return {fx:"breath",dim:.08,ph:"前奏"};
+  if(t>dur-6) return {fx:"breath",dim:Math.max(.05,(dur-t)/6),ph:"結尾"};
+  if((sec.ch||[]).some(([s,e])=>t>=s&&t<e)) return {fx:"flash",dim:1,ph:"副歌"};
+  return {fx:"breath",dim:1,ph:"主歌"}; }
+/* 管理員：段落微調（邊看秒數邊按 ±） */
+function secEditHtml(sid){ const T=getTracks(), tr=T[sid], s=tr&&tr.sec; if(!s) return `<p class="muted">還沒有段落</p>`;
+  const row=(lab,k,i,j)=>`<div class="sec-r"><span>${lab}</span><button data-a="secAdj" data-v="${sid}" data-k="${k}" data-i="${i}" data-j="${j}" data-d="-1">−</button><b>${fmtDur((k==="intro"?s.intro:s.ch[i][j]))}</b><button data-a="secAdj" data-v="${sid}" data-k="${k}" data-i="${i}" data-j="${j}" data-d="1">＋</button></div>`;
+  return `<div class="sec-ed">${row("前奏結束","intro",0,0)}${s.ch.map((c,i)=>row(`副歌 ${i+1} 開始`,"ch",i,0)+row(`副歌 ${i+1} 結束`,"ch",i,1)+`<button class="sec-x" data-a="secDel" data-v="${sid}" data-i="${i}">刪掉副歌 ${i+1}</button>`).join("")}<button class="btn btn-soft btn-block" data-a="secAdd" data-v="${sid}">＋ 加一段副歌</button></div>`; }
+function secOpen(sid){ tieModal("燈光段落",secEditHtml(sid),`<button class="t-mbtn main" data-a="tCloseLayer">好了</button>`); }
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^sec(Adj|Add|Del|Open)$/.test(a)) return;
+  const sid=t.dataset.v, T=getTracks(), tr=T[sid]; if(!tr) return; if(a==="secOpen"){ if(tr.sec){ secOpen(sid); return; } toast("正在聽這首歌…"); trackBuffer(sid).then(buf=>{ const T2=getTracks(); if(buf&&T2[sid]){ T2[sid].sec=analyzeSections(buf,T2[sid].bpm); S.set(K.tracks,T2); } secOpen(sid); }).catch(()=>secOpen(sid)); return; } const s=tr.sec||(tr.sec={intro:0,ch:[],dur:Math.round(tr.dur||180)});
+  if(a==="secAdj"){ const d=+t.dataset.d; if(t.dataset.k==="intro") s.intro=Math.max(0,s.intro+d); else { const c=s.ch[+t.dataset.i]; c[+t.dataset.j]=Math.max(0,c[+t.dataset.j]+d); if(c[1]<c[0]+2) c[1]=c[0]+2; } }
+  if(a==="secAdd"){ const last=s.ch[s.ch.length-1], st=last?last[1]+20:Math.max(s.intro+30,40); s.ch.push([st,st+20]); }
+  if(a==="secDel") s.ch.splice(+t.dataset.i,1);
+  S.set(K.tracks,T); const box=document.querySelector(".sec-ed"); if(box) box.outerHTML=secEditHtml(sid); });
 
 </script>
 </body>
