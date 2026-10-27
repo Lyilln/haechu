@@ -5447,7 +5447,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027103750";
+const BUILD="20261027104103";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15050,7 +15050,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "cfVoice": { mediaSrc(mid).then(u=>{ if(!u){ toast("語音讀不到"); return; } const au=new Audio(u); au.play().catch(()=>toast("播放失敗")); }); break; }
   } });
 /* 藝人第一次在這間店做任何事 → 算「到店」，通知追蹤這團的粉絲 */
-function cfArrive(c){ if(c.art.at) return; c.art.at=Date.now(); if(c.demo) return; try{ const m=MEMBERS[c.mid]; feedPush({kind:"system",member:c.mid,group:m.group,text:`🎂 ${m.name} 到生日咖啡廳了！快去看看留下了什麼`},"g:"+m.group); }catch(e){} }
+function cfArrive(c){ if(c.art.at) return; c.art.at=Date.now(); if(c.demo) return; try{ const m=MEMBERS[c.mid]; feedPush({kind:"system",member:c.mid,group:m.group,text:`🎂 ${m.name} 到生日咖啡廳了！快去看看留下了什麼`},"g:"+m.group);
+    const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===c.mid), G=S.get(K.ptGrants,[])||[], id="cfa_"+c.id; if(em&&!G.some(g=>g.id===id)){ G.push({id,to:em,n:300,why:"生日咖啡廳到店",by:"auto",ts:Date.now()}); S.set(K.ptGrants,G.slice(-2000)); } }catch(e){} }   /* 藝人到店 +300（一年一次） */
 document.addEventListener("change",async e=>{ const id=e.target.id; if(!["cfPoster","cfCup","cfSelfie","cfVoiceIn"].includes(id)) return; const f=e.target.files&&e.target.files[0], mid=e.target.dataset.v; e.target.value=""; if(!f||!mid) return;
   try{ const c=cfCur(mid); if(!c) return;
     if(id==="cfVoiceIn"){ if(f.size>15*1024*1024){ toast("語音檔太大了"); return; } const vid="cfv"+Date.now().toString(36); await MDB.put(vid,f.slice(0,f.size,f.type||"audio/mp4")); c.art.voice=vid; cfArrive(c); }
