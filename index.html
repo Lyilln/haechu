@@ -5143,7 +5143,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027002006";
+const BUILD="20261027002702";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -13223,10 +13223,15 @@ const TRUCK3D=(()=>{
     { const t=X3.ctex(640,200,(x,w,h)=>{ const n=9, sw=w/n; for(let i=0;i<n;i++){ x.fillStyle=i%2?P.soft:P.body; x.fillRect(i*sw,0,sw,150); x.beginPath(); x.arc(i*sw+sw/2,148,sw/2,0,Math.PI); x.fill(); } x.fillStyle=P.trim; x.fillRect(0,0,w,8); });
       plane(1.94,.64,t,-.78,2.15,1.22,0,{alpha:1,ds:1,rx:-Math.PI/2+.5,cast:1,rough:.85,coat:0}); add(new THREE.CylinderGeometry(.018,.018,1.96,12),gold,-.78,2.42,.96,{rz:Math.PI/2}); }
     // 燈串（暖白燈泡）
-    if(d.lights){ const lg=new THREE.Group(); lg.position.set(0,1.96,1.5); g.add(lg); A.swing=A.swing||[]; A.swing.push({g:lg,k:.7,a:0,v:0,b:0,vb:0});
-      for(let i=0;i<10;i++){ const u=i/9, x=-1.7+u*1.84, y=1.9-Math.sin(u*Math.PI)*.1;
-        add(new THREE.SphereGeometry(.042,16,12),X3.emit("#FFE3A8",2.2),x,y-1.96,0,{shadow:false,to:lg});
-        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:X3.glowTex(),color:X3.C("#FFD58A"),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); sp.position.set(x,y-1.96,0); sp.scale.set(.18,.18,1); lg.add(sp); A.glows.push({sp,ph:i*.9}); } }
+    /* 燈串：一條電線垂下來，每顆燈泡各自用短線吊著，會各自擺動 */
+    if(d.lights){ A.swing=A.swing||[]; const wm=X3.paint("#3A2E2A"), pts=[];
+      for(let i=0;i<10;i++){ const u=i/9, x=-1.7+u*1.84, y=1.98-Math.sin(u*Math.PI)*.1; pts.push(new THREE.Vector3(x,y,1.5));
+        const pg=new THREE.Group(); pg.position.set(x,y,1.5); g.add(pg);
+        add(new THREE.CylinderGeometry(.005,.005,.09,6),wm,0,-.045,0,{shadow:false,to:pg});
+        add(new THREE.SphereGeometry(.042,16,12),X3.emit("#FFE3A8",2.2),0,-.12,0,{shadow:false,to:pg});
+        const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:X3.glowTex(),color:X3.C("#FFD58A"),transparent:true,blending:THREE.AdditiveBlending,depthWrite:false})); sp.position.set(0,-.12,0); sp.scale.set(.18,.18,1); pg.add(sp); A.glows.push({sp,ph:i*.9});
+        A.swing.push({g:pg,k:2.2+(i%3)*.25,a:0,v:0,b:0,vb:0,ph:i*.7,bulb:1}); }
+      g.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts),40,.006,6),wm)); }
     // 側面直式橫幅（+z）：照片＋標語＋From.
     { const t=X3.ctex(440,500,(x,w,h)=>{ x.fillStyle=P.soft; X3.rr(x,0,0,w,h,26); x.fill(); x.strokeStyle=P.trim; x.lineWidth=6; X3.rr(x,14,14,w-28,h-28,20); x.stroke(); photo(x,ban,40,40,w-80,260,P,14);
         x.fillStyle=ink; x.textAlign="center"; x.font=`600 40px ${SANS}`; x.fillText(slogan.slice(0,10),w/2,358); if(slogan.length>10) x.fillText(slogan.slice(10,20),w/2,406);
@@ -13301,7 +13306,9 @@ const TRUCK3D=(()=>{
       const ty=1.45; I.cam.position.set(0,ty+Math.sin(I.pitch)*I.dist,Math.cos(I.pitch)*I.dist); I.cam.lookAt(0,ty-.05,0);
       I.anim.balloons.forEach(b=>{ if(b.a==null){ b.g.position.y=Math.sin(t*1.3+b.ph)*.05; return; } const ta=Math.max(-.7,Math.min(.7,-I._av*.16-acc*.012)), tb=Math.max(-.5,Math.min(.5,-ax*.03));
         spring(b,ta,tb); b.g.rotation.x=b.a+Math.sin(t*.9+b.ph)*.03; b.g.rotation.z=b.b+Math.sin(t*1.1+b.ph)*.03; });
-      (I.anim.swing||[]).forEach(s=>{ const ta=Math.max(-.45,Math.min(.45,I._av*.09+acc*.006)), tb=Math.max(-.3,Math.min(.3,ax*.02)); spring(s,ta,tb); s.g.rotation.x=s.a; s.g.rotation.z=s.b*.4; });
+      (I.anim.swing||[]).forEach(s=>{ /* 往外甩（轉越快甩越開）＋轉向時往後拖＋開車時前後晃 */
+        const ta=Math.max(-1,Math.min(.35,-I._av*I._av*.35-Math.abs(acc)*.01)), tb=Math.max(-.8,Math.min(.8,acc*.02+I._av*.25+ax*.05));
+        spring(s,ta,tb); s.g.rotation.x=s.a+Math.sin(t*1.7+(s.ph||0))*.04; s.g.rotation.z=s.b+Math.sin(t*1.3+(s.ph||0))*.03; });
       I.anim.glows.forEach(gl=>{ const k=.75+.25*Math.sin(t*3+gl.ph); gl.sp.material.opacity=k*.75; gl.sp.scale.setScalar(.15+.06*k); });
       I.anim.steam.forEach(s=>{ const u=((t*.45+s.ph)%1.6)/1.6; s.sp.position.y=1.48+u*.42; s.sp.position.x=s.cx+Math.sin(u*6+s.ph)*.03; s.sp.material.opacity=Math.sin(u*Math.PI)*.3; s.sp.scale.setScalar(.12+u*.18); });
       I.R.render(I.scene,I.cam); requestAnimationFrame(f); };
