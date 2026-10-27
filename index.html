@@ -4854,6 +4854,11 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .sn-nav2 .nav-ico .si{width:25px;height:25px}
 .t-qbar.show{pointer-events:auto;touch-action:none}
 .lsf-b.off{border-style:dashed!important;opacity:.55}
+/* 餐車表單：兩側留白、欄位對齊 */
+.card.trk-ed{padding:18px 18px 20px!important;box-sizing:border-box}
+.trk-ed .field{box-sizing:border-box;width:100%;height:50px}
+.trk-ed .trk-ph .field{height:64px}
+.trk-ed .trk-mi+.trk-mi{margin-top:-2px}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -4972,6 +4977,42 @@ html[data-theme="dark"] .cfr-sig .cf-im{mix-blend-mode:normal;filter:invert(1) s
 .cfr-table{display:none}
 .cfr-seat .cf-cork{background:linear-gradient(180deg,#E8D1B4,#DCC09C);border-radius:16px;padding:14px;box-shadow:inset 0 0 0 6px #C49A70}
 #cfPad,.fs-pad canvas{touch-action:none}
+/* ===== v282 門面（高級版）：奶油灰泥牆、橡木拱窗看得到店裡、金色店名、玻璃門 ===== */
+.cfs{background:linear-gradient(180deg,#F7F1E8 0%,#F2EADF 70%,#E6DACB 70.3%,#DDCFBD 100%)!important;color:#3A2E25}
+html[data-theme="dark"] .cfs{background:linear-gradient(180deg,#2B2520 0%,#26201B 70%,#3A3129 70.3%,#342B24 100%)!important;color:#F1E6D8}
+.cfs-awn{height:30px;margin:0 16%;border-radius:0 0 14px 14px;background:repeating-linear-gradient(90deg,var(--ac) 0 18px,color-mix(in srgb,var(--ac) 55%,#fff) 18px 36px);-webkit-mask:radial-gradient(9px 7px at 9px 100%,#0000 98%,#000) 0 0/18px 100%;mask:radial-gradient(9px 7px at 9px 100%,#0000 98%,#000) 0 0/18px 100%;filter:saturate(.7) brightness(1.02);opacity:.9}
+.cfs-sign{position:relative;text-align:center;padding:14px 0 6px;display:flex;flex-direction:column;align-items:center}
+.cfs-sign small{font-size:9.5px;letter-spacing:.42em;opacity:.6;font-weight:600}
+.cfs-sign b{font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;font-size:30px;font-weight:500;letter-spacing:.06em;margin-top:2px;background:linear-gradient(180deg,#C9A45C,#9C7432 60%,#D9B872);-webkit-background-clip:text;background-clip:text;color:transparent;max-width:90%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cfs-lamp{position:absolute;top:8px;width:16px;height:10px;border-radius:0 0 10px 10px;background:#3A2E25;box-shadow:0 10px 18px 4px rgba(255,210,140,.5)}.cfs-lamp.l{left:22%}.cfs-lamp.r{right:22%}
+.cfs-front{position:relative;display:grid;grid-template-columns:1fr 92px;gap:14px;align-items:end;padding:6px 18px 0}
+.cfs-win{position:relative;height:168px;border-radius:84px 84px 6px 6px;border:7px solid #A9805A;box-shadow:inset 0 0 0 2px #E9D6BC,0 8px 18px rgba(80,50,25,.12);overflow:hidden;background:radial-gradient(120% 90% at 50% 100%,#FFE3B0 0%,#F6D7A6 35%,#E9C899 70%,#D8B485 100%)}
+.cfs.on .cfs-win{background:radial-gradient(120% 90% at 50% 100%,#FFEBC2 0%,#FADDAE 40%,#EDCA98 75%,#DDB688 100%)}
+.cfs-win::after{content:"";position:absolute;inset:0;background:linear-gradient(120deg,rgba(255,255,255,.35) 0 18%,transparent 18% 30%,rgba(255,255,255,.18) 30% 34%,transparent 34%),linear-gradient(90deg,transparent calc(50% - 2px),#A9805A calc(50% - 2px) calc(50% + 2px),transparent calc(50% + 2px));pointer-events:none}
+.cfs-in{position:absolute;inset:0}
+.cfs-pend{position:absolute;top:0;width:1.5px;height:34px;background:#5A4535}.cfs-pend::after{content:"";position:absolute;left:-9px;top:32px;width:20px;height:12px;border-radius:12px 12px 2px 2px;background:#3A2E25;box-shadow:0 10px 22px 6px rgba(255,214,150,.75)}
+.cfs-pend.a{left:24%}.cfs-pend.b{left:50%;height:46px}.cfs-pend.b::after{top:44px}.cfs-pend.c{left:76%}
+.cfs-shelf{position:absolute;left:12%;right:12%;top:86px;height:4px;background:#8B6644;opacity:.55}
+.cfs-shelf::before{content:"";position:absolute;bottom:4px;left:8%;width:12px;height:16px;border-radius:3px;background:#F3EBDD;box-shadow:22px 2px 0 -2px #E7D9C4,48px -2px 0 0 #fff,74px 1px 0 -1px #EADCC8}
+.cfs-cnt{position:absolute;left:-2%;right:-2%;bottom:0;height:34px;background:linear-gradient(180deg,#C79A6E,#A97D55);box-shadow:inset 0 4px 0 #DDB68C}
+.cfs-cake{position:absolute;right:20%;bottom:34px;width:30px;height:22px;border-radius:6px 6px 2px 2px;background:linear-gradient(180deg,#fff 0 40%,var(--ac) 40% 52%,#fff 52%);box-shadow:0 0 0 1.5px rgba(0,0,0,.05)}
+.cfs-cake::before{content:"";position:absolute;left:13px;top:-9px;width:3px;height:9px;background:#F6C3D4;border-radius:2px;box-shadow:0 -4px 6px 1px rgba(255,200,120,.9)}
+.cfs-pst{position:absolute;bottom:40px;width:54px;aspect-ratio:3/4;background:#fff;padding:3px;box-shadow:0 3px 8px rgba(0,0,0,.18)}.cfs-pst .cf-im{width:100%;height:100%;object-fit:cover}
+.cfs-pst.p0{left:12%;transform:rotate(-3deg)}.cfs-pst.p1{left:34%;transform:rotate(2deg)}
+.cfs-pol{right:10px;bottom:40px}
+.cfs-door{position:relative;height:196px;border:0;padding:0;border-radius:46px 46px 4px 4px;background:linear-gradient(180deg,#2F2620,#211A15);box-shadow:inset 0 0 0 5px #4A3A2E,0 10px 24px rgba(40,25,10,.28),0 0 0 3px #C9A45C33;cursor:pointer;font:inherit;transform-origin:left center;transition:transform .45s cubic-bezier(.5,0,.3,1),box-shadow .3s}
+.cfs.on .cfs-door{box-shadow:inset 0 0 0 5px #4A3A2E,0 10px 24px rgba(40,25,10,.28),0 0 26px 4px rgba(255,205,130,.45)}
+.cfs-dglass{position:absolute;left:12px;right:12px;top:12px;bottom:46px;border-radius:36px 36px 3px 3px;background:radial-gradient(120% 80% at 50% 100%,#FFE2AE,#EFC98E 55%,#C99E6B);box-shadow:inset 0 0 0 2px #C9A45C}
+.cfs-dglass::after{content:"";position:absolute;inset:0;border-radius:inherit;background:linear-gradient(125deg,rgba(255,255,255,.4) 0 20%,transparent 20%)}
+.cfs-hang{position:absolute;left:50%;top:48px;transform:translateX(-50%) rotate(-3deg);padding:4px 9px;border-radius:5px;background:#FFFBF4;color:#3A2E25;font-size:9.5px;font-weight:800;letter-spacing:.18em;box-shadow:0 3px 6px rgba(0,0,0,.18);animation:cfsSw 3.2s ease-in-out infinite}
+.cfs-hang::before{content:"";position:absolute;left:50%;top:-12px;width:22px;height:12px;margin-left:-11px;border:1.5px solid #C9A45C;border-bottom:0;border-radius:12px 12px 0 0}
+@keyframes cfsSw{50%{transform:translateX(-50%) rotate(3deg)}}
+.cfs-handle{position:absolute;right:14px;top:56%;width:5px;height:34px;border-radius:3px;background:linear-gradient(180deg,#F1D79A,#B98C3E);box-shadow:0 2px 4px rgba(0,0,0,.25)}
+.cfs-door.opening{transform:perspective(520px) rotateY(-70deg)}
+button.cfs-door:active{transform:scale(.98)}
+.cfs-tree{position:absolute;right:2px;bottom:0;width:30px;height:64px;pointer-events:none;background:radial-gradient(circle at 50% 30%,#7C9A6A 0 9px,transparent 10px),radial-gradient(circle at 30% 45%,#8FAE7B 0 8px,transparent 9px),radial-gradient(circle at 70% 48%,#6E8C5E 0 8px,transparent 9px),linear-gradient(#7A5A3C,#7A5A3C) 50% 70%/2px 22px no-repeat,linear-gradient(180deg,#E9DFD1,#CDBFAE) 50% 100%/22px 18px no-repeat}
+.cfs-step{height:10px;margin:0 8px;border-radius:0 0 8px 8px;background:#CDBBA6}
+html[data-theme="dark"] .cfs-step{background:#4A3D33}
 
 </style>
 </head>
@@ -5375,7 +5416,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027054748";
+const BUILD="20261027055738";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -14861,11 +14902,17 @@ function cfTileSub(){ const o=cfOpenNow(); if(o.length) return `● ${o.map(x=>M
 
 /* 店門口：整間小店的門面 */
 function cfFront(c,w,enter){ const m=MEMBERS[c.mid], g=groupOf(m.group), name=m.name, tot=Object.values(c.pts).reduce((s,n)=>s+n,0), cup=c.cups[c.cups.length-1];
-  return `<section class="cf-shop" style="--cc:${grad(m.g||0)}">
-    <div class="cf-awn"></div><div class="cf-sign"><small>HAPPY BIRTHDAY</small><b>${esc(name)}</b><em>café</em></div>
-    <div class="cf-face"><div class="cf-win">${c.posters.length?c.posters.slice(-3).map(p=>`<span class="cf-wp">${cfImg(p.img)}</span>`).join(""):`<span class="cf-wp ph">🎂</span>`}${c.art.selfie?`<span class="cf-pol">${cfImg(c.art.selfie)}<i>${esc(name)} 到店</i></span>`:""}</div>
-      ${enter?`<button class="cf-door" data-a="cfIn" data-v="${c.mid}" aria-label="進店"><span class="cf-open">${w.open?"OPEN":"CLOSED"}</span><em class="cf-push">PUSH</em></button>`:`<div class="cf-door"><span class="cf-open">${w.open?"OPEN":"CLOSED"}</span></div>`}</div>
-    <div class="cf-step"></div>
+  const ac=(GRADS[(m.g||0)%GRADS.length]||["#B9A2E8"])[0], open=w.open;
+  const winIn=`<span class="cfs-in"><i class="cfs-pend a"></i><i class="cfs-pend b"></i><i class="cfs-pend c"></i><i class="cfs-shelf"></i><i class="cfs-cnt"></i><i class="cfs-cake"></i></span>`;
+  const posters=c.posters.slice(-2).map((p,i)=>`<span class="cfs-pst p${i}">${cfImg(p.img)}</span>`).join("");
+  const door=`<span class="cfs-dglass"></span><span class="cfs-hang">${open?"OPEN":"CLOSED"}</span><i class="cfs-handle"></i>`;
+  return `<section class="cf-shop cfs ${open?"on":""}" style="--ac:${ac}">
+    <div class="cfs-awn"></div>
+    <div class="cfs-sign"><i class="cfs-lamp l"></i><i class="cfs-lamp r"></i><small>BIRTHDAY CAFÉ</small><b>${esc(name)}</b></div>
+    <div class="cfs-front"><div class="cfs-win">${winIn}${posters}${c.art.selfie?`<span class="cf-pol cfs-pol">${cfImg(c.art.selfie)}<i>${esc(name)}</i></span>`:""}</div>
+      ${enter?`<button class="cfs-door" data-a="cfIn" data-v="${c.mid}" aria-label="進店">${door}</button>`:`<div class="cfs-door">${door}</div>`}
+      <i class="cfs-tree"></i></div>
+    <div class="cfs-step"></div>
     <div class="cf-stat"><span><b>${fmt(Object.keys(c.visits).length)}</b>位來過</span><span><b>${fmt(tot)}</b>積分應援</span><span><b>${fmt(c.cards.length)}</b>張卡片</span></div>
     <p class="cf-when">${w.open?(w.diff===0?"🎉 今天生日！":w.diff>0?`生日倒數 ${w.diff} 天`:`生日過後第 ${-w.diff} 天`)+`・營業到 ${ymd(+w.day+CF_DAYS*864e5)}`:`${ymd(+w.day-CF_DAYS*864e5)} 開店`}${g&&!g.solo?`・${esc(g.name)}`:""}</p></section>`; }
 function cfSec(t,sub,body,act=""){ return `<section class="cf-sec"><div class="cf-sh"><b>${t}</b>${sub?`<small>${sub}</small>`:""}${act}</div>${body}</section>`; }
@@ -14926,7 +14973,7 @@ const cfCur=mid=>{ const w=cfWindow(mid); return w?cfGet(mid,w.y):null; };
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^cf[A-Z]/.test(a)) return;
   const mid=t.dataset.v, rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
   switch(a){
-    case "cfIn": { const d=t.closest(".cf-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; render(); window.scrollTo(0,0); },420); break; }
+    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; render(); window.scrollTo(0,0); },420); break; }
     case "cfOut": ui.cfIn=null; render(); window.scrollTo(0,0); break;
     case "cfZone": { const r=document.getElementById("cfRoom"), z=r&&r.querySelector(`[data-z="${t.dataset.v}"]`); if(z) r.scrollTo({left:z.offsetLeft-r.offsetLeft,behavior:"smooth"}); break; }
     case "cfGo": ui.cfIn=null; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
@@ -15284,7 +15331,7 @@ function lsPartsMesh(front,side,back,top,depth,split,pm,embC,dims,lbl){ pm=pm||{
   if(bulb){ const cy=(bulb.y0+bulb.y1)/2, ry=(bulb.y1-bulb.y0)/2, mid=[]; for(let y=bulb.y0;y<bulb.y1;y++){ const u=(y+.5-cy)/ry; if(Math.abs(u)<.75&&core[y]) mid.push(core[y]/Math.sqrt(1-u*u)); } mid.sort((a,b)=>a-b); const Rb=Math.min(mid[Math.floor(mid.length*.2)]||1e9,(()=>{ const v=[]; for(let y=bulb.y0;y<bulb.y1;y++) if(core[y]) v.push(core[y]); v.sort((a,b)=>a-b); return v[Math.floor(v.length*.75)]||core[Math.round(cy)]; })());
     bulb.fit=y=>Rb*Math.sqrt(Math.max(0,1-((y+.5-cy)/ry)**2)); for(let y=bulb.y0;y<bulb.y1;y++){ const f=bulb.fit(y); if(core[y]>f*1.03) core[y]=Math.max(.5,f); }
     /* 燈泡要正圓：上下比左右長的話，用左右的半徑做球（底部貼著底座），上面的裝飾一起往下移 */
-    bulb.Rb=Rb; if(ry>Rb*1.04){ const c2=bulb.y1-Rb, top=Math.round(c2-Rb), dy=top-bulb.y0; bulb.sph={c:c2,R:Rb}; parts.forEach(q=>{ if(q.y1<=bulb.y0) q.dy=dy; }); bulb.y0=Math.max(bulb.y0,top); } }
+    bulb.Rb=Rb; if(Math.abs(ry-Rb)<Rb*.35){ const c2=bulb.y1-Rb, top=Math.round(c2-Rb), dy=top-bulb.y0; bulb.sph={c:c2,R:Rb}; parts.forEach(q=>{ if(q.y1<=bulb.y0) q.dy=dy; }); bulb.y0=Math.max(0,top); } }   // 球幾乎都是正圓：上下左右差不到 35% 就做正球
   if(bulb&&dims&&dims.L&&dims.D){ const body=parts.filter(q=>!q.swing), want=dims.D/dims.L*(body.reduce((s,q)=>Math.max(s,q.y1),0)-body.reduce((s,q)=>Math.min(s,q.y0),NY)), k=Math.max(.8,Math.min(1.25,want/(2*bulb.Rb))); if(Math.abs(k-1)>.03) bulb.k=k; }
   const meshes=[], info=[]; const glowOf=p=>p.mat==="glow"?1:p.mat==="glass"?.15:p.head?.6:0;
   const colorAt=(x,y,z,nx,nz)=>{ const wf=Math.max(0,nz), wb=Math.max(0,-nz), ws=Math.abs(nx); let c=[0,0,0], t=0; const add=(cc,w)=>{ if(cc&&w>0){ c[0]+=cc[0]*w; c[1]+=cc[1]*w; c[2]+=cc[2]*w; t+=w; } };
