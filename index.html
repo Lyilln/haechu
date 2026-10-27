@@ -4644,6 +4644,25 @@ html[data-theme="dark"] .sn-vbusy>div{background:#262626;color:#F5F5F5}html[data
 .sn-sugh{display:flex;justify-content:space-between;align-items:center;padding-right:16px}.sn-sugh button{border:0;background:none;color:#0095F6;font:inherit;font-size:13.5px;font-weight:600}
 .sn-nav button.on:last-child{background:color-mix(in srgb,var(--t) 9%,transparent);border-radius:22px;width:64px}
 .sn-feed,.sn-grid,.sn-ul,.sn-nt{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
+/* ===== Reels 進階 ===== */
+.sn-prog{position:absolute;left:0;right:0;bottom:calc(env(safe-area-inset-bottom,0px) + 76px);height:14px;z-index:3;display:flex;align-items:flex-end;touch-action:none}
+.sn-prog i{display:block;height:2px;width:0;background:rgba(255,255,255,.9);border-radius:2px;transition:height .15s}.sn-prog::before{content:"";position:absolute;left:0;right:0;bottom:0;height:2px;background:rgba(255,255,255,.25)}.sn-prog.drag i{height:5px}
+.sn-2x{position:absolute;left:50%;top:calc(env(safe-area-inset-top,0px) + 70px);transform:translateX(-50%);z-index:4;font-style:normal;font-size:13px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);border-radius:14px;padding:4px 12px;opacity:0;transition:opacity .15s;pointer-events:none}
+.sn-reel1.x2 .sn-2x{opacity:1}
+.sn-rr .saved .si{fill:currentColor}
+.sn-rfav{display:inline-flex;margin-left:6px;vertical-align:middle}.sn-rfav .sn-av{box-shadow:0 0 0 1.5px #000}.sn-rfav .sn-av+.sn-av{margin-left:-6px}
+html.sn-vshrink .sn-reel1 .sn-rbg{bottom:62vh;transition:bottom .25s}html.sn-vshrink .sn-reel1 .sn-rbg video,html.sn-vshrink .sn-reel1 .sn-rbg img{object-fit:contain}
+html.sn-vshrink .sn-reel1 .sn-rr,html.sn-vshrink .sn-reel1 .sn-rb,html.sn-vshrink .sn-reel1 .sn-prog{opacity:0;pointer-events:none}
+html.sn-vshrink .sn-shw{background:transparent}html.sn-vshrink .sn-sh{max-height:62vh;height:62vh}
+.sn-cemo{display:flex;justify-content:space-around;padding:8px 10px 2px;border-top:.5px solid var(--sn-l,#DBDBDB)}.sn-cemo button{border:0;background:none;font-size:24px;padding:2px}
+.sn-shact{display:flex;gap:18px;padding:12px 16px calc(env(safe-area-inset-bottom,0px) + 14px);border-top:.5px solid var(--sn-l,#DBDBDB);overflow-x:auto}.sn-shact button{flex:none;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;color:inherit;font:inherit;width:64px}
+.sn-shact i{width:50px;height:50px;border-radius:50%;background:rgba(127,127,127,.14);display:grid;place-items:center;font-style:normal;font-size:20px}.sn-shact small{font-size:11px;text-align:center}
+.sn-colh{display:flex;align-items:center;gap:12px;padding:10px 16px}.sn-colh>span:nth-child(2){flex:1;display:flex;flex-direction:column}.sn-colh small{color:#8E8E8E;font-size:12px}.sn-colh .si{fill:currentColor}
+.sn-colth{position:relative;flex:none;width:44px;height:44px;border-radius:8px;overflow:hidden;background:rgba(127,127,127,.15)}.sn-colth .sn-img,.sn-colth .sn-pic{position:absolute;inset:0}.sn-colth .sn-ri{display:none}
+.sn-colt{display:flex;justify-content:space-between;align-items:center;padding:10px 16px;border-top:.5px solid var(--sn-l,#DBDBDB)}.sn-colt button{border:0;background:none;color:#0095F6;font:inherit;font-weight:600;font-size:14px}
+.sn-coll{display:flex;flex-direction:column;max-height:42vh;overflow-y:auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}.sn-coll button{display:flex;align-items:center;gap:12px;border:0;background:none;color:inherit;font:inherit;padding:8px 16px;text-align:left}
+.sn-coll button>span:nth-child(2){flex:1;display:flex;flex-direction:column}.sn-coll small{color:#8E8E8E;font-size:12px}.sn-coll i{font-style:normal;width:28px;height:28px;border-radius:50%;border:1.5px solid #C7C7CC;display:grid;place-items:center;font-size:14px}.sn-coll i.on{background:#0095F6;border-color:#0095F6;color:#fff}
+.sn-colf{display:flex;gap:6px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none}.sn-colf button{flex:none;border:1px solid var(--sn-l,#DBDBDB);border-radius:16px;background:none;color:inherit;font:inherit;font-size:13px;padding:6px 12px;display:flex;gap:6px}.sn-colf em{font-style:normal;color:#8E8E8E}.sn-colf button.on{background:var(--t,#000);color:var(--b,#fff);border-color:transparent}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -4761,6 +4780,81 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 #sbxPill b{background:rgba(0,0,0,.8);color:#fff;border-radius:11px;padding:2px 9px}
 /* iPhone：毛玻璃的標題列、導航列偶爾整塊沒畫出來 → 讓它們各自有固定的圖層 */
 .top,.nav-in{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.t-ctx3{display:flex;gap:0;padding:0;overflow:hidden}.t-ctx3 button{border:0;background:none;font:inherit;font-size:14px;font-weight:600;padding:10px 16px;color:inherit}.t-ctx3 button+button{border-left:1px solid rgba(127,127,127,.2)}.t-ctx3 .dg{color:#FF3B30}
+.has-arw .t-meta2{justify-content:flex-end}
+.has-arw .t-b[data-lp]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
+
+/* ===== 生日咖啡廳：迷你小店 ===== */
+.cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
+.cf-none{display:flex;flex-direction:column;align-items:center;gap:10px;padding:56px 20px;color:var(--ink-3);text-align:center}.cf-none span{font-size:40px}
+.cf-card{display:block;width:100%;border:0;padding:0;background:none;text-align:inherit;color:inherit;font:inherit}
+.cf-hint{margin:0;font-size:12.5px;color:var(--ink-3)}
+/* 門面 */
+.cf-shop{position:relative;border-radius:26px;overflow:hidden;background:linear-gradient(180deg,#FFF8F1 0%,#FBEFE3 100%);color:#3B2A1E;padding:0 0 14px;box-shadow:0 10px 30px rgba(88,52,30,.14)}
+html[data-theme="dark"] .cf-shop{background:linear-gradient(180deg,#2A211C 0%,#1E1814 100%);color:#F5E9DD}
+.cf-awn{height:46px;background:repeating-linear-gradient(90deg,#fff 0 26px,transparent 26px 52px),var(--cc);-webkit-mask:radial-gradient(13px 10px at 13px 100%,#0000 98%,#000) 0 0/26px 100%;mask:radial-gradient(13px 10px at 13px 100%,#0000 98%,#000) 0 0/26px 100%}
+.cf-sign{margin:10px auto 0;width:max-content;max-width:86%;text-align:center;padding:8px 22px 10px;border-radius:14px;background:#3B2A1E;color:#FFF3E6;box-shadow:0 4px 0 rgba(0,0,0,.18);display:flex;flex-direction:column;align-items:center;line-height:1.05}
+.cf-sign small{font-size:10px;letter-spacing:.32em;opacity:.8}.cf-sign b{font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;font-size:26px;font-weight:700;margin-top:3px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cf-sign em{font-family:Georgia,serif;font-style:italic;font-size:14px;opacity:.85}
+.cf-face{display:grid;grid-template-columns:1fr 84px;gap:12px;padding:14px 18px 0;align-items:end}
+.cf-win{position:relative;height:150px;border-radius:14px 14px 4px 4px;border:6px solid #8A5A3C;background:linear-gradient(160deg,rgba(255,255,255,.75),rgba(255,236,214,.5));display:flex;align-items:center;justify-content:center;gap:6px;padding:10px;overflow:hidden}
+html[data-theme="dark"] .cf-win{background:linear-gradient(160deg,rgba(255,236,214,.12),rgba(255,236,214,.04))}
+.cf-win::after{content:"";position:absolute;left:0;right:0;top:0;height:40%;background:linear-gradient(180deg,rgba(255,255,255,.35),transparent);pointer-events:none}
+.cf-wp{flex:1;max-width:30%;aspect-ratio:3/4;border-radius:4px;overflow:hidden;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.18);transform:rotate(-2deg)}.cf-wp:nth-child(2){transform:rotate(2deg) translateY(-4px)}.cf-wp.ph{display:grid;place-items:center;font-size:30px;max-width:40%}
+.cf-wp .cf-im{width:100%;height:100%;object-fit:cover}
+.cf-pol{position:absolute;right:8px;bottom:6px;width:62px;background:#fff;padding:4px 4px 14px;box-shadow:0 3px 8px rgba(0,0,0,.25);transform:rotate(6deg)}.cf-pol .cf-im{width:100%;aspect-ratio:1;object-fit:cover}.cf-pol i{position:absolute;left:0;right:0;bottom:2px;font-style:normal;font-size:8px;text-align:center;color:#3B2A1E}
+.cf-door{height:170px;border-radius:42px 42px 4px 4px;background:linear-gradient(180deg,#9C6A48,#7A4E33);border:5px solid #5E3B26;position:relative;display:flex;justify-content:center;padding-top:22px}
+.cf-door::after{content:"";position:absolute;right:12px;top:50%;width:8px;height:8px;border-radius:50%;background:#F2C66D}
+.cf-open{height:22px;padding:0 10px;border-radius:6px;background:#FFF3E6;color:#3B2A1E;font-size:10px;font-weight:800;letter-spacing:.12em;display:grid;place-items:center;box-shadow:0 2px 0 rgba(0,0,0,.2)}
+.cf-step{height:10px;margin:0 10px;border-radius:0 0 8px 8px;background:#C9A88E}
+.cf-stat{display:flex;justify-content:space-around;padding:12px 10px 4px;font-size:11.5px;opacity:.85}.cf-stat span{display:flex;flex-direction:column;align-items:center}.cf-stat b{font-size:18px;font-variant-numeric:tabular-nums}
+.cf-when{margin:6px 0 0;text-align:center;font-size:12.5px;opacity:.8}
+/* 區塊 */
+.cf-sec{border-radius:22px;background:var(--glass);padding:14px 16px;display:flex;flex-direction:column;gap:12px;color:var(--ink)}
+.cf-sh{display:flex;align-items:baseline;gap:8px}.cf-sh b{font-size:16px}.cf-sh small{color:var(--ink-3);font-size:12px;flex:1}
+.cf-add{margin-left:auto;flex:none;border:0;border-radius:16px;background:#3B2A1E;color:#FFF3E6;font:inherit;font-size:12.5px;font-weight:700;padding:6px 12px;cursor:pointer}.cf-add input{display:none}
+html[data-theme="dark"] .cf-add{background:#F5E9DD;color:#3B2A1E}
+.cf-im{display:block}
+/* 藝人到店 */
+.cf-art{border-radius:22px;padding:16px;background:linear-gradient(135deg,#FFF1E0,#FFE3EE);color:#3B2A1E;display:flex;flex-direction:column;gap:12px}
+html[data-theme="dark"] .cf-art{background:linear-gradient(135deg,#3A2A22,#3A2232);color:#F5E9DD}
+.cf-arth{font-weight:800}
+.cf-sigw{border-radius:14px;background:repeating-linear-gradient(0deg,#F6EBDD 0 2px,#FBF4EA 2px 22px);padding:10px}.cf-sigw .sig{width:100%;height:auto;max-height:160px;object-fit:contain}
+.cf-voice{border:0;border-radius:18px;background:#3B2A1E;color:#FFF3E6;font:inherit;font-weight:700;padding:10px 14px}
+.cf-acts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.cf-acts>*{display:flex;flex-direction:column;align-items:center;gap:6px;border:0;border-radius:16px;background:rgba(127,127,127,.1);color:inherit;font:inherit;font-size:22px;padding:14px 4px;cursor:pointer}.cf-acts span{font-size:12.5px;font-weight:600}.cf-acts input{display:none}
+/* 應援 */
+.cf-gb{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.cf-gb button{border:0;border-radius:14px;background:rgba(127,127,127,.1);color:inherit;font:inherit;font-size:13px;font-weight:700;padding:12px 0;font-variant-numeric:tabular-nums}
+.cf-pc{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;background:rgba(127,127,127,.06)}.cf-pc p{margin:0;display:flex;flex-direction:column}.cf-pc small{color:var(--ink-3)}
+.cf-pcc{position:relative;flex:none;width:64px;aspect-ratio:55/85;border-radius:8px;overflow:hidden;background:var(--cc);box-shadow:0 4px 12px rgba(0,0,0,.2);display:grid;place-items:center;color:#fff;transform:rotate(-4deg)}.cf-pcc .cf-im{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.cf-pcc i{position:absolute;left:0;right:0;bottom:4px;font-style:normal;font-size:7px;font-weight:800;text-align:center;line-height:1.1;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+/* 海報牆 */
+.cf-wall{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:4px 2px}
+.cf-pst{position:relative;margin:0;background:#fff;padding:5px 5px 18px;box-shadow:0 3px 10px rgba(0,0,0,.14);transform:rotate(var(--r))}.cf-pst .cf-im{width:100%;aspect-ratio:3/4;object-fit:cover}.cf-pst figcaption{position:absolute;left:0;right:0;bottom:3px;font-size:9px;color:#8A7564;text-align:center;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;padding:0 4px}
+.cf-pst::before{content:"";position:absolute;left:50%;top:-6px;width:28px;height:12px;transform:translateX(-50%) rotate(-3deg);background:rgba(255,214,231,.85);z-index:1}
+/* 杯套 */
+.cf-cups{display:flex;gap:14px;overflow-x:auto;padding:6px 2px 2px;scrollbar-width:none}.cf-cups::-webkit-scrollbar{display:none}
+.cf-cup{position:relative;flex:none;width:86px;display:flex;flex-direction:column;align-items:center}
+.cf-lid{width:80px;height:12px;border-radius:6px 6px 3px 3px;background:#F2EDE7;box-shadow:0 2px 0 #D9D1C8}
+.cf-sleeve{width:72px;height:56px;margin-top:10px;overflow:hidden;clip-path:polygon(0 0,100% 0,94% 100%,6% 100%);background:#C9A88E}.cf-sleeve .cf-im{width:100%;height:100%;object-fit:cover}
+.cf-body{width:62px;height:22px;background:#FBF8F4;clip-path:polygon(0 0,100% 0,92% 100%,8% 100%)}
+.cf-cup small{font-size:10px;color:var(--ink-3);margin-top:4px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+/* 菜單（黑板） */
+.cf-board{border-radius:14px;background:#2F3A33;border:8px solid #8A5A3C;color:#F4F1E8;padding:14px 16px;font-family:"Chalkboard SE","Comic Sans MS",ui-rounded,system-ui,sans-serif;display:flex;flex-direction:column;gap:8px;box-shadow:inset 0 0 30px rgba(0,0,0,.35)}
+.cf-board>b{text-align:center;letter-spacing:.2em;font-size:13px;opacity:.9}.cf-board>p{margin:0;text-align:center;opacity:.6;font-size:13px}
+.cf-mi{position:relative;display:flex;align-items:baseline;gap:8px;font-size:15px}.cf-mi i{flex:1;border-bottom:2px dotted rgba(244,241,232,.35)}.cf-mi small{font-size:11px;opacity:.7}
+/* 留言板（軟木塞） */
+.cf-cork{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:14px 12px;border-radius:14px;background:#C99E6E radial-gradient(rgba(0,0,0,.08) 1px,transparent 1.5px) 0 0/7px 7px;box-shadow:inset 0 0 0 6px #8A5A3C}
+.cf-cork>.cf-hint{grid-column:1/-1;color:#3B2A1E;text-align:center}
+.cf-note{position:relative;background:var(--nc);color:#3B2A1E;padding:12px 10px 10px;transform:rotate(var(--r));box-shadow:0 3px 8px rgba(0,0,0,.2);display:flex;flex-direction:column;gap:6px;min-width:0}
+.cf-note::before{content:"";position:absolute;left:50%;top:-5px;width:10px;height:10px;border-radius:50%;background:#E5484D;box-shadow:0 1px 2px rgba(0,0,0,.35);transform:translateX(-50%)}
+.cf-note p{margin:0;font-size:13px;line-height:1.45;word-break:break-word}.cf-note small{font-size:10.5px;opacity:.7}
+.cf-rep{font-size:12px;background:rgba(255,255,255,.65);border-radius:8px;padding:6px 8px;line-height:1.4}.cf-rb{align-self:flex-start;border:0;border-radius:10px;background:rgba(59,42,30,.85);color:#FFF3E6;font:inherit;font-size:11px;padding:4px 10px}
+.cf-q{margin:0 0 8px;font-size:13px;opacity:.8;text-align:left}
+/* 藝人最愛 */
+.cf-star{position:absolute;right:4px;top:4px;z-index:2;width:28px;height:28px;border-radius:50%;border:0;background:rgba(0,0,0,.35);color:#fff;font-size:15px;display:grid;place-items:center;padding:0}.cf-star.on{background:#E5484D}
+.cf-stamp{position:absolute;right:-6px;top:-8px;z-index:2;font-style:normal;font-size:8.5px;font-weight:900;line-height:1.1;text-align:center;color:#E5484D;border:2px solid #E5484D;border-radius:50%;width:44px;height:44px;display:grid;place-items:center;background:rgba(255,255,255,.75);transform:rotate(-14deg);overflow:hidden}
+/* 簽名板 */
+.cf-padc{border-radius:14px;overflow:hidden;background:repeating-linear-gradient(0deg,#F6EBDD 0 2px,#FBF4EA 2px 22px);touch-action:none;margin:10px 0}.cf-padc canvas{display:block;width:100%;height:auto;touch-action:none}
+/* 即將開店 */
+.cf-up{padding:6px 14px}.cf-upr{display:flex;align-items:center;gap:10px;padding:8px 0}.cf-upr+.cf-upr{border-top:1px solid var(--line)}.cf-upr span{flex:1;display:flex;flex-direction:column}.cf-upr small{color:var(--ink-3);font-size:12px}.cf-upr em{font-style:normal;font-size:12px;color:var(--ink-3)}
 
 </style>
 </head>
@@ -5164,7 +5258,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027024914";
+const BUILD="20261027031718";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5574,7 +5668,11 @@ function myLevel(){ const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.mem
   const fl=+S.get(K.lvMax,0)||0; if(li<fl){ li=fl; si=0; } else if(li>fl) S.set(K.lvMax,li);
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
   return {li,si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],art,next:nx&&(!art&&nx[0]>0?null:{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)})}; }
-function lvLine(){ try{ const v=myLevel(), p=points(); return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${v.next?`再 ${fmt(v.next.need)} 分升到 ${v.next.code}`:!v.art?(p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
+function lvLine(){ try{ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${v.next?`再 ${fmt(v.next.need)} 分升到 ${v.next.code}`:!v.art?(adm?"":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
+/* 藝人帳號的等級：用藝人自己的積分收入（分潤後實得）算，出道後至少 R1 */
+function artLevel(mid){ const p=Math.max(0,(pointsOf(mid)||{}).net||0); let li=1,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v&&i>=1){ li=i; si=j; } }));
+  const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null; return {li,si,p,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],next:nx&&{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }
+function artLvLine(mid){ try{ const v=artLevel(mid); return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${v.next?`再 ${fmt(v.next.need)} 分升到 ${v.next.code}`:"最高等級"}</small></div>`; }catch(e){ return ""; } }
 function buyTie(mid,days,pts){
   if(points()<pts) return {type:"nopts"};
   S.set(K.points,points()-pts); if(pts) recordSale("tie",{mid,pts,label:`${WHISPER_NAME} 券・${MEMBERS[mid].name}（${days} 天）`});
@@ -6577,6 +6675,7 @@ function removeReported(r){
   if(!r.kind||r.kind==="comment"){ removeComment(r.commentId); return; }
   if(r.kind==="live"){ const l=getLive(r.ref.liveId); if(l){ l.msgs=l.msgs.filter(x=>x.ts!==r.ref.ts); saveLive(l); } }
   if(r.kind==="tie"){ S.set(K.whispers,S.get(K.whispers,[]).filter(w=>w.id!==r.ref.wid)); }
+  if(r.kind==="sns"){ try{ const d=snDB(); d.posts=d.posts.filter(p=>p.id!==r.ref.wid); snSave(d); }catch(e){} }
 }
 function reportWho(r){ if(r.who) return r.who; const c=S.get(K.comments,[]).find(x=>x.id===r.commentId); return c?(c.author==="me"?"fan:me":"fan:"+c.name):null; }
 
@@ -6737,7 +6836,7 @@ const TIERS={1:{name:"日常",rate:.82},2:{name:"舞台",rate:.15},3:{name:"流�
 const getDebut=()=>S.get(K.debut,[])||[];
 const myDebut=()=>{ const em=myEmail(); return em?getDebut().filter(x=>x.email===em).sort((a,b)=>b.ts-a.ts)[0]||null:null; };
 function debutSync(){ try{ const s=session(), d=myDebut(); if(!s||s.home||!d||d.status!=="ok"||!d.mid||!MEMBERS[d.mid]) return; const a=ACCOUNTS[s.email]; if(a&&!a.member) ACCOUNTS[s.email]={...a,role:a.role==="admin"?"admin":"artist",member:d.mid}; SS.set({...s,home:d.mid}); }catch(e){} }
-function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="no"?"未通過":"";
+function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="no"?"未通過":"";
   return `<div class="section-h">出道</div><section class="card"><button class="list-btn" data-a="debutAsk">${I.star}申請出道<span class="r">${st}</span></button></section>`; }
 function debutAdmHtml(){ const L=getDebut().slice().sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
   const row=x=>`<div class="db-row"><span class="db-av" style="background:${grad(x.g||0)}">${esc((x.name||"?")[0])}</span><span class="db-tx"><b>${esc(x.name)}</b><small>${esc(acctUser(x.email))}・${ago(x.ts)}</small>${dbMedia(x)}</span>${x.status==="wait"?`<span class="db-act"><button class="btn btn-sm btn-main db-b" data-a="dbOk" data-v="${x.id}">核准</button><button class="btn btn-sm btn-soft db-b" data-a="dbNo" data-v="${x.id}">不核准</button></span>`:`<span class="r muted">${x.status==="ok"?"已出道":"未通過"}</span>`}</div>`;
@@ -8588,7 +8687,7 @@ function viewArtist(tab){
   if(tab==="me"){
     return head+`<main class="page">
       <section class="card me-card"><div class="av lg" style="margin:0 auto;background:${grad(m.g)}">${mAvIn(mid)}</div>
-        <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span></section>
+        <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span>${artLvLine(mid)}</section>
       <div class="section-h">${WHISPER_NAME} 設定</div>
       <section class="card">
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
@@ -8941,7 +9040,7 @@ function viewTieArtist(mid){
     const sh=fanShown(w,mid);
     return sep+`<div class="t-art"><span class="fan-av">${mascot("msg:"+w.id)}</span>
       <div class="t-art-c"><div class="t-art-n"><span class="from-fan">FROM FAN</span>${sh.member?(sh.name?`<b class="a-nick">${esc(sh.name)}</b>`:`<span class="a-dia" title="Membership">💎</span>`):""}${w.from==="me"&&isAdminAcct()&&!isUni()?`<span class="t-badge soft">示範粉絲</span>`:""}</div>
-      <div class="t-bw has-arw"><div class="t-b">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:""}</div><button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-meta2"><button class="t-rep" data-a="tieRep" data-id="${w.id}" aria-label="檢舉這則訊息">⋯</button><span class="t-time">${timeHM(w.ts)}</span></span></div></div></div>`;
+      <div class="t-bw has-arw"><div class="t-b" data-lp="${w.id}">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:""}</div><button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-meta2"><span class="t-time">${timeHM(w.ts)}</span></span></div></div></div>`;
   }).join("");
   const draft=ui.wDraft||"", Q=tieQ(mid);
   /* 待發送的訊息（照 Bubble：先排好，預覽後一次送出） */
@@ -10108,7 +10207,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
-const FOC_PAGES={show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
+const FOC_PAGES={cafe:"生日咖啡廳",show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
   const sc=getSched(), ls=lightsea(), gid=MEMBERS[mid].group, mine=ls&&ls.gid===gid, nc=nextConcert(gid), g=groupOf(gid);
@@ -10121,6 +10220,7 @@ function viewArtistFoc(mid,p){
       ${!mine&&demoOn()?`<button class="btn btn-soft btn-block" data-a="lsDemo">示範：打開燈控台看看</button>`:""}</section></main>`;
   if(p==="truck") return focHead("應援餐車")+viewTruckArtist(mid);
   if(p==="biz") return focHead("代言・雜誌")+viewBizArtist(mid,route().id);
+  if(p==="cafe") return focHead("生日咖啡廳")+viewCafe(route().id||mid);
   if(p==="show") return focHead(route().id?vsTitle(route().id):"綜藝")+viewShowArtist(mid,route().id);
   if(p==="tour"){ setTimeout(trmScroll,0); return focHead("世巡")+viewTourArtist(mid); }
   if(p==="news"){ const nid=route().id; return focHead("新聞")+(nid?newsDetailHtml(nid):newsListHtml("#/artist?tab=foc&p=news",[gid],g.solo?"我的":"我們團")); }
@@ -10140,7 +10240,7 @@ function viewArtistFoc(mid,p){
       ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     </section>
     ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
-    ${secH("star","檔期")}<div class="tiles">${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
+    ${secH("star","檔期")}<div class="tiles">${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
     ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}</div>
   </main>`;
 }
@@ -10170,12 +10270,12 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
     ${!q&&now.length?`${secH("live","正在發生")}<div class="now-list">${now.join("")}</div>`:""}
-    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["每天",["promo","cards","sns","news"]],["檔期",["show","biz","fsl","truck"]],["大型活動",["concert","tour","survival"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
+    ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["每天",["promo","cards","sns","news"]],["檔期",["cafe","show","biz","fsl","truck"]],["大型活動",["concert","tour","survival"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
   </main>`;
 }
 function vodList(gid){ return getVods(gid).filter(v=>!v.sec).map(v=>({id:v.id,type:vcatName(v.cat),title:v.title,ts:v.ts,v})); }
@@ -10399,6 +10499,7 @@ function viewCoreSub(page,id){
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return viewTruckFan();
   if(page==="biz") return coreHead("代言・雜誌")+viewBizFan(id);
+  if(page==="cafe") return coreHead("生日咖啡廳")+viewCafe(id);
   if(page==="show") return coreHead(id?vsTitle(id):"綜藝")+viewShowFan(id);
   if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
@@ -10539,13 +10640,13 @@ const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人�
 function adminHead(title,sk=null,ph=""){ if(isUni()){ if(title==="FOC") return uniMainHead("活動"); if(["REPORT","POST"].includes(title)&&!(sk&&srchOn(sk))) return uniMainHead("內容"); if(sk&&srchOn(sk)) return `<header class="top uni-top sh-head"><div class="top-row">${srchBar(ph)}</div></header>`; return uniHead(UNI_T[title]||title,sk?srchBtn(sk):""); }
   return `<header class="top sh-head"><div class="top-row">${sk&&srchOn(sk)?srchBar(ph):`<div class="logo">${APP_NAME}<small>管理員</small></div><div class="spacer"></div>${sk?srchBtn(sk):""}<span class="art-sub">${title}</span>`}</div></header>`; }
 function reportCard(r){
-  const KIND={comment:"貼文留言",live:"直播留言",tie:WHISPER_NAME+" 訊息"}, kind=r.kind||"comment", who=reportWho(r), ms=who&&muteState(who);
+  const KIND={comment:"貼文留言",live:"直播留言",tie:WHISPER_NAME+" 訊息",sns:"SNS 貼文"}, kind=r.kind||"comment", who=reportWho(r), ms=who&&muteState(who);
   let body="", where="";
   if(kind==="comment"){ const c=S.get(K.comments,[]).find(x=>x.id===r.commentId), p=S.get(K.posts,[]).find(x=>x.id===r.postId), m=p&&MEMBERS[p.member];
     body=c?`<div class="rp-c"><div class="av sm" style="background:${grad(c.g)}">${esc(shownName(c)[0])}</div><div><b>${esc(shownName(c))}</b><p>${esc(c.text)}</p></div></div>`:`<p class="muted" style="font-size:13px;margin:8px 0 0">內容已被刪除</p>`;
     where=m?`留言在 ${esc(m.name)} 的貼文：${esc(p.text.slice(0,40))}${p.text.length>40?"…":""}`:""; }
   else { body=`<div class="rp-c"><span class="fan-av sm">${mascot(r.who||"x")}</span><div><b>${esc(shownName({name:r.name,by:r.ref&&r.ref.by}))}</b><p>${esc(r.text||"")}</p></div></div>`;
-    where=kind==="live"?(()=>{const l=getLive(r.ref.liveId);return l?`在「${esc(l.title)}」直播間`:""})():`在 ${esc(MEMBERS[r.ref.mid]?MEMBERS[r.ref.mid].name:"")} 的 ${WHISPER_NAME}`; }
+    where=kind==="sns"?`SNS・${esc(r.name||"")} 的貼文`:kind==="live"?(()=>{const l=getLive(r.ref.liveId);return l?`在「${esc(l.title)}」直播間`:""})():`在 ${esc(MEMBERS[r.ref.mid]?MEMBERS[r.ref.mid].name:"")} 的 ${WHISPER_NAME}`; }
   return `<article class="card rp ${r.status!=="open"?"done":""}">
     <div class="rp-h"><span class="badge ${r.status==="open"?"warn":""}">${r.status==="open"?"待處理":r.status==="removed"?"已刪除":"已駁回"}</span><span class="badge">${KIND[kind]}</span>
       <span class="muted">${esc(r.reason)}・${r.count} 人檢舉${r.mine?"（含示範帳號）":""}・${ago(r.ts)}</span></div>
@@ -11789,6 +11890,10 @@ function showCopyMenu(el,x,y){
   const w=getWhispers().find(v=>v.id===el.dataset.lp); if(!w) return;
   if(route().sub==="chat"){ openMsgSheet(w.id); return; }
   if(w.from==="artist") return;
+  /* 藝人端：長按粉絲的訊息 → 回覆／複製／檢舉（取代原本的「⋯」） */
+  if((session()||{}).role==="artist"){ ui.copyText=w.ko||w.text; const L=Math.min(Math.max(x,90),window.innerWidth-90)/ZM(), T=Math.max(y-64,10)/ZM();
+    layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx t-ctx3" style="left:${L}px;top:${T}px"><button data-a="tieArw" data-id="${w.id}">回覆</button><button data-a="tCopy">複製</button><button class="dg" data-a="tieRep" data-id="${w.id}">檢舉</button></div></div>`;
+    layer.querySelectorAll(".t-ctx3 button").forEach(b=>b.addEventListener("click",()=>{ layer.innerHTML=""; })); try{ navigator.vibrate&&navigator.vibrate(10); }catch(e){} return; }
   const st=route().m?tieSet(route().m):null, text=w.ko||w.text;
   ui.copyText=text;
   layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx" style="left:${Math.min(Math.max(x,60),window.innerWidth-60)/ZM()}px;top:${Math.max(y-56,10)/ZM()}px"><button data-a="tCopy">複製</button></div></div>`;
@@ -13666,7 +13771,7 @@ const SNS_FANS=[];   // 正式版：沒有假的粉絲帳號
 const SNS_CAPS=["今天的天空好美 ☁️","練習結束，回家路上 🌙","咖啡續命中 ☕","週末小確幸 🍰","新買的手機殼 💜","彩排後的宵夜 🍜","雨天聽歌最對味 🎧","今日穿搭 👗"];
 /* SNS 資料分開存（貼文、按讚、留言、追蹤…各一份）：按一個讚不用整包重存，人多也不會互相蓋掉
    私訊：每兩個人一份（daisuki_dm:甲~乙），只有這兩個人的對話，不再混在一起 */
-const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{},cf:{},folAt:{}};
+const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{},cf:{},folAt:{},intr:{},col:{}};
 const snKey=p=>"daisuki_sn_"+p;
 function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&HB.ver[K.sns]==null&&!Object.keys(HB.ver||{}).length) return;
   const old=S.get(K.sns,null); if(old&&typeof old==="object"){ Object.keys(SN_PARTS).forEach(p=>{ if(old[p]!=null&&S.get(snKey(p),null)==null) S.set(snKey(p),old[p]); });
@@ -13768,19 +13873,23 @@ function snExplore(d){ const q=nz((ui.snQ||"").trim()), me=snMeId();
   return `<header class="sn-top"><label class="sn-q">${si("search")}<input id="snQ" placeholder="搜尋" autocomplete="off" value="${esc(ui.snQ||"")}"></label></header>
     ${q?`<main class="sn-ul">${hits.length?hits.map(u=>`<button class="sn-ur" data-a="snsGo" data-v="profile" data-id="${u.id}" data-rec="1">${snAv(u,44)}<span><b>${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><small>${esc(u.name)}</small></span></button>`).join(""):`<p class="sn-none">找不到「${esc(q)}」</p>`}</main>`
       :`${rec.length?`<div class="sn-rec"><div class="sn-rech"><b>最近搜尋</b><button data-a="snRecX">全部清除</button></div><div class="sn-recl">${rec.map(u=>`<button data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,52)}<small>${esc(u.u)}</small></button>`).join("")}</div></div>`:""}<main class="sn-grid ex">${P.map((p,i)=>{ const u=snUser(p.uid); return `<button class="${i%10===2?"tall":""}" data-a="snsGo" data-v="post" data-id="${p.id}">${snThumb(p,u)}</button>`; }).join("")}</main>`}`; }
-function snReels(d,id){ const me=snMeId(), V=d.posts.filter(p=>snIsVid(p)&&snCanSee(d,p.uid)).sort((a,b)=>b.ts-a.ts), i0=id?V.findIndex(p=>p.id===id):-1, P=i0>0?V.slice(i0).concat(V.slice(0,i0)):V;
+/* 興趣分數：有興趣 ＋、沒興趣 －（作者、#標籤都算），追蹤的人加一點，新的加一點 */
+function snScore(d,p){ const me=snMeId(), I=(d.intr||{})[me]||{}, U=I.u||{}, T=I.t||{}; let s=(p.ts-Date.now())/36e5/24; s+=(U[p.uid]||0)*3; snTagsOf(p).forEach(t=>{ s+=(T[t]||0)*2; }); if(snFol(d,me).includes(p.uid)) s+=1; s+=Math.min(3,snLikes(d,p)/10); return s; }
+function snReels(d,id){ const me=snMeId(), I=(d.intr||{})[me]||{}, no=new Set(I.no||[]), V=d.posts.filter(p=>snIsVid(p)&&snCanSee(d,p.uid)&&(!no.has(p.id)||p.id===id)).sort((a,b)=>snScore(d,b)-snScore(d,a)), i0=id?V.findIndex(p=>p.id===id):-1, P=i0>0?V.slice(i0).concat(V.slice(0,i0)):V;
   const fr=ui.snRf==="fr", fo=snFol(d,me); if(fr) P.splice(0,P.length,...P.filter(p=>fo.includes(p.uid)));
-  return `<header class="sn-top clear"><nav class="sn-rtab"><button class="${fr?"":"on"}" data-a="snRf" data-v="">Reels</button><button class="${fr?"on":""}" data-a="snRf" data-v="fr">朋友</button></nav><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("cam")}</button></header>
+  return `<header class="sn-top clear"><nav class="sn-rtab"><button class="${fr?"":"on"}" data-a="snRf" data-v="">Reels</button><button class="${fr?"on":""}" data-a="snRf" data-v="fr">朋友<span class="sn-rfav">${[...new Set(V.filter(p=>fo.includes(p.uid)).map(p=>p.uid))].slice(0,3).map(x=>snAv(snUser(x),18)).join("")}</span></button></nav><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("cam")}</button></header>
     <main class="sn-reels">${P.length?"":`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b><button data-a="snNewP" data-v="post">上傳影片</button></div>`}${P.map(p=>{ const u=snUser(p.uid); if(!u) return ""; const liked=(d.likes[p.id]||[]).includes(me), fo=snFol(d,me).includes(u.id);
       return `<section class="sn-reel1"><div class="sn-rbg" data-a="snTap" data-id="${p.id}">${snMedia(p,u,0)}</div><i class="sn-heart">${si("heart")}</i>
-        <div class="sn-rr"><button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}">${si("heart")}<small>${fmt(snLikes(d,p))}</small></button><button data-a="snCm" data-id="${p.id}">${si("chat")}<small>${fmt((d.cms[p.id]||[]).length)}</small></button><button class="${snRp(d,me).some(x=>x.id===p.id)?"rpd":""}" data-a="snRepost" data-id="${p.id}">${si("repost")}<small>${fmt(snRpCount(d,p))}</small></button><button data-a="snShare" data-id="${p.id}">${si("send")}</button><button data-a="snMore" data-id="${p.id}">${si("dots")}</button></div>
+        <div class="sn-rr"><button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}">${si("heart")}<small>${fmt(snLikes(d,p))}</small></button><button data-a="snCm" data-id="${p.id}">${si("chat")}<small>${fmt((d.cms[p.id]||[]).length)}</small></button><button class="${snRp(d,me).some(x=>x.id===p.id)?"rpd":""}" data-a="snRepost" data-id="${p.id}">${si("repost")}<small>${fmt(snRpCount(d,p))}</small></button><button data-a="snShare" data-id="${p.id}">${si("send")}</button><button class="${(d.saved[me]||[]).includes(p.id)?"saved":""}" data-a="snSaveP" data-id="${p.id}">${si("save")}</button><button data-a="snMore" data-id="${p.id}">${si("dots")}</button></div>
+        <div class="sn-prog" data-id="${p.id}"><i></i></div><em class="sn-2x">2x ▶▶</em>
         <div class="sn-rb"><span class="sn-rbu"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,30)}<b>${esc(u.u)}</b></button>${u.id!==me?`<button data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":"追蹤"}</button>`:""}</span>${p.cap?`<p>${esc(p.cap)}</p>`:""}<small>${si("music","sm")} ${esc(u.u)}・原創音訊</small></div></section>`; }).join("")}</main>`; }
 function snHls(d,uid){ return ((d.hl||{})[uid]||[]).filter(h=>h&&h.items&&h.items.length); }
 /* 限時動態／精選的小圖：照片、或分享的貼文的第一張 */
 function snStThumb(d,s,g){ if(s.vid&&s.vid.poster) return `<img class="sn-img" data-mid="${s.vid.poster}" alt="">`; if(s.mid&&!s.vid) return `<img class="sn-img" data-mid="${s.mid}" alt="">`; if(s.post){ const p=d.posts.find(x=>x.id===s.post); if(p&&p.media&&p.media[0]) return `<img class="sn-img" data-mid="${p.media[0].poster||p.media[0].mid}" alt="">`; } return snPic(s.pic||s.id,g,"fill"); }
 function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=u.id===me, P=d.posts.filter(x=>x.uid===u.id).sort((a,b)=>b.ts-a.ts), tab=ui.snTab||"grid", fo=snFol(d,me).includes(u.id);
   const base=0;
-  const list=tab==="reels"?P.filter(snIsVid):tab==="saved"&&mine?(d.saved[me]||[]).map(x=>d.posts.find(p=>p.id===x)).filter(Boolean):tab==="reposts"?snRp(d,u.id).map(x=>d.posts.find(p=>p.id===x.id)).filter(Boolean):tab==="tagged"?d.posts.filter(p=>(p.tags||[]).includes(u.id)&&snCanSee(d,p.uid)).sort((a,b)=>b.ts-a.ts):P;
+  const colF=tab==="saved"&&mine&&ui.snColF?(((d.col||{})[me]||[]).find(c=>c.id===ui.snColF)||null):null;
+  const list=tab==="reels"?P.filter(snIsVid):tab==="saved"&&mine?(colF?colF.items:(d.saved[me]||[])).map(x=>d.posts.find(p=>p.id===x)).filter(Boolean):tab==="reposts"?snRp(d,u.id).map(x=>d.posts.find(p=>p.id===x.id)).filter(Boolean):tab==="tagged"?d.posts.filter(p=>(p.tags||[]).includes(u.id)&&snCanSee(d,p.uid)).sort((a,b)=>b.ts-a.ts):P;
   const see=snCanSee(d,u.id), hls=see?snHls(d,u.id):[], lockH=`<div class="sn-empty sn-lock"><span>${si("lock")}</span><b>這是私人帳號</b><small>追蹤這個帳號即可查看相片和影片。</small></div>`;
   const empty=tab==="reels"?`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b>${mine?`<button data-a="snNewP" data-v="post">上傳影片</button>`:""}</div>`:tab==="tagged"?`<div class="sn-empty"><span>${si("tag")}</span><b>${mine?"有你的相片和影片":"還沒有相片"}</b></div>`:tab==="reposts"?`<div class="sn-empty"><span>${si("repost")}</span><b>還沒有轉發</b></div>`:tab==="saved"?`<div class="sn-empty"><span>${si("save")}</span><b>還沒有收藏</b></div>`
     :mine?`<div class="sn-empty"><span>${si("cam")}</span><b>分享相片</b><button data-a="snCreate">分享你的第一張相片</button></div>`:`<div class="sn-empty"><b>還沒有貼文</b></div>`;
@@ -13792,7 +13901,7 @@ function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=
     ${mine?snSugHtml(d,"探索用戶"):""}
     ${hls.length||mine?`<div class="sn-hls">${mine?`<button data-a="snHlNew"><span class="sn-hlc add">${si("plusP")}</span><small>新增</small></button>`:""}${hls.map(h=>`<button data-a="snHl" data-v="${u.id}" data-id="${h.id}"><span class="sn-hlc">${snStThumb(d,h.items[0],u.g)}</span><small>${esc(h.title)}</small></button>`).join("")}</div>`:""}
     ${see?"":lockH}${see?`<nav class="sn-pt">${[["grid","grid","貼文"],["reels","reels2","Reels"],["reposts","repost","轉發"],["tagged","tag","被標註"]].map(([k,ic,l])=>`<button class="${tab===k?"on":""}" data-a="snsPTab" data-v="${k}" aria-label="${l}">${si(ic)}</button>`).join("")}</nav>
-    ${tab==="saved"?`<div class="sn-fmode">已儲存</div>`:""}
+    ${tab==="saved"?`<div class="sn-fmode">已儲存</div>${((d.col||{})[me]||[]).length?`<nav class="sn-colf">${((d.col||{})[me]||[]).map(c=>`<button class="${ui.snColF===c.id?"on":""}" data-a="snColF" data-v="${c.id}">${esc(c.name)}<em>${c.items.length}</em></button>`).join("")}</nav>`:""}`:""}
     <main class="sn-grid ${tab==="reels"?"reels":""}">${list.length?list.map(p=>`<button data-a="snsGo" data-v="${tab==="reels"?"reels":"post"}" data-id="${p.id}">${tab==="reels"?`<img class="sn-img" data-mid="${(p.media[0]||{}).poster||""}" alt=""><i class="sn-rv">${si("heart","sm")} ${fmtW(snLikes(d,p))}</i>`:snThumb(p,snUser(p.uid))}</button>`).join(""):empty}</main>`:""}`; }
 
 function snEdit(d){ const me=snMeId(), u=snUser(me);
@@ -13842,6 +13951,7 @@ function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) retu
         return `<div class="sn-cr ${sub?"sub":""}">${snAv(u,sub?26:34)}<div><p><b>${esc(u.u)}</b> ${c.uid===me?snRich(c.text):trT("s:"+c.id,c.text,"","span")}</p><small>${snsAgo(c.ts)}${lk.length?` ・ ${fmt(lk.length)} 個讚`:""} ・ <button data-a="snCmRe" data-id="${id}" data-v="${c.re&&ids.has(c.re)?c.re:c.id}" data-u="${esc(u.u)}">回覆</button>${c.uid===me||isAdminAcct()||p.uid===me?` ・ <button data-a="snCmDel" data-id="${id}" data-v="${c.id}">刪除</button>`:""}</small></div><button class="sn-clk ${lk.includes(me)?"on":""}" data-a="snCmLk" data-id="${id}" data-v="${c.id}" aria-label="讚">${si("heart","sm")}</button></div>`; };
         return L.filter(c=>!c.re||!ids.has(c.re)).map(c=>row(c)+L.filter(k=>k.re===c.id).map(k=>row(k,1)).join("")).join(""); })():`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
     ${ui.snRe&&ui.snRe.p===id?`<div class="sn-reb"><span>正在回覆 ${esc(ui.snRe.u)}</span><button data-a="snCmReX" data-id="${id}" aria-label="取消">×</button></div>`:""}
+    <div class="sn-cemo">${["❤️","🙌","🔥","👏","😢","😍","😮","😂"].map(x=>`<button data-a="snCmEmo" data-v="${x}">${x}</button>`).join("")}</div>
     <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),32)}<input id="snCmIn" placeholder="新增留言…" autocomplete="off" value="${ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}"><button type="submit">發佈</button></form></div></div>`,"sncm");
   requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 /* 限時動態 */
@@ -13864,7 +13974,7 @@ function snStoryPost(d,pid){ const p=d.posts.find(x=>x.id===pid), a=p&&snUser(p.
   return `<div class="sn-spost" style="--sg:${grad(a.g||0)}"><button class="sn-spc" data-a="snStoryPost" data-id="${p.id}"><span class="sn-spu">${snAv(a,26)}<b>${esc(a.u)}${a.ver?`<i class="sn-v">✓</i>`:""}</b></span><span class="sn-spm">${m?`<img class="sn-img" data-mid="${m.poster||m.mid}" alt="">${m.type==="video"?`<i class="sn-ri">${si("reels2","sm")}</i>`:""}`:snPic(p.id,a.g,"fill")}</span>${p.cap?`<span class="sn-spcap"><b>${esc(a.u)}</b> ${esc(p.cap.slice(0,60))}</span>`:""}</button></div>`; }
 /* 分享到私訊 */
 function snOpenShare(id){ const me=snMeId(), U=snAllUsers().filter(u=>u.id!==me).slice(0,12);
-  setLayer(`<div class="sn-shw" data-a="tCloseLayer"><div class="sn-sh" role="dialog" aria-label="分享"><i class="sn-grab"></i><b class="sn-sht">分享</b><button class="sn-tost" data-a="snToStory" data-id="${id}"><span>${snAv(snUser(me),44)}<em>＋</em></span><b>加到你的限時動態</b></button><div class="sn-shg">${U.map(u=>`<button data-a="snShareTo" data-id="${id}" data-v="${u.id}">${snAv(u,58)}<small>${esc(u.name)}</small></button>`).join("")}</div></div></div>`,"snsh");
+  setLayer(`<div class="sn-shw" data-a="tCloseLayer"><div class="sn-sh" role="dialog" aria-label="分享"><i class="sn-grab"></i><b class="sn-sht">分享</b><div class="sn-shg">${U.map(u=>`<button data-a="snShareTo" data-id="${id}" data-v="${u.id}">${snAv(u,58)}<small>${esc(u.name)}</small></button>`).join("")}</div><div class="sn-shact"><button data-a="snToStory" data-id="${id}"><i>${si("plusP")}</i><small>加到限時動態</small></button><button data-a="snCopyLink" data-id="${id}"><i>🔗</i><small>複製連結</small></button><button data-a="snsGo" data-v="dm"><i>${si("send")}</i><small>私訊</small></button></div></div></div>`,"snsh");
   requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 function snFakeReply(uid){ return; if(!uid.startsWith("f:")&&!uid.startsWith("m:")) return; const R=["哈哈真的！","好喔～💜","我也這麼覺得","等等回你！","太可愛了吧 🥹"];
   setTimeout(()=>{ const d=snDB(); (d.dm[uid]=d.dm[uid]||[]).push({from:uid,text:R[Math.random()*R.length|0],ts:Date.now()}); snSave(d); if(route().sub==="sns"&&route().p==="thread"&&route().id===uid){ render(); } },2200+Math.random()*2000); }
@@ -13923,6 +14033,12 @@ function snCfPage(d){ const me=snMeId(), L=(d.cf||{})[me]||[], q=nz((ui.snCfQ||"
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>摯友</b><span class="sn-sp"></span></header>
     <div class="sn-cfh"><span class="sn-cfs">★</span><small>${fmt(L.length)} 人</small></div>
     <main class="sn-tpl sn-cfl">${U.map(u=>`<button class="${L.includes(u.id)?"on":""}" data-a="snCfT" data-v="${u.id}">${snAv(u,44)}<span><b>${esc(u.u)}</b><small>${esc(u.name)}</small></span><i></i></button>`).join("")||`<p class="sn-none">還沒有可以加的人</p>`}</main>`; }
+/* 收藏集（跟 IG 一樣：收藏後跳出來，可以放進某個收藏集） */
+function snColSheet(pid){ const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===pid), C=((d.col||{})[me]||[]);
+  setLayer(`<div class="sn-shw open" data-a="tCloseLayer"><div class="sn-sh sn-colsh" role="dialog" aria-label="收藏"><i class="sn-grab"></i>
+    <div class="sn-colh">${p?`<span class="sn-colth">${snThumb(p,snUser(p.uid))}</span>`:""}<span><b>已儲存</b><small>只有你看得到</small></span>${si("save")}</div>
+    <div class="sn-colt"><b>收藏集</b><button data-a="snColNew" data-id="${pid}">新增收藏集</button></div>
+    <div class="sn-coll">${C.map(c=>{ const fp=d.posts.find(x=>x.id===c.items[0]); return `<button data-a="snColT" data-v="${c.id}" data-id="${pid}"><span class="sn-colth">${fp?snThumb(fp,snUser(fp.uid)):""}</span><span><b>${esc(c.name)}</b><small>${c.items.length} 則</small></span><i class="${c.items.includes(pid)?"on":""}">${c.items.includes(pid)?"✓":"＋"}</i></button>`; }).join("")||`<p class="sn-none">還沒有收藏集</p>`}</div></div></div>`,"sncol"); hydrateMedia(layer); }
 
 /* =========================================================
    SNS 的按鈕（從 10-點擊互動 拆出來：SNS 自己一個檔案，改 SNS 不會動到別的地方）
@@ -13941,12 +14057,28 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snCmDel": { const d=snDB(), L=d.cms[t.dataset.id]||[]; d.cms[t.dataset.id]=L.filter(c=>c.id!==t.dataset.v); snSave(d); snOpenCm(t.dataset.id); toast("已刪除留言"); break; }
     case "snShare": snOpenShare(t.dataset.id); break;
     case "snShareTo": { const me=snMeId(), to=t.dataset.v; dmAppend(me,to,{text:"",post:t.dataset.id,ts:Date.now()}); layer.innerHTML=""; toast("已傳送"); snFakeReply(to); break; }
-    case "snSaveP": { const d=snDB(), me=snMeId(), L=d.saved[me]=d.saved[me]||[], i=L.indexOf(t.dataset.id); if(i>=0) L.splice(i,1); else L.unshift(t.dataset.id); snSave(d); const y=window.scrollY; render(); window.scrollTo(0,y); toast(i>=0?"已從收藏移除":"已收藏"); break; }
+    case "snSaveP": { const d=snDB(), me=snMeId(), L=d.saved[me]=d.saved[me]||[], pid=t.dataset.id, i=L.indexOf(pid); if(i>=0){ L.splice(i,1); ((d.col||{})[me]||[]).forEach(c=>{ c.items=c.items.filter(x=>x!==pid); }); } else L.unshift(pid); snSave(d); t.classList.toggle("saved",i<0);
+      if(i>=0){ toast("已從收藏移除"); const y=window.scrollY; render(); window.scrollTo(0,y); } else snColSheet(pid); break; }
     case "snMore": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; const me=snMeId(), fo=snFol(d,me).includes(p.uid), items=[];
       if(p.uid===me) items.push(["編輯","snEditCap",`data-id="${p.id}"`]);
       if(p.uid===me||isAdminAcct()) items.push([p.uid===me?"刪除":"刪除這則（管理員）","snDelP",`data-id="${p.id}"`]);
       if(p.uid!==me) items.push([fo?"取消追蹤":"追蹤","snFollow",`data-v="${p.uid}"`]);
-      items.push(["前往這則貼文","snsGo",`data-v="post" data-id="${p.id}"`]); iosSheet(items); break; }
+      if(p.uid!==me){ items.push(["有興趣","snInt",`data-id="${p.id}" data-v="1"`]); items.push(["沒興趣","snInt",`data-id="${p.id}" data-v="-1"`]); items.push(["為什麼會看到這則","snWhy",`data-id="${p.id}"`]); items.push(["檢舉","snRepP",`data-id="${p.id}"`]); }
+      if(route().p!=="post") items.push(["前往這則貼文","snsGo",`data-v="post" data-id="${p.id}"`]); iosSheet(items); break; }
+    case "snInt": { const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; const v=+t.dataset.v, I=(d.intr=d.intr||{})[me]=d.intr[me]||{u:{},t:{},no:[]}; I.u=I.u||{}; I.t=I.t||{}; I.no=I.no||[];
+      I.u[p.uid]=Math.max(-5,Math.min(5,(I.u[p.uid]||0)+v)); snTagsOf(p).forEach(x=>{ I.t[x]=Math.max(-5,Math.min(5,(I.t[x]||0)+v)); }); if(v<0&&!I.no.includes(p.id)) I.no.push(p.id); I.no=I.no.slice(-300);
+      snSave(d); layer.innerHTML=""; toast(v>0?"之後會推薦更多像這樣的內容":"之後會少推薦像這樣的內容"); if(v<0) render(); break; }
+    case "snWhy": { const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; const u=snUser(p.uid)||{}, I=(d.intr||{})[me]||{}, R=[];
+      if(snFol(d,me).includes(p.uid)) R.push(`你追蹤了 ${u.u}`); if((I.u||{})[p.uid]>0) R.push(`你對 ${u.u} 的內容有興趣`); snTagsOf(p).filter(x=>((I.t||{})[x]||0)>0).slice(0,2).forEach(x=>R.push(`你對 #${x} 有興趣`)); if(snLikes(d,p)>=5) R.push("很多人喜歡這則"); if(!R.length) R.push("這是最近的新內容");
+      layer.innerHTML=""; tieModal("為什麼會看到這則",R.map(x=>`・${esc(x)}`).join("<br>"),`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
+    case "snRepP": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; const u=snUser(p.uid)||{}; layer.innerHTML="";
+      ask(`檢舉 ${u.u||""} 的這則貼文？管理員會審核。`,()=>{ reportItem("sns",{wid:p.id,text:p.cap||"（沒有文字）",name:u.u||"",who:p.uid}); toast("已送出檢舉"); },{title:"檢舉",ok:"檢舉"}); break; }
+    case "snCmEmo": { const i=document.getElementById("snCmIn"); if(i){ i.value+=t.dataset.v; i.focus(); } break; }
+    case "snCopyLink": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.clipboard.writeText(h).then(()=>toast("已複製連結"),()=>toast("複製失敗")); }catch(e){ toast("複製失敗"); } layer.innerHTML=""; break; }
+    case "snColT": { const d=snDB(), me=snMeId(), C=(d.col=d.col||{})[me]=d.col[me]||[], c=C.find(x=>x.id===t.dataset.v); if(!c) break; const pid=t.dataset.id, i=c.items.indexOf(pid); if(i>=0) c.items.splice(i,1); else c.items.unshift(pid); if(i<0){ const S2=d.saved[me]=d.saved[me]||[]; if(!S2.includes(pid)) S2.unshift(pid); } snSave(d); snColSheet(pid); toast(i>=0?`已從「${c.name}」移除`:`已儲存到「${c.name}」`); break; }
+    case "snColNew": layer.innerHTML=""; tieModal("新增收藏集",`<input id="snColIn" class="a-nick-in" maxlength="20" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snColNewOk" data-id="${t.dataset.id}">新增</button>`,"row"); setTimeout(()=>{ const i=document.getElementById("snColIn"); if(i) i.focus(); },200); break;
+    case "snColNewOk": { const v=((document.getElementById("snColIn")||{}).value||"").trim(); if(!v){ toast("取個名字吧"); break; } if(!isAdminAcct()&&banBlock(v)) break; const d=snDB(), me=snMeId(), C=(d.col=d.col||{})[me]=d.col[me]||[], pid=t.dataset.id; C.unshift({id:"c"+Date.now().toString(36),name:v,items:pid?[pid]:[]}); if(pid){ const S2=d.saved[me]=d.saved[me]||[]; if(!S2.includes(pid)) S2.unshift(pid); } snSave(d); layer.innerHTML=""; if(pid) snColSheet(pid); else render(); toast(pid?`已儲存到「${v}」`:"已新增收藏集"); break; }
+    case "snColF": ui.snColF=ui.snColF===t.dataset.v?null:t.dataset.v; render(); break;
     case "snDelP": { const id=t.dataset.id; ask("要刪除這則貼文嗎？",()=>{ const d=snDB(); d.posts=d.posts.filter(x=>x.id!==id); delete d.likes[id]; delete d.cms[id]; Object.values(d.saved).forEach(L=>{ const i=L.indexOf(id); if(i>=0) L.splice(i,1); }); snSave(d); layer.innerHTML=""; if(route().p==="post") navBack(); else render(); toast("已刪除"); }); break; }
     case "snFollow": { const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, i=L.indexOf(v); d.req=d.req||{};
       if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
@@ -14131,6 +14263,19 @@ function viewCloud(){ const c=ui.cloud||{}; if(!c.at&&!c.busy) setTimeout(cloudL
     <button class="btn btn-soft cu-re" data-a="cloudRe" ${c.busy?"disabled":""}>${c.busy?"讀取中…":"重新整理"}</button></main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="cloudRe"]'); if(t) cloudLoad(); });
 hbRxOpen();
+/* ===== Reels：開留言／分享時影片縮到上面繼續播；長按 2 倍速；下面的進度條可以拖 ===== */
+new MutationObserver(()=>{ const on=route().sub==="sns"&&route().p==="reels"&&!!layer.querySelector(".sn-shw"); document.documentElement.classList.toggle("sn-vshrink",on); }).observe(layer,{childList:true,subtree:false});
+function snReelVid(el){ const r=el.closest(".sn-reel1"); return r&&r.querySelector("video.sn-vid"); }
+let snLp=null;
+document.addEventListener("pointerdown",e=>{ const bg=e.target.closest(".sn-reel1 .sn-rbg"); if(!bg) return; const v=snReelVid(bg); if(!v) return;
+  clearTimeout(snLp&&snLp.t); snLp={v,on:false,t:setTimeout(()=>{ snLp.on=true; v.playbackRate=2; if(v.paused) v.play().catch(()=>{}); bg.closest(".sn-reel1").classList.add("x2"); },350)}; });
+["pointerup","pointercancel","pointerleave"].forEach(ev=>document.addEventListener(ev,()=>{ if(!snLp) return; clearTimeout(snLp.t); if(snLp.on){ snLp.v.playbackRate=1; snLp.v.closest(".sn-reel1")?.classList.remove("x2"); snLp.skip=Date.now(); } else snLp=null; }));
+/* 長按放開後的那一下點擊不算（不然會變成開關聲音） */
+document.addEventListener("click",e=>{ if(snLp&&snLp.skip&&Date.now()-snLp.skip<400&&e.target.closest(".sn-reel1 .sn-rbg")){ e.stopPropagation(); e.preventDefault(); snLp=null; } },true);
+document.addEventListener("timeupdate",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")) return; const r=v.closest(".sn-reel1"); if(!r) return; const b=r.querySelector(".sn-prog i"); if(b&&v.duration) b.style.width=(v.currentTime/v.duration*100)+"%"; },true);
+document.addEventListener("pointerdown",e=>{ const pg=e.target.closest(".sn-prog"); if(!pg) return; const v=snReelVid(pg); if(!v||!v.duration) return; e.preventDefault(); pg.classList.add("drag");
+  const seek=ev=>{ const rc=pg.getBoundingClientRect(), u=Math.max(0,Math.min(1,(ev.clientX-rc.left)/rc.width)); v.currentTime=u*v.duration; const b=pg.querySelector("i"); if(b) b.style.width=(u*100)+"%"; };
+  seek(e); const up=()=>{ pg.classList.remove("drag"); window.removeEventListener("pointermove",seek); window.removeEventListener("pointerup",up); }; window.addEventListener("pointermove",seek); window.addEventListener("pointerup",up); });
 
 /* =========================================================
    綜藝（真實節目原名）：只有出道藝人能上節目，粉絲看、押積分猜誰贏、留言
@@ -14493,6 +14638,108 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   } });
 document.addEventListener("input",e=>{ if(e.target.id==="bzTxt"||e.target.classList.contains("bzQa")) bzKeep(); if(["bzAName","bzAIssue","bzACon"].includes(e.target.id)||e.target.classList.contains("bzAQ")) bzAKeep(); });
 document.addEventListener("change",async e=>{ if(e.target.id!=="bzPic") return; const f=e.target.files&&e.target.files[0]; if(!f||!ui.bzD) return; bzKeep(); try{ const {blob,w,h}=await prepPhoto(f), id="bzp"+Date.now(); await MDB.put(id,blob); Object.assign(ui.bzD,{img:id,w,h}); render(); }catch(err){ toast("這張照片讀不出來"); } });
+
+/* =========================================================
+   生日咖啡廳：藝人生日的前後三天，系統自動開一間迷你小店
+   ・粉絲：打卡進店、捐積分（算進藝人營收）、上傳海報／杯套、加生日特調到菜單、寫留言卡
+     有捐積分或佈置的人，拿到一張「生日限定到店小卡」
+   ・藝人（全部可選，不強迫）：牆上簽名、語音感謝、到店自拍、蓋「藝人最愛」章、一張一張回留言卡
+     藝人到店時，追蹤這團的粉絲會收到通知
+   資料：daisuki_cafe（只放文字和照片的編號，照片本身在 R2）
+   ========================================================= */
+const CF_KEY="daisuki_cafe", CF_DAYS=3, CF_GIFT=[100,300,500,1000];
+const cfAll=()=>S.get(CF_KEY,{})||{};
+const cfIdOf=(mid,y)=>mid+"_"+y;
+/* 生日：今年（或剛過完年的那一年）的那一天；前後三天內就開店 */
+function cfWindow(mid){ const b=getBdays()[mid]||(MEMBERS[mid]||{}).bday;
+  /* HUSSEY 示範／試玩：不管生日，店一直開著（資料只放這支手機） */
+  if(demoOn()&&mid===demoMid()){ const real=b?cfWindowReal(mid,b):null; if(!real||!real.open){ const d=new Date(); d.setHours(0,0,0,0); return {y:"demo",day:d,diff:0,open:true,demo:true}; } return real; }
+  if(!b) return null; return cfWindowReal(mid,b); }
+function cfWindowReal(mid,b){ const [mm,dd]=String(b).split("-").map(Number); if(!mm||!dd) return null;
+  const now=new Date(), t0=new Date(now.getFullYear(),now.getMonth(),now.getDate());
+  for(const y of [now.getFullYear()-1,now.getFullYear(),now.getFullYear()+1]){ const t=new Date(y,mm-1,dd), diff=Math.round((t-t0)/864e5); if(Math.abs(diff)<=CF_DAYS) return {y,day:t,diff,open:true}; }
+  const t=new Date(now.getFullYear(),mm-1,dd); if(t<t0) t.setFullYear(now.getFullYear()+1); return {y:t.getFullYear(),day:t,diff:Math.round((t-t0)/864e5),open:false}; }
+const cfMids=()=>Object.keys(MEMBERS).filter(m=>!MEMBERS[m].official&&groupOf(MEMBERS[m].group));
+const cfOpenNow=()=>cfMids().map(m=>({m,w:cfWindow(m)})).filter(x=>x.w&&x.w.open);
+function cfGet(mid,y){ if(y==="demo"){ ui.cfDemo=ui.cfDemo||{}; return ui.cfDemo[mid]||(ui.cfDemo[mid]={id:cfIdOf(mid,y),mid,y,demo:1,posters:[],cups:[],menu:[],cards:[{id:"nd1",text:"生日快樂！永遠支持你 💜",by:"x",name:"示範粉絲",ts:Date.now()-3600e3}],visits:{},pts:{},art:{}}); } const A=cfAll(), id=cfIdOf(mid,y); return A[id]||{id,mid,y,posters:[],cups:[],menu:[],cards:[],visits:{},pts:{},art:{}}; }
+function cfPut(c){ if(c.demo){ (ui.cfDemo=ui.cfDemo||{})[c.mid]=c; return; } const A=cfAll(); A[c.id]=c; S.set(CF_KEY,A); }
+const cfMe=()=>myEmail()||"";
+const cfFan=()=>(session()||{}).role!=="artist";
+const cfGot=(c,em)=>!!(c.pts[em]||c.posters.some(x=>x.by===em)||c.cups.some(x=>x.by===em)||c.menu.some(x=>x.by===em)||c.cards.some(x=>x.by===em));
+const cfImg=(id,cls="")=>id?`<img class="cf-im ${cls}" data-mid="${id}" alt="">`:"";
+const cfFav=(c,k)=>(c.art.favs||[]).includes(k);
+function cfTileSub(){ const o=cfOpenNow(); if(o.length) return `● ${o.map(x=>MEMBERS[x.m].name).slice(0,2).join("、")}${o.length>2?" 等":""} 營業中`; const nx=cfMids().map(m=>({m,w:cfWindow(m)})).filter(x=>x.w).sort((a,b)=>a.w.diff-b.w.diff)[0]; return nx?`${MEMBERS[nx.m].name}・${nx.w.diff-CF_DAYS} 天後開店`:"還沒有藝人生日"; }
+
+/* 店門口：整間小店的門面 */
+function cfFront(c,w){ const m=MEMBERS[c.mid], g=groupOf(m.group), name=m.name, tot=Object.values(c.pts).reduce((s,n)=>s+n,0), cup=c.cups[c.cups.length-1];
+  return `<section class="cf-shop" style="--cc:${grad(m.g||0)}">
+    <div class="cf-awn"></div><div class="cf-sign"><small>HAPPY BIRTHDAY</small><b>${esc(name)}</b><em>café</em></div>
+    <div class="cf-face"><div class="cf-win">${c.posters.length?c.posters.slice(-3).map(p=>`<span class="cf-wp">${cfImg(p.img)}</span>`).join(""):`<span class="cf-wp ph">🎂</span>`}${c.art.selfie?`<span class="cf-pol">${cfImg(c.art.selfie)}<i>${esc(name)} 到店</i></span>`:""}</div>
+      <div class="cf-door"><span class="cf-open">${w.open?"OPEN":"CLOSED"}</span></div></div>
+    <div class="cf-step"></div>
+    <div class="cf-stat"><span><b>${fmt(Object.keys(c.visits).length)}</b>位來過</span><span><b>${fmt(tot)}</b>積分應援</span><span><b>${fmt(c.cards.length)}</b>張卡片</span></div>
+    <p class="cf-when">${w.open?(w.diff===0?"🎉 今天生日！":w.diff>0?`生日倒數 ${w.diff} 天`:`生日過後第 ${-w.diff} 天`)+`・營業到 ${ymd(+w.day+CF_DAYS*864e5)}`:`${ymd(+w.day-CF_DAYS*864e5)} 開店`}${g&&!g.solo?`・${esc(g.name)}`:""}</p></section>`; }
+function cfSec(t,sub,body,act=""){ return `<section class="cf-sec"><div class="cf-sh"><b>${t}</b>${sub?`<small>${sub}</small>`:""}${act}</div>${body}</section>`; }
+function viewCafe(mid){ const L=cfOpenNow();
+  if(!mid){ const up=cfMids().map(m=>({m,w:cfWindow(m)})).filter(x=>x.w&&!x.w.open).sort((a,b)=>a.w.diff-b.w.diff).slice(0,6);
+    return `<main class="page cf-list">${L.length?L.map(({m,w})=>{ const c=cfGet(m,w.y); return `<button class="cf-card" data-a="cfGo" data-v="${m}">${cfFront(c,w)}</button>`; }).join(""):`<div class="cf-none"><span>☕</span><b>現在沒有營業中的生日咖啡廳</b></div>`}
+      ${up.length?`<div class="section-h">即將開店</div><section class="card cf-up">${up.map(({m,w})=>`<div class="cf-upr">${vsAv(m,36)}<span><b>${esc(MEMBERS[m].name)}</b><small>${ymd(+w.day)} 生日</small></span><em>${Math.max(0,w.diff-CF_DAYS)} 天後</em></div>`).join("")}</section>`:""}</main>`; }
+  const w=cfWindow(mid); if(!w) return `<main class="page"><div class="cf-none"><b>這位藝人還沒設定生日</b></div></main>`;
+  const c=cfGet(mid,w.y), em=cfMe(), fan=cfFan(), mine=!fan&&(session()||{}).member===mid, on=w.open, A=c.art||{};
+  if(fan&&on&&em&&!c.visits[em]){ c.visits[em]=Date.now(); cfPut(c); }
+  const got=fan&&em&&cfGot(c,em);
+  const star=(k)=>mine&&on?`<button class="cf-star ${cfFav(c,k)?"on":""}" data-a="cfFav" data-v="${mid}" data-k="${k}" aria-label="藝人最愛">★</button>`:cfFav(c,k)?`<i class="cf-stamp">${esc(MEMBERS[mid].name)}<br>最愛</i>`:"";
+  return `<main class="page cf">${cfFront(c,w)}
+    ${A.at?`<section class="cf-art"><div class="cf-arth">✨ ${esc(MEMBERS[mid].name)} 到店了・${ago(A.at)}</div>
+      ${A.sig?`<div class="cf-sigw">${cfImg(A.sig,"sig")}</div>`:""}${A.voice?`<button class="cf-voice" data-a="cfVoice" data-v="${A.voice}">▶ 聽 ${esc(MEMBERS[mid].name)} 的語音感謝</button>`:""}</section>`:""}
+    ${mine?`<section class="cf-sec cf-me"><div class="cf-sh"><b>到店</b><small>想做哪個就做哪個</small></div><div class="cf-acts">
+      <button data-a="cfSign" data-v="${mid}">✍️<span>${A.sig?"重新簽名":"牆上簽名"}</span></button>
+      <label>🎙️<span>${A.voice?"換語音":"語音感謝"}</span><input type="file" accept="audio/*" id="cfVoiceIn" data-v="${mid}"></label>
+      <label>📸<span>${A.selfie?"換自拍":"到店自拍"}</span><input type="file" accept="image/*" id="cfSelfie" data-v="${mid}"></label></div>
+      ${on?"":`<p class="cf-hint">開店期間才能到店</p>`}</section>`:""}
+    ${fan&&on?`<section class="cf-sec cf-gift"><div class="cf-sh"><b>生日應援</b><small>你有 ${fmt(points())} 積分</small></div><div class="cf-gb">${CF_GIFT.map(n=>`<button data-a="cfGift" data-v="${mid}" data-n="${n}">☕ ${fmt(n)}</button>`).join("")}</div>
+      ${got?`<div class="cf-pc"><span class="cf-pcc" style="--cc:${grad(MEMBERS[mid].g||0)}">${A.selfie?cfImg(A.selfie):`<b>${esc(MEMBERS[mid].name)}</b>`}<i>BIRTHDAY<br>CAFÉ ${c.y}</i></span><p><b>生日限定到店小卡</b><small>謝謝你的應援 💜</small></p></div>`:`<p class="cf-hint">捐積分或幫忙佈置，就能拿到生日限定到店小卡</p>`}</section>`:""}
+    ${cfSec("海報牆",`${c.posters.length} 張`,`<div class="cf-wall">${c.posters.slice().reverse().map((p,i)=>`<figure class="cf-pst" style="--r:${(strHash(p.id)%7)-3}deg">${cfImg(p.img)}${star("p:"+p.id)}<figcaption>${esc(p.name||"")}</figcaption></figure>`).join("")||`<p class="cf-hint">還沒有海報</p>`}</div>`,fan&&on?`<label class="cf-add">＋ 貼海報<input type="file" accept="image/*" id="cfPoster" data-v="${mid}"></label>`:"")}
+    ${cfSec("杯套",`${c.cups.length} 款`,`<div class="cf-cups">${c.cups.slice().reverse().map(x=>`<div class="cf-cup"><span class="cf-lid"></span><span class="cf-sleeve">${cfImg(x.img)}</span><span class="cf-body"></span>${star("c:"+x.id)}<small>${esc(x.name||"")}</small></div>`).join("")||`<p class="cf-hint">還沒有杯套</p>`}</div>`,fan&&on?`<label class="cf-add">＋ 做杯套<input type="file" accept="image/*" id="cfCup" data-v="${mid}"></label>`:"")}
+    ${cfSec("菜單","",`<div class="cf-board"><b>BIRTHDAY MENU</b>${c.menu.map(x=>`<div class="cf-mi"><span>${esc(x.name)}</span><i></i><small>${esc(x.by_n||"")}</small>${star("m:"+x.id)}</div>`).join("")||`<p>— 還沒有特調 —</p>`}</div>`,fan&&on?`<button class="cf-add" data-a="cfMenu" data-v="${mid}">＋ 生日特調</button>`:"")}
+    ${cfSec("留言板",`${c.cards.length} 張`,`<div class="cf-cork">${c.cards.slice().reverse().map(x=>`<div class="cf-note" style="--r:${(strHash(x.id)%9)-4}deg;--nc:${["#FFF3B0","#FFD6E7","#D7F0FF","#E2FFD9","#EBDDFF"][strHash(x.id)%5]}"><p>${fan&&x.by===em?esc(x.text):trT("cf:"+x.id,x.text,"","span")}</p><small>— ${esc(x.name||"")}</small>${star("n:"+x.id)}
+        ${x.reply?`<div class="cf-rep"><b>${esc(MEMBERS[mid].name)}</b> ${fan?trT("cfr:"+x.id,x.reply,"","span"):esc(x.reply)}</div>`:mine&&on?`<button class="cf-rb" data-a="cfReply" data-v="${mid}" data-k="${x.id}">回覆</button>`:""}</div>`).join("")||`<p class="cf-hint">還沒有留言卡</p>`}</div>`,fan&&on?`<button class="cf-add" data-a="cfCard" data-v="${mid}">＋ 寫卡片</button>`:"")}
+  </main>`; }
+/* 簽名板 */
+function cfSignPad(mid){ setLayer(`<div class="fs-pad-w cf-padw" role="dialog" aria-label="簽名"><div class="fs-pad"><b>在咖啡廳的牆上簽名</b><div class="cf-padc"><canvas id="cfPad" width="600" height="360"></canvas></div><div class="t-mb mrow"><button class="t-mbtn" data-a="cfPadClr">重簽</button><button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfPadOk" data-v="${mid}">完成</button></div></div></div>`,"cfpad");
+  const cv=document.getElementById("cfPad"), x=cv.getContext("2d"); x.lineCap="round"; x.lineJoin="round"; x.lineWidth=7; x.strokeStyle="#3B2A1E"; let dn=false, n=0;
+  const P=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*cv.width/r.width,(e.clientY-r.top)*cv.height/r.height]; };
+  cv.addEventListener("pointerdown",e=>{ e.preventDefault(); dn=true; const [a,b]=P(e); x.beginPath(); x.moveTo(a,b); try{ cv.setPointerCapture(e.pointerId); }catch(_){} });
+  cv.addEventListener("pointermove",e=>{ if(!dn) return; const [a,b]=P(e); x.lineTo(a,b); x.stroke(); n++; });
+  ["pointerup","pointercancel"].forEach(ev=>cv.addEventListener(ev,()=>{ dn=false; })); cv._n=()=>n; }
+async function cfUp(file,pre){ const {blob,w,h}=await prepPhoto(file), id=pre+Date.now().toString(36); await MDB.put(id,blob); return {id,w,h}; }
+const cfCur=mid=>{ const w=cfWindow(mid); return w?cfGet(mid,w.y):null; };
+
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^cf[A-Z]/.test(a)) return;
+  const mid=t.dataset.v, rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
+  switch(a){
+    case "cfGo": location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
+    case "cfGift": { const n=+t.dataset.n, c=cfCur(mid), em=cfMe(); if(!c||!em) break; if(points()<n){ toast("積分不夠，先補充積分吧"); break; }
+      ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); rr(); toast("生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
+    case "cfMenu": tieModal("生日特調",`<input id="cfMenuIn" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfMenuOk" data-v="${mid}">加到菜單</button>`,"row"); setTimeout(()=>document.getElementById("cfMenuIn")?.focus(),200); break;
+    case "cfMenuOk": { const v=((document.getElementById("cfMenuIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.menu.push({id:"m"+Date.now().toString(36),name:v,by:cfMe(),by_n:ME.name,ts:Date.now()}); c.menu=c.menu.slice(-30); cfPut(c); layer.innerHTML=""; rr(); break; }
+    case "cfCard": tieModal("生日卡片",`<textarea id="cfCardIn" class="a-nick-in sn-caped" rows="4" maxlength="150" placeholder="輸入文字"></textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfCardOk" data-v="${mid}">貼上去</button>`,"row"); setTimeout(()=>document.getElementById("cfCardIn")?.focus(),200); break;
+    case "cfCardOk": { const v=((document.getElementById("cfCardIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.cards.push({id:"n"+Date.now().toString(36),text:v,by:cfMe(),name:ME.name,ts:Date.now()}); c.cards=c.cards.slice(-200); cfPut(c); layer.innerHTML=""; rr(); toast("卡片貼上去了"); break; }
+    case "cfReply": { const c=cfCur(mid), x=c&&c.cards.find(y=>y.id===t.dataset.k); if(!x) break; tieModal("回覆卡片",`<p class="cf-q">${esc(x.text)}</p><textarea id="cfRepIn" class="a-nick-in sn-caped" rows="3" maxlength="120" placeholder="輸入文字"></textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfReplyOk" data-v="${mid}" data-k="${x.id}">回覆</button>`,"row"); setTimeout(()=>document.getElementById("cfRepIn")?.focus(),200); break; }
+    case "cfReplyOk": { const v=((document.getElementById("cfRepIn")||{}).value||"").trim(); if(!v) break; const c=cfCur(mid), x=c.cards.find(y=>y.id===t.dataset.k); if(!x) break; x.reply=v; x.rts=Date.now(); cfArrive(c); cfPut(c); layer.innerHTML=""; rr(); break; }
+    case "cfFav": { const c=cfCur(mid), k=t.dataset.k, F=c.art.favs=c.art.favs||[], i=F.indexOf(k); if(i>=0) F.splice(i,1); else F.push(k); cfArrive(c); cfPut(c); rr(); break; }
+    case "cfSign": cfSignPad(mid); break;
+    case "cfPadClr": { const cv=document.getElementById("cfPad"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); break; }
+    case "cfPadOk": { const cv=document.getElementById("cfPad"); if(!cv) break; if(cv._n&&cv._n()<3){ toast("先簽個名吧"); break; } const id="cfs"+Date.now().toString(36), b=b64Blob(cv.toDataURL("image/png")); MDB.put(id,b); const c=cfCur(mid); c.art.sig=id; cfArrive(c); cfPut(c); layer.innerHTML=""; rr(); toast("簽好了 ✍️"); break; }
+    case "cfVoice": { mediaSrc(mid).then(u=>{ if(!u){ toast("語音讀不到"); return; } const au=new Audio(u); au.play().catch(()=>toast("播放失敗")); }); break; }
+  } });
+/* 藝人第一次在這間店做任何事 → 算「到店」，通知追蹤這團的粉絲 */
+function cfArrive(c){ if(c.art.at) return; c.art.at=Date.now(); if(c.demo) return; try{ const m=MEMBERS[c.mid]; feedPush({kind:"system",member:c.mid,group:m.group,text:`🎂 ${m.name} 到生日咖啡廳了！快去看看留下了什麼`},"g:"+m.group); }catch(e){} }
+document.addEventListener("change",async e=>{ const id=e.target.id; if(!["cfPoster","cfCup","cfSelfie","cfVoiceIn"].includes(id)) return; const f=e.target.files&&e.target.files[0], mid=e.target.dataset.v; e.target.value=""; if(!f||!mid) return;
+  try{ const c=cfCur(mid); if(!c) return;
+    if(id==="cfVoiceIn"){ if(f.size>15*1024*1024){ toast("語音檔太大了"); return; } const vid="cfv"+Date.now().toString(36); await MDB.put(vid,f.slice(0,f.size,f.type||"audio/mp4")); c.art.voice=vid; cfArrive(c); }
+    else { const r=await cfUp(f,id==="cfSelfie"?"cfsl":"cfp"); if(id==="cfSelfie"){ c.art.selfie=r.id; cfArrive(c); } else (id==="cfPoster"?c.posters:c.cups).push({id:"x"+Date.now().toString(36),img:r.id,by:cfMe(),name:ME.name,ts:Date.now()}); }
+    c.posters=c.posters.slice(-60); c.cups=c.cups.slice(-30); cfPut(c); render(); toast("好了 ✨"); }catch(err){ toast("這個檔案讀不出來"); } });
 
 </script>
 </body>
