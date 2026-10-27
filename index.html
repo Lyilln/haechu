@@ -5535,7 +5535,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027120259";
+const BUILD="20261027120620";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15850,7 +15850,7 @@ function preCardsHtml(){ const D=getDebut().filter(x=>x.status==="pre"&&x.day), 
    ・全部只在畫面上：不存任何東西、不連雲端、看不到真正藝人的資料
    ・玩完就是「進 SUN KISS 才能繼續」
    ========================================================= */
-const TRY_JOIN="";   /* 入群連結：她給了再填；空的就請他們到 LINE 搜尋 */
+const TRY_JOIN="https://line.me/ti/g2/7iT3j2hGOM4GHpnkZeunPHVJbPUODoTZg5zA_Q";   /* SUN KISS 社群 */
 const TRY_LOCK=[["🌟","追藝人"],["💎","賺積分"],["🎤","出道"],["📺","綜藝"],["☕","生日咖啡廳"],["💌","TIE"]];
 const TRY={k:null,sw:0,t0:0,col:"#C7AEFF",ls:null,tm:0};
 function tryOpen(k){ TRY.k=k||"menu"; clearTimeout(TRY.tm); try{ if(TRY.ls) TRY.ls.destroy(); }catch(e){} TRY.ls=null;
