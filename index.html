@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027154213";
+const BUILD="20261027154358";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10567,7 +10567,7 @@ function viewArtistFoc(mid,p){
     ${preCardsHtml()}
     ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
-    ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}${(()=>{ const c=isCur(), on=c&&c.st==="on", w=isWin(); return tile("focGo","isac","star","偶像運動會",on?"● 進行中":w?`${w.n}・等開幕`:isNextTxt(),on?"on":w?"":"off"); })()}</div>
+    ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=toursShown().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}${(()=>{ const c=isCur(), on=c&&c.st==="on", w=isWin(); return tile("focGo","isac","star","偶像運動會",on?"● 進行中":w?`${w.n}・等開幕`:isNextTxt(),on?"on":w?"":"off"); })()}</div>
     
   </main>`;
 }
@@ -10597,7 +10597,7 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",`${esc(weekType())}・${esc(getSched().deadline)}`],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=getTours().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}${!q?preCardsHtml():""}
@@ -10744,9 +10744,16 @@ const cityOf=n=>TOUR_CITIES.find(c=>c[0]===n);
 /* 地圖投影（Miller）：跟 TOUR_LAND 的陸地是同一套，寬 1000、高 474 */
 const tourXY=(lat,lon)=>{ const Y=a=>1.25*Math.log(Math.tan(Math.PI/4+.4*a*Math.PI/180)), s=1000/(2*Math.PI); lat=Math.max(-58,Math.min(80,lat)); return [(lon+180)/360*1000,(Y(80)-Y(lat))*s]; };
 const getTours=()=>(S.get(K.wtours,[])||[]).filter(t=>groupOf(t.gid)).sort((a,b)=>(b.ts||0)-(a.ts||0));
-const tourOf=id=>getTours().find(t=>t.id===id);
+/* 示範世巡（跟示範演唱會一樣）：藝人端 HUSSEY／試玩、粉絲端試玩時才看得到；不存、不算積分、不用買票 */
+function tourDemo(){ try{ const s=session(); if(!s) return null; const r=route().role; let gid=null;
+    if(r==="artist"&&demoOn()){ const m=MEMBERS[demoMid()]; gid=m&&m.group; } else if(r==="fan"&&sbxOn()){ gid=coreStickGroup(); }
+    if(!gid||!groupOf(gid)) return null; const D=864e5, H=36e5, n=Date.now(), d0=new Date(n); d0.setHours(19,0,0,0); const base=d0.getTime();
+    const mk=(id,city,st,dur,msg)=>({id:"wtd_"+id,city,startTs:st,msg,dcc:{id:"wtdc_"+id,startTs:st,endTs:st+dur,ended:st+dur<=n}});
+    return {id:"wt_demo",demo:true,gid,title:"示範世巡",status:"approved",ts:n,stops:[mk(1,"首爾",base-6*D,2*H,"首爾，好久不見！"),mk(2,"東京",base-3*D,2*H,"東京的大家，謝謝你們 💜"),mk(3,"台北",n-30*60e3,2*H,"台北！今天也一起玩吧"),mk(4,"新加坡",base+3*D,2*H,""),mk(5,"洛杉磯",base+8*D,2*H,"")]}; }catch(e){ return null; } }
+const toursShown=()=>{ const d=tourDemo(); return d?[d,...getTours()]:getTours(); };
+const tourOf=id=>toursShown().find(t=>t.id===id);
 const myTix=()=>S.get(K.tourTix,{})||{}, myStamps=()=>S.get(K.tourStamp,{})||{};
-const stopCC=st=>st&&st.cid?S.get(K.concerts,[]).find(c=>c.id===st.cid):null;
+const stopCC=st=>st&&st.dcc?st.dcc:st&&st.cid?S.get(K.concerts,[]).find(c=>c.id===st.cid):null;
 function stopState(st){ const c=stopCC(st), n=Date.now(); if(!c) return "off"; if(c.ended||c.endTs<=n) return "done"; if(c.startTs<=n) return "live"; return "soon"; }
 const tourStops=t=>(t.stops||[]).slice().sort((a,b)=>a.startTs-b.startTs);
 function wtDone(t){ const L=tourStops(t).filter(st=>stopState(st)!=="off"); return L.length&&L.every(st=>stopState(st)==="done"); }
@@ -10774,18 +10781,18 @@ function tourMapHtml(t,{stamps={}}={}){ const L=tourStops(t), g=groupOf(t.gid), 
 function trmScroll(){ document.querySelectorAll(".trm:not([data-sc])").forEach(m=>{ m.dataset.sc="1"; const sv=m.querySelector("svg"); if(!sv) return; const k=sv.clientWidth/1000; m.scrollLeft=Math.max(0,(+m.dataset.cx||500)*k-m.clientWidth/2); }); }
 /* ---------- 粉絲端 ---------- */
 function viewTourFan(id){ const fol=followed(), tix=myTix(), stamps=myStamps();
-  if(!id){ const L=getTours().filter(t=>t.status==="approved").sort((a,b)=>(fol.includes(b.gid)-fol.includes(a.gid))||((b.ts||0)-(a.ts||0)));
+  if(!id){ const L=toursShown().filter(t=>t.status==="approved").sort((a,b)=>(fol.includes(b.gid)-fol.includes(a.gid))||((b.ts||0)-(a.ts||0)));
     return coreHead("世巡")+`<main class="page tr">${L.length?L.map(t=>{ const g=groupOf(t.gid), S2=tourStops(t), d=S2.filter(st=>stopState(st)==="done").length;
       return `<button class="card tr-card" data-a="tourOpen" data-v="${t.id}" style="--gt:${gTheme(t.gid)}"><span class="tr-g">${esc(g.name)}</span><b>${esc(t.title)}</b><small>${S2.length} 站・${S2.length?`${tourMD(S2[0].startTs)} – ${tourMD(S2[S2.length-1].startTs)}`:""}</small><span class="tr-bar"><i style="width:${S2.length?d/S2.length*100:0}%"></i></span><em>${d===S2.length&&d?"巡演完成":`已完成 ${d} / ${S2.length} 站`}</em></button>`; }).join(""):`<p class="me-none">目前沒有世界巡演</p>`}</main>`; }
   const t=tourOf(id); if(!t||t.status!=="approved") return coreHead("世巡")+`<main class="page"><p class="me-none">這個巡演已經取消</p></main>`;
   const g=groupOf(t.gid), L=tourStops(t), d=L.filter(st=>stopState(st)==="done").length; setTimeout(trmScroll,0);
   return coreHead("世巡")+`<main class="page tr" style="--gt:${gTheme(t.gid)}"><div class="tr-hero"><span class="tr-g">${esc(g.name)}</span><h2>${esc(t.title)}</h2><small>${L.length} 站・${wtDone(t)?"巡演完成":`已完成 ${d} 站`}</small></div>
     ${tourMapHtml(t,{stamps})}
-    <section class="card tr-list">${L.map((st,i)=>{ const s=stopState(st), has=!!tix[st.id], c=stopCC(st);
-      const act=s==="off"?`<span class="tr-st off">取消</span>`:s==="done"?`<span class="tr-st done">${stamps[st.id]?"已蓋章":"已結束"}</span>`:s==="live"?(has?`<button class="tr-btn on" data-a="concertOn">進場</button>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`):(has?`<span class="tr-st have">已購票</span>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`);
+    <section class="card tr-list">${L.map((st,i)=>{ const s=stopState(st), has=t.demo||!!tix[st.id], c=stopCC(st);
+      const act=s==="off"?`<span class="tr-st off">取消</span>`:s==="done"?`<span class="tr-st done">${stamps[st.id]?"已蓋章":"已結束"}</span>`:s==="live"?(has?`<button class="tr-btn on" ${t.demo?`data-a="lsDemoPlay" data-v="demo"`:`data-a="concertOn"`}>進場</button>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`):(has?`<span class="tr-st have">已購票</span>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`);
       return `<div class="tr-row ${s}"><span class="tr-n">${i+1}</span><div class="tr-i"><b>${esc(st.city)}</b><small>${c?evWhen(c.startTs):tourMD(st.startTs)}${s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>${act}</div>`; }).join("")}</section></main>`; }
 /* ---------- 藝人端 ---------- */
-function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=getTours().filter(t=>t.gid===gid), d=ui.trDraft;
+function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=toursShown().filter(t=>t.gid===gid), d=ui.trDraft;
   const form=d?`<section class="card studio tr-form"><div class="foc-cfg-h"><h3>申請世巡</h3></div>
       <span class="fld-lab">巡演名稱</span><label class="field"><input id="trTi" maxlength="40" placeholder="輸入文字" value="${esc(d.title)}"></label>
       <span class="fld-lab">站點</span>${d.stops.length?`<div class="tr-dl">${d.stops.slice().sort((a,b)=>a.startTs-b.startTs).map(st=>`<div class="tr-di"><b>${esc(st.city)}</b><small>${evWhen(st.startTs)}</small><button data-a="trStopDel" data-v="${st.id}" aria-label="刪掉這站">${XI}</button></div>`).join("")}</div>`:""}
@@ -10796,7 +10803,7 @@ function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=getTours().filt
     return `<section class="card tr-a"><div class="tr-ah"><b>${esc(t.title)}</b><span class="tr-badge ${t.status}">${ST[t.status]||""}</span></div>${t.status==="rejected"&&t.why?`<p class="tr-why">${esc(t.why)}</p>`:""}
       ${L.map(st=>{ const s=t.status==="approved"?stopState(st):"", c=stopCC(st);
         return `<div class="tr-row ${s}"><div class="tr-i"><b>${esc(st.city)}</b><small>${evWhen(c?c.startTs:st.startTs)}${s==="done"?`・+${fmt(TOUR_STOP_PTS)}`:s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>
-          ${s==="soon"&&!st.msg?`<button class="tr-btn" data-a="trSay" data-v="${t.id}" data-s="${st.id}">說一句話</button>`:s==="live"?`<button class="tr-btn on" data-a="stOn">進場</button>`:""}</div>`; }).join("")}
+          ${s==="soon"&&!st.msg&&!t.demo?`<button class="tr-btn" data-a="trSay" data-v="${t.id}" data-s="${st.id}">說一句話</button>`:s==="live"?`<button class="tr-btn on" data-a="${t.demo?"lsDemo":"stOn"}">進場</button>`:""}</div>`; }).join("")}
       ${t.status==="approved"&&wtDone(t)?`<p class="tr-fin">巡演完成・+${fmt(TOUR_DONE_PTS)}</p>`:""}</section>`; }).join("")}</main>`; }
 /* ---------- 管理員 ---------- */
 function tourAdminHtml(){ const L=getTours(), P=L.filter(t=>t.status==="pending"), A=L.filter(t=>t.status==="approved");
