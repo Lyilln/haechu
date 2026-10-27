@@ -129,7 +129,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .page{padding:14px 16px}
 .section-h{display:flex;align-items:center;gap:8px;margin:18px 2px 10px;font-weight:800;font-size:16px}
 .section-h .muted{font-size:12px;font-weight:700;color:var(--ink-3)}
-.card{position:relative;background:var(--glass);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);border:1px solid rgba(255,255,255,.6);border-radius:var(--radius-l);box-shadow:var(--shadow)}
+.card{position:relative;background:var(--glass);border:1px solid rgba(255,255,255,.6);border-radius:var(--radius-l);box-shadow:var(--shadow)}
 .card::before{content:"";position:absolute;inset:0;border-radius:inherit;background:radial-gradient(120% 90% at 0% 0%,rgba(255,255,255,.55) 0%,rgba(255,255,255,.14) 34%,rgba(255,255,255,0) 60%);pointer-events:none}
 .card>*{position:relative}
 .muted{color:var(--ink-3)}
@@ -4747,6 +4747,8 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .scx-q{margin:8px 16px}.scx-plus{flex:none;font-style:normal;width:28px;height:28px;border-radius:50%;background:#0095F6;color:#fff;display:grid;place-items:center}
 #sbxPill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 96px);z-index:9000;border:0;border-radius:16px;background:rgba(255,159,10,.95);color:#000;font:inherit;font-size:12px;font-weight:700;padding:5px 6px 5px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.2)}
 #sbxPill b{background:rgba(0,0,0,.8);color:#fff;border-radius:11px;padding:2px 9px}
+/* iPhone：毛玻璃的標題列、導航列偶爾整塊沒畫出來 → 讓它們各自有固定的圖層 */
+.top,.nav-in{-webkit-backface-visibility:hidden;backface-visibility:hidden}
 
 </style>
 </head>
@@ -5150,7 +5152,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027003131";
+const BUILD="20261027003623";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
