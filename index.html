@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027133113";
+const BUILD="20261027140541";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9190,10 +9190,12 @@ function viewTieRoom(member){
     }
     const shown=w.ko||w.text;   // 藝人原文；開啟翻譯後按 A 會在下面顯示中文
     const lang=st.trLang||"zh", wel=w.welcome&&!w.kind&&!isZhText(w.text);   /* 歡迎語不是中文：跟藝人訊息一樣有 A，按了才顯示翻譯 */
-    const tx=wel?welTr(w,lang):trText(w,lang), hasSrc=wel||w.ko||(!w.kind&&!isZhText(w.text)), canTr=st.translate&&hasSrc&&!(tr.has(w.id)&&tx), showTr=st.translate&&hasSrc&&tr.has(w.id)&&tx;
+    /* 引用的粉絲訊息不是中文：按 A 時一起翻（跟 Bubble 一樣，虛線下面紫字） */
+    const tx=wel?welTr(w,lang):trText(w,lang), mainN=wel||w.ko||(!w.kind&&!isZhText(w.text)), rqN=!!(w.reply&&w.reply.text&&!isZhText(w.reply.text)), rqT=rqN?rqTrGet(w.id,lang):"", asked=tr.has(w.id),
+      hasSrc=mainN||rqN, canTr=st.translate&&hasSrc&&!(asked&&(!mainN||tx)&&(!rqN||rqT)), showTr=st.translate&&mainN&&asked&&tx, showRq=st.translate&&rqN&&asked&&rqT;
     return sep+`<div class="t-art">${tieAv(m,"ring")}
       <div class="t-art-c"><div class="t-art-n">${st.badge?artBadge(member):""}<b>${esc(st.chatName)}</b>${w.milestone?`<span class="t-ms">🎉 ${w.milestone} 天紀念日</span>`:""}</div>
-        ${w.reply?tieRq(w.reply,false,true):""}<div class="t-bw">${w.kind?mediaBubble(w):`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
+        ${w.reply?tieRq(showRq?{text:w.reply.text,tr:rqT}:w.reply,false,!showRq):""}<div class="t-bw">${w.kind?mediaBubble(w):`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
           <span class="t-side">${canTr&&!w.kind?`<button class="t-abtn" data-a="tTranslate" data-id="${w.id}" aria-label="翻譯">A</button>`:""}<span class="t-tm">${timeHM(w.ts)}</span></span></div></div></div>`;
   }).join("");
   const days=subDays(member);
@@ -10013,6 +10015,13 @@ async function welTranslate(wid,lang){ const k=wid+":"+lang; if(welAsked.has(k))
   const all=S.get(K.tieTrX,{})||{}; all[wid+":w"+lang]=t; S.set(K.tieTrX,all); }
 /* 中文翻譯：送出時翻好的就用 w.text；送出那一刻沒翻成功（網路斷、App 被關）就在看的人手機上按 A 再翻，存在自己這邊 */
 const trText=(w,lang)=>lang==="zh"?(w.ko||isZhText(w.text)?w.text:((S.get(K.tieTrX,{})||{})[w.id+":zh"]||"")):(S.get(K.tieTrX,{})[w.id+":"+lang]||"");
+const rqTrGet=(wid,lang)=>(S.get(K.tieTrX,{})||{})[wid+":rq:"+lang]||"";
+/* 按 A：訊息本身＋引用的粉絲訊息，需要翻的都翻 */
+async function tieTrBoth(wid,lang){ const w=getWhispers().find(x=>x.id===wid); if(!w) return false; let ok=true;
+  const mainN=w.ko||(!w.kind&&!isZhText(w.text)); if(mainN&&!trText(w,lang)) ok=await tieTranslateX(wid,lang);
+  const r=w.reply&&w.reply.text; if(r&&!isZhText(r)&&!rqTrGet(wid,lang)){ const t=lang==="zh"&&hasHangul(r)?await koToZh(r):await translateMany([r],lang).then(o=>o&&aiClean(o[0])).catch(()=>null);
+    if(t){ const all=S.get(K.tieTrX,{})||{}; all[wid+":rq:"+lang]=t; S.set(K.tieTrX,all); } else if(!mainN){ toast("翻譯失敗，等一下再試試"); ok=false; } }
+  return ok; }
 async function tieTranslateX(wid,lang){
   const w=getWhispers().find(x=>x.id===wid); if(!w) return false; if(trText(w,lang)) return true;
   if(!useDeepL()&&(!SAMPLE||aiOff)){ toast("翻譯服務還沒連上，等一下再試試"); return false; }
@@ -11978,7 +11987,7 @@ document.addEventListener("click",e=>{
     case "tToSettings": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=settings"; break;
     case "tTranslate": { const id=t.dataset.id, lang=tieSet(route().m).trLang||"zh"; const done=()=>{ const s2=new Set(S.get(K.tieTr,[])); s2.add(id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); };
       const wl=getWhispers().find(x=>x.id===id); if(wl&&wl.welcome){ if(welTr(wl,lang)) done(); else { t.classList.add("busy"); welTranslate(id,lang).then(()=>{ t.classList.remove("busy"); if(welTr(wl,lang)) done(); else toast("翻譯失敗，等一下再試試"); }); } break; }
-      if(wl&&trText(wl,lang)) done(); else { t.classList.add("busy"); tieTranslateX(id,lang).then(ok=>{ t.classList.remove("busy"); if(ok) done(); }); } break; }
+      t.classList.add("busy"); tieTrBoth(id,lang).then(ok=>{ t.classList.remove("busy"); if(ok) done(); }); break; }
     case "tLang": { const m2=t.dataset.m, cur=tieSet(m2).trLang||"zh"; tieModal("翻譯結果語言",`<span class="t-langs">${Object.entries(TR_LANGS).map(([k,v])=>`<button class="t-lang ${cur===k?"on":""}" data-a="tLangSet" data-m="${m2}" data-v="${k}">${v}${cur===k?" ✓":""}</button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "tLangSet": { saveTieSet(t.dataset.m,{trLang:t.dataset.v}); S.set(K.tieTr,[]); layer.innerHTML=""; render(); toast("翻譯會改成 "+TR_LANGS[t.dataset.v]); break; }
     case "tRecall": recallWhisper(t.dataset.id); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("已收回訊息"); break;
