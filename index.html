@@ -5536,7 +5536,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027130847";
+const BUILD="20261027132120";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -13134,7 +13134,7 @@ function viewBanned(){ return `<main class="page"><section class="card studio"><
 
 /* TIE：藝人回覆粉絲（粉絲端看不到是哪位粉絲寫的） */
 const TI_REPLY='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/></svg>';
-const tieRq=(r,me,noTr)=>`<div class="t-rp ${me?"me":""}"><small>ARTIST 的回覆：</small><p>${esc(r.text)}</p>${r.tr&&!noTr?`<p class="t-rp-tr">${esc(r.tr)}</p>`:""}</div>`;
+const tieRq=(r,me,noTr)=>`<div class="t-rp ${me?"me":""}"><small>${(session()||{}).role==="artist"?"你的回覆：":"ARTIST 的回覆："}</small><p>${esc(r.text)}</p>${r.tr&&!noTr?`<p class="t-rp-tr">${esc(r.tr)}</p>`:""}</div>`;
 (()=>{ let sx=0,sy=0,el=null,dx=0,lock=0;
   document.addEventListener("touchstart",e=>{ const t=e.target.closest&&e.target.closest("[data-sw]"); el=t||null; if(!el) return; sx=e.touches[0].clientX; sy=e.touches[0].clientY; dx=0; lock=0; el.style.transition="none"; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!el) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy; if(!lock&&(Math.abs(x)>8||Math.abs(y)>8)) lock=Math.abs(x)>Math.abs(y)?1:2; if(lock!==1) return; dx=Math.max(-84,Math.min(0,x)); el.style.transform=`translateX(${dx}px)`; el.classList.toggle("sw-on",dx<-56); },{passive:true});
