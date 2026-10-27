@@ -4150,7 +4150,7 @@ html[data-theme="dark"] .ws-cnt b{color:#F2F2F5}html[data-theme="dark"] .ws-plus
 .concert2.stage .cc-t b{font-size:22px}
 .st-mic{position:absolute;left:50%;top:27%;width:min(30vw,128px);transform:translateX(-50%);transform-origin:50% 92%;z-index:3;touch-action:none;filter:drop-shadow(0 0 28px rgba(255,255,255,.25)) drop-shadow(0 20px 30px rgba(0,0,0,.5));animation:micIn .6s cubic-bezier(.3,1.4,.5,1)}
 @keyframes micIn{from{opacity:0;transform:translateX(-50%) translateY(40px) scale(.9)}}
-.st-mic{perspective:700px}.mic-svg{width:100%;height:auto;display:block;transform-origin:50% 93%;will-change:transform;overflow:visible}
+.st-mic3{position:absolute;left:50%;top:15%;width:min(78vw,340px);height:min(54vh,470px);transform:translateX(-50%);z-index:3;animation:micIn .6s cubic-bezier(.3,1.4,.5,1)}.st-mic3 .ls-halo{opacity:.3}.mic-svg{width:100%;height:auto;display:block;transform-origin:50% 93%;will-change:transform;overflow:visible}
 .st-bds{position:absolute;inset:0;z-index:4;pointer-events:none}
 .st-bd{position:absolute;width:118px;padding:0;border:0;background:none;pointer-events:auto;transform:rotate(var(--r));animation:bdUp .5s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
 .st-bd::after{content:"";position:absolute;left:50%;top:100%;width:5px;height:34px;margin-left:-2.5px;border-radius:2px;background:linear-gradient(#E9E2D3,#B9AE98)}
@@ -5453,7 +5453,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027114157";
+const BUILD="20261027114704";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7669,7 +7669,7 @@ function artStageOn(){
     <header class="cc-top"><button class="cc-x" data-a="stOff" aria-label="離開舞台">${XI}</button><button class="cc-x cc-more" data-a="stMenu" aria-label="更多" style="position:absolute;right:14px;top:calc(env(safe-area-inset-top,0px) + 12px)">⋯</button>
       <div class="cc-t"><span class="cc-pill"><i></i>${esc(g.name)}・${esc(ls.title)}</span><b>${esc(artName(mid,"feed"))}</b><span class="cc-seat">${fsWhen(ls.endTs).split(" ")[1]} 結束</span><small id="ccNow"></small></div></header>
     <div id="ccCmd" class="cc-cmd"></div><div id="ccMis" class="cc-mis" hidden><i></i><b></b></div>
-    <div class="st-mic" id="stMic">${MIC_SVG(glow)}</div>
+    <div class="st-mic3" id="stMic"></div>
     <div class="st-dock" id="stDock">${stDockHtml()}</div>
   </div>`;
   seaRun(layer.querySelector(".cc-sea"),glow);
@@ -7691,16 +7691,9 @@ function stBoardPop(){ const host=document.getElementById("stBds"); if(!host){ c
   const x=L[Math.floor(Math.random()*L.length)], el=document.createElement("button"); el.className="st-bd"; el.dataset.a="stBd"; el.dataset.v=x.id;
   const side=host.children.length%2?Math.random()<.5:host.querySelector(".st-bd")?.dataset.side!=="l"; el.dataset.side=side?"l":"r"; el.style.left=(side?3+Math.random()*16:56+Math.random()*12)+"%"; el.style.bottom=(33+Math.random()*14)+"%"; el.style.setProperty("--r",(Math.random()*14-7).toFixed(1)+"deg");
   el.innerHTML=bdHtml(x,cc.gid,true); host.appendChild(el); setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),450); },5000); }
-/* 麥克風：跟應援棒同一套彈簧，可以左右揮、也可以往前往後揮 */
-function stMicDrag(){ const m=document.getElementById("stMic"); if(!m) return; const inn=m.querySelector(".mic-svg"); let pt=null; const S2={r:0,rv:0,p:0,pv:0,t0:performance.now()};
-  m.addEventListener("pointerdown",e=>{ pt={x:e.clientX,y:e.clientY}; try{ m.setPointerCapture(e.pointerId); }catch(er){} });
-  m.addEventListener("pointermove",e=>{ if(!pt) return; const dx=e.clientX-pt.x, dy=e.clientY-pt.y; pt={x:e.clientX,y:e.clientY};
-    S2.rv=dx*.006; S2.r=Math.max(-.6,Math.min(.6,S2.r+S2.rv)); S2.pv=-dy*.006; S2.p=Math.max(-.7,Math.min(.7,S2.p+S2.pv)); SEA.boost=Math.min(1.4,SEA.boost+(Math.abs(dx)+Math.abs(dy))*.0015); });
-  const up=()=>{ pt=null; }; m.addEventListener("pointerup",up); m.addEventListener("pointercancel",up);
-  const tick=now=>{ if(!m.isConnected) return; if(!pt){ S2.rv+=-S2.r*.07; S2.rv*=.9; S2.r+=S2.rv; S2.pv+=-S2.p*.07; S2.pv*=.88; S2.p+=S2.pv; }
-    const t=(now-S2.t0)/1000, idle=!pt&&Math.abs(S2.rv)+Math.abs(S2.pv)<.002, r=S2.r+(idle?Math.sin(t*1.9)*.035:0);
-    inn.style.transform=`rotateZ(${r}rad) rotateX(${S2.p}rad)`; requestAnimationFrame(tick); };
-  requestAnimationFrame(tick); }
+/* 麥克風：真的 3D，跟應援棒同一個畫法、同一套彈簧（左右、前後都能揮） */
+function stMicDrag(){ const m=document.getElementById("stMic"); if(!m) return; const ls=lightsea(), col=(ls&&ls.color)||m.closest(".concert2")?.dataset.glow||"#C7AEFF";
+  m._ls=LS3D.mount(m,{glow:col},{mic:true,swing:true,auto:false,glow:col,onSwing:v=>{ SEA.boost=Math.min(1.4,SEA.boost+v*.003); }}); }
 function stOff(){ clearInterval(ccTimer); clearInterval(ui.stBdT); ui.stK=null; layer.innerHTML=""; render(); }
 function stReply(id,txt){ const L=bdAll(), x=L.find(y=>y.id===id); if(!x) return; x.ans={by:ui.stMid,text:txt,ts:Date.now()}; x.up=false; bdSave(L); const el=document.querySelector(`.st-bd[data-v="${id}"]`); if(el){ el.classList.add("hit"); setTimeout(()=>el.remove(),500); } toast("已回應 💜"); }
 function stSheet(html){ const st=layer.querySelector(".concert2.stage"); if(!st) return; st.querySelector(".st-shw")?.remove(); const w=document.createElement("div"); w.className="st-shw"; w.dataset.a="stShX"; w.innerHTML=`<div class="st-sh" data-a="stNoop">${html}</div>`; st.appendChild(w); requestAnimationFrame(()=>w.classList.add("open")); }
@@ -13811,6 +13804,31 @@ const STICK3D=(()=>{
     const ring2=new THREE.Mesh(new THREE.TorusGeometry(.6,.012,12,96),gold); ring2.position.y=.95; g.add(ring2);
     lathe([[0,1.53],[.05,1.53],[.075,1.57],[.06,1.62],[0,1.66]],gold,32);
     const out={g,core,btn,headY:.95,c}; models.set(key,out); g.visible=false; scene.add(g); return out; }
+  /* 舞台麥克風：真的 3D（鍍鉻網罩＋裡面的黑色海綿、燈色光圈、霧黑握把） */
+  function modelMic(c){ const key="mic"; if(models.has(key)) return models.get(key); const g=new THREE.Group();
+    const lathe=(pts,m,seg=96)=>{ const me=new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r,y])=>new THREE.Vector2(r,y)),seg),m); g.add(me); return me; };
+    const chrome=new THREE.MeshStandardMaterial({color:X3.C("#F1F2F6"),metalness:1,roughness:.12,envMapIntensity:1.5});
+    const satin=new THREE.MeshStandardMaterial({color:X3.C("#D9DAE0"),metalness:1,roughness:.32,envMapIntensity:1.3});
+    const body=new THREE.MeshPhysicalMaterial({color:X3.C("#17151C"),metalness:.55,roughness:.38,clearcoat:.8,clearcoatRoughness:.18,envMapIntensity:1.1});
+    /* 握把：上粗下細，底下鍍鉻尾蓋 */
+    lathe([[0,-1.62],[.115,-1.62],[.135,-1.6],[.14,-1.55],[.15,-1.2],[.175,-.5],[.2,.08],[.205,.18],[0,.18]],body);
+    lathe([[0,-1.7],[.09,-1.7],[.12,-1.68],[.138,-1.64],[.142,-1.58],[0,-1.58]],chrome);
+    [-1.5,-1.44].forEach(y=>{ const t=new THREE.Mesh(new THREE.TorusGeometry(.143+(y+1.5)*.04,.006,10,64),satin); t.rotation.x=Math.PI/2; t.position.y=y; g.add(t); });
+    /* 側邊開關＋小燈 */
+    const sw=new THREE.Mesh(X3.rbox(.09,.22,.06,.025),new THREE.MeshStandardMaterial({color:X3.C("#0B0A0E"),metalness:.3,roughness:.5})); sw.position.set(0,-.42,.19); sw.rotation.x=-.04; g.add(sw);
+    const btn=new THREE.Mesh(new THREE.SphereGeometry(.018,16,12),X3.emit(c.glow,1.6)); btn.position.set(0,-.36,.225); g.add(btn);
+    /* 光圈（跟著燈色亮）＋鍍鉻領口 */
+    const core=new THREE.Mesh(new THREE.TorusGeometry(.214,.03,16,96),new THREE.MeshStandardMaterial({color:X3.C(c.glow),emissive:X3.C(c.glow),emissiveIntensity:1.8,roughness:.3})); core.rotation.x=Math.PI/2; core.position.y=.2; g.add(core);
+    lathe([[0,.215],[.215,.215],[.23,.25],[.26,.34],[.31,.44],[.355,.49],[.36,.5],[0,.5]],chrome);
+    /* 網罩：鍍鉻網＋裡面黑海綿＋中間一圈接縫 */
+    const HY=.93, HR=.47;
+    const holes=X3.ctex(512,256,(x,w,h)=>{ x.fillStyle="#fff"; x.fillRect(0,0,w,h); x.fillStyle="#000"; const s=8; for(let yy=0;yy<h;yy+=s) for(let xx=-s;xx<w;xx+=s){ x.beginPath(); x.arc(xx+s/2+((yy/s)%2?s/2:0),yy+s/2,s*.36,0,Math.PI*2); x.fill(); } });
+    holes.encoding=THREE.LinearEncoding; holes.wrapS=holes.wrapT=THREE.RepeatWrapping; holes.generateMipmaps=false; holes.minFilter=THREE.LinearFilter;
+    const foam=new THREE.Mesh(new THREE.SphereGeometry(HR*.95,48,32),new THREE.MeshStandardMaterial({color:X3.C("#1A1820"),roughness:1,metalness:0})); foam.position.y=HY; g.add(foam);
+    const grill=new THREE.Mesh(new THREE.SphereGeometry(HR,96,64,0,Math.PI*2,0,Math.PI*.86),new THREE.MeshStandardMaterial({color:X3.C("#EEF0F4"),metalness:1,roughness:.22,envMapIntensity:1.6,alphaMap:holes,alphaTest:.5,side:THREE.DoubleSide})); grill.position.y=HY; g.add(grill);
+    const seam=new THREE.Mesh(new THREE.TorusGeometry(HR*1.005,.016,16,128),chrome); seam.rotation.x=Math.PI/2; seam.position.y=HY; g.add(seam);
+    const seam2=new THREE.Mesh(new THREE.TorusGeometry(HR*.83,.012,12,128),satin); seam2.rotation.x=Math.PI/2; seam2.position.y=HY-HR*.56; g.add(seam2);
+    const out={g,core,btn,headY:HY,c,mic:true}; models.set(key,out); g.visible=false; scene.add(g); return out; }
   /* 照設計圖做的模型：用辨識出來的輪廓（圓的做旋轉體、愛心星星做成鼓起來的立體板），表面貼設計圖本身，燈頭會發光 */
   const dsKey=ds=>ds._k||(ds._k="ds"+Math.random().toString(36).slice(2,9));
   const building=new Set();
@@ -13899,11 +13917,11 @@ const STICK3D=(()=>{
     el.classList.add("ls3d"); el.innerHTML=`<span class="ls-halo"></span><canvas></canvas>${o.controls?`<span class="ls-ctl"><button type="button" data-m="rot" class="on">↻ 旋轉</button><button type="button" data-m="move">✥ 移動</button><button type="button" data-m="reset">⟲ 重設</button></span>`:""}`;
     const cv=el.querySelector("canvas"), halo=el.querySelector(".ls-halo"), ctx=cv.getContext("2d");
     const st={yaw:o.yaw??-.5,pitch:.12,sc:1,px:0,py:0,vy:0,auto:o.auto!==false,wave:!!o.wave,pulse:o.pulse||0,glow:o.glow||ds.glow||"#C7AEFF",dead:false,mode:"rot",t0:performance.now(),touch:0,swing:!!o.swing,roll:0,rv:0,sw:0,sv:0,em:o.bright?1:0};
-    if(st.swing){ st.yaw=-.32; st.pitch=.08; st.sc=.84; }
+    if(st.swing){ st.yaw=o.mic?-.2:-.32; st.pitch=.08; st.sc=o.mic?1.12:.84; }
     const api={el,cv,ctx,halo,st,ds,o,m:null,set(k,v){ if(k==="rv"){ st.rv+=v; return; } st[k]=v; if(k==="glow") applyGlow(); }, update(nd){ api.ds=nd; ready(); }, destroy(){ st.dead=true; live.delete(api); }};
     function applyGlow(){ halo.style.background=`radial-gradient(circle,${st.glow}cc 0%,${st.glow}55 35%,transparent 68%)`; }
     applyGlow();
-    function ready(){ const d=api.ds; if(d&&d.rows&&d.tex){ api.m={ds:d}; return; } sampleColors(d,()=>{ if(st.dead) return; const c=colorsOf(d); api.m={key:[c.glow,c.handle,c.letter].join("|"),c}; }); }
+    function ready(){ const d=api.ds; if(o.mic){ api.m={mic:1,c:{glow:st.glow}}; return; } if(d&&d.rows&&d.tex){ api.m={ds:d}; return; } sampleColors(d,()=>{ if(st.dead) return; const c=colorsOf(d); api.m={key:[c.glow,c.handle,c.letter].join("|"),c}; }); }
     loadThree().then(()=>{ if(st.dead) return; init(); ready(); live.add(api); kick(); }).catch(()=>{ if(ds.cut) el.innerHTML=`<img class="ls-fb" src="${ds.cut}" alt="應援棒">`; });
     // 手勢：一指旋轉（或移動）、雙擊重設；揮動模式跟著手指甩
     const pts=new Map(); let lastTap=0; const reset=()=>{ st.yaw=-.5; st.pitch=.12; st.sc=1; st.px=0; st.py=0; st.vy=0; };
@@ -13927,7 +13945,7 @@ const STICK3D=(()=>{
         else if(!a.pts.size){ st.yaw+=st.vy; st.vy*=.93; if(st.auto&&idle) st.yaw+=.008; }
         let pw=1; if(st.pulse===1) pw=.55+.45*Math.sin(t*5); else if(st.pulse===2) pw=(Math.sin(t*12)>0?1:.25); else if(st.pulse===3) pw=.6+.4*Math.sin(t*2.2);
         const wave=st.swing?-(st.roll+(idle?Math.sin(t*1.9)*.1:0)):st.wave?Math.sin(t*4.2)*.32:0, swp=st.swing?st.sw:0;
-        const M=a.m.ds?modelDs(a.m.ds):model(a.m.key,{...a.m.c,glow:a.m.c.glow}); if(!M) return; models.forEach(x=>{ if(x) x.g.visible=false; }); M.g.visible=true;
+        const M=a.m.mic?modelMic(a.m.c):a.m.ds?modelDs(a.m.ds):model(a.m.key,{...a.m.c,glow:a.m.c.glow}); if(!M) return; models.forEach(x=>{ if(x) x.g.visible=false; }); M.g.visible=true;
         const col=X3.C(st.glow);
         if(M.core){ M.core.material.color.copy(col); M.core.material.emissive.copy(col); M.core.material.emissiveIntensity=(.22+.5*pw)*(st.em?1.35:1); M.btn.material.emissive.copy(col); M.btn.material.color.copy(col); }
         else if(M.uni){ M.uni.glowC.value.copy(col); M.uni.glowK.value=(.35+.75*pw)*(st.em?1.35:1); }
