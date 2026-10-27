@@ -5536,7 +5536,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027121130";
+const BUILD="20261027130847";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9187,7 +9187,7 @@ function viewTieRoom(member){
     }
     const shown=w.ko||w.text;   // 藝人原文；開啟翻譯後按 A 會在下面顯示中文
     const lang=st.trLang||"zh", wel=w.welcome&&!w.kind&&!isZhText(w.text);   /* 歡迎語不是中文：跟藝人訊息一樣有 A，按了才顯示翻譯 */
-    const tx=wel?welTr(w,lang):trText(w,lang), hasSrc=wel||w.ko, canTr=st.translate&&hasSrc&&!(tr.has(w.id)&&tx), showTr=st.translate&&hasSrc&&tr.has(w.id)&&tx;
+    const tx=wel?welTr(w,lang):trText(w,lang), hasSrc=wel||w.ko||(!w.kind&&!isZhText(w.text)), canTr=st.translate&&hasSrc&&!(tr.has(w.id)&&tx), showTr=st.translate&&hasSrc&&tr.has(w.id)&&tx;
     return sep+`<div class="t-art">${tieAv(m,"ring")}
       <div class="t-art-c"><div class="t-art-n">${st.badge?artBadge(member):""}<b>${esc(st.chatName)}</b>${w.milestone?`<span class="t-ms">🎉 ${w.milestone} 天紀念日</span>`:""}</div>
         ${w.reply?tieRq(w.reply,false,true):""}<div class="t-bw">${w.kind?mediaBubble(w):`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
@@ -9996,19 +9996,20 @@ const tieFixed=new Set();
 function tieRepair(){ try{ if(!session()||!(useDeepL()||(SAMPLE&&!aiOff))) return; const list=S.get(K.whispers,[]); let ch=0; const redo=[];
   list.slice(-300).forEach(w=>{ if(w.from!=="artist"||w.kind||w.welcome||tieFixed.has(w.id)) return;
     const bad=(w.ko&&w.ko===w.text&&hasHangul(w.ko))||(w.kt&&w.ko&&stillKo(w.text)&&!/\p{Script=Han}/u.test(w.text));
-    if(!bad) return; tieFixed.add(w.id); w.text=w.ko; delete w.ko; delete w.kt; ch++; redo.push(w.id); });
-  if(ch){ S.set(K.whispers,list); redo.slice(0,15).forEach((id,i)=>setTimeout(()=>tieOriginal(id),i*400)); } }catch(e){} }
+    if(!bad){ const s=session(); if(!w.ko&&hasHangul(w.text)&&s&&s.role==="artist"&&(s.member===w.member||uniMe&&uniMe()===w.member)&&Date.now()-w.ts<7*864e5){ tieFixed.add(w.id); redo.push(w.id); } return; } tieFixed.add(w.id); w.text=w.ko; delete w.ko; delete w.kt; ch++; redo.push(w.id); });
+  if(ch) S.set(K.whispers,list); if(redo.length){ redo.slice(0,15).forEach((id,i)=>setTimeout(()=>tieOriginal(id),i*400)); } }catch(e){} }
 setTimeout(tieRepair,4000); setInterval(tieRepair,60e3);
 const welTr=(w,lang)=>(S.get(K.tieTrX,{})||{})[w.id+":w"+lang]||"";
 const welAsked=new Set();
 async function welTranslate(wid,lang){ const k=wid+":"+lang; if(welAsked.has(k)) return; welAsked.add(k); const w=getWhispers().find(x=>x.id===wid); if(!w){ welAsked.delete(k); return; }
   const out=await translateMany([w.text],lang); const t=out&&aiClean(out[0]); welAsked.delete(k); if(!t) return;
   const all=S.get(K.tieTrX,{})||{}; all[wid+":w"+lang]=t; S.set(K.tieTrX,all); }
-const trText=(w,lang)=>lang==="zh"?w.text:(S.get(K.tieTrX,{})[w.id+":"+lang]||"");
+/* 中文翻譯：送出時翻好的就用 w.text；送出那一刻沒翻成功（網路斷、App 被關）就在看的人手機上按 A 再翻，存在自己這邊 */
+const trText=(w,lang)=>lang==="zh"?(w.ko||isZhText(w.text)?w.text:((S.get(K.tieTrX,{})||{})[w.id+":zh"]||"")):(S.get(K.tieTrX,{})[w.id+":"+lang]||"");
 async function tieTranslateX(wid,lang){
   const w=getWhispers().find(x=>x.id===wid); if(!w) return false; if(trText(w,lang)) return true;
   if(!useDeepL()&&(!SAMPLE||aiOff)){ toast("翻譯服務還沒連上，等一下再試試"); return false; }
-  const out=await translateMany([w.ko||w.text],lang); const t=out&&aiClean(out[0]); if(!t){ toast("翻譯失敗，等一下再試試"); return false; }
+  const src=w.ko||w.text, t=lang==="zh"&&hasHangul(src)?await koToZh(src):(await translateMany([src],lang).then(o=>o&&aiClean(o[0])).catch(()=>null)); if(!t){ toast("翻譯失敗，等一下再試試"); return false; }
   const all=S.get(K.tieTrX,{}); all[wid+":"+lang]=t; S.set(K.tieTrX,all); return true;
 }
 /* 管理員：AI 粉絲設定 */
@@ -11970,7 +11971,7 @@ document.addEventListener("click",e=>{
     case "tToSettings": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=settings"; break;
     case "tTranslate": { const id=t.dataset.id, lang=tieSet(route().m).trLang||"zh"; const done=()=>{ const s2=new Set(S.get(K.tieTr,[])); s2.add(id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); };
       const wl=getWhispers().find(x=>x.id===id); if(wl&&wl.welcome){ if(welTr(wl,lang)) done(); else { t.classList.add("busy"); welTranslate(id,lang).then(()=>{ t.classList.remove("busy"); if(welTr(wl,lang)) done(); else toast("翻譯失敗，等一下再試試"); }); } break; }
-      if(lang==="zh") done(); else { t.classList.add("busy"); tieTranslateX(id,lang).then(ok=>{ t.classList.remove("busy"); if(ok) done(); }); } break; }
+      if(wl&&trText(wl,lang)) done(); else { t.classList.add("busy"); tieTranslateX(id,lang).then(ok=>{ t.classList.remove("busy"); if(ok) done(); }); } break; }
     case "tLang": { const m2=t.dataset.m, cur=tieSet(m2).trLang||"zh"; tieModal("翻譯結果語言",`<span class="t-langs">${Object.entries(TR_LANGS).map(([k,v])=>`<button class="t-lang ${cur===k?"on":""}" data-a="tLangSet" data-m="${m2}" data-v="${k}">${v}${cur===k?" ✓":""}</button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "tLangSet": { saveTieSet(t.dataset.m,{trLang:t.dataset.v}); S.set(K.tieTr,[]); layer.innerHTML=""; render(); toast("翻譯會改成 "+TR_LANGS[t.dataset.v]); break; }
     case "tRecall": recallWhisper(t.dataset.id); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("已收回訊息"); break;
