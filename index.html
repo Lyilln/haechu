@@ -4150,7 +4150,7 @@ html[data-theme="dark"] .ws-cnt b{color:#F2F2F5}html[data-theme="dark"] .ws-plus
 .concert2.stage .cc-t b{font-size:22px}
 .st-mic{position:absolute;left:50%;top:27%;width:min(30vw,128px);transform:translateX(-50%);transform-origin:50% 92%;z-index:3;touch-action:none;filter:drop-shadow(0 0 28px rgba(255,255,255,.25)) drop-shadow(0 20px 30px rgba(0,0,0,.5));animation:micIn .6s cubic-bezier(.3,1.4,.5,1)}
 @keyframes micIn{from{opacity:0;transform:translateX(-50%) translateY(40px) scale(.9)}}
-.st-mic3{position:absolute;left:50%;top:15%;width:min(78vw,340px);height:min(54vh,470px);transform:translateX(-50%);z-index:3;animation:micIn .6s cubic-bezier(.3,1.4,.5,1)}.st-mic3 .ls-halo{opacity:.3}.mic-svg{width:100%;height:auto;display:block;transform-origin:50% 93%;will-change:transform;overflow:visible}
+.st-mic3{position:absolute;left:0;right:0;top:15%;height:min(54vh,470px);z-index:3;animation:micIn3 .6s cubic-bezier(.3,1.4,.5,1)}@keyframes micIn3{from{opacity:0;transform:translateY(40px)}}.st-mic3 .ls-halo{opacity:.3}.mic-svg{width:100%;height:auto;display:block;transform-origin:50% 93%;will-change:transform;overflow:visible}
 .st-bds{position:absolute;inset:0;z-index:4;pointer-events:none}
 .st-bd{position:absolute;width:118px;padding:0;border:0;background:none;pointer-events:auto;transform:rotate(var(--r));animation:bdUp .5s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
 .st-bd::after{content:"";position:absolute;left:50%;top:100%;width:5px;height:34px;margin-left:-2.5px;border-radius:2px;background:linear-gradient(#E9E2D3,#B9AE98)}
@@ -5453,7 +5453,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027114704";
+const BUILD="20261027115323";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8114,7 +8114,8 @@ function render(){
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
-  if(r.sub==="sns") return paint(viewSns(r.p||"home",r.id),false);
+  if(r.sub==="sns"){ /* SNS 的分頁列跟 App 的一樣放在頁面外面：換頁不重畫，鏡片滑過去、可以按住拖 */
+    let h=viewSns(r.p||"home",r.id), nv=""; h=h.replace(/<nav class="nav sn-nav2"[\s\S]*?<\/nav>/,m=>{ nv=m; return ""; }); return nv?paint(h,true,nv):paint(h,false); }
   if(r.sub==="look") return paint(viewLook(),false);
   if(r.sub==="replay"&&getLive(r.id)) return paint(viewReplay(r.id),false);
   if(r.sub==="tint") return paint(viewTint(r.id),false);
@@ -8168,7 +8169,7 @@ function tieFootPad(){ const ms=document.querySelector(".t-msgs"), f=document.qu
 addEventListener("resize",()=>tieFootPad());
 function paint(html,hasNav,navHtml=""){
   const pgChg=ui._ph!==location.hash, prevY=window.scrollY, prevBottom=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-40;
-  if(hasNav&&isUni()){ const ro=route().role; if(ro==="fan") navHtml=uniNav(uniActive()); else if(ro==="admin") navHtml=uniAdminNav(); html=uniSwitch()+html; }
+  if(hasNav&&isUni()&&!navHtml.includes("sn-nav2")){ const ro=route().role; if(ro==="fan") navHtml=uniNav(uniActive()); else if(ro==="admin") navHtml=uniAdminNav(); html=uniSwitch()+html; }
   setTimeout(onboardCheck,500);
   setTimeout(()=>{ const s=session(); if(s&&welcomeDone()&&!ui.coach&&(s.role==="artist"||s.uni)) artBdayCheck(s.role==="artist"?s.member:uniMe()); },900);
   try{ if(ui._ph&&ui._ph!==location.hash&&root.firstElementChild){ SNAP.set(ui._ph,{html:root.innerHTML,y:window.scrollY}); if(SNAP.size>12) SNAP.delete(SNAP.keys().next().value); } }catch(e){}
@@ -8177,7 +8178,7 @@ function paint(html,hasNav,navHtml=""){
   const pc=pa&&!matchMedia("(prefers-reduced-motion: reduce)").matches?" pg-"+(fixedPage&&pa!=="op"?"op":pa)+(fixedPage&&pa==="push"?" pg-tpush":""):"";
   // 導覽列不要每次重畫：同一組分頁就保留原本的玻璃列，只把鏡片滑過去（才不會卡）
   const oldSn=root.querySelector(".sn-nav2"), oldNav=root.querySelector(":scope > .nav"), tmp=document.createElement("div"); if(hasNav) tmp.innerHTML=navHtml; const newNav=tmp.firstElementChild;
-  const sig=n=>n?[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v+"|"+b.querySelector(".nav-ico").innerHTML.length).join(","):"";
+  const sig=n=>n?n.className+(n.querySelector(".nav-lens")?"L":"")+[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v+"|"+b.querySelector(".nav-ico").innerHTML.length).join(","):"";
   if(hasNav&&oldNav&&newNav&&sig(oldNav)===sig(newNav)){
     const app=root.querySelector(":scope > .app"); const box=document.createElement("div"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`;
     if(app) app.replaceWith(box.firstElementChild); else root.prepend(box.firstElementChild);
@@ -14372,7 +14373,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   switch(a){
     case "snsGo": ui.snTab="grid"; if(t.dataset.v!=="new") ui.snDraft=ui.snDraft&&ui.snDraft.media.length?ui.snDraft:null; clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; } if(layer.innerHTML) layer.innerHTML=""; { const h="#/"+session().role+"/sns?p="+t.dataset.v+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""), cur=route(), tabLike=t.closest(".sn-tabs,.sn-nav,nav")&&!t.dataset.id;
       /* 下面的分頁（跟 Instagram 一樣）：從首頁切過去會留一筆，返回就回首頁；分頁之間互切不留；按首頁直接退回首頁 */
-      if(tabLike&&cur.sub==="sns"){ const home="#/"+session().role+"/sns", curHome=!cur.p||cur.p==="home"; if(t.dataset.v==="home"){ if(!curHome) navBackTo(home); } else if(curHome) location.hash=h; else navReplace(h); }
+      if(tabLike&&cur.sub==="sns"){ /* 跟 App 的導覽列一樣：分頁之間直接換、不疊歷史；按目前這頁就捲回最上面 */
+        const curTab=(cur.p||"home")===(t.dataset.v)&&!cur.id; if(curTab){ window.scrollTo({top:0,behavior:"smooth"}); document.querySelectorAll(".sn-reels,.sn-feed").forEach(x=>x.scrollTo&&x.scrollTo({top:0,behavior:"smooth"})); break; }
+        navReplace(t.dataset.v==="home"?"#/"+session().role+"/sns":h); window.scrollTo(0,0); }
       else location.hash=h; }
     window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
