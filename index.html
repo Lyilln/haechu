@@ -3355,7 +3355,7 @@ html[data-theme="dark"] .sn,.sn.dark{--b:#000;--t:#F5F5F5;--s:#A8A8A8;--l:#36363
 .sn-acts .si{width:25px;height:25px}
 .sn-meta{padding:0 14px;display:flex;flex-direction:column;gap:4px;font-size:13.5px}
 .sn-meta p{margin:0;line-height:1.45}.sn-meta small{color:var(--s);font-size:12px}.sn-meta .sn-more{font-size:13.5px}
-.sn-nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:flex;justify-content:space-around;align-items:center;height:calc(env(safe-area-inset-bottom,0px) + 50px);padding-bottom:env(safe-area-inset-bottom,0px);background:var(--b);border-top:.5px solid var(--l)}
+.sn-nav{position:fixed;left:14px;right:14px;bottom:calc(env(safe-area-inset-bottom,0px) + 8px);z-index:6;display:flex;justify-content:space-around;align-items:center;height:60px;border-radius:30px;background:color-mix(in srgb,var(--b) 82%,transparent);-webkit-backdrop-filter:blur(20px) saturate(180%);backdrop-filter:blur(20px) saturate(180%);box-shadow:0 6px 24px rgba(0,0,0,.12);border:.5px solid color-mix(in srgb,var(--t) 10%,transparent);border-top:.5px solid var(--l)}
 .sn-nav button{width:48px;height:44px;border:0;background:none;color:var(--t);display:grid;place-items:center}
 .sn-nav button.on .si{stroke-width:2.7}
 .sn-nav .sn-av.ring{padding:1.5px;background:var(--t)}
@@ -4632,6 +4632,18 @@ html[data-theme="dark"] .sn-vbusy>div{background:#262626;color:#F5F5F5}html[data
 .sn-fls{display:flex;justify-content:space-between;align-items:center;padding:8px 16px;font-size:14px}.sn-fls button{border:0;background:none;color:inherit;font-size:18px}
 .sn-cfh{display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px}.sn-cfs{width:64px;height:64px;border-radius:50%;background:#1CD14F;color:#fff;display:grid;place-items:center;font-size:30px}.sn-cfh small{color:#737373}
 .sn-cfl button.on i{background:#1CD14F;border-color:#1CD14F}
+/* ===== 個人檔案對照 IG ===== */
+.sn-pav{position:relative;flex:none;display:inline-block}
+.sn-pnote{position:absolute;left:-6px;top:-30px;z-index:2;max-width:130px;border:0;background:var(--b,#fff);color:var(--t,#000);font:inherit;font-size:12px;line-height:1.25;padding:7px 11px;border-radius:16px;box-shadow:0 2px 10px rgba(0,0,0,.14);overflow:hidden;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;text-align:center}
+.sn-pnote::after{content:"";position:absolute;left:24px;bottom:-5px;width:9px;height:9px;border-radius:50%;background:inherit}
+.sn-pnote.ph{color:#8E8E8E}
+.sn-ph{padding-top:30px}
+.sn-padd{position:absolute;right:-2px;bottom:-2px;width:26px;height:26px;border-radius:50%;border:3px solid var(--b,#fff);background:var(--t,#000);color:var(--b,#fff);font-size:16px;line-height:1;display:grid;place-items:center;padding:0}
+.sn-songs{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}.sn-song{display:inline-flex;align-items:center;gap:6px;max-width:100%;border:1px solid var(--l2,#DBDBDB);border-radius:16px;padding:5px 12px;font-size:12.5px;font-weight:600;background:none;color:inherit;font-family:inherit}.sn-song span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.sn-song.add{color:#737373;font-weight:500}
+.sn-btns .sn-bi{flex:0 0 36px;display:grid;place-items:center;padding:0}
+.sn-sugh{display:flex;justify-content:space-between;align-items:center;padding-right:16px}.sn-sugh button{border:0;background:none;color:#0095F6;font:inherit;font-size:13.5px;font-weight:600}
+.sn-nav button.on:last-child{background:color-mix(in srgb,var(--t) 9%,transparent);border-radius:22px;width:64px}
+.sn-feed,.sn-grid,.sn-ul,.sn-nt{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 84px)}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5152,7 +5164,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027003623";
+const BUILD="20261027024914";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -13721,9 +13733,9 @@ function snStorySeen(d,uid){ const me=snMeId(), st=snActiveStories(d).filter(s=>
 const snTabs=(p)=>{ const me=snMeId(), un=dmThreads().filter(x=>{ const l=x.t[x.t.length-1]; return l.from!==me&&!l.read; }).length;
   return `<nav class="sn-nav">${[["home","home"],["reels","reels2"],["dm","dm"],["explore","search"]].map(([k,ic])=>`<button class="${p===k||(k==="dm"&&p==="thread")?"on":""}" data-a="snsGo" data-v="${k}" aria-label="${k}">${si(ic)}${k==="dm"&&un?`<em class="sn-badge">${un}</em>`:""}</button>`).join("")}<button class="${p==="profile"&&!route().id?"on":""}" data-a="snsGo" data-v="profile" aria-label="個人檔案">${snAv(snUser(snMeId()),26,p==="profile"&&!route().id)}</button></nav>`; };
 function viewSns(p,id){ snSeed(); const d=snDB();
-  const body=p==="explore"?snExplore(d):p==="reels"?snReels(d,id):p==="profile"?snProfile(d,id):p==="new"?snNew(d):p==="dm"?snDmList(d):p==="thread"?snThread(d,id):p==="notif"?snNotif(d):p==="post"?snPostPage(d,id):p==="edit"?snEdit(d):p==="tag"?snTagPage(d,id):p==="cf"?snCfPage(d):p==="scout"?snScoutPage(d):p==="fl"?snFlPage(d,id):snHome(d);
+  const body=p==="explore"?snExplore(d):p==="reels"?snReels(d,id):p==="profile"?snProfile(d,id):p==="new"?snNew(d):p==="dm"?snDmList(d):p==="thread"?snThread(d,id):p==="notif"?snNotif(d):p==="post"?snPostPage(d,id):p==="edit"?snEdit(d):p==="tag"?snTagPage(d,id):p==="cf"?snCfPage(d):p==="sug"?snSugPage(d):p==="scout"?snScoutPage(d):p==="fl"?snFlPage(d,id):snHome(d);
   setTimeout(()=>{ const c=document.querySelector(".sn-thread-b"); if(c) c.scrollTop=c.scrollHeight; },0);
-  return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf"].includes(p)?"":snTabs(p)}</div>`; }
+  return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf","sug"].includes(p)?"":snTabs(p)}</div>`; }
 const snRp=(d,uid)=>d.rp&&d.rp[uid]||[];
 const snRpCount=(d,p)=>Object.values(d.rp||{}).filter(L=>L.some(x=>x.id===p.id)).length;
 function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u) return ""; const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
@@ -13774,11 +13786,11 @@ function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=
     :mine?`<div class="sn-empty"><span>${si("cam")}</span><b>分享相片</b><button data-a="snCreate">分享你的第一張相片</button></div>`:`<div class="sn-empty"><b>還沒有貼文</b></div>`;
   return `<header class="sn-top">${mine?`<button class="sn-ib" data-a="snsExit" aria-label="離開">${si("x")}</button><button class="sn-ib" data-a="snCreate" aria-label="新增">${si("plusP")}</button><b class="sn-un c">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><button class="sn-ib" data-a="snMenu" aria-label="選單">${si("menu")}</button>`
       :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><span class="sn-sp"></span>${u.id==="o:scout"&&isAdminAcct()?`<button class="sn-ib" data-a="snsGo" data-v="scout" aria-label="星探設定">${si("menu")}</button>`:isAdminAcct()&&!u.mid?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
-    <section class="sn-ph"><button class="sn-hu" data-a="${see&&snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,86,snHasStory(d,u.id),snStorySeen(d,u.id),snStoryCf(d,u.id))}</button><div class="sn-stat"><span><b>${P.length}</b>貼文</span><button data-a="snFl" data-v="${u.id}" data-k="fol"><b>${fmtW(base+snFollowers(d,u.id))}</b>粉絲</button><button data-a="snFl" data-v="${u.id}" data-k="ing"><b>${snFol(d,u.id).length}</b>追蹤中</button></div></section>
-    <div class="sn-bio"><b>${esc(u.name)}</b>${u.bio?`<p>${esc(u.bio)}</p>`:""}</div>
-    <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":snReqd(d,u.id)?"已要求":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button>`}</div>
+    <section class="sn-ph"><span class="sn-pav">${(()=>{ const nt=(d.notes||{})[u.id]; const on=nt&&nt.ts>Date.now()-864e5; return mine?`<button class="sn-pnote ${on?"":"ph"}" data-a="snNote">${on?esc(nt.text):"便利貼…"}</button>`:on&&see?`<span class="sn-pnote">${esc(nt.text)}</span>`:""; })()}<button class="sn-hu" data-a="${see&&snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,86,snHasStory(d,u.id),snStorySeen(d,u.id),snStoryCf(d,u.id))}</button>${mine?`<button class="sn-padd" data-a="snNewP" data-v="story" aria-label="新增限時動態">＋</button>`:""}</span><div class="sn-stat"><span><b>${P.length}</b>貼文</span><button data-a="snFl" data-v="${u.id}" data-k="fol"><b>${fmtW(base+snFollowers(d,u.id))}</b>粉絲</button><button data-a="snFl" data-v="${u.id}" data-k="ing"><b>${snFol(d,u.id).length}</b>追蹤中</button></div></section>
+    <div class="sn-bio"><b>${esc(u.name)}</b>${u.bio?`<p>${esc(u.bio)}</p>`:""}${(()=>{ const sg=(d.prof[u.id]||{}).song; return sg||mine?`<div class="sn-songs">${sg?`<span class="sn-song">${si("reels2","sm")}<span>${esc(sg)}</span></span>`:""}${mine?`<button class="sn-song add" data-a="snsGo" data-v="edit">＋ ${sg?"更換":"新增音樂"}</button>`:""}</div>`:""; })()}</div>
+    <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button><button class="sn-bi" data-a="snsGo" data-v="sug" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":snReqd(d,u.id)?"已要求":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button>`}</div>
     ${mine?snSugHtml(d,"探索用戶"):""}
-    ${hls.length||mine?`<div class="sn-hls">${hls.map(h=>`<button data-a="snHl" data-v="${u.id}" data-id="${h.id}"><span class="sn-hlc">${snStThumb(d,h.items[0],u.g)}</span><small>${esc(h.title)}</small></button>`).join("")}${mine?`<button data-a="snHlNew"><span class="sn-hlc add">${si("plusP")}</span><small>新增</small></button>`:""}</div>`:""}
+    ${hls.length||mine?`<div class="sn-hls">${mine?`<button data-a="snHlNew"><span class="sn-hlc add">${si("plusP")}</span><small>新增</small></button>`:""}${hls.map(h=>`<button data-a="snHl" data-v="${u.id}" data-id="${h.id}"><span class="sn-hlc">${snStThumb(d,h.items[0],u.g)}</span><small>${esc(h.title)}</small></button>`).join("")}</div>`:""}
     ${see?"":lockH}${see?`<nav class="sn-pt">${[["grid","grid","貼文"],["reels","reels2","Reels"],["reposts","repost","轉發"],["tagged","tag","被標註"]].map(([k,ic,l])=>`<button class="${tab===k?"on":""}" data-a="snsPTab" data-v="${k}" aria-label="${l}">${si(ic)}</button>`).join("")}</nav>
     ${tab==="saved"?`<div class="sn-fmode">已儲存</div>`:""}
     <main class="sn-grid ${tab==="reels"?"reels":""}">${list.length?list.map(p=>`<button data-a="snsGo" data-v="${tab==="reels"?"reels":"post"}" data-id="${p.id}">${tab==="reels"?`<img class="sn-img" data-mid="${(p.media[0]||{}).poster||""}" alt=""><i class="sn-rv">${si("heart","sm")} ${fmtW(snLikes(d,p))}</i>`:snThumb(p,snUser(p.uid))}</button>`).join(""):empty}</main>`:""}`; }
@@ -13786,7 +13798,7 @@ function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=
 function snEdit(d){ const me=snMeId(), u=snUser(me);
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="取消">${si("back")}</button><b>編輯個人檔案</b><span class="sn-sp"></span><button class="sn-next" data-a="snEditOk">完成</button></header>
     <div class="sn-edav"><label>${snAv(u,86)}<span>更換大頭貼照</span><input type="file" accept="image/*" id="snAvIn"></label></div>
-    <div class="sn-edf"><label><span>名稱</span><em>${esc(u.name)}</em></label><label><span>用戶名稱</span><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label><label><span>個人簡介</span><textarea id="snBioIn" rows="3" placeholder="輸入文字">${esc(u.bio||"")}</textarea></label></div>
+    <div class="sn-edf"><label><span>名稱</span><em>${esc(u.name)}</em></label><label><span>用戶名稱</span><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label><label><span>音樂</span><input id="snSongIn" maxlength="40" placeholder="輸入文字" value="${esc((d.prof[me]||{}).song||"")}" autocomplete="off"></label><label><span>個人簡介</span><textarea id="snBioIn" rows="3" placeholder="輸入文字">${esc(u.bio||"")}</textarea></label></div>
     <div class="sn-edf"><button class="sn-prv" data-a="snPrivT"><span>私人帳號</span><i class="sn-sw ${snPriv(d,me)?"on":""}"></i></button></div>`; }
 function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":"post"}), n=dr.media.length;
   return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n?"":"disabled"}>分享</button></header>
@@ -13899,7 +13911,12 @@ const snRecKey=()=>"hc_snrec_"+snMeId();
 function snRecent(){ try{ return JSON.parse(localStorage.getItem(snRecKey())||"[]").slice(0,12); }catch(e){ return []; } }
 function snRecAdd(id){ try{ const L=snRecent().filter(x=>x!==id); L.unshift(id); localStorage.setItem(snRecKey(),JSON.stringify(L.slice(0,12))); }catch(e){} }
 /* 推薦帳號那一排（首頁、自己的個人檔案都用） */
-function snSugHtml(d,title){ const sg=snSuggest(d); if(!sg.length) return ""; return `<section class="sn-sug"><div class="sn-sugh"><b>${esc(title||"推薦追蹤")}</b></div><div class="sn-sugl">${sg.map(id=>{ const u=snUser(id); return u?`<div class="sn-sugc"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${id}">${snAv(u,64)}<b>${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><small>${esc(u.name)}</small></button><button class="pri" data-a="snFollow" data-v="${id}">追蹤</button><button class="sn-sugx" data-a="snSugX" data-v="${id}" aria-label="關掉">×</button></div>`:""; }).join("")}</div></section>`; }
+const snMutual=(d,id)=>{ const me=snMeId(); return snFol(d,me).filter(x=>(d.fol[x]||[]).includes(id)).length; };
+function snSugHtml(d,title){ const sg=snSuggest(d); if(!sg.length) return ""; return `<section class="sn-sug"><div class="sn-sugh"><b>${esc(title||"推薦追蹤")}</b><button data-a="snsGo" data-v="sug">查看全部</button></div><div class="sn-sugl">${sg.map(id=>{ const u=snUser(id); return u?`<div class="sn-sugc"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${id}">${snAv(u,64)}<b>${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><small>${snMutual(d,id)?`${snMutual(d,id)} 位共同追蹤`:esc(u.name)}</small></button><button class="pri" data-a="snFollow" data-v="${id}">追蹤</button><button class="sn-sugx" data-a="snSugX" data-v="${id}" aria-label="關掉">×</button></div>`:""; }).join("")}</div></section>`; }
+/* 探索用戶（全部） */
+function snSugPage(d){ const me=snMeId(), fo=snFol(d,me), U=snAllUsers().filter(u=>u.id!==me&&!u.off&&!fo.includes(u.id)).sort((a,b)=>snMutual(d,b.id)-snMutual(d,a.id)||(b.ver?1:0)-(a.ver?1:0));
+  return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>探索用戶</b><span class="sn-sp"></span></header>
+    <main class="sn-ul">${U.map(x=>`<div class="sn-flr"><button class="sn-ur" data-a="snsGo" data-v="profile" data-id="${x.id}">${snAv(x,48)}<span><b>${esc(x.u)}${x.ver?`<i class="sn-v">✓</i>`:""}</b><small>${snMutual(d,x.id)?`${snMutual(d,x.id)} 位共同追蹤`:esc(x.name)}</small></span></button><button class="sn-fb ${snReqd(d,x.id)?"":"pri"}" data-a="snFollow" data-v="${x.id}">${snReqd(d,x.id)?"已要求":"追蹤"}</button></div>`).join("")||`<p class="sn-none">都追蹤了</p>`}</main>`; }
 /* 摯友名單 */
 function snCfPage(d){ const me=snMeId(), L=(d.cf||{})[me]||[], q=nz((ui.snCfQ||"").trim()), fol=Object.keys(d.fol).filter(x=>x!==me&&(d.fol[x]||[]).includes(me)), ids=[...new Set([...L,...fol,...snFol(d,me)])].filter(x=>x!==me);
   const U=ids.map(snUser).filter(u=>u&&!u.off&&(!q||nz(u.u).includes(q)||nz(u.name).includes(q)));
@@ -13913,7 +13930,9 @@ function snCfPage(d){ const me=snMeId(), L=(d.cf||{})[me]||[], q=nz((ui.snCfQ||"
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^sn/.test(a)||a==="snOpen") return;
   switch(a){
     case "snsGo": ui.snTab="grid"; if(t.dataset.v!=="new") ui.snDraft=ui.snDraft&&ui.snDraft.media.length?ui.snDraft:null; clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; } if(layer.innerHTML) layer.innerHTML=""; { const h="#/"+session().role+"/sns?p="+t.dataset.v+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""), cur=route(), tabLike=t.closest(".sn-tabs,.sn-nav,nav")&&!t.dataset.id;
-      if(tabLike&&cur.sub==="sns"&&["home","reels","dm","explore","profile"].includes(cur.p||"home")&&!cur.id) navReplace(h); else location.hash=h; }   // SNS 底下的分頁之間切換不留紀錄（跟 Instagram 一樣）
+      /* 下面的分頁（跟 Instagram 一樣）：從首頁切過去會留一筆，返回就回首頁；分頁之間互切不留；按首頁直接退回首頁 */
+      if(tabLike&&cur.sub==="sns"){ const home="#/"+session().role+"/sns", curHome=!cur.p||cur.p==="home"; if(t.dataset.v==="home"){ if(!curHome) navBackTo(home); } else if(curHome) location.hash=h; else navReplace(h); }
+      else location.hash=h; }
     window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
     case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snToggleLike(id,true); const y=window.scrollY; render(); window.scrollTo(0,y); snHeartPop(id); snTapT=0; } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")) setTimeout(()=>{ if(snTapT===now) snSndToggle(); },330); } break; }
@@ -13934,15 +13953,15 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(i>=0) L.splice(i,1); else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); } (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "snShareMe": { const u=snUser(snMeId()); try{ navigator.clipboard.writeText("@"+u.u).then(()=>toast("已複製你的用戶名稱"),()=>toast("@"+u.u)); }catch(e){ toast("@"+u.u); } break; }
     case "snEditOk": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; const u=((document.getElementById("snUIn")||{}).value||"").trim().toLowerCase().replace(/[^a-z0-9._]/g,""), b=((document.getElementById("snBioIn")||{}).value||"").trim();
-      if(u&&snAllUsers().some(x=>x.id!==me&&x.u===u)){ toast("這個用戶名稱有人用了"); break; } if(u&&nameBlock(u)) break; if(b&&!isAdminAcct()&&banBlock(b)) break; if(u) pr.u=u; pr.bio=b; snSave(d); navBack(); toast("已更新個人檔案"); break; }
+      if(u&&snAllUsers().some(x=>x.id!==me&&x.u===u)){ toast("這個用戶名稱有人用了"); break; } if(u&&nameBlock(u)) break; if(b&&!isAdminAcct()&&banBlock(b)) break; const sg=((document.getElementById("snSongIn")||{}).value||"").trim(); if(sg&&!isAdminAcct()&&banBlock(sg)) break; if(u) pr.u=u; pr.bio=b; if(sg) pr.song=sg; else delete pr.song; snSave(d); navBack(); toast("已更新個人檔案"); break; }
     case "snMode": { const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:"post"}); dr.mode=t.dataset.v; if(dr.mode==="story") dr.media=dr.media.slice(0,1); render(); break; }
-    case "snNewX": ui.snDraft=null; location.hash="#/"+session().role+"/sns?p=home"; break;
+    case "snNewX": ui.snDraft=null; navBack(); break;
     case "snPost": { const dr=ui.snDraft; if(!dr||!dr.media.length||dr.busy) break; const cap=((document.getElementById("snCap")||{}).value||dr.cap||"").trim(); if(cap&&!isAdminAcct()&&banBlock(cap)) break;
       const vm=dr.media.find(m=>m.type==="video"); if(vm&&vm.file){ dr.cap=cap; dr.busy=1; snVidReady(vm).then(ok=>{ dr.busy=0; if(ok){ const b=document.querySelector('[data-a="snPost"]'); if(b) b.click(); else { ui.snDraft=dr; } } }); break; }
       const d=snDB(), me=snMeId();
       if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
       else { d.posts.push({id:"sp"+Date.now(),uid:me,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap,ts:Date.now(),...((dr.tags||[]).length?{tags:dr.tags.slice()}:{})}); toast("已分享"); }
-      snSave(d); ui.snDraft=null; location.replace("#/"+session().role+"/sns?p=home"); window.scrollTo(0,0); break; }
+      snSave(d); ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
     case "snStory": if(t.dataset.v) snOpenStory(t.dataset.v,t.dataset.o==="1"); break;
     case "snSnd": snSndToggle(); break;
     case "snCmRe": ui.snRe={p:t.dataset.id,c:t.dataset.v,u:t.dataset.u}; snOpenCm(t.dataset.id); setTimeout(()=>{ const i=document.getElementById("snCmIn"); if(i){ i.focus(); const n=i.value.length; try{ i.setSelectionRange(n,n); }catch(e){} } },60); break;
@@ -13997,7 +14016,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snStoryDel": { const id=t.dataset.v; const d=snDB(); d.stories=d.stories.filter(x=>x.id!==id); snSave(d); toast("已刪除限時動態"); clearTimeout(ui.snStT); if(ui.snStory){ snShowStory(); } break; }
     case "snAdmUser": { const uid=t.dataset.v; iosSheet([["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`]]); break; }
     case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); d.posts=d.posts.filter(p=>p.uid!==uid); d.stories=d.stories.filter(x=>x.uid!==uid); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
-    case "snsExit": { const f=ui.snsFrom; ui.snsFrom=null; navBackTo(f); break; }
+    case "snsExit": { let f=ui.snsFrom; ui.snsFrom=null;
+      /* 重新整理過不知道從哪進來：找進 SNS 之前的那一頁；找不到就回首頁（不會只退一步又停在 SNS 裡） */
+      if(!f){ const cur=NAV_BASE+NAV_D; for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]&&!NAV_STK[i].includes("/sns")){ f=NAV_STK[i]; break; } } }
+      if(f) navBackTo(f); else navRoot("#/"+session().role); break; }
   }
 });
 /* 最近搜尋：從搜尋結果點進去的帳號記下來（只存在這支手機） */
