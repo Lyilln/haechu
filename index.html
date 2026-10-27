@@ -4873,6 +4873,65 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 @keyframes obFlip{0%{transform:rotateY(90deg) scale(.9);opacity:.3}100%{transform:none;opacity:1}}
 @keyframes obCap{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @keyframes obDraw{to{stroke-dashoffset:0}}
+/* 偶運小遊戲（第二代）：全螢幕 */
+.isg2{position:fixed;inset:0;z-index:300;background:#0B1026;color:#fff;display:flex;flex-direction:column;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}
+.isg2 header{display:flex;align-items:center;gap:10px;padding:10px 14px}.isg2 header b{flex:1;font-size:17px}.isg2 header span{font-size:12px;opacity:.7}
+.isg2 header button{width:34px;height:34px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:15px}
+.isg2-stage{position:relative;flex:1;min-height:0;margin:0 10px;border-radius:18px;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,.4)}
+.isg2-stage canvas{display:block;touch-action:none}
+.isg2-msg{position:absolute;left:0;right:0;top:40px;margin:0;text-align:center;font-weight:900;font-size:20px;text-shadow:0 2px 8px rgba(0,0,0,.6);pointer-events:none}
+.isg2-msg.pop{animation:isPop .5s cubic-bezier(.3,1.6,.5,1)}@keyframes isPop{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+.isg2-ctl{display:flex;gap:10px;padding:14px;min-height:96px;align-items:center;justify-content:center}
+.isg2-btn{flex:1;height:76px;border:0;border-radius:22px;background:linear-gradient(180deg,#A78BFA,#7C3AED);color:#fff;font:inherit;font-size:20px;font-weight:900;box-shadow:0 6px 0 #5B21B6,0 10px 24px rgba(124,58,237,.4);touch-action:none;user-select:none;-webkit-user-select:none}
+.isg2-btn.half{flex:1}.isg2-btn.on,.isg2-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #5B21B6}
+.isg2-tip{margin:0;opacity:.7;font-size:14px}
+.isg2-ctl .is-res{font-size:22px;font-weight:900;margin:0 10px 0 0}.isg2-ctl .is-big{height:60px;padding:0 30px;border:0;border-radius:18px;background:#FFD23F;color:#1B1530;font-weight:900;font-size:18px}
+/* ===== Hello Baby（第二代）：嬰兒房、Q 版寶寶、照顧按鈕、剪貼簿日記 ===== */
+.bb{--bbW:#FFF6EE;--bbS:#F3D9C9;--bbF:#EBDCCB;--bbSky:#BFE0FA;--bbSun:#FFE08A}
+.bb-hero{padding:0!important;overflow:hidden;border-radius:28px!important;background:var(--glass)!important;text-align:center;display:flex;flex-direction:column;align-items:center;gap:4px;padding-bottom:16px!important}
+.bb-room{position:relative;width:100%;aspect-ratio:36/25;overflow:hidden}
+.bb-room.night{--bbW:#3B3560;--bbS:#6B62A3;--bbF:#2E2950;--bbSky:#1B1840;--bbSun:#FFF4C7}
+.bb-room.night .bb-kid{filter:brightness(.92)}
+.bb-bg{position:absolute;inset:0;width:100%;height:100%}
+.bb-mobile{position:absolute;left:50%;top:0;width:150px;height:70px;margin-left:-75px;animation:bbSpin 9s ease-in-out infinite alternate;transform-origin:50% 0}
+.bb-mobile::before{content:"";position:absolute;left:50%;top:0;width:1.5px;height:22px;background:#C9B79F}.bb-mobile::after{content:"";position:absolute;left:10px;right:10px;top:22px;height:2px;border-radius:2px;background:#D9C4A8}
+.bb-mobile i{position:absolute;top:24px;font-style:normal;font-size:16px;transform-origin:50% 0;animation:bbDangle 2.6s ease-in-out infinite}.bb-mobile i::before{content:"";position:absolute;left:50%;top:-2px;width:1px;height:12px;background:#C9B79F;transform:translateY(-10px)}
+.bb-mobile i:nth-child(1){left:12px;top:34px}.bb-mobile i:nth-child(2){left:48px;top:42px;animation-delay:-.6s}.bb-mobile i:nth-child(3){left:84px;top:38px;animation-delay:-1.2s}.bb-mobile i:nth-child(4){left:118px;top:44px;animation-delay:-1.8s}
+@keyframes bbSpin{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}@keyframes bbDangle{50%{transform:rotate(8deg)}}
+.bb-kid{position:absolute;left:50%;bottom:4%;transform:translateX(-50%);animation:bbBreath 3.2s ease-in-out infinite;transform-origin:50% 100%}
+.bb-kid .bb-face.happy{animation:bbHop 1.6s ease-in-out infinite}.bb-kid .bb-face.cry{animation:bbShake .5s ease-in-out infinite}
+@keyframes bbBreath{50%{transform:translateX(-50%) scale(1.025,.985)}}@keyframes bbHop{50%{transform:translateY(-5px)}}@keyframes bbShake{25%{transform:rotate(-2deg)}75%{transform:rotate(2deg)}}
+.bb-hero>b{font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;font-size:26px;font-weight:600;margin-top:10px;color:var(--ink)}
+.bb-hero>small{color:var(--ink-3);font-size:12.5px}
+.bb-xp{width:72%}.bb-xp i{display:block;height:6px;border-radius:6px;background:rgba(0,0,0,.06);overflow:hidden}.bb-xp u{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#FFC6D6,#C8B5FF)}
+/* 狀態：一行一個柔和的膠囊 */
+.bb-st{display:grid!important;grid-template-columns:1fr 1fr;gap:10px!important;padding:14px!important}
+.bb-bar{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:16px;background:var(--s2)}
+.bb-bar em{font-style:normal;width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:#fff;box-shadow:0 2px 6px rgba(0,0,0,.06);flex:none}
+.bb-bar span{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.bb-bar b{font-size:12px;color:var(--ink-2)}
+.bb-bar i{display:block;height:6px;border-radius:6px;background:rgba(0,0,0,.06);overflow:hidden}.bb-bar u{display:block;height:100%;border-radius:6px;background:linear-gradient(90deg,#A7E3C4,#7CCFA8)}
+.bb-bar.low u{background:linear-gradient(90deg,#FFB4A8,#FF7A6B)}.bb-bar small{font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums;width:22px;text-align:right}
+/* 照顧按鈕：圓形＋冷卻進度圈 */
+.bb-acts{display:grid!important;grid-template-columns:repeat(3,1fr);gap:12px!important}
+.bb-acts button{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;border:0;background:none;font:inherit;color:var(--ink);padding:0}
+.bb-acts button i{width:64px;height:64px;border-radius:50%;display:grid;place-items:center;font-style:normal;font-size:26px;background:radial-gradient(circle at 40% 35%,#fff,#FFF1E8);box-shadow:0 6px 16px rgba(180,120,90,.18),inset 0 0 0 1px rgba(0,0,0,.04);position:relative}
+.bb-acts button i::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:conic-gradient(#C8B5FF calc(var(--p)*1%),transparent 0);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 0);mask:radial-gradient(farthest-side,transparent calc(100% - 4px),#000 0)}
+.bb-acts button b{font-size:12.5px;font-weight:700}.bb-acts button small{position:absolute;top:22px;font-size:11px;font-weight:800;color:#7C6BC4}
+.bb-acts button:disabled i{filter:grayscale(.6);opacity:.6}.bb-acts button:not(:disabled):active i{transform:scale(.94)}
+/* 成長日記：剪貼簿（亞麻紙、紙膠帶、拍立得、便條） */
+.bb-book{border-radius:26px;padding:18px 16px 22px;background:linear-gradient(0deg,rgba(255,255,255,.0),rgba(255,255,255,.0)),repeating-linear-gradient(0deg,rgba(150,120,90,.035) 0 1px,transparent 1px 3px),repeating-linear-gradient(90deg,rgba(150,120,90,.03) 0 1px,transparent 1px 4px),#F7F1E7;box-shadow:inset 0 0 0 1px rgba(140,110,80,.12),0 10px 30px rgba(120,90,60,.08);color:#4A3C30}
+html[data-theme="dark"] .bb-book{background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0 1px,transparent 1px 3px),#2B2621;color:#EFE4D6}
+.bb-bh{display:flex;align-items:baseline;gap:10px;margin-bottom:14px;padding-bottom:10px;border-bottom:1px dashed rgba(140,110,80,.3)}.bb-bh b{font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;font-size:22px;font-weight:600;letter-spacing:.04em}.bb-bh small{opacity:.6;font-size:12px}
+.bb-pages{display:grid;grid-template-columns:1fr 1fr;gap:16px 12px;align-items:start}
+.bb-tape{position:absolute;left:50%;top:-8px;width:56px;height:16px;margin-left:-28px;opacity:.85;transform:rotate(-3deg);box-shadow:0 1px 2px rgba(0,0,0,.06);-webkit-mask:linear-gradient(90deg,transparent 0 2px,#000 2px calc(100% - 2px),transparent 0)}
+.bb-pol{position:relative;margin:6px 0 0;padding:7px 7px 30px;background:#fff;transform:rotate(var(--r));box-shadow:0 6px 14px rgba(90,60,30,.16)}.bb-pol img{display:block;width:100%;aspect-ratio:1;object-fit:cover;background:#EFE7DB}
+.bb-pol figcaption{position:absolute;left:8px;right:8px;bottom:7px;display:flex;justify-content:space-between;font-size:11px;color:#6E5C4B}.bb-pol time{font-family:Georgia,serif;opacity:.7}
+.bb-note{position:relative;margin-top:6px;padding:16px 12px 10px;background:repeating-linear-gradient(180deg,transparent 0 21px,rgba(140,170,200,.25) 21px 22px),#FFFDF8;transform:rotate(var(--r));box-shadow:0 4px 10px rgba(90,60,30,.1);border-radius:2px}
+html[data-theme="dark"] .bb-note{background:repeating-linear-gradient(180deg,transparent 0 21px,rgba(255,255,255,.08) 21px 22px),#3A332C}
+.bb-note p{margin:0 0 8px;font-size:14px;line-height:22px;word-break:break-word}.bb-note footer{display:flex;justify-content:space-between;font-size:10.5px;opacity:.65}.bb-note time{font-family:Georgia,serif}
+.bb-stamp{grid-column:1/-1;display:flex;align-items:center;gap:10px;font-size:12.5px;color:#7A6754;opacity:.9}
+.bb-stamp time{flex:none;width:44px;height:44px;border-radius:50%;display:grid;place-items:center;border:1.5px solid #C98E7A;color:#C98E7A;font-family:Georgia,serif;font-size:11px;transform:rotate(-12deg)}
+.bb-empty{grid-column:1/-1;text-align:center;opacity:.5;font-family:Georgia,serif;font-style:italic;padding:20px 0}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5431,7 +5490,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027081436";
+const BUILD="20261027081958";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15147,37 +15206,7 @@ function isPay(){ try{ if(!isAdminAcct()) return; const A=isGet(), c=A.cur; if(!
 setInterval(isPay,60e3); setTimeout(isPay,14e3);
 const isTile=()=>{ const c=isCur(); return c&&c.st==="on"?"● 開幕中":isWin()?"等開幕":"中秋・過年"; };
 
-/* ===== 小遊戲（全螢幕） ===== */
-function isGame(ev){ const c=isCur(), mid=(session()||{}).member; if(!c||c.st!=="on"||!mid) return; if(isTriesLeft(c,ev,mid)<=0){ toast("今天的次數用完了"); return; }
-  const E=IS_EV[ev]; setLayer(`<div class="is-g"><header><b>${E.ic} ${E.n}</b><button data-a="isQuit" aria-label="離開">✕</button></header><canvas id="isCv" width="360" height="420"></canvas><p id="isMsg" class="is-gm"></p><div class="is-gb" id="isBtns"></div></div>`,"isgame");
-  const cv=document.getElementById("isCv"), x=cv.getContext("2d"), msg=t=>{ const m=document.getElementById("isMsg"); if(m) m.textContent=t; }, btns=h=>{ const b=document.getElementById("isBtns"); if(b) b.innerHTML=h; };
-  const G=ui.isG={ev,dead:false,done:v=>isDone(ev,v)}; const loop=f=>{ const st=()=>{ if(G.dead||!cv.isConnected) return; f(); requestAnimationFrame(st); }; requestAnimationFrame(st); };
-  const bg=()=>{ x.fillStyle="#0E1A3A"; x.fillRect(0,0,360,420); };
-  if(ev==="archery"){ let arrows=[], wind=(Math.random()-.5)*1.6, t0=performance.now(); G.act=()=>{ if(arrows.length>=3) return; const t=(performance.now()-t0)/1000, ax=180+Math.sin(t*2.3)*70+Math.sin(t*5.1)*18+wind*20, ay=200+Math.cos(t*1.9)*60+Math.sin(t*4.3)*16; const d=Math.hypot(ax-180,ay-200), s=Math.max(0,10-Math.floor(d/14)); arrows.push([ax,ay,s]); if(arrows.length===3){ const tot=arrows.reduce((a,b)=>a+b[2],0); setTimeout(()=>G.done(tot),900); } };
-    btns(`<button class="is-big" data-a="isAct">射！</button>`); msg(`風向 ${wind>0?"→":"←"} ${Math.abs(wind*10).toFixed(1)}`);
-    loop(()=>{ bg(); [10,9,8,7,6,5,4,3,2,1].forEach(i=>{ x.beginPath(); x.arc(180,200,i*14,0,7); x.fillStyle=i>8?"#FFD23F":i>6?"#E5484D":i>4?"#3E8EF7":i>2?"#222":"#F2F2F2"; x.fill(); }); arrows.forEach(([a,b,s])=>{ x.fillStyle="#fff"; x.beginPath(); x.arc(a,b,5,0,7); x.fill(); x.fillStyle="#000"; x.font="bold 12px sans-serif"; x.fillText(s,a+7,b-7); });
-      if(arrows.length<3){ const t=(performance.now()-t0)/1000, ax=180+Math.sin(t*2.3)*70+Math.sin(t*5.1)*18+wind*20, ay=200+Math.cos(t*1.9)*60+Math.sin(t*4.3)*16; x.strokeStyle="#39FF88"; x.lineWidth=2; x.beginPath(); x.arc(ax,ay,12,0,7); x.moveTo(ax-18,ay); x.lineTo(ax+18,ay); x.moveTo(ax,ay-18); x.lineTo(ax,ay+18); x.stroke(); }
-      x.fillStyle="#FFD23F"; x.font="bold 18px monospace"; x.fillText(`${arrows.reduce((a,b)=>a+b[2],0)} 分  ${"➶".repeat(3-arrows.length)}`,14,404); }); }
-  if(ev==="sprint"){ let st="ready", go=0, pos=0, last="", foul=0, t1=0; const goAt=performance.now()+1800+Math.random()*1800; msg("左右交替狂點！");
-    btns(`<button class="is-big half" data-a="isAct" data-v="L">左</button><button class="is-big half" data-a="isAct" data-v="R">右</button>`);
-    G.act=v=>{ const now=performance.now(); if(st==="ready"){ if(now<goAt){ foul++; msg("偷跑！+0.5 秒"); } return; } if(st!=="run") return; if(v&&v!==last){ pos+=1; last=v; if(pos>=60){ st="end"; t1=(now-go)/1000+foul*.5; const c=isCur(); if(c&&foul){ c.foul=c.foul||{}; c.foul[(session()||{}).member]=(c.foul[(session()||{}).member]||0)+foul; isPut(c); } setTimeout(()=>G.done(Math.round(t1*100)/100),700); } } };
-    loop(()=>{ const now=performance.now(); if(st==="ready"&&now>=goAt){ st="run"; go=now; } bg(); for(let i=0;i<4;i++){ x.fillStyle=i%2?"#C1442E":"#D45A43"; x.fillRect(20,60+i*80,320,70); } x.fillStyle="#fff"; x.fillRect(320,60,4,310);
-      const px=20+pos/60*300; x.font="40px sans-serif"; x.fillText("🏃",px-10,215); x.fillStyle="#FFD23F"; x.font="bold 22px monospace"; x.fillText(st==="ready"?(now<goAt-900?"預備…":"…"):st==="run"?((now-go)/1000+foul*.5).toFixed(2)+"s":t1.toFixed(2)+"s",14,404); if(st==="run"&&now-go<600){ x.font="bold 54px sans-serif"; x.fillText("GO!",130,140); } }); }
-  if(ev==="jump"){ let h=140, fails=0, best=0, ph=0, busy=false; const zone=()=>Math.max(.06,.32-(h-140)*.006); msg("點下去的時候指針要在綠色區");
-    btns(`<button class="is-big" data-a="isAct">跳！</button>`);
-    G.act=()=>{ if(busy) return; const p=(Math.sin(ph)+1)/2, z=zone(), ok=Math.abs(p-.5)<z/2; busy=true; if(ok){ best=h; msg(`${h}cm 成功！`); h+=5; } else { fails++; msg(`${h}cm 失敗（${fails}/3）`); } setTimeout(()=>{ busy=false; if(fails>=3) G.done(best); },600); };
-    loop(()=>{ ph+=.06+(h-140)*.0012; bg(); x.fillStyle="#2A3A6A"; x.fillRect(40,300,280,10); x.fillStyle="#FFD23F"; x.fillRect(60,300-(h-140)*1.4,240,6); x.font="44px sans-serif"; x.fillText("🤸",150,360);
-      const p=(Math.sin(ph)+1)/2, z=zone(); x.fillStyle="#333"; x.fillRect(30,30,300,22); x.fillStyle="#39FF88"; x.fillRect(30+300*(.5-z/2),30,300*z,22); x.fillStyle="#fff"; x.fillRect(30+300*p-2,24,4,34); x.fillStyle="#FFD23F"; x.font="bold 20px monospace"; x.fillText(`橫桿 ${h}cm  最佳 ${best||"—"}`,14,404); }); }
-  if(ev==="bowling"){ let roll=0, stage="aim", ph=0, aim=0, pw=0, pins=10, got=[]; msg("先定方向，再定力道（兩球）"); btns(`<button class="is-big" data-a="isAct">定！</button>`);
-    G.act=()=>{ if(stage==="aim"){ aim=Math.sin(ph); stage="pow"; ph=0; return; } if(stage==="pow"){ pw=(Math.sin(ph)+1)/2; stage="anim";
-        const acc=1-Math.min(1,Math.abs(aim)*1.3), k=acc*(.55+.45*(1-Math.abs(pw-.8)*2)), hit=Math.abs(aim)>.85?0:Math.min(pins,Math.round(pins*Math.max(0,Math.min(1,k+(Math.random()-.5)*.25))));
-        pins-=hit; got.push(hit); msg(hit===10&&roll===0?"STRIKE!!":hit===0?"洗溝…":`倒了 ${hit} 支`); roll++;
-        setTimeout(()=>{ if(roll>=2||pins===0){ const tot=got[0]===10?15:got.reduce((a,b)=>a+b,0)+(pins===0?2:0); G.done(tot); } else { stage="aim"; ph=0; } },1000); } };
-    loop(()=>{ ph+=stage==="aim"?.05:.09; bg(); x.fillStyle="#C99E6E"; x.beginPath(); x.moveTo(140,40); x.lineTo(220,40); x.lineTo(300,380); x.lineTo(60,380); x.fill(); x.fillStyle="#333"; x.fillRect(40,40,20,340); x.fillRect(300,40,20,340);
-      for(let i=0;i<pins;i++){ const r=i<4?0:i<7?1:i<9?2:3, ci=i<4?i:i<7?i-4:i<9?i-7:0, n=4-r; x.fillStyle="#fff"; x.beginPath(); x.arc(180-(n-1)*10+ci*20,60+r*16,6,0,7); x.fill(); }
-      const ang=stage==="aim"?Math.sin(ph):aim; x.strokeStyle="#FFD23F"; x.lineWidth=4; x.beginPath(); x.moveTo(180,360); x.lineTo(180+ang*90,230); x.stroke();
-      if(stage==="pow"){ const p=(Math.sin(ph)+1)/2; x.fillStyle="#333"; x.fillRect(330,120,18,220); x.fillStyle="#39FF88"; x.fillRect(330,120+220*(1-.9),18,220*.2); x.fillStyle="#fff"; x.fillRect(326,120+220*(1-p)-2,26,4); }
-      x.fillStyle="#FFD23F"; x.font="bold 18px monospace"; x.fillText(`第 ${Math.min(2,roll+1)} 球  ${got.join(" / ")}`,14,404); }); } }
+/* 小遊戲本體在 js/23-偶運小遊戲.js */
 function isDone(ev,v){ const G=ui.isG; if(!G||G.fin) return; G.fin=true; const c=isCur(), mid=(session()||{}).member; if(!c||!mid) return; const E=IS_EV[ev]; c.sc=c.sc||{}; const B=c.sc[ev]=c.sc[ev]||{}, o=B[mid]=B[mid]||{best:null,n:0,day:""};
   if(o.day!==isDay()){ o.day=isDay(); o.n=0; } o.n++; const better=o.best==null||(E.hi?v>o.best:v<o.best); if(better) o.best=v; isPut(c);
   const b=document.getElementById("isBtns"); if(b) b.innerHTML=`<p class="is-res">${isFmt(ev,v)} ${E.unit}${better?"・新紀錄！":""}</p><button class="is-big" data-a="isQuit">好</button>`; }
@@ -15217,12 +15246,23 @@ function bbMine(mid){ const o=bbOwnerOf(mid); if(!o) return null; if(demoOn()&&m
 /* 依時間算現在的狀態（大家算出來都一樣） */
 function bbNow(b){ const h=Math.max(0,(Date.now()-(b.s.ts||Date.now()))/36e5), o={}; Object.keys(BB_RATE).forEach(k=>{ o[k]=Math.max(0,Math.round((b.s[k]??80)-BB_RATE[k]*h)); }); o.avg=Math.round((o.full+o.mood+o.clean+o.sleep)/4); return o; }
 const bbStage=b=>{ let i=0; BB_STAGE.forEach(([x],k)=>{ if((b.xp||0)>=x) i=k; }); return i; };
-function bbFace(b,sz=150){ const n=bbNow(b), st=bbStage(b), sick=b.sick, cry=n.avg<30||n.full<15||sick, sleepy=n.sleep<25, happy=n.avg>=70&&!sick, gift=(b.wear||"");
-  const eye=sleepy?`<path d="M44 58 q8 6 16 0M84 58 q8 6 16 0" stroke="#3B2A1E" stroke-width="4" fill="none" stroke-linecap="round"/>`:cry?`<path d="M44 56 l14 6M100 56 l-14 6" stroke="#3B2A1E" stroke-width="4" stroke-linecap="round"/><path d="M50 66 q-4 14 2 18M94 66 q4 14 -2 18" stroke="#6BC5FF" stroke-width="5" fill="none" stroke-linecap="round"/>`:`<circle cx="52" cy="58" r="${happy?6:5}" fill="#3B2A1E"/><circle cx="92" cy="58" r="${happy?6:5}" fill="#3B2A1E"/><circle cx="54" cy="55" r="2" fill="#fff"/><circle cx="94" cy="55" r="2" fill="#fff"/>`;
-  const mouth=cry?`<ellipse cx="72" cy="84" rx="10" ry="8" fill="#C0392B"/>`:happy?`<path d="M58 78 q14 16 28 0" stroke="#3B2A1E" stroke-width="4" fill="#FF8FA3" stroke-linecap="round"/>`:`<path d="M62 82 q10 6 20 0" stroke="#3B2A1E" stroke-width="4" fill="none" stroke-linecap="round"/>`;
-  return `<svg class="bb-face ${cry?"cry":happy?"happy":""}" viewBox="0 0 144 150" width="${sz}" height="${sz*150/144}"><ellipse cx="72" cy="${st>=2?128:132}" rx="${30+st*3}" ry="14" fill="${["#FFE3EC","#E3F2FF","#FFF3C4","#E6FFE3","#F0E3FF"][strHash(b.id)%5]}"/>
-    <circle cx="72" cy="64" r="${46+st*2}" fill="#FFE0C7"/><circle cx="28" cy="64" r="9" fill="#FFD3B5"/><circle cx="116" cy="64" r="9" fill="#FFD3B5"/>${st>=1?`<path d="M60 22 q12 -14 22 0" stroke="#5B3A29" stroke-width="5" fill="none" stroke-linecap="round"/>`:`<path d="M70 20 q4 -8 8 0" stroke="#5B3A29" stroke-width="3" fill="none"/>`}
-    <circle cx="40" cy="76" r="8" fill="#FFB3C1" opacity=".6"/><circle cx="104" cy="76" r="8" fill="#FFB3C1" opacity=".6"/>${eye}${mouth}${sick?`<text x="100" y="32" font-size="22">🤒</text>`:""}${n.clean<20?`<text x="18" y="120" font-size="18">💩</text>`:""}${sleepy&&!cry?`<text x="108" y="30" font-size="18">💤</text>`:""}${gift?`<text x="52" y="30" font-size="34">${gift}</text>`:""}</svg>`; }
+function bbFace(b,sz=150){ const n=bbNow(b), st=bbStage(b), sick=b.sick, cry=n.avg<30||n.full<15||sick, sleepy=n.sleep<25&&!cry, happy=n.avg>=70&&!sick, k=strHash(b.id||"x"), on=["#F8C8D8","#BFDDF7","#FCE3A6","#C9EBC4","#DCCBF7"][k%5], hair=["#7A4E36","#3E2A20","#B07A4F","#5B3A29"][k%4], u="bb"+(k%997);
+  const eyes=sleepy?`<path d="M52 74 q9 7 18 0M86 74 q9 7 18 0" stroke="#4A3226" stroke-width="3.4" fill="none" stroke-linecap="round"/>`
+    :happy?`<path d="M51 76 q10 -11 20 0M85 76 q10 -11 20 0" stroke="#4A3226" stroke-width="3.6" fill="none" stroke-linecap="round"/>`
+    :`<g><ellipse cx="61" cy="74" rx="8" ry="${cry?7:9}" fill="#3A2820"/><ellipse cx="95" cy="74" rx="8" ry="${cry?7:9}" fill="#3A2820"/><circle cx="64" cy="70" r="3" fill="#fff"/><circle cx="98" cy="70" r="3" fill="#fff"/><circle cx="58.5" cy="77.5" r="1.4" fill="#fff" opacity=".8"/><circle cx="92.5" cy="77.5" r="1.4" fill="#fff" opacity=".8"/></g>`;
+  const tears=cry?`<path d="M54 84 q-5 12 0 18 q5 -6 0 -18zM102 84 q-5 12 0 18 q5 -6 0 -18z" fill="#8FD3FF" opacity=".9"><animate attributeName="opacity" values=".9;.4;.9" dur="1.2s" repeatCount="indefinite"/></path>`:"";
+  const mouth=cry?`<path d="M68 96 q10 -8 20 0 q-4 8 -10 8 q-6 0 -10 -8z" fill="#C2414F"/>`:happy?`<path d="M68 92 q10 12 20 0z" fill="#E86A7E"/><path d="M73 96 q5 3 10 0" stroke="#F7A1AE" stroke-width="2" fill="none"/>`:sleepy?`<ellipse cx="78" cy="95" rx="3.5" ry="2.5" fill="#D9707F"/>`:`<path d="M71 94 q7 5 14 0" stroke="#B85A66" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+  const bodyY=st===0?150:146, arms=st===0?"":`<path d="M40 ${bodyY-4} q-14 6 -12 18" stroke="#FFDCC6" stroke-width="10" fill="none" stroke-linecap="round"/><path d="M116 ${bodyY-4} q14 6 12 18" stroke="#FFDCC6" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+  const legs=st>=2?`<ellipse cx="62" cy="${bodyY+30}" rx="11" ry="8" fill="#FFDCC6"/><ellipse cx="94" cy="${bodyY+30}" rx="11" ry="8" fill="#FFDCC6"/>`:"";
+  const body=st===0?`<path d="M30 132 q48 -24 96 0 q6 44 -48 48 q-54 -4 -48 -48z" fill="url(#${u}w)"/><path d="M34 140 q44 18 88 0" stroke="#fff" stroke-width="3" opacity=".6" fill="none"/>`
+    :`${legs}<path d="M42 ${bodyY-14} q36 -16 72 0 q8 34 -4 42 q-32 10 -64 0 q-12 -8 -4 -42z" fill="url(#${u}w)"/><circle cx="78" cy="${bodyY+4}" r="4" fill="#fff" opacity=".8"/>${arms}`;
+  const hairs=st===0?`<path d="M74 26 q6 -12 12 -2" stroke="${hair}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`:`<path d="M44 52 q4 -34 34 -34 q32 0 36 32 q-10 -14 -20 -16 q-4 8 -16 8 q4 -8 2 -12 q-20 4 -36 22z" fill="${hair}"/><path d="M76 18 q2 -12 12 -10" stroke="${hair}" stroke-width="3.5" fill="none" stroke-linecap="round"/>`;
+  return `<svg class="bb-face ${cry?"cry":happy?"happy":sleepy?"sleepy":""}" viewBox="0 0 156 190" width="${sz}" height="${sz*190/156}"><defs><radialGradient id="${u}s" cx="42%" cy="38%" r="70%"><stop offset="0" stop-color="#FFF1E6"/><stop offset=".7" stop-color="#FFE0CB"/><stop offset="1" stop-color="#F7C9AE"/></radialGradient><linearGradient id="${u}w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${on}"/><stop offset="1" stop-color="#fff" stop-opacity=".9"/></linearGradient></defs>
+    <ellipse cx="78" cy="${st===0?182:184}" rx="46" ry="6" fill="#000" opacity=".08"/>${body}
+    <circle cx="27" cy="76" r="10" fill="#FFD8C2"/><circle cx="129" cy="76" r="10" fill="#FFD8C2"/><circle cx="78" cy="72" r="52" fill="url(#${u}s)"/>${hairs}
+    <ellipse cx="50" cy="90" rx="10" ry="6.5" fill="#FF9FB1" opacity="${sick?.85:.45}"/><ellipse cx="106" cy="90" rx="10" ry="6.5" fill="#FF9FB1" opacity="${sick?.85:.45}"/>${eyes}${tears}${mouth}
+    ${sick?`<rect x="56" y="34" width="44" height="14" rx="7" fill="#BDE3FF" stroke="#8CC8F2"/>`:""}${sleepy?`<text x="120" y="34" font-size="16" fill="#9A8FD8" font-weight="700">z<tspan font-size="11" dy="-6">z</tspan></text>`:""}
+    ${b.wear?`<text x="78" y="26" font-size="30" text-anchor="middle">${b.wear}</text>`:""}${n.clean<20?`<text x="128" y="176" font-size="16">💩</text>`:""}</svg>`; }
 /* 照顧 */
 function bbCare(id,act,mid){ const b=id==="demo_baby"?ui.bbDemo:bbAll()[id]; if(!b||b.st!=="on") return; const A=BB_ACT[act], now=Date.now(), key=mid+":"+act, cd=(b.cd||{})[key]||0;
   if(act==="doctor"){ if(!b.sick){ toast("寶寶沒有生病"); return; } b.sick=0; bbLog(b,mid,"帶寶寶去看醫生 🩺"); bbPut(b); return; }
@@ -15246,16 +15286,26 @@ function viewBaby(mid,id){ const s=session()||{}, art=s.role==="artist"; let b=i
     return `<main class="page bb">${art?`<section class="bb-apply">${bbFace({id:"x",s:{full:90,mood:95,clean:90,sleep:90,ts:Date.now()},xp:0},110)}<b>Hello Baby</b><p>${esc(mine.name)} 想當爸爸媽媽嗎？</p>${wait?`<span class="bb-pill">申請中・等管理員核准</span>`:`<button class="btn btn-main" data-a="bbApply" data-v="${mid}">申請領養</button>`}</section>`:""}
       ${L.length?`<div class="section-h">寶寶們</div>${L.map(x=>`<button class="bb-card" data-a="uniGo" data-v="${art?"#/artist?tab=foc&p=baby&id=":"#/fan/core?p=baby&id="}${x.id}">${bbFace(x,64)}<span><b>${esc(x.name)}</b><small>${esc(x.own.name)}・${x.st==="on"?BB_STAGE[bbStage(x)][1]:x.st==="fail"?"被社工帶走了":`畢業・${x.grade}`}</small></span></button>`).join("")}`:art?"":`<div class="vs-none"><b>還沒有寶寶</b></div>`}</main>`; }
   if(!b) return `<main class="page bb"><div class="vs-none"><b>找不到寶寶</b></div></main>`;
-  const n=bbNow(b), st=bbStage(b), on=b.st==="on", parent=art&&bbMembers(b).includes(mid), bar=(k,l,ic)=>`<div class="bb-bar ${n[k]<25?"low":""}"><span>${ic} ${l}</span><i><u style="width:${n[k]}%"></u></i></div>`;
+  const n=bbNow(b), st=bbStage(b), on=b.st==="on", parent=art&&bbMembers(b).includes(mid), bar=(k,l,ic)=>`<div class="bb-bar ${n[k]<25?"low":""}"><em>${ic}</em><span><b>${l}</b><i><u style="width:${n[k]}%"></u></i></span><small>${n[k]}</small></div>`;
   const nx=BB_STAGE[st+1], day=Math.min(BB_WEEKS*7,Math.floor((Date.now()-b.start)/864e5)+1);
-  return `<main class="page bb"><section class="bb-hero ${b.st}"><div class="bb-room">${bbFace(b,170)}</div><b>${esc(b.name)}</b><small>${esc(b.own.name)} 的寶寶・${b.st==="fail"?"已被社工帶走":b.st==="done"?`畢業・成績 ${b.grade}`:`第 ${day} 天・${BB_STAGE[st][1]}`}</small>
+  return `<main class="page bb"><section class="bb-hero ${b.st}"><div class="bb-room ${(new Date().getHours()<6||new Date().getHours()>=19)?"night":""}">
+        <svg class="bb-bg" viewBox="0 0 360 250" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><defs><pattern id="bbWp" width="36" height="36" patternUnits="userSpaceOnUse"><path d="M18 10 l2 5 5 .5 -4 3.5 1.3 5 -4.3 -2.7 -4.3 2.7 1.3 -5 -4 -3.5 5 -.5z" fill="var(--bbS)" opacity=".5"/></pattern></defs>
+          <rect width="360" height="250" fill="var(--bbW)"/><rect width="360" height="250" fill="url(#bbWp)"/><rect y="186" width="360" height="64" fill="var(--bbF)"/><rect y="182" width="360" height="6" fill="#fff" opacity=".7"/>
+          <g transform="translate(262 30)"><rect width="74" height="86" rx="37" fill="var(--bbSky)"/><circle cx="50" cy="28" r="10" fill="var(--bbSun)"/><path d="M37 0 V86 M0 46 H74" stroke="#fff" stroke-width="4"/><rect width="74" height="86" rx="37" fill="none" stroke="#fff" stroke-width="5"/></g>
+          <g transform="translate(18 52)"><rect width="66" height="5" rx="2" fill="#D9C4A8"/><circle cx="14" cy="-8" r="8" fill="#F6C1CF"/><rect x="28" y="-16" width="12" height="16" rx="3" fill="#BFDDF7"/><path d="M50 0 l6 -14 l6 14z" fill="#FCE3A6"/></g>
+          <ellipse cx="180" cy="222" rx="120" ry="20" fill="#fff" opacity=".45"/><g stroke="#E7D7C2" stroke-width="6" stroke-linecap="round" opacity=".9">${Array.from({length:9},(_,i)=>`<path d="M${104+i*19} 116 V200"/>`).join("")}</g><rect x="96" y="108" width="168" height="10" rx="5" fill="#EADBC6"/></svg>
+        <div class="bb-mobile" aria-hidden="true"><i>⭐</i><i>🌙</i><i>☁️</i><i>⭐</i></div><div class="bb-kid">${bbFace(b,150)}</div></div><b>${esc(b.name)}</b><small>${esc(b.own.name)} 的寶寶・${b.st==="fail"?"已被社工帶走":b.st==="done"?`畢業・成績 ${b.grade}`:`第 ${day} 天・${BB_STAGE[st][1]}`}</small>
       ${on?`<div class="bb-xp"><i><u style="width:${nx?Math.min(100,((b.xp||0)-BB_STAGE[st][0])/(nx[0]-BB_STAGE[st][0])*100):100}%"></u></i><small>${nx?`再照顧一下就${nx[1]}`:"最大了"}</small></div>`:""}
       ${b.warn&&on?`<p class="bb-warn">⚠️ 社工警告 ${b.warn} 次</p>`:""}${b.first?`<p class="bb-first">第一句話：「${esc(b.first.word)}！」</p>`:""}</section>
     ${on?`<section class="card bb-st">${bar("full","飽足","🍼")}${bar("mood","心情","😊")}${bar("clean","乾淨","🛁")}${bar("sleep","精神","🌙")}</section>`:""}
-    ${on&&parent?`<section class="bb-acts">${Object.entries(BB_ACT).filter(([k])=>k!=="doctor"||b.sick).map(([k,A])=>{ const cd=((b.cd||{})[mid+":"+k]||0)+A.cd*60e3-Date.now(); return `<button data-a="bbCare" data-id="${b.id}" data-v="${k}" ${cd>0?"disabled":""}><i>${A.ic}</i><b>${A.n}</b>${cd>0?`<small>${Math.ceil(cd/60e3)} 分</small>`:""}</button>`; }).join("")}</section>
+    ${on&&parent?`<section class="bb-acts">${Object.entries(BB_ACT).filter(([k])=>k!=="doctor"||b.sick).map(([k,A])=>{ const cd=((b.cd||{})[mid+":"+k]||0)+A.cd*60e3-Date.now(); return `<button data-a="bbCare" data-id="${b.id}" data-v="${k}" ${cd>0?"disabled":""} style="--p:${cd>0?Math.round(cd/(A.cd*60e3)*100):0}"><i>${A.ic}</i><b>${A.n}</b>${cd>0?`<small>${Math.ceil(cd/60e3)} 分</small>`:""}</button>`; }).join("")}</section>
       <form class="bb-df" data-id="${b.id}"><input id="bbDiary" maxlength="80" placeholder="輸入文字" autocomplete="off"><label class="bb-dp">📷<input type="file" accept="image/*" id="bbPic" data-id="${b.id}"></label><button type="submit">寫日記</button></form>`:""}
     ${on&&!art?`<section class="card bb-gift"><h3>送禮物<small>你有 ${fmt(points())} 積分</small></h3><div>${BB_GIFT.map(([ic,nm,p])=>`<button data-a="bbGift" data-id="${b.id}" data-v="${ic}" data-n="${p}"><i>${ic}</i><small>${nm}・${p}</small></button>`).join("")}</div></section>`:""}
-    <section class="card bb-log"><h3>育兒日記</h3>${(b.diary||[]).concat(b.log||[]).sort((x,y)=>y.ts-x.ts).slice(0,60).map(x=>`<div class="bb-li ${x.mid?"":"sys"}"><small>${new Date(x.ts).getMonth()+1}/${new Date(x.ts).getDate()} ${pad(new Date(x.ts).getHours())}:${pad(new Date(x.ts).getMinutes())}</small><p>${x.mid&&MEMBERS[x.mid]?`<b>${esc(MEMBERS[x.mid].name)}</b> `:x.by?`<b>${esc(x.by)}</b> `:""}${esc(x.t)}</p>${x.img?`<img class="bb-im" data-mid="${x.img}" alt="">`:""}</div>`).join("")||`<p class="vs-wait">還沒有日記</p>`}</section></main>`; }
+    <section class="bb-book"><div class="bb-bh"><b>成長日記</b><small>${esc(b.name)}・${(b.diary||[]).length} 篇</small></div>
+      <div class="bb-pages">${(b.diary||[]).concat(b.log||[]).sort((x,y)=>y.ts-x.ts).slice(0,60).map(x=>{ const d=new Date(x.ts), r=((strHash(String(x.ts))%7)-3)*.7, who=x.mid&&MEMBERS[x.mid]?MEMBERS[x.mid].name:x.by||"", date=`${d.getMonth()+1}.${pad(d.getDate())}`, tape=["#E9D5C3","#D7E3DC","#E8D9EE","#F1E4C4"][strHash(String(x.ts))%4];
+        if(x.img) return `<figure class="bb-pol" style="--r:${r}deg"><i class="bb-tape" style="background:${tape}"></i><img class="bb-im" data-mid="${x.img}" alt=""><figcaption><span>${esc(who)}</span><time>${date}</time></figcaption></figure>`;
+        if(!x.mid&&!x.by) return `<div class="bb-stamp"><time>${date}</time><span>${esc(x.t)}</span></div>`;
+        return `<article class="bb-note" style="--r:${r}deg"><i class="bb-tape" style="background:${tape}"></i><p>${esc(x.t)}</p><footer><span>${esc(who)}</span><time>${date} ${pad(d.getHours())}:${pad(d.getMinutes())}</time></footer></article>`; }).join("")||`<p class="bb-empty">第一頁還是空白的</p>`}</div></section></main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^bb[A-Z]/.test(a)) return; const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
   switch(a){
     case "bbCare": bbCare(t.dataset.id,t.dataset.v,(session()||{}).member); rr(); break;
@@ -15604,6 +15654,119 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="secAdd"){ const last=s.ch[s.ch.length-1], st=last?last[1]+20:Math.max(s.intro+30,40); s.ch.push([st,st+20]); }
   if(a==="secDel") s.ch.splice(+t.dataset.i,1);
   S.set(K.tracks,T); const box=document.querySelector(".sec-ed"); if(box) box.outerHTML=secEditHtml(sid); });
+
+/* =========================================================
+   偶像運動會・小遊戲（第二代）：60fps、真的手感、會失誤
+   ・射箭：按住拉弓（越久越穩、太久手會抖）→ 放開射；屏息時準星晃得少，有風會偏
+   ・60m 短跑：槍響前不能動；左右「交替」點，節奏越整齊越快，同一邊連點會絆一下；後段體力會掉
+   ・跳高：按住助跑加速，在起跳線放開；速度＋時機決定跳多高，三次機會
+   ・保齡球：在球道上用手指往前甩，甩歪會轉彎；球瓶互相碰撞、真的會亂倒
+   成績照舊交給 isDone(ev, 分數)
+   ========================================================= */
+function isGame(ev){ const c=isCur(), mid=(session()||{}).member; if(!c||c.st!=="on"||!mid) return; if(isTriesLeft(c,ev,mid)<=0){ toast("今天的次數用完了"); return; }
+  const E=IS_EV[ev];
+  setLayer(`<div class="isg2"><header><button data-a="isQuit" aria-label="離開">✕</button><b>${E.ic} ${E.n}</b><span>剩 ${isTriesLeft(c,ev,mid)} 次</span></header>
+    <div class="isg2-stage"><canvas id="isCv"></canvas><p id="isMsg" class="isg2-msg"></p></div><div class="isg2-ctl" id="isBtns"></div></div>`,"isgame");
+  const cv=document.getElementById("isCv"), x=cv.getContext("2d"), box=cv.parentElement, dpr=Math.min(2,devicePixelRatio||1);
+  let W=0,H=0; const fit=()=>{ W=box.clientWidth; H=box.clientHeight; cv.width=W*dpr; cv.height=H*dpr; cv.style.width=W+"px"; cv.style.height=H+"px"; x.setTransform(dpr,0,0,dpr,0,0); }; fit();
+  const msg=t=>{ const m=document.getElementById("isMsg"); if(m){ m.textContent=t; m.classList.remove("pop"); void m.offsetWidth; m.classList.add("pop"); } }, btns=h=>{ const b=document.getElementById("isBtns"); if(b) b.innerHTML=h; };
+  const G=ui.isG={ev,dead:false,done:v=>{ setTimeout(()=>isDone(ev,v),700); }};
+  const au=audioCtx&&audioCtx(), beep=(f=660,d=.12,v=.18,type="sine")=>{ try{ if(!au) return; const o=au.createOscillator(), g=au.createGain(); o.type=type; o.frequency.value=f; g.gain.setValueAtTime(v,au.currentTime); g.gain.exponentialRampToValueAtTime(.001,au.currentTime+d); o.connect(g); g.connect(au.destination); o.start(); o.stop(au.currentTime+d); }catch(e){} };
+  /* 頭像：用藝人自己的照片當頭 */
+  const face=newImg(), ph=mPhoto(mid); let faceOk=false; if(ph){ face.onload=()=>faceOk=true; face.src=ph; }
+  const head=(cx,cy,r)=>{ x.save(); x.beginPath(); x.arc(cx,cy,r,0,7); x.closePath(); if(faceOk){ x.clip(); x.drawImage(face,cx-r,cy-r,r*2,r*2); } else { x.fillStyle="#FFD9B8"; x.fill(); } x.restore(); x.strokeStyle="#fff"; x.lineWidth=2; x.beginPath(); x.arc(cx,cy,r,0,7); x.stroke(); };
+  /* 選手：小小的身體＋手腳，跑步相位 p */
+  const body=(cx,cy,s,p,col="#8843FB")=>{ const L=(a,b,c2,d)=>{ x.beginPath(); x.moveTo(a,b); x.lineTo(c2,d); x.stroke(); }; x.lineCap="round"; x.strokeStyle=col; x.lineWidth=s*.28; L(cx,cy,cx+s*.1,cy+s*.9);
+    x.lineWidth=s*.16; const sw=Math.sin(p)*.9; x.strokeStyle="#2B2340"; L(cx+s*.1,cy+s*.9,cx+s*.1+Math.sin(sw)*s*.8,cy+s*.9+Math.cos(sw)*s*.8); L(cx+s*.1,cy+s*.9,cx+s*.1-Math.sin(sw)*s*.8,cy+s*.9+Math.cos(sw)*s*.8);
+    x.strokeStyle=col; x.lineWidth=s*.12; L(cx+s*.05,cy+s*.25,cx+s*.05-Math.sin(sw)*s*.6,cy+s*.25+Math.cos(sw)*s*.45); L(cx+s*.05,cy+s*.25,cx+s*.05+Math.sin(sw)*s*.6,cy+s*.25+Math.cos(sw)*s*.45); head(cx,cy-s*.22,s*.34); };
+  /* 運動場背景：天空、看台（觀眾會晃）、跑道 */
+  const crowd=Array.from({length:160},()=>({x:Math.random(),y:Math.random(),c:["#F472B6","#FBBF24","#60A5FA","#A78BFA","#34D399","#fff"][Math.floor(Math.random()*6)],p:Math.random()*6}));
+  const stadium=(t,horizon=.42,cheer=0)=>{ let g=x.createLinearGradient(0,0,0,H*horizon); g.addColorStop(0,"#5B8DEF"); g.addColorStop(1,"#BFD6FF"); x.fillStyle=g; x.fillRect(0,0,W,H*horizon);
+    x.fillStyle="#2E3557"; x.fillRect(0,H*(horizon-.2),W,H*.2); crowd.forEach(d=>{ x.fillStyle=d.c; x.globalAlpha=.85; x.beginPath(); x.arc(d.x*W,H*(horizon-.19)+d.y*H*.17+Math.sin(t*(3+cheer*6)+d.p)*(1+cheer*3),2.4,0,7); x.fill(); }); x.globalAlpha=1;
+    x.fillStyle="#fff"; x.fillRect(0,H*horizon-3,W,3); x.fillStyle="#1F2442"; x.font="bold 11px sans-serif"; x.fillText("IDOL STAR ATHLETICS CHAMPIONSHIPS",10,H*(horizon-.205)-4); };
+  let last=performance.now(), T=0; const loop=f=>{ const st=now=>{ if(G.dead||!cv.isConnected) return; const dt=Math.min(.05,(now-last)/1000); last=now; T+=dt; f(dt,T); requestAnimationFrame(st); }; requestAnimationFrame(st); };
+  const hold=(id,on,off)=>{ const b=document.getElementById(id); if(!b) return; const d=e=>{ e.preventDefault(); b.classList.add("on"); on(); }, u=e=>{ if(!b.classList.contains("on")) return; e.preventDefault(); b.classList.remove("on"); off(); };
+    b.addEventListener("pointerdown",d); b.addEventListener("pointerup",u); b.addEventListener("pointercancel",u); b.addEventListener("pointerleave",u); };
+
+  /* ---------- 射箭 ---------- */
+  if(ev==="archery"){ const wind=(Math.random()-.5)*2, arrows=[]; let draw=0, drawing=false, fly=null, total=0, breath=1;
+    msg(`風 ${wind>0?"→":"←"} ${Math.abs(wind*5).toFixed(1)} m/s　按住拉弓，放開射`); btns(`<button class="isg2-btn" id="isHold">按住拉弓</button>`);
+    const R=()=>Math.min(W,H)*.36, cx=()=>W/2, cy=()=>H*.48;
+    const aim=t=>{ const k=drawing?Math.max(.25,1-draw*.55)+Math.max(0,draw-1.6)*1.6:1; return [cx()+(Math.sin(t*1.7)*.55+Math.sin(t*3.9+1)*.25)*R()*.55*k+wind*R()*.04, cy()+(Math.cos(t*1.3)*.5+Math.sin(t*4.7)*.2)*R()*.45*k]; };
+    hold("isHold",()=>{ if(fly||arrows.length>=3) return; drawing=true; draw=0; beep(320,.08,.08); },()=>{ if(!drawing) return; drawing=false; if(draw<.35){ msg("弓還沒拉滿"); return; }
+      const [ax,ay]=aim(T), tx=ax+wind*R()*.18*(1.4-Math.min(1,draw)), ty=ay+(1-Math.min(1,draw))*R()*.25; fly={x0:cx(),y0:H*1.05,tx,ty,t:0}; beep(880,.06,.1,"triangle"); });
+    loop((dt,t)=>{ if(drawing) draw+=dt;
+      let g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,"#9CC3FF"); g.addColorStop(.55,"#DCEBFF"); g.addColorStop(.56,"#7FBF6A"); g.addColorStop(1,"#5A9B4A"); x.fillStyle=g; x.fillRect(0,0,W,H);
+      x.fillStyle="#E8D9B8"; x.fillRect(cx()-6,cy(),12,H*.4);
+      const rings=[["#F5F5F5","#222"],["#F5F5F5","#222"],["#1E1E1E","#555"],["#1E1E1E","#555"],["#2F7FE8","#1E5DB5"],["#2F7FE8","#1E5DB5"],["#E5484D","#B33236"],["#E5484D","#B33236"],["#FFD23F","#D9A800"],["#FFD23F","#D9A800"]];
+      x.shadowColor="rgba(0,0,0,.25)"; x.shadowBlur=14; rings.forEach(([f,s],i)=>{ x.beginPath(); x.arc(cx(),cy(),R()*(1-i/10),0,7); x.fillStyle=f; x.fill(); x.shadowBlur=0; x.strokeStyle=s; x.lineWidth=1; x.stroke(); });
+      x.fillStyle="#D9A800"; x.beginPath(); x.arc(cx(),cy(),R()*.05,0,7); x.fill();
+      arrows.forEach(a=>{ x.strokeStyle="#5A3E2B"; x.lineWidth=3; x.beginPath(); x.moveTo(a.x,a.y); x.lineTo(a.x+10,a.y+14); x.stroke(); x.fillStyle="#E5484D"; x.beginPath(); x.moveTo(a.x+10,a.y+14); x.lineTo(a.x+18,a.y+16); x.lineTo(a.x+12,a.y+22); x.fill(); x.fillStyle="#fff"; x.font="bold 14px sans-serif"; x.strokeStyle="#000"; x.lineWidth=3; x.strokeText(a.s===10&&a.X?"X":a.s,a.x+16,a.y-4); x.fillText(a.s===10&&a.X?"X":a.s,a.x+16,a.y-4); });
+      if(fly){ fly.t+=dt/.45; const k=Math.min(1,fly.t), px=fly.x0+(fly.tx-fly.x0)*k, py=fly.y0+(fly.ty-fly.y0)*k-Math.sin(k*Math.PI)*H*.08; x.strokeStyle="#5A3E2B"; x.lineWidth=3; x.beginPath(); x.moveTo(px,py); x.lineTo(px+(1-k)*30,py+(1-k)*60); x.stroke();
+        if(k>=1){ const d=Math.hypot(fly.tx-cx(),fly.ty-cy())/R(), s=d>=1?0:10-Math.floor(d*10), X=d<.05; arrows.push({x:fly.tx,y:fly.ty,s,X}); total+=s; beep(s>=9?1040:s>=6?700:220,.15,.2,"square"); msg(s===10?(X?"X！正中紅心！":"10 分！"):s===0?"脫靶…":`${s} 分`); fly=null;
+          if(arrows.length>=3){ G.done(total); } } }
+      if(!fly&&arrows.length<3){ const [ax,ay]=aim(t), r=18; x.strokeStyle=drawing&&draw>1.6?"#FF4D4D":"#00E676"; x.lineWidth=2; x.beginPath(); x.arc(ax,ay,r,0,7); x.moveTo(ax-r-10,ay); x.lineTo(ax-6,ay); x.moveTo(ax+6,ay); x.lineTo(ax+r+10,ay); x.moveTo(ax,ay-r-10); x.lineTo(ax,ay-6); x.moveTo(ax,ay+6); x.lineTo(ax,ay+r+10); x.stroke(); }
+      x.fillStyle="rgba(0,0,0,.45)"; x.fillRect(0,H-34,W,34); x.fillStyle="#FFD23F"; x.font="bold 16px ui-monospace,monospace"; x.fillText(`總分 ${total}`,12,H-12); x.fillText(`箭 ${"➶ ".repeat(3-arrows.length-(fly?1:0))}`,W-110,H-12);
+      if(drawing){ x.fillStyle="rgba(255,255,255,.8)"; x.fillRect(12,12,120,8); x.fillStyle=draw>1.6?"#FF4D4D":"#00E676"; x.fillRect(12,12,Math.min(1,draw/1.6)*120,8); } }); }
+
+  /* ---------- 60m 短跑 ---------- */
+  if(ev==="sprint"){ let st="mark", go=0, pos=0, v=0, lastS="", lastT=0, rhythm=0, stam=1, foul=0, end=0, stumble=0; const goAt=performance.now()+2600+Math.random()*1500;
+    btns(`<button class="isg2-btn half" data-a="isAct" data-v="L">左</button><button class="isg2-btn half" data-a="isAct" data-v="R">右</button>`); msg("各就位…");
+    setTimeout(()=>{ if(st==="mark"){ st="set"; msg("預備…"); beep(440,.1); } },1300);
+    G.act=s=>{ const now=performance.now(); if(st==="mark"||st==="set"){ foul++; msg("偷跑！加罰 0.5 秒"); beep(150,.3,.25,"sawtooth"); return; } if(st!=="run") return;
+      if(s===lastS){ stumble=.35; v*=.6; msg("絆到了！要左右交替"); beep(200,.1,.15,"square"); } else { const gap=(now-lastT)/1000; const even=lastT?Math.max(0,1-Math.abs(gap-.16)/.16):.5; rhythm=rhythm*.7+even*.3; v=Math.min(12.5,v+1.4+rhythm*1.2); }
+      lastS=s; lastT=now; };
+    loop((dt,t)=>{ const now=performance.now(); if(st==="set"&&now>=goAt){ st="run"; go=now; msg("GO!"); beep(1200,.25,.3,"square"); }
+      if(st==="run"){ stumble=Math.max(0,stumble-dt); stam=Math.max(.35,1-Math.max(0,pos-35)/60); v=Math.max(0,v-dt*(3.2-stam*1.2)); pos+=v*stam*dt*(stumble?.4:1); if(pos>=60){ st="end"; end=(now-go)/1000+foul*.5; msg(`${end.toFixed(2)} 秒`); beep(1040,.3,.25); G.done(Math.round(end*100)/100); } }
+      stadium(t,.4,st==="run"?1:0);
+      const sc=W/22, cam=Math.max(0,Math.min(60-18,pos-5)); x.fillStyle="#C1442E"; x.fillRect(0,H*.4,W,H*.6); for(let i=0;i<5;i++){ x.fillStyle="rgba(255,255,255,.75)"; x.fillRect(0,H*(.46+i*.11),W,2); }
+      for(let m=0;m<=60;m+=10){ const px=(m-cam)*sc+W*.1; if(px<-20||px>W+20) continue; x.fillStyle="rgba(255,255,255,.9)"; x.font="bold 12px sans-serif"; x.fillText(m+"m",px-10,H*.44); x.fillRect(px,H*.45,2,H*.55); }
+      const fx=(60-cam)*sc+W*.1; x.fillStyle="#fff"; for(let i=0;i<12;i++) x.fillRect(fx,H*.45+i*H*.046,6,H*.023);
+      [.55,.66,.77].forEach((ly,i)=>{ const rp=st==="run"?Math.min(60,(now-go)/1000*(7.2+i*.6)):0; body((rp-cam)*sc+W*.1,H*ly,22,rp*2.4,["#60A5FA","#34D399","#F472B6"][i]); });
+      body((pos-cam)*sc+W*.1,H*.88,30,pos*2.2+(stumble?Math.sin(t*30):0),"#8843FB");
+      x.fillStyle="rgba(0,0,0,.5)"; x.fillRect(0,0,W,30); x.fillStyle="#FFD23F"; x.font="bold 16px ui-monospace,monospace"; x.fillText(st==="run"?((now-go)/1000+foul*.5).toFixed(2)+"s":st==="end"?end.toFixed(2)+"s":"0.00s",10,21);
+      x.fillStyle="#fff"; x.fillText(`${Math.floor(pos)}m`,W-60,21); x.fillStyle="rgba(255,255,255,.25)"; x.fillRect(W*.3,10,W*.3,10); x.fillStyle=stam>.7?"#00E676":stam>.5?"#FFD23F":"#FF4D4D"; x.fillRect(W*.3,10,W*.3*stam,10); }); }
+
+  /* ---------- 跳高 ---------- */
+  if(ev==="jump"){ let bar=140, fails=0, best=0, st="ready", spd=0, run=0, jmp=null; const TAKE=.78;
+    msg(`橫桿 ${bar}cm　按住助跑，在白線放開`); btns(`<button class="isg2-btn" id="isHold">按住助跑</button>`);
+    hold("isHold",()=>{ if(st!=="ready") return; st="run"; spd=0; run=0; },()=>{ if(st!=="run") return; const err=Math.abs(run-TAKE), timing=Math.max(0,1-err/.12), h=110+spd*62*(.45+.55*timing)+(Math.random()-.5)*6; st="jump"; jmp={t:0,h,ok:h>=bar+2}; });
+    loop((dt,t)=>{ stadium(t,.45,st==="jump"?1:0); x.fillStyle="#3B82F6"; x.fillRect(0,H*.45,W,H*.55); x.fillStyle="#2563EB"; x.fillRect(W*.62,H*.72,W*.36,H*.12);
+      const sx=W*.08, ex=W*.66, bx=W*.72, by=H*.74-(bar-100)*H*.0042; x.fillStyle="#E5E7EB"; x.fillRect(bx-4,by-6,6,H*.74-by+40); x.fillRect(bx+W*.2,by-6,6,H*.74-by+40); x.fillStyle="#FFD23F"; x.fillRect(bx,by,W*.2,5);
+      x.fillStyle="#fff"; x.fillRect(sx+(ex-sx)*TAKE,H*.7,3,H*.12);
+      if(st==="run"){ spd=Math.min(1,spd+dt*.55); run+=dt*spd*.62; if(run>=1){ st="ready"; fails++; msg(`踩線犯規（${fails}/3）`); beep(150,.3,.2,"sawtooth"); if(fails>=3){ st="end"; G.done(best); } } }
+      let px=sx+(ex-sx)*Math.min(1,run), py=H*.78, p=run*30;
+      if(st==="jump"&&jmp){ jmp.t+=dt/1.1; const k=Math.min(1,jmp.t), top=H*.74-(jmp.h-100)*H*.0042; px=sx+(ex-sx)*TAKE+(bx+W*.1-(sx+(ex-sx)*TAKE))*k*1.4; py=H*.78+(top-H*.78)*Math.sin(Math.min(1,k*1.15)*Math.PI);
+        if(k>=1){ if(jmp.ok){ best=bar; msg(`${bar}cm 成功！`); beep(1040,.2,.25); bar+=5; fails=0; } else { fails++; msg(`${bar}cm 碰桿（${fails}/3）`); beep(180,.35,.25,"sawtooth"); } jmp=null; run=0; spd=0; st=fails>=3?"end":"ready"; if(st==="end") G.done(best); else msg(`橫桿 ${bar}cm　按住助跑，在白線放開`); } }
+      if(st==="jump"){ x.save(); x.translate(px,py); x.rotate(-1.2); body(0,0,28,0,"#8843FB"); x.restore(); } else body(px,py,28,p,"#8843FB");
+      x.fillStyle="rgba(0,0,0,.5)"; x.fillRect(0,0,W,30); x.fillStyle="#FFD23F"; x.font="bold 16px ui-monospace,monospace"; x.fillText(`橫桿 ${bar}cm　最佳 ${best||"—"}　${"✕".repeat(fails)}`,10,21);
+      if(st==="run"){ x.fillStyle="rgba(255,255,255,.3)"; x.fillRect(W*.62,40,W*.33,10); x.fillStyle="#00E676"; x.fillRect(W*.62,40,W*.33*spd,10); } }); }
+
+  /* ---------- 保齡球 ---------- */
+  if(ev==="bowling"){ let roll=0, got=[], ball=null, pins=[], swipe=null, settle=0;
+    const lane=()=>({l:W*.26,r:W*.74,top:H*.06,bot:H*.96}), rackPins=()=>{ const L=lane(), cx=(L.l+L.r)/2, s=(L.r-L.l)*.11, P=[]; for(let r=0;r<4;r++) for(let i=0;i<=r;i++) P.push({x:cx+(i-r/2)*s,y:L.top+H*.05+r*s*.9,vx:0,vy:0,down:false}); return P; };
+    pins=rackPins(); msg("在球道上用手指往前甩（兩球）"); btns(`<p class="isg2-tip">往前甩　甩歪會轉彎</p>`);
+    cv.style.touchAction="none";
+    cv.addEventListener("pointerdown",e=>{ if(ball||roll>=2) return; const r=cv.getBoundingClientRect(); swipe={x:e.clientX-r.left,y:e.clientY-r.top,t:performance.now(),pts:[]}; });
+    cv.addEventListener("pointermove",e=>{ if(!swipe) return; const r=cv.getBoundingClientRect(); swipe.pts.push([e.clientX-r.left,e.clientY-r.top,performance.now()]); });
+    cv.addEventListener("pointerup",e=>{ if(!swipe) return; const r=cv.getBoundingClientRect(), ex=e.clientX-r.left, ey=e.clientY-r.top, dt=Math.max(60,performance.now()-swipe.t), dy=swipe.y-ey; if(dy<30){ swipe=null; return; }
+      const L=lane(), sp=Math.min(1.25,dy/dt*1.1), mid=swipe.pts[Math.floor(swipe.pts.length/2)]||[ex,ey], curve=((mid[0]-(swipe.x+ex)/2))/40;
+      ball={x:Math.max(L.l+10,Math.min(L.r-10,swipe.x)),y:L.bot-H*.06,vx:(ex-swipe.x)/dt*120*.4,vy:-sp*H*1.05,spin:-curve*H*.25}; swipe=null; beep(120,.5,.12,"triangle"); });
+    loop((dt,t)=>{ const L=lane(); let g=x.createLinearGradient(0,0,0,H); g.addColorStop(0,"#1B1530"); g.addColorStop(1,"#2C2050"); x.fillStyle=g; x.fillRect(0,0,W,H);
+      g=x.createLinearGradient(L.l,0,L.r,0); g.addColorStop(0,"#C99863"); g.addColorStop(.5,"#E7C08A"); g.addColorStop(1,"#C99863"); x.fillStyle=g; x.fillRect(L.l,L.top,L.r-L.l,L.bot-L.top);
+      x.fillStyle="rgba(0,0,0,.35)"; x.fillRect(L.l-16,L.top,16,L.bot-L.top); x.fillRect(L.r,L.top,16,L.bot-L.top);
+      for(let i=1;i<10;i++){ x.fillStyle="rgba(120,80,40,.15)"; x.fillRect(L.l+(L.r-L.l)*i/10,L.top,1,L.bot-L.top); } x.fillStyle="#8843FB"; for(let i=1;i<=7;i++){ x.beginPath(); const ax=L.l+(L.r-L.l)*i/8, ay=L.bot-H*.28; x.moveTo(ax,ay); x.lineTo(ax-5,ay+12); x.lineTo(ax+5,ay+12); x.fill(); }
+      if(ball){ ball.vx+=ball.spin*dt; ball.x+=ball.vx*dt; ball.y+=ball.vy*dt; ball.vy*=Math.pow(.92,dt); if(ball.x<L.l+8||ball.x>L.r-8){ ball.gutter=true; ball.x=Math.max(L.l-8,Math.min(L.r+8,ball.x)); ball.vx=0; ball.spin=0; }
+        pins.forEach(p=>{ if(ball.gutter) return; const d=Math.hypot(p.x-ball.x,p.y-ball.y), rr=(L.r-L.l)*.075; if(d<rr&&d>0){ const nx=(p.x-ball.x)/d, ny=(p.y-ball.y)/d, s=Math.hypot(ball.vx,ball.vy)*.8; p.vx+=nx*s; p.vy+=ny*s; p.down=true; } });
+        if(ball.y<L.top-20){ ball=null; settle=1.2; } }
+      pins.forEach((p,i)=>{ p.x+=p.vx*dt; p.y+=p.vy*dt; p.vx*=Math.pow(.2,dt); p.vy*=Math.pow(.2,dt); pins.forEach((q,j)=>{ if(j<=i) return; const d=Math.hypot(q.x-p.x,q.y-p.y), rr=(L.r-L.l)*.055; if(d<rr&&d>0&&(Math.hypot(p.vx,p.vy)>30||Math.hypot(q.vx,q.vy)>30)){ const nx=(q.x-p.x)/d, ny=(q.y-p.y)/d, s=(Math.hypot(p.vx,p.vy)+Math.hypot(q.vx,q.vy))*.5; q.vx+=nx*s; q.vy+=ny*s; q.down=p.down=true; } }); });
+      pins.forEach(p=>{ x.save(); x.translate(p.x,p.y); if(p.down) x.rotate(Math.atan2(p.vy,p.vx)+1.57); x.fillStyle="rgba(0,0,0,.25)"; x.beginPath(); x.ellipse(2,4,7,4,0,0,7); x.fill(); x.fillStyle="#fff"; x.beginPath(); x.ellipse(0,0,p.down?9:7,p.down?4:7,0,0,7); x.fill(); x.strokeStyle="#E5484D"; x.lineWidth=2; x.beginPath(); x.arc(0,0,p.down?3:4,0,7); x.stroke(); x.restore(); });
+      if(ball){ g=x.createRadialGradient(ball.x-4,ball.y-4,2,ball.x,ball.y,13); g.addColorStop(0,"#C9A7FF"); g.addColorStop(1,"#5B21B6"); x.fillStyle=g; x.beginPath(); x.arc(ball.x,ball.y,12,0,7); x.fill(); }
+      if(swipe&&swipe.pts.length){ x.strokeStyle="rgba(255,255,255,.6)"; x.lineWidth=4; x.beginPath(); x.moveTo(swipe.x,swipe.y); swipe.pts.forEach(([a,b])=>x.lineTo(a,b)); x.stroke(); }
+      if(settle>0){ settle-=dt; if(settle<=0){ const n=pins.filter(p=>p.down).length; got.push(n); msg(n===pins.length&&roll===0?"STRIKE!!":n===0?"洗溝…":`倒了 ${n} 支`); beep(n>=8?1040:500,.25,.25); pins=pins.filter(p=>!p.down); roll++;
+          if(roll>=2||!pins.length){ const tot=got[0]===10?15:got.reduce((a,b)=>a+b,0)+(!pins.length?2:0); G.done(tot); } } }
+      x.fillStyle="rgba(0,0,0,.5)"; x.fillRect(0,0,W,30); x.fillStyle="#FFD23F"; x.font="bold 16px ui-monospace,monospace"; x.fillText(`第 ${Math.min(2,roll+1)} 球　${got.join(" / ")||""}`,10,21); }); }
+  window.addEventListener("resize",fit,{once:true}); }
 
 </script>
 </body>
