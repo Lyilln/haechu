@@ -5443,7 +5443,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027101835";
+const BUILD="20261027103140";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -14558,7 +14558,7 @@ const VSHOW={
   rm:{name:"Running Man",ko:"런닝맨",seg:"이름표 떼기",tip:"撕名牌",g:5},
   onetwo:{name:"兩天一夜",ko:"1박 2일",seg:"복불복",tip:"晚餐・爬梯子・翻牌",g:2,retro:1}};
 const VS_PUN=["在 SNS 發一張自己的醜照","直播時唱一首童謠","發一則限時動態跳 10 秒可愛舞","用三種語言跟粉絲說「我愛你」","錄一段模仿團員的語音","今天在 TIE 用撒嬌語氣傳三則訊息","把 SNS 大頭貼換成粉絲指定的照片一天","寫一封手寫信給粉絲並拍照上傳"];
-const VS_BETS=[100,300,500,1000];
+const VS_BETS=[100,300,500,1000], VS_CUT=.05;   // 押注池抽 5% 給管理員們
 const vsAll=()=>(S.get(VS_KEY,[])||[]).filter(e=>e&&e.id&&VSHOW[e.show]).concat(vsDemo());
 /* HUSSEY 的示範：只放在這支手機的記憶體，不會上雲端、粉絲看不到 */
 function vsDemo(){ if(!demoOn()) return []; if(ui.vsDemo) return ui.vsDemo; const me=demoMid(), o=Object.keys(MEMBERS).filter(m=>m!==me&&!MEMBERS[m].official&&groupOf(MEMBERS[m].group)).slice(0,2), mids=[me,...o], now=Date.now(), end=now+3*864e5;
@@ -14625,8 +14625,10 @@ function vsBet(id,mid,n){ const ep=vsGet(id); if(!ep||ep.st!=="on") return; cons
 function vsPayAll(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[VS_KEY]==null) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)); let add=0, dirty=false;
   vsAll().forEach(ep0=>{ if(String(ep0.id).startsWith("demo_")) return; const ep=vsCheck(ep0); if(ep.st!=="done"||ep.paid) return; const res=ep.res||{}, win=res.betWin||res.win||[], B=Object.entries(ep.bets||{}), pool=B.reduce((s,[,b])=>s+b.n,0), wp=B.filter(([,b])=>win.includes(b.mid)).reduce((s,[,b])=>s+b.n,0);
     B.forEach(([em,b])=>{ const id=`vs_${ep.id}_${em}`; if(have.has(id)) return; let n=0, why="";
-      if(!wp){ n=b.n; why=`${VSHOW[ep.show].name}・沒有人猜中，退回`; } else if(win.includes(b.mid)){ n=Math.floor(b.n*pool/wp); why=`${VSHOW[ep.show].name}・猜中了！`; } else return;
+      if(!wp){ n=Math.floor(b.n*(1-VS_CUT)); why=`${VSHOW[ep.show].name}・沒有人猜中，退回（扣 ${VS_CUT*100}%）`; } else if(win.includes(b.mid)){ n=Math.floor(b.n*pool*(1-VS_CUT)/wp); why=`${VSHOW[ep.show].name}・猜中了！`; } else return;
       L.push({id,to:em,n,why,by:"auto",ts:Date.now()}); have.add(id); add++; });
+    /* 押注池抽 5%，管理員們平分當薪水 */
+    { const cut=Math.floor(pool*VS_CUT), ads=Object.keys(ACCOUNTS).filter(e=>ACCOUNTS[e]&&ACCOUNTS[e].role==="admin"); if(cut>0&&ads.length){ const each=Math.floor(cut/ads.length); ads.forEach(e=>{ const id=`vsh_${ep.id}_${e}`; if(!have.has(id)&&each>0){ L.push({id,to:e,n:each,why:`${VSHOW[ep.show].name}・押注抽成（管理員薪水）`,by:"auto",ts:Date.now()}); have.add(id); add++; } }); } }
     ep.mids.forEach(m=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return; const id=`vsa_${ep.id}_${m}`; if(have.has(id)) return; const w=win.includes(m);
       L.push({id,to:em,n:w?500:100,why:`${VSHOW[ep.show].name}・${w?"冠軍":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; });
     ep.paid=Date.now(); vsPut(ep); dirty=true; });
@@ -14752,7 +14754,7 @@ document.addEventListener("input",e=>{ if(e.target.id==="vsTxt"){ const m=locati
 document.addEventListener("change",async e=>{ if(e.target.id!=="vsAud") return; const f=e.target.files&&e.target.files[0]; if(!f||!ui.vsD) return; if(f.size>15*1024*1024){ toast("音檔太大，剪短一點（15MB 以內）"); return; } const id="vsa"+Date.now(); await MDB.put(id,f.slice(0,f.size,f.type||"audio/mpeg")); ui.vsD.aud=id; ui.vsD.audN=f.name; const n=document.getElementById("vsAudN"); if(n) n.textContent=f.name; });
 document.addEventListener("submit",e=>{ if(e.target.id!=="vsCmForm") return; e.preventDefault(); const inp=document.getElementById("vsCmIn"), v=(inp&&inp.value||"").trim(); if(!v) return; if(!isAdminAcct()&&banBlock(v)) return;
   const ep=vsGet(e.target.dataset.id); if(!ep) return; const s=session()||{}, mid=s.role==="artist"&&MEMBERS[s.member]?s.member:"";
-  (ep.cm=ep.cm||[]).push({id:"c"+Date.now().toString(36),by:myEmail(),name:ME.name,mid,text:v,ts:Date.now()}); ep.cm=ep.cm.slice(-300); vsPut(ep); inp.value=""; const y=window.scrollY; render(); window.scrollTo(0,y); });
+  (ep.cm=ep.cm||[]).push({id:"c"+Date.now().toString(36),by:myEmail(),name:ME.name,mid,text:v,ts:Date.now()}); ep.cm=ep.cm.slice(-300); vsPut(ep); inp.value=""; fanEarn("vscm",10,{cap:50,why:"綜藝留言應援"}); const y=window.scrollY; render(); window.scrollTo(0,y); });
 /* ===== 試玩模式：開關、畫面最上方的提示 ===== */
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="sbxT"],[data-a="sbxOff"]'); if(!t) return;
   if(sbxOn()){ ask("結束試玩？剛剛玩的東西都會清掉，換回真正的資料。",()=>sbxOff(),{ok:"結束試玩",danger:false}); return; }
@@ -14911,7 +14913,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(b.type==="ad"&&!(d.text||"").trim()){ toast("寫一句廣告文案"); break; } if(b.type==="mag"&&(b.qs||[]).some((q,i)=>!(d.qa[i]||"").trim())){ toast("每一題都要回答"); break; }
       const txt=[d.text,...d.qa].join(" "); if(!isAdminAcct()&&banBlock(txt)) break;
       b.ans[mid]={...(b.ans[mid]||{}),st:"ok",img:d.img,w:d.w,h:d.h,text:(d.text||"").trim(),qa:d.qa.map(x=>(x||"").trim()),ts:Date.now()}; bzPut(b); ui.bzD=null; rr(); toast("交件了！酬勞稍後入帳"); break; }
-    case "bzLike": { const b=bzGet(t.dataset.id), me=myEmail(); if(!b||!me) break; const L=(b.likes=b.likes||{})[t.dataset.v]=b.likes[t.dataset.v]||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else L.push(me); bzPut(b); rr(); break; }
+    case "bzLike": { const b=bzGet(t.dataset.id), me=myEmail(); if(!b||!me) break; const L=(b.likes=b.likes||{})[t.dataset.v]=b.likes[t.dataset.v]||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else { L.push(me); fanEarn("bzlike",10,{cap:50,once:"bz_"+b.id+"_"+t.dataset.v,why:"代言按讚"}); } bzPut(b); rr(); break; }
     case "bzBuy": { const b=bzGet(t.dataset.id), me=myEmail(); if(!b||!me||(b.buys||{})[me]) break; if(points()<b.price){ toast("積分不夠，先補充積分吧"); break; }
       ask(`用 ${fmt(b.price)} 積分買《${b.name}》？`,()=>{ const b2=bzGet(b.id); if(!b2||(b2.buys||{})[me]) return; S.set(K.points,points()-b2.price); (b2.buys=b2.buys||{})[me]=Date.now(); const sub=bzSubs(b2), share=Math.floor(b2.price/Math.max(1,sub.length));
         sub.forEach(m=>recordSale("mag",{mid:m,pts:share,label:`雜誌・${b2.name}`})); bzPut(b2); rr(); toast("買好了！"); },{ok:"購買",danger:false}); break; }
@@ -15030,11 +15032,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "cfGift": { const n=+t.dataset.n, c=cfCur(mid), em=cfMe(); if(!c||!em) break; if(points()<n){ toast("積分不夠，先補充積分吧"); break; }
       ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); rr(); toast("生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
     case "cfMenu": tieModal("生日特調",`<input id="cfMenuIn" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfMenuOk" data-v="${mid}">加到菜單</button>`,"row"); setTimeout(()=>document.getElementById("cfMenuIn")?.focus(),200); break;
-    case "cfMenuOk": { const v=((document.getElementById("cfMenuIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.menu.push({id:"m"+Date.now().toString(36),name:v,by:cfMe(),by_n:ME.name,ts:Date.now()}); c.menu=c.menu.slice(-30); cfPut(c); layer.innerHTML=""; rr(); break; }
+    case "cfMenuOk": { const v=((document.getElementById("cfMenuIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.menu.push({id:"m"+Date.now().toString(36),name:v,by:cfMe(),by_n:ME.name,ts:Date.now()}); c.menu=c.menu.slice(-30); cfPut(c); fanEarn("cfdeco_"+c.id,50,{cap:150,life:1,why:"幫忙佈置咖啡廳"}); layer.innerHTML=""; rr(); break; }
     case "cfCard": tieModal("生日卡片",`<textarea id="cfCardIn" class="a-nick-in sn-caped" rows="4" maxlength="150" placeholder="輸入文字"></textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfCardOk" data-v="${mid}">貼上去</button>`,"row"); setTimeout(()=>document.getElementById("cfCardIn")?.focus(),200); break;
-    case "cfCardOk": { const v=((document.getElementById("cfCardIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.cards.push({id:"n"+Date.now().toString(36),text:v,by:cfMe(),name:ME.name,ts:Date.now()}); c.cards=c.cards.slice(-200); cfPut(c); layer.innerHTML=""; rr(); toast("卡片貼上去了"); break; }
+    case "cfCardOk": { const v=((document.getElementById("cfCardIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.cards.push({id:"n"+Date.now().toString(36),text:v,by:cfMe(),name:ME.name,ts:Date.now()}); c.cards=c.cards.slice(-200); cfPut(c); fanEarn("cfcard",30,{once:"cfc_"+c.id,why:"生日咖啡廳留言卡"}); layer.innerHTML=""; rr(); toast("卡片貼上去了"); break; }
     case "cfReply": { const c=cfCur(mid), x=c&&c.cards.find(y=>y.id===t.dataset.k); if(!x) break; tieModal("回覆卡片",`<p class="cf-q">${esc(x.text)}</p><textarea id="cfRepIn" class="a-nick-in sn-caped" rows="3" maxlength="120" placeholder="輸入文字"></textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfReplyOk" data-v="${mid}" data-k="${x.id}">回覆</button>`,"row"); setTimeout(()=>document.getElementById("cfRepIn")?.focus(),200); break; }
-    case "cfReplyOk": { const v=((document.getElementById("cfRepIn")||{}).value||"").trim(); if(!v) break; const c=cfCur(mid), x=c.cards.find(y=>y.id===t.dataset.k); if(!x) break; x.reply=v; x.rts=Date.now(); cfArrive(c); cfPut(c); layer.innerHTML=""; rr(); break; }
+    case "cfReplyOk": { const v=((document.getElementById("cfRepIn")||{}).value||"").trim(); if(!v) break; const c=cfCur(mid), x=c.cards.find(y=>y.id===t.dataset.k); if(!x) break; x.reply=v; x.rts=Date.now(); cfArrive(c); cfPut(c); if(!c.demo&&x.by){ const G=S.get(K.ptGrants,[])||[]; if(!G.some(g=>g.id==="cfr_"+x.id)){ G.push({id:"cfr_"+x.id,to:x.by,n:100,why:`${MEMBERS[mid].name} 回了你的生日卡片`,by:"auto",ts:Date.now()}); S.set(K.ptGrants,G.slice(-2000)); } } layer.innerHTML=""; rr(); break; }
     case "cfFav": { const c=cfCur(mid), k=t.dataset.k, F=c.art.favs=c.art.favs||[], i=F.indexOf(k); if(i>=0) F.splice(i,1); else F.push(k); cfArrive(c); cfPut(c); rr(); break; }
     case "cfSign": cfSignPad(mid); break;
     case "cfPadClr": { const cv=document.getElementById("cfPad"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); break; }
@@ -15046,7 +15048,7 @@ function cfArrive(c){ if(c.art.at) return; c.art.at=Date.now(); if(c.demo) retur
 document.addEventListener("change",async e=>{ const id=e.target.id; if(!["cfPoster","cfCup","cfSelfie","cfVoiceIn"].includes(id)) return; const f=e.target.files&&e.target.files[0], mid=e.target.dataset.v; e.target.value=""; if(!f||!mid) return;
   try{ const c=cfCur(mid); if(!c) return;
     if(id==="cfVoiceIn"){ if(f.size>15*1024*1024){ toast("語音檔太大了"); return; } const vid="cfv"+Date.now().toString(36); await MDB.put(vid,f.slice(0,f.size,f.type||"audio/mp4")); c.art.voice=vid; cfArrive(c); }
-    else { const r=await cfUp(f,id==="cfSelfie"?"cfsl":"cfp"); if(id==="cfSelfie"){ c.art.selfie=r.id; cfArrive(c); } else (id==="cfPoster"?c.posters:c.cups).push({id:"x"+Date.now().toString(36),img:r.id,by:cfMe(),name:ME.name,ts:Date.now()}); }
+    else { const r=await cfUp(f,id==="cfSelfie"?"cfsl":"cfp"); if(id==="cfSelfie"){ c.art.selfie=r.id; cfArrive(c); } else{ fanEarn("cfdeco_"+c.id,50,{cap:150,life:1,why:"幫忙佈置咖啡廳"}); } if(id!=="cfSelfie") (id==="cfPoster"?c.posters:c.cups).push({id:"x"+Date.now().toString(36),img:r.id,by:cfMe(),name:ME.name,ts:Date.now()}); }
     c.posters=c.posters.slice(-60); c.cups=c.cups.slice(-30); cfPut(c); render(); toast("好了 ✨"); }catch(err){ toast("這個檔案讀不出來"); } });
 /* 店內左右滑：上面的分頁跟著亮 */
 document.addEventListener("scroll",e=>{ const r=e.target; if(!r||r.id!=="cfRoom") return; const i=Math.round(r.scrollLeft/Math.max(1,r.clientWidth*.86)); document.querySelectorAll(".cfr-tabs button").forEach((b,k)=>b.classList.toggle("on",k===i)); },true);
@@ -15177,14 +15179,14 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "isAct": if(ui.isG&&ui.isG.act) ui.isG.act(t.dataset.v); break;
     case "isQuit": if(ui.isG) ui.isG.dead=true; ui.isG=null; layer.innerHTML=""; render(); break;
     case "isCheer": { const c=isCur(), em=myEmail(), g=t.dataset.v; if(!c||c.st!=="on"||!em) break; const day=isDay(), k=em+"|"+day; ui.isCh=ui.isCh||{}; const cnt=(c.chd||{})[k+"|"+g]||0; if(cnt>=IS_CHEER_DAY){ toast(`今天幫這團加油 ${IS_CHEER_DAY} 次了，明天再來`); break; }
-      c.ch=c.ch||{}; c.ch[g]=c.ch[g]||{}; c.ch[g][em]=(c.ch[g][em]||0)+1; c.chd=c.chd||{}; c.chd[k+"|"+g]=cnt+1; Object.keys(c.chd).forEach(x=>{ if(!x.includes("|"+day+"|")) delete c.chd[x]; }); isPut(c); t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop"); const sm=t.querySelector("small"); if(sm) sm.textContent=fmt(c.ch[g][em]); break; }
-    case "isOpen": { const w=isWin(); if(!w&&!demoOn()){ toast("只有中秋、過年前後可以開幕"); break; } const days=+((document.getElementById("isDays")||{}).value||3); const id="is"+Date.now().toString(36);
+      c.ch=c.ch||{}; c.ch[g]=c.ch[g]||{}; c.ch[g][em]=(c.ch[g][em]||0)+1; c.chd=c.chd||{}; c.chd[k+"|"+g]=cnt+1; Object.keys(c.chd).forEach(x=>{ if(!x.includes("|"+day+"|")) delete c.chd[x]; }); isPut(c); fanEarn("ischeer",5,{cap:50,quiet:1}); t.classList.remove("pop"); void t.offsetWidth; t.classList.add("pop"); const sm=t.querySelector("small"); if(sm) sm.textContent=fmt(c.ch[g][em]); break; }
+    case "isOpen": { const w=isWin(); if(!w&&!demoOn()){ toast("只有中秋、過年前後可以開幕"); break; } const days=+((document.getElementById("isDays")||{}).value||2); const id="is"+Date.now().toString(36);
       isPut({id,name:`${w?w.y+" "+w.n:"特別"}偶像運動會`,st:"on",start:Date.now(),end:Date.now()+days*864e5,sc:{},ch:{}}); render(); toast("運動會開幕！"); break; }
     case "isClose": ask("現在閉幕並發獎？",()=>{ const c=isGet().cur; if(!c) return; c.end=Date.now(); c.st="done"; isPut(c); isPay(); render(); }); break;
   } });
 function isAdminHtml(){ const c=isGet().cur, w=isWin(); return `<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>偶像運動會</h3></div>
   ${c&&c.st==="on"?`<p class="vs-wait">${esc(c.name)}・${vsLeft(c.end)}</p><button class="btn btn-soft btn-block" data-a="isClose">閉幕並發獎</button>`
-   :w?`<label class="foc-lab">${w.y} ${w.n}運動會・天數</label><label class="field"><select id="isDays"><option value="3">3 天</option><option value="5">5 天</option><option value="7">7 天</option></select></label><button class="btn btn-main btn-block" data-a="isOpen">開幕</button>`
+   :w?`<label class="foc-lab">${w.y} ${w.n}運動會・天數</label><label class="field"><select id="isDays"><option value="2">2 天</option><option value="1">1 天</option></select></label><button class="btn btn-main btn-block" data-a="isOpen">開幕</button>`
    :`<p class="vs-wait">中秋、過年前後三週內才能開幕</p>`}</section>`; }
 
 
@@ -15634,6 +15636,23 @@ function isGame(ev){ const c=isCur(), mid=(session()||{}).member; if(!c||c.st!==
           if(roll>=2||!pins.length){ const tot=got[0]===10?15:got.reduce((a,b)=>a+b,0)+(!pins.length?2:0); G.done(tot); } } }
       x.fillStyle="rgba(0,0,0,.5)"; x.fillRect(0,0,W,30); x.fillStyle="#FFD23F"; x.font="bold 16px ui-monospace,monospace"; x.fillText(`第 ${Math.min(2,roll+1)} 球　${got.join(" / ")||""}`,10,21); }); }
   window.addEventListener("resize",fit,{once:true}); }
+
+/* =========================================================
+   粉絲也能從藝人端的玩法賺分（#KISS）：分數小、每天有上限
+   ・綜藝留言應援 +10（一天最多 50）・代言按讚 +10（一張照片一次，一天最多 50）
+   ・咖啡廳留言卡 +30（一家店一次）・幫忙佈置 +50（一家店最多 150）・藝人回你的卡片 +100
+   ・偶運加油 +5（一天最多 50）・餐車送到 +200（出錢的人，一台一次）
+   上限記在這支手機（只是防手滑連刷，不用上雲端）
+   ========================================================= */
+function fanEarn(kind,n,o={}){ try{ const s=session()||{}; if(s.role!=="fan"||!myEmail()) return 0; const day=new Date().toISOString().slice(0,10), key="hc_earn_"+myEmail(), E=JSON.parse(localStorage.getItem(key)||"{}");
+    if(E.day!==day){ E.day=day; E.d={}; } E.d=E.d||{}; E.once=E.once||{};
+    if(o.once){ if(E.once[o.once]) return 0; }
+    const bag=o.life?(E.life=E.life||{}):E.d, capK=o.capKey||kind, used=bag[capK]||0; if(o.cap!=null&&used>=o.cap) return 0; const add=o.cap!=null?Math.min(n,o.cap-used):n; if(add<=0) return 0;
+    bag[capK]=used+add; if(o.once) E.once[o.once]=1; const ks=Object.keys(E.once); if(ks.length>800) ks.slice(0,ks.length-800).forEach(k=>delete E.once[k]);
+    localStorage.setItem(key,JSON.stringify(E)); S.set(K.points,points()+add); if(!o.quiet) toast(`+${add} 積分・${o.why||""}`); return add; }catch(e){ return 0; } }
+/* 餐車送到了：出錢的粉絲 +200（看到的時候領） */
+function tkEarnCheck(){ try{ const me=myEmail(); if(!me||(session()||{}).role!=="fan") return; getTrucks().forEach(t=>{ if(tkState(t)==="done"&&(t.paid||[]).some(p=>p.em===me)) fanEarn("truck",200,{once:"tk_"+t.id,why:`應援餐車送到 ${MEMBERS[t.mid].name} 那裡了`}); }); }catch(e){} }
+setInterval(tkEarnCheck,90e3); setTimeout(tkEarnCheck,15e3);
 
 </script>
 </body>
