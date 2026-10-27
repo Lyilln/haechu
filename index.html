@@ -3743,6 +3743,7 @@ html[data-theme="dark"] body .t-bgl.t-default{background:linear-gradient(180deg,
 .tr-btn.on{background:var(--gt,var(--violet));color:#fff}
 .tr-st{flex:none;font-size:12px;font-weight:800;color:var(--ink-3)}.tr-st.have{color:var(--gt,var(--violet))}.tr-st.done{color:#E04F86}
 .tr-a{padding:6px 0;margin-bottom:12px}.tr-ah{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 14px}.tr-ah b{display:flex;flex-direction:column;gap:2px;font-size:16px}
+.tr-amap{padding:0 14px 6px}.tr-amap .trm{border-radius:16px}
 .tr-a .ls-btns{padding:10px 14px 8px}
 .tr-badge.rejected{background:#FEE2E2;color:#B91C1C}
 html[data-theme="dark"] .tr-badge.pending{background:rgba(251,191,36,.18)!important;color:#FCD34D!important}html[data-theme="dark"] .tr-badge.approved{background:rgba(16,185,129,.18)!important;color:#6EE7B7!important}html[data-theme="dark"] .tr-badge.rejected{background:rgba(248,113,113,.18)!important;color:#FCA5A5!important}
@@ -5542,7 +5543,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027154524";
+const BUILD="20261027154836";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10802,8 +10803,9 @@ function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=toursShown().fi
       <div class="tr-add"><label class="field"><select id="trCity">${TOUR_CITIES.map(c=>`<option ${d.city===c[0]?"selected":""}>${c[0]}</option>`).join("")}</select></label><label class="field"><input id="trWhen" type="datetime-local" value="${esc(d.when||dtLocal(Math.ceil((Date.now()+2*36e5)/36e5)*36e5))}" min="${dtLocal(Date.now()+36e5)}"></label><button class="btn btn-soft" data-a="trStopAdd">加入</button></div>
       <div class="ls-btns"><button class="btn btn-soft" data-a="trCancel">取消</button><button class="btn btn-main" data-a="trSubmit">送出申請</button></div></section>`:`<button class="btn btn-main btn-block" data-a="trNew">申請世巡</button>`;
   const ST={pending:"審核中",approved:"已核准",rejected:"沒有通過"};
+  if(mine.some(t=>t.status==="approved")) setTimeout(trmScroll,0);
   return `<main class="page foc tr">${form}${mine.map(t=>{ const L=tourStops(t);
-    return `<section class="card tr-a"><div class="tr-ah"><b>${esc(t.title)}</b><span class="tr-badge ${t.status}">${ST[t.status]||""}</span></div>${t.status==="rejected"&&t.why?`<p class="tr-why">${esc(t.why)}</p>`:""}
+    return `<section class="card tr-a"><div class="tr-ah"><b>${esc(t.title)}</b><span class="tr-badge ${t.status}">${ST[t.status]||""}</span></div>${t.status==="rejected"&&t.why?`<p class="tr-why">${esc(t.why)}</p>`:""}${t.status==="approved"?`<div class="tr-amap">${tourMapHtml(t)}</div>`:""}
       ${L.map(st=>{ const s=t.status==="approved"?stopState(st):"", c=stopCC(st);
         return `<div class="tr-row ${s}"><div class="tr-i"><b>${esc(st.city)}</b><small>${evWhen(c?c.startTs:st.startTs)}${s==="done"?`・+${fmt(TOUR_STOP_PTS)}`:s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>
           ${s==="soon"&&!st.msg&&!t.demo?`<button class="tr-btn" data-a="trSay" data-v="${t.id}" data-s="${st.id}">說一句話</button>`:s==="live"?`<button class="tr-btn on" data-a="${t.demo?"lsDemo":"stOn"}">進場</button>`:""}</div>`; }).join("")}
@@ -11180,6 +11182,20 @@ function viewAdmin(tab){
 
 /* datetime-local 用的本地時間字串（YYYY-MM-DDTHH:MM） */
 function dtLocal(ts){ const d=new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`; }
+
+/* 世巡提醒（管理員的手機每分鐘看一次）：
+   ・下一站開唱前 24 小時還沒留話 → 推播提醒那團的藝人去留一句話
+   ・開唱前 10 分鐘還是沒留 → 自動放一句預設的話，照樣通知有買票的粉絲 */
+const TR_DEF=[c=>`${c}的大家，今天見！`,c=>`${c}，我們來了 💜`,c=>`今晚在${c}，一起玩吧！`,c=>`${c}，好想你們！等等見`];
+function tourTick(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.wtours]==null)) return; const all=S.get(K.wtours,[])||[], n=Date.now(); let ch=false;
+  all.forEach(t=>{ if(t.status!=="approved") return; const g=groupOf(t.gid); if(!g) return;
+    tourStops(t).forEach(st=>{ const s=stopState(st); if(s!=="soon"||st.msg) return; const left=st.startTs-n;
+      if(left<=24*36e5&&left>10*60e3&&!st.rem){ st.rem=n; ch=true; const ems=Object.keys(ACCOUNTS).filter(e=>{ const a=ACCOUNTS[e]; return a&&a.member&&MEMBERS[a.member]&&MEMBERS[a.member].group===t.gid; });
+        ems.forEach(e=>feedPush({kind:"system",text:`${t.title}・${st.city}站快開唱了，去世巡留一句話給粉絲吧`},"u:"+e)); }
+      if(left<=10*60e3){ const h=[...st.id].reduce((a,c)=>a+c.charCodeAt(0),0); st.msg=TR_DEF[h%TR_DEF.length](st.city); st.msgAuto=1; st.msgTs=n; ch=true;
+        feedPush({kind:"tour",group:t.gid,text:`${st.city}站・${st.msg}`,tourId:t.id,direct:true},"tix:"+st.id); } }); });
+  if(ch) S.set(K.wtours,all); }catch(e){} }
+setInterval(tourTick,60e3); setTimeout(tourTick,11e3);
 
 /* =========================================================
    4. 互動
