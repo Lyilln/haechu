@@ -5504,7 +5504,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027100542";
+const BUILD="20261027101426";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10491,7 +10491,7 @@ function viewArtistFoc(mid,p){
     ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
     ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}${(()=>{ const c=isCur(), on=c&&c.st==="on", w=isWin(); return tile("focGo","isac","star","偶像運動會",on?"● 進行中":w?`${w.n}・等開幕`:isNextTxt(),on?"on":w?"":"off"); })()}</div>
-    ${secH("heart","養成")}<div class="tiles">${(()=>{ const b=bbMine(mid), on=b&&b.st==="on"; return tile("focGo","baby","heart","Hello Baby",on?`● 養育中・${esc(b.name||"寶寶")}`:b&&b.st==="wait"?"申請審核中":"申請養寶寶",on?"on":""); })()}</div>
+    
   </main>`;
 }
 const FIC={
@@ -10814,7 +10814,7 @@ function prodArt(p){ const g=groupOf(p.gid), C=GRADS[(p.kind==="tie"?p.g2:g.g)%G
   const mm=MEMBERS[p.mid], ph=tktPhoto(p.gid)||(mm?artProf(p.mid).avatar||"":""), who=mm?artName(p.mid,"tie"):g.name;
   return `<span class="tkt" style="--c0:${c0};--c1:${c1}"><span class="tkt-ph">${ph?`<span class="tkt-img" style="background-image:url('${ph}')"></span>`:`<b class="tkt-ini">${esc((who||"?")[0])}</b>`}<small>HAECHU</small></span><span class="tkt-st"><b>${WHISPER_NAME}</b><span class="tkt-nm">${esc(who)}</span><i class="tkt-bar"></i></span></span>`; }
 const prodLabel=p=>p.kind==="ms"?"MEMBERSHIP":p.k==="stick"?"OFFICIAL":p.kind==="album"?(p.pre?"PRE-ORDER":"ALBUM"):p.k==="limited"?"LIMITED":"";
-const prodThumb=(p,big)=>`<span class="wsp-th ${big?"big":""}">${prodLabel(p)?`<small>${prodLabel(p)}</small>`:""}${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img class="wsp-cov" src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span>`;
+const prodThumb=(p,big)=>`<span class="wsp-th ${big?"big":""}">${prodLabel(p)&&!(p.k==="stick"&&(getSticks()[p.gid]||{}).photo)?`<small>${prodLabel(p)}</small>`:""}${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img class="wsp-cov" src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span>`;
 const prodCard=p=>`<button class="wsp-pc" data-a="pOpen" data-v="${p.id}">${prodThumb(p)}<span class="wsp-nm">${esc(p.name)}</span><span class="wsp-pr">${p.pts===0?"<b>免費</b>":`<b>${fmt(p.pts)}</b> 積分${p.from?" 起":""}`}</span>${p.own?`<em class="wsp-tag on">${esc(p.ownTxt||"已擁有")}</em>`:p.kind==="ms"?`<em class="wsp-tag">送官方應援棒</em>`:p.pre?`<em class="wsp-tag on">預購特典中</em>`:""}</button>`;
 /* 查看所有橫幅（照 Weverse Shop 的「＋」）：上面依藝人篩選，下面一張一張列出來 */
 function openAllBan(){ const f=followed().filter(g=>groupOf(g)&&!isSelfGid(g)), fl=ui.banF&&f.includes(ui.banF)?ui.banF:"all";
@@ -10994,7 +10994,7 @@ function viewAdmin(tab){
         ${secH("clock","每週")}<div class="tiles">${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","專輯・音樂・舞台")}${tl("news","news","新聞",newsSub())}</div>
         ${secH("star","檔期")}<div class="tiles">${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}</div>
         ${secH("trophy","大型活動")}<div class="tiles">${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}</div>
-        ${secH("gem","養成")}<div class="tiles">${tl("baby","gem","Hello Baby",bbW?`${bbW} 筆待核准`:"領養與照顧",bbW?"on":"")}</div></main>`; }
+        </main>`; }
     const SEGN={sched:"賽程",music:"打歌",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",baby:"Hello Baby",cafe:"生日咖啡廳"};
     const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>當前活動階段配置</h3><span class="badge">即時同步中</span></div>
@@ -14704,7 +14704,7 @@ function vsCard(ep,base,mid){ const S0=VSHOW[ep.show], need=mid&&vsNeed(ep,mid);
     <em class="vs-st ${ep.st==="on"?"on":""}">${need?"輪到你":ep.st==="on"?`錄影中・${vsLeft(ep.end)}`:"已播出"}</em></button>`; }
 function vsListHtml(base,mid,eps){ const on=eps.filter(e=>e.st==="on"), done=eps.filter(e=>e.st!=="on");
   const art=(session()||{}).role==="artist", go=p=>art?`#/artist?tab=foc&p=${p}`:`#/fan/core?p=${p}`, ic=isCur();
-  const sp=`<div class="vs-sp"><button class="vs-spc is" data-a="uniGo" data-v="${go("isac")}"><i>🏅</i><b>偶像運動會</b><small>${isTile()}</small>${ic&&ic.st==="on"?`<em>LIVE</em>`:""}</button><button class="vs-spc bb" data-a="uniGo" data-v="${go("baby")}"><i>👶</i><b>Hello Baby</b><small>${bbTile(art?mid:null)}</small></button></div>`;
+  const sp=`<div class="vs-sp"><button class="vs-spc is" data-a="uniGo" data-v="${go("isac")}"><i>🏅</i><b>偶像運動會</b><small>${isTile()}</small>${ic&&ic.st==="on"?`<em>LIVE</em>`:""}</button></div>`;
   return `<main class="page vs">${sp}${eps.length?"":`<div class="vs-none"><b>還沒有節目</b></div>`}${on.length?`<div class="section-h">錄影中</div>${on.map(e=>vsCard(e,base,mid)).join("")}`:""}${done.length?`<div class="section-h">已播出</div>${done.map(e=>vsCard(e,base,mid)).join("")}`:""}</main>`; }
 function vsHero(ep){ const S0=VSHOW[ep.show]; return `<section class="vs-hero ${S0.retro?"retro":""}" style="--vg:${grad(S0.g)}"><span class="vs-logo big"><b>${esc(S0.name)}</b><small>${esc(S0.ko)}</small></span><h2>${esc(ep.title)}</h2><p>${esc(S0.seg)}・${esc(S0.tip)}</p>
   <span class="vs-st ${ep.st==="on"?"on":""}">${ep.st==="on"?`錄影中・${vsLeft(ep.end)}`:"已播出"}</span><div class="vs-cast">${ep.mids.map(m=>`<span>${vsAv(m,46)}<small>${esc(vsName(m))}</small></span>`).join("")}</div></section>`; }
