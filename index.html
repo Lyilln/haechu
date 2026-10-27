@@ -1012,7 +1012,8 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 .t-arw{width:26px;height:26px;border:0;border-radius:50%;background:rgba(255,255,255,.55);color:#9A96A3;display:grid;place-items:center;padding:0;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
 .t-arw svg{width:15px;height:15px}
 .t-qsep{display:flex;justify-content:center;margin:14px 0 6px}.t-qsep span{font-size:11.5px;color:#fff;background:rgba(0,0,0,.28);padding:4px 12px;border-radius:999px}
-.t-q{opacity:.6}
+.t-q{opacity:1;align-items:center}.t-q .t-mecol{opacity:.6}
+.t-qx{flex:none;width:26px;height:26px;margin-right:6px;padding:0;border:0;border-radius:50%;display:grid;place-items:center;background:rgba(120,100,160,.16);color:var(--ink,#4B4360)}.t-qx svg{width:13px;height:13px}
 .t-wait{text-align:center;font-size:11.5px;color:#8E8A99;margin:14px 0 22px}
 .t-qrow{display:flex;flex-direction:column;align-items:flex-end;gap:4px;margin:10px 0 0}.t-qrow small{font-size:11px;color:#8E8A99;margin-right:4px}
 .t-qgo{display:flex;align-items:center;gap:6px;height:38px;padding:0 14px;border:0;border-radius:12px;background:#FF7A2F;color:#fff;font:inherit;font-size:13.5px;font-weight:800;box-shadow:0 6px 18px -6px rgba(255,122,47,.6)}
@@ -5536,7 +5537,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027132120";
+const BUILD="20261027132309";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9341,7 +9342,7 @@ function viewTieArtist(mid){
   }).join("");
   const draft=ui.wDraft||"", Q=tieQ(mid);
   /* 待發送的訊息（照 Bubble：先排好，預覽後一次送出） */
-  const qHtml=Q.length?`<div class="t-qsep"><span>待發送的訊息</span></div>${Q.map((q,i)=>`<div class="t-me t-q" data-a="tqItem" data-i="${i}"><div class="t-mecol">${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),true,true):""}<div class="t-b me">${nickTag(esc(q.text))}</div></div></div>`).join("")}`:"";
+  const qHtml=Q.length?`<div class="t-qsep"><span>待發送的訊息</span></div>${Q.map((q,i)=>`<div class="t-me t-q" data-a="tqItem" data-i="${i}"><button type="button" class="t-qx" data-a="tqDel" data-i="${i}" aria-label="取消這則">${XI}</button><div class="t-mecol">${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),true,true):""}<div class="t-b me">${nickTag(esc(q.text))}</div></div></div>`).join("")}`:"";
   const QUICK=["謝謝大家，今天也在努力練習中 ♡","大家吃過晚餐了嗎？記得保暖喔～","今晚文字直播見！期待和你們相聚 ✨"];
   return `${artTieBg(mid)?tieBgLayer(artTieBg(mid)):(thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`)}<header class="t-rh t-rh-art">
       <div class="t-rh-row"><button class="t-ib" data-a="tab" data-v="home" aria-label="返回">${TI.back}</button><h3>${esc(artName(mid,"tie"))}</h3><div class="t-rh-r"><button class="t-ib t-dots" data-a="tArtDrawer" data-m="${mid}" aria-label="更多"><i></i><i></i><i></i></button></div></div>
