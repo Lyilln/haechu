@@ -4877,6 +4877,10 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .wsp-th .wsp-ph{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border-radius:inherit}.wsp-th:has(.wsp-ph) small{z-index:1;left:50%;right:auto;transform:translateX(-50%);padding:3px 9px;border-radius:999px;background:rgba(255,255,255,.85);color:#6B6478}
 .wsp-phbig{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:20px;margin-bottom:12px}
 .ls-photo{display:block;width:120px;aspect-ratio:1;object-fit:cover;border-radius:14px;margin:10px auto 0}
+/* 餐車付款：中間那顆不要被擠成直排 */
+.trk-ed .trk-sh{flex:none;display:inline-flex;align-items:center;gap:6px;padding:4px}
+.trk-ed .trk-sh button{flex:none;width:40px;height:40px;font-size:18px}
+.trk-ed .trk-sh button.on{width:auto;min-width:96px;padding:0 16px;white-space:nowrap;font-size:14px}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5443,7 +5447,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027103140";
+const BUILD="20261027103750";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6810,7 +6814,7 @@ function blobDU(blob){ return new Promise(res=>{ const r=new FileReader(); r.onl
    ・Membership、周邊算給整個團，再平均分給團裡的成員（不含官方帳號）
    ・藝人分潤比例由管理員設定
    ========================================================= */
-const revShare=()=>S.get(K.revShare,50);
+const revShare=()=>S.get(K.revShare,15);   // 藝人分潤：粉絲花在藝人身上的積分 15%（她 10/27 定）
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
@@ -6983,8 +6987,10 @@ function tieQuiet(){ const now=Date.now(), Q0=S.get(K.tieQ0,{})||{}, out=[];
 /* 還沒傳過 TIE 的藝人：從第一次被看到的那天開始算 */
 function tieQ0Mark(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.whispers]==null)) return; const Q=S.get(K.tieQ0,{})||{}; let ch=false; artistMids().forEach(mid=>{ if(!Q[mid]&&!tieLastArt(mid)){ Q[mid]=Date.now(); ch=true; } }); if(ch) S.set(K.tieQ0,Q); }catch(e){} }
 
-/* ===== 分潤（做法 B）：每月 1 號結算上個月，藝人分到的積分的 10% 變成積分，每人每月最多 1 萬 ===== */
-const REVB_RATE=.1, REVB_CAP=10000, REVB_FIRST="2026-10";
+/* ===== 分潤：每月 1 號結算上個月，粉絲花在藝人身上的積分 × 藝人分得比例（預設 15%），不設上限（她 10/27 定） ===== */
+const REVB_RATE=1, REVB_CAP=Infinity, REVB_FIRST="2026-10";
+/* 舊的預設 50% 換成 15%（只換一次；之後管理員自己改的就照管理員的） */
+setTimeout(()=>{ try{ if(!isAdminAcct()||S.get("daisuki_rev15",0)) return; if(HB_ON&&HB.ver[K.revShare]===undefined&&!HB.pulled) return; const v=S.get(K.revShare,null); if(v==null||v===50) S.set(K.revShare,15); S.set("daisuki_rev15",1); }catch(e){} },20e3);
 const ymKey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
 function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) return;   /* 雲端資料還沒載入就先不結算 */ const now=new Date(), last=new Date(now.getFullYear(),now.getMonth()-1,1), key=ymKey(last); if(key<REVB_FIRST) return;
     const done=S.get(K.revB,{})||{}; if(done[key]) return;
@@ -8071,7 +8077,7 @@ function defaultStick(gid){ if(!_defStick[gid]){ const g=groupOf(gid), c=GRADS[g
 let _genStick=null;
 const genericStick=()=>_genStick||(_genStick=Object.assign(LS3D.analyze(LS3D.sample("round","#E9E3F7","#FCE7F3","★")),{glow:"#C7AEFF"}));
 const stickOf=gid=>gid==="generic"?genericStick():getSticks()[gid]||defaultStick(gid);
-const MERCH=[{k:"stick",name:"官方應援棒",pts:6000,ic:"✦",d:"演唱會燈海裡舉起這一團的官方應援棒。Membership 會員直接擁有"},{k:"album",name:"最新專輯",pts:8000,ic:"💿",d:"收藏在 ME 的「我的周邊」"},{k:"limited",name:"限定周邊組",pts:1500,ic:"🎀",d:"數量限定的小卡與貼紙"}];
+const MERCH=[{k:"stick",name:"官方應援棒",pts:4500,ic:"✦",d:"演唱會燈海裡舉起這一團的官方應援棒。單買永久擁有；Membership 會員在會員期間也能用"},{k:"album",name:"最新專輯",pts:8000,ic:"💿",d:"收藏在 ME 的「我的周邊」"},{k:"limited",name:"限定周邊組",pts:1500,ic:"🎀",d:"數量限定的小卡與貼紙"}];
 const owns=(gid,k)=>!!(S.get(K.owned,{})[gid]||{})[k];
 function mountSticks(scope){
   scope.querySelectorAll(".ls-box:not([data-mounted])").forEach(el=>{
@@ -10599,7 +10605,7 @@ const TOUR_LAND="M670 188l3 1 2 0 1-1 2-1 1-1 1-2 2-1 1-1 1 1 2 0 2 0 1 1 2-1 2-
    ・開場前藝人可以說一句話，推播給買票的粉絲
    ・核准、每站結束、全部結束都會自動出一則娛樂新聞
    ========================================================= */
-const TOUR_TIX=3500, TOUR_STOP_PTS=2000, TOUR_DONE_PTS=10000, TOUR_MINS=120;
+const TOUR_TIX=3500, TOUR_STOP_PTS=2000, TOUR_DONE_PTS=5000, TOUR_MINS=120;
 const TOUR_CITIES=[["首爾",37.57,126.98],["釜山",35.18,129.08],["東京",35.68,139.69],["大阪",34.69,135.5],["名古屋",35.18,136.91],["福岡",33.59,130.4],["台北",25.03,121.56],["高雄",22.63,120.3],["香港",22.32,114.17],["澳門",22.2,113.54],["曼谷",13.76,100.5],["新加坡",1.35,103.82],["吉隆坡",3.14,101.69],["馬尼拉",14.6,120.98],["雅加達",-6.21,106.85],["胡志明市",10.82,106.63],["雪梨",-33.87,151.21],["墨爾本",-37.81,144.96],["奧克蘭",-36.85,174.76],["洛杉磯",34.05,-118.24],["舊金山",37.77,-122.42],["西雅圖",47.61,-122.33],["拉斯維加斯",36.17,-115.14],["達拉斯",32.78,-96.8],["芝加哥",41.88,-87.63],["紐約",40.71,-74.01],["亞特蘭大",33.75,-84.39],["多倫多",43.65,-79.38],["溫哥華",49.28,-123.12],["墨西哥城",19.43,-99.13],["聖保羅",-23.55,-46.63],["布宜諾斯艾利斯",-34.6,-58.38],["聖地牙哥",-33.45,-70.67],["倫敦",51.51,-0.13],["巴黎",48.86,2.35],["柏林",52.52,13.4],["阿姆斯特丹",52.37,4.9],["馬德里",40.42,-3.7],["米蘭",45.46,9.19],["杜拜",25.2,55.27]];
 const cityOf=n=>TOUR_CITIES.find(c=>c[0]===n);
 /* 地圖投影（Miller）：跟 TOUR_LAND 的陸地是同一套，寬 1000、高 474 */
