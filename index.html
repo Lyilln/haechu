@@ -1040,6 +1040,8 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 .nz2 .nz-vf{display:inline-grid;vertical-align:-2px;color:#2FC8E8;margin:0 2px}.nz2 .nz-vf svg{width:14px;height:14px}
 .nz2 .nz-th{flex:none;width:58px;height:58px;border-radius:12px;overflow:hidden;background:var(--s2)}.nz2 .nz-th img{width:100%;height:100%;object-fit:cover}
 
+.t-mecol .tq-media .t-photo{max-width:200px}.tq-media{display:block}.tq-l .tq-media .t-photo{max-width:220px}
+
 /* ===== 應援棒 3D ===== */
 .ls-box{position:relative;width:100%;height:300px}
 .ls3d canvas{position:absolute;inset:0;width:100%;height:100%;z-index:1;touch-action:none;cursor:grab}
@@ -5537,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027132309";
+const BUILD="20261027133113";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9342,7 +9344,7 @@ function viewTieArtist(mid){
   }).join("");
   const draft=ui.wDraft||"", Q=tieQ(mid);
   /* 待發送的訊息（照 Bubble：先排好，預覽後一次送出） */
-  const qHtml=Q.length?`<div class="t-qsep"><span>待發送的訊息</span></div>${Q.map((q,i)=>`<div class="t-me t-q" data-a="tqItem" data-i="${i}"><button type="button" class="t-qx" data-a="tqDel" data-i="${i}" aria-label="取消這則">${XI}</button><div class="t-mecol">${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),true,true):""}<div class="t-b me">${nickTag(esc(q.text))}</div></div></div>`).join("")}`:"";
+  const qHtml=Q.length?`<div class="t-qsep"><span>待發送的訊息</span></div>${Q.map((q,i)=>`<div class="t-me t-q" data-a="tqItem" data-i="${i}"><button type="button" class="t-qx" data-a="tqDel" data-i="${i}" aria-label="取消這則">${XI}</button><div class="t-mecol">${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),true,true):""}${tqBub(q)}</div></div>`).join("")}`:"";
   const QUICK=["謝謝大家，今天也在努力練習中 ♡","大家吃過晚餐了嗎？記得保暖喔～","今晚文字直播見！期待和你們相聚 ✨"];
   return `${artTieBg(mid)?tieBgLayer(artTieBg(mid)):(thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`)}<header class="t-rh t-rh-art">
       <div class="t-rh-row"><button class="t-ib" data-a="tab" data-v="home" aria-label="返回">${TI.back}</button><h3>${esc(artName(mid,"tie"))}</h3><div class="t-rh-r"><button class="t-ib t-dots" data-a="tArtDrawer" data-m="${mid}" aria-label="更多"><i></i><i></i><i></i></button></div></div>
@@ -9377,12 +9379,16 @@ function openArtTieBg(){ const mid=session().member, ab=artTieBg(mid), tab=ui.ti
     <button class="t-sb cancel" data-a="tCloseLayer">取消</button></div></div>`,"bgmenu"); }
 /* ===== 藝人 TIE：待發送的訊息（照 Bubble）：先排好最多 10 則，預覽後一次送出。只存在這支手機 ===== */
 const TQ_MAX=10;
+/* 照片、語音也先排進待發：檔案先只存在這支手機（不上傳），按「傳送」才上傳 */
+async function tqAddMedia(mid,kind,blob,meta){ const Q=tieQ(mid); if(Q.length>=TQ_MAX){ toast(`一次最多 ${TQ_MAX} 則，先把待發訊息送出去吧`); return false; }
+  const id="m"+Date.now()+Math.random().toString(36).slice(2,5); await MDB.put(id,blob,true); Q.push({kind,mid:id,...meta,text:kind==="photo"?"📷 照片":"🎙️ 語音",rid:ui.tReply||null}); ui.tReply=null; tieQSet(mid,Q); ui.scrollChat=true; render(); return true; }
+const tqBub=(q,pv)=>q.kind?`<div class="tq-media">${mediaBubble({...q,from:"artist"})}</div>`:(pv?`<div class="tq-bb">${nickTag(esc(q.text))}</div>`:`<div class="t-b me">${nickTag(esc(q.text))}</div>`);
 const tieQ=mid=>{ try{ return JSON.parse(localStorage.getItem("hc_tq_"+mid)||"[]")||[]; }catch(e){ return ui["tq_"+mid]||[]; } };
 const tieQSet=(mid,Q)=>{ ui["tq_"+mid]=Q; try{ localStorage.setItem("hc_tq_"+mid,JSON.stringify(Q)); }catch(e){} };
 function openTieQPreview(){ const mid=session().member, m=MEMBERS[mid], Q=tieQ(mid); if(!Q.length) return; const ab=artTieBg(mid);
   setLayer(`<div class="tq-pv" role="dialog" aria-label="預覽"><header class="tq-h"><button class="t-ib" data-a="tqBack" aria-label="返回">${TI.back}</button><b>預覽</b><span class="tq-sp"></span></header>
-    <div class="tq-b">${ab?tieBgLayer(ab,"tq-bg"):(thChatBg("tq-bg")||`<div class="tq-bg t-default"></div>`)}<div class="tq-l">${Q.map(q=>`<div class="tq-m">${tieAv(m,"tq-av")}<div><div class="tq-n">${artBadge(mid)}<b>${esc(artName(mid,"tie"))}</b></div>${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),false,true):""}<div class="tq-bb">${nickTag(esc(q.text))}</div></div></div>`).join("")}</div></div>
-    <footer class="tq-f"><button data-a="tqBack">返回</button><button class="go" data-a="tqSend">傳送</button></footer></div>`,"tqpv"); }
+    <div class="tq-b">${ab?tieBgLayer(ab,"tq-bg"):(thChatBg("tq-bg")||`<div class="tq-bg t-default"></div>`)}<div class="tq-l">${Q.map(q=>`<div class="tq-m">${tieAv(m,"tq-av")}<div><div class="tq-n">${artBadge(mid)}<b>${esc(artName(mid,"tie"))}</b></div>${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),false,true):""}${tqBub(q,1)}</div></div>`).join("")}</div></div>
+    <footer class="tq-f"><button data-a="tqBack">返回</button><button class="go" data-a="tqSend">傳送</button></footer></div>`,"tqpv"); hydrateMedia(layer); }
 
 /* =========================================================
    MEET（照 NSY 的直播規則）
@@ -11580,7 +11586,7 @@ document.addEventListener("click",e=>{
     case "cmCrop": { const L=ui.composeMedia||[], i=+t.dataset.i, x=L[i]; if(!x||x.kind!=="photo") break; (async()=>{ const b0=await MDB.get(x.mid); if(!b0){ toast("找不到這張照片"); return; } const b=await cropImg(b0,{free:true,max:1280}); if(!b) return;
       const id="pp"+Date.now()+i, im=await new Promise(res=>{ const u=URL.createObjectURL(b), q=new Image(); q.onload=()=>{ res(q); URL.revokeObjectURL(u); }; q.src=u; }); await MDB.put(id,b); L[i]={...x,mid:id,w:im.naturalWidth,h:im.naturalHeight}; const y=window.scrollY; render(); window.scrollTo(0,y); })(); break; }
     case "tPhCrop": { const p=ui.tiePh; if(!p) break; (async()=>{ const b=await cropImg(p.blob,{free:true,max:1280}); if(!b) return; p.blob=b; tiePhPrev(); })(); break; }
-    case "tPhSend": { const p=ui.tiePh; ui.tiePh=null; layer.innerHTML=""; if(!p) break; (async()=>{ try{ const {blob,w,h}=await prepPhoto(p.blob), id="m"+Date.now(); await MDB.put(id,blob); sendWhisperMedia(p.mid,"photo",id,{w,h}); aiOnTie(p.mid,"（傳了一張照片）",blob); ui.scrollChat=true; render(); tieToast("照片已傳送"); }catch(e){ toast("這張照片讀不出來，換一張試試"); } })(); break; }
+    case "tPhSend": { const p=ui.tiePh; ui.tiePh=null; layer.innerHTML=""; if(!p) break; (async()=>{ try{ const {blob,w,h}=await prepPhoto(p.blob); await tqAddMedia(p.mid,"photo",blob,{w,h}); }catch(e){ toast("這張照片讀不出來，換一張試試"); } })(); break; }
     case "tPhX": ui.tiePh=null; layer.innerHTML=""; break;
     case "tourOpen": location.hash="#/fan/core?p=tour&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
     case "openTour": location.hash="#/fan/core?p=tour"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
@@ -12031,7 +12037,9 @@ document.addEventListener("click",e=>{
     case "tqPreview": openTieQPreview(); break;
     case "tqBack": layer.innerHTML=""; break;
     case "tqSend": iosAlert(`要傳送 ${WHISPER_NAME} 嗎？`,"確認後，訊息會一起傳送。",`<button data-a="tCloseLayer">取消</button><button data-a="tqSendOk">確認</button>`); break;
-    case "tqSendOk": { const mid=session().member, Q=tieQ(mid); layer.innerHTML=""; if(!Q.length) break; Q.forEach((q,k)=>{ sendWhisper(mid,q.text,q.rid); }); try{ aiOnTie(mid,Q.map(q=>q.text).join("\n")); }catch(_){} tieQSet(mid,[]); ui.scrollChat=true; render(); tieToast("已傳送"); break; }
+    case "tqSendOk": { const mid=session().member, Q=tieQ(mid); layer.innerHTML=""; if(!Q.length) break; tieQSet(mid,[]);
+      (async()=>{ for(const q of Q){ try{ if(q.kind){ const b=await MDB.get(q.mid); if(!b) continue; await hbUpload(q.mid,b); sendWhisperMedia(mid,q.kind,q.mid,q.kind==="photo"?{w:q.w,h:q.h}:{dur:q.dur}); } else sendWhisper(mid,q.text,q.rid); }catch(_){} await new Promise(r=>setTimeout(r,8)); }
+        try{ aiOnTie(mid,Q.map(q=>q.kind==="photo"?"（傳了一張照片）":q.kind==="voice"?"（傳了一段語音，大約 "+Math.round(q.dur||0)+" 秒，你聽不到內容）":q.text).join("\n")); }catch(_){} ui.scrollChat=true; render(); tieToast("已傳送"); })(); break; }
     case "tkNew": { const f=followed(), ms=f.flatMap(gid=>isSelfGid(gid)?[]:grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:ME.name||""}}; render(); window.scrollTo(0,0); break; }
     case "tkMid": tkKeep(); ui.tkD.mid=t.dataset.v; render(); break;
     case "tkPal": tkKeep(); ui.tkD.deco.pal=+t.dataset.v; render(); break;
@@ -12181,8 +12189,7 @@ document.addEventListener("change",async e=>{
   if(e.target.id==="attPhoto"||e.target.id==="attVoice"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const mid=session().member, isP=e.target.id==="attPhoto"; layer.innerHTML="";
     try{ const id="m"+Date.now(); let reached;
       if(isP){ ui.tiePh={mid,blob:f}; e.target.value=""; tiePhPrev(); return; }
-      else { if(f.size>15*1024*1024){ toast("語音檔太大了，請小於 15MB"); return; } const dur=await audioDur(f); await MDB.put(id,f); reached=sendWhisperMedia(mid,"voice",id,{dur}); aiOnTie(mid,"（傳了一段語音，大約 "+Math.round(dur||0)+" 秒，你聽不到內容）"); }
-      ui.scrollChat=true; render(); tieToast(isP?"照片已傳送":"語音已傳送");
+      else { if(f.size>15*1024*1024){ toast("語音檔太大了，請小於 15MB"); return; } const dur=await audioDur(f); await tqAddMedia(mid,"voice",f,{dur}); }
     }catch(err){ toast(isP?"這張照片讀不出來，換一張試試":"這個音檔讀不出來，換成 m4a 或 mp3 試試"); }
     return; }
   if(e.target.id==="lsThr"&&ui.lsDraft){ const o=ui.lsDraft.ds; lsLoad(ui.lsDraft.src,+e.target.value); if(ui.lsDraft&&o) ["side","back","top","v2","front","pm","split","glow"].forEach(k=>{ if(o[k]!=null) ui.lsDraft.ds[k]=o[k]; }); lsRerender(); return; }
