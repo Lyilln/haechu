@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027140541";
+const BUILD="20261027140956";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8271,6 +8271,8 @@ function paint(html,hasNav,navHtml=""){
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ L.classList.remove("go"); L.style.transform=""; L.style.setProperty("--i",i); L.style.setProperty("--f",i); }
   } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
+  /* 保險：這頁應該有導覽列卻不見了，補回去 */
+  if(hasNav&&navHtml&&!root.querySelector(":scope > .nav")) root.insertAdjacentHTML("beforeend",navHtml);
   /* SNS 下面的分頁列：保留原本那條，鏡片直接滑過去，不要整條重畫（才順） */
   { const nw=root.querySelector(".sn-nav2"); if(oldSn&&nw&&oldSn!==nw){ const oL=oldSn.querySelector(".nav-lens"), nL=nw.querySelector(".nav-lens"), ob=[...oldSn.querySelectorAll(".nav-btn")], nb=[...nw.querySelectorAll(".nav-btn")];
       if(oL&&nL&&ob.length===nb.length){ ob.forEach((b,k)=>{ b.className=nb[k].className; b.querySelector(".nav-ico").innerHTML=nb[k].querySelector(".nav-ico").innerHTML; }); const i=nb.findIndex(b=>b.classList.contains("on")); oL.classList.remove("go"); oL.style.transform=""; if(i>=0){ oL.style.setProperty("--i",i); oL.style.setProperty("--f",i); } nw.replaceWith(oldSn); } } }
