@@ -5375,7 +5375,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027054112";
+const BUILD="20261027054748";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15308,7 +15308,7 @@ function lsPartsMesh(front,side,back,top,depth,split,pm,embC,dims,lbl){ pm=pm||{
     /* 掛繩：不做成實心，改成真的繩圈（在 3D 那邊做，會晃） */
     if(p.swing){ info.push({key:p.key,label:p.label,mat:p.mat,auto:p.auto}); if(p.mat!=="off") strap={pivot:Y(p.y0),L:(p.y1-p.y0)*sc,w:Math.max(.05,Math.min(.22,p.avgF*2*sc)),color:(lbl.strapC?[1,3,5].map(i=>parseInt(lbl.strapC.slice(i,i+2),16)*.82):p.mc).map(v=>Math.pow(v/255,2.2)),mat:p.mat,ringC:!!lbl.ringMetal}; return; }
     if(p.lathe){ const P=[],C=[],G=[],I=[], SEG=72;
-      for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y), sp=p===bulb&&bulb.sph, kk=p===bulb&&bulb.k||1, rS=sp?sp.R*Math.sqrt(Math.max(0,1-((y-sp.c)/sp.R)**2)):0, rx=Math.max(.0001,(sp?rS:core[yy])*sc*kk), rz=Math.max(.0001,(sp?rS:(score&&score[yy]?score[yy]:core[yy]))*sc*kk);
+      for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y), sp=p===bulb&&bulb.sph, kk=p===bulb&&bulb.k||1, rS=sp?sp.R*Math.sqrt(Math.max(0,1-((y-sp.c)/sp.R)**2)):0, rx=Math.max(.0001,(sp?rS:core[yy])*sc*kk), rz=Math.max(.0001,(sp?rS:(score&&score[yy]&&Math.abs(score[yy]-core[yy])>core[yy]*.3?score[yy]:core[yy]))*sc*kk);   // 側面跟正面差不到三成＝設計稿誤差，做正圓
         for(let k=0;k<=SEG;k++){ const a=k/SEG*Math.PI*2, sx=Math.sin(a), cz=Math.cos(a); P.push(rx*sx,Yp(y),rz*cz); C.push(...colorAt(rx*sx,yy,rz*cz,sx,cz)); G.push(g); } }
       const rowN=SEG+1; for(let j=0;j<p.y1-p.y0;j++) for(let k=0;k<SEG;k++){ const a=j*rowN+k, b=a+rowN; I.push(a,b,a+1,b,b+1,a+1); }
       [[p.y0,1],[p.y1,-1]].forEach(([y,dir])=>{ const c0=P.length/3; P.push(0,Yp(y),0); C.push(...colorAt(0,Math.min(NY-1,y),.01,0,1)); G.push(g); const base=(y===p.y0?0:(p.y1-p.y0)*rowN); for(let k=0;k<SEG;k++) dir>0?I.push(c0,base+k+1,base+k):I.push(c0,base+k,base+k+1); });
@@ -15330,7 +15330,7 @@ function lsPartsMesh(front,side,back,top,depth,split,pm,embC,dims,lbl){ pm=pm||{
   /* 有框「燈頭圖案特寫」：直接用特寫圖（清楚很多） */
   if(embC&&bulb&&bulb.mat==="glass"&&pm.emb!=="off"){ const Rb=bulb.Rb*(bulb.k||1), NE=Math.max(16,Math.round(Rb*1.44*Math.min(1,embC.height/embC.width))), E=lsRead(embC,NE), cyb=bulb.sph?bulb.sph.c:(bulb.y0+bulb.y1)/2;
     const o={key:"emb",label:"燈頭裡的圖案",auto:"glow",mat:pm.emb||"glow"}; info.push({key:"emb",label:o.label,mat:o.mat,auto:"glow"});
-    emb={...o,...puff((x,y)=>x>=0&&x<E.w&&y>=0&&y<E.h&&E.d[(y*E.w+x)*4+3]>=128,0,E.w,0,E.h,()=>Rb*sc*.2,{g:o.mat==="glow"?.5:.15,dx:(CX-E.w/2)*sc,dy:cyb-E.h/2,col:(x,y)=>{ const q=(y*E.w+x)*4, c=[0,1,2].map(i=>E.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*2.1-.08)),2.2)); }})}; }
+    emb={...o,...puff((x,y)=>x>=0&&x<E.w&&y>=0&&y<E.h&&E.d[(y*E.w+x)*4+3]>=128,0,E.w,0,E.h,()=>Math.min(E.w,E.h)*sc*.26,{g:o.mat==="glow"?.5:.15,dx:(CX-E.w/2)*sc,dy:cyb-E.h/2,col:(x,y)=>{ const q=(y*E.w+x)*4, c=[0,1,2].map(i=>E.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*2.1-.08)),2.2)); }})}; }
   else if(bulb&&bulb.mat==="glass"){ const cy=Math.round((bulb.y0+bulb.y1)/2), br=core[cy], hsAt=(x,y)=>{ const q=(y*W+x)*4; return lsHsl([F.d[q],F.d[q+1],F.d[q+2]]); };
     let ls=0,n=0; for(let y=bulb.y0;y<bulb.y1;y++) for(let x=Math.round(CX-br);x<CX+br;x++){ if(F.d[(y*W+x)*4+3]<128) continue; ls+=hsAt(x,y).l; n++; } const ml=n?ls/n:.8;
     const ry=(bulb.y1-bulb.y0)/2, inC=(x,y)=>((x-CX)/(br*.86))**2+((y-cy)/(ry*.86))**2<1, mk=(x,y)=>{ if(!inC(x,y)||F.d[(y*W+x)*4+3]<128) return false; const h=hsAt(x,y); return h.s>.2&&h.l<ml+.02||h.l<ml-.14; };
@@ -15345,7 +15345,7 @@ function lsPartsMesh(front,side,back,top,depth,split,pm,embC,dims,lbl){ pm=pm||{
     const mk2=(x,y)=>{ const i=(y-bulb.y0)*bw+(x-bx0); return x>=bx0&&x<bx0+bw&&y>=bulb.y0&&y<bulb.y1&&!out[i]&&inC(x,y); };
     let cnt=0; for(let i=0;i<bw*bh;i++) if(lab[i]&&keep[lab[i]]) cnt++;
     if(cnt>40){ const o={key:"emb",label:"燈頭裡的圖案",auto:"glow",mat:pm.emb||"glow"}; info.push({key:"emb",label:o.label,mat:o.mat,auto:"glow"});
-      if(o.mat!=="off"){ const th=()=>br*sc*.22; emb={...o,...puff(mk2,Math.max(0,Math.round(CX-br)),Math.min(W,Math.round(CX+br)),bulb.y0,bulb.y1,th,{g:o.mat==="glow"?.5:.15,kx:bulb.k||1,col:(x,y)=>{ const q=(y*W+x)*4, c=[0,1,2].map(i=>F.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.9-.06)),2.2)); }})}; } } }
+      if(o.mat!=="off"){ const th=()=>br*sc*.4; emb={...o,...puff(mk2,Math.max(0,Math.round(CX-br)),Math.min(W,Math.round(CX+br)),bulb.y0,bulb.y1,th,{g:o.mat==="glow"?.5:.15,kx:bulb.k||1,col:(x,y)=>{ const q=(y*W+x)*4, c=[0,1,2].map(i=>F.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.9-.06)),2.2)); }})}; } } }
   if(emb) meshes.push(emb);
   const proj={f:[CX/F.w,1/(sc*F.w)],b:B?[BX/B.w,-1/(sc*B.w)]:[CX/F.w,-1/(sc*F.w)],s:S?[SX/S.w,-1/(sc*S.w)]:null};
   return {meshes,ring,strap,info,bulbW:bulb&&bulb.mat==="glass"?{R:bulb.Rb*sc*(bulb.k||1),y:bulb.sph?Y(bulb.sph.c):Y((bulb.y0+bulb.y1)/2)}:null,headY:bulb?Y(Math.round((bulb.y0+bulb.y1)/2)):Y(Math.round(headEnd/2)),front,side,back,proj}; }
