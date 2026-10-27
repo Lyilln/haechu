@@ -4745,6 +4745,8 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .scx-chat{display:flex;flex-direction:column;gap:5px;border-top:.5px solid rgba(127,127,127,.2);padding-top:10px}.scx-chat p{margin:0;font-size:13px;padding:8px 12px;border-radius:16px;background:rgba(127,127,127,.18);align-self:flex-start;max-width:85%;line-height:1.45}.scx-chat p.me{align-self:flex-end;background:#3797F0;color:#fff}
 .scx-none{display:flex;flex-direction:column;align-items:center;gap:10px;padding:30px 0;color:#8E8E8E}
 .scx-q{margin:8px 16px}.scx-plus{flex:none;font-style:normal;width:28px;height:28px;border-radius:50%;background:#0095F6;color:#fff;display:grid;place-items:center}
+#sbxPill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 96px);z-index:9000;border:0;border-radius:16px;background:rgba(255,159,10,.95);color:#000;font:inherit;font-size:12px;font-weight:700;padding:5px 6px 5px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.2)}
+#sbxPill b{background:rgba(0,0,0,.8);color:#fff;border-radius:11px;padding:2px 9px}
 
 </style>
 </head>
@@ -5019,10 +5021,15 @@ function hbMergeArr(b,l,r){
   const firstCommon=r.findIndex(x=>Lm.has(hbId(x))), front=new Set(r.slice(0,firstCommon<0?0:firstCommon).map(hbId));
   return [...extra.filter(x=>front.has(hbId(x))),...out,...extra.filter(x=>!front.has(hbId(x)))]; }
 /* 寫入：先存手機，再排隊送上雲端 */
-function hbMark(k){ try{ if(!HB_ON||!(HB.tok||HB.ref)||HB.applying||!hbSyncable(k)) return; HB.dirty.add(k);
+/* ===== 試玩模式（只有 HUSSEY）：在自己手機上玩，什麼都不上傳、不收別人的更新；結束時從雲端還原 ===== */
+function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
+function sbxOn(){ try{ return localStorage.getItem("hc_sandbox")==="1"&&sbxWho(); }catch(e){ return false; } }
+async function sbxOff(){ try{ localStorage.removeItem("hc_sandbox"); }catch(e){} document.getElementById("sbxPill")?.remove(); toast("試玩結束，正在還原…"); ui.vsDemo=null; ui.bzDemo=null;
+  if(HB_ON&&HB.tok){ try{ await hbPullAll(); }catch(e){} } else { location.reload(); return; } render(); toast("已還原成真正的資料"); }
+function hbMark(k){ try{ if(sbxOn()) return; if(!HB_ON||!(HB.tok||HB.ref)||HB.applying||!hbSyncable(k)) return; HB.dirty.add(k);
   const p=hbPendGet(); if(!(k in p)){ p[k]=HB.base[k]!=null?HB.base[k]:null; hbPendSet(p); }
   clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,500); }catch(e){} }
-async function hbFlush(){ if(HB.busy||!HB.tok) return; HB.busy=true; let again=false;
+async function hbFlush(){ if(HB.busy||!HB.tok||sbxOn()) return; HB.busy=true; let again=false;
   try{ for(const k of [...HB.dirty]){ HB.dirty.delete(k); HB.inflight=k; try{ await hbPush(k); HB.fail=0; }catch(e){ HB.dirty.add(k); again=true; HB.fail++; if(!e.net&&e.status>=400&&e.status<500&&e.status!==401&&e.status!==409){ HB.dirty.delete(k); try{ console.warn("hbPush",e.status,k); const L=JSON.parse(localStorage.getItem("hc_pushfail")||"[]"); L.unshift({k,s:e.status,t:Date.now()}); localStorage.setItem("hc_pushfail",JSON.stringify(L.slice(0,30))); }catch(x){} if(isAdminAcct()) toast(`有一筆資料沒有存到伺服器（${e.status}・${k.replace(/^daisuki_/,"")}）`); } break; } } }
   finally{ HB.busy=false; HB.inflight=null; }
   if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,again?Math.min(15e3,1000*2**Math.min(4,HB.fail)):300); } }
@@ -5041,7 +5048,7 @@ async function hbPush0(k){ let local=hbReadLocal(k); if(local==null) return;   /
     const merged=hbMerge(JSON.parse(HB.base[k]||"null"),local,row.v); hbRow(row,false); hbWriteLocal(k,merged); local=merged; if(k===K.roster) applyRoster(); hbSoon(); }
   throw new Error("conflict"); }
 /* 讀取：每幾秒問一次有沒有別人改過的資料 */
-async function hbPoll(){ if(!HB.tok||document.hidden) return; let ch=false;
+async function hbPoll(){ if(!HB.tok||document.hidden||sbxOn()) return; let ch=false;
   try{ const rows=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&updated_at=gt.${encodeURIComponent(HB.since||"1970-01-01T00:00:00Z")}&order=updated_at.asc&limit=500`);
     (Array.isArray(rows)?rows:[]).forEach(row=>{ if(row.k===HB.inflight) return; /* 這份正在送出：先不套用別人的版本，送出時會自己合併（不然會把別人的新訊息吃掉） */ if(HB.ver[row.k]!=null&&row.ver<=HB.ver[row.k]){ if(row.updated_at>HB.since) HB.since=row.updated_at; return; }
       if(HB.dirty.has(row.k)){ const m=hbMerge(JSON.parse(HB.base[row.k]||"null"),hbReadLocal(row.k),row.v); hbRow(row); hbWriteLocal(row.k,m); }
@@ -5143,13 +5150,13 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027002702";
+const BUILD="20261027003131";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
 /* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
 const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
-async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
+async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob||sbxOn()) return true;
   if(MEDIA_URL){ if(blob.size>48*1024*1024){ toast("檔案太大（超過 48MB），其他人會看不到"); return false; }
     for(let i=0;i<3;i++){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"PUT",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":blob.type||"application/octet-stream"},body:blob}); if(r.ok||r.status===409) return true; if(r.status===401) await hbRefresh(); }catch(e){} await new Promise(r=>setTimeout(r,1500*(i+1))); }
     }   // R2 傳不上去：改放 Supabase，至少大家看得到
@@ -5157,7 +5164,7 @@ async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob) return true;
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"application/octet-stream","x-upsert":"false"}}); return true; }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return true; await new Promise(r=>setTimeout(r,1500*(i+1))); } }
   toast("照片／語音沒有上傳成功，其他人可能看不到，請再傳一次"); return false; }
 /* 圖片放雲端空間（R2；不行就放 Supabase Storage），回傳網址；資料裡只存網址，不佔資料庫 */
-async function hbImgUrl(id,blob){ if(!HB_ON||!HB.tok||!blob) return null;
+async function hbImgUrl(id,blob){ if(!HB_ON||!HB.tok||!blob||sbxOn()) return null;
   if(MEDIA_URL){ for(let i=0;i<3;i++){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"PUT",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":blob.type||"image/jpeg"},body:blob}); if(r.ok||r.status===409) return MEDIA_URL+"/media/"+encodeURIComponent(id); if(r.status===401) await hbRefresh(); }catch(e){} await new Promise(r=>setTimeout(r,1200*(i+1))); } }
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"image/jpeg","x-upsert":"false"}}); return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); await new Promise(r=>setTimeout(r,1200*(i+1))); } }
   return null; }
@@ -7204,7 +7211,7 @@ const TRAINEES=[
   {id:"t6",name:"時溫",agency:"Aurora Lab",tags:["話少","舞蹈狂"],st:[68,96,79],g:1},
   {id:"t7",name:"若川",agency:"Prism Works",tags:["搞笑","元氣"],st:[80,82,90],g:7},
   {id:"t8",name:"一然",agency:"Cloud Nine",tags:["穩重","主唱"],st:[97,74,83],g:3}];
-const svOpen=()=>!!S.get(K.svOpen,false);
+const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false);
 const svVotes=()=>({t1:18420,t2:17110,t3:16980,t4:15230,t5:12870,t6:11940,t7:9820,t8:9310,...S.get(K.svVotes,{})});
 const svToday=()=>{ const r=S.get(K.svMine,{}), k=new Date().toDateString(); return r.day===k?r.n:0; };
 function svEnd(){ const t=new Date(); t.setDate(t.getDate()+((7-t.getDay())%7)); t.setHours(23,59,0,0); return t.getTime(); }
@@ -8422,6 +8429,7 @@ function viewFan(tab){
       ${secH("gear","設定")}
       <section class="card">
         <button class="list-btn" data-a="settings">${I.bell}通知設定</button>
+        ${sbxWho()?`<button class="list-btn" data-a="sbxT">${I.star}試玩模式<span class="r">${sbxOn()?"試玩中":"關閉"}</span></button>`:""}
         <button class="list-btn" data-a="acctInfo">${I.user}帳號設定<span class="r">${esc((session()||{}).email||"")}</span></button>
         
         <button class="list-btn" data-a="theme">${I.gear}外觀<span class="r">${themeLabel()}</span></button>
@@ -9728,7 +9736,7 @@ function seedFansign(){
 /* 示範：直接看簽售進行中的樣子（測試期間大家都看得到，正式給成員玩之前，管理員可以在 ME 關掉） */
 /* 正式版：示範按鈕全部不顯示。只有 HUSSEY 這個藝人帳號在藝人端（FOC）時打開，讓她看每一個模塊長怎樣 */
 const demoMid=()=>{ try{ const s=session(); if(!s) return ""; return s.member||uniMe()||""; }catch(e){ return ""; } };
-const demoOn=()=>{ try{ const r=route(), m=MEMBERS[demoMid()]; if(r.role!=="artist"||!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } };
+const demoOn=()=>{ try{ if(sbxOn()) return true; const r=route(), m=MEMBERS[demoMid()]; if(r.role!=="artist"||!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } };
 function fsDemoSig(seed){ const c=document.createElement("canvas"); c.width=300; c.height=300; const x=c.getContext("2d"); x.strokeStyle=["#111827","#6F2FE6","#DB2777"][seed%3]; x.lineWidth=5; x.lineCap="round"; x.lineJoin="round";
   x.beginPath(); x.moveTo(60+seed*6,170-seed*20); x.bezierCurveTo(80,90,110,90,105,160-seed*15); x.bezierCurveTo(100,210,140,120,160,140); x.bezierCurveTo(180,160,175,200,200,150); x.bezierCurveTo(215,120,235,130,240,160); x.stroke();
   x.beginPath(); x.moveTo(90,200-seed*25); x.quadraticCurveTo(160,215,235,190-seed*25); x.stroke(); return c.toDataURL("image/png"); }
@@ -14296,6 +14304,12 @@ document.addEventListener("change",async e=>{ if(e.target.id!=="vsAud") return; 
 document.addEventListener("submit",e=>{ if(e.target.id!=="vsCmForm") return; e.preventDefault(); const inp=document.getElementById("vsCmIn"), v=(inp&&inp.value||"").trim(); if(!v) return; if(!isAdminAcct()&&banBlock(v)) return;
   const ep=vsGet(e.target.dataset.id); if(!ep) return; const s=session()||{}, mid=s.role==="artist"&&MEMBERS[s.member]?s.member:"";
   (ep.cm=ep.cm||[]).push({id:"c"+Date.now().toString(36),by:myEmail(),name:ME.name,mid,text:v,ts:Date.now()}); ep.cm=ep.cm.slice(-300); vsPut(ep); inp.value=""; const y=window.scrollY; render(); window.scrollTo(0,y); });
+/* ===== 試玩模式：開關、畫面最上方的提示 ===== */
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="sbxT"],[data-a="sbxOff"]'); if(!t) return;
+  if(sbxOn()){ ask("結束試玩？剛剛玩的東西都會清掉，換回真正的資料。",()=>sbxOff(),{ok:"結束試玩",danger:false}); return; }
+  ask("開始試玩？\n所有東西只在這支手機上，不會上傳、不會影響其他人。積分給你 999,999 讓你隨便玩。",()=>{ try{ localStorage.setItem("hc_sandbox","1"); }catch(_){} ui.vsDemo=null; ui.bzDemo=null; S.set(K.points,999999); sbxPill(); render(); toast("試玩開始 🎮"); },{ok:"開始",danger:false}); });
+function sbxPill(){ const on=sbxOn(), el=document.getElementById("sbxPill"); if(on&&!el) document.body.insertAdjacentHTML("beforeend",`<button id="sbxPill" data-a="sbxOff">🎮 試玩中・不影響其他人<b>結束</b></button>`); else if(!on&&el) el.remove(); }
+setInterval(sbxPill,1500); setTimeout(sbxPill,800);
 
 /* =========================================================
    星探（SNS 官方帳號 haechu.scout）＋ 廣告代言・雜誌拍攝
@@ -14351,6 +14365,10 @@ document.addEventListener("submit",e=>{ const f=e.target.closest(".sc-rf"); if(!
 const BZ_KEY="daisuki_biz";
 const bzAll=()=>(S.get(BZ_KEY,[])||[]).filter(x=>x&&x.id).concat(bzDemo());
 function bzDemo(){ if(!demoOn()) return []; if(ui.bzDemo) return ui.bzDemo; const me=demoMid(), now=Date.now();
+  if(sbxOn()&&route().role==="fan"&&MEMBERS[me]){ /* 試玩：粉絲端看得到已經拍好的廣告和雜誌 */
+    const pic=(id,a,b,txt)=>{ if(!memBlobs[id]){ const c=document.createElement("canvas"); c.width=480; c.height=600; const x=c.getContext("2d"), gr=x.createLinearGradient(0,0,480,600); gr.addColorStop(0,a); gr.addColorStop(1,b); x.fillStyle=gr; x.fillRect(0,0,480,600); x.fillStyle="rgba(255,255,255,.92)"; x.textAlign="center"; x.font="700 44px Georgia,serif"; x.fillText(txt,240,300); MDB.put(id,b64Blob(c.toDataURL("image/jpeg",.85)),true); } return id; };
+    ui.bzDemo=[{id:"demo_ad",type:"ad",name:"LUMI Cosmetics",concept:"夏日清透妝感",qs:[],mids:[me],reward:500,price:0,ts:now,end:now+5*864e5,st:"on",ans:{[me]:{st:"ok",img:pic("demo_bz1","#F8C8DC","#A8C8F8","LUMI"),w:4,h:5,text:"讓光，留在你的臉上。",ts:now}},likes:{},buys:{}},
+      {id:"demo_mag",type:"mag",name:"VOGUE STAR",issue:"試玩",concept:"冬日星空",qs:["最近的小確幸是什麼？","想對粉絲說的話？"],mids:[me],reward:1000,price:300,ts:now-1,end:now-1000,st:"on",ans:{[me]:{st:"ok",img:pic("demo_bz2","#2B2A4C","#B48CFF","VOGUE"),w:4,h:5,qa:["晚上喝一杯熱可可。","謝謝你們一直都在 💜"],ts:now}},likes:{},buys:{}}]; return ui.bzDemo; }
   ui.bzDemo=[{id:"demo_ad",type:"ad",name:"LUMI Cosmetics",concept:"夏日清透妝感，拍一張像在海邊的照片",qs:[],mids:[me],reward:500,price:0,ts:now,end:now+5*864e5,st:"on",ans:{},likes:{},buys:{}},
     {id:"demo_mag",type:"mag",name:"VOGUE STAR",issue:"示範",concept:"冬日星空",qs:["最近的小確幸是什麼？","想對粉絲說的話？"],mids:[me],reward:1000,price:300,ts:now-1,end:now+5*864e5,st:"on",ans:{},likes:{},buys:{}}]; return ui.bzDemo; }
 const bzGet=id=>bzAll().find(x=>x.id===id);
