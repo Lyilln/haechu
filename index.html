@@ -5118,7 +5118,8 @@ html[data-theme="dark"] .cfs-step{background:#4A3D33}
 .try-glow{position:absolute;inset:0;background:radial-gradient(60% 40% at 50% 30%,rgba(155,123,255,.35),transparent 70%),radial-gradient(50% 35% at 50% 80%,rgba(244,114,182,.25),transparent 70%);pointer-events:none}
 .try-end h2{position:relative;margin:0;font-size:28px;font-weight:900}
 .try-lock{position:relative;display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
-.try-lock span{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:16px 6px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.try-lock span{position:relative;display:flex;flex-direction:column;align-items:center;gap:5px;padding:14px 6px 12px;border-radius:18px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12)}
+.try-lock small{font-size:10.5px;line-height:1.4;font-weight:600;opacity:.62;text-wrap:balance;padding:0 2px}
 .try-lock i{font-size:24px;font-style:normal;filter:grayscale(.3)}.try-lock b{font-size:12.5px;font-weight:800;opacity:.85}
 .try-lock u{position:absolute;top:6px;right:8px;font-size:11px;text-decoration:none;opacity:.8}
 .try-end .btn{position:relative}
@@ -5535,7 +5536,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027120620";
+const BUILD="20261027121130";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15851,7 +15852,7 @@ function preCardsHtml(){ const D=getDebut().filter(x=>x.status==="pre"&&x.day), 
    ・玩完就是「進 SUN KISS 才能繼續」
    ========================================================= */
 const TRY_JOIN="https://line.me/ti/g2/7iT3j2hGOM4GHpnkZeunPHVJbPUODoTZg5zA_Q";   /* SUN KISS 社群 */
-const TRY_LOCK=[["🌟","追藝人"],["💎","賺積分"],["🎤","出道"],["📺","綜藝"],["☕","生日咖啡廳"],["💌","TIE"]];
+const TRY_LOCK=[["🌟","追藝人","動態、直播<br>舞台都看得到"],["💎","賺積分","打卡、應援<br>就能升等級"],["🎤","出道","從練習生<br>一路站上舞台"],["📺","綜藝","上節目做任務<br>押上積分"],["☕","生日咖啡廳","幫藝人開一間<br>生日咖啡廳"],["💌","TIE","跟藝人<br>一對一聊天"]];
 const TRY={k:null,sw:0,t0:0,col:"#C7AEFF",ls:null,tm:0};
 function tryOpen(k){ TRY.k=k||"menu"; clearTimeout(TRY.tm); try{ if(TRY.ls) TRY.ls.destroy(); }catch(e){} TRY.ls=null;
   const X=`<button class="try-x" data-a="tryX" aria-label="關閉">${XI}</button>`;
@@ -15903,7 +15904,7 @@ function tryTruckOn(){ TRY.pal=0; const el=document.getElementById("tryTk"); TRU
 /* 玩完：想繼續，就進群 */
 function tryEnd(){ return `<div class="try-end"><span class="try-glow"></span>
   <h2>想玩更多？</h2>
-  <div class="try-lock">${TRY_LOCK.map(([e,l])=>`<span><i>${e}</i><b>${l}</b><u>🔒</u></span>`).join("")}</div>
+  <div class="try-lock">${TRY_LOCK.map(([e,l,d])=>`<span><i>${e}</i><b>${l}</b><small>${d}</small><u>🔒</u></span>`).join("")}</div>
   <button class="btn btn-main btn-block" data-a="tryJoin">加入 SUN KISS</button>
   <button class="try-again" data-a="tryGo" data-v="menu">再玩一次</button></div>`; }
 function tryJoin(){ if(TRY_JOIN){ window.open(TRY_JOIN,"_blank"); return; } toast("到 LINE 搜尋「SUN KISS」"); }
