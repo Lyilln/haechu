@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027141946";
+const BUILD="20261027142536";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -12346,7 +12346,8 @@ const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
 function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
   const tmp=document.createElement("div"); tmp.innerHTML=viewTieArtist(mid); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
   cur.innerHTML=nw.innerHTML; try{ hydrateMedia(cur); }catch(e){} inp.value=""; inp.dispatchEvent(new Event("input",{bubbles:true}));
-  requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight)); return true; }catch(e){ return false; } }
+  /* 鍵盤開著時訊息區是自己捲的盒子（kbbox）：要捲那個盒子到底，不是整頁；高度一律不動 */
+  requestAnimationFrame(()=>{ if(cur.classList.contains("kbbox")) cur.scrollTop=cur.scrollHeight; else { try{ tieFootPad(); }catch(e){} window.scrollTo(0,document.documentElement.scrollHeight); } }); return true; }catch(e){ return false; } }
 /* 底部變暗的視窗打開時：後面的頁面不能滑；簽名板、畫布上手指只畫線，畫面不跟著跑
    （只擋「沒有可以捲的東西」的滑動，視窗裡本來能捲的清單照常能捲；不動任何高度） */
 document.addEventListener("touchmove",e=>{ try{ if(!layer||!layer.firstElementChild||!layer.firstElementChild.getBoundingClientRect().width) return; const t=e.target; if(!(t instanceof Element)) return;
