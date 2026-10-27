@@ -4849,6 +4849,10 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .foc-now{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;margin:2px 0 10px;border-radius:18px;background:var(--glass);border:1px solid var(--line,rgba(0,0,0,.06));color:var(--ink);font:inherit}
 .foc-now .t{display:flex;flex-direction:column;min-width:0}.foc-now .t b{font-size:15px}.foc-now .t small{font-size:12px;color:var(--ink-3)}
 .tile.off{opacity:.5;filter:saturate(.3)}
+/* SNS 導覽列＝App 導覽列（只放圖示） */
+.sn-nav2 .nav-btn{padding:10px 0!important}.sn-nav2 .nav-ico{height:30px}
+.sn-nav2 .nav-ico .si{width:25px;height:25px}
+.t-qbar.show{pointer-events:auto;touch-action:none}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -4920,7 +4924,53 @@ html[data-theme="dark"] .cf-art{background:linear-gradient(135deg,#3A2A22,#3A223
 /* 簽名板 */
 .cf-padc{border-radius:14px;overflow:hidden;background:repeating-linear-gradient(0deg,#F6EBDD 0 2px,#FBF4EA 2px 22px);touch-action:none;margin:10px 0}.cf-padc canvas{display:block;width:100%;height:auto;touch-action:none}
 /* 即將開店 */
-.cf-up{padding:6px 14px}.cf-upr{display:flex;align-items:center;gap:10px;padding:8px 0}.cf-upr+.cf-upr{border-top:1px solid var(--line)}.cf-upr span{flex:1;display:flex;flex-direction:column}.cf-upr small{color:var(--ink-3);font-size:12px}.cf-upr em{font-style:normal;font-size:12px;color:var(--ink-3)}
+.cf-up{padding:6px 14px}.cf-upr{display:flex;align-items:center;gap:10px;padding:8px 0}.cf-upr+.cf-upr{border-top:1px solid var(--line)}.cf-upr>span:not(.vs-av){flex:1;display:flex;flex-direction:column}.cf-upr .vs-av{flex:none}.cf-upr small{color:var(--ink-3);font-size:12px}.cf-upr em{font-style:normal;font-size:12px;color:var(--ink-3)}
+/* ===== v278 門面再精緻一點：白牆＋橡木＋串燈＋盆栽（韓系白咖啡廳＋溫暖手繪） ===== */
+.cf-shop{background:linear-gradient(180deg,#FFFCF7 0%,#FBF5EC 62%,#E9D7C2 62.2%,#E2CDB4 100%)}
+html[data-theme="dark"] .cf-shop{background:linear-gradient(180deg,#2E2620 0%,#251E19 62%,#3A2C21 62.2%,#33271D 100%)}
+.cf-face{position:relative}
+.cf-face::before{content:"";position:absolute;left:24px;right:110px;top:2px;height:14px;background:radial-gradient(circle,#FFE6A8 0 3px,#FFD47A55 4px,transparent 6px) 0 0/22px 14px repeat-x;filter:drop-shadow(0 0 4px #FFD47A)}
+.cf-win{border-radius:70px 70px 6px 6px;border-color:#B8865E;background:linear-gradient(180deg,#FFF6E6,#FCE9D2);box-shadow:inset 0 0 0 3px #FFF8EE,inset 0 -18px 30px rgba(255,200,140,.35)}
+.cf-win::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent calc(50% - 2px),#B8865E88 calc(50% - 2px) calc(50% + 2px),transparent calc(50% + 2px));pointer-events:none;z-index:1}
+button.cf-door{font:inherit;cursor:pointer;transform-origin:left center;transition:transform .42s cubic-bezier(.5,0,.3,1);perspective:400px}
+.cf-door{background:linear-gradient(180deg,#A47452,#7E5237);box-shadow:inset 0 0 0 4px #6A432B}
+.cf-door::before{content:"";position:absolute;left:18%;right:18%;top:46px;height:52px;border-radius:30px 30px 4px 4px;background:linear-gradient(160deg,#FFF3DD,#F7D9B5);opacity:.9;box-shadow:inset 0 0 0 2px #6A432B}
+.cf-door.opening{transform:perspective(500px) rotateY(-68deg)}
+.cf-push{position:absolute;bottom:22px;left:50%;transform:translateX(-50%);font-style:normal;font-size:9px;letter-spacing:.24em;font-weight:800;color:#FFE9CC;opacity:.85}
+.cf-step::after{content:"🪴";position:absolute;right:6px;margin-top:-34px;font-size:28px}.cf-step{position:relative}
+/* ===== 店內 ===== */
+.cf-inside{gap:12px}
+.cfr-bar{display:flex;align-items:center;gap:10px;color:var(--ink)}.cfr-bar button{width:38px;height:38px;border-radius:50%;border:0;background:var(--glass);color:var(--ink);display:grid;place-items:center}
+.cfr-bar b{font-family:"Didot","Bodoni 72","Playfair Display",Georgia,serif;font-size:20px}.cfr-bar span{margin-left:auto;font-size:12px;color:var(--ink-3)}
+.cfr-tabs{display:flex;gap:6px;padding:4px;border-radius:999px;background:var(--glass);align-self:center}
+.cfr-tabs button{border:0;background:none;font:inherit;font-size:13px;font-weight:700;color:var(--ink-3);padding:6px 16px;border-radius:999px}.cfr-tabs button.on{background:#3B2A1E;color:#FFF3E6}
+.cfr-room{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px;padding:0 16px 4px;scrollbar-width:none;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+.cfr-room::-webkit-scrollbar{display:none}
+.cfr-z{flex:0 0 86%;scroll-snap-align:center;position:relative;min-height:520px;max-height:72vh;overflow-y:auto;border-radius:26px;padding:56px 14px 18px;display:flex;flex-direction:column;gap:12px;color:#3B2A1E;
+  background:linear-gradient(180deg,#FDFAF5 0%,#F7F0E6 76%,#D9BC9A 76.2%,#CFAF8B 100%);box-shadow:0 10px 30px rgba(88,52,30,.14),inset 0 0 0 1px rgba(120,80,40,.08)}
+html[data-theme="dark"] .cfr-z{background:linear-gradient(180deg,#2E2620 0%,#2A221D 76%,#4A3626 76.2%,#3F2E21 100%);color:#F5E9DD}
+.cfr-z .cf-sec{background:transparent;padding:0;color:inherit}.cfr-z .cf-sh small{color:inherit;opacity:.6}
+.cfr-lamp{position:absolute;top:0;left:22%;width:2px;height:30px;background:#6A4B35}.cfr-lamp::after{content:"";position:absolute;left:-13px;top:28px;width:28px;height:16px;border-radius:14px 14px 3px 3px;background:#3B2A1E;box-shadow:0 14px 26px 6px rgba(255,214,140,.55)}
+.cfr-lamp.r{left:auto;right:22%}
+.cfr-wain{position:sticky;bottom:-18px;margin:auto -14px -18px;height:0}
+.cfr-sig{align-self:center;text-align:center;padding:10px 18px 6px;transform:rotate(-3deg)}.cfr-sig .cf-im{max-width:220px;max-height:110px;mix-blend-mode:multiply}
+html[data-theme="dark"] .cfr-sig .cf-im{mix-blend-mode:normal;filter:invert(1) sepia(.4)}
+.cfr-sig small{display:block;font-size:10px;letter-spacing:.2em;opacity:.55}
+.cfr-shelf{position:absolute;left:14px;right:14px;top:40px;height:8px;border-radius:3px;background:#B8865E;box-shadow:0 4px 0 rgba(0,0,0,.08)}
+.cfr-shelf::before{content:"☕ 🫖 🍯 🌿";position:absolute;bottom:6px;left:10px;font-size:18px;letter-spacing:10px}
+.cfr-bar2{padding-top:72px}
+.cfr-counter{margin-top:auto;position:relative;height:84px;border-radius:12px 12px 6px 6px;background:linear-gradient(180deg,#C99A6E,#A97A52);box-shadow:inset 0 6px 0 #DDB48A}
+.cfr-mach{position:absolute;left:16px;bottom:58px;width:58px;height:62px;border-radius:10px 10px 4px 4px;background:linear-gradient(180deg,#E9E4DE,#BFB7AE);box-shadow:inset 0 -12px 0 #8E857C}
+.cfr-mach::after{content:"";position:absolute;left:22px;bottom:-10px;width:14px;height:12px;border-radius:0 0 6px 6px;background:#fff;box-shadow:0 -3px 0 #8E857C}
+.cfr-case{position:absolute;right:14px;bottom:58px;padding:8px 12px;border-radius:12px 12px 2px 2px;background:linear-gradient(160deg,rgba(255,255,255,.85),rgba(255,255,255,.45));box-shadow:inset 0 0 0 2px rgba(255,255,255,.9),0 4px 10px rgba(0,0,0,.08);font-size:24px;letter-spacing:4px}
+.cfr-win{height:120px;border-radius:60px 60px 8px 8px;border:6px solid #B8865E;background:linear-gradient(180deg,#DCEBF5,#FBE9D4);position:relative;flex:none}
+.cfr-vase{position:absolute;right:16px;bottom:-4px;width:26px;height:34px;border-radius:8px 8px 12px 12px;background:#EFE6DA;box-shadow:inset -4px 0 0 #DCCFBE}
+.cfr-vase::before{content:"🌾";position:absolute;left:-2px;top:-34px;font-size:30px;transform:rotate(-8deg)}
+.cfr-pol{position:relative;right:auto;bottom:auto;align-self:flex-start;width:96px;margin:-30px 0 0 10px;transform:rotate(-5deg)}
+.cfr-radio{align-self:flex-end;display:flex;align-items:center;gap:8px;border:0;border-radius:16px;background:#3B2A1E;color:#FFF3E6;font:inherit;font-size:12.5px;font-weight:700;padding:8px 14px}
+.cfr-table{display:none}
+.cfr-seat .cf-cork{background:linear-gradient(180deg,#E8D1B4,#DCC09C);border-radius:16px;padding:14px;box-shadow:inset 0 0 0 6px #C49A70}
+#cfPad,.fs-pad canvas{touch-action:none}
 
 </style>
 </head>
@@ -5324,7 +5374,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027045158";
+const BUILD="20261027051213";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6663,7 +6713,10 @@ function quotaBar(){
   let b=document.getElementById("tQbar"); if(!b){ b=document.createElement("div"); b.id="tQbar"; b.className="t-qbar"; b.setAttribute("role","status"); document.body.appendChild(b); }
   b.textContent=QUOTA_MSG(fanMax(route().m||Object.keys(MEMBERS)[0])); b.classList.remove("show"); void b.offsetWidth; b.classList.add("show");
   clearTimeout(ui.qbarT); ui.qbarT=setTimeout(()=>b.classList.remove("show"),5200);
+  if(!b._sw){ b._sw=1; let y0=null; b.addEventListener("pointerdown",e=>{ y0=e.clientY; }); b.addEventListener("pointermove",e=>{ if(y0!=null&&e.clientY-y0<-14){ b.classList.remove("show"); y0=null; } }); b.addEventListener("pointerup",()=>{ y0=null; }); }
 }
+/* 提示只屬於這個聊天室：一離開就收掉 */
+window.addEventListener("hashchange",()=>{ const b=document.getElementById("tQbar"); if(b) b.classList.remove("show"); });
 
 /* ===== 示範照片、語音：不見了就重新產生 ===== */
 async function genDemo(id){
@@ -10738,7 +10791,7 @@ function concertAdminHtml(){
 }
 function lsAdminHtml(){
   const gid=ui.lsGid&&groupOf(ui.lsGid)?ui.lsGid:GROUPS[0].id, g=groupOf(gid), has=!!getSticks()[gid], dr=ui.lsDraft, ds=dr&&dr.ds;
-  const c=GRADS[g.g%GRADS.length], sw=[...new Set([ds&&ds.detGlow,c[0],c[1],"#F472B6","#60A5FA","#34D399","#FBBF24","#FFFFFF"].filter(Boolean))];
+  const c=GRADS[g.g%GRADS.length], sw=[...new Set([...((ds&&ds.glows)||[]),ds&&ds.detGlow,c[0],c[1],"#F472B6","#60A5FA","#34D399","#FBBF24","#FFFFFF"].filter(Boolean))];
   return `<section class="card studio ls-admin" id="lsAdmin"><div class="foc-cfg-h"><h3>應援棒 3D 設計</h3><span class="badge">自動辨識</span></div>
     
     <div class="chips wrap">${GROUPS.map(x=>`<button class="chip ${x.id===gid?"on":""}" data-a="lsGroup" data-v="${x.id}">${esc(x.name)}${getSticks()[x.id]?" ✓":""}</button>`).join("")}</div>
@@ -10746,7 +10799,7 @@ function lsAdminHtml(){
     ${ds?`<div class="ls-det"><img src="${ds.cut}" alt="去背結果"><div><b>辨識結果</b><ul>
         <li>✓ 已自動去背${ds.turned?"・圖是橫的，已轉正":""}${ds.flipped?"・已上下翻正":""}</li>
         <li>造型：${ds.v2?`零件拆解立體（${["正面",ds.side&&"側面",ds.back&&"背面",ds.top&&"頂面"].filter(Boolean).join("＋")}${ds.depth?"＋AI 深度":""}）`:ds.side?`三視圖立體重建（照正面＋側面${ds.back?"＋背面":""}雕出來）`:ds.mode==="lathe"?"旋轉立體（左右對稱的燈頭）":"立體造型（愛心、星星這類）"}</li>
-        <li>燈頭：上方 ${Math.round(ds.split*100)}%</li>
+        <li>燈頭：上方 ${Math.round(ds.split*100)}%</li>${ds.dims?`<li>尺寸：全長 ${ds.dims.L} cm${ds.dims.D?`・燈頭 ⌀${ds.dims.D} cm`:""}</li>`:""}
         <li>燈光色：${ds.detGlow?`<i style="background:${ds.detGlow}"></i> 從燈頭抓到的顏色`:"燈頭偏白，先用團色"}</li></ul></div></div>
       <div class="ls-views"><span><img src="${ds.cut}" alt=""><small>正面</small></span>${ds.side?`<span><img src="${ds.side}" alt=""><small>側面</small></span>`:`<label class="ls-vadd">＋ 側面圖<input type="file" id="lsSide" accept="image/*"></label>`}${ds.side?(ds.back?`<span><img src="${ds.back}" alt=""><small>背面</small></span>`:`<label class="ls-vadd">＋ 背面圖<input type="file" id="lsBack" accept="image/*"></label>`):""}</div>
       ${ds.side?"":`<div class="ls-row"><span>造型</span><div class="ls-seg"><button class="${ds.mode==="lathe"?"on":""}" data-a="lsMode" data-v="lathe">旋轉立體</button><button class="${ds.mode==="plate"?"on":""}" data-a="lsMode" data-v="plate">立體造型</button></div></div>`}
@@ -12068,6 +12121,12 @@ function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs")
   const tmp=document.createElement("div"); tmp.innerHTML=viewTieArtist(mid); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
   cur.innerHTML=nw.innerHTML; try{ hydrateMedia(cur); }catch(e){} inp.value=""; inp.dispatchEvent(new Event("input",{bubbles:true}));
   requestAnimationFrame(()=>window.scrollTo(0,document.documentElement.scrollHeight)); return true; }catch(e){ return false; } }
+/* 底部變暗的視窗打開時：後面的頁面不能滑；簽名板、畫布上手指只畫線，畫面不跟著跑
+   （只擋「沒有可以捲的東西」的滑動，視窗裡本來能捲的清單照常能捲；不動任何高度） */
+document.addEventListener("touchmove",e=>{ try{ if(!layer||!layer.firstElementChild||!layer.firstElementChild.getBoundingClientRect().width) return; const t=e.target; if(!(t instanceof Element)) return;
+  if(t.closest("input,textarea,select")) return; if(t.tagName!=="CANVAS"&&!layer.contains(t)) return;
+  for(let el=t; el&&el!==layer; el=el.parentElement){ if(el.tagName==="CANVAS") break; const cs=getComputedStyle(el); if(/(auto|scroll)/.test(cs.overflowY+cs.overflowX)&&(el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1)) return; }
+  e.preventDefault(); }catch(_){} },{passive:false});
 
 /* =========================================================
    主題（照 LINE 主題小舖）：SHOP 裡的「TINT」
@@ -13646,14 +13705,14 @@ const STICK3D=(()=>{
           sh.fragmentShader="uniform vec3 glowC;\nuniform float glowK;\nvarying float vG;\n"+sh.fragmentShader.replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"); };
         out.g.add(new THREE.Mesh(geo,mat)); out.g.visible=false; scene.add(out.g); models.set(key,out); }catch(e){ models.set(key,null); } building.delete(key); }); }
   /* 第二代：拆零件（旋轉體／鼓起來／環／燈頭裡的立體圖案）＋材質（玻璃、金屬、珍珠、塑膠、發光）；掛繩會晃 */
-  function modelParts(ds,key){ Promise.all([lsImg(ds.front||ds.cut),lsImg(ds.side),lsImg(ds.back),lsImg(ds.top),lsImg(ds.depth)]).then(([f,s,b,tp,dp])=>{ try{ if(!f) throw 0;
-        const m=lsPartsMesh(toCanvas(f),s?toCanvas(s):null,b?toCanvas(b):null,tp?toCanvas(tp):null,dp?toCanvas(dp):null,ds.split||.45,ds.pm);
+  function modelParts(ds,key){ Promise.all([lsImg(ds.front||ds.cut),lsImg(ds.side),lsImg(ds.back),lsImg(ds.top),lsImg(ds.depth),lsImg(ds.embImg)]).then(([f,s,b,tp,dp,eb])=>{ try{ if(!f) throw 0;
+        const m=lsPartsMesh(toCanvas(f),s?toCanvas(s):null,b?toCanvas(b):null,tp?toCanvas(tp):null,dp?toCanvas(dp):null,ds.split||.45,ds.pm,eb?toCanvas(eb):null,ds.dims);
         Object.defineProperty(ds,"_parts",{value:m.info,enumerable:false,configurable:true,writable:true});
         const pl=document.getElementById("lsParts"); if(pl&&ui.lsDraft&&ui.lsDraft.ds===ds) pl.innerHTML=lsPartsUI(ds);
         const uni={glowC:{value:new THREE.Color(1,1,1)},glowK:{value:1}}, out={g:new THREE.Group(),headY:m.headY,uni,mat:null};
         const T=c=>{ const t=new THREE.CanvasTexture(lsDelit(c)); t.anisotropy=8; return t; }, J=m.proj, tF=T(m.front), tB=m.back?T(m.back):tF, tS=m.side?T(m.side):tF;
         const PU={tF:{value:tF},tB:{value:tB},tS:{value:tS},pF:{value:new THREE.Vector2(...J.f)},pB:{value:new THREE.Vector2(...J.b)},pS:{value:new THREE.Vector2(...(J.s||[.5,0]))},hasS:{value:J.s?1:0}};
-        const hook=(mat,useT)=>{ mat.onBeforeCompile=sh=>{ sh.uniforms.glowC=uni.glowC; sh.uniforms.glowK=uni.glowK; Object.assign(sh.uniforms,PU);
+        const hook=(mat,useT,gls)=>{ mat.onBeforeCompile=sh=>{ sh.uniforms.glowC=uni.glowC; sh.uniforms.glowK=uni.glowK; Object.assign(sh.uniforms,PU);
           sh.vertexShader="attribute float g;\nvarying float vG;\nvarying vec3 vOP;\nvarying vec3 vON;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvG=g;\nvOP=position;\nvON=normal;");
           sh.fragmentShader="uniform vec3 glowC;\nuniform float glowK;\nvarying float vG;\nvarying vec3 vOP;\nvarying vec3 vON;\nuniform sampler2D tF;\nuniform sampler2D tB;\nuniform sampler2D tS;\nuniform vec2 pF;\nuniform vec2 pB;\nuniform vec2 pS;\nuniform float hasS;\n"
             +sh.fragmentShader.replace("#include <color_fragment>",useT?`#include <color_fragment>
@@ -13661,16 +13720,28 @@ const STICK3D=(()=>{
     vec4 cf=texture2D(tF,vec2(pF.x+pF.y*vOP.x,v)), cb=texture2D(tB,vec2(pB.x+pB.y*vOP.x,v)), cs=texture2D(tS,vec2(pS.x+pS.y*vOP.z,v));
     wf*=cf.a; wb*=cb.a; ws*=cs.a; float t=wf+wb+ws;
     if(t>.02){ vec3 c=(cf.rgb*wf+cb.rgb*wb+cs.rgb*ws)/t; diffuseColor.rgb=pow(c,vec3(2.2)); } }`:"#include <color_fragment>")
-            .replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"); }; return mat; };
+            .replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"+(gls?"\n{ float fr=pow(1.-abs(dot(normalize(normal),normalize(vViewPosition))),2.4); totalEmissiveRadiance+=mix(vec3(1.),glowC,.45)*fr*.85; diffuseColor.a=mix(diffuseColor.a,.9,fr*fr); }":"")); }; return mat; };
         const MAT={plastic:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.34,metalness:0,clearcoat:.6,clearcoatRoughness:.15,envMapIntensity:.9}),1),
           pearl:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.22,metalness:.12,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1.15}),1),
           metal:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.2,metalness:.92,envMapIntensity:1.35}),1),
           glow:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.3,metalness:0,clearcoat:1,envMapIntensity:.8}),1),
-          glass:()=>hook(new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:0,transparent:true,opacity:.2,envMapIntensity:1.8,depthWrite:false}),0),
+          glass:()=>hook(new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:0,transparent:true,opacity:.16,envMapIntensity:1.8,depthWrite:false}),0,1),
           vc:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.25,metalness:.1,clearcoat:1,envMapIntensity:1,side:THREE.DoubleSide}),0)};
         const geoOf=p=>{ const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.BufferAttribute(p.P,3)); geo.setAttribute("color",new THREE.BufferAttribute(p.C,3)); geo.setAttribute("g",new THREE.BufferAttribute(p.G,1)); geo.setIndex(new THREE.BufferAttribute(p.I,1)); geo.computeVertexNormals(); return geo; };
         m.meshes.forEach(p=>{ const geo=geoOf(p), me=new THREE.Mesh(geo,(p.key==="emb"||p.key==="thin"?MAT.vc:MAT[p.mat]||MAT.plastic)()); if(p.mat==="glass"){ me.renderOrder=3; }
-          if(p.swing){ const pv=new THREE.Group(); pv.position.y=p.pivot; geo.translate(0,-p.pivot,0); pv.add(me); out.g.add(pv); out.sw={pv,a:0,va:0,b:0,vb:0}; } else out.g.add(me); });
+          out.g.add(me); });
+        /* 玻璃燈頭裡淡淡的燈光色光暈（看得出玻璃球） */
+        if(m.bulbW){ const hz=new THREE.Mesh(new THREE.SphereGeometry(m.bulbW.R*.93,48,32),new THREE.ShaderMaterial({uniforms:{glowC:uni.glowC,glowK:uni.glowK},transparent:true,depthWrite:false,
+            vertexShader:"varying vec3 vN;varying vec3 vV;void main(){ vN=normalize(normalMatrix*normal); vec4 mv=modelViewMatrix*vec4(position,1.); vV=normalize(-mv.xyz); gl_Position=projectionMatrix*mv; }",
+            fragmentShader:"uniform vec3 glowC;uniform float glowK;varying vec3 vN;varying vec3 vV;void main(){ float f=pow(max(dot(vN,vV),0.),1.4); gl_FragColor=vec4(glowC,f*.3*clamp(glowK,0.,1.4)); }"}));
+          hz.position.y=m.bulbW.y; hz.renderOrder=1; out.g.add(hz); }
+        /* 掛繩：真的繩圈，分上下兩節，會被甩、會垂下來 */
+        if(m.strap){ const S2=m.strap, rr=Math.max(.009,S2.w*.07), a=S2.w*.42, Lh=S2.L/2, rm=new THREE.MeshStandardMaterial({color:new THREE.Color(...S2.color),roughness:.75,metalness:.05});
+          const tube=pts=>new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map(p=>new THREE.Vector3(...p))),24,rr,8,false),rm);
+          const l1=new THREE.Group(); l1.position.y=S2.pivot; l1.add(tube([[-a*.6,0,0],[-a*.85,-Lh*.5,0],[-a,-Lh,0]])); l1.add(tube([[a*.6,0,0],[a*.85,-Lh*.5,0],[a,-Lh,0]]));
+          const l2=new THREE.Group(); l2.position.y=-Lh; l2.add(tube([[-a,0,0],[-a*.9,-Lh*.55,0],[0,-Lh,0],[a*.9,-Lh*.55,0],[a,0,0]]));
+          const bead=new THREE.Mesh(new THREE.SphereGeometry(rr*2.6,16,12),new THREE.MeshPhysicalMaterial({color:new THREE.Color(...S2.color),roughness:.2,clearcoat:1})); bead.position.y=-Lh*1.02; l2.add(bead);
+          l1.add(l2); out.g.add(l1); out.sw=[{pv:l1,a:0,va:0,b:0,vb:0,k:.09,d:.07},{pv:l2,a:0,va:0,b:0,vb:0,k:.06,d:.05}]; }
         if(m.ring){ const r=m.ring, mt=new THREE.MeshPhysicalMaterial({color:new THREE.Color(...r.color),roughness:r.mat==="metal"?.2:.24,metalness:r.mat==="metal"?.9:.15,clearcoat:1,envMapIntensity:1.2,emissive:new THREE.Color(...r.color),emissiveIntensity:r.mat==="glow"?.6:0,transparent:r.mat==="glass",opacity:r.mat==="glass"?.35:1});
           const rg=new THREE.Group(), me=new THREE.Mesh(new THREE.TorusGeometry(r.R,r.tube,16,140),mt); me.rotation.x=Math.PI/2-r.tilt; rg.add(me); rg.position.set(r.x,r.y,0); rg.rotation.z=r.roll; out.g.add(rg); }
         out.g.visible=false; scene.add(out.g); models.set(key,out); }catch(e){ console.warn("ls parts",e); models.set(key,null); } building.delete(key); }); }
@@ -13738,8 +13809,8 @@ const STICK3D=(()=>{
         const g=M.g; g.position.set(0,0,0); g.rotation.set(0,0,0); g.scale.set(1,1,1); g.updateMatrix();
         const m4=new THREE.Matrix4().makeTranslation(st.px,st.py,0).multiply(new THREE.Matrix4().makeScale(st.sc*(M.core?.88:1.05),st.sc*(M.core?.88:1.05),st.sc*(M.core?.88:1.05))).multiply(new THREE.Matrix4().makeTranslation(0,-.8,0)).multiply(new THREE.Matrix4().makeRotationZ(wave)).multiply(new THREE.Matrix4().makeRotationX(swp)).multiply(new THREE.Matrix4().makeTranslation(0,.8,0)).multiply(new THREE.Matrix4().makeRotationX(st.pitch)).multiply(new THREE.Matrix4().makeRotationY(st.yaw));
         g.matrixAutoUpdate=false; g.matrix.copy(m4); g.updateMatrixWorld(true);
-        if(M.sw){ const w=M.sw, lg=new THREE.Vector3(0,-1,0).transformDirection(new THREE.Matrix4().copy(g.matrixWorld).invert()), ta=Math.atan2(lg.x,-lg.y), tb=Math.atan2(-lg.z,-lg.y);   // 掛繩：重力永遠往下，被甩動會晃回來
-          w.va+=(ta-w.a)*.09-w.va*.07; w.vb+=(tb-w.b)*.09-w.vb*.07+(st.vy||0)*.06; w.a=Math.max(-1.5,Math.min(1.5,w.a+w.va)); w.b=Math.max(-1.5,Math.min(1.5,w.b+w.vb)); w.pv.rotation.set(w.b,0,w.a); }
+        if(M.sw) M.sw.forEach(w=>{ const pm=w.pv.parent.matrixWorld, lg=new THREE.Vector3(0,-1,0).transformDirection(new THREE.Matrix4().copy(pm).invert()), ta=Math.atan2(lg.x,-lg.y), tb=Math.atan2(-lg.z,-lg.y);   // 掛繩：重力永遠往下，被甩動會晃回來
+          w.va+=(ta-w.a)*w.k-w.va*w.d; w.vb+=(tb-w.b)*w.k-w.vb*w.d+(st.vy||0)*.05; w.a=Math.max(-1.6,Math.min(1.6,w.a+w.va)); w.b=Math.max(-1.6,Math.min(1.6,w.b+w.vb)); w.pv.rotation.set(w.b,0,w.a); w.pv.updateMatrixWorld(true); });
         cam.aspect=w/h; cam.updateProjectionMatrix();
         R.setViewport(0,RH-h,w,h); R.setScissor(0,RH-h,w,h); R.setScissorTest(true); R.setClearColor(0x000000,0); R.clear(); R.render(scene,cam);
         a.ctx.clearRect(0,0,w,h); a.ctx.drawImage(R.domElement,0,0,w,h,0,0,w,h);
@@ -13826,14 +13897,14 @@ const lsImg=src=>new Promise(res=>{ if(!src){ res(null); return; } const i=newIm
 const toCanvas=im=>{ const c=document.createElement("canvas"); c.width=im.naturalWidth||im.width; c.height=im.naturalHeight||im.height; c.getContext("2d").drawImage(im,0,0); return c; };
 /* ===== 三視圖框選：上傳後先自動猜位置，管理員可以自己拖、調大小、開關 =====
    設計稿上有文字、細節圖、尺寸圖也沒關係，只拿框起來的地方 */
-const LS_FR=[["front","正面","#8843FB"],["side","側面","#0A84FF"],["back","背面","#FF375F"],["top","頂面","#30D158"]];
+const LS_FR=[["front","正面","#8843FB"],["side","側面","#0A84FF"],["back","背面","#FF375F"],["top","頂面","#30D158"],["emb","圖案特寫","#FF9F0A"]];
 function lsFrameOpen(im,only){ const W=im.naturalWidth, H=im.naturalHeight; let A={};
   try{ A=typeof lsSheetDetect==="function"?lsSheetDetect(im):{}; }catch(e){}
   if(!A.front){ let V=[]; try{ V=lsSplitSheet(im).filter(c=>c._r&&c._r.w*c._r.h<W*H*.3); }catch(e){} LS_FR.forEach(([k],i)=>{ const r=V[i]&&V[i]._r; if(r) A[k]={x:Math.max(0,r.x-6),y:Math.max(0,r.y-6),w:Math.min(W,r.w+12),h:Math.min(H,r.h+12)}; }); }
   const def=i=>({x:W*(.04+i*.24),y:H*.05,w:W*.2,h:H*.5}), box={};
   if(only){ const r=A.front||A[only]; LS_FR.forEach(([k],i)=>{ box[k]={...(k===only?(r||{x:W*.1,y:H*.05,w:W*.8,h:H*.9}):def(i)),on:k===only}; }); }
-  else LS_FR.forEach(([k],i)=>{ box[k]={...(A[k]||def(i)),on:i===0||!!A[k]}; });
-  ui.lsFr={im,W,H,box,cur:only||"front",z:1,only}; lsFrameDraw(); }
+  else LS_FR.forEach(([k],i)=>{ box[k]={...(A[k]||def(i%4)),on:i===0||!!A[k]}; });
+  ui.lsFr={im,W,H,box,cur:only||"front",z:1,only,glows:A.glows}; lsFrameDraw(); }
 function lsFrameDraw(){ const f=ui.lsFr; if(!f) return; const pc=(v,t)=>(v/t*100).toFixed(3)+"%";
   setLayer(`<div class="lsf"><header class="lsf-h"><button data-a="lsFrX">取消</button><b>框選視圖</b><button class="ok" data-a="lsFrOk">完成</button></header>
     <nav class="lsf-seg">${LS_FR.filter(([k])=>!f.only||k===f.only).map(([k,l,c])=>`<button class="${f.cur===k?"cur":""} ${f.box[k].on?"on":""}" style="--c:${c}" data-a="lsFrPick" data-v="${k}"><i></i>${l}</button>`).join("")}</nav>
@@ -13861,7 +13932,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     d.ds[f.only]=lsViewURL(c); d.ds.v2=1; d.ds._k=null; lsRerender(); toast("已加上，轉轉看 ✨"); return; }
   if(a==="lsFrOk"){ const fr=lsFrameCut(f,"front"); if(!fr){ toast("正面框裡找不到應援棒，把框調到應援棒上"); return; }
     ui.lsFr=null; layer.innerHTML=""; if(!lsLoad(fr)) return; const d=ui.lsDraft; if(!d) return; const sd=lsFrameCut(f,"side"), bk=lsFrameCut(f,"back"), tp=lsFrameCut(f,"top");
-    d.ds.side=sd?lsViewURL(sd):null; d.ds.back=bk?lsViewURL(bk):null; d.ds.top=tp?lsViewURL(tp):null; d.ds.v2=1; d.ds.front=lsViewURL(fr); d.ds.pm=null; d.ds.depth=null; d.ds._k=null; lsRerender(); lsDepthRun(fr);
+    const eb=lsFrameCut(f,"emb"); d.ds.side=sd?lsViewURL(sd):null; d.ds.back=bk?lsViewURL(bk):null; d.ds.top=tp?lsViewURL(tp):null; d.ds.embImg=eb?lsViewURL(eb):null; d.ds.glows=f.glows||null; d.ds.dims=null; d.ds.v2=1; d.ds.front=lsViewURL(fr); d.ds.pm=null; d.ds.depth=null; d.ds._k=null; lsRerender(); lsDepthRun(fr); lsOcrRun(f.im);
     toast(sd?`用了 ${[fr,sd,bk,tp].filter(Boolean).length} 個視圖做立體 ✨`:"只用正面做；可以再加側面圖"); } });
 
 /* =========================================================
@@ -13942,7 +14013,9 @@ const snStoryCf=(d,uid)=>snActiveStories(d).some(s=>s.uid===uid&&s.cf);
 function snHasStory(d,uid){ return snActiveStories(d).some(s=>s.uid===uid); }
 function snStorySeen(d,uid){ const me=snMeId(), st=snActiveStories(d).filter(s=>s.uid===uid); return st.length&&st.every(s=>((d.seen[me]||{})[s.id])); }
 const snTabs=(p)=>{ const me=snMeId(), un=dmThreads().filter(x=>{ const l=x.t[x.t.length-1]; return l.from!==me&&!l.read; }).length;
-  return `<nav class="sn-nav">${[["home","home"],["reels","reels2"],["dm","dm"],["explore","search"]].map(([k,ic])=>`<button class="${p===k||(k==="dm"&&p==="thread")?"on":""}" data-a="snsGo" data-v="${k}" aria-label="${k}">${si(ic)}${k==="dm"&&un?`<em class="sn-badge">${un}</em>`:""}</button>`).join("")}<button class="${p==="profile"&&!route().id?"on":""}" data-a="snsGo" data-v="profile" aria-label="個人檔案">${snAv(snUser(snMeId()),26,p==="profile"&&!route().id)}</button></nav>`; };
+  /* 跟 App 的導覽列同一套：液態玻璃鏡片、按住左右拖切換 */
+  const K=["home","reels","dm","explore","profile"], cur=p==="thread"?"dm":p==="profile"&&route().id?"":p, i=K.indexOf(cur), f=NAVP.sns; if(i>=0) NAVP.sns=i; const go=i>=0&&f!=null&&f!==i;
+  return `<nav class="nav sn-nav2" aria-label="SNS 選單"><div class="nav-in" style="--n:5">${i>=0?`<span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>`:""}${[["home","home"],["reels","reels2"],["dm","dm"],["explore","search"]].map(([k,ic])=>`<button class="nav-btn ${cur===k?"on":""}" data-a="snsGo" data-v="${k}" aria-label="${k}"><span class="nav-ico">${si(ic)}${k==="dm"&&un?`<span class="nbadge">${un>99?"99+":un}</span>`:""}</span></button>`).join("")}<button class="nav-btn ${cur==="profile"?"on":""}" data-a="snsGo" data-v="profile" aria-label="個人檔案"><span class="nav-ico">${snAv(snUser(snMeId()),26,cur==="profile")}</span></button></div></nav>`; };
 function viewSns(p,id){ snSeed(); const d=snDB();
   const body=p==="explore"?snExplore(d):p==="reels"?snReels(d,id):p==="profile"?snProfile(d,id):p==="new"?snNew(d):p==="dm"?snDmList(d):p==="thread"?snThread(d,id):p==="notif"?snNotif(d):p==="post"?snPostPage(d,id):p==="edit"?snEdit(d):p==="tag"?snTagPage(d,id):p==="cf"?snCfPage(d):p==="sug"?snSugPage(d):p==="scout"?snScoutPage(d):p==="fl"?snFlPage(d,id):snHome(d);
   setTimeout(()=>{ const c=document.querySelector(".sn-thread-b"); if(c) c.scrollTop=c.scrollHeight; },0);
@@ -14002,7 +14075,7 @@ function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=
   return `<header class="sn-top">${mine?`<button class="sn-ib" data-a="snsExit" aria-label="離開">${si("x")}</button><button class="sn-ib" data-a="snCreate" aria-label="新增">${si("plusP")}</button><b class="sn-un c">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><button class="sn-ib" data-a="snMenu" aria-label="選單">${si("menu")}</button>`
       :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`<i class="sn-v">✓</i>`:""}</b><span class="sn-sp"></span>${u.id==="o:scout"&&isAdminAcct()?`<button class="sn-ib" data-a="snsGo" data-v="scout" aria-label="星探設定">${si("menu")}</button>`:isAdminAcct()&&!u.mid?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
     <section class="sn-ph"><span class="sn-pav">${(()=>{ const nt=(d.notes||{})[u.id]; const on=nt&&nt.ts>Date.now()-864e5; return mine?`<button class="sn-pnote ${on?"":"ph"}" data-a="snNote">${on?esc(nt.text):"便利貼…"}</button>`:on&&see?`<span class="sn-pnote">${esc(nt.text)}</span>`:""; })()}<button class="sn-hu" data-a="${see&&snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,86,snHasStory(d,u.id),snStorySeen(d,u.id),snStoryCf(d,u.id))}</button>${mine?`<button class="sn-padd" data-a="snNewP" data-v="story" aria-label="新增限時動態">＋</button>`:""}</span><div class="sn-stat"><span><b>${P.length}</b>貼文</span><button data-a="snFl" data-v="${u.id}" data-k="fol"><b>${fmtW(base+snFollowers(d,u.id))}</b>粉絲</button><button data-a="snFl" data-v="${u.id}" data-k="ing"><b>${snFol(d,u.id).length}</b>追蹤中</button></div></section>
-    <div class="sn-bio"><b>${esc(u.name)}</b>${u.bio?`<p>${esc(u.bio)}</p>`:""}${(()=>{ const sg=(d.prof[u.id]||{}).song; return sg||mine?`<div class="sn-songs">${sg?`<span class="sn-song">${si("reels2","sm")}<span>${esc(sg)}</span></span>`:""}${mine?`<button class="sn-song add" data-a="snsGo" data-v="edit">＋ ${sg?"更換":"新增音樂"}</button>`:""}</div>`:""; })()}</div>
+    <div class="sn-bio"><b>${esc(u.name)}</b>${u.bio?`<p>${esc(u.bio)}</p>`:""}</div>
     <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button><button class="sn-bi" data-a="snsGo" data-v="sug" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":snReqd(d,u.id)?"已要求":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button>`}</div>
     ${mine?snSugHtml(d,"探索用戶"):""}
     ${hls.length||mine?`<div class="sn-hls">${mine?`<button data-a="snHlNew"><span class="sn-hlc add">${si("plusP")}</span><small>新增</small></button>`:""}${hls.map(h=>`<button data-a="snHl" data-v="${u.id}" data-id="${h.id}"><span class="sn-hlc">${snStThumb(d,h.items[0],u.g)}</span><small>${esc(h.title)}</small></button>`).join("")}</div>`:""}
@@ -14013,7 +14086,7 @@ function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=
 function snEdit(d){ const me=snMeId(), u=snUser(me);
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="取消">${si("back")}</button><b>編輯個人檔案</b><span class="sn-sp"></span><button class="sn-next" data-a="snEditOk">完成</button></header>
     <div class="sn-edav"><label>${snAv(u,86)}<span>更換大頭貼照</span><input type="file" accept="image/*" id="snAvIn"></label></div>
-    <div class="sn-edf"><label><span>名稱</span><em>${esc(u.name)}</em></label><label><span>用戶名稱</span><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label><label><span>音樂</span><input id="snSongIn" maxlength="40" placeholder="輸入文字" value="${esc((d.prof[me]||{}).song||"")}" autocomplete="off"></label><label><span>個人簡介</span><textarea id="snBioIn" rows="3" placeholder="輸入文字">${esc(u.bio||"")}</textarea></label></div>
+    <div class="sn-edf"><label><span>名稱</span><em>${esc(u.name)}</em></label><label><span>用戶名稱</span><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label><label><span>個人簡介</span><textarea id="snBioIn" rows="3" placeholder="輸入文字">${esc(u.bio||"")}</textarea></label></div>
     <div class="sn-edf"><button class="sn-prv" data-a="snPrivT"><span>私人帳號</span><i class="sn-sw ${snPriv(d,me)?"on":""}"></i></button></div>`; }
 function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":"post"}), n=dr.media.length;
   return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n?"":"disabled"}>分享</button></header>
@@ -14191,7 +14264,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(i>=0) L.splice(i,1); else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); } (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "snShareMe": { const u=snUser(snMeId()); try{ navigator.clipboard.writeText("@"+u.u).then(()=>toast("已複製你的用戶名稱"),()=>toast("@"+u.u)); }catch(e){ toast("@"+u.u); } break; }
     case "snEditOk": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; const u=((document.getElementById("snUIn")||{}).value||"").trim().toLowerCase().replace(/[^a-z0-9._]/g,""), b=((document.getElementById("snBioIn")||{}).value||"").trim();
-      if(u&&snAllUsers().some(x=>x.id!==me&&x.u===u)){ toast("這個用戶名稱有人用了"); break; } if(u&&nameBlock(u)) break; if(b&&!isAdminAcct()&&banBlock(b)) break; const sg=((document.getElementById("snSongIn")||{}).value||"").trim(); if(sg&&!isAdminAcct()&&banBlock(sg)) break; if(u) pr.u=u; pr.bio=b; if(sg) pr.song=sg; else delete pr.song; snSave(d); navBack(); toast("已更新個人檔案"); break; }
+      if(u&&snAllUsers().some(x=>x.id!==me&&x.u===u)){ toast("這個用戶名稱有人用了"); break; } if(u&&nameBlock(u)) break; if(b&&!isAdminAcct()&&banBlock(b)) break; const sg=((document.getElementById("snSongIn")||{}).value||"").trim(); if(sg&&!isAdminAcct()&&banBlock(sg)) break; if(u) pr.u=u; pr.bio=b; snSave(d); navBack(); toast("已更新個人檔案"); break; }
     case "snMode": { const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:"post"}); dr.mode=t.dataset.v; if(dr.mode==="story") dr.media=dr.media.slice(0,1); render(); break; }
     case "snNewX": ui.snDraft=null; navBack(); break;
     case "snPost": { const dr=ui.snDraft; if(!dr||!dr.media.length||dr.busy) break; const cap=((document.getElementById("snCap")||{}).value||dr.cap||"").trim(); if(cap&&!isAdminAcct()&&banBlock(cap)) break;
@@ -14784,11 +14857,11 @@ const cfFav=(c,k)=>(c.art.favs||[]).includes(k);
 function cfTileSub(){ const o=cfOpenNow(); if(o.length) return `● ${o.map(x=>MEMBERS[x.m].name).slice(0,2).join("、")}${o.length>2?" 等":""} 營業中`; const nx=cfMids().map(m=>({m,w:cfWindow(m)})).filter(x=>x.w).sort((a,b)=>a.w.diff-b.w.diff)[0]; return nx?`${MEMBERS[nx.m].name}・${nx.w.diff-CF_DAYS} 天後開店`:"還沒有藝人生日"; }
 
 /* 店門口：整間小店的門面 */
-function cfFront(c,w){ const m=MEMBERS[c.mid], g=groupOf(m.group), name=m.name, tot=Object.values(c.pts).reduce((s,n)=>s+n,0), cup=c.cups[c.cups.length-1];
+function cfFront(c,w,enter){ const m=MEMBERS[c.mid], g=groupOf(m.group), name=m.name, tot=Object.values(c.pts).reduce((s,n)=>s+n,0), cup=c.cups[c.cups.length-1];
   return `<section class="cf-shop" style="--cc:${grad(m.g||0)}">
     <div class="cf-awn"></div><div class="cf-sign"><small>HAPPY BIRTHDAY</small><b>${esc(name)}</b><em>café</em></div>
     <div class="cf-face"><div class="cf-win">${c.posters.length?c.posters.slice(-3).map(p=>`<span class="cf-wp">${cfImg(p.img)}</span>`).join(""):`<span class="cf-wp ph">🎂</span>`}${c.art.selfie?`<span class="cf-pol">${cfImg(c.art.selfie)}<i>${esc(name)} 到店</i></span>`:""}</div>
-      <div class="cf-door"><span class="cf-open">${w.open?"OPEN":"CLOSED"}</span></div></div>
+      ${enter?`<button class="cf-door" data-a="cfIn" data-v="${c.mid}" aria-label="進店"><span class="cf-open">${w.open?"OPEN":"CLOSED"}</span><em class="cf-push">PUSH</em></button>`:`<div class="cf-door"><span class="cf-open">${w.open?"OPEN":"CLOSED"}</span></div>`}</div>
     <div class="cf-step"></div>
     <div class="cf-stat"><span><b>${fmt(Object.keys(c.visits).length)}</b>位來過</span><span><b>${fmt(tot)}</b>積分應援</span><span><b>${fmt(c.cards.length)}</b>張卡片</span></div>
     <p class="cf-when">${w.open?(w.diff===0?"🎉 今天生日！":w.diff>0?`生日倒數 ${w.diff} 天`:`生日過後第 ${-w.diff} 天`)+`・營業到 ${ymd(+w.day+CF_DAYS*864e5)}`:`${ymd(+w.day-CF_DAYS*864e5)} 開店`}${g&&!g.solo?`・${esc(g.name)}`:""}</p></section>`; }
@@ -14802,9 +14875,7 @@ function viewCafe(mid){ const L=cfOpenNow();
   if(fan&&on&&em&&!c.visits[em]){ c.visits[em]=Date.now(); cfPut(c); }
   const got=fan&&em&&cfGot(c,em);
   const star=(k)=>mine&&on?`<button class="cf-star ${cfFav(c,k)?"on":""}" data-a="cfFav" data-v="${mid}" data-k="${k}" aria-label="藝人最愛">★</button>`:cfFav(c,k)?`<i class="cf-stamp">${esc(MEMBERS[mid].name)}<br>最愛</i>`:"";
-  return `<main class="page cf">${cfFront(c,w)}
-    ${A.at?`<section class="cf-art"><div class="cf-arth">✨ ${esc(MEMBERS[mid].name)} 到店了・${ago(A.at)}</div>
-      ${A.sig?`<div class="cf-sigw">${cfImg(A.sig,"sig")}</div>`:""}${A.voice?`<button class="cf-voice" data-a="cfVoice" data-v="${A.voice}">▶ 聽 ${esc(MEMBERS[mid].name)} 的語音感謝</button>`:""}</section>`:""}
+  if(!(ui.cfIn===mid)) return `<main class="page cf">${cfFront(c,w,1)}
     ${mine?`<section class="cf-sec cf-me"><div class="cf-sh"><b>到店</b><small>想做哪個就做哪個</small></div><div class="cf-acts">
       <button data-a="cfSign" data-v="${mid}">✍️<span>${A.sig?"重新簽名":"牆上簽名"}</span></button>
       <label>🎙️<span>${A.voice?"換語音":"語音感謝"}</span><input type="file" accept="audio/*" id="cfVoiceIn" data-v="${mid}"></label>
@@ -14812,11 +14883,32 @@ function viewCafe(mid){ const L=cfOpenNow();
       ${on?"":`<p class="cf-hint">開店期間才能到店</p>`}</section>`:""}
     ${fan&&on?`<section class="cf-sec cf-gift"><div class="cf-sh"><b>生日應援</b><small>你有 ${fmt(points())} 積分</small></div><div class="cf-gb">${CF_GIFT.map(n=>`<button data-a="cfGift" data-v="${mid}" data-n="${n}">☕ ${fmt(n)}</button>`).join("")}</div>
       ${got?`<div class="cf-pc"><span class="cf-pcc" style="--cc:${grad(MEMBERS[mid].g||0)}">${A.selfie?cfImg(A.selfie):`<b>${esc(MEMBERS[mid].name)}</b>`}<i>BIRTHDAY<br>CAFÉ ${c.y}</i></span><p><b>生日限定到店小卡</b><small>謝謝你的應援 💜</small></p></div>`:`<p class="cf-hint">捐積分或幫忙佈置，就能拿到生日限定到店小卡</p>`}</section>`:""}
+  </main>`;
+  const sig=A.sig?`<div class="cfr-sig">${cfImg(A.sig,"sig")}<small>${esc(MEMBERS[mid].name)}・${c.y==="demo"?"":c.y}</small></div>`:"";
+  return `<main class="page cf cf-inside" style="--cc:${grad(MEMBERS[mid].g||0)}">
+    <div class="cfr-bar"><button data-a="cfOut" data-v="${mid}" aria-label="回到門口">${I.back}</button><b>${esc(MEMBERS[mid].name)} café</b><span>${A.at?`✨ ${esc(MEMBERS[mid].name)} 來過了`:""}</span></div>
+    <nav class="cfr-tabs">${[["wall","牆面"],["bar","吧台"],["seat","窗邊"]].map(([k,l],i)=>`<button class="${i?"":"on"}" data-a="cfZone" data-v="${k}">${l}</button>`).join("")}</nav>
+    <div class="cfr-room" id="cfRoom">
+      <section class="cfr-z cfr-wall" data-z="wall"><i class="cfr-lamp"></i><i class="cfr-lamp r"></i>${sig}
     ${cfSec("海報牆",`${c.posters.length} 張`,`<div class="cf-wall">${c.posters.slice().reverse().map((p,i)=>`<figure class="cf-pst" style="--r:${(strHash(p.id)%7)-3}deg">${cfImg(p.img)}${star("p:"+p.id)}<figcaption>${esc(p.name||"")}</figcaption></figure>`).join("")||`<p class="cf-hint">還沒有海報</p>`}</div>`,fan&&on?`<label class="cf-add">＋ 貼海報<input type="file" accept="image/*" id="cfPoster" data-v="${mid}"></label>`:"")}
-    ${cfSec("杯套",`${c.cups.length} 款`,`<div class="cf-cups">${c.cups.slice().reverse().map(x=>`<div class="cf-cup"><span class="cf-lid"></span><span class="cf-sleeve">${cfImg(x.img)}</span><span class="cf-body"></span>${star("c:"+x.id)}<small>${esc(x.name||"")}</small></div>`).join("")||`<p class="cf-hint">還沒有杯套</p>`}</div>`,fan&&on?`<label class="cf-add">＋ 做杯套<input type="file" accept="image/*" id="cfCup" data-v="${mid}"></label>`:"")}
+      <i class="cfr-wain"></i></section>
+      <section class="cfr-z cfr-bar2" data-z="bar"><i class="cfr-shelf"></i>
     ${cfSec("菜單","",`<div class="cf-board"><b>BIRTHDAY MENU</b>${c.menu.map(x=>`<div class="cf-mi"><span>${esc(x.name)}</span><i></i><small>${esc(x.by_n||"")}</small>${star("m:"+x.id)}</div>`).join("")||`<p>— 還沒有特調 —</p>`}</div>`,fan&&on?`<button class="cf-add" data-a="cfMenu" data-v="${mid}">＋ 生日特調</button>`:"")}
+    ${cfSec("杯套",`${c.cups.length} 款`,`<div class="cf-cups">${c.cups.slice().reverse().map(x=>`<div class="cf-cup"><span class="cf-lid"></span><span class="cf-sleeve">${cfImg(x.img)}</span><span class="cf-body"></span>${star("c:"+x.id)}<small>${esc(x.name||"")}</small></div>`).join("")||`<p class="cf-hint">還沒有杯套</p>`}</div>`,fan&&on?`<label class="cf-add">＋ 做杯套<input type="file" accept="image/*" id="cfCup" data-v="${mid}"></label>`:"")}
+        <div class="cfr-counter"><i class="cfr-mach"></i><span class="cfr-case">🎂${c.posters.length+c.cards.length>5?"🍰":""}🧁</span></div></section>
+      <section class="cfr-z cfr-seat" data-z="seat"><div class="cfr-win"><i class="cfr-vase"></i></div>
+        ${A.selfie?`<span class="cf-pol cfr-pol">${cfImg(A.selfie)}<i>${esc(MEMBERS[mid].name)}</i></span>`:""}${A.voice?`<button class="cfr-radio" data-a="cfVoice" data-v="${A.voice}">📻<span>聽 ${esc(MEMBERS[mid].name)} 的語音</span></button>`:""}
     ${cfSec("留言板",`${c.cards.length} 張`,`<div class="cf-cork">${c.cards.slice().reverse().map(x=>`<div class="cf-note" style="--r:${(strHash(x.id)%9)-4}deg;--nc:${["#FFF3B0","#FFD6E7","#D7F0FF","#E2FFD9","#EBDDFF"][strHash(x.id)%5]}"><p>${fan&&x.by===em?esc(x.text):trT("cf:"+x.id,x.text,"","span")}</p><small>— ${esc(x.name||"")}</small>${star("n:"+x.id)}
         ${x.reply?`<div class="cf-rep"><b>${esc(MEMBERS[mid].name)}</b> ${fan?trT("cfr:"+x.id,x.reply,"","span"):esc(x.reply)}</div>`:mine&&on?`<button class="cf-rb" data-a="cfReply" data-v="${mid}" data-k="${x.id}">回覆</button>`:""}</div>`).join("")||`<p class="cf-hint">還沒有留言卡</p>`}</div>`,fan&&on?`<button class="cf-add" data-a="cfCard" data-v="${mid}">＋ 寫卡片</button>`:"")}
+        <i class="cfr-table"></i></section>
+    </div>
+    ${mine?`<section class="cf-sec cf-me"><div class="cf-sh"><b>到店</b><small>想做哪個就做哪個</small></div><div class="cf-acts">
+      <button data-a="cfSign" data-v="${mid}">✍️<span>${A.sig?"重新簽名":"牆上簽名"}</span></button>
+      <label>🎙️<span>${A.voice?"換語音":"語音感謝"}</span><input type="file" accept="audio/*" id="cfVoiceIn" data-v="${mid}"></label>
+      <label>📸<span>${A.selfie?"換自拍":"到店自拍"}</span><input type="file" accept="image/*" id="cfSelfie" data-v="${mid}"></label></div>
+      ${on?"":`<p class="cf-hint">開店期間才能到店</p>`}</section>`:""}
+    ${fan&&on?`<section class="cf-sec cf-gift"><div class="cf-sh"><b>生日應援</b><small>你有 ${fmt(points())} 積分</small></div><div class="cf-gb">${CF_GIFT.map(n=>`<button data-a="cfGift" data-v="${mid}" data-n="${n}">☕ ${fmt(n)}</button>`).join("")}</div>
+      ${got?`<div class="cf-pc"><span class="cf-pcc" style="--cc:${grad(MEMBERS[mid].g||0)}">${A.selfie?cfImg(A.selfie):`<b>${esc(MEMBERS[mid].name)}</b>`}<i>BIRTHDAY<br>CAFÉ ${c.y}</i></span><p><b>生日限定到店小卡</b><small>謝謝你的應援 💜</small></p></div>`:`<p class="cf-hint">捐積分或幫忙佈置，就能拿到生日限定到店小卡</p>`}</section>`:""}
   </main>`; }
 /* 簽名板 */
 function cfSignPad(mid){ setLayer(`<div class="fs-pad-w cf-padw" role="dialog" aria-label="簽名"><div class="fs-pad"><b>在咖啡廳的牆上簽名</b><div class="cf-padc"><canvas id="cfPad" width="600" height="360"></canvas></div><div class="t-mb mrow"><button class="t-mbtn" data-a="cfPadClr">重簽</button><button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfPadOk" data-v="${mid}">完成</button></div></div></div>`,"cfpad");
@@ -14831,7 +14923,10 @@ const cfCur=mid=>{ const w=cfWindow(mid); return w?cfGet(mid,w.y):null; };
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^cf[A-Z]/.test(a)) return;
   const mid=t.dataset.v, rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
   switch(a){
-    case "cfGo": location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
+    case "cfIn": { const d=t.closest(".cf-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; render(); window.scrollTo(0,0); },420); break; }
+    case "cfOut": ui.cfIn=null; render(); window.scrollTo(0,0); break;
+    case "cfZone": { const r=document.getElementById("cfRoom"), z=r&&r.querySelector(`[data-z="${t.dataset.v}"]`); if(z) r.scrollTo({left:z.offsetLeft-r.offsetLeft,behavior:"smooth"}); break; }
+    case "cfGo": ui.cfIn=null; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
     case "cfGift": { const n=+t.dataset.n, c=cfCur(mid), em=cfMe(); if(!c||!em) break; if(points()<n){ toast("積分不夠，先補充積分吧"); break; }
       ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); rr(); toast("生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
     case "cfMenu": tieModal("生日特調",`<input id="cfMenuIn" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfMenuOk" data-v="${mid}">加到菜單</button>`,"row"); setTimeout(()=>document.getElementById("cfMenuIn")?.focus(),200); break;
@@ -14853,6 +14948,8 @@ document.addEventListener("change",async e=>{ const id=e.target.id; if(!["cfPost
     if(id==="cfVoiceIn"){ if(f.size>15*1024*1024){ toast("語音檔太大了"); return; } const vid="cfv"+Date.now().toString(36); await MDB.put(vid,f.slice(0,f.size,f.type||"audio/mp4")); c.art.voice=vid; cfArrive(c); }
     else { const r=await cfUp(f,id==="cfSelfie"?"cfsl":"cfp"); if(id==="cfSelfie"){ c.art.selfie=r.id; cfArrive(c); } else (id==="cfPoster"?c.posters:c.cups).push({id:"x"+Date.now().toString(36),img:r.id,by:cfMe(),name:ME.name,ts:Date.now()}); }
     c.posters=c.posters.slice(-60); c.cups=c.cups.slice(-30); cfPut(c); render(); toast("好了 ✨"); }catch(err){ toast("這個檔案讀不出來"); } });
+/* 店內左右滑：上面的分頁跟著亮 */
+document.addEventListener("scroll",e=>{ const r=e.target; if(!r||r.id!=="cfRoom") return; const i=Math.round(r.scrollLeft/Math.max(1,r.clientWidth*.86)); document.querySelectorAll(".cfr-tabs button").forEach((b,k)=>b.classList.toggle("on",k===i)); },true);
 
 /* =========================================================
    二代綜藝（復古風）
@@ -15127,6 +15224,14 @@ function lsSheetDetect(img){ let W=img.naturalWidth||img.width, H=img.naturalHei
   if(best[0]) out.front=box(best[0]); if(best[1]) out.side=box(best[1]); if(best[2]) out.back=box(best[2]);
   /* 頂面：同一排上半部、接近圓形、寬度跟燈頭差不多 */
   if(best[0]){ const r=best[0], used=new Set(best), headW=r.w; const tp=G.filter(g=>!used.has(g)&&g.asp>.7&&g.asp<1.4&&g.w>headW*.5&&g.w<headW*1.6&&g.y0>=r.y0-h*.05&&g.y1<=r.y0+r.h*.6&&g.fill>.45&&g.fill<.9).sort((p,q)=>q.a-p.a)[0]; if(tp) out.top=box(tp); }
+  /* 發光照：暗暗的方形照片，裡面最亮、最鮮豔的顏色就是那一種燈光色 */
+  const glows=[]; G.filter(g=>g.fill>.86&&g.w>w*.05&&g.h>h*.05&&!best.includes(g)).forEach(g=>{ let L=0,n=0; const bins={};
+    for(let y=g.y0;y<=g.y1;y+=2) for(let x=g.x0;x<=g.x1;x+=2){ const i=y*w+x, r=d[i*4],gg=d[i*4+1],b=d[i*4+2], mx=Math.max(r,gg,b), mn=Math.min(r,gg,b); L+=mx; n++; if(mx<140||(mx-mn)/mx<.4) continue;
+      let hh=0; if(mx===r) hh=((gg-b)/(mx-mn)+6)%6; else if(mx===gg) hh=(b-r)/(mx-mn)+2; else hh=(r-gg)/(mx-mn)+4; const k2=Math.floor(hh*4)%24, B=bins[k2]||(bins[k2]={n:0,r:0,g:0,b:0}); B.n++; B.r+=r; B.g+=gg; B.b+=b; }
+    if(!n||L/n>150) return; const top=Object.values(bins).sort((p,q)=>q.n-p.n)[0]; if(!top||top.n<20) return;
+    const hex="#"+[top.r,top.g,top.b].map(v=>Math.round(Math.min(255,v/top.n*1.08)).toString(16).padStart(2,"0")).join("");
+    const near=glows.some(x=>{ const a=parseInt(x.slice(1),16), c=parseInt(hex.slice(1),16); return Math.abs((a>>16)-(c>>16))+Math.abs(((a>>8)&255)-((c>>8)&255))+Math.abs((a&255)-(c&255))<70; }); if(!near) glows.push(hex); });
+  if(glows.length) out.glows=glows.slice(0,8);
   return out; }
 
 /* ===== 2. 拆零件做 3D ===== */
@@ -15137,7 +15242,7 @@ const lsHsl=([r,g,b])=>{ r/=255; g/=255; b/=255; const mx=Math.max(r,g,b), mn=Ma
 function lsSample(V,x,y){ const xx=Math.max(0,Math.min(V.w-1,Math.round(x))), yy=Math.max(0,Math.min(V.h-1,Math.round(y))), q=(yy*V.w+xx)*4; return V.d[q+3]>40?[V.d[q]/255,V.d[q+1]/255,V.d[q+2]/255]:null; }
 /* 零件材質：自動判斷，管理員可以在零件清單點一下改 */
 const LS_MATS=["glass","metal","pearl","plastic","glow","off"], LS_MATN={glass:"玻璃",metal:"金屬",pearl:"珍珠",plastic:"塑膠",glow:"發光",off:"隱藏"};
-function lsPartsMesh(front,side,back,top,depth,split,pm){ pm=pm||{};
+function lsPartsMesh(front,side,back,top,depth,split,pm,embC,dims){ pm=pm||{};
   const NY=320, F=lsRead(front,NY), S=side?lsRead(side,NY):null, B=back?lsRead(back,NY):null, D=depth?lsRead(depth,NY):null, FR=lsRows(F), SR=S?lsRows(S):null, BR=B?lsRows(B):null;
   const sc=2.6/NY, Y=y=>1.3-y*sc, headEnd=Math.round(NY*(split||.45)), W=F.w;
   const med=a=>{ const b=a.slice().sort((p,q)=>p-q); return b[b.length>>1]; };
@@ -15171,7 +15276,10 @@ function lsPartsMesh(front,side,back,top,depth,split,pm){ pm=pm||{};
     p.mat=pm[p.key]||p.auto; });
   /* 燈泡用圓／橢圓來對：環、裝飾黏在球邊時，把它們從球身分出來 */
   if(bulb){ const cy=(bulb.y0+bulb.y1)/2, ry=(bulb.y1-bulb.y0)/2, mid=[]; for(let y=bulb.y0;y<bulb.y1;y++){ const u=(y+.5-cy)/ry; if(Math.abs(u)<.75&&core[y]) mid.push(core[y]/Math.sqrt(1-u*u)); } mid.sort((a,b)=>a-b); const Rb=mid[Math.floor(mid.length*.2)]||core[Math.round(cy)];
-    bulb.fit=y=>Rb*Math.sqrt(Math.max(0,1-((y+.5-cy)/ry)**2)); for(let y=bulb.y0;y<bulb.y1;y++){ const f=bulb.fit(y); if(core[y]>f*1.03) core[y]=Math.max(.5,f); } if(window.__dbg) window.__rb=[Rb,ry,cy]; }
+    bulb.fit=y=>Rb*Math.sqrt(Math.max(0,1-((y+.5-cy)/ry)**2)); for(let y=bulb.y0;y<bulb.y1;y++){ const f=bulb.fit(y); if(core[y]>f*1.03) core[y]=Math.max(.5,f); }
+    /* 燈泡要正圓：上下比左右長的話，用左右的半徑做球（底部貼著底座），上面的裝飾一起往下移 */
+    bulb.Rb=Rb; if(ry>Rb*1.04){ const c2=bulb.y1-Rb, top=Math.round(c2-Rb), dy=top-bulb.y0; bulb.sph={c:c2,R:Rb}; parts.forEach(q=>{ if(q.y1<=bulb.y0) q.dy=dy; }); bulb.y0=Math.max(bulb.y0,top); } }
+  if(bulb&&dims&&dims.L&&dims.D){ const want=dims.D/dims.L*(parts.reduce((s,q)=>Math.max(s,q.y1),0)-parts.reduce((s,q)=>Math.min(s,q.y0),NY)), k=Math.max(.8,Math.min(1.25,want/(2*bulb.Rb))); if(Math.abs(k-1)>.03) bulb.k=k; }
   const meshes=[], info=[]; const glowOf=p=>p.mat==="glow"?1:p.mat==="glass"?.15:p.head?.6:0;
   const colorAt=(x,y,z,nx,nz)=>{ const wf=Math.max(0,nz), wb=Math.max(0,-nz), ws=Math.abs(nx); let c=[0,0,0], t=0; const add=(cc,w)=>{ if(cc&&w>0){ c[0]+=cc[0]*w; c[1]+=cc[1]*w; c[2]+=cc[2]*w; t+=w; } };
     add(lsSample(F,CX+x/sc,y),wf+.0001); if(B) add(lsSample(B,BX-x/sc,y),wb); else add(lsSample(F,CX-x/sc,y),wb*.9); if(S) add(lsSample(S,SX-z/sc,y),ws);
@@ -15183,20 +15291,23 @@ function lsPartsMesh(front,side,back,top,depth,split,pm){ pm=pm||{};
     for(let y=h-1;y>=0;y--) for(let x=w-1;x>=0;x--){ const i=y*w+x; if(!dist[i]) continue; let v=Math.min(x<w-1?dist[i+1]+1:1,y<h-1?dist[i+w]+1:1); dist[i]=Math.min(dist[i],v); }
     let mx=1; dist.forEach(v=>{ if(v>mx) mx=v; }); const P=[],C=[],G=[],I=[], idx=new Int32Array(w*h*2).fill(-1);
     for(const s of [0,1]) for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; if(!dist[i]) continue; let z=thick(x+x0,y+y0)*Math.sqrt(dist[i]/mx); if(D&&o.depth){ const dd=lsSample(D,(x+x0)*D.w/W,y+y0); if(dd) z*=.6+.8*dd[0]; }
-      idx[s*w*h+i]=P.length/3; P.push((x+x0-CX)*sc+(o.dx||0),Y(y+y0),(s?-1:1)*Math.max(.004,z)+(o.dz||0)); C.push(...(o.col?o.col(x+x0,y+y0):colorAt((x+x0-CX)*sc,y+y0,0,0,s?-1:1))); G.push(o.g); }
+      idx[s*w*h+i]=P.length/3; P.push(((x+x0-CX)*sc+(o.dx||0))*(o.kx||1),Y(y+y0+(o.dy||0)),(s?-1:1)*Math.max(.004,z)+(o.dz||0)); C.push(...(o.col?o.col(x+x0,y+y0):colorAt((x+x0-CX)*sc,y+y0,0,0,s?-1:1))); G.push(o.g); }
     const at=(s,y,x)=>x<0||x>=w||y<0||y>=h?-1:idx[s*w*h+y*w+x];
     for(const s of [0,1]) for(let y=0;y<h-1;y++) for(let x=0;x<w-1;x++){ const a=at(s,y,x), b=at(s,y,x+1), c=at(s,y+1,x), d=at(s,y+1,x+1); if(a<0||b<0||c<0||d<0) continue; if(s===0) I.push(a,c,b,b,c,d); else I.push(a,b,c,b,d,c); }
     /* 前後兩面在邊緣接起來 */
     for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const a=at(0,y,x); if(a<0) continue; [[1,0],[0,1]].forEach(([dx,dy])=>{ const b=at(0,y+dy,x+dx); if(b<0) return; const edge=at(0,y-dx,x-dy)<0||at(0,y+dx,x+dy)<0; if(!edge) return; const a2=at(1,y,x), b2=at(1,y+dy,x+dx); I.push(a,a2,b,b,a2,b2); }); }
     return {P:new Float32Array(P),C:new Float32Array(C),G:new Float32Array(G),I:new Uint32Array(I)}; }
-  parts.forEach(p=>{ const g=glowOf(p), o={key:p.key,label:p.label,mat:p.mat,auto:p.auto,head:p.head,swing:p.swing,pivot:p.swing?Y(p.y0):0};
+  let strap=null;
+  parts.forEach(p=>{ const g=glowOf(p), o={key:p.key,label:p.label,mat:p.mat,auto:p.auto,head:p.head,dy:p.dy||0}, Yp=y=>Y(y+(p.dy||0));
+    /* 掛繩：不做成實心，改成真的繩圈（在 3D 那邊做，會晃） */
+    if(p.swing){ info.push({key:p.key,label:p.label,mat:p.mat,auto:p.auto}); if(p.mat!=="off") strap={pivot:Y(p.y0),L:(p.y1-p.y0)*sc,w:Math.max(.05,Math.min(.22,p.avgF*2*sc)),color:p.mc.map(v=>Math.pow(v/255,2.2)),mat:p.mat}; return; }
     if(p.lathe){ const P=[],C=[],G=[],I=[], SEG=72;
-      for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y), rx=Math.max(.0001,core[yy]*sc), rz=Math.max(.0001,(score&&score[yy]?score[yy]:core[yy])*sc);
-        for(let k=0;k<=SEG;k++){ const a=k/SEG*Math.PI*2, sx=Math.sin(a), cz=Math.cos(a); P.push(rx*sx,Y(y),rz*cz); C.push(...colorAt(rx*sx,yy,rz*cz,sx,cz)); G.push(g); } }
+      for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y), sp=p===bulb&&bulb.sph, kk=p===bulb&&bulb.k||1, rS=sp?sp.R*Math.sqrt(Math.max(0,1-((y-sp.c)/sp.R)**2)):0, rx=Math.max(.0001,(sp?rS:core[yy])*sc*kk), rz=Math.max(.0001,(sp?rS:(score&&score[yy]?score[yy]:core[yy]))*sc*kk);
+        for(let k=0;k<=SEG;k++){ const a=k/SEG*Math.PI*2, sx=Math.sin(a), cz=Math.cos(a); P.push(rx*sx,Yp(y),rz*cz); C.push(...colorAt(rx*sx,yy,rz*cz,sx,cz)); G.push(g); } }
       const rowN=SEG+1; for(let j=0;j<p.y1-p.y0;j++) for(let k=0;k<SEG;k++){ const a=j*rowN+k, b=a+rowN; I.push(a,b,a+1,b,b+1,a+1); }
-      [[p.y0,1],[p.y1,-1]].forEach(([y,dir])=>{ const c0=P.length/3; P.push(0,Y(y),0); C.push(...colorAt(0,Math.min(NY-1,y),.01,0,1)); G.push(g); const base=(y===p.y0?0:(p.y1-p.y0)*rowN); for(let k=0;k<SEG;k++) dir>0?I.push(c0,base+k+1,base+k):I.push(c0,base+k,base+k+1); });
+      [[p.y0,1],[p.y1,-1]].forEach(([y,dir])=>{ const c0=P.length/3; P.push(0,Yp(y),0); C.push(...colorAt(0,Math.min(NY-1,y),.01,0,1)); G.push(g); const base=(y===p.y0?0:(p.y1-p.y0)*rowN); for(let k=0;k<SEG;k++) dir>0?I.push(c0,base+k+1,base+k):I.push(c0,base+k,base+k+1); });
       push(o,{...o,P:new Float32Array(P),C:new Float32Array(C),G:new Float32Array(G),I:new Uint32Array(I)}); }
-    else { const th=(x,y)=>(score&&score[y]?score[y]:Math.max(2,(FR[y]?FR[y].w:4)*.22))*sc; push(o,{...o,...puff((x,y)=>y>=p.y0&&y<p.y1&&F.d[(y*W+x)*4+3]>=128,0,W,p.y0,p.y1,th,{g,depth:1})}); } });
+    else { const th=(x,y)=>(score&&score[y]?score[y]:Math.max(2,(FR[y]?FR[y].w:4)*.22))*sc; push(o,{...o,...puff((x,y)=>y>=p.y0&&y<p.y1&&F.d[(y*W+x)*4+3]>=128,0,W,p.y0,p.y1,th,{g,depth:1,dy:p.dy||0})}); } });
   /* 燈頭外面多出來的（環、翅膀、吊飾） */
   const isExtra=(x,y)=>{ if(F.d[(y*W+x)*4+3]<128) return false; const p=parts.find(q=>y>=q.y0&&y<q.y1); return !!(p&&p.lathe&&Math.abs(x-CX)>core[y]+2.5); };
   let ring=null;
@@ -15209,8 +15320,12 @@ function lsPartsMesh(front,side,back,top,depth,split,pm){ pm=pm||{};
   { const inRing=y=>ring&&bulb&&y>=bulb.y0&&y<bulb.y1, any=[]; for(let y=0;y<NY;y++) for(let x=0;x<W;x++) if(isExtra(x,y)&&!inRing(y)) any.push(1);
     if(any.length>12){ const o={key:"thin",label:"外側裝飾",auto:"pearl",mat:pm.thin||"pearl"}; push(o,{...o,...puff((x,y)=>isExtra(x,y)&&!inRing(y),0,W,0,NY,()=>.03,{g:0})}); } }
   /* 玻璃燈頭裡的圖案：挖出有顏色的部分，做成立體的小物件放進玻璃裡，自己會發光 */
-  let emb=null;
-  if(bulb&&bulb.mat==="glass"){ const cy=Math.round((bulb.y0+bulb.y1)/2), br=core[cy], hsAt=(x,y)=>{ const q=(y*W+x)*4; return lsHsl([F.d[q],F.d[q+1],F.d[q+2]]); };
+  let emb=null; if(ring&&bulb&&bulb.k){ ring.R*=bulb.k; }
+  /* 有框「燈頭圖案特寫」：直接用特寫圖（清楚很多） */
+  if(embC&&bulb&&bulb.mat==="glass"&&pm.emb!=="off"){ const Rb=bulb.Rb*(bulb.k||1), NE=Math.max(16,Math.round(Rb*1.44*Math.min(1,embC.height/embC.width))), E=lsRead(embC,NE), cyb=bulb.sph?bulb.sph.c:(bulb.y0+bulb.y1)/2;
+    const o={key:"emb",label:"燈頭裡的圖案",auto:"glow",mat:pm.emb||"glow"}; info.push({key:"emb",label:o.label,mat:o.mat,auto:"glow"});
+    emb={...o,...puff((x,y)=>x>=0&&x<E.w&&y>=0&&y<E.h&&E.d[(y*E.w+x)*4+3]>=128,0,E.w,0,E.h,()=>Rb*sc*.2,{g:o.mat==="glow"?.5:.15,dx:(CX-E.w/2)*sc,dy:cyb-E.h/2,col:(x,y)=>{ const q=(y*E.w+x)*4, c=[0,1,2].map(i=>E.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.4)),2.2)); }})}; }
+  else if(bulb&&bulb.mat==="glass"){ const cy=Math.round((bulb.y0+bulb.y1)/2), br=core[cy], hsAt=(x,y)=>{ const q=(y*W+x)*4; return lsHsl([F.d[q],F.d[q+1],F.d[q+2]]); };
     let ls=0,n=0; for(let y=bulb.y0;y<bulb.y1;y++) for(let x=Math.round(CX-br);x<CX+br;x++){ if(F.d[(y*W+x)*4+3]<128) continue; ls+=hsAt(x,y).l; n++; } const ml=n?ls/n:.8;
     const ry=(bulb.y1-bulb.y0)/2, inC=(x,y)=>((x-CX)/(br*.86))**2+((y-cy)/(ry*.86))**2<1, mk=(x,y)=>{ if(!inC(x,y)||F.d[(y*W+x)*4+3]<128) return false; const h=hsAt(x,y); return h.s>.2&&h.l<ml+.02||h.l<ml-.14; };
     /* 只留大塊的（把反光、雜點去掉），再把小洞補起來 */
@@ -15224,10 +15339,10 @@ function lsPartsMesh(front,side,back,top,depth,split,pm){ pm=pm||{};
     const mk2=(x,y)=>{ const i=(y-bulb.y0)*bw+(x-bx0); return x>=bx0&&x<bx0+bw&&y>=bulb.y0&&y<bulb.y1&&!out[i]&&inC(x,y); };
     let cnt=0; for(let i=0;i<bw*bh;i++) if(lab[i]&&keep[lab[i]]) cnt++;
     if(cnt>40){ const o={key:"emb",label:"燈頭裡的圖案",auto:"glow",mat:pm.emb||"glow"}; info.push({key:"emb",label:o.label,mat:o.mat,auto:"glow"});
-      if(o.mat!=="off"){ const th=()=>br*sc*.22; emb={...o,...puff(mk2,Math.max(0,Math.round(CX-br)),Math.min(W,Math.round(CX+br)),bulb.y0,bulb.y1,th,{g:o.mat==="glow"?.5:.15,col:(x,y)=>{ const q=(y*W+x)*4, c=[0,1,2].map(i=>F.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.9-.06)),2.2)); }})}; } } }
+      if(o.mat!=="off"){ const th=()=>br*sc*.22; emb={...o,...puff(mk2,Math.max(0,Math.round(CX-br)),Math.min(W,Math.round(CX+br)),bulb.y0,bulb.y1,th,{g:o.mat==="glow"?.5:.15,kx:bulb.k||1,col:(x,y)=>{ const q=(y*W+x)*4, c=[0,1,2].map(i=>F.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.9-.06)),2.2)); }})}; } } }
   if(emb) meshes.push(emb);
   const proj={f:[CX/F.w,1/(sc*F.w)],b:B?[BX/B.w,-1/(sc*B.w)]:[CX/F.w,-1/(sc*F.w)],s:S?[SX/S.w,-1/(sc*S.w)]:null};
-  return {meshes,ring,info,headY:bulb?Y(Math.round((bulb.y0+bulb.y1)/2)):Y(Math.round(headEnd/2)),front,side,back,proj}; }
+  return {meshes,ring,strap,info,bulbW:bulb&&bulb.mat==="glass"?{R:bulb.Rb*sc*(bulb.k||1),y:bulb.sph?Y(bulb.sph.c):Y((bulb.y0+bulb.y1)/2)}:null,headY:bulb?Y(Math.round((bulb.y0+bulb.y1)/2)):Y(Math.round(headEnd/2)),front,side,back,proj}; }
 /* 去掉設計稿上「畫好的光影」：大面積的明暗拉平，只留圖案細節，光影交給 3D */
 function lsDelit(c){ try{ const w=c.width,h=c.height, x=c.getContext("2d",{willReadFrequently:true}), d=x.getImageData(0,0,w,h), q=d.data;
     const sw=Math.max(2,Math.round(w/14)), sh=Math.max(2,Math.round(h/14)), s=document.createElement("canvas"); s.width=sw; s.height=sh; const sx=s.getContext("2d"); sx.drawImage(c,0,0,sw,sh);
@@ -15255,6 +15370,16 @@ async function lsDepth(canvas,onP){ try{
 /* 做好正面之後，背景偷偷算深度（失敗就照原本的方式，不影響） */
 function lsDepthRun(fr){ const d=ui.lsDraft; if(!d||!navigator.onLine) return; const ds=d.ds; let shown=0;
   lsDepth(fr,p=>{ const pc=Math.round(p*100); if(pc>=shown+20){ shown=pc; toast(`AI 深度模型下載中 ${pc}%（只有第一次）`); } }).then(url=>{ if(!url||ui.lsDraft!==d||d.ds!==ds) return; ds.depth=url; ds._k=null; lsRerender(); toast("AI 深度完成，立體更細緻了 ✨"); }); }
+/* ===== 4. 讀設計稿上的尺寸（手機上的文字辨識，第一次下載約 10MB，只在管理員手機） =====
+   讀到「全長」（最大的 cm）跟「直徑」（前面有 Ø/⌀/Φ/DIA 的數字），燈頭大小照真的比例調 */
+const lsLoadJs=src=>new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });
+async function lsOcrDims(im){ try{ if(!window.Tesseract) await lsLoadJs("https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js");
+    const k=Math.min(1,2000/Math.max(im.naturalWidth,im.naturalHeight)), c=document.createElement("canvas"); c.width=Math.round(im.naturalWidth*k); c.height=Math.round(im.naturalHeight*k); c.getContext("2d").drawImage(im,0,0,c.width,c.height);
+    const r=await Tesseract.recognize(c,"eng"), t=(r&&r.data&&r.data.text)||"", V=[]; const re=/(Ø|ø|⌀|Φ|φ|DIA\.?|D\s*=)?\s*(\d{1,3}(?:[.,]\d{1,2})?)\s*(cm|mm)\b/gi; let m;
+    while((m=re.exec(t))){ let v=parseFloat(m[2].replace(",",".")); if(/mm/i.test(m[3])) v/=10; if(v>0&&v<200) V.push({v,dia:!!m[1]}); }
+    if(!V.length) return null; const L=Math.max(...V.map(x=>x.v)), ds=V.filter(x=>x.dia&&x.v<L*.7).map(x=>x.v); return {L,D:ds.length?Math.max(...ds):null}; }catch(e){ return null; } }
+function lsOcrRun(im){ const d=ui.lsDraft; if(!d||!navigator.onLine) return; const ds=d.ds;
+  lsOcrDims(im).then(r=>{ if(!r||ui.lsDraft!==d||d.ds!==ds) return; ds.dims=r; if(r.D){ ds._k=null; } lsRerender(); toast(`讀到尺寸：全長 ${r.L} cm${r.D?`・燈頭 ⌀${r.D} cm`:""}`); }); }
 
 </script>
 </body>
