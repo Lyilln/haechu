@@ -4845,6 +4845,10 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .bb-df{display:flex;gap:6px;align-items:center}.bb-df input:not([type=file]){flex:1;min-width:0;border:1px solid var(--line);border-radius:18px;padding:9px 14px;font:inherit;font-size:16px;background:var(--glass);color:var(--ink)}.bb-df button{border:0;border-radius:16px;background:#FF9EC0;color:#fff;font:inherit;font-weight:800;padding:9px 12px}.bb-dp{font-size:22px}.bb-dp input{display:none}
 .bb-gift{padding:12px 14px}.bb-gift h3{margin:0 0 8px;font-size:15px;display:flex;justify-content:space-between}.bb-gift h3 small{font-size:12px;color:var(--ink-3);font-weight:500}.bb-gift>div{display:flex;gap:8px;overflow-x:auto}.bb-gift button{flex:none;border:0;border-radius:14px;background:rgba(127,127,127,.1);color:inherit;font:inherit;padding:10px;display:flex;flex-direction:column;align-items:center;gap:2px;width:78px}.bb-gift i{font-style:normal;font-size:26px}.bb-gift small{font-size:10.5px}
 .bb-log{padding:12px 14px}.bb-log h3{margin:0 0 6px;font-size:15px}.bb-li{padding:8px 0;border-top:1px solid var(--line)}.bb-li small{font-size:11px;color:var(--ink-3)}.bb-li p{margin:2px 0 0;font-size:14px}.bb-li.sys p{color:#C0392B;font-weight:700}.bb-im{display:block;max-width:60%;border-radius:12px;margin-top:6px}
+/* 藝人 FOC：本週狀況一條 */
+.foc-now{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;margin:2px 0 10px;border-radius:18px;background:var(--glass);border:1px solid var(--line,rgba(0,0,0,.06));color:var(--ink);font:inherit}
+.foc-now .t{display:flex;flex-direction:column;min-width:0}.foc-now .t b{font-size:15px}.foc-now .t small{font-size:12px;color:var(--ink-3)}
+.tile.off{opacity:.5;filter:saturate(.3)}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5320,7 +5324,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027042854";
+const BUILD="20261027045158";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8208,7 +8212,7 @@ const evHit=(q,e)=>{const m=MEMBERS[e.member],g=groupOf(e.group);return hit(q,e.
 const liveHit=(q,l)=>{const m=MEMBERS[l.member],g=groupOf(l.group);return hit(q,l.title,m&&m.name,g&&g.name)};
 
 /* ---------- 小圖示（區塊標題用，風格 C） ---------- */
-const HI={globe:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z"/>',truck:'<path d="M3 7.5h11v9H3z"/><path d="M14 10.5h3.5l3 3v3H14z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/><path d="M4.5 7.5l1.2-2.5h7.6l1.2 2.5"/>',news:'<path d="M4.5 5.5h11v13h-10a1 1 0 0 1-1-1z"/><path d="M15.5 9h3.5v8.5a1 1 0 0 1-1 1h-2.5"/><path d="M7.5 9h5M7.5 12h5M7.5 15h3"/>',cam:'<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.3" r="3.3"/>',card:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
+const HI={heart:'<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',globe:'<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.4 3.8 5.2 3.8 8.5s-1.2 6.1-3.8 8.5c-2.6-2.4-3.8-5.2-3.8-8.5s1.2-6.1 3.8-8.5z"/>',truck:'<path d="M3 7.5h11v9H3z"/><path d="M14 10.5h3.5l3 3v3H14z"/><circle cx="7" cy="17.5" r="1.8"/><circle cx="17" cy="17.5" r="1.8"/><path d="M4.5 7.5l1.2-2.5h7.6l1.2 2.5"/>',news:'<path d="M4.5 5.5h11v13h-10a1 1 0 0 1-1-1z"/><path d="M15.5 9h3.5v8.5a1 1 0 0 1-1 1h-2.5"/><path d="M7.5 9h5M7.5 12h5M7.5 15h3"/>',cam:'<path d="M4 8h3.5L9 5.5h6L16.5 8H20v11H4z"/><circle cx="12" cy="13.3" r="3.3"/>',card:'<rect x="5" y="3" width="14" height="18" rx="3"/><path d="M9 8h6"/>',bolt:'<path d="M13 3L5 14h6l-1 7 8-11h-6z"/>',mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4"/>',
   trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/>',play:'<rect x="3" y="5" width="18" height="14" rx="3"/><path d="M10 9l5 3-5 3z"/>',pen:'<path d="M4 20l4-1 10-10-3-3L5 16z"/><path d="M14 7l3 3"/>',
   gem:'<path d="M6 4h12l3 5-9 11L3 9z"/><path d="M3 9h18M9 4l3 16 3-16"/>',tie:'<path d="M12 12c-3-4-8-4-8 0s5 4 8 0zm0 0c3-4 8-4 8 0s-5 4-8 0z"/>',bag:'<path d="M5 8h14l-1 12H6z"/><path d="M9 8a3 3 0 0 1 6 0"/>',
   album:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="2.5"/>',receipt:'<path d="M6 3h12v18l-3-2-3 2-3-2-3 2z"/><path d="M9 8h6M9 12h6"/>',live:'<circle cx="12" cy="12" r="3"/><path d="M6.3 6.3a8 8 0 0 0 0 11.4M17.7 6.3a8 8 0 0 1 0 11.4"/>',
@@ -8749,7 +8753,7 @@ function viewArtist(tab){
   if(tab==="me"){
     return head+`<main class="page">
       <section class="card me-card"><div class="av lg" style="margin:0 auto;background:${grad(m.g)}">${mAvIn(mid)}</div>
-        <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span>${artLvLine(mid)}</section>
+        <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span>${lvLine()}</section>
       <div class="section-h">${WHISPER_NAME} 設定</div>
       <section class="card">
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
@@ -8764,6 +8768,7 @@ function viewArtist(tab){
       <div class="section-h">App</div>
       <section class="card">
         ${!isAdminAcct()?`<button class="list-btn" data-a="swapRole">${I.swap}切換到粉絲端<span class="r">追其他藝人、互串</span></button>`:""}
+        ${sbxWho()?`<button class="list-btn" data-a="sbxT">${I.star}試玩模式<span class="r">${sbxOn()?"試玩中":"關閉"}</span></button>`:""}
         <button class="list-btn" data-a="theme">${I.gear}外觀<span class="r">${themeLabel()}</span></button>
         <button class="list-btn" data-a="coachAgain">${I.star}重看教學</button>
         <button class="list-btn" data-a="a2h">${I.home}加到主畫面<span class="r">iPhone</span></button>
@@ -10270,6 +10275,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
 const FOC_PAGES={isac:"偶像運動會",baby:"Hello Baby",cafe:"生日咖啡廳",show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"榮譽與職務",stick:"官方應援棒"};
+function isNextTxt(){ const now=Date.now(), n=IS_HOL.find(([d])=>new Date(d+"T00:00:00").getTime()-21*864e5>now); return n?`下次：${n[1]}・${+n[0].slice(5,7)}/${+n[0].slice(8)} 前後`:"—"; }
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
   const sc=getSched(), ls=lightsea(), gid=MEMBERS[mid].group, mine=ls&&ls.gid===gid, nc=nextConcert(gid), g=groupOf(gid);
@@ -10297,15 +10303,12 @@ function viewArtistFoc(mid,p){
   const fsOn=fsAll().filter(e=>e.group===gid&&e.id!=="fsshow"&&e.status!=="done"), fsLive=fsOn.find(e=>e.status==="live");
   const tile=(a,v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="${a}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   return `<main class="page foc">
-    <section class="card foc-c hero"><span class="foc-strip"></span>
-      <div class="foc-h"><span class="foc-ic">${FIC.stage}</span><div><b>舞台演出</b><small>STAGE &amp; CONCERT</small></div><span class="foc-badges"><em class="${hasAK?"on":""}">AK</em><em class="${hasPAK?"on":""}">PAK</em></span></div>
-      <div class="foc-row"><span>目前階段</span><span class="foc-stage">${esc(sc.stage)}<button class="core-info" data-a="focTip" aria-label="賽制說明"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="7" r="1.6" fill="currentColor"/><path d="M12 11v7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg></button></span></div>
-      <div class="foc-week"><span>✦</span><div><b>${wt==="宣傳週"?"宣傳週不排名，先好好準備舞台":wonShows.length?`本週拿下 ${wonShows.length} 個一位（+${fmt(wonShows.length*MSP.win)}）`:"本週還沒有一位，一起加油！"}</b><small>${wonShows.length?esc(wonShows.map(x=>x.name).join("・"))+"・":""}${left?`本週剩 ${left} 天`:"今天結算"}・結算 ${esc(sc.deadline)}</small></div></div>
-      ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
-    </section>
+    <button class="foc-now" data-a="focGo" data-v="honor"><span class="foc-ic">${FIC.stage}</span><span class="t"><b>${esc(sc.stage)}${sc.stage===wt?"":"・"+wt}</b><small>${wt==="宣傳週"?"這週不排名":wonShows.length?`本週 ${wonShows.length} 個一位`:"本週還沒有一位"}・${left?`剩 ${left} 天`:"今天結算"}</small></span><span class="foc-badges"><em class="${hasAK?"on":""}">AK</em><em class="${hasPAK?"on":""}">PAK</em></span></button>
+    ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
-    ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}</div>
+    ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=getTours().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}${(()=>{ const c=isCur(), on=c&&c.st==="on", w=isWin(); return tile("focGo","isac","star","偶像運動會",on?"● 進行中":w?`${w.n}・等開幕`:isNextTxt(),on?"on":w?"":"off"); })()}</div>
+    ${secH("heart","養成")}<div class="tiles">${(()=>{ const b=bbMine(mid), on=b&&b.st==="on"; return tile("focGo","baby","heart","Hello Baby",on?`● 養育中・${esc(b.name||"寶寶")}`:b&&b.st==="wait"?"申請審核中":"申請養寶寶",on?"on":""); })()}</div>
   </main>`;
 }
 const FIC={
@@ -10749,9 +10752,9 @@ function lsAdminHtml(){
       ${ds.side?"":`<div class="ls-row"><span>造型</span><div class="ls-seg"><button class="${ds.mode==="lathe"?"on":""}" data-a="lsMode" data-v="lathe">旋轉立體</button><button class="${ds.mode==="plate"?"on":""}" data-a="lsMode" data-v="plate">立體造型</button></div></div>`}
       <div class="ls-row"><span>燈頭範圍</span><input type="range" id="lsSplit" min="10" max="85" value="${Math.round(ds.split*100)}"><output id="lsSplitV">${Math.round(ds.split*100)}%</output></div>
       <div class="ls-row"><span>燈光顏色</span><div class="ls-sw">${sw.map(h=>`<button class="${(ds.glow||"").toLowerCase()===h.toLowerCase()?"on":""}" style="background:${h}" data-a="lsGlow" data-v="${h}" aria-label="燈光色 ${h}"></button>`).join("")}</div></div>
-      <div class="ls-row"><span>去背強度</span><input type="range" id="lsThr" min="12" max="90" value="${dr.thr}"><output id="lsThrV">${dr.thr}</output></div>
+      ${ds.v2?`<div class="ls-row ls-parts"><span>零件</span><div class="chips wrap" id="lsParts">${lsPartsUI(ds)}</div></div>`:`<div class="ls-row"><span>去背強度</span><input type="range" id="lsThr" min="12" max="90" value="${dr.thr}"><output id="lsThrV">${dr.thr}</output></div>`}
       <div class="ls-btns"><button class="btn btn-soft" data-a="lsCancel">取消</button><button class="btn btn-main" data-a="lsPublish">發布到 ${esc(g.name)}</button></div>
-      <p class="ls-tip">背景沒去乾淨就把「去背強度」調高；燈頭的發光範圍不對就拉「燈頭範圍」。</p>`
+      `
     :`<div class="ls-btns"><label class="btn btn-main ls-file">上傳三視圖<input type="file" id="lsSheet" accept="image/*"></label><label class="btn btn-soft ls-file">只有正面圖<input type="file" id="lsFile" accept="image/*"></label>${has?`<button class="btn btn-soft" data-a="lsRemove">恢復預設款</button>`:""}</div>
       <div class="ls-samp">沒有圖？用範例試試：<button data-a="lsSample" data-v="round">圓球款</button><button data-a="lsSample" data-v="heart">愛心款</button><button data-a="lsSample" data-v="star">星星款</button></div>
       <p class="ls-tip">三視圖：正面、側面、背面由左到右排在同一張圖（單色背景），會照三個角度雕出立體的應援棒，造型再複雜都可以。只有正面圖的話，會用正面的輪廓做。</p>`}
@@ -11931,7 +11934,7 @@ document.addEventListener("change",async e=>{
       ui.scrollChat=true; render(); tieToast(isP?"照片已傳送":"語音已傳送");
     }catch(err){ toast(isP?"這張照片讀不出來，換一張試試":"這個音檔讀不出來，換成 m4a 或 mp3 試試"); }
     return; }
-  if(e.target.id==="lsThr"&&ui.lsDraft){ lsLoad(ui.lsDraft.src,+e.target.value); lsRerender(); return; }
+  if(e.target.id==="lsThr"&&ui.lsDraft){ const o=ui.lsDraft.ds; lsLoad(ui.lsDraft.src,+e.target.value); if(ui.lsDraft&&o) ["side","back","top","v2","front","pm","split","glow"].forEach(k=>{ if(o[k]!=null) ui.lsDraft.ds[k]=o[k]; }); lsRerender(); return; }
   if(e.target.id==="lsSheet"||e.target.id==="lsSide"||e.target.id==="lsBack"){ const f=e.target.files&&e.target.files[0], which=e.target.id; e.target.value=""; if(!f) return; const rd=new FileReader();
     rd.onload=()=>{ const im=new Image(); im.onload=()=>{ if(which==="lsSheet"){ lsFrameOpen(im); return; } if(ui.lsDraft){ lsFrameOpen(im,which==="lsSide"?"side":"back"); return; } const V=lsSplitSheet(im); if(!V.length){ toast("找不到應援棒，換一張背景單純的圖試試"); return; }
       if(which==="lsSheet"){ if(!lsLoad(V[0])){ return; } const d=ui.lsDraft; if(V[1]){ d.ds.side=lsViewURL(V[1]); if(V[2]) d.ds.back=lsViewURL(V[2]); d.ds._k=null; } lsRerender(); toast(V[1]?`找到 ${V.length} 個視圖，立體重建完成 ✨`:"只找到一個視圖，先用正面做；可以再加側面圖"); }
@@ -13642,35 +13645,34 @@ const STICK3D=(()=>{
           sh.vertexShader="attribute float g;\nvarying float vG;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvG=g;");
           sh.fragmentShader="uniform vec3 glowC;\nuniform float glowK;\nvarying float vG;\n"+sh.fragmentShader.replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"); };
         out.g.add(new THREE.Mesh(geo,mat)); out.g.visible=false; scene.add(out.g); models.set(key,out); }catch(e){ models.set(key,null); } building.delete(key); }); }
-  /* 第二代：拆零件（旋轉體／鼓起來／薄片）＋自動材質（玻璃、金屬、塑膠） */
-  function modelParts(ds,key){ Promise.all([lsImg(ds.cut),lsImg(ds.side),lsImg(ds.back),lsImg(ds.top),lsImg(ds.depth)]).then(([f,s,b,tp,dp])=>{ try{ if(!f) throw 0;
-        const m=lsPartsMesh(toCanvas(f),s?toCanvas(s):null,b?toCanvas(b):null,tp?toCanvas(tp):null,dp?toCanvas(dp):null,ds.split||.45);
+  /* 第二代：拆零件（旋轉體／鼓起來／環／燈頭裡的立體圖案）＋材質（玻璃、金屬、珍珠、塑膠、發光）；掛繩會晃 */
+  function modelParts(ds,key){ Promise.all([lsImg(ds.front||ds.cut),lsImg(ds.side),lsImg(ds.back),lsImg(ds.top),lsImg(ds.depth)]).then(([f,s,b,tp,dp])=>{ try{ if(!f) throw 0;
+        const m=lsPartsMesh(toCanvas(f),s?toCanvas(s):null,b?toCanvas(b):null,tp?toCanvas(tp):null,dp?toCanvas(dp):null,ds.split||.45,ds.pm);
+        Object.defineProperty(ds,"_parts",{value:m.info,enumerable:false,configurable:true,writable:true});
+        const pl=document.getElementById("lsParts"); if(pl&&ui.lsDraft&&ui.lsDraft.ds===ds) pl.innerHTML=lsPartsUI(ds);
         const uni={glowC:{value:new THREE.Color(1,1,1)},glowK:{value:1}}, out={g:new THREE.Group(),headY:m.headY,uni,mat:null};
-        /* 表面直接用原圖投影（正面、背面、側面三張圖照角度混合），比頂點色清楚很多 */
-        const T=c=>{ const t=new THREE.CanvasTexture(c); t.anisotropy=8; return t; }, J=m.proj, tF=T(m.front), tB=m.back?T(m.back):tF, tS=m.side?T(m.side):tF;
+        const T=c=>{ const t=new THREE.CanvasTexture(lsDelit(c)); t.anisotropy=8; return t; }, J=m.proj, tF=T(m.front), tB=m.back?T(m.back):tF, tS=m.side?T(m.side):tF;
         const PU={tF:{value:tF},tB:{value:tB},tS:{value:tS},pF:{value:new THREE.Vector2(...J.f)},pB:{value:new THREE.Vector2(...J.b)},pS:{value:new THREE.Vector2(...(J.s||[.5,0]))},hasS:{value:J.s?1:0}};
-        const hook=mat=>{ mat.onBeforeCompile=sh=>{ sh.uniforms.glowC=uni.glowC; sh.uniforms.glowK=uni.glowK; Object.assign(sh.uniforms,PU);
+        const hook=(mat,useT)=>{ mat.onBeforeCompile=sh=>{ sh.uniforms.glowC=uni.glowC; sh.uniforms.glowK=uni.glowK; Object.assign(sh.uniforms,PU);
           sh.vertexShader="attribute float g;\nvarying float vG;\nvarying vec3 vOP;\nvarying vec3 vON;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvG=g;\nvOP=position;\nvON=normal;");
           sh.fragmentShader="uniform vec3 glowC;\nuniform float glowK;\nvarying float vG;\nvarying vec3 vOP;\nvarying vec3 vON;\nuniform sampler2D tF;\nuniform sampler2D tB;\nuniform sampler2D tS;\nuniform vec2 pF;\nuniform vec2 pB;\nuniform vec2 pS;\nuniform float hasS;\n"
-            +sh.fragmentShader.replace("#include <color_fragment>",`#include <color_fragment>
+            +sh.fragmentShader.replace("#include <color_fragment>",useT?`#include <color_fragment>
   { vec3 n=normalize(vON); float v=(vOP.y+1.3)/2.6; float wf=pow(max(0.,n.z),2.), wb=pow(max(0.,-n.z),2.), ws=n.x*n.x*hasS+.0001;
     vec4 cf=texture2D(tF,vec2(pF.x+pF.y*vOP.x,v)), cb=texture2D(tB,vec2(pB.x+pB.y*vOP.x,v)), cs=texture2D(tS,vec2(pS.x+pS.y*vOP.z,v));
     wf*=cf.a; wb*=cb.a; ws*=cs.a; float t=wf+wb+ws;
-    if(t>.02){ vec3 c=(cf.rgb*wf+cb.rgb*wb+cs.rgb*ws)/t; float m=(c.r+c.g+c.b)/3.; c=clamp(vec3(m)+(c-vec3(m))*1.2,0.,1.); diffuseColor.rgb=pow(c,vec3(2.2)); } }`)
+    if(t>.02){ vec3 c=(cf.rgb*wf+cb.rgb*wb+cs.rgb*ws)/t; diffuseColor.rgb=pow(c,vec3(2.2)); } }`:"#include <color_fragment>")
             .replace("#include <emissivemap_fragment>","#include <emissivemap_fragment>\ntotalEmissiveRadiance += glowC*vG*glowK*(0.25+0.75*diffuseColor.rgb);"); }; return mat; };
-        const MAT={plastic:()=>new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.3,metalness:0,clearcoat:1,clearcoatRoughness:.08,envMapIntensity:.95}),
-          metal:()=>new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.22,metalness:.9,envMapIntensity:1.3}),
-          glass:()=>new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.05,metalness:0,clearcoat:1,clearcoatRoughness:0,transparent:true,opacity:.9,envMapIntensity:.7,depthWrite:false}),
-          thin:()=>new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.25,metalness:.35,clearcoat:1,envMapIntensity:1.1,side:THREE.DoubleSide})};
-        m.meshes.forEach(p=>{ const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.BufferAttribute(p.P,3)); geo.setAttribute("color",new THREE.BufferAttribute(p.C,3)); geo.setAttribute("g",new THREE.BufferAttribute(p.G,1)); geo.setIndex(new THREE.BufferAttribute(p.I,1)); geo.computeVertexNormals();
-          const me=new THREE.Mesh(geo,hook((MAT[p.mat]||MAT.plastic)())); if(p.mat==="glass") me.renderOrder=2; out.g.add(me); });
-        /* 玻璃燈頭裡的圖案：燈頭那一段的正面圖，十字交叉兩片，自己會亮 */
-        if(m.inner){ const S=m.inner.src, F=m.front, k=F.height/200, c=document.createElement("canvas"), sw=Math.round(S.rpx*2*k*.9), sh=Math.round((S.y1-S.y0)*k*.8); c.width=Math.max(8,sw); c.height=Math.max(8,sh);
-          const cx2=c.getContext("2d"); cx2.drawImage(F,(S.cx-S.rpx*.9)*k,(S.y0+(S.y1-S.y0)*.1)*k,sw,sh,0,0,c.width,c.height);
-          /* 只留「有顏色」的地方（玻璃裡的星星、圖案），白白的玻璃本身變透明 */
-          const id=cx2.getImageData(0,0,c.width,c.height), q=id.data; for(let i=0;i<q.length;i+=4){ const mx=Math.max(q[i],q[i+1],q[i+2]), mn=Math.min(q[i],q[i+1],q[i+2]), s=mx?(mx-mn)/mx:0; q[i+3]=Math.min(q[i+3],Math.max(0,Math.min(255,(s-.1)*900))); } cx2.putImageData(id,0,0); const tex=new THREE.CanvasTexture(c); tex.encoding=THREE.sRGBEncoding;
-          const pm=new THREE.MeshBasicMaterial({map:tex,transparent:true,depthWrite:false,side:THREE.DoubleSide}), ph=m.inner.r*2*sh/Math.max(1,sw);
-          [0,Math.PI/2].forEach(r=>{ const pl=new THREE.Mesh(new THREE.PlaneGeometry(m.inner.r*2,ph),pm); pl.position.y=m.inner.y; pl.rotation.y=r; pl.renderOrder=1; out.g.add(pl); }); }
+        const MAT={plastic:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.34,metalness:0,clearcoat:.6,clearcoatRoughness:.15,envMapIntensity:.9}),1),
+          pearl:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.22,metalness:.12,clearcoat:1,clearcoatRoughness:.05,envMapIntensity:1.15}),1),
+          metal:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.2,metalness:.92,envMapIntensity:1.35}),1),
+          glow:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.3,metalness:0,clearcoat:1,envMapIntensity:.8}),1),
+          glass:()=>hook(new THREE.MeshPhysicalMaterial({color:0xffffff,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:0,transparent:true,opacity:.2,envMapIntensity:1.8,depthWrite:false}),0),
+          vc:()=>hook(new THREE.MeshPhysicalMaterial({vertexColors:true,roughness:.25,metalness:.1,clearcoat:1,envMapIntensity:1,side:THREE.DoubleSide}),0)};
+        const geoOf=p=>{ const geo=new THREE.BufferGeometry(); geo.setAttribute("position",new THREE.BufferAttribute(p.P,3)); geo.setAttribute("color",new THREE.BufferAttribute(p.C,3)); geo.setAttribute("g",new THREE.BufferAttribute(p.G,1)); geo.setIndex(new THREE.BufferAttribute(p.I,1)); geo.computeVertexNormals(); return geo; };
+        m.meshes.forEach(p=>{ const geo=geoOf(p), me=new THREE.Mesh(geo,(p.key==="emb"||p.key==="thin"?MAT.vc:MAT[p.mat]||MAT.plastic)()); if(p.mat==="glass"){ me.renderOrder=3; }
+          if(p.swing){ const pv=new THREE.Group(); pv.position.y=p.pivot; geo.translate(0,-p.pivot,0); pv.add(me); out.g.add(pv); out.sw={pv,a:0,va:0,b:0,vb:0}; } else out.g.add(me); });
+        if(m.ring){ const r=m.ring, mt=new THREE.MeshPhysicalMaterial({color:new THREE.Color(...r.color),roughness:r.mat==="metal"?.2:.24,metalness:r.mat==="metal"?.9:.15,clearcoat:1,envMapIntensity:1.2,emissive:new THREE.Color(...r.color),emissiveIntensity:r.mat==="glow"?.6:0,transparent:r.mat==="glass",opacity:r.mat==="glass"?.35:1});
+          const rg=new THREE.Group(), me=new THREE.Mesh(new THREE.TorusGeometry(r.R,r.tube,16,140),mt); me.rotation.x=Math.PI/2-r.tilt; rg.add(me); rg.position.set(r.x,r.y,0); rg.rotation.z=r.roll; out.g.add(rg); }
         out.g.visible=false; scene.add(out.g); models.set(key,out); }catch(e){ console.warn("ls parts",e); models.set(key,null); } building.delete(key); }); }
   function modelDs(ds){ const key=dsKey(ds); if(models.has(key)) return models.get(key); if(building.has(key)) return null; building.add(key);
     if(ds.v2&&ds.cut&&typeof lsPartsMesh==="function"){ modelParts(ds,key); return null; }
@@ -13736,6 +13738,8 @@ const STICK3D=(()=>{
         const g=M.g; g.position.set(0,0,0); g.rotation.set(0,0,0); g.scale.set(1,1,1); g.updateMatrix();
         const m4=new THREE.Matrix4().makeTranslation(st.px,st.py,0).multiply(new THREE.Matrix4().makeScale(st.sc*(M.core?.88:1.05),st.sc*(M.core?.88:1.05),st.sc*(M.core?.88:1.05))).multiply(new THREE.Matrix4().makeTranslation(0,-.8,0)).multiply(new THREE.Matrix4().makeRotationZ(wave)).multiply(new THREE.Matrix4().makeRotationX(swp)).multiply(new THREE.Matrix4().makeTranslation(0,.8,0)).multiply(new THREE.Matrix4().makeRotationX(st.pitch)).multiply(new THREE.Matrix4().makeRotationY(st.yaw));
         g.matrixAutoUpdate=false; g.matrix.copy(m4); g.updateMatrixWorld(true);
+        if(M.sw){ const w=M.sw, lg=new THREE.Vector3(0,-1,0).transformDirection(new THREE.Matrix4().copy(g.matrixWorld).invert()), ta=Math.atan2(lg.x,-lg.y), tb=Math.atan2(-lg.z,-lg.y);   // 掛繩：重力永遠往下，被甩動會晃回來
+          w.va+=(ta-w.a)*.09-w.va*.07; w.vb+=(tb-w.b)*.09-w.vb*.07+(st.vy||0)*.06; w.a=Math.max(-1.5,Math.min(1.5,w.a+w.va)); w.b=Math.max(-1.5,Math.min(1.5,w.b+w.vb)); w.pv.rotation.set(w.b,0,w.a); }
         cam.aspect=w/h; cam.updateProjectionMatrix();
         R.setViewport(0,RH-h,w,h); R.setScissor(0,RH-h,w,h); R.setScissorTest(true); R.setClearColor(0x000000,0); R.clear(); R.render(scene,cam);
         a.ctx.clearRect(0,0,w,h); a.ctx.drawImage(R.domElement,0,0,w,h,0,0,w,h);
@@ -13817,7 +13821,7 @@ function lsHullMesh(front,side,back,split,top){
     if(fx*nx+fy*ny+fz*nz<0){ const t=ind[i+1]; ind[i+1]=ind[i+2]; ind[i+2]=t; } }
   return {P:new Float32Array(pos),N:new Float32Array(nor),C:new Float32Array(col),G:new Float32Array(gg),I:pos.length/3>65000?new Uint32Array(ind):new Uint16Array(ind),headY:1.2-split*.5*2.4}; }
 /* 縮小到最高 480px 的去背 PNG（存起來不會太大） */
-function lsViewURL(c){ const k=Math.min(1,480/c.height), w=Math.max(4,Math.round(c.width*k)), h=Math.max(4,Math.round(c.height*k)), t=document.createElement("canvas"); t.width=w; t.height=h; t.getContext("2d").drawImage(c,0,0,w,h); return t.toDataURL("image/png"); }
+function lsViewURL(c){ const k=Math.min(1,1024/c.height), w=Math.max(4,Math.round(c.width*k)), h=Math.max(4,Math.round(c.height*k)), t=document.createElement("canvas"); t.width=w; t.height=h; t.getContext("2d").drawImage(c,0,0,w,h); return t.toDataURL("image/png"); }
 const lsImg=src=>new Promise(res=>{ if(!src){ res(null); return; } const i=newImg(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; });
 const toCanvas=im=>{ const c=document.createElement("canvas"); c.width=im.naturalWidth||im.width; c.height=im.naturalHeight||im.height; c.getContext("2d").drawImage(im,0,0); return c; };
 /* ===== 三視圖框選：上傳後先自動猜位置，管理員可以自己拖、調大小、開關 =====
@@ -13845,7 +13849,7 @@ document.addEventListener("pointerdown",e=>{ const b=e.target.closest(".lsf-b");
   const up=()=>{ window.removeEventListener("pointermove",mv); window.removeEventListener("pointerup",up); window.removeEventListener("pointercancel",up); };
   window.addEventListener("pointermove",mv); window.addEventListener("pointerup",up); window.addEventListener("pointercancel",up); });
 /* 框起來的地方 → 去背 → 只留最大的那一塊 */
-function lsFrameCut(f,k){ const b=f.box[k]; if(!b||!b.on) return null; const s=Math.min(1,900/Math.max(b.w,b.h)), c=document.createElement("canvas"); c.width=Math.max(8,Math.round(b.w*s)); c.height=Math.max(8,Math.round(b.h*s));
+function lsFrameCut(f,k){ const b=f.box[k]; if(!b||!b.on) return null; const s=Math.min(1,1400/Math.max(b.w,b.h)), c=document.createElement("canvas"); c.width=Math.max(8,Math.round(b.w*s)); c.height=Math.max(8,Math.round(b.h*s));
   c.getContext("2d").drawImage(f.im,b.x,b.y,b.w,b.h,0,0,c.width,c.height); let V=[]; try{ V=lsSplitSheet(c); }catch(e){} if(!V.length) return null;
   return V.sort((p,q)=>q.width*q.height-p.width*p.height)[0]; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^lsFr/.test(a)) return; const f=ui.lsFr;
@@ -13857,7 +13861,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     d.ds[f.only]=lsViewURL(c); d.ds.v2=1; d.ds._k=null; lsRerender(); toast("已加上，轉轉看 ✨"); return; }
   if(a==="lsFrOk"){ const fr=lsFrameCut(f,"front"); if(!fr){ toast("正面框裡找不到應援棒，把框調到應援棒上"); return; }
     ui.lsFr=null; layer.innerHTML=""; if(!lsLoad(fr)) return; const d=ui.lsDraft; if(!d) return; const sd=lsFrameCut(f,"side"), bk=lsFrameCut(f,"back"), tp=lsFrameCut(f,"top");
-    d.ds.side=sd?lsViewURL(sd):null; d.ds.back=bk?lsViewURL(bk):null; d.ds.top=tp?lsViewURL(tp):null; d.ds.v2=1; d.ds.depth=null; d.ds._k=null; lsRerender(); lsDepthRun(fr);
+    d.ds.side=sd?lsViewURL(sd):null; d.ds.back=bk?lsViewURL(bk):null; d.ds.top=tp?lsViewURL(tp):null; d.ds.v2=1; d.ds.front=lsViewURL(fr); d.ds.pm=null; d.ds.depth=null; d.ds._k=null; lsRerender(); lsDepthRun(fr);
     toast(sd?`用了 ${[fr,sd,bk,tp].filter(Boolean).length} 個視圖做立體 ✨`:"只用正面做；可以再加側面圖"); } });
 
 /* =========================================================
@@ -15131,68 +15135,111 @@ function lsRows(V){ const R=[]; for(let y=0;y<V.h;y++){ let L=-1,Rr=-1,cnt=0,r=0
     R.push(L<0?null:{L,R:Rr,w:Rr-L+1,cx:(L+Rr)/2,fill:cnt/(Rr-L+1),c:[r/cnt,g/cnt,b/cnt]}); } return R; }
 const lsHsl=([r,g,b])=>{ r/=255; g/=255; b/=255; const mx=Math.max(r,g,b), mn=Math.min(r,g,b), l=(mx+mn)/2, s=mx===mn?0:l>.5?(mx-mn)/(2-mx-mn):(mx-mn)/(mx+mn); return {l,s}; };
 function lsSample(V,x,y){ const xx=Math.max(0,Math.min(V.w-1,Math.round(x))), yy=Math.max(0,Math.min(V.h-1,Math.round(y))), q=(yy*V.w+xx)*4; return V.d[q+3]>40?[V.d[q]/255,V.d[q+1]/255,V.d[q+2]/255]:null; }
-function lsPartsMesh(front,side,back,top,depth,split){
+/* 零件材質：自動判斷，管理員可以在零件清單點一下改 */
+const LS_MATS=["glass","metal","pearl","plastic","glow","off"], LS_MATN={glass:"玻璃",metal:"金屬",pearl:"珍珠",plastic:"塑膠",glow:"發光",off:"隱藏"};
+function lsPartsMesh(front,side,back,top,depth,split,pm){ pm=pm||{};
   const NY=320, F=lsRead(front,NY), S=side?lsRead(side,NY):null, B=back?lsRead(back,NY):null, D=depth?lsRead(depth,NY):null, FR=lsRows(F), SR=S?lsRows(S):null, BR=B?lsRows(B):null;
-  const sc=2.6/NY, Y=y=>1.3-y*sc, headEnd=Math.round(NY*(split||.45));
-  /* 主軸（整支的中心線）：用最寬幾行以外的中位數，比較不會被環、翅膀拉歪 */
-  const cxs=FR.filter(Boolean).map(r=>r.cx).sort((a,b)=>a-b), CX=cxs[cxs.length>>1]||F.w/2, scs=SR?SR.filter(Boolean).map(r=>r.cx).sort((a,b)=>a-b):[], SX=scs[scs.length>>1]||(S?S.w/2:0);
-  /* 每一行：主體半徑。正面以中心線往左右看「連續」的那一段（不算分開的環） */
-  /* 半徑算到小數點（看邊緣半透明的程度），再稍微抹平，球體才不會一格一格 */
-  const ext=(V,R,cx)=>{ const raw=R.map((r,y)=>{ if(!r) return 0; const al=x=>{ const xx=Math.round(x); return xx<0||xx>=V.w?0:V.d[(y*V.w+xx)*4+3]; }; let a=0,b=0,x;
+  const sc=2.6/NY, Y=y=>1.3-y*sc, headEnd=Math.round(NY*(split||.45)), W=F.w;
+  const med=a=>{ const b=a.slice().sort((p,q)=>p-q); return b[b.length>>1]; };
+  const CX=med(FR.filter(Boolean).map(r=>r.cx))||W/2, SX=SR?med(SR.filter(Boolean).map(r=>r.cx))||S.w/2:0, BX=BR?med(BR.filter(Boolean).map(r=>r.cx))||B.w/2:0;
+  /* 每一行主體半徑（從中心線往兩邊「連續」的那段，算到小數點） */
+  const ext=(V,R,cx)=>R.map((r,y)=>{ if(!r) return 0; const al=x=>{ const xx=Math.round(x); return xx<0||xx>=V.w?0:V.d[(y*V.w+xx)*4+3]; }; let a=0,b=0,x;
       for(x=cx;al(x)>=128;x--) a++; a+=al(x)/255; for(x=cx;al(x)>=128;x++) b++; b+=al(x)/255; return Math.min(a,b); });
-    return raw.map((v,y)=>{ if(!v) return 0; let s=0,w=0; for(let k=-3;k<=3;k++){ const u=raw[y+k]; if(u){ const q=4-Math.abs(k); s+=u*q; w+=q; } } return s/w; }); };
-  const core=ext(F,FR,CX), score=SR?ext(S,SR,SX):null; if(window.__dbg) window.__prof=core.map((v,i)=>i%8?null:[i,Math.round(v),score&&Math.round(score[i]),FR[i]&&FR[i].w]).filter(Boolean);
-  /* 切段：寬度跳很多、或顏色差很多的地方 */
+  const rawF=ext(F,FR,CX), rawS=SR?ext(S,SR,SX):null;
+  /* 切段：寬度跳很多、顏色差很多、或燈頭分界 */
   const cd=(a,b)=>a&&b?Math.hypot(a.c[0]-b.c[0],a.c[1]-b.c[1],a.c[2]-b.c[2]):0, segs=[]; let s0=-1;
-  for(let y=0;y<=NY;y++){ const on=y<NY&&core[y]>0; if(on&&s0<0) s0=y; const brk=on&&s0>=0&&y>s0+3&&(Math.abs(core[y]-core[y-1])>Math.max(3,core[y-1]*.22)||cd(FR[y],FR[y-1])>60||y===headEnd);
+  for(let y=0;y<=NY;y++){ const on=y<NY&&rawF[y]>.5; if(on&&s0<0) s0=y; const brk=on&&s0>=0&&y>s0+3&&(Math.abs(rawF[y]-rawF[y-1])>Math.max(3,rawF[y-1]*.22)||cd(FR[y],FR[y-1])>60||y===headEnd);
     if((!on||brk)&&s0>=0){ segs.push([s0,y]); s0=on?y:-1; } }
-  /* 太短的段併到前一段 */
   const SG=[]; segs.forEach(s=>{ if(SG.length&&s[1]-s[0]<5&&SG[SG.length-1][1]===s[0]) SG[SG.length-1][1]=s[1]; else SG.push(s.slice()); });
+  /* 段內抹平（不跨段，球和頂端裝飾才不會黏成一顆蛋） */
+  const smooth=(raw,y0,y1)=>{ for(let y=y0;y<y1;y++){ let s=0,w=0; for(let k=-3;k<=3;k++){ const u=y+k; if(u<y0||u>=y1||!raw[u]) continue; const q=4-Math.abs(k); s+=raw[u]*q; w+=q; } raw.__s=raw.__s||[]; raw.__s[y]=w?s/w:raw[y]; } };
+  SG.forEach(([a,b])=>{ smooth(rawF,a,b); if(rawS) smooth(rawS,a,b); });
+  const core=rawF.map((v,y)=>(rawF.__s&&rawF.__s[y])||v), score=rawS?rawS.map((v,y)=>(rawS.__s&&rawS.__s[y])||v):null;
   const parts=[];
   SG.forEach(([y0,y1])=>{ const rows=[]; for(let y=y0;y<y1;y++) rows.push(y); const fw=rows.map(y=>core[y]), sw=score?rows.map(y=>score[y]):null;
-    const avgF=fw.reduce((a,b)=>a+b,0)/fw.length, avgS=sw?sw.reduce((a,b)=>a+b,0)/sw.length:avgF, sym=rows.every(y=>{ const r=FR[y]; return !r||Math.abs((r.cx-CX))<Math.max(2,r.w*.12); });
+    const avgF=fw.reduce((a,b)=>a+b,0)/fw.length, avgS=sw?sw.reduce((a,b)=>a+b,0)/sw.length:avgF, sym=rows.every(y=>{ const r=FR[y]; return !r||Math.abs(r.cx-CX)<Math.max(2,r.w*.12); });
+    let ext2=0, dir=0; for(let i=2;i<fw.length;i+=2){ const d=fw[i]-fw[i-2]; const s=d>1.2?1:d<-1.2?-1:0; if(s&&dir&&s!==dir) ext2++; if(s) dir=s; }   // 寬度忽大忽小（星星、皇冠）就不是轉一圈的形狀
     const col=rows.map(y=>FR[y]).filter(Boolean), mc=[0,1,2].map(i=>col.reduce((s,r)=>s+r.c[i],0)/Math.max(1,col.length)), hs=lsHsl(mc);
     let vr=0; col.forEach(r=>{ const l=(r.c[0]+r.c[1]+r.c[2])/765; vr+=(l-hs.l)**2; }); vr=Math.sqrt(vr/Math.max(1,col.length));
-    const head=y0<headEnd, lathe=sym&&(!sw||Math.abs(avgS-avgF)<avgF*.28);
-    const mat=head&&hs.l>.62&&hs.s<.45?"glass":hs.s<.12&&vr>.05&&hs.l>.35&&hs.l<.85&&(y1-y0)<NY*.12?"metal":"plastic";
-    parts.push({y0,y1,lathe,mat,head}); });
-  /* 幾何 */
-  const meshes=[];
-  const colorAt=(x,y,z,nx,nz)=>{ // 依法線方向把正面／背面／側面的顏色混在一起
-    const wf=Math.max(0,nz), wb=Math.max(0,-nz), ws=Math.abs(nx); let c=[0,0,0], t=0;
-    const add=(cc,w)=>{ if(cc&&w>0){ c[0]+=cc[0]*w; c[1]+=cc[1]*w; c[2]+=cc[2]*w; t+=w; } };
-    add(lsSample(F,CX+x/sc,y),wf+.0001); if(B) add(lsSample(B,(B.w/2)-(x/sc)*(B.w/F.w),y),wb); else add(lsSample(F,CX-x/sc,y),wb*.9); if(S) add(lsSample(S,SX+(nx>0?-1:1)*z/sc,y),ws);
-    if(!t) return [.95,.95,.97]; c=c.map(v=>v/t); const m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.2)),2.2)); }; // 頂點色要換成線性色彩，不然顯示時會被提亮變灰白 // 設計稿多半是粉嫩色，打光後會變淡，先把顏色拉濃一點
-  parts.forEach(p=>{ const P=[],N=[],C=[],G=[],I=[];
-    if(p.lathe){ const SEG=72; for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y), rx=Math.max(.0001,core[yy]*sc), rz=Math.max(.0001,(score&&score[yy]?score[yy]:core[yy])*sc); // 正面寬、側面厚：橢圓的旋轉體
-        for(let k=0;k<=SEG;k++){ const a=k/SEG*Math.PI*2, sx=Math.sin(a), cz=Math.cos(a); P.push(rx*sx,Y(y),rz*cz); N.push(sx,0,cz); let c=colorAt(rx*sx,y,rz*cz,sx,cz); C.push(...c); G.push(p.head?(p.mat==="glass"?.15:1):0); } }
+    const head=y0<headEnd, lathe=sym&&ext2<=2&&(!sw||avgS>avgF*.45);
+    parts.push({y0,y1,lathe,head,avgF,hs,vr,mc,area:avgF*(y1-y0)}); });
+  /* 認零件：燈泡（燈頭裡最大的那段）、頂端裝飾、握把（燈頭以外最大）、掛繩（最下面、很細） */
+  const bulb=parts.filter(p=>p.head&&p.lathe).sort((a,b)=>b.area-a.area)[0], grip=parts.filter(p=>!p.head).sort((a,b)=>b.area-a.area)[0];
+  parts.forEach((p,i)=>{ p.key="p"+i;
+    if(p===bulb) p.label="燈頭"; else if(p===grip) p.label="握把"; else if(bulb&&p.y1<=bulb.y0) p.label="頂端裝飾"; else if(p.head) p.label="燈頭底座"; else if(grip&&p.y0>=grip.y1&&p.avgF<grip.avgF*.6&&i===parts.length-1){ p.label="掛繩"; p.swing=1; } else p.label=grip&&p.y0>=grip.y1?"底座":"零件";
+    p.auto=p===bulb&&p.hs.l>.6&&p.hs.s<.5?"glass":p.hs.s<.14&&p.vr>.04&&p.hs.l>.3&&p.hs.l<.88&&(p.y1-p.y0)<NY*.12?"metal":p.hs.l>.78&&p.hs.s<.25?"pearl":"plastic";
+    p.mat=pm[p.key]||p.auto; });
+  /* 燈泡用圓／橢圓來對：環、裝飾黏在球邊時，把它們從球身分出來 */
+  if(bulb){ const cy=(bulb.y0+bulb.y1)/2, ry=(bulb.y1-bulb.y0)/2, mid=[]; for(let y=bulb.y0;y<bulb.y1;y++){ const u=(y+.5-cy)/ry; if(Math.abs(u)<.75&&core[y]) mid.push(core[y]/Math.sqrt(1-u*u)); } mid.sort((a,b)=>a-b); const Rb=mid[Math.floor(mid.length*.2)]||core[Math.round(cy)];
+    bulb.fit=y=>Rb*Math.sqrt(Math.max(0,1-((y+.5-cy)/ry)**2)); for(let y=bulb.y0;y<bulb.y1;y++){ const f=bulb.fit(y); if(core[y]>f*1.03) core[y]=Math.max(.5,f); } if(window.__dbg) window.__rb=[Rb,ry,cy]; }
+  const meshes=[], info=[]; const glowOf=p=>p.mat==="glow"?1:p.mat==="glass"?.15:p.head?.6:0;
+  const colorAt=(x,y,z,nx,nz)=>{ const wf=Math.max(0,nz), wb=Math.max(0,-nz), ws=Math.abs(nx); let c=[0,0,0], t=0; const add=(cc,w)=>{ if(cc&&w>0){ c[0]+=cc[0]*w; c[1]+=cc[1]*w; c[2]+=cc[2]*w; t+=w; } };
+    add(lsSample(F,CX+x/sc,y),wf+.0001); if(B) add(lsSample(B,BX-x/sc,y),wb); else add(lsSample(F,CX-x/sc,y),wb*.9); if(S) add(lsSample(S,SX-z/sc,y),ws);
+    if(!t) return [.9,.9,.92]; return c.map(v=>Math.pow(v/t,2.2)); };
+  const push=(o,p)=>{ info.push({key:o.key,label:o.label,mat:o.mat,auto:o.auto}); if(o.mat==="off") return; meshes.push(p); };
+  /* 有厚度的「鼓起來」形狀：給一個遮罩，照離邊緣的距離鼓起來 */
+  function puff(mask,x0,x1,y0,y1,thick,o){ const w=x1-x0, h=y1-y0, dist=new Float32Array(w*h); for(let y=0;y<h;y++) for(let x=0;x<w;x++) dist[y*w+x]=mask(x+x0,y+y0)?1e4:0;
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; if(!dist[i]) continue; let v=Math.min(x?dist[i-1]+1:1,y?dist[i-w]+1:1); dist[i]=Math.min(dist[i],v); }
+    for(let y=h-1;y>=0;y--) for(let x=w-1;x>=0;x--){ const i=y*w+x; if(!dist[i]) continue; let v=Math.min(x<w-1?dist[i+1]+1:1,y<h-1?dist[i+w]+1:1); dist[i]=Math.min(dist[i],v); }
+    let mx=1; dist.forEach(v=>{ if(v>mx) mx=v; }); const P=[],C=[],G=[],I=[], idx=new Int32Array(w*h*2).fill(-1);
+    for(const s of [0,1]) for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const i=y*w+x; if(!dist[i]) continue; let z=thick(x+x0,y+y0)*Math.sqrt(dist[i]/mx); if(D&&o.depth){ const dd=lsSample(D,(x+x0)*D.w/W,y+y0); if(dd) z*=.6+.8*dd[0]; }
+      idx[s*w*h+i]=P.length/3; P.push((x+x0-CX)*sc+(o.dx||0),Y(y+y0),(s?-1:1)*Math.max(.004,z)+(o.dz||0)); C.push(...(o.col?o.col(x+x0,y+y0):colorAt((x+x0-CX)*sc,y+y0,0,0,s?-1:1))); G.push(o.g); }
+    const at=(s,y,x)=>x<0||x>=w||y<0||y>=h?-1:idx[s*w*h+y*w+x];
+    for(const s of [0,1]) for(let y=0;y<h-1;y++) for(let x=0;x<w-1;x++){ const a=at(s,y,x), b=at(s,y,x+1), c=at(s,y+1,x), d=at(s,y+1,x+1); if(a<0||b<0||c<0||d<0) continue; if(s===0) I.push(a,c,b,b,c,d); else I.push(a,b,c,b,d,c); }
+    /* 前後兩面在邊緣接起來 */
+    for(let y=0;y<h;y++) for(let x=0;x<w;x++){ const a=at(0,y,x); if(a<0) continue; [[1,0],[0,1]].forEach(([dx,dy])=>{ const b=at(0,y+dy,x+dx); if(b<0) return; const edge=at(0,y-dx,x-dy)<0||at(0,y+dx,x+dy)<0; if(!edge) return; const a2=at(1,y,x), b2=at(1,y+dy,x+dx); I.push(a,a2,b,b,a2,b2); }); }
+    return {P:new Float32Array(P),C:new Float32Array(C),G:new Float32Array(G),I:new Uint32Array(I)}; }
+  parts.forEach(p=>{ const g=glowOf(p), o={key:p.key,label:p.label,mat:p.mat,auto:p.auto,head:p.head,swing:p.swing,pivot:p.swing?Y(p.y0):0};
+    if(p.lathe){ const P=[],C=[],G=[],I=[], SEG=72;
+      for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y), rx=Math.max(.0001,core[yy]*sc), rz=Math.max(.0001,(score&&score[yy]?score[yy]:core[yy])*sc);
+        for(let k=0;k<=SEG;k++){ const a=k/SEG*Math.PI*2, sx=Math.sin(a), cz=Math.cos(a); P.push(rx*sx,Y(y),rz*cz); C.push(...colorAt(rx*sx,yy,rz*cz,sx,cz)); G.push(g); } }
       const rowN=SEG+1; for(let j=0;j<p.y1-p.y0;j++) for(let k=0;k<SEG;k++){ const a=j*rowN+k, b=a+rowN; I.push(a,b,a+1,b,b+1,a+1); }
-      /* 上下封口 */
-      [[p.y0,1],[p.y1,-1]].forEach(([y,dir])=>{ const c0=P.length/3; P.push(0,Y(y),0); N.push(0,dir,0); C.push(...colorAt(0,Math.min(NY-1,y),.01,0,1)); G.push(p.head?1:0); const base=(y===p.y0?0:(p.y1-p.y0)*rowN); for(let k=0;k<SEG;k++) dir>0?I.push(c0,base+k+1,base+k):I.push(c0,base+k,base+k+1); });
-    } else { /* 鼓起來：正面輪廓的每一點，厚度照「這一行的寬度」做成圓弧，有側面就照側面的厚度，有深度圖再加起伏 */
-      const W=F.w, idx=new Int32Array(W*(p.y1-p.y0+1)*2).fill(-1); const half=y=>{ const r=FR[y]; return r?r.w/2:1; }, thick=y=>score?Math.max(2,score[y]):Math.max(2,half(y)*.45);
-      const zAt=(x,y)=>{ const r=FR[y]; if(!r) return 0; const u=(x-r.cx)/Math.max(1,r.w/2), base=thick(y)*Math.sqrt(Math.max(0,1-u*u)); let k=1; if(D){ const dd=lsSample(D,x*D.w/W,y); if(dd) k=.55+.9*dd[0]; } return Math.max(.6,base*k)*sc; };
-      for(const side2 of [1,-1]) for(let y=p.y0;y<=p.y1;y++){ const yy=Math.min(NY-1,y); for(let x=0;x<W;x++){ if(F.d[(yy*W+x)*4+3]<128) continue; const z=zAt(x,yy)*side2, vi=P.length/3; idx[((side2>0?0:1)*(p.y1-p.y0+1)+(y-p.y0))*W+x]=vi; P.push((x-CX)*sc,Y(y),z); N.push(0,0,side2); C.push(...colorAt((x-CX)*sc,yy,z,0,side2)); G.push(p.head?1:0); } }
-      const at=(s,y,x)=>x<0||x>=W||y<p.y0||y>p.y1?-1:idx[(s*(p.y1-p.y0+1)+(y-p.y0))*W+x];
-      for(const s of [0,1]) for(let y=p.y0;y<p.y1;y++) for(let x=0;x<W-1;x++){ const a=at(s,y,x), b=at(s,y,x+1), c=at(s,y+1,x), d=at(s,y+1,x+1); if(a<0||b<0||c<0||d<0) continue; if(s===0) I.push(a,c,b,b,c,d); else I.push(a,b,c,b,d,c); }
-      /* 算法線 */
-      const NN=new Float32Array(P.length); for(let t=0;t<I.length;t+=3){ const [a,b,c]=[I[t],I[t+1],I[t+2]], ax=P[b*3]-P[a*3], ay=P[b*3+1]-P[a*3+1], az=P[b*3+2]-P[a*3+2], bx=P[c*3]-P[a*3], by=P[c*3+1]-P[a*3+1], bz=P[c*3+2]-P[a*3+2], nx=ay*bz-az*by, ny=az*bx-ax*bz, nz=ax*by-ay*bx; [a,b,c].forEach(v=>{ NN[v*3]+=nx; NN[v*3+1]+=ny; NN[v*3+2]+=nz; }); }
-      for(let v=0;v<NN.length;v+=3){ const l=Math.hypot(NN[v],NN[v+1],NN[v+2])||1; N[v]=NN[v]/l; N[v+1]=NN[v+1]/l; N[v+2]=NN[v+2]/l; } }
-    meshes.push({P:new Float32Array(P),N:new Float32Array(N),C:new Float32Array(C),G:new Float32Array(G),I:new Uint32Array(I),mat:p.mat,head:p.head,lathe:p.lathe}); });
-  /* 比主體多出來的部分（環、翅膀、吊飾、按鈕）：做成薄片 */
-  { const W=F.w, P=[],N=[],C=[],G=[],I=[], idx=new Int32Array(W*NY*2).fill(-1);
-    const extra=(x,y)=>{ if(F.d[(y*W+x)*4+3]<128) return false; const p=parts.find(q=>y>=q.y0&&y<q.y1); if(!p||!p.lathe) return false; return Math.abs(x-CX)>core[y]+1; };
-    for(const s of [1,-1]) for(let y=0;y<NY;y++) for(let x=0;x<W;x++){ if(!extra(x,y)) continue; const vi=P.length/3; idx[((s>0?0:1)*NY+y)*W+x]=vi; P.push((x-CX)*sc,Y(y),s*.035); N.push(0,0,s); C.push(...(lsSample(F,x,y)||[1,1,1]).map(v=>Math.pow(v,2.2))); G.push(y<headEnd?.5:0); }
-    const at=(s,y,x)=>x<0||x>=W||y<0||y>=NY?-1:idx[(s*NY+y)*W+x];
-    for(const s of [0,1]) for(let y=0;y<NY-1;y++) for(let x=0;x<W-1;x++){ const a=at(s,y,x), b=at(s,y,x+1), c=at(s,y+1,x), d=at(s,y+1,x+1); if(a<0||b<0||c<0||d<0) continue; if(s===0) I.push(a,c,b,b,c,d); else I.push(a,b,c,b,d,c); }
-    if(I.length) meshes.push({P:new Float32Array(P),N:new Float32Array(N),C:new Float32Array(C),G:new Float32Array(G),I:new Uint32Array(I),mat:"thin"}); }
-  /* 玻璃燈頭裡面：放一張發光的「燈頭裡的圖案」 */
-  const gl=parts.find(p=>p.mat==="glass"&&p.lathe); let inner=null;
-  if(gl){ const mid=Math.round((gl.y0+gl.y1)/2), r=core[mid]*sc; inner={y:Y(mid),r:r*.82,src:{y0:gl.y0,y1:gl.y1,cx:CX,rpx:core[mid]}}; }
-    const bcs=BR?BR.filter(Boolean).map(r=>r.cx).sort((a,b)=>a-b):[], BX=bcs[bcs.length>>1]||(B?B.w/2:0);
-  /* 貼圖投影用：世界座標 → 各視圖的 u（v 都一樣：上 1.3、下 -1.3） */
+      [[p.y0,1],[p.y1,-1]].forEach(([y,dir])=>{ const c0=P.length/3; P.push(0,Y(y),0); C.push(...colorAt(0,Math.min(NY-1,y),.01,0,1)); G.push(g); const base=(y===p.y0?0:(p.y1-p.y0)*rowN); for(let k=0;k<SEG;k++) dir>0?I.push(c0,base+k+1,base+k):I.push(c0,base+k,base+k+1); });
+      push(o,{...o,P:new Float32Array(P),C:new Float32Array(C),G:new Float32Array(G),I:new Uint32Array(I)}); }
+    else { const th=(x,y)=>(score&&score[y]?score[y]:Math.max(2,(FR[y]?FR[y].w:4)*.22))*sc; push(o,{...o,...puff((x,y)=>y>=p.y0&&y<p.y1&&F.d[(y*W+x)*4+3]>=128,0,W,p.y0,p.y1,th,{g,depth:1})}); } });
+  /* 燈頭外面多出來的（環、翅膀、吊飾） */
+  const isExtra=(x,y)=>{ if(F.d[(y*W+x)*4+3]<128) return false; const p=parts.find(q=>y>=q.y0&&y<q.y1); return !!(p&&p.lathe&&Math.abs(x-CX)>core[y]+2.5); };
+  let ring=null;
+  if(bulb){ const pts=[]; for(let y=bulb.y0;y<bulb.y1;y++) for(let x=0;x<W;x++) if(isExtra(x,y)) pts.push([x,y]);
+    const L=pts.filter(q=>q[0]<CX), R=pts.filter(q=>q[0]>CX); if(window.__dbg) window.__rg=[L.length,R.length,L.length&&L.reduce((a,b)=>b[0]<a[0]?b:a),R.length&&R.reduce((a,b)=>b[0]>a[0]?b:a),CX,core[Math.round((bulb.y0+bulb.y1)/2)],bulb.y0,bulb.y1];
+    if(L.length>8&&R.length>8){ const pl=L.reduce((a,b)=>b[0]<a[0]?b:a), pr=R.reduce((a,b)=>b[0]>a[0]?b:a), rad=Math.hypot(pr[0]-pl[0],pr[1]-pl[1])/2, bulbR=core[Math.round((bulb.y0+bulb.y1)/2)];
+      if(rad>bulbR*1.04&&rad<bulbR*1.9){ const cols={}; pts.forEach(([x])=>cols[x]=(cols[x]||0)+1); const tube=Math.max(bulbR*.045,Math.min(bulbR*.12,med(Object.values(cols))/2)), cL=[0,1].map(i=>L.reduce((s,q)=>s+q[i],0)/L.length), cR=[0,1].map(i=>R.reduce((s,q)=>s+q[i],0)/R.length);
+        const cc=[0,1,2].map(i=>pts.reduce((s,[x,y])=>s+F.d[(y*W+x)*4+i],0)/pts.length/255);
+        ring={key:"ring",label:"環",auto:"metal",x:((pl[0]+pr[0])/2-CX)*sc,y:Y((pl[1]+pr[1])/2),R:rad*sc,tube:tube*sc,roll:-Math.atan2(cR[1]-cL[1],cR[0]-cL[0]),tilt:.38,color:cc.map(v=>Math.pow(v,2.2))}; ring.mat=pm.ring||"pearl"; info.push({key:"ring",label:"環",mat:ring.mat,auto:"pearl"}); if(ring.mat==="off") ring=null; } } }
+  { const inRing=y=>ring&&bulb&&y>=bulb.y0&&y<bulb.y1, any=[]; for(let y=0;y<NY;y++) for(let x=0;x<W;x++) if(isExtra(x,y)&&!inRing(y)) any.push(1);
+    if(any.length>12){ const o={key:"thin",label:"外側裝飾",auto:"pearl",mat:pm.thin||"pearl"}; push(o,{...o,...puff((x,y)=>isExtra(x,y)&&!inRing(y),0,W,0,NY,()=>.03,{g:0})}); } }
+  /* 玻璃燈頭裡的圖案：挖出有顏色的部分，做成立體的小物件放進玻璃裡，自己會發光 */
+  let emb=null;
+  if(bulb&&bulb.mat==="glass"){ const cy=Math.round((bulb.y0+bulb.y1)/2), br=core[cy], hsAt=(x,y)=>{ const q=(y*W+x)*4; return lsHsl([F.d[q],F.d[q+1],F.d[q+2]]); };
+    let ls=0,n=0; for(let y=bulb.y0;y<bulb.y1;y++) for(let x=Math.round(CX-br);x<CX+br;x++){ if(F.d[(y*W+x)*4+3]<128) continue; ls+=hsAt(x,y).l; n++; } const ml=n?ls/n:.8;
+    const ry=(bulb.y1-bulb.y0)/2, inC=(x,y)=>((x-CX)/(br*.86))**2+((y-cy)/(ry*.86))**2<1, mk=(x,y)=>{ if(!inC(x,y)||F.d[(y*W+x)*4+3]<128) return false; const h=hsAt(x,y); return h.s>.2&&h.l<ml+.02||h.l<ml-.14; };
+    /* 只留大塊的（把反光、雜點去掉），再把小洞補起來 */
+    const bx0=Math.max(0,Math.round(CX-br)), bw=Math.min(W,Math.round(CX+br))-bx0, bh=bulb.y1-bulb.y0, M0=new Uint8Array(bw*bh); for(let y=0;y<bh;y++) for(let x=0;x<bw;x++) M0[y*bw+x]=mk(x+bx0,y+bulb.y0)?1:0;
+    const M1=new Uint8Array(bw*bh); for(let y=1;y<bh-1;y++) for(let x=1;x<bw-1;x++){ let n=0; for(let k=-1;k<=1;k++) for(let j=-1;j<=1;j++) n+=M0[(y+k)*bw+x+j]; M1[y*bw+x]=n>=4?1:0; }
+    const lab=new Int32Array(bw*bh), sz=[0]; let nl=0; for(let i=0;i<bw*bh;i++){ if(!M1[i]||lab[i]) continue; nl++; let c=0; const st=[i]; lab[i]=nl; while(st.length){ const j=st.pop(); c++; const x=j%bw, y=(j/bw)|0; for(const k of [x>0?j-1:-1,x<bw-1?j+1:-1,y>0?j-bw:-1,y<bh-1?j+bw:-1]) if(k>=0&&M1[k]&&!lab[k]){ lab[k]=nl; st.push(k); } } sz.push(c); }
+    const big=Math.max(0,...sz), keep=sz.map(v=>v>=big*.18&&v>=20);
+    /* 圖案中間白白的反光面也算進來：從外圍灌水，灌不到的洞就是圖案裡面 */
+    const sol=new Uint8Array(bw*bh); for(let i=0;i<bw*bh;i++) sol[i]=lab[i]&&keep[lab[i]]?1:0; const out=new Uint8Array(bw*bh), q2=[]; for(let x=0;x<bw;x++){ q2.push(x,(bh-1)*bw+x); } for(let y=0;y<bh;y++){ q2.push(y*bw,y*bw+bw-1); }
+    while(q2.length){ const j=q2.pop(); if(out[j]||sol[j]) continue; out[j]=1; const x=j%bw, y=(j/bw)|0; if(x>0) q2.push(j-1); if(x<bw-1) q2.push(j+1); if(y>0) q2.push(j-bw); if(y<bh-1) q2.push(j+bw); }
+    const mk2=(x,y)=>{ const i=(y-bulb.y0)*bw+(x-bx0); return x>=bx0&&x<bx0+bw&&y>=bulb.y0&&y<bulb.y1&&!out[i]&&inC(x,y); };
+    let cnt=0; for(let i=0;i<bw*bh;i++) if(lab[i]&&keep[lab[i]]) cnt++;
+    if(cnt>40){ const o={key:"emb",label:"燈頭裡的圖案",auto:"glow",mat:pm.emb||"glow"}; info.push({key:"emb",label:o.label,mat:o.mat,auto:"glow"});
+      if(o.mat!=="off"){ const th=()=>br*sc*.22; emb={...o,...puff(mk2,Math.max(0,Math.round(CX-br)),Math.min(W,Math.round(CX+br)),bulb.y0,bulb.y1,th,{g:o.mat==="glow"?.5:.15,col:(x,y)=>{ const q=(y*W+x)*4, c=[0,1,2].map(i=>F.d[q+i]/255), m=(c[0]+c[1]+c[2])/3; return c.map(v=>Math.pow(Math.max(0,Math.min(1,m+(v-m)*1.9-.06)),2.2)); }})}; } } }
+  if(emb) meshes.push(emb);
   const proj={f:[CX/F.w,1/(sc*F.w)],b:B?[BX/B.w,-1/(sc*B.w)]:[CX/F.w,-1/(sc*F.w)],s:S?[SX/S.w,-1/(sc*S.w)]:null};
-  return {meshes,headY:Y(Math.round(headEnd/2)),inner,F,front,side,back,proj}; }
+  return {meshes,ring,info,headY:bulb?Y(Math.round((bulb.y0+bulb.y1)/2)):Y(Math.round(headEnd/2)),front,side,back,proj}; }
+/* 去掉設計稿上「畫好的光影」：大面積的明暗拉平，只留圖案細節，光影交給 3D */
+function lsDelit(c){ try{ const w=c.width,h=c.height, x=c.getContext("2d",{willReadFrequently:true}), d=x.getImageData(0,0,w,h), q=d.data;
+    const sw=Math.max(2,Math.round(w/14)), sh=Math.max(2,Math.round(h/14)), s=document.createElement("canvas"); s.width=sw; s.height=sh; const sx=s.getContext("2d"); sx.drawImage(c,0,0,sw,sh);
+    const b=document.createElement("canvas"); b.width=w; b.height=h; const bx=b.getContext("2d",{willReadFrequently:true}); bx.imageSmoothingEnabled=true; bx.drawImage(s,0,0,w,h); const bq=bx.getImageData(0,0,w,h).data;
+    let gm=0,n=0; for(let i=0;i<q.length;i+=4) if(q[i+3]>128){ gm+=q[i]*.3+q[i+1]*.59+q[i+2]*.11; n++; } gm=n?gm/n:180;
+    for(let i=0;i<q.length;i+=4){ if(q[i+3]<10) continue; const a=bq[i+3]/255||1, lb=(bq[i]*.3+bq[i+1]*.59+bq[i+2]*.11)/a; if(lb<8) continue; const k=Math.max(.7,Math.min(1.45,(lb*.45+gm*.55)/lb)); q[i]=Math.min(255,q[i]*k); q[i+1]=Math.min(255,q[i+1]*k); q[i+2]=Math.min(255,q[i+2]*k); }
+    const o=document.createElement("canvas"); o.width=w; o.height=h; o.getContext("2d").putImageData(d,0,0); return o; }catch(e){ return c; } }
+/* 零件清單（草稿下面）：點一下換材質 */
+function lsPartsUI(ds){ const L=ds&&ds._parts; if(!L) return `<small class="muted">辨識中…</small>`; return L.map(p=>`<button class="chip ${p.mat==="off"?"":"on"}" data-a="lsPart" data-v="${p.key}">${p.label}・${LS_MATN[p.mat]||p.mat}</button>`).join(""); }
+document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="lsPart"]'); if(!t||!ui.lsDraft) return; const ds=ui.lsDraft.ds, k=t.dataset.v, cur=(ds._parts||[]).find(p=>p.key===k); if(!cur) return;
+  ds.pm=ds.pm||{}; ds.pm[k]=LS_MATS[(LS_MATS.indexOf(cur.mat)+1)%LS_MATS.length]; cur.mat=ds.pm[k]; ds._k=null; const el=document.querySelector('.ls-box[data-ls="draft"]'); if(el&&el._ls) el._ls.update(ds); const pl=document.getElementById("lsParts"); if(pl) pl.innerHTML=lsPartsUI(ds); });
+document.addEventListener("change",e=>{ if(e.target.id==="lsSplit"&&ui.lsDraft&&ui.lsDraft.ds.v2){ const ds=ui.lsDraft.ds; ds._k=null; const el=document.querySelector('.ls-box[data-ls="draft"]'); if(el&&el._ls) el._ls.update(ds); } });
 
 /* ===== 3. 手機上的 AI 深度（可選） ===== */
 let LSD_PIPE=null;
