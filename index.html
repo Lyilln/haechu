@@ -5539,7 +5539,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027141709";
+const BUILD="20261027141946";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -12447,7 +12447,8 @@ ${H} .t-empty-ico{color:${rgba(v.ac,.6)}!important;border-color:${rgba(v.ac,.2)}
 ${H} .t-foot{background:${v.bar}!important;border-top:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 ${H} .t-inp{background:${dark?mixHex(v.bar,"#ffffff",.08):"#ffffff"}!important}
 ${H} .t-meta span,${H} .t-time,${H} .t-day span{color:${v.sub}!important}
-${(()=>{ if(1.05/(wcagLum(v.ac)+.05)>=3) return ""; const on=lumHex(v.ink)<.5?v.ink:"#1D1A24", L=thAcFillSel(); const L2=[...L,".th-dot.on"]; return `${L2.map(x=>H+" "+x).join(",")}{color:${on}!important;text-shadow:none!important}`; })()}`;
+${(()=>{ if(1.05/(wcagLum(v.ac)+.05)>=3) return ""; /* 換成深色字：主題文字色跟主色對比夠（4.5 以上）才用，不然一律用深墨色，避免「紫底淡紫字」看不到 */
+    const cr=(a,b2)=>{ const A=wcagLum(a)+.05, B=wcagLum(b2)+.05; return Math.max(A,B)/Math.min(A,B); }, on=cr(v.ink,v.ac)>=4.5?v.ink:"#1D1A24", L=thAcFillSel(); const L2=[...L,".th-dot.on"]; return `${L2.map(x=>H+" "+x).join(",")}{color:${on}!important;text-shadow:none!important}`; })()}`;
 }
 /* 主題的主色太淺時（例如粉橘），按鈕上的白字會看不清楚：找出所有「主色底＋白字」的地方，改成深色字 */
 const wcagLum=hex=>{ const [r,g,b]=hexRgb(hex).map(x=>{ x/=255; return x<=.03928?x/12.92:Math.pow((x+.055)/1.055,2.4); }); return .2126*r+.7152*g+.0722*b; };
