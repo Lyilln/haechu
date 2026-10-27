@@ -4150,7 +4150,7 @@ html[data-theme="dark"] .ws-cnt b{color:#F2F2F5}html[data-theme="dark"] .ws-plus
 .concert2.stage .cc-t b{font-size:22px}
 .st-mic{position:absolute;left:50%;top:27%;width:min(30vw,128px);transform:translateX(-50%);transform-origin:50% 92%;z-index:3;touch-action:none;filter:drop-shadow(0 0 28px rgba(255,255,255,.25)) drop-shadow(0 20px 30px rgba(0,0,0,.5));animation:micIn .6s cubic-bezier(.3,1.4,.5,1)}
 @keyframes micIn{from{opacity:0;transform:translateX(-50%) translateY(40px) scale(.9)}}
-.mic-svg{width:100%;height:auto;display:block}
+.st-mic{perspective:700px}.mic-svg{width:100%;height:auto;display:block;transform-origin:50% 93%;will-change:transform;overflow:visible}
 .st-bds{position:absolute;inset:0;z-index:4;pointer-events:none}
 .st-bd{position:absolute;width:118px;padding:0;border:0;background:none;pointer-events:auto;transform:rotate(var(--r));animation:bdUp .5s cubic-bezier(.3,1.5,.5,1);filter:drop-shadow(0 10px 18px rgba(0,0,0,.45))}
 .st-bd::after{content:"";position:absolute;left:50%;top:100%;width:5px;height:34px;margin-left:-2.5px;border-radius:2px;background:linear-gradient(#E9E2D3,#B9AE98)}
@@ -5453,7 +5453,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027113844";
+const BUILD="20261027114157";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7638,16 +7638,25 @@ function concertOn(){
 }
 
 /* ===== 藝人端：走進演唱會現場（手上拿的是麥克風；燈海裡會隨機舉起粉絲的應援板） ===== */
-const MIC_SVG=c=>`<svg viewBox="0 0 120 300" class="mic-svg"><defs>
-  <radialGradient id="micG" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".45" stop-color="#D9D6E3"/><stop offset="1" stop-color="#8E8A9C"/></radialGradient>
-  <pattern id="micM" width="7" height="7" patternUnits="userSpaceOnUse"><circle cx="3.5" cy="3.5" r="1.25" fill="rgba(60,50,80,.35)"/></pattern>
-  <linearGradient id="micB" x1="0" x2="1"><stop offset="0" stop-color="#2A2633"/><stop offset=".45" stop-color="#5C566B"/><stop offset=".55" stop-color="#6B657A"/><stop offset="1" stop-color="#211E29"/></linearGradient>
-  <linearGradient id="micR" x1="0" x2="1"><stop offset="0" stop-color="${c}"/><stop offset=".5" stop-color="#FFFFFF"/><stop offset="1" stop-color="${c}"/></linearGradient></defs>
-  <circle cx="60" cy="58" r="50" fill="url(#micG)"/><circle cx="60" cy="58" r="50" fill="url(#micM)"/><circle cx="60" cy="58" r="50" fill="none" stroke="rgba(255,255,255,.6)" stroke-width="2"/>
-  <ellipse cx="44" cy="38" rx="16" ry="10" fill="rgba(255,255,255,.55)"/>
-  <rect x="30" y="100" width="60" height="16" rx="5" fill="url(#micR)"/>
-  <path d="M34 116h52l-10 170a8 8 0 0 1-8 7H52a8 8 0 0 1-8-7z" fill="url(#micB)"/>
-  <rect x="52" y="150" width="16" height="5" rx="2.5" fill="${c}" opacity=".9"/></svg>`;
+const MIC_SVG=c=>`<svg viewBox="0 0 140 340" class="mic-svg"><defs>
+  <radialGradient id="micG" cx="36%" cy="30%" r="78%"><stop offset="0" stop-color="#FFFFFF"/><stop offset=".3" stop-color="#E6E4EC"/><stop offset=".72" stop-color="#9C98A8"/><stop offset="1" stop-color="#4E4A5A"/></radialGradient>
+  <pattern id="micM" width="5" height="5" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><path d="M0 0H5M0 0V5" stroke="rgba(40,34,56,.5)" stroke-width=".9"/></pattern>
+  <radialGradient id="micSh" cx="50%" cy="50%" r="50%"><stop offset=".62" stop-color="rgba(0,0,0,0)"/><stop offset="1" stop-color="rgba(20,14,34,.55)"/></radialGradient>
+  <linearGradient id="micC" x1="0" x2="1"><stop offset="0" stop-color="#6E6A78"/><stop offset=".22" stop-color="#F4F2F8"/><stop offset=".42" stop-color="#A9A5B4"/><stop offset=".7" stop-color="#E9E7EF"/><stop offset="1" stop-color="#55515F"/></linearGradient>
+  <linearGradient id="micB" x1="0" x2="1"><stop offset="0" stop-color="#0E0C13"/><stop offset=".3" stop-color="#2B2833"/><stop offset=".42" stop-color="#4A4655"/><stop offset=".5" stop-color="#2E2B36"/><stop offset="1" stop-color="#09080D"/></linearGradient>
+  <linearGradient id="micL" x1="0" x2="1"><stop offset="0" stop-color="${c}" stop-opacity=".5"/><stop offset=".5" stop-color="#fff"/><stop offset="1" stop-color="${c}" stop-opacity=".5"/></linearGradient>
+  <filter id="micGl" x="-50%" y="-200%" width="200%" height="500%"><feGaussianBlur stdDeviation="3"/></filter>
+  <clipPath id="micH"><circle cx="70" cy="64" r="54"/></clipPath></defs>
+  <g clip-path="url(#micH)"><rect x="10" y="4" width="120" height="120" fill="url(#micG)"/><rect x="10" y="4" width="120" height="120" fill="url(#micM)"/>
+    <path d="M14 66 Q70 80 126 66" stroke="rgba(255,255,255,.55)" stroke-width="2.4" fill="none"/><path d="M14 69 Q70 83 126 69" stroke="rgba(30,24,44,.35)" stroke-width="1.2" fill="none"/>
+    <rect x="10" y="4" width="120" height="120" fill="url(#micSh)"/></g>
+  <ellipse cx="50" cy="38" rx="20" ry="12" fill="rgba(255,255,255,.7)" transform="rotate(-24 50 38)"/><circle cx="70" cy="64" r="54" fill="none" stroke="rgba(255,255,255,.75)" stroke-width="1.6"/>
+  <path d="M30 112 Q70 124 110 112 L106 132 Q70 142 34 132z" fill="url(#micC)"/>
+  <path d="M35 134 Q70 144 105 134 L103 141 Q70 151 37 141z" fill="${c}" filter="url(#micGl)" opacity=".9"/><path d="M35 134 Q70 144 105 134 L103 140 Q70 150 37 140z" fill="url(#micL)"/>
+  <path d="M37 142 Q70 152 103 142 L88 318 Q70 326 52 318z" fill="url(#micB)"/>
+  <path d="M58 152 L56 300" stroke="rgba(255,255,255,.18)" stroke-width="3" stroke-linecap="round"/>
+  <rect x="62" y="178" width="16" height="26" rx="4" fill="#07060A" stroke="rgba(255,255,255,.12)"/><circle cx="70" cy="186" r="2.2" fill="${c}"/><rect x="66" y="193" width="8" height="2" rx="1" fill="rgba(255,255,255,.35)"/>
+  <path d="M52 300 Q70 306 88 300 L87 316 Q70 324 53 316z" fill="url(#micC)" opacity=".85"/></svg>`;
 function artStageOn(){
   const s=session(), mid=s.member||uniMe(), ls=lightsea(); if(!ls){ toast("現在沒有演唱會"); return; }
   const g=groupOf(ls.gid), glow=GRADS[g.g%GRADS.length][0], cc=curConcert();
@@ -7682,11 +7691,16 @@ function stBoardPop(){ const host=document.getElementById("stBds"); if(!host){ c
   const x=L[Math.floor(Math.random()*L.length)], el=document.createElement("button"); el.className="st-bd"; el.dataset.a="stBd"; el.dataset.v=x.id;
   const side=host.children.length%2?Math.random()<.5:host.querySelector(".st-bd")?.dataset.side!=="l"; el.dataset.side=side?"l":"r"; el.style.left=(side?3+Math.random()*16:56+Math.random()*12)+"%"; el.style.bottom=(33+Math.random()*14)+"%"; el.style.setProperty("--r",(Math.random()*14-7).toFixed(1)+"deg");
   el.innerHTML=bdHtml(x,cc.gid,true); host.appendChild(el); setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),450); },5000); }
-function stMicDrag(){ const m=document.getElementById("stMic"); if(!m) return; let x0=null, r=0;
-  m.addEventListener("pointerdown",e=>{ x0=e.clientX; m.style.transition="none"; try{ m.setPointerCapture(e.pointerId); }catch(er){} });
-  m.addEventListener("pointermove",e=>{ if(x0==null) return; r=Math.max(-28,Math.min(28,(e.clientX-x0)/4)); m.style.transform=`translateX(-50%) rotate(${r}deg)`; SEA.boost=Math.min(1.4,SEA.boost+Math.abs(r)*.002); });
-  const up=()=>{ if(x0==null) return; x0=null; m.style.transition="transform .6s cubic-bezier(.3,1.6,.5,1)"; m.style.transform="translateX(-50%) rotate(0deg)"; };
-  m.addEventListener("pointerup",up); m.addEventListener("pointercancel",up); }
+/* 麥克風：跟應援棒同一套彈簧，可以左右揮、也可以往前往後揮 */
+function stMicDrag(){ const m=document.getElementById("stMic"); if(!m) return; const inn=m.querySelector(".mic-svg"); let pt=null; const S2={r:0,rv:0,p:0,pv:0,t0:performance.now()};
+  m.addEventListener("pointerdown",e=>{ pt={x:e.clientX,y:e.clientY}; try{ m.setPointerCapture(e.pointerId); }catch(er){} });
+  m.addEventListener("pointermove",e=>{ if(!pt) return; const dx=e.clientX-pt.x, dy=e.clientY-pt.y; pt={x:e.clientX,y:e.clientY};
+    S2.rv=dx*.006; S2.r=Math.max(-.6,Math.min(.6,S2.r+S2.rv)); S2.pv=-dy*.006; S2.p=Math.max(-.7,Math.min(.7,S2.p+S2.pv)); SEA.boost=Math.min(1.4,SEA.boost+(Math.abs(dx)+Math.abs(dy))*.0015); });
+  const up=()=>{ pt=null; }; m.addEventListener("pointerup",up); m.addEventListener("pointercancel",up);
+  const tick=now=>{ if(!m.isConnected) return; if(!pt){ S2.rv+=-S2.r*.07; S2.rv*=.9; S2.r+=S2.rv; S2.pv+=-S2.p*.07; S2.pv*=.88; S2.p+=S2.pv; }
+    const t=(now-S2.t0)/1000, idle=!pt&&Math.abs(S2.rv)+Math.abs(S2.pv)<.002, r=S2.r+(idle?Math.sin(t*1.9)*.035:0);
+    inn.style.transform=`rotateZ(${r}rad) rotateX(${S2.p}rad)`; requestAnimationFrame(tick); };
+  requestAnimationFrame(tick); }
 function stOff(){ clearInterval(ccTimer); clearInterval(ui.stBdT); ui.stK=null; layer.innerHTML=""; render(); }
 function stReply(id,txt){ const L=bdAll(), x=L.find(y=>y.id===id); if(!x) return; x.ans={by:ui.stMid,text:txt,ts:Date.now()}; x.up=false; bdSave(L); const el=document.querySelector(`.st-bd[data-v="${id}"]`); if(el){ el.classList.add("hit"); setTimeout(()=>el.remove(),500); } toast("已回應 💜"); }
 function stSheet(html){ const st=layer.querySelector(".concert2.stage"); if(!st) return; st.querySelector(".st-shw")?.remove(); const w=document.createElement("div"); w.className="st-shw"; w.dataset.a="stShX"; w.innerHTML=`<div class="st-sh" data-a="stNoop">${html}</div>`; st.appendChild(w); requestAnimationFrame(()=>w.classList.add("open")); }
@@ -8169,7 +8183,7 @@ function paint(html,hasNav,navHtml=""){
   const pa0=pageAnim(), pa=ui.swiped?"":pa0; ui.swiped=false; const fixedPage=/class="(mr |mr"|t-foot|t-bgl|sticky-cta)/.test(html);
   const pc=pa&&!matchMedia("(prefers-reduced-motion: reduce)").matches?" pg-"+(fixedPage&&pa!=="op"?"op":pa)+(fixedPage&&pa==="push"?" pg-tpush":""):"";
   // 導覽列不要每次重畫：同一組分頁就保留原本的玻璃列，只把鏡片滑過去（才不會卡）
-  const oldNav=root.querySelector(":scope > .nav"), tmp=document.createElement("div"); if(hasNav) tmp.innerHTML=navHtml; const newNav=tmp.firstElementChild;
+  const oldSn=root.querySelector(".sn-nav2"), oldNav=root.querySelector(":scope > .nav"), tmp=document.createElement("div"); if(hasNav) tmp.innerHTML=navHtml; const newNav=tmp.firstElementChild;
   const sig=n=>n?[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v+"|"+b.querySelector(".nav-ico").innerHTML.length).join(","):"";
   if(hasNav&&oldNav&&newNav&&sig(oldNav)===sig(newNav)){
     const app=root.querySelector(":scope > .app"); const box=document.createElement("div"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`;
@@ -8177,6 +8191,9 @@ function paint(html,hasNav,navHtml=""){
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ L.classList.remove("go"); L.style.transform=""; L.style.setProperty("--i",i); L.style.setProperty("--f",i); }
   } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
+  /* SNS 下面的分頁列：保留原本那條，鏡片直接滑過去，不要整條重畫（才順） */
+  { const nw=root.querySelector(".sn-nav2"); if(oldSn&&nw&&oldSn!==nw){ const oL=oldSn.querySelector(".nav-lens"), nL=nw.querySelector(".nav-lens"), ob=[...oldSn.querySelectorAll(".nav-btn")], nb=[...nw.querySelectorAll(".nav-btn")];
+      if(oL&&nL&&ob.length===nb.length){ ob.forEach((b,k)=>{ b.className=nb[k].className; b.querySelector(".nav-ico").innerHTML=nb[k].querySelector(".nav-ico").innerHTML; }); const i=nb.findIndex(b=>b.classList.contains("on")); oL.classList.remove("go"); oL.style.transform=""; if(i>=0){ oL.style.setProperty("--i",i); oL.style.setProperty("--f",i); } nw.replaceWith(oldSn); } } }
   hydrateMedia(root); try{ truckAttach(); }catch(e){} tieFootPad(); try{ lvLockSync(); }catch(e){} try{ const sw=document.querySelector(".uni-sw"); document.documentElement.style.setProperty("--uniH",sw?sw.offsetHeight+"px":"0px"); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
   const tev=document.getElementById("tev"); if(tev){ tev.focus(); tev.setSelectionRange(tev.value.length,tev.value.length); }
   { const hs=document.getElementById("hostFeed"); if(hs) hs.scrollTop=hs.scrollHeight; const ms=document.getElementById("mrStream"); if(ms) ms.scrollTop=ms.scrollHeight; }
