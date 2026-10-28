@@ -5250,6 +5250,20 @@ main.wk{padding-bottom:110px}
 .wk-side{position:fixed;z-index:39;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);display:flex;flex-direction:column;gap:10px}
 .wk-side button{width:44px;height:44px;border:1px solid #444;background:rgba(20,20,24,.9);color:#fff;font-size:18px;border-radius:8px}.wk-side span{display:flex;flex-direction:column}.wk-side span button:first-child{border-radius:8px 8px 0 0}.wk-side span button:last-child{border-radius:0 0 8px 8px;border-top:0}
 .wk-pillname{position:fixed;z-index:39;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);transform:translate(-50%,10px);padding:6px 22px;border-radius:999px;background:rgba(60,60,66,.95);color:#fff;font-weight:800;opacity:0;pointer-events:none;transition:.2s}.wk-pillname.on{opacity:1;transform:translate(-50%,0)}
+/* 名片分頁：封面格、相關文件 */
+.wkg-links a.on{color:var(--wc);font-weight:700}
+.wkg-mem a.me{font-weight:800;text-decoration:underline}
+.wkn-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:10px;border-top:1px solid var(--wkb,#ccc)}
+.wkn-t{display:flex;flex-direction:column;gap:2px;min-width:0;font-size:12px;text-align:left}
+.wkn-cv{display:block;aspect-ratio:1;border-radius:6px;background-size:cover;background-position:center}
+.wkn-t b{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.wkn-t em{font-style:normal;align-self:flex-start;font-size:10.5px;padding:1px 6px;border-radius:9px;background:var(--wc);color:#fff}
+.wkn-t small{opacity:.65;font-size:11px}
+.wkn-rel{display:flex;flex-wrap:wrap;gap:6px 14px;padding:10px 12px;border-top:1px solid var(--wkb,#ccc)}
+.wkn-rel a{color:var(--wkl);font-size:13.5px}
+.wk-add{margin:22px 0 8px;padding:12px;border:1px dashed var(--wkb,#ccc);border-radius:8px;display:flex;flex-wrap:wrap;gap:8px 14px}
+.wk-add b{width:100%;font-size:13px;opacity:.7}
+.wk-add a{color:var(--wkl);font-size:13.5px}
 
 </style>
 </head>
@@ -5668,7 +5682,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028044118";
+const BUILD="20261028045550";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16147,70 +16161,20 @@ function wkAuto(gid){ const ms=getMShow(), songs=[...(ms.songs||[]),...(ms.ended
   const now=Date.now(), cc=getConcerts().filter(c=>c.gid===gid&&!c.tour&&(c.ended||c.endTs<=now)), tours=(typeof getTours==="function"?getTours():[]).filter(t=>t.gid===gid&&t.status==="approved");
   return {debut:idTs(gid,/^g/), songs, wins, cc, tours}; }
 const wkYmd=ts=>{ const d=new Date(ts); return `${d.getFullYear()}年 ${d.getMonth()+1}月 ${d.getDate()}日`; };
-/* 一頁 */
-function wkView(id){ const isG=id.startsWith("g:"), key=id.slice(2), m=isG?null:MEMBERS[key], gid=isG?key:m.group, g=groupOf(gid), P=wkPage(id), F=P.f||{}, A=wkAuto(gid), col=gTheme(gid), notes=[], can=wkCanEdit(id);
-  if(ui.wkEd===id&&can) return wkEditor(id,isG,P);
-  const cats=[g.solo?"SOLO":"團體", g.name, A.debut?new Date(A.debut).getFullYear()+" 年出道":"", isG?"":(F.pos||"")].filter(Boolean);
-  const mem=isG?grpMembers(gid):[];
-  const row=(l,v)=>v?`<tr><th>${l}</th><td>${v}</td></tr>`:"";
-  const info=`<table class="wk-info" style="--wc:${col}"><tr><td colspan="2" class="wk-ih">${esc(isG?g.name:m.name)}</td></tr><tr><td colspan="2" class="wk-iph">${isG?`<span class="wk-gav" style="background:${grad(g.g||0)}">${esc((g.name||"?")[0])}</span>`:`<span class="wk-mav" style="background:${grad(m.g||0)}">${mAvIn(key)}</span>`}</td></tr>
-    ${isG?row("成員",mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("、"))+WK_GF.map(([k,l])=>row(l,esc(F[k]||""))).join(""):WK_F.map(([k,l])=>row(l,esc(F[k]||""))).join("")+row("所屬",`<a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a>`)}
-    ${row("出道",A.debut?wkYmd(A.debut):"")}${row("應援色",`<i class="wk-sw" style="background:${col}"></i>`)}</table>`;
-  const S2=[];   // [標題, 內容, [小段]]
-  S2.push(["概要",P.ov?`<p>${wkTxt(P.ov,notes,id)}</p>`:`<p class="wk-empty">還沒有內容</p>`]);
-  const yrs={}; if(A.debut) (yrs[new Date(A.debut).getFullYear()]=yrs[new Date(A.debut).getFullYear()]||[]).push(`${wkYmd(A.debut)} 出道`);
-  A.songs.forEach(s=>{ const t=idTs(s.id,/^s/); if(t) (yrs[new Date(t).getFullYear()]=yrs[new Date(t).getFullYear()]||[]).push(`《${esc(s.title)}》${A.wins[s.id]?`・打歌一位 ${A.wins[s.id]} 次`:""}`); });
-  A.cc.forEach(c=>(yrs[new Date(c.startTs).getFullYear()]=yrs[new Date(c.startTs).getFullYear()]||[]).push(`演唱會「${esc(c.title)}」`));
-  A.tours.forEach(t=>{ const L=tourStops(t); if(L.length) (yrs[new Date(L[0].startTs).getFullYear()]=yrs[new Date(L[0].startTs).getFullYear()]||[]).push(`世界巡演「${esc(t.title)}」${L.length} 站`); });
-  S2.push(["經歷",(P.hi?`<p>${wkTxt(P.hi,notes,id)}</p>`:"")+(Object.keys(yrs).length?Object.keys(yrs).sort().map(y=>`<h4>${y}年</h4><ul>${yrs[y].map(x=>`<li>${x}</li>`).join("")}</ul>`).join(""):(P.hi?"":`<p class="wk-empty">還沒有內容</p>`))]);
-  S2.push(["作品",A.songs.length?`<table class="wk-tb"><tr><th>歌名</th><th>發行</th><th>打歌一位</th></tr>${A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<tr><td>${esc(s.title)}</td><td>${t?wkYmd(t):""}</td><td>${A.wins[s.id]||0}</td></tr>`; }).join("")}</table>`:`<p class="wk-empty">還沒有作品</p>`]);
-  { const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(isG?(e.mids||[]).some(x=>MEMBERS[x]&&MEMBERS[x].group===gid):(e.mids||[]).includes(key)));
-    if(eps.length) S2.push(["綜藝",`<table class="wk-tb"><tr><th>節目</th><th>日期</th><th>結果</th></tr>${eps.map(e=>{ const w=((e.res||{}).win||[]), t=e.ts||idTs(String(e.id).replace(/^\D+/,"x"),/^x/)||0, me=isG?(e.mids||[]).filter(x=>MEMBERS[x]&&MEMBERS[x].group===gid):[key];
-      return `<tr><td>${esc(VSHOW[e.show].name)}</td><td>${t?wkYmd(t):""}</td><td>${e.st!=="done"?"播出中":me.some(x=>w.includes(x))?"🏆 冠軍":"出演"}</td></tr>`; }).join("")}</table>`]); }
-  if(A.cc.length||A.tours.length) S2.push(["演唱會・世巡",`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`]);
-  S2.push(["趣事",(P.tr||"").trim()?`<ul>${P.tr.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),notes,id)}</li>`).join("")}</ul>`:`<p class="wk-empty">還沒有內容</p>`]);
-  const fold=ui.wkFold||{};
-  const body=S2.map(([t,c],i)=>`<section class="wk-s ${fold[id+i]?"fold":""}"><h2 data-a="wkFold" data-v="${id+i}"><span class="wk-no">${i+1}.</span> ${t}<i class="wk-ar">▾</i></h2><div class="wk-sc">${c}</div></section>`).join("");
-  const sibs=isG?mem:grpMembers(gid);
-  const nav=`<table class="wk-nav" style="--wc:${col}"><tr><th><a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a></th></tr><tr><td>${sibs.map(x=>`<a class="wk-ln ${!isG&&x===key?"me":""}" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join(" · ")}</td></tr></table>`;
-  const H=(P.hist||[]);
-  return `<article class="wk-doc">
-    <div class="wk-th"><h1>${esc(wkName(id))}</h1><div class="wk-tools">${can?`<button data-a="wkEdit" data-v="${id}">編輯</button>`:""}<button data-a="wkHist" data-v="${id}">歷史</button></div></div>
-    <p class="wk-upd">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}</p>
-    <div class="wk-cat">分類：${cats.map(c=>`<span>${esc(c)}</span>`).join(" | ")}</div>
-    ${isG?"":`<div class="wk-up">上層文件：<a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a></div>`}
-    ${ui.wkH===id?`<div class="wk-hist"><b>修改紀錄</b>${H.length?H.slice().reverse().map(h=>`<p><span>${ymd(h.ts)} ${timeHM(h.ts)}</span> ${esc(h.n||"")} <em class="${h.d>=0?"p":"m"}">(${h.d>=0?"+":""}${h.d})</em></p>`).join(""):`<p>還沒有修改紀錄</p>`}</div>`:""}
-    ${info}
-    <div class="wk-toc"><b>目錄</b>${S2.map(([t],i)=>`<a data-a="wkTo" data-v="${i}"><span class="wk-no">${i+1}.</span> ${t}</a>`).join("")}</div>
-    ${body}
-    ${notes.length?`<div class="wk-notes">${notes.map((n,i)=>`<p><a>[${i+1}]</a> ${esc(n)}</p>`).join("")}</div>`:""}
-    ${nav}</article>`; }
-function wkEditor(id,isG,P){ const F=P.f||{};
-  return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯)</small></h1></div>
-    <p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。直接打字就好，提到其他藝人的名字會自動變成連結。</p>
-    <div class="wk-ef">${(isG?WK_GF:WK_F).map(([k,l])=>`<label><span>${l}</span><input id="wkf_${k}" maxlength="40" value="${esc(F[k]||"")}" placeholder="輸入文字"></label>`).join("")}</div>
-    <label class="wk-ea"><span>1. 概要</span><textarea id="wk_ov" rows="4" maxlength="1500" placeholder="輸入文字">${esc(P.ov||"")}</textarea></label>
-    <label class="wk-ea"><span>2. 經歷</span><textarea id="wk_hi" rows="6" maxlength="4000" placeholder="輸入文字">${esc(P.hi||"")}</textarea></label>
-    <label class="wk-ea"><span>趣事（一行一條）</span><textarea id="wk_tr" rows="5" maxlength="3000" placeholder="輸入文字">${esc(P.tr||"")}</textarea></label>
-    <div class="ls-btns"><button class="btn btn-soft" data-a="wkCancel">取消</button><button class="btn btn-main" data-a="wkSave" data-v="${id}">儲存</button></div></article>`; }
-function wkSave(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[id]||{})}, v=k=>((document.getElementById(k)||{}).value||"").trim(), isG=id.startsWith("g:");
-  const f={}; (isG?WK_GF:WK_F).forEach(([k])=>{ const x=v("wkf_"+k); if(x) f[k]=x; }); const ov=v("wk_ov"), hi=v("wk_hi"), tr=v("wk_tr");
-  if(!isAdminAcct()&&[ov,hi,tr,...Object.values(f)].some(x=>x&&banBlock(x))) return;
-  const len=o=>JSON.stringify([o.f||{},o.ov||"",o.hi||"",o.tr||""]).length, d=len({f,ov,hi,tr})-len(P);
-  Object.assign(P,{f,ov,hi,tr,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d}].slice(-20);
-  all[id]=P; S.set(WK_KEY,all); ui.wkEd=null; render(); window.scrollTo(0,0); toast("已儲存"); }
 /* ===== 團體頁、SOLOIST 頁：照 Namuwiki 手機版（她 10/28 給 ifeye、BIBI、dodree 截圖；TW-IN 是兩人團） ===== */
 const WKG_F=[["genre","曲風"],["leader","隊長"],["co","公司"],["dist","發行商"],["fan","粉絲名"]];
 const WKS_F=[["real","本名"],["birth","出生日期","date"],["bplace","出生地"],["from","出身"],["nat","國籍"],["clan","本貫"],["body","身體資料"],["family","家人"],["rel","宗教"],["edu","學歷"],["co","公司"],["fan","粉絲名"],["motto","座右銘"],["nick","綽號"],["hobby","興趣"],["mbti","MBTI"]];
 /* 段落：[key, 標題, 小段[[key,標題]], 自動內容] */
 const WKG_S=[["ov","概要"],["mem","成員",[["chem","成員間的化學反應"]]],["feat","特色"],["act","活動",[["perf","公演"],["cont","內容"],["show","綜藝"]]],["disc","作品"],["award","得獎紀錄"],["tr","趣事",[["pre","出道前"]]],["pics","歷代宣傳照"],["nav","周邊導覽"]];
 const WKS_S=[["ov","概要"],["life","生平"],["music","音樂活動",[["disc","作品"],["award","音樂節目"],["perf","公演"]]],["acting","演技活動"],["other","其他活動",[["show","綜藝"],["radio","廣播"],["ad","廣告"]]],["prize","得獎紀錄"],["ctrv","爭議"],["tr","趣事"],["nav","周邊導覽"]];
+const wkT=P=>P.s||{ov:P.ov||"",life:P.hi||"",tr:P.tr||""};   /* v330 以前的個人頁資料 */
 const WK_AUTO=new Set(["mem","disc","award","perf","show","ad","pics","nav","prize"]);   // 這些段自動填（perf 自動＋可補寫）
 const wkDays=ts=>Math.floor((dayStart(Date.now())-dayStart(ts))/864e5);
 const wkAge=s=>{ const t=ymdTs(s); if(!t) return ""; const d=new Date(t), n=new Date(); let a=n.getFullYear()-d.getFullYear(); if(n.getMonth()<d.getMonth()||n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()) a--; return a; };
 const wkDot=s=>{ const t=ymdTs(s); if(!t) return esc(s||""); const d=new Date(t); return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())}.`; };
-function wkAutoSec(k,ctx){ const {gid,A,mem,isSolo,key}=ctx, empty=`<p class="wk-empty">還沒有內容</p>`;
-  if(k==="mem"){ const n=mem.length, cols=n<=2||n===4?2:3; return `<div class="wkm-grid" style="--cols:${cols};--wc:${ctx.col}">${mem.map(x=>{ const Fm=(wkPage("m:"+x).f)||{}; return `<div class="wkm-c"><a class="wkm-ph" data-a="wkGo" data-v="m:${x}" style="background:${grad(MEMBERS[x].g||0)}">${teaserIn?teaserIn(x):mAvIn(x)}</a><b data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</b><span>${Fm.bday?`${wkDot(Fm.bday)}${wkAge(Fm.bday)!==""?` (${wkAge(Fm.bday)}歲)`:""}`:"—"}</span><span>${esc(Fm.nat||"—")}</span><span>${esc(Fm.pos||"—")}</span></div>`; }).join("")}</div>`; }
+function wkAutoSec(k,ctx){ const {gid,A,isSolo,key,isM}=ctx, mem=isM?[key]:ctx.mem, empty="";
+  if(isM&&["mem","disc","award","prize","perf","pics"].includes(k)) return "";
+  if(k==="mem"){ const n=mem.length, cols=n<=2||n===4?2:3; return `<div class="wkm-grid" style="--cols:${cols};--wc:${ctx.col}">${mem.map(x=>{ const Fm=(wkPage("m:"+x).f)||{}; Fm.bday=Fm.birth||Fm.bday; return `<div class="wkm-c"><a class="wkm-ph" data-a="wkGo" data-v="m:${x}" style="background:${grad(MEMBERS[x].g||0)}">${teaserIn?teaserIn(x):mAvIn(x)}</a><b data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</b><span>${Fm.bday?`${wkDot(Fm.bday)}${wkAge(Fm.bday)!==""?` (${wkAge(Fm.bday)}歲)`:""}`:"—"}</span><span>${esc(Fm.nat||"—")}</span><span>${esc(Fm.pos||"—")}</span></div>`; }).join("")}</div>`; }
   if(k==="disc") return A.songs.length?`<table class="wk-tb"><tr><th>歌名</th><th>發行</th><th>一位</th></tr>${A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<tr><td>${esc(s.title)}</td><td>${t?wkYmd(t):""}</td><td>${A.wins[s.id]||0}</td></tr>`; }).join("")}</table>`:empty;
   if(k==="award"||k==="prize"){ const L=A.songs.filter(s=>A.wins[s.id]); return L.length?`<ul>${L.map(s=>`<li>音樂節目一位：《${esc(s.title)}》${A.wins[s.id]} 次</li>`).join("")}</ul>`:empty; }
   if(k==="perf") return A.cc.length||A.tours.length?`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`:"";
@@ -16219,48 +16183,69 @@ function wkAutoSec(k,ctx){ const {gid,A,mem,isSolo,key}=ctx, empty=`<p class="wk
   if(k==="pics"){ const ph=[gPhoto(gid),...mem.map(x=>mPhoto(x))].filter(Boolean); return ph.length?`<div class="wk-pics">${ph.map(u=>`<span style="background-image:url('${u}')"></span>`).join("")}</div>`:empty; }
   if(k==="nav") return `<table class="wk-nav" style="--wc:${ctx.col}"><tr><th><a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(ctx.g.name)}</a></th></tr><tr><td>${mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join(" · ")}</td></tr></table>`;
   return ""; }
-function wkViewG(id){ const gid=id.slice(2), g=groupOf(gid), isSolo=!!g.solo, mem=grpMembers(gid), key=isSolo?mem[0]:null, P=wkPage(id), F=P.f||{}, T=P.s||{}, A=wkAuto(gid), col=gTheme(gid), can=wkCanEdit(id), ctx={gid,g,A,mem,isSolo,key,col};
-  if(ui.wkEd&&ui.wkEd.startsWith(id+"#")&&can) return wkSecEditor(id,ui.wkEd.slice(id.length+1),isSolo,P);
-  const lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
-  const logo=P.logo?`<img class="wkg-logo" src="${esc(P.logo)}" alt=""><i></i>`:"";   /* 還沒上傳 Logo：只放團名（她：沒上傳前用團名） */
-  const card=`<div class="wkg-card" style="--wc:${col}"><div class="wkg-top">${logo}<span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>
-    ${!isSolo&&mem.length?`<div class="wkg-mem">${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("")}</div>`:""}
-    <div class="wkg-links">${(isSolo?[["music","音樂作品"],["disc","參與作品"],["other","出演作品"],["nav","相關文件"]]:[["disc","音樂作品"],["nav","相關文件"]]).map(([k,l])=>`<a data-a="wkToK" data-v="${k}">[ ${l} ]</a>`).join("")}</div></div>`;
-  const photo=P.photo||(isSolo?mPhoto(key):gPhoto(gid));
-  const hero=!isSolo&&photo?`<figure class="wkg-hero" style="--wc:${col}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
-  const row=(l,v)=>`<tr><th>${l}</th><td>${v||"—"}</td></tr>`, d=A.debut, dd=d?wkDays(d):0;
-  const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip">出道作品</span><span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
-  const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a><br><a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
-  const infoRows=isSolo?WKS_F.map(([k,l])=>{ if(k==="birth") return row("出生",F.birth?`${wkDot(F.birth)}${wkAge(F.birth)!==""?`（${wkAge(F.birth)}歲）`:""}${F.bplace?`<br>${esc(F.bplace)}`:""}`:esc(F.bplace||"")); if(k==="bplace") return ""; if(k==="co") return row(l,esc(F[k]||""))+row("出道",debutRow); if(k==="fan") return row(l,F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:""); return row(l,esc(F[k]||"")); }).join("")+row("簽名",(()=>{ const sig=Object.values(S.get("daisuki_cafe",{})||{}).filter(c=>c&&c.mid===key&&c.art&&c.art.sig).map(c=>c.art.sig).pop(); return sig&&typeof cfImg==="function"?`<span class="wk-sig">${cfImg(sig,"sig")}</span>`:""; })())
+/* 頁面的共同資料（團體頁 g:、SOLOIST 頁 g:(solo)、成員頁 m:） */
+function wkCtx(id){ const isM=id.startsWith("m:"), key0=id.slice(2), gid=isM?(MEMBERS[key0]||{}).group:key0, g=groupOf(gid), isSolo=!isM&&!!g.solo, mem=grpMembers(gid), key=isM?key0:isSolo?mem[0]:null;
+  return {id,isM,isSolo,person:isM||isSolo,gid,g,mem,key,A:wkAuto(gid),col:gTheme(gid)}; }
+const wkSecs=ctx=>ctx.person?WKS_S:WKG_S;
+/* 這一段有沒有內容（沒內容的段落和連結都不出現，她：沒有的不要寫） */
+function wkHas(ctx,P,k){ const T=wkT(P); return !!((T[k]||"").trim()||(k==="ov"&&T.ovq)||(WK_AUTO.has(k)&&wkAutoSec(k,ctx))); }
+function wkSecOn(ctx,P,[k,t,sub]){ return wkHas(ctx,P,k)||(sub||[]).some(([k2])=>wkHas(ctx,P,k2)); }
+/* 團的名片（團體頁、成員頁共用）：Logo／團名點了回團體頁；[音樂作品][出演作品][相關文件] 點了在卡片裡展開 */
+function wkNavbox(ctx){ const {gid,g,mem,col,isSolo}=ctx, GP=wkPage("g:"+gid), GF=GP.f||{}, gctx=wkCtx("g:"+gid), open=ui.wkNb&&ui.wkNb.startsWith(gid+"|")?ui.wkNb.split("|")[1]:"";
+  const logo=GP.logo?`<img class="wkg-logo" src="${esc(GP.logo)}" alt=""><i></i>`:"";
+  const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x)));
+  const rel=wkSecs(gctx).flatMap(([k,t,sub])=>[[k,t],...(sub||[])]).filter(([k])=>!["ov","nav","mem"].includes(k)&&wkHas(gctx,GP,k));
+  const tabs=[gctx.A.songs.length?["disc","音樂作品"]:null,isSolo&&eps.length?["show","出演作品"]:null,rel.length?["rel","相關文件"]:null].filter(Boolean);
+  const cover=s=>{ const ph=gPhoto(gid); return ph?`style="background-image:url('${esc(ph)}')"`:`style="background:${grad(g.g||0)}"`; };
+  const panel=open==="disc"?`<div class="wkn-grid">${gctx.A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<div class="wkn-t"><span class="wkn-cv" ${cover(s)}></span><b>${esc(s.title)}</b><em>${gctx.A.wins[s.id]?`一位 ${gctx.A.wins[s.id]} 次`:"單曲"}</em><small>${t?wkDot(ymdIn(t)):""}</small></div>`; }).join("")}</div>`
+    :open==="show"?`<div class="wkn-grid">${eps.map(e=>`<div class="wkn-t"><span class="wkn-cv" style="background:${grad((e.show||"").length)}"></span><b>${esc(VSHOW[e.show].name)}</b><em>${(e.mids||[]).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</em></div>`).join("")}</div>`
+    :open==="rel"?`<div class="wkn-rel">${rel.map(([k,t])=>`<a data-a="wkJump" data-v="${gid}|${k}">${t}</a>`).join("")}</div>`:"";
+  return `<div class="wkg-card" style="--wc:${col}"><div class="wkg-top" data-a="wkGo" data-v="g:${gid}">${logo}<span><b>${esc(g.name)}</b><small>${esc(GF.kname||"")}</small></span></div>
+    ${!isSolo&&mem.length?`<div class="wkg-mem">${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}" class="${ctx.key===x?"me":""}">${esc(MEMBERS[x].name)}</a>`).join("")}</div>`:""}
+    ${tabs.length?`<div class="wkg-links">${tabs.map(([k,l])=>`<a data-a="wkNb" data-v="${gid}|${k}" class="${open===k?"on":""}">[ ${l} ]</a>`).join("")}</div>`:""}${panel}</div>`; }
+function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), F=P.f||{}, T=wkT(P), can=wkCanEdit(id);
+  if(ui.wkEd&&ui.wkEd.startsWith(id+"#")&&can) return wkSecEditor(id,ui.wkEd.slice(id.length+1),person,P,isM);
+  const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
+  const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
+  const hero=!person&&photo?`<figure class="wkg-hero" style="--wc:${col}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
+  const row=(l,v)=>v?`<tr><th>${l}</th><td>${v}</td></tr>`:"", d=A.debut, dd=d?wkDays(d):0;
+  const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
+  const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a> · <a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
+  const birth=F.birth||F.bday;
+  const infoRows=person?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F).map(([k,l])=>{ if(k==="birth") return row("出生",birth||F.bplace?`${birth?`${wkDot(birth)}${wkAge(birth)!==""?`（${wkAge(birth)}歲）`:""}`:""}${F.bplace?`<br>${esc(F.bplace)}`:""}`:""); if(k==="bplace") return ""; if(k==="co") return row(l,esc(F[k]||""))+(isM?row("所屬",`<a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a>`):row("出道",debutRow)); if(k==="fan") return row(l,F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:""); return row(l,esc(F[k]||"")); }).join("")+row("簽名",(()=>{ const sig=Object.values(S.get("daisuki_cafe",{})||{}).filter(c=>c&&c.mid===key&&c.art&&c.art.sig).map(c=>c.art.sig).pop(); return sig&&typeof cfImg==="function"?`<span class="wk-sig">${cfImg(sig,"sig")}</span>`:""; })())
     :row("出道日",debutRow)+row("出道作品",firstSong?`<span class="wk-chip f">${esc(firstSong.title)}</span>`:"")+WKG_F.map(([k,l])=>row(l,k==="fan"&&F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:k==="leader"&&F.leader?wkTxt(F.leader,[],id):esc(F[k]||""))).join("");
-  const info=`<table class="wk-info2" style="--wc:${col}"><tr><td colspan="2" class="wk-ih2">${isSolo?`<b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small>`:`<div class="wkg-top">${logo}<span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>`}</td></tr>
-    ${isSolo&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
-  const SS=isSolo?WKS_S:WKG_S, fold=ui.wkFold||{}, toc=[], body=[];
+  const head=person?`<b>${esc(F.kname||name)}</b><small>${esc(F.kname?name.toUpperCase():"")}</small>`:`<div class="wkg-top"><span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>`;
+  const info=`<table class="wk-info2" style="--wc:${col}"><tr><td colspan="2" class="wk-ih2">${head}</td></tr>${person&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
+  const SS=wkSecs(ctx), fold=ui.wkFold||{}, toc=[], body=[], empty=[];
   const txt=k=>{ const v=(T[k]||"").trim(); if(!v) return ""; if(k==="tr"||k==="pre") return `<ul>${v.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),[],id)}</li>`).join("")}</ul>`; return `<p>${wkTxt(v,[],id)}</p>`; };
   const secHtml=(n,k,t,lv)=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||k==="perf")?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
     toc.push(`<a data-a="wkToK" data-v="${k}" class="lv${lv}"><span class="wk-no">${n}.</span> ${t}</a>`);
-    return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}${!auto&&!own&&!q?`<p class="wk-empty">還沒有內容</p>`:""}</div></section>`; };
-  SS.forEach(([k,t,sub],i)=>{ body.push(secHtml(i+1,k,t,1)); (sub||[]).forEach(([k2,t2],j)=>body.push(secHtml(`${i+1}.${j+1}`,k2,t2,2))); });
-  const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,F.co||""].filter(Boolean);
+    return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}</div></section>`; };
+  let n=0; SS.forEach(([k,t,sub])=>{ if(!wkSecOn(ctx,P,[k,t,sub])){ if(can&&(!WK_AUTO.has(k)||k==="perf")) empty.push([k,t]); (sub||[]).forEach(([k2,t2])=>{ if(can&&(!WK_AUTO.has(k2)||k2==="perf")) empty.push([k2,t2]); }); return; }
+    n++; body.push(secHtml(n,k,t,1)); let j=0; (sub||[]).forEach(([k2,t2])=>{ if(wkHas(ctx,P,k2)){ j++; body.push(secHtml(`${n}.${j}`,k2,t2,2)); } else if(can&&(!WK_AUTO.has(k2)||k2==="perf")) empty.push([k2,t2]); }); });
+  const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isM?(F.pos||""):isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,F.co||""].filter(Boolean);
   const H=P.hist||[];
+  if(ui.wkJ&&ui.wkJ.id===id){ const k=ui.wkJ.k; ui.wkJ=null; setTimeout(()=>{ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({block:"start"}); },60); }
   return `<article class="wk-doc wk-g">
-    <h1 class="wk-t">${esc(g.name)}</h1><p class="wk-upd2">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}<a data-a="wkHist" data-v="${id}">歷史</a></p>
+    <h1 class="wk-t">${esc(name)}</h1><p class="wk-upd2">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}<a data-a="wkHist" data-v="${id}">歷史</a></p>
     <div class="wk-cat2 ${ui.wkCat===id?"open":""}"><span>分類：${cats.map(c=>`<a class="wk-ln">${esc(c)}</a>`).join(" | ")}</span><button data-a="wkCat" data-v="${id}">${ui.wkCat===id?"收合":"更多"}</button></div>
     ${ui.wkH===id?`<div class="wk-hist"><b>修改紀錄</b>${H.length?H.slice().reverse().map(h=>`<p><span>${ymd(h.ts)} ${timeHM(h.ts)}</span> ${esc(h.n||"")} <em class="${h.d>=0?"p":"m"}">(${h.d>=0?"+":""}${h.d})</em></p>`).join(""):`<p>還沒有修改紀錄</p>`}</div>`:""}
-    ${card}${hero}${info}
-    <div class="wk-toc2 ${ui.wkTocC?"fold":""}" id="wkToc"><b data-a="wkTocT">目錄<i>⌄</i></b>${toc.join("")}</div>
-    ${body.join("")}</article>`; }
-function wkSecEditor(id,k,isSolo,P){ const F=P.f||{}, T=P.s||{}, nm=k==="info"?"資料框":((isSolo?WKS_S:WKG_S).flatMap(([a,b,s])=>[[a,b],...(s||[])]).find(x=>x[0]===k)||[k,k])[1];
-  const fields=isSolo?WKS_F:WKG_F;
+    ${wkNavbox(ctx)}${hero}${info}
+    ${toc.length?`<div class="wk-toc2 ${ui.wkTocC?"fold":""}" id="wkToc"><b data-a="wkTocT">目錄<i>⌄</i></b>${toc.join("")}</div>`:""}
+    ${body.join("")}
+    ${empty.length?`<div class="wk-add"><b>還沒寫的段落</b>${empty.map(([k,t])=>`<a data-a="wkEditS" data-v="${id}#${k}">＋ ${t}</a>`).join("")}</div>`:""}</article>`; }
+function wkSecEditor(id,k,isSolo,P,isM){ const F={...(P.f||{})}, T=wkT(P), nm=k==="info"?"資料框":((isSolo?WKS_S:WKG_S).flatMap(([a,b,s])=>[[a,b],...(s||[])]).find(x=>x[0]===k)||[k,k])[1];
+  if(F.bday&&!F.birth&&/^\d{4}-\d{2}-\d{2}$/.test(F.bday)) F.birth=F.bday;
+  const fields=isSolo?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F):WKG_F;
   const body=k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="60" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>`).join("")}</div>
-      <div class="wk-up2"><label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label><label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label></div>`
+      <div class="wk-up2">${isM?"":`<label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label>`}<label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label></div>`
     :`${k==="ov"?`<label class="wk-ea"><span>引言（可不填）</span><input data-k="s.ovq" maxlength="80" value="${esc(T.ovq||"")}" placeholder="輸入文字"></label>`:""}<label class="wk-ea"><span>${k==="tr"||k==="pre"?"一行一條":"內容"}</span><textarea data-k="s.${k}" rows="8" maxlength="4000" placeholder="輸入文字">${esc(T[k]||"")}</textarea></label>`;
   return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯：${nm})</small></h1></div><p class="wk-tip">直接打字就好，提到其他藝人的名字會自動變成連結。</p>${body}
     <div class="ls-btns"><button class="btn btn-soft" data-a="wkCancel">取消</button><button class="btn btn-main" data-a="wkSaveS" data-v="${id}">儲存</button></div></article>`; }
-function wkSaveS(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[id]||{})}, F={...(P.f||{})}, T={...(P.s||{})}, vals=[];
+function wkSaveS(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[id]||{})}, F={...(P.f||{})}, T={...wkT(P)}, vals=[];
   document.querySelectorAll(".wk-ed [data-k]").forEach(el=>{ const [b,k]=el.dataset.k.split("."), v=el.value.trim(); vals.push(v); (b==="f"?F:T)[k]=v; if(!v) delete (b==="f"?F:T)[k]; });
   if(!isAdminAcct()&&vals.some(x=>x&&banBlock(x))) return;
-  const len=o=>JSON.stringify([o.f||{},o.s||{}]).length, dl=len({f:F,s:T})-len(P);
+  const len=o=>JSON.stringify([o.f||{},o.s||{}]).length, dl=len({f:F,s:T})-len(P); delete P.ov; delete P.hi; delete P.tr; if(F.birth) delete F.bday;
   Object.assign(P,{f:F,s:T,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d:dl}].slice(-20);
   all[id]=P; S.set(WK_KEY,all); ui.wkEd=null; ui.wkSnap=null; render(); toast("已儲存"); }
 document.addEventListener("change",async e=>{ const t=e.target; if(t.id!=="wkLogo"&&t.id!=="wkPhoto") return; const f=t.files&&t.files[0], id=t.dataset.v; t.value=""; if(!f||!wkCanEdit(id)) return;
@@ -16281,16 +16266,18 @@ function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
     ${q?`<div class="wk-box"><b>搜尋結果</b>${hit.length?hit.map(id=>`<a class="wk-ln" data-a="wkGo" data-v="${id}">${esc(wkName(id))}</a>`).join(""):`<p class="wk-empty">找不到</p>`}</div>`:""}
     <div class="wk-box"><b>最近修改</b>${recent.length?recent.map(id=>`<a class="wk-ln" data-a="wkGo" data-v="${id}">${esc(wkName(id))}<small>${ago(all[id].ts)}</small></a>`).join(""):`<p class="wk-empty">還沒有人修改</p>`}</div>
     <div class="wk-box"><b>全部文件</b>${GROUPS.filter(g=>g.id!=="tdm_g").map(g=>`<p class="wk-gl"><a class="wk-ln" data-a="wkGo" data-v="g:${g.id}">${esc(g.name)}</a>${g.solo?"":`：${grpMembers(g.id).map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("・")}`}</p>`).join("")}</div></div>`; }
-function viewWiki(id){ const ok=id&&wkOk(id); return `<main class="page wk">${ok?(id.startsWith("g:")?wkViewG(id):wkView(id)):wkHome()}${wkFloat(ok?id:null)}</main>`; }
+function viewWiki(id){ const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
-  if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; location.hash=wkHash(v); window.scrollTo(0,0); }
+  if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; location.hash=wkHash(v); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
   else if(a==="wkCancel") wkLeave();
-  else if(a==="wkSave") wkSave(v);
+  else if(a==="wkSave") wkSaveS(v);
   else if(a==="wkHist"){ ui.wkH=ui.wkH===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkFold"){ ui.wkFold=ui.wkFold||{}; ui.wkFold[v]=!ui.wkFold[v]; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkEditS"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
   else if(a==="wkSaveS") wkSaveS(v);
+  else if(a==="wkNb"){ ui.wkNb=ui.wkNb===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
+  else if(a==="wkJump"){ const [g2,k]=v.split("|"), to="g:"+g2; ui.wkNb=null; if(route().id===to){ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } else { ui.wkJ={id:to,k}; location.hash=wkHash(to); } }
   else if(a==="wkCat"){ ui.wkCat=ui.wkCat===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkLinks"){ ui.wkLk=ui.wkLk===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkCm"){ location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v); }
