@@ -5728,7 +5728,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028110346";
+const BUILD="20261028120347";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16191,7 +16191,8 @@ const WK_GF=[["fan","粉絲名"],["co","所屬公司"],["slogan","口號"]];
 const wkAll=()=>S.get(WK_KEY,{})||{};
 const wkPage=id=>wkAll()[id]||{};
 const wkOk=id=>{ if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
-function wkCanEdit(id){ try{ if(isAdminAcct()) return true; const s=session(); if(!s||s.role!=="artist") return false; const me=s.member||uniMe();
+const wkFanView=()=>!["artist","admin"].includes(route().role);   /* 粉絲端只能看：不顯示編輯、修改時間、還沒寫的段落 */
+function wkCanEdit(id){ try{ if(wkFanView()) return false; if(isAdminAcct()) return true; const s=session(); if(!s||s.role!=="artist") return false; const me=s.member||uniMe();
     if(id.startsWith("m:")) return id.slice(2)===me; if(id.startsWith("g:")) return !!MEMBERS[me]&&MEMBERS[me].group===id.slice(2); }catch(e){} return false; }
 const wkName=id=>id.startsWith("g:")?(groupOf(id.slice(2))||{}).name||"":(MEMBERS[id.slice(2)]||{}).name||"";
 const wkHash=id=>(route().role==="artist"?"#/artist?tab=foc&p=wiki":route().role==="admin"?"#/admin?tab=wiki":"#/fan/core?p=wiki")+"&id="+(id?encodeURIComponent(id):"home");   /* 首頁用 id=home（藝人端沒 id 會直接開自己的頁） */
@@ -16315,7 +16316,7 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const H=P.hist||[];
   if(ui.wkJ&&ui.wkJ.id===id){ const k=ui.wkJ.k; ui.wkJ=null; setTimeout(()=>{ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({block:"start"}); },60); }
   return `<article class="wk-doc wk-g"${ctx.hsrc?` data-hsrc="${esc(ctx.hsrc)}"`:""}>
-    <h1 class="wk-t">${esc(name)}</h1><p class="wk-upd2">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}<a data-a="wkHist" data-v="${id}">歷史</a></p>
+    <h1 class="wk-t">${esc(name)}</h1>${wkFanView()?"":`<p class="wk-upd2">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}<a data-a="wkHist" data-v="${id}">歷史</a></p>`}
     <div class="wk-cat2 ${ui.wkCat===id?"open":""}"><span>分類：${cats.map(c=>`<a class="wk-ln">${esc(c)}</a>`).join(" | ")}</span><button data-a="wkCat" data-v="${id}">${ui.wkCat===id?"收合":"更多"}</button></div>
     ${ui.wkH===id?`<div class="wk-hist"><b>修改紀錄</b>${H.length?H.slice().reverse().map(h=>`<p><span>${ymd(h.ts)} ${timeHM(h.ts)}</span> ${esc(h.n||"")} <em class="${h.d>=0?"p":"m"}">(${h.d>=0?"+":""}${h.d})</em></p>`).join(""):`<p>還沒有修改紀錄</p>`}</div>`:""}
     ${wkNavbox(ctx)}${hero}${info}
@@ -16418,7 +16419,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkMenu"){ const old=document.querySelector(".wk-sheet"); if(old){ old.remove(); return; } const id=route().id, ok=id&&wkOk(id), d=document.createElement("div"); d.className="wk-sheet";
     d.innerHTML=`<div class="wk-shb"><i></i><div class="wk-shtop"><button data-a="wkRand" aria-label="隨機文件">⤮</button><label><input id="wkQ2" placeholder="SKpedia 搜尋" autocomplete="off"></label><button data-a="wkShX" aria-label="收起">⌄</button></div>
       <div class="wk-shchips"><a data-a="wkGo" data-v="">首頁・最近修改</a><a data-a="wkExit">回到 ${route().role==="artist"?"FOC":"FEST"}</a></div>
-      ${ok?`<div class="wk-shcard"><b>${esc(wkName(id))}</b><div>${wkCanEdit(id)?`<a data-a="wkEditS" data-v="${id}#info">編輯</a>`:""}<a data-a="wkHist" data-v="${id}">歷史</a><a data-a="wkShare">複製連結</a></div></div>`:""}</div>`;
+      ${ok?`<div class="wk-shcard"><b>${esc(wkName(id))}</b><div>${wkCanEdit(id)?`<a data-a="wkEditS" data-v="${id}#info">編輯</a>`:""}${wkFanView()?"":`<a data-a="wkHist" data-v="${id}">歷史</a>`}<a data-a="wkShare">複製連結</a></div></div>`:""}</div>`;
     document.querySelector("main.wk").appendChild(d); }
   else if(a==="wkExit"){ layer.innerHTML=""; location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"; }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
