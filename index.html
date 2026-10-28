@@ -5294,6 +5294,7 @@ main.wk{padding-bottom:110px}
 .wk-col{display:inline-flex;align-items:center;gap:2px}.wk-col input{width:44px;height:34px;padding:0;border:1px solid var(--wkb);border-radius:8px;background:none}.wk-col button{border:0;background:none;color:var(--wkt);width:24px;height:24px;display:grid;place-items:center}.wk-col svg{width:13px;height:13px}
 .wk-sug{position:fixed;left:16px;right:16px;z-index:63;background:var(--wkbg);color:var(--wkt);border:1px solid var(--wkb);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.35);max-height:50vh;overflow:auto;padding:6px 0}.wk-sug a{display:flex;align-items:baseline;gap:8px;padding:11px 16px;cursor:pointer;font-size:15px}.wk-sug a+a{border-top:1px solid var(--wkb)}.wk-sug small{opacity:.6;font-size:12.5px}.wk-sug p{margin:0;padding:12px 16px;opacity:.7;font-size:14px}
 .wkg-hero figcaption a{color:inherit;cursor:pointer}
+.wkg-cap2{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;opacity:1!important;font-weight:700}.wkg-cap2 img{height:2.2em;max-width:40%;object-fit:contain}
 
 </style>
 </head>
@@ -5712,7 +5713,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028081714";
+const BUILD="20261028082149";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16253,7 +16254,7 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const cs=wkCols(gid,col), sol=isSolo?`;--wth:${cs[0]};--wtt:${cs[1]||wkInk(cs[0])};--wc:${cs[1]||cs[0]}`:"";
   const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
   const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
-  const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption><span>${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc((wkPage("m:"+x).f||{}).kname||MEMBERS[x].name)}</a>`).join(" · ")}</span>${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
+  const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption><span>${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc((wkPage("m:"+x).f||{}).kname||MEMBERS[x].name)}</a>`).join(" · ")}</span>${(()=>{ const t=(P.f||{}).capt||(lastSong?`《${lastSong.title}》`:""); return t||P.alogo?`<small class="wkg-cap2">${esc(t)}${P.alogo?`<img src="${esc(P.alogo)}" alt="">`:""}</small>`:""; })()}</figcaption></figure>`:"";
   const row=(l,v)=>v?`<tr><th>${l}</th><td>${v}</td></tr>`:"", d=A.debut, dd=d?wkDays(d):0;
   const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
   const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a> · <a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
@@ -16285,12 +16286,12 @@ function wkNtRows(key,txt,N){ const nums=[...new Set([...String(txt||"").matchAl
 const wkNtUI=(key,txt,P)=>`<div class="wk-nts" data-for="${key}">${wkNtRows(key,txt,Object.fromEntries(((P.n||{})[key]||[]).map((t,i)=>[i+1,t])))}</div><button type="button" class="wk-fnadd" data-a="wkFnAdd" data-v="${key}">＋ 註解</button>`;
 function wkSecEditor(id,k,isSolo,P,isM){ const F={...(P.f||{})}, T=wkT(P), nm=k==="info"?"資料框":((isSolo?WKS_S:WKG_S).flatMap(([a,b,s])=>[[a,b],...(s||[])]).find(x=>x[0]===k)||[k,k])[1];
   if(F.bday&&!F.birth&&/^\d{4}-\d{2}-\d{2}$/.test(F.bday)) F.birth=F.bday;
-  const fields=isSolo?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F):WKG_F;
+  const fields=isSolo?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F):[...WKG_F,["capt","團體照說明"]];
   const body=k==="mem"?`<div class="wk-upl">${grpMembers(id.slice(2)).map(x=>{ const u=(P.mph||{})[x]; return `<div class="wk-upi"><span style="${u?`background-image:url('${esc(u)}')`:`background:${grad(MEMBERS[x].g||0)}`}"></span><b>${esc(MEMBERS[x].name)}</b><label class="btn btn-soft">${u?"換照片":"上傳照片"}<input type="file" accept="image/*" class="wk-up" data-v="${id}" data-m="${x}" hidden></label></div>`; }).join("")}</div>`
     :k==="pics"?`<div class="wk-upl">${(P.pics||[]).map((p,i)=>`<div class="wk-upi"><span style="background-image:url('${esc(p.u)}')"></span><label class="field"><input data-pc="${i}" maxlength="40" value="${esc(p.t||"")}" placeholder="輸入文字"></label><button class="wk-del" data-a="wkPicDel" data-v="${id}|${i}" aria-label="刪除">${XI}</button></div>`).join("")}</div><label class="btn btn-soft btn-block">＋ 加照片<input type="file" accept="image/*" class="wk-up" data-v="${id}" data-m="" hidden></label>`
     :k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<div class="wk-fld"><label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="80" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>${ty==="date"?"":wkNtUI("f."+f,F[f],P)}</div>`).join("")}</div>
       ${isM?"":`<div class="wk-cols"><span>代表色</span>${[1,2,3].map(i=>{ const v=F["c"+i]||(i===1?gTheme(id.slice(2)):""); return v?`<span class="wk-col"><input type="color" data-k="f.c${i}" value="${esc(v)}">${i>1?`<button type="button" data-a="wkColX" aria-label="拿掉">${XI}</button>`:""}</span>`:""; }).join("")}${F.c3?"":`<button type="button" class="wk-fnadd" data-a="wkColAdd">＋ 加顏色</button>`}</div>`}
-      <div class="wk-up2">${isM?"":`<label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label>`}<label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label></div>`
+      <div class="wk-up2">${isM?"":`<label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label>`}<label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label>${id.startsWith("g:")&&!isSolo?`<label class="btn btn-soft">${P.alogo?"換專輯 Logo":"上傳專輯 Logo"}<input type="file" accept="image/*" class="wk-up" data-v="${id}" data-m="" data-al="1" hidden></label>`:""}</div>`
     :`${k==="ov"?`<label class="wk-ea"><span>引言（可不填）</span><input data-k="s.ovq" maxlength="80" value="${esc(T.ovq||"")}" placeholder="輸入文字"></label>`:""}<label class="wk-ea"><span>${k==="tr"||k==="pre"?"一行一條":"內容"}</span><textarea data-k="s.${k}" rows="8" maxlength="4000" placeholder="輸入文字">${esc(T[k]||"")}</textarea></label>${wkNtUI("s."+k,T[k],P)}`;
   return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯：${nm})</small></h1></div><p class="wk-tip">直接打字就好，提到其他藝人的名字會自動變成連結。</p>${body}
     <div class="ls-btns"><button class="btn btn-soft" data-a="wkCancel">取消</button><button class="btn btn-main" data-a="wkSaveS" data-v="${id}">儲存</button></div></article>`; }
@@ -16414,7 +16415,7 @@ document.addEventListener("change",e=>{ const t=e.target; if(t.matches&&t.matche
 /* 成員照、宣傳照：選了就上傳（R2），說明字先暫存 */
 document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!t.classList.contains("wk-up")) return; const f=t.files&&t.files[0], id=t.dataset.v, m=t.dataset.m; t.value=""; if(!f||!wkCanEdit(id)) return;
   try{ const {blob}=await prepPhoto(f); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
-    const all=wkAll(), P={...(all[id]||{})}; if(m) P.mph={...(P.mph||{}),[m]:url}; else { const pics=(P.pics||[]).map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); P.pics=[...pics,{u:url,t:""}]; }
+    const all=wkAll(), P={...(all[id]||{})}; if(t.dataset.al) P.alogo=url; else if(m) P.mph={...(P.mph||{}),[m]:url}; else { const pics=(P.pics||[]).map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); P.pics=[...pics,{u:url,t:""}]; }
     P.ts=Date.now(); all[id]=P; S.set(WK_KEY,all); toast("照片放好了"); const y=window.scrollY; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,y); }catch(err){ toast("這張圖片讀不出來"); } });
 
 </script>
