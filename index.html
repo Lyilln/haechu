@@ -4241,7 +4241,7 @@ html[data-theme] body .st-fx button.on,.st-fx button.on{background:rgba(255,255,
 .dl .hm b{display:block;font-size:14px;font-weight:400;color:rgba(255,255,255,.85)!important}
 .dl .hm span{display:block;font-size:17px;font-weight:700;line-height:1.4;color:#fff!important}
 .dl .hm em{display:none}.dl .hm.sel span{color:#C7AEFF!important}
-.dl-foot{position:relative;z-index:6;display:flex!important;align-items:center;gap:14px;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 6px)!important;transform:translateY(calc(-1 * var(--kb,0px)));background:none!important;border:0!important}
+.dl-foot{position:relative;z-index:6;display:flex!important;align-items:center;gap:14px;padding:10px 16px calc(env(safe-area-inset-bottom,0px) + 6px)!important;background:none!important;border:0!important}
 .dl-foot .cm-in{flex:1;display:flex;align-items:center;height:52px;border-radius:26px;border:1.5px solid rgba(255,255,255,.55)!important;background:rgba(0,0,0,.15)!important;padding:0 6px 0 20px}
 .dl-foot .cm-in input{flex:1;min-width:0;border:0;background:none;color:#fff!important;font:inherit;font-size:16px;outline:none}
 .dl-foot .cm-in input::placeholder{color:rgba(255,255,255,.55)}
@@ -5730,7 +5730,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028132123";
+const BUILD="20261028134034";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9784,7 +9784,7 @@ function viewReplay(id){
     :x.from==="artist"?`<div class="rp2-a ${lvWho(x,l)!==l.member?"rp2-g2":""}"><span class="rp2-av" style="background:${grad((MEMBERS[lvWho(x,l)]||m).g)}">${mAvIn(lvWho(x,l))}</span><div><b>${esc(artName(lvWho(x,l),"live"))} <span class="rp2-vf">${I.verified}</span></b>${x.reply?`<q>${repQ(x.reply)}</q>`:""}${trT("lv:"+l.id+":"+x.ts,x.text,"")}</div><time>${timeHM(x.ts)}</time></div>`
     :`<div class="rp2-f"><p><b>${esc(mineX(x)?"你":x.name||"粉絲")}</b>${mineX(x)?esc(x.text):trT("lv:"+l.id+":"+x.ts+":"+(x.name||""),x.text,"","span")}</p><time>${timeHM(x.ts)}</time></div>`;
   return `<div class="rp2"><div class="cm-bg"><span class="cm-blob b1" style="background:${c[0]}"></span><span class="cm-blob b2" style="background:${c[1]}"></span><span class="cm-blob b3"></span></div>
-    <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}${l.co&&l.co.was&&MEMBERS[l.co.mid]?" × "+esc(artName(l.co.mid,"live")):""}・${ymd(l.startTs)}・${mmss(l)}</small></span><span class="rp2-sp"></span>${(l.bgm||[]).length?`<button class="rp2-x rp-bgm ${RPB.id===l.id&&RPB.on?"on":""}" data-a="rpBgm" data-v="${l.id}" aria-label="背景音樂">${BGM_IC}</button>`:""}</header>
+    <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}${l.co&&l.co.was&&MEMBERS[l.co.mid]?" × "+esc(artName(l.co.mid,"live")):""}・${ymd(l.startTs)} ${timeHM(l.startTs)}・直播 ${mmss(l)}</small></span><span class="rp2-sp"></span>${(l.bgm||[]).length?`<button class="rp2-x rp-bgm ${RPB.id===l.id&&RPB.on?"on":""}" data-a="rpBgm" data-v="${l.id}" aria-label="背景音樂">${BGM_IC}</button>`:""}</header>
     <div class="seg2 rp2-seg" style="--i:${art?1:0}"><i class="seg2-ind"></i><button class="${art?"":"on"}" data-a="rpMode" data-v="all">全部留言</button><button class="${art?"on":""}" data-a="rpMode" data-v="art">${artV?"只看我說的話":"只看藝人說的話"}</button></div>
     <main class="rp2-log seg2-pane ${ui.segAnim||""}">${log.length?log.map(row).join(""):`<p class="rp2-none">${art?"這場直播藝人還沒說話":"這場直播沒有留言"}</p>`}</main></div>`;
 }
@@ -9793,7 +9793,17 @@ const DEMO_LINES=["大家今天過得好嗎？☘︎ 正在看大家的留言，
 const DEMO_REPLY=["有看到你喔～謝謝你今天也來陪我 ♡","哈哈哈被你發現了 🤭","收到！你也要記得早點休息喔"];
 let meetSig="";
 /* 直播間打字：鍵盤蓋住下面的留言，只有輸入列浮到鍵盤上面；畫面本身不被往上推 */
-if(window.visualViewport){ const vv=window.visualViewport; const kb=()=>{ const r=document.querySelector(".dl"); if(!r) return; const k=Math.max(0,Math.round(innerHeight-vv.height)); r.style.setProperty("--kb",k+"px"); r.style.transform=vv.offsetTop?`translateY(${Math.round(vv.offsetTop)}px)`:""; }; vv.addEventListener("resize",kb); vv.addEventListener("scroll",kb); }
+if(window.visualViewport){ const vv=window.visualViewport; let raf=0;   /* 跟 TIE 一樣用量的：輸入列貼在鍵盤（含「^ ˅ ✓」）正上方，整個直播間不動 */
+  const nud=(el,d)=>{ const m=/translateY\((-?[\d.]+)px\)/.exec(el.style.transform||""), t=m?+m[1]:0, z=parseFloat(getComputedStyle(document.documentElement).zoom)||1; el.style.transform=`translateY(${(t+d/z).toFixed(1)}px)`; };
+  const kb=()=>{ raf=0; const r=document.querySelector(".dl"), f=r&&r.querySelector(".dl-foot"); if(!f) return; r.style.setProperty("--kb","0px"); r.style.transform="";
+    const typing=document.activeElement&&document.activeElement.id==="lin", open=typing&&vv.height<(screen.height||innerHeight)*0.8;
+    if(!open){ f.style.transform=""; return; }
+    const k=document.documentElement.getBoundingClientRect().width/Math.max(1,vv.width), lift=isIOS&&isStandalone()?-10:6, want=vv.height*k-lift*k;
+    for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nud(f,d); } };
+  const q=()=>{ if(!raf) raf=requestAnimationFrame(kb); };
+  vv.addEventListener("resize",q); vv.addEventListener("scroll",q); addEventListener("scroll",q,{passive:true});
+  document.addEventListener("focusin",e=>{ if(e.target.id!=="lin") return; q(); setTimeout(q,350); setTimeout(q,700); });
+  document.addEventListener("focusout",e=>{ if(e.target.id!=="lin") return; setTimeout(q,60); setTimeout(q,300); }); }
 const IOS26=isIOS&&(+((navigator.userAgent.match(/Version\/(\d+)/)||[])[1]||0)>=26||!/Version\//.test(navigator.userAgent));   /* 主畫面 App 的 UA 沒有版本號，當成新版 */
 /* TIE 聊天室打字（iPhone）：鍵盤打開時，輸入列貼在鍵盤正上方、標題列留在最上面，中間不留空白 */
 let fitN=0;
