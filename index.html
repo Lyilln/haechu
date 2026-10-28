@@ -5264,6 +5264,8 @@ main.wk{padding-bottom:110px}
 .wk-add{margin:22px 0 8px;padding:12px;border:1px dashed var(--wkb,#ccc);border-radius:8px;display:flex;flex-wrap:wrap;gap:8px 14px}
 .wk-add b{width:100%;font-size:13px;opacity:.7}
 .wk-add a{color:var(--wkl);font-size:13.5px}
+.wkn-li{text-align:left;margin:0;padding:10px 12px 10px 28px;border-top:1px solid var(--wkb,#ccc);font-size:13.5px;display:grid;gap:4px}
+.wkn-grid+.wkn-li{border-top:0;padding-top:0}
 
 </style>
 </head>
@@ -5682,7 +5684,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028045550";
+const BUILD="20261028050431";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16195,10 +16197,13 @@ function wkNavbox(ctx){ const {gid,g,mem,col,isSolo}=ctx, GP=wkPage("g:"+gid), G
   const logo=GP.logo?`<img class="wkg-logo" src="${esc(GP.logo)}" alt=""><i></i>`:"";
   const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x)));
   const rel=wkSecs(gctx).flatMap(([k,t,sub])=>[[k,t],...(sub||[])]).filter(([k])=>!["ov","nav","mem"].includes(k)&&wkHas(gctx,GP,k));
-  const tabs=[gctx.A.songs.length?["disc","音樂作品"]:null,isSolo&&eps.length?["show","出演作品"]:null,rel.length?["rel","相關文件"]:null].filter(Boolean);
+  const GT=wkT(GP), lines=ks=>ks.flatMap(k=>(GT[k]||"").split("\n")).map(x=>x.replace(/^[-・*]\s*/,"").trim()).filter(Boolean), part=isSolo?lines(["music"]):[], acts=isSolo?lines(["acting","show","radio","ad"]):[];
+  const tabs=[gctx.A.songs.length?["disc","音樂作品"]:null,part.length?["part","參與作品"]:null,isSolo&&(eps.length||acts.length)?["show","出演作品"]:null,rel.length?["rel","相關文件"]:null].filter(Boolean);
+  const li=a=>a.length?`<ul class="wkn-li">${a.map(x=>`<li>${wkTxt(x,[],"g:"+gid)}</li>`).join("")}</ul>`:"";
   const cover=s=>{ const ph=gPhoto(gid); return ph?`style="background-image:url('${esc(ph)}')"`:`style="background:${grad(g.g||0)}"`; };
   const panel=open==="disc"?`<div class="wkn-grid">${gctx.A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<div class="wkn-t"><span class="wkn-cv" ${cover(s)}></span><b>${esc(s.title)}</b><em>${gctx.A.wins[s.id]?`一位 ${gctx.A.wins[s.id]} 次`:"單曲"}</em><small>${t?wkDot(ymdIn(t)):""}</small></div>`; }).join("")}</div>`
-    :open==="show"?`<div class="wkn-grid">${eps.map(e=>`<div class="wkn-t"><span class="wkn-cv" style="background:${grad((e.show||"").length)}"></span><b>${esc(VSHOW[e.show].name)}</b><em>${(e.mids||[]).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</em></div>`).join("")}</div>`
+    :open==="show"?`<div class="wkn-grid">${eps.map(e=>`<div class="wkn-t"><span class="wkn-cv" style="background:${grad((e.show||"").length)}"></span><b>${esc(VSHOW[e.show].name)}</b><em>${(e.mids||[]).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</em></div>`).join("")}</div>${li(acts)}`
+    :open==="part"?li(part)
     :open==="rel"?`<div class="wkn-rel">${rel.map(([k,t])=>`<a data-a="wkJump" data-v="${gid}|${k}">${t}</a>`).join("")}</div>`:"";
   return `<div class="wkg-card" style="--wc:${col}"><div class="wkg-top" data-a="wkGo" data-v="g:${gid}">${logo}<span><b>${esc(g.name)}</b><small>${esc(GF.kname||"")}</small></span></div>
     ${!isSolo&&mem.length?`<div class="wkg-mem">${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}" class="${ctx.key===x?"me":""}">${esc(MEMBERS[x].name)}</a>`).join("")}</div>`:""}
@@ -16214,7 +16219,7 @@ function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,perso
   const birth=F.birth||F.bday;
   const infoRows=person?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F).map(([k,l])=>{ if(k==="birth") return row("出生",birth||F.bplace?`${birth?`${wkDot(birth)}${wkAge(birth)!==""?`（${wkAge(birth)}歲）`:""}`:""}${F.bplace?`<br>${esc(F.bplace)}`:""}`:""); if(k==="bplace") return ""; if(k==="co") return row(l,esc(F[k]||""))+(isM?row("所屬",`<a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a>`):row("出道",debutRow)); if(k==="fan") return row(l,F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:""); return row(l,esc(F[k]||"")); }).join("")+row("簽名",(()=>{ const sig=Object.values(S.get("daisuki_cafe",{})||{}).filter(c=>c&&c.mid===key&&c.art&&c.art.sig).map(c=>c.art.sig).pop(); return sig&&typeof cfImg==="function"?`<span class="wk-sig">${cfImg(sig,"sig")}</span>`:""; })())
     :row("出道日",debutRow)+row("出道作品",firstSong?`<span class="wk-chip f">${esc(firstSong.title)}</span>`:"")+WKG_F.map(([k,l])=>row(l,k==="fan"&&F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:k==="leader"&&F.leader?wkTxt(F.leader,[],id):esc(F[k]||""))).join("");
-  const head=person?`<b>${esc(F.kname||name)}</b><small>${esc(F.kname?name.toUpperCase():"")}</small>`:`<div class="wkg-top"><span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>`;
+  const head=isM?`<b>${esc(F.kname||name)}</b><small>${esc(F.kname?name.toUpperCase():"")}</small>`:isSolo?`<b>${esc(name)}</b><small>${esc(F.kname||"")}</small>`:`<div class="wkg-top"><span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>`;
   const info=`<table class="wk-info2" style="--wc:${col}"><tr><td colspan="2" class="wk-ih2">${head}</td></tr>${person&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
   const SS=wkSecs(ctx), fold=ui.wkFold||{}, toc=[], body=[], empty=[];
   const txt=k=>{ const v=(T[k]||"").trim(); if(!v) return ""; if(k==="tr"||k==="pre") return `<ul>${v.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),[],id)}</li>`).join("")}</ul>`; return `<p>${wkTxt(v,[],id)}</p>`; };
