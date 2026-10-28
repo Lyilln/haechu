@@ -5730,7 +5730,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028131736";
+const BUILD="20261028132123";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10613,7 +10613,7 @@ function bgmAdd(vid){ if(ui.bgmBusy) return; const inp=document.createElement("i
     ui.bgmBusy=null; bgmRefresh(); if(bad) toast(vid?"這支影片的聲音讀不出來":"請換成 MP3 或 M4A 檔"); else if(big) toast(vid?"這支影片太大了，請先在「照片」把前後剪短（45MB 以下）":"檔案太大了，請小於 20MB"); };
   pickClick(inp); }
 const BG={a:null,on:false,lid:null,idx:-1,url:{}};
-function bgmIsOn(l,host){ return host?!l.bgmOff:(BG.on&&BG.lid===l.id); }
+function bgmIsOn(l,host){ return host?(!l.bgmOff&&BG.on&&BG.lid===l.id):(BG.on&&BG.lid===l.id); }   /* 藝人：自己手機真的在放才亮 */
 function bgmPos(l){ const L=l.bgm||[], tot=L.reduce((s,x)=>s+(x.dur||0),0); if(!tot) return null;
   let p=(l.bgmOff?(l.bgmAt||0):((Date.now()-(l.bgmT0||l.startTs))/1000))%tot; if(p<0) p=0;
   for(let i=0;i<L.length;i++){ if(p<L[i].dur) return {i,off:p}; p-=L[i].dur; } return {i:0,off:0}; }
@@ -10635,7 +10635,8 @@ function bgmUI(){ const room=document.querySelector(".mr.dl"); if(!room) return;
   const l=b?getLive(b.dataset.id):null; if(!l) return; const on=bgmIsOn(l,host); b.classList.toggle("on",on);
   if(s){ const p=bgmPos(l), playing=!l.bgmOff&&(host||BG.on); s.textContent=playing&&p?"♪ "+l.bgm[p.i].name:""; } }
 function bgmTap(id){ const l=getLive(id); if(!l||!(l.bgm||[]).length) return; const a=bgmEl(), host=!!document.querySelector(".mr.dl.host");
-  if(host){ if(l.bgmOff){ l.bgmT0=Date.now()-(l.bgmAt||0)*1000; l.bgmOff=false; BG.on=true; } else { const p=bgmPos(l); let at=0; for(let i=0;i<(p?p.i:0);i++) at+=l.bgm[i].dur; l.bgmAt=at+(p?p.off:0); l.bgmOff=true; BG.on=false; } saveLive(l); }
+  if(host&&!l.bgmOff&&!(BG.on&&BG.lid===id)){ BG.on=true; }   /* 開播後音樂已經在放（粉絲聽得到），但藝人手機還沒出聲：第一下是「我也要聽」，不是關掉 */
+  else if(host){ if(l.bgmOff){ l.bgmT0=Date.now()-(l.bgmAt||0)*1000; l.bgmOff=false; BG.on=true; } else { const p=bgmPos(l); let at=0; for(let i=0;i<(p?p.i:0);i++) at+=l.bgm[i].dur; l.bgmAt=at+(p?p.off:0); l.bgmOff=true; BG.on=false; } saveLive(l); }
   else BG.on=!(BG.on&&BG.lid===id);
   BG.lid=id;
   if(BG.on){ const p=bgmPos(l), u=p&&!l.bgmOff&&BG.url[l.bgm[p.i].mid];
