@@ -5307,6 +5307,7 @@ main.wk{padding-bottom:110px}
 .wk-mia{display:grid;place-items:center;padding:0;line-height:1}.wk-mia svg{display:block;pointer-events:none}
 .wk-ta{display:block;width:100%;box-sizing:border-box;resize:none;overflow:hidden;min-height:44px;line-height:1.5;font:inherit;padding:10px 12px;border:1px solid var(--wkb);border-radius:10px;background:var(--wks);color:var(--wkt)}
 .wk-info2 td.wk-tdm{padding:0!important}.wk-tdm>div{padding:8px 10px}.wk-tdm>div+div{border-top:1px solid var(--wkb)}
+.wk-info2 ruby rt{font-size:.6em;opacity:.85}.wk-sm{font-size:.82em;opacity:.9}
 
 </style>
 </head>
@@ -5725,7 +5726,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028103342";
+const BUILD="20261028104203";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16251,6 +16252,9 @@ function wkKeepRender(){ const key=wkFKey, V={};
   document.querySelectorAll(".wk-ed input:not([type=file]),.wk-ed textarea").forEach(el=>{ const k=key(el); if(k) V[k]=el.value; }); const y=window.scrollY, snap=ui.wkSnap; render();
   document.querySelectorAll(".wk-ed input:not([type=file]),.wk-ed textarea").forEach(el=>{ const k=key(el); if(k&&V[k]!=null) el.value=V[k]; }); ui.wkSnap=snap; window.scrollTo(0,y); }
 function wkPicsOf(id){ const P={...wkPage(id),...(ui.wkStg&&ui.wkStg.id===id&&ui.wkEd?ui.wkStg.o:{})}; if(Array.isArray(P.pics)) return P.pics; const isM=id.startsWith("m:"); if(isM) return []; const gid=id.slice(2), g=groupOf(gid)||{}, u=g.solo?(P.photo||mPhoto(grpMembers(gid)[0])):(P.photo||gPhoto(gid)); return u?[{u,t:""}]:[]; }
+/* 資料框的字：漢字(かな) → 假名小字浮在漢字上；一行最後面的 (…) 變小字（本名、韓文名除外） */
+function wkFmtL(L,small){ L=L.replace(/([\u3400-\u9FFF々〆]+)[(（]([\u3040-\u30FFー・ ]+)[)）]/g,"<ruby>$1<rt>$2</rt></ruby>");
+  return small?L.replace(/(\([^()<>]*\))((?:\u0002[^\u0003]*\u0003)*)\s*$/,'<small class="wk-sm">$1</small>$2'):L; }
 /* 頁面的共同資料（團體頁 g:、SOLOIST 頁 g:(solo)、成員頁 m:） */
 function wkCtx(id){ const isM=id.startsWith("m:"), key0=id.slice(2), gid=isM?(MEMBERS[key0]||{}).group:key0, g=groupOf(gid), isSolo=!isM&&!!g.solo, mem=grpMembers(gid), key=isM?key0:isSolo?mem[0]:null;
   return {id,isM,isSolo,person:isM||isSolo,gid,g,mem,key,A:wkAuto(gid),col:gTheme(gid)}; }
@@ -16259,7 +16263,7 @@ const wkSecs=ctx=>ctx.person?WKS_S:WKG_S;
 function wkHas(ctx,P,k){ const T=wkT(P); return !!((T[k]||"").trim()||(k==="ov"&&T.ovq)||(WK_AUTO.has(k)&&wkAutoSec(k,ctx))); }
 function wkSecOn(ctx,P,[k,t,sub]){ return wkHas(ctx,P,k)||(sub||[]).some(([k2])=>wkHas(ctx,P,k2)); }
 /* 團的名片（團體頁、成員頁共用）：Logo／團名點了回團體頁；[音樂作品][出演作品][相關文件] 點了在卡片裡展開 */
-function wkNavbox(ctx){ const {gid,g,mem,col,isSolo}=ctx, GP=wkPage("g:"+gid), GF=GP.f||{}, gctx=wkCtx("g:"+gid), open=ui.wkNb&&ui.wkNb.startsWith(gid+"|")?ui.wkNb.split("|")[1]:"";
+function wkNavbox(ctx){ const {gid,g,mem,isSolo}=ctx, col=gTheme(gid), GP=wkPage("g:"+gid), GF=GP.f||{}, gctx=wkCtx("g:"+gid), open=ui.wkNb&&ui.wkNb.startsWith(gid+"|")?ui.wkNb.split("|")[1]:"";
   const logo=GP.logo?`<img class="wkg-logo" src="${esc(GP.logo)}" alt=""><i></i>`:"";
   const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x)));
   const rel=wkSecs(gctx).flatMap(([k,t,sub])=>[[k,t],...(sub||[])]).filter(([k])=>!["ov","nav","mem"].includes(k)&&wkHas(gctx,GP,k));
@@ -16288,7 +16292,7 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
   const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
   const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption><span>${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc((wkPage("m:"+x).f||{}).kname||MEMBERS[x].name)}</a>`).join(" · ")}</span>${(()=>{ const t=(P.f||{}).capt||(lastSong?`《${lastSong.title}》`:""); return t||P.alogo?`<small class="wkg-cap2">${esc(t)}${P.alogo?`<img src="${esc(P.alogo)}" alt="">`:""}</small>`:""; })()}</figcaption></figure>`:"";
-  const row=(l,v)=>{ if(!v) return ""; const B=String(v).trim().split(/\n\s*\n/); return `<tr><th>${l}</th><td${B.length>1?` class="wk-tdm"`:""}>${B.map(b=>B.length>1?`<div>${b.split("\n").join("<br>")}</div>`:b.split("\n").join("<br>")).join("")}</td></tr>`; }, d=A.debut, dd=d?wkDays(d):0;
+  const sm=l=>!/本名|韓文名/.test(l), row=(l,v)=>{ if(!v) return ""; const B=String(v).trim().split(/\n\s*\n/).map(b=>b.split("\n").map(x=>wkFmtL(x,sm(l))).join("\n")); return `<tr><th>${l}</th><td${B.length>1?` class="wk-tdm"`:""}>${B.map(b=>B.length>1?`<div>${b.split("\n").join("<br>")}</div>`:b.split("\n").join("<br>")).join("")}</td></tr>`; }, d=A.debut, dd=d?wkDays(d):0;
   const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
   const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a> · <a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
   const birth=F.birth||F.bday;
