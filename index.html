@@ -5226,7 +5226,7 @@ main.wk{padding-bottom:110px}
 .wk-ih2{text-align:center;padding:12px!important;background:var(--wks)}.wk-ih2>b{display:block;font-size:20px;color:var(--wc)}.wk-ih2>small{color:var(--wc)}
 .wk-iph2{padding:0!important}.wk-iph2 span{display:block;aspect-ratio:3/4;background:center/cover}
 .wk-chip{display:inline-block;border:1px solid var(--wkt);border-radius:4px;font-size:11.5px;padding:0 5px;margin-left:4px;vertical-align:1px}.wk-chip.f{background:var(--wc);border-color:var(--wc);color:#fff;font-weight:800}
-.wk-pill{display:inline-block;color:#fff;font-weight:800;font-size:13.5px;line-height:1.5;padding:2px 20px 2px 14px;border-radius:.9em 2.4em .5em .9em/.9em 1.3em .5em .9em}
+.wk-pill{display:inline-block;color:#fff;font-weight:800;font-size:13.5px;line-height:1.5;padding:2px 20px 2px 14px;border-radius:1.2em 2.4em .45em .45em/1.4em 1.4em .45em .45em}
 .wk-sig img,.wk-sig span{max-height:60px;max-width:150px}
 .wk-ie{text-align:right;margin:4px 0 12px;font-size:13px}.wk-ie a,.wk-ed1{color:var(--wkl);cursor:pointer;font-weight:700}
 .wk-toc2{display:inline-flex;flex-direction:column;border:1px solid var(--wkb);padding:12px 18px;margin:8px 0 16px;min-width:60%;font-size:15px}
@@ -5710,7 +5710,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028075120";
+const BUILD="20261028075256";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
