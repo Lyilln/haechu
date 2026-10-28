@@ -5267,6 +5267,7 @@ main.wk{padding-bottom:110px}
 .wkn-li{text-align:left;margin:0;padding:10px 12px 10px 28px;border-top:1px solid var(--wkb,#ccc);font-size:13.5px;display:grid;gap:4px}
 .wkn-grid+.wkn-li{border-top:0;padding-top:0}
 .wk-ef input,.wk-ef textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}.wk-ef input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left}
+.wk-tocpop{position:fixed;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:60;max-width:min(78vw,340px);max-height:60vh;overflow:auto;background:var(--wkbg,#fff);border:1px solid var(--wkb,#ccc);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.35);padding:14px 18px;display:flex;flex-direction:column;gap:10px;font-size:15px}.wk-tocpop b{font-size:18px}.wk-tocpop{color:var(--wkt)}.wk-tocpop a{color:inherit;cursor:pointer}.wk-tocpop a.lv2{padding-left:18px}.wk-tocpop .wk-no{color:var(--wkl)}
 
 </style>
 </head>
@@ -5685,7 +5686,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028071144";
+const BUILD="20261028071353";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16291,7 +16292,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkCm"){ location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v); }
   else if(a==="wkTocT"){ ui.wkTocC=!ui.wkTocC; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
-  else if(a==="wkTocGo"){ const s=document.getElementById("wkToc")||document.querySelector(".wk-toc"); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="wkTocGo"){ const old=document.querySelector(".wk-tocpop"); if(old){ old.remove(); return; } const t=document.getElementById("wkToc"); if(!t) return;   /* 像 Namuwiki：浮出目錄，點一項就跳過去 */
+    const d=document.createElement("div"); d.className="wk-tocpop"; d.innerHTML=`<b>目錄</b>${[...t.querySelectorAll("a")].map(x=>x.outerHTML).join("")}`; document.querySelector("main.wk").appendChild(d); }
   else if(a==="wkTop") window.scrollTo({top:0,behavior:"smooth"});
   else if(a==="wkBot") window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
   else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; location.hash=wkHash(L[Math.floor(Math.random()*L.length)]); window.scrollTo(0,0); } }
@@ -16306,6 +16308,8 @@ const wkFormVal=()=>[...document.querySelectorAll(".wk-ed input,.wk-ed textarea"
 function wkLeave(){ const go=()=>{ ui.wkEd=null; ui.wkSnap=null; render(); window.scrollTo(0,0); };
   if(ui.wkSnap!=null&&wkFormVal()!==ui.wkSnap) ask("還沒儲存，確定要離開嗎？",go,{title:"還沒儲存",ok:"離開"}); else go(); }
 document.addEventListener("click",e=>{ if(!ui.wkEd||!document.querySelector(".wk-ed")) return; const b=e.target.closest('[data-a="back"]'); if(!b||layer.contains(b)) return; e.stopPropagation(); e.preventDefault(); wkLeave(); },true);
+
+document.addEventListener("click",e=>{ const p=document.querySelector(".wk-tocpop"); if(p&&!e.target.closest('[data-a="wkTocGo"]')) setTimeout(()=>p.remove(),0); },true);
 
 </script>
 </body>
