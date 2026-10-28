@@ -4537,6 +4537,7 @@ html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 5
 .pd-jump{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:5;width:40px;height:40px;border-radius:50%;border:0;background:var(--s1,#fff);color:var(--ink);box-shadow:0 6px 18px -6px rgba(0,0,0,.35);display:grid;place-items:center;padding:0}
 .pd-jump svg{width:20px;height:20px}
 .pd-sh .pd-sav+i{margin-left:6px!important}
+.dl-foot .mr-send{display:grid!important;place-items:center;width:40px;height:40px;padding:0!important;margin:0}.dl-foot .mr-send svg{display:block;margin:0}.dl-foot .cm-in{padding:0 6px 0 20px!important}
 
 /* ===== SNS 影片 ===== */
 video.sn-img{background:#000}
@@ -5730,7 +5731,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028134451";
+const BUILD="20261028134838";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9802,7 +9803,8 @@ if(window.visualViewport){ const vv=window.visualViewport; let raf=0;   /* 跟 T
     for(let i=0;i<3;i++){ const d=want-f.getBoundingClientRect().bottom; if(Math.abs(d)<1) break; nud(f,d); } };
   const q=()=>{ if(!raf) raf=requestAnimationFrame(kb); };
   vv.addEventListener("resize",q); vv.addEventListener("scroll",q); addEventListener("scroll",q,{passive:true});
-  document.addEventListener("focusin",e=>{ if(e.target.id!=="lin") return; q(); setTimeout(q,350); setTimeout(q,700); });
+  let tick=0; document.addEventListener("focusin",e=>{ if(e.target.id!=="lin") return; q(); setTimeout(q,350); setTimeout(q,700);
+    clearInterval(tick); tick=setInterval(()=>{ if(!document.activeElement||document.activeElement.id!=="lin"){ clearInterval(tick); return; } q(); },300); });   /* 送出後上面多了提示、留言：版面變了也要再量一次，輸入列才不會飄高 */
   document.addEventListener("focusout",e=>{ if(e.target.id!=="lin") return; setTimeout(q,60); setTimeout(q,300); }); }
 const IOS26=isIOS&&(+((navigator.userAgent.match(/Version\/(\d+)/)||[])[1]||0)>=26||!/Version\//.test(navigator.userAgent));   /* 主畫面 App 的 UA 沒有版本號，當成新版 */
 /* TIE 聊天室打字（iPhone）：鍵盤打開時，輸入列貼在鍵盤正上方、標題列留在最上面，中間不留空白 */
