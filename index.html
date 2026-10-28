@@ -5200,8 +5200,8 @@ html[data-theme="dark"] .wk{--wkbar:#3A3150!important;--wkbart:#E4DAFF!important
 .wk-box{border:1px solid var(--wkb);padding:10px 12px;display:flex;flex-direction:column;gap:4px}.wk-box>b{font-size:14px;border-bottom:1px solid var(--wkb);padding-bottom:6px;margin-bottom:4px}
 .wk-box>.wk-ln{display:flex;justify-content:space-between}.wk-box small{color:#888;font-size:12px}.wk-gl{margin:2px 0}
 .wk-ed .wk-tip{font-size:12.5px;color:#888;margin:6px 0 12px}
-.wk-ef{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}.wk-ef label,.wk-ea{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700}
-.wk-ef input,.wk-ea textarea{border:1px solid var(--wkb);border-radius:4px;padding:8px;font:inherit;font-size:14px;background:var(--wkbg);color:var(--wkt);min-width:0}
+.wk-ef{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px}.wk-ef label,.wk-ea{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700}
+.wk-ef input,.wk-ea textarea{width:100%;box-sizing:border-box;border:1px solid var(--wkb);border-radius:4px;padding:8px;font:inherit;font-size:14px;background:var(--wkbg);color:var(--wkt);min-width:0}
 .wk-ea{margin-bottom:12px}.wk-ea textarea{resize:vertical;line-height:1.6}
 
 </style>
@@ -5621,7 +5621,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028041750";
+const BUILD="20261028042019";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16165,13 +16165,19 @@ function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
 function viewWiki(id){ return `<main class="page wk"><div class="wk-bar"><button data-a="wkGo" data-v="">SK<b>pedia</b></button></div>${id&&wkOk(id)?wkView(id):wkHome()}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; location.hash=wkHash(v); window.scrollTo(0,0); }
-  else if(a==="wkEdit"){ ui.wkEd=v; render(); window.scrollTo(0,0); }
-  else if(a==="wkCancel"){ ui.wkEd=null; render(); }
+  else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
+  else if(a==="wkCancel") wkLeave();
   else if(a==="wkSave") wkSave(v);
   else if(a==="wkHist"){ ui.wkH=ui.wkH===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkFold"){ ui.wkFold=ui.wkFold||{}; ui.wkFold[v]=!ui.wkFold[v]; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
 document.addEventListener("input",e=>{ if(e.target.id!=="wkQ") return; ui.wkQ=e.target.value; clearTimeout(ui.wkQT); ui.wkQT=setTimeout(()=>{ const p=e.target.selectionStart; render(); const i=document.getElementById("wkQ"); if(i){ i.focus(); try{ i.setSelectionRange(p,p); }catch(_){} } },250); });
+
+/* 編輯中：取消、返回鍵、左邊緣滑回去，都是回到百科頁；有改東西沒存才問一下 */
+const wkFormVal=()=>[...document.querySelectorAll(".wk-ed input,.wk-ed textarea")].map(x=>x.value).join("\u0001");
+function wkLeave(){ const go=()=>{ ui.wkEd=null; ui.wkSnap=null; render(); window.scrollTo(0,0); };
+  if(ui.wkSnap!=null&&wkFormVal()!==ui.wkSnap) ask("還沒儲存，確定要離開嗎？",go,{title:"還沒儲存",ok:"離開"}); else go(); }
+document.addEventListener("click",e=>{ if(!ui.wkEd||!document.querySelector(".wk-ed")) return; const b=e.target.closest('[data-a="back"]'); if(!b||layer.contains(b)) return; e.stopPropagation(); e.preventDefault(); wkLeave(); },true);
 
 </script>
 </body>
