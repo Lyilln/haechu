@@ -5200,7 +5200,7 @@ html[data-theme="dark"] .wk{--wkl:#E9A33A!important;--wkbar:#3A3150!important;--
 .wk-box{border:1px solid var(--wkb);padding:10px 12px;display:flex;flex-direction:column;gap:4px}.wk-box>b{font-size:14px;border-bottom:1px solid var(--wkb);padding-bottom:6px;margin-bottom:4px}
 .wk-box>.wk-ln{display:flex;justify-content:space-between}.wk-box small{color:#888;font-size:12px}.wk-gl{margin:2px 0}
 .wk-ed .wk-tip{font-size:12.5px;color:#888;margin:6px 0 12px}
-.wk-ef{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px}.wk-ef label,.wk-ea{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700}
+.wk-ef{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-bottom:12px}.wk-ef label,.wk-ea{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700}
 .wk-ef input,.wk-ea textarea{width:100%;box-sizing:border-box;border:1px solid var(--wkb);border-radius:4px;padding:8px;font:inherit;font-size:14px;background:var(--wkbg);color:var(--wkt);min-width:0}
 .wk-ea{margin-bottom:12px}.wk-ea textarea{resize:vertical;line-height:1.6}
 
@@ -5266,6 +5266,7 @@ main.wk{padding-bottom:110px}
 .wk-add a{color:var(--wkl);font-size:13.5px}
 .wkn-li{text-align:left;margin:0;padding:10px 12px 10px 28px;border-top:1px solid var(--wkb,#ccc);font-size:13.5px;display:grid;gap:4px}
 .wkn-grid+.wkn-li{border-top:0;padding-top:0}
+.wk-ef input,.wk-ef textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}.wk-ef input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left}
 
 </style>
 </head>
@@ -5684,7 +5685,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028050855";
+const BUILD="20261028071144";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
