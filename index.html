@@ -5728,7 +5728,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028130550";
+const BUILD="20261028130856";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8016,7 +8016,7 @@ function silentWav(){ if(silentURL) return silentURL; const n=2205, ab=new Array
 function mediaUnlock(){ const m=mediaEl(); try{ if(!m.paused) return; if(!m.dataset.sid) m.src=silentWav(); const tok=m._u=Math.random(); m.muted=true; const p=m.play(); const done=()=>{ if(m._u!==tok) return; m.pause(); m.muted=false; m._u=0; }; if(p&&p.then) p.then(done).catch(()=>{ if(m._u===tok){ m.muted=false; m._u=0; } }); else done(); }catch(e){} }
 function mediaPlay(m){ m._u=0; m.muted=false; return m.play(); }
 async function demoBlob(){ if(memBlobs.au_demo) return memBlobs.au_demo; const b=await trackBuffer("demo"); if(!b) return null; return memBlobs.au_demo=await compactWav(b); }
-async function mediaLoad(sid){ const m=mediaEl(); if(m.dataset.sid===sid) return m; const blob=sid==="demo"?await demoBlob():await MDB.get("au_"+sid); if(!blob) return null;
+async function mediaLoad(sid){ const m=mediaEl(); if(m.dataset.sid===sid) return m; const blob=sid==="demo"?await demoBlob():await auGet(sid); if(!blob) return null;
   if(m._url) URL.revokeObjectURL(m._url); m._url=URL.createObjectURL(blob); m.src=m._url; m.dataset.sid=sid; try{ m.load(); }catch(e){}
   await new Promise(r=>{ const t=setTimeout(r,5000); m.onloadedmetadata=()=>{ clearTimeout(t); r(); }; }); return m; }
 function mediaStop(){ if(rgMedia){ try{ rgMedia.pause(); }catch(e){} } }
@@ -8027,7 +8027,7 @@ const decodeAu=(c,ab)=>new Promise((res,rej)=>{ try{ const p=c.decodeAudioData(a
 async function trackBuffer(sid){
   if(auBuf[sid]) return auBuf[sid]; const c=audioCtx(); if(!c) return null; if(sid!=="demo"&&(getTracks()[sid]||{}).media) return null;
   if(sid==="demo") return auBuf[sid]=await demoSong();
-  const blob=await MDB.get("au_"+sid); if(!blob) return null;
+  const blob=await auGet(sid); if(!blob) return null;
   return auBuf[sid]=await decodeAu(c,await blob.arrayBuffer());
 }
 /* 示範曲：App 自己合成的 64 秒節拍（不需要上傳） */
@@ -8047,6 +8047,17 @@ async function demoSong(){
   return await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); });
 }
 /* 把聲音存成小一點的 WAV（單聲道 22kHz），影片或大檔就不用整個存起來 */
+/* 演唱會音樂放 R2（不用 Supabase）：上傳的手機傳上去；粉絲手機第一次用到時下載，存在自己手機，之後不再下載 */
+async function auR2Put(sid,blob){ if(!blob||blob.size>45*1024*1024||!MEDIA_URL||!HB_ON||!HB.tok||sbxOn()) return null; const id="au_"+sid+"_"+Date.now().toString(36);
+  for(let i=0;i<3;i++){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"PUT",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":blob.type||"audio/wav"},body:blob}); if(r.ok||r.status===409) return MEDIA_URL+"/media/"+encodeURIComponent(id); if(r.status===401) await hbRefresh(); }catch(e){} await new Promise(r=>setTimeout(r,1500*(i+1))); } return null; }
+function auShare(sid,blob){ auR2Put(sid,blob).then(u=>{ if(!u) return; try{ localStorage.setItem("au_u_"+sid,u); }catch(e){} const T=getTracks(); if(!T[sid]) return; T[sid]={...T[sid],url:u}; S.set(K.tracks,T); }); }
+const AU_DL={};
+async function auGet(sid){ let b=null; try{ b=await MDB.get("au_"+sid); }catch(e){} const u=(getTracks()[sid]||{}).url; if(b&&(!u||MDB_AU_URL(sid)===u)) return b; if(!u) return b;
+  if(!AU_DL[sid]) AU_DL[sid]=(async()=>{ try{ const r=await fetch(u); if(!r.ok) return b; const nb=await r.blob(); try{ await MDB.put("au_"+sid,nb); localStorage.setItem("au_u_"+sid,u); }catch(e){} return nb; }catch(e){ return b; } finally{ delete AU_DL[sid]; } })();
+  return AU_DL[sid]; }
+const MDB_AU_URL=sid=>{ try{ return localStorage.getItem("au_u_"+sid)||""; }catch(e){ return ""; } };
+/* 之前只存在管理員手機的歌：打開 App 時補傳一次 */
+setTimeout(async()=>{ try{ if(!isAdminAcct()||!MEDIA_URL) return; const T=getTracks(); for(const sid of Object.keys(T)){ if(T[sid].url||sid==="demo") continue; const b=await MDB.get("au_"+sid); if(b) auShare(sid,b); } }catch(e){} },8000);
 async function compactWav(buf){
   const sr=22050, len=Math.ceil(buf.duration*sr), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(1,len,sr), src=oc.createBufferSource(); src.buffer=buf; src.connect(oc.destination); src.start(0);
   const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); });
@@ -8294,7 +8305,7 @@ function toneWav(){ if(toneWav.u) return toneWav.u; const sr=22050, n=sr*.6|0, a
 async function sndTest(sid){
   rcClose(); tpClose(); const old=document.getElementById("stW"); if(old) old.remove();
   const w=document.createElement("div"); w.id="stW"; w.className="rc-w"; document.body.appendChild(w); ui.st={sid};
-  let blob=null; try{ blob=sid&&sid!=="demo"?await MDB.get("au_"+sid):null; }catch(e){} ui.st.url=blob?URL.createObjectURL(blob):null; ui.st.info=(blob?`${blob.type||"未知格式"}・${(blob.size/1048576).toFixed(1)} MB`:"沒有找到這首歌的檔案")+((sid&&sid!=="demo")?(await idbHas("au_"+sid)?"・已存在手機":"・沒有存在手機（重開就不見）"):"")+(blob?"":"・檔案讀不出來，請重新上傳");
+  let blob=null; try{ blob=sid&&sid!=="demo"?await auGet(sid):null; }catch(e){} ui.st.url=blob?URL.createObjectURL(blob):null; ui.st.info=(blob?`${blob.type||"未知格式"}・${(blob.size/1048576).toFixed(1)} MB`:"沒有找到這首歌的檔案")+((sid&&sid!=="demo")?(await idbHas("au_"+sid)?"・已存在手機":"・沒有存在手機（重開就不見）"):"")+(blob?"":"・檔案讀不出來，請重新上傳");
   stPaint(); }
 function stRows(st){ return (st.res||[["A","方法 A（Web Audio）","—"],["B","方法 B（聲音元件）","—"],["C","方法 C（你的歌）",st.info]]).map((r,i)=>`<div class="${st.cur===i?"cur":""}"><em>${r[0]}</em><span>${esc(r[1])}</span><b>${esc(r[2])}</b></div>`).join(""); }
 function stPaint(){ const st=ui.st, w=document.getElementById("stW"); if(!st||!w) return;
@@ -12421,13 +12432,13 @@ document.addEventListener("change",async e=>{
     try{ const ab=await f.arrayBuffer(); step="解碼音樂"; const c=audioCtx(); if(!c) throw new Error("這台裝置不支援播放音樂");
       const buf=await decodeAu(c,ab); step="抓節拍"; const an=analyzeBeats(buf); step="存到手機";
       step="存到手機"; const keep=isVid||f.size>12*1024*1024?await compactWav(buf):f; try{ await MDB.put("au_"+sid,keep); }catch(err){} auBuf[sid]=buf; const kept=await idbHas("au_"+sid);
-      const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",bpm:an.bpm,offset:an.offset,dur:an.dur,sec:analyzeSections(buf,an.bpm),chant:(T[sid]||{}).chant||[]}; S.set(K.tracks,T);
+      const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",bpm:an.bpm,offset:an.offset,dur:an.dur,sec:analyzeSections(buf,an.bpm),chant:(T[sid]||{}).chant||[]}; delete T[sid].url; S.set(K.tracks,T); try{ localStorage.setItem("au_u_"+sid,""); }catch(e){} auShare(sid,keep);
       inp.value=""; ui.cmGid=sg?sg.gid:ui.cmGid; lsRerender();
       tieModal("上傳好了 🎵",`《${title}》<br>${fmtDur(an.dur)}・BPM ${an.bpm}<br><br>下一步：按「試玩」聽聽看音符有沒有對上拍子，再去「錄應援詞」。${kept?"":"<br><br><b>注意：這裡沒辦法把音樂長期存在手機上，關掉 App 再打開要重新上傳。</b>"}`,`<button class="t-mbtn main" data-a="cmTryM" data-v="${sid}">試玩</button><button class="t-mbtn" data-a="tCloseLayer">晚點再說</button>`);
     }catch(err){
       if(step==="解碼音樂"){ const dur=await mediaDur(f);   // 讀不出聲音（例如 iPhone 照片裡的 .MOV）→ 改用影片元件播放，拍子用手動對
         if(dur>0){ try{ await MDB.put("au_"+sid,f); }catch(e2){}
-          const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",media:true,bpm:null,offset:0,dur,chant:(T[sid]||{}).chant||[]}; S.set(K.tracks,T);
+          const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",media:true,bpm:null,offset:0,dur,chant:(T[sid]||{}).chant||[]}; delete T[sid].url; S.set(K.tracks,T); auShare(sid,f);
           inp.value=""; ui.cmGid=sg?sg.gid:ui.cmGid; lsRerender();
           tieModal("上傳好了，還差一步 🎵",`《${title}》${fmtDur(dur)}<br><br>這個檔案 App 沒辦法自己抓拍子，請你手動對一次：按「對拍子」，音樂開始後跟著鼓聲點 8 下以上就好。`,`<button class="t-mbtn main" data-a="cmTap" data-v="${sid}">對拍子</button><button class="t-mbtn" data-a="tCloseLayer">晚點再說</button>`);
           return; } }
