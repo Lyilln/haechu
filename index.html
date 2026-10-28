@@ -4894,6 +4894,9 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 .pre-im{flex:none;width:56px;height:70px;border-radius:12px;background:var(--s2) center/cover;display:grid;place-items:center;font-weight:900;color:var(--ink-3)}
 .pre-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.pre-tx em{font-style:normal;font-size:10px;letter-spacing:.24em;font-weight:800;color:var(--violet,#8843FB)}.pre-tx b{font-size:16px}.pre-tx small{font-size:12px;color:var(--ink-3)}
 .pre-d{flex:none;text-align:right;display:flex;flex-direction:column}.pre-d b{font-family:Georgia,serif;font-size:22px;font-variant-numeric:tabular-nums}.pre-d small{font-size:11px;color:var(--ink-3)}
+/* iPhone 的日期欄會比其他欄寬、樣子不一樣：統一成跟其他輸入框一樣 */
+input[type="date"].a-nick-in,input[type="datetime-local"].a-nick-in{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;height:44px;line-height:44px;padding-top:0;padding-bottom:0}
+input[type="date"].a-nick-in::-webkit-date-and-time-value,input[type="datetime-local"].a-nick-in::-webkit-date-and-time-value{text-align:center;margin:0}
 
 /* ===== 生日咖啡廳：迷你小店 ===== */
 .cf,.cf-list{display:flex;flex-direction:column;gap:14px;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 110px)}
@@ -5618,7 +5621,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028040912";
+const BUILD="20261028041122";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
