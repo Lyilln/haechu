@@ -5068,6 +5068,12 @@ html[data-theme="dark"] .cfs-step{background:#4A3D33}
 .cfs-tip::after{content:"";position:absolute;right:30px;top:100%;border:7px solid transparent;border-top-color:#2C2733}
 @keyframes cfTip{to{opacity:1;transform:none}}@keyframes cfTipB{50%{transform:translateY(-4px)}}
 html[data-theme="dark"] .cfs-tip{background:#F4EEE6!important;color:#2C2733!important}html[data-theme="dark"] .cfs-tip::after{border-top-color:#F4EEE6!important}
+/* 深色模式：軟木板、便利貼是實體的東西，維持原本的顏色（自動轉深色會把字轉淡、板子轉黑） */
+html[data-theme="dark"] .cf-cork{background:#C99E6E radial-gradient(rgba(0,0,0,.08) 1px,transparent 1.5px) 0 0/7px 7px!important;box-shadow:inset 0 0 0 6px #8A5A3C!important}
+html[data-theme="dark"] .cfr-seat .cf-cork{background:linear-gradient(180deg,#E8D1B4,#DCC09C)!important;box-shadow:inset 0 0 0 6px #C49A70!important}
+html[data-theme="dark"] .cf-note{background:var(--nc)!important;color:#3B2A1E!important;box-shadow:0 3px 8px rgba(0,0,0,.35)!important}
+html[data-theme="dark"] .cf-note p,html[data-theme="dark"] .cf-note small,html[data-theme="dark"] .cf-note span{color:#3B2A1E!important}
+html[data-theme="dark"] .cf-cork>.cf-hint{color:#3B2A1E!important}
 
 /* ===== 訪客試玩 ===== */
 .try-in{display:flex;align-items:center;justify-content:center;gap:8px;margin:22px auto 0;padding:12px 22px;border-radius:999px;border:1px solid rgba(155,123,255,.35);background:linear-gradient(135deg,rgba(199,174,255,.18),rgba(249,168,212,.18));font:inherit;font-size:14.5px;font-weight:800;color:var(--violet-ink);letter-spacing:.04em;box-shadow:0 8px 24px -12px rgba(120,80,220,.5)}
@@ -5569,7 +5575,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028012943";
+const BUILD="20261028030722";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
