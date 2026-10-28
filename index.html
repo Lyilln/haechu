@@ -5163,7 +5163,7 @@ html[data-theme="dark"] .cf-cork>.cf-hint{color:#3B2A1E!important}
 
 /* ===== SKpedia：照 Namuwiki 的樣子 ===== */
 .wk{--wkg:#9B7FE0;--wkbar:#EDE6FF;--wkbart:#5B3FA8;--wkl:#0275D8;--wkb:#CCCCCC;--wkt:#373A3C;--wkbg:#FFFFFF;--wks:#F5F5F5;padding-top:0}
-html[data-theme="dark"] .wk{--wkbar:#3A3150!important;--wkbart:#E4DAFF!important;--wkl:#6BB7FF!important;--wkb:#3A3A44!important;--wkt:#DDDDDD!important;--wkbg:#1F2023!important;--wks:#2A2B30!important}
+html[data-theme="dark"] .wk{--wkl:#E9A33A!important;--wkbar:#3A3150!important;--wkbart:#E4DAFF!important;--wkl:#6BB7FF!important;--wkb:#3A3A44!important;--wkt:#DDDDDD!important;--wkbg:#1F2023!important;--wks:#2A2B30!important}
 .wk-bar{margin:0 -16px 0;padding:10px 16px;background:var(--wkbar);border-bottom:1px solid rgba(155,127,224,.25);display:flex;align-items:center}
 .wk-bar button{border:0;background:none;padding:0;font:inherit;font-size:20px;font-weight:300;color:var(--wkbart);letter-spacing:-.01em}.wk-bar b{font-weight:800}
 .wk-doc,.wk-home{margin:12px -16px 0;padding:16px;background:var(--wkbg);color:var(--wkt);font-size:14.5px;line-height:1.7;border-top:1px solid var(--wkb);border-bottom:1px solid var(--wkb)}
@@ -5203,6 +5203,53 @@ html[data-theme="dark"] .wk{--wkbar:#3A3150!important;--wkbart:#E4DAFF!important
 .wk-ef{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:8px;margin-bottom:12px}.wk-ef label,.wk-ea{display:flex;flex-direction:column;gap:4px;font-size:12.5px;font-weight:700}
 .wk-ef input,.wk-ea textarea{width:100%;box-sizing:border-box;border:1px solid var(--wkb);border-radius:4px;padding:8px;font:inherit;font-size:14px;background:var(--wkbg);color:var(--wkt);min-width:0}
 .wk-ea{margin-bottom:12px}.wk-ea textarea{resize:vertical;line-height:1.6}
+
+/* ===== 手機版 Namuwiki 樣式（團體、SOLOIST） ===== */
+body:has(main.wk) .nav{display:none!important}
+main.wk{padding-bottom:110px}
+.wk-t{margin:4px 0 0;font-size:34px;font-weight:800;line-height:1.2;word-break:break-word}
+.wk-upd2{margin:4px 0 12px;font-size:13px;color:#999;display:flex;gap:10px;align-items:center}.wk-upd2 a{margin-left:auto;color:var(--wkl);cursor:pointer}
+.wk-cat2{display:flex;align-items:center;gap:8px;border:1px solid var(--wkb);border-radius:6px;padding:6px 10px;font-size:13.5px;margin-bottom:14px}
+.wk-cat2>span{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.wk-cat2.open>span{white-space:normal}
+.wk-cat2 button{flex:none;border:1px solid var(--wkb);border-radius:6px;background:none;color:var(--wkt);font:inherit;font-size:12px;padding:2px 8px}
+.wkg-card{border:1px solid var(--wkb);border-radius:10px;padding:14px 12px;margin-bottom:14px;background:var(--wks);text-align:center}
+.wkg-top{display:flex;align-items:center;justify-content:center;gap:12px}.wkg-top>i{width:1.5px;align-self:stretch;background:var(--wc);opacity:.7}
+.wkg-top span{display:flex;flex-direction:column;text-align:left;line-height:1.2}.wkg-top span:only-child{text-align:center}.wkg-top b{font-size:19px;font-weight:800;color:var(--wc)}.wkg-top small{color:var(--wc);opacity:.85}
+.wkg-logo{max-height:56px;max-width:120px;object-fit:contain}.wkg-lt{font-size:22px;font-weight:900;color:var(--wc);letter-spacing:.02em}
+.wkg-mem{display:flex;justify-content:space-around;flex-wrap:wrap;gap:6px;margin:10px 0 8px;padding-bottom:8px;border-bottom:1px solid var(--wc)}.wkg-mem a{color:var(--wc);cursor:pointer}
+.wkg-links{display:flex;justify-content:space-around;flex-wrap:wrap;gap:6px;margin-top:8px;font-size:13.5px}.wkg-links a{color:var(--wc);font-weight:700;cursor:pointer}
+.wkg-hero{margin:0 0 14px;border:2px solid var(--wc);border-radius:8px;overflow:hidden}.wkg-hero span{display:block;aspect-ratio:4/3;background:center/cover}
+.wkg-hero figcaption{padding:8px;text-align:center;color:var(--wc);font-weight:700;background:var(--wks);display:flex;flex-direction:column}.wkg-hero small{opacity:.8}
+.wk-info2{width:100%;border-collapse:collapse;border:2px solid var(--wc);font-size:13.5px}
+.wk-info2 th{width:30%;background:var(--wc);color:#fff;font-weight:700;text-align:center;padding:8px 6px;border-top:1px solid rgba(255,255,255,.25)}
+.wk-info2 td{padding:8px 10px;border:1px solid var(--wkb);word-break:break-word}.wk-info2 td small{color:#999}
+.wk-ih2{text-align:center;padding:12px!important;background:var(--wks)}.wk-ih2>b{display:block;font-size:20px;color:var(--wc)}.wk-ih2>small{color:var(--wc)}
+.wk-iph2{padding:0!important}.wk-iph2 span{display:block;aspect-ratio:3/4;background:center/cover}
+.wk-chip{display:inline-block;border:1px solid var(--wkt);border-radius:4px;font-size:11.5px;padding:0 5px;margin-left:4px;vertical-align:1px}.wk-chip.f{background:var(--wc);border-color:var(--wc);color:#fff;font-weight:800}
+.wk-pill{display:inline-block;background:linear-gradient(90deg,#fff,var(--wc));color:#fff;font-weight:800;padding:2px 14px;border-radius:999px;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.wk-sig img,.wk-sig span{max-height:60px;max-width:150px}
+.wk-ie{text-align:right;margin:4px 0 12px;font-size:13px}.wk-ie a,.wk-ed1{color:var(--wkl);cursor:pointer;font-weight:700}
+.wk-toc2{display:inline-flex;flex-direction:column;border:1px solid var(--wkb);padding:12px 18px;margin:8px 0 16px;min-width:60%;font-size:15px}
+.wk-toc2>b{display:flex;justify-content:space-between;font-size:18px;margin-bottom:6px;cursor:pointer}.wk-toc2>b i{font-style:normal;color:#999}
+.wk-toc2 a{color:var(--wkt);cursor:pointer;line-height:1.9}.wk-toc2 a.lv2{padding-left:22px;color:var(--wkl)}.wk-toc2.fold a{display:none}
+.wk-g .wk-s h2{font-size:24px;display:flex;align-items:center;gap:6px;cursor:default}.wk-g .wk-s.lv2 h2{font-size:20px}
+.wk-g .wk-ar{order:-1;margin:0;font-size:16px;color:#999;cursor:pointer;transform:none}.wk-g .wk-s.fold .wk-ar{transform:rotate(-90deg)}
+.wk-ed1{margin-left:auto;font-size:13px}
+.wk-q{margin:0 0 10px;padding:10px 14px;border:1px dashed var(--wkb);border-left:5px solid #888;background:var(--wks)}
+.wkm-grid{display:grid;grid-template-columns:repeat(var(--cols),minmax(0,1fr));border:2px solid var(--wc)}
+.wkm-c{display:flex;flex-direction:column;text-align:center;border:1px solid var(--wkb);min-width:0}
+.wkm-ph{display:block;aspect-ratio:3/4;cursor:pointer;color:#fff;font-size:32px;font-weight:800;display:grid;place-items:center;overflow:hidden}.wkm-ph>*{width:100%;height:100%;background-size:cover;background-position:center;display:block}
+.wkm-c b{background:var(--wc);color:#fff;padding:6px 2px;cursor:pointer}.wkm-c span{padding:5px 4px;font-size:12.5px;border-top:1px solid var(--wkb)}
+.wk-pics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px}.wk-pics span{aspect-ratio:3/4;background:center/cover;border-radius:4px}
+.wk-up2{display:flex;gap:8px;margin-bottom:12px}.wk-up2 .btn{flex:1}
+/* 浮動列 */
+.wk-fbar{position:fixed;z-index:40;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);display:flex;align-items:center;gap:8px;padding:6px;border-radius:999px;background:rgba(20,20,24,.92);box-shadow:0 10px 30px -10px rgba(0,0,0,.6)}
+.wk-fbar>button{flex:none;width:46px;height:46px;border-radius:50%;border:0;background:#2E2F35;color:#fff;font-size:20px}
+.wk-fbar label{flex:1;min-width:0;display:flex;align-items:center;gap:6px;height:46px;border-radius:999px;background:#3A3B42;padding:0 14px;color:#aaa}
+.wk-fbar input{flex:1;min-width:0;border:0;background:none;color:#fff;font:inherit;font-size:15px;outline:none}
+.wk-side{position:fixed;z-index:39;right:10px;bottom:calc(env(safe-area-inset-bottom,0px) + 130px);display:flex;flex-direction:column;gap:10px}
+.wk-side button{width:44px;height:44px;border:1px solid #444;background:rgba(20,20,24,.9);color:#fff;font-size:18px;border-radius:8px}.wk-side span{display:flex;flex-direction:column}.wk-side span button:first-child{border-radius:8px 8px 0 0}.wk-side span button:last-child{border-radius:0 0 8px 8px;border-top:0}
+.wk-pillname{position:fixed;z-index:39;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 74px);transform:translate(-50%,10px);padding:6px 22px;border-radius:999px;background:rgba(60,60,66,.95);color:#fff;font-weight:800;opacity:0;pointer-events:none;transition:.2s}.wk-pillname.on{opacity:1;transform:translate(-50%,0)}
 
 </style>
 </head>
@@ -5621,7 +5668,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028042019";
+const BUILD="20261028044118";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16152,6 +16199,78 @@ function wkSave(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[id
   const len=o=>JSON.stringify([o.f||{},o.ov||"",o.hi||"",o.tr||""]).length, d=len({f,ov,hi,tr})-len(P);
   Object.assign(P,{f,ov,hi,tr,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d}].slice(-20);
   all[id]=P; S.set(WK_KEY,all); ui.wkEd=null; render(); window.scrollTo(0,0); toast("已儲存"); }
+/* ===== 團體頁、SOLOIST 頁：照 Namuwiki 手機版（她 10/28 給 ifeye、BIBI、dodree 截圖；TW-IN 是兩人團） ===== */
+const WKG_F=[["genre","曲風"],["leader","隊長"],["co","公司"],["dist","發行商"],["fan","粉絲名"]];
+const WKS_F=[["real","本名"],["birth","出生日期","date"],["bplace","出生地"],["from","出身"],["nat","國籍"],["clan","本貫"],["body","身體資料"],["family","家人"],["rel","宗教"],["edu","學歷"],["co","公司"],["fan","粉絲名"],["motto","座右銘"],["nick","綽號"],["hobby","興趣"],["mbti","MBTI"]];
+/* 段落：[key, 標題, 小段[[key,標題]], 自動內容] */
+const WKG_S=[["ov","概要"],["mem","成員",[["chem","成員間的化學反應"]]],["feat","特色"],["act","活動",[["perf","公演"],["cont","內容"],["show","綜藝"]]],["disc","作品"],["award","得獎紀錄"],["tr","趣事",[["pre","出道前"]]],["pics","歷代宣傳照"],["nav","周邊導覽"]];
+const WKS_S=[["ov","概要"],["life","生平"],["music","音樂活動",[["disc","作品"],["award","音樂節目"],["perf","公演"]]],["acting","演技活動"],["other","其他活動",[["show","綜藝"],["radio","廣播"],["ad","廣告"]]],["prize","得獎紀錄"],["ctrv","爭議"],["tr","趣事"],["nav","周邊導覽"]];
+const WK_AUTO=new Set(["mem","disc","award","perf","show","ad","pics","nav","prize"]);   // 這些段自動填（perf 自動＋可補寫）
+const wkDays=ts=>Math.floor((dayStart(Date.now())-dayStart(ts))/864e5);
+const wkAge=s=>{ const t=ymdTs(s); if(!t) return ""; const d=new Date(t), n=new Date(); let a=n.getFullYear()-d.getFullYear(); if(n.getMonth()<d.getMonth()||n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()) a--; return a; };
+const wkDot=s=>{ const t=ymdTs(s); if(!t) return esc(s||""); const d=new Date(t); return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())}.`; };
+function wkAutoSec(k,ctx){ const {gid,A,mem,isSolo,key}=ctx, empty=`<p class="wk-empty">還沒有內容</p>`;
+  if(k==="mem"){ const n=mem.length, cols=n<=2||n===4?2:3; return `<div class="wkm-grid" style="--cols:${cols};--wc:${ctx.col}">${mem.map(x=>{ const Fm=(wkPage("m:"+x).f)||{}; return `<div class="wkm-c"><a class="wkm-ph" data-a="wkGo" data-v="m:${x}" style="background:${grad(MEMBERS[x].g||0)}">${teaserIn?teaserIn(x):mAvIn(x)}</a><b data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</b><span>${Fm.bday?`${wkDot(Fm.bday)}${wkAge(Fm.bday)!==""?` (${wkAge(Fm.bday)}歲)`:""}`:"—"}</span><span>${esc(Fm.nat||"—")}</span><span>${esc(Fm.pos||"—")}</span></div>`; }).join("")}</div>`; }
+  if(k==="disc") return A.songs.length?`<table class="wk-tb"><tr><th>歌名</th><th>發行</th><th>一位</th></tr>${A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<tr><td>${esc(s.title)}</td><td>${t?wkYmd(t):""}</td><td>${A.wins[s.id]||0}</td></tr>`; }).join("")}</table>`:empty;
+  if(k==="award"||k==="prize"){ const L=A.songs.filter(s=>A.wins[s.id]); return L.length?`<ul>${L.map(s=>`<li>音樂節目一位：《${esc(s.title)}》${A.wins[s.id]} 次</li>`).join("")}</ul>`:empty; }
+  if(k==="perf") return A.cc.length||A.tours.length?`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`:"";
+  if(k==="show"){ const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x))); return eps.length?`<table class="wk-tb"><tr><th>節目</th><th>結果</th></tr>${eps.map(e=>`<tr><td>${esc(VSHOW[e.show].name)}</td><td>${e.st!=="done"?"播出中":(e.mids||[]).filter(x=>mem.includes(x)).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</td></tr>`).join("")}</table>`:empty; }
+  if(k==="ad"){ const L=(typeof bzAll==="function"?bzAll():[]).filter(b=>b&&mem.includes(b.mid)); return L.length?`<ul>${L.map(b=>`<li>${esc(b.brand||b.title||"代言")}</li>`).join("")}</ul>`:empty; }
+  if(k==="pics"){ const ph=[gPhoto(gid),...mem.map(x=>mPhoto(x))].filter(Boolean); return ph.length?`<div class="wk-pics">${ph.map(u=>`<span style="background-image:url('${u}')"></span>`).join("")}</div>`:empty; }
+  if(k==="nav") return `<table class="wk-nav" style="--wc:${ctx.col}"><tr><th><a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(ctx.g.name)}</a></th></tr><tr><td>${mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join(" · ")}</td></tr></table>`;
+  return ""; }
+function wkViewG(id){ const gid=id.slice(2), g=groupOf(gid), isSolo=!!g.solo, mem=grpMembers(gid), key=isSolo?mem[0]:null, P=wkPage(id), F=P.f||{}, T=P.s||{}, A=wkAuto(gid), col=gTheme(gid), can=wkCanEdit(id), ctx={gid,g,A,mem,isSolo,key,col};
+  if(ui.wkEd&&ui.wkEd.startsWith(id+"#")&&can) return wkSecEditor(id,ui.wkEd.slice(id.length+1),isSolo,P);
+  const lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
+  const logo=P.logo?`<img class="wkg-logo" src="${esc(P.logo)}" alt=""><i></i>`:"";   /* 還沒上傳 Logo：只放團名（她：沒上傳前用團名） */
+  const card=`<div class="wkg-card" style="--wc:${col}"><div class="wkg-top">${logo}<span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>
+    ${!isSolo&&mem.length?`<div class="wkg-mem">${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("")}</div>`:""}
+    <div class="wkg-links">${(isSolo?[["music","音樂作品"],["disc","參與作品"],["other","出演作品"],["nav","相關文件"]]:[["disc","音樂作品"],["nav","相關文件"]]).map(([k,l])=>`<a data-a="wkToK" data-v="${k}">[ ${l} ]</a>`).join("")}</div></div>`;
+  const photo=P.photo||(isSolo?mPhoto(key):gPhoto(gid));
+  const hero=!isSolo&&photo?`<figure class="wkg-hero" style="--wc:${col}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
+  const row=(l,v)=>`<tr><th>${l}</th><td>${v||"—"}</td></tr>`, d=A.debut, dd=d?wkDays(d):0;
+  const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip">出道作品</span><span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
+  const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a><br><a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
+  const infoRows=isSolo?WKS_F.map(([k,l])=>{ if(k==="birth") return row("出生",F.birth?`${wkDot(F.birth)}${wkAge(F.birth)!==""?`（${wkAge(F.birth)}歲）`:""}${F.bplace?`<br>${esc(F.bplace)}`:""}`:esc(F.bplace||"")); if(k==="bplace") return ""; if(k==="co") return row(l,esc(F[k]||""))+row("出道",debutRow); if(k==="fan") return row(l,F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:""); return row(l,esc(F[k]||"")); }).join("")+row("簽名",(()=>{ const sig=Object.values(S.get("daisuki_cafe",{})||{}).filter(c=>c&&c.mid===key&&c.art&&c.art.sig).map(c=>c.art.sig).pop(); return sig&&typeof cfImg==="function"?`<span class="wk-sig">${cfImg(sig,"sig")}</span>`:""; })())
+    :row("出道日",debutRow)+row("出道作品",firstSong?`<span class="wk-chip f">${esc(firstSong.title)}</span>`:"")+WKG_F.map(([k,l])=>row(l,k==="fan"&&F.fan?`<span class="wk-pill">${esc(F.fan)}</span>`:k==="leader"&&F.leader?wkTxt(F.leader,[],id):esc(F[k]||""))).join("");
+  const info=`<table class="wk-info2" style="--wc:${col}"><tr><td colspan="2" class="wk-ih2">${isSolo?`<b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small>`:`<div class="wkg-top">${logo}<span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>`}</td></tr>
+    ${isSolo&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
+  const SS=isSolo?WKS_S:WKG_S, fold=ui.wkFold||{}, toc=[], body=[];
+  const txt=k=>{ const v=(T[k]||"").trim(); if(!v) return ""; if(k==="tr"||k==="pre") return `<ul>${v.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),[],id)}</li>`).join("")}</ul>`; return `<p>${wkTxt(v,[],id)}</p>`; };
+  const secHtml=(n,k,t,lv)=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||k==="perf")?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
+    toc.push(`<a data-a="wkToK" data-v="${k}" class="lv${lv}"><span class="wk-no">${n}.</span> ${t}</a>`);
+    return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}${!auto&&!own&&!q?`<p class="wk-empty">還沒有內容</p>`:""}</div></section>`; };
+  SS.forEach(([k,t,sub],i)=>{ body.push(secHtml(i+1,k,t,1)); (sub||[]).forEach(([k2,t2],j)=>body.push(secHtml(`${i+1}.${j+1}`,k2,t2,2))); });
+  const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,F.co||""].filter(Boolean);
+  const H=P.hist||[];
+  return `<article class="wk-doc wk-g">
+    <h1 class="wk-t">${esc(g.name)}</h1><p class="wk-upd2">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}<a data-a="wkHist" data-v="${id}">歷史</a></p>
+    <div class="wk-cat2 ${ui.wkCat===id?"open":""}"><span>分類：${cats.map(c=>`<a class="wk-ln">${esc(c)}</a>`).join(" | ")}</span><button data-a="wkCat" data-v="${id}">${ui.wkCat===id?"收合":"更多"}</button></div>
+    ${ui.wkH===id?`<div class="wk-hist"><b>修改紀錄</b>${H.length?H.slice().reverse().map(h=>`<p><span>${ymd(h.ts)} ${timeHM(h.ts)}</span> ${esc(h.n||"")} <em class="${h.d>=0?"p":"m"}">(${h.d>=0?"+":""}${h.d})</em></p>`).join(""):`<p>還沒有修改紀錄</p>`}</div>`:""}
+    ${card}${hero}${info}
+    <div class="wk-toc2 ${ui.wkTocC?"fold":""}" id="wkToc"><b data-a="wkTocT">目錄<i>⌄</i></b>${toc.join("")}</div>
+    ${body.join("")}</article>`; }
+function wkSecEditor(id,k,isSolo,P){ const F=P.f||{}, T=P.s||{}, nm=k==="info"?"資料框":((isSolo?WKS_S:WKG_S).flatMap(([a,b,s])=>[[a,b],...(s||[])]).find(x=>x[0]===k)||[k,k])[1];
+  const fields=isSolo?WKS_F:WKG_F;
+  const body=k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="60" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>`).join("")}</div>
+      <div class="wk-up2"><label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label><label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label></div>`
+    :`${k==="ov"?`<label class="wk-ea"><span>引言（可不填）</span><input data-k="s.ovq" maxlength="80" value="${esc(T.ovq||"")}" placeholder="輸入文字"></label>`:""}<label class="wk-ea"><span>${k==="tr"||k==="pre"?"一行一條":"內容"}</span><textarea data-k="s.${k}" rows="8" maxlength="4000" placeholder="輸入文字">${esc(T[k]||"")}</textarea></label>`;
+  return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯：${nm})</small></h1></div><p class="wk-tip">直接打字就好，提到其他藝人的名字會自動變成連結。</p>${body}
+    <div class="ls-btns"><button class="btn btn-soft" data-a="wkCancel">取消</button><button class="btn btn-main" data-a="wkSaveS" data-v="${id}">儲存</button></div></article>`; }
+function wkSaveS(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[id]||{})}, F={...(P.f||{})}, T={...(P.s||{})}, vals=[];
+  document.querySelectorAll(".wk-ed [data-k]").forEach(el=>{ const [b,k]=el.dataset.k.split("."), v=el.value.trim(); vals.push(v); (b==="f"?F:T)[k]=v; if(!v) delete (b==="f"?F:T)[k]; });
+  if(!isAdminAcct()&&vals.some(x=>x&&banBlock(x))) return;
+  const len=o=>JSON.stringify([o.f||{},o.s||{}]).length, dl=len({f:F,s:T})-len(P);
+  Object.assign(P,{f:F,s:T,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d:dl}].slice(-20);
+  all[id]=P; S.set(WK_KEY,all); ui.wkEd=null; ui.wkSnap=null; render(); toast("已儲存"); }
+document.addEventListener("change",async e=>{ const t=e.target; if(t.id!=="wkLogo"&&t.id!=="wkPhoto") return; const f=t.files&&t.files[0], id=t.dataset.v; t.value=""; if(!f||!wkCanEdit(id)) return;
+  try{ const {blob}=await prepPhoto(f), mid="wk_"+(t.id==="wkLogo"?"logo_":"ph_")+Date.now().toString(36); let url=await hbImgUrl(mid,blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
+    const all=wkAll(), P={...(all[id]||{})}; P[t.id==="wkLogo"?"logo":"photo"]=url; P.ts=Date.now(); all[id]=P; S.set(WK_KEY,all); toast(t.id==="wkLogo"?"Logo 換好了":"照片換好了"); const y=window.scrollY; render(); window.scrollTo(0,y); }catch(err){ toast("這張圖片讀不出來"); } });
+/* 浮動列（取代 App 導覽列）、右邊的目錄／上下按鈕、往下滑時底部的頁名膠囊 */
+const wkFloat=id=>`<div class="wk-fbar"><button data-a="wkRand" aria-label="隨機文件">⤮</button><label><span>🔍</span><input id="wkQ2" placeholder="SKpedia 搜尋" autocomplete="off"></label><button data-a="wkMenu" aria-label="選單">☰</button></div>
+  ${id?`<div class="wk-side"><button data-a="wkTocGo" aria-label="目錄">☰</button><span><button data-a="wkTop" aria-label="最上面">↑</button><button data-a="wkBot" aria-label="最下面">↓</button></span></div><div class="wk-pillname">${esc(wkName(id))}</div>`:""}`;
+function wkIds(){ return [...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m"&&groupOf(MEMBERS[k].group)).map(k=>"m:"+k)]; }
+addEventListener("scroll",()=>{ const p=document.querySelector(".wk-pillname"); if(p) p.classList.toggle("on",window.scrollY>320); },{passive:true});
 /* 首頁：大搜尋框＋最近修改＋全部藝人 */
 function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
   const ids=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m"&&groupOf(MEMBERS[k].group)).map(k=>"m:"+k)];
@@ -16162,7 +16281,7 @@ function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
     ${q?`<div class="wk-box"><b>搜尋結果</b>${hit.length?hit.map(id=>`<a class="wk-ln" data-a="wkGo" data-v="${id}">${esc(wkName(id))}</a>`).join(""):`<p class="wk-empty">找不到</p>`}</div>`:""}
     <div class="wk-box"><b>最近修改</b>${recent.length?recent.map(id=>`<a class="wk-ln" data-a="wkGo" data-v="${id}">${esc(wkName(id))}<small>${ago(all[id].ts)}</small></a>`).join(""):`<p class="wk-empty">還沒有人修改</p>`}</div>
     <div class="wk-box"><b>全部文件</b>${GROUPS.filter(g=>g.id!=="tdm_g").map(g=>`<p class="wk-gl"><a class="wk-ln" data-a="wkGo" data-v="g:${g.id}">${esc(g.name)}</a>${g.solo?"":`：${grpMembers(g.id).map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("・")}`}</p>`).join("")}</div></div>`; }
-function viewWiki(id){ return `<main class="page wk"><div class="wk-bar"><button data-a="wkGo" data-v="">SK<b>pedia</b></button></div>${id&&wkOk(id)?wkView(id):wkHome()}</main>`; }
+function viewWiki(id){ const ok=id&&wkOk(id); return `<main class="page wk">${ok?(id.startsWith("g:")?wkViewG(id):wkView(id)):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; location.hash=wkHash(v); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
@@ -16170,7 +16289,21 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkSave") wkSave(v);
   else if(a==="wkHist"){ ui.wkH=ui.wkH===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkFold"){ ui.wkFold=ui.wkFold||{}; ui.wkFold[v]=!ui.wkFold[v]; const y=window.scrollY; render(); window.scrollTo(0,y); }
+  else if(a==="wkEditS"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
+  else if(a==="wkSaveS") wkSaveS(v);
+  else if(a==="wkCat"){ ui.wkCat=ui.wkCat===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
+  else if(a==="wkLinks"){ ui.wkLk=ui.wkLk===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
+  else if(a==="wkCm"){ location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v); }
+  else if(a==="wkTocT"){ ui.wkTocC=!ui.wkTocC; const y=window.scrollY; render(); window.scrollTo(0,y); }
+  else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="wkTocGo"){ const s=document.getElementById("wkToc")||document.querySelector(".wk-toc"); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="wkTop") window.scrollTo({top:0,behavior:"smooth"});
+  else if(a==="wkBot") window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
+  else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; location.hash=wkHash(L[Math.floor(Math.random()*L.length)]); window.scrollTo(0,0); } }
+  else if(a==="wkMenu") iosSheet([["SKpedia 首頁","wkGo",'data-v=""'],["回到 "+(route().role==="artist"?"FOC":"FEST"),"wkExit",""]]);
+  else if(a==="wkExit"){ layer.innerHTML=""; location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"; }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
+document.addEventListener("keydown",e=>{ if(e.target.id!=="wkQ2"||e.key!=="Enter") return; e.preventDefault(); ui.wkQ=e.target.value; location.hash=wkHash(""); });
 document.addEventListener("input",e=>{ if(e.target.id!=="wkQ") return; ui.wkQ=e.target.value; clearTimeout(ui.wkQT); ui.wkQT=setTimeout(()=>{ const p=e.target.selectionStart; render(); const i=document.getElementById("wkQ"); if(i){ i.focus(); try{ i.setSelectionRange(p,p); }catch(_){} } },250); });
 
 /* 編輯中：取消、返回鍵、左邊緣滑回去，都是回到百科頁；有改東西沒存才問一下 */
