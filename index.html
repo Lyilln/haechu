@@ -5728,7 +5728,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028110158";
+const BUILD="20261028110346";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16229,7 +16229,7 @@ function wkAutoSec(k,ctx){ const {gid,A,isSolo,key,isM}=ctx, mem=isM?[key]:ctx.m
   if(k==="perf") return A.cc.length||A.tours.length?`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`:"";
   if(k==="show"){ const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x))); return eps.length?`<table class="wk-tb"><tr><th>節目</th><th>結果</th></tr>${eps.map(e=>`<tr><td>${esc(VSHOW[e.show].name)}</td><td>${e.st!=="done"?"播出中":(e.mids||[]).filter(x=>mem.includes(x)).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</td></tr>`).join("")}</table>`:empty; }
   if(k==="ad"){ const L=(typeof bzAll==="function"?bzAll():[]).filter(b=>b&&mem.includes(b.mid)); return L.length?`<ul>${L.map(b=>`<li>${esc(b.brand||b.title||"代言")}</li>`).join("")}</ul>`:empty; }
-  if(k==="pics"&&wkPicsOf(ctx.id).length) { const cs=wkCols(gid,ctx.col), hv=u=>WKHC[u]?`--hc:${WKHC[u][0]};--hct:${WKHC[u][1]}`:"";   /* 像 Namuwiki：標題列用代表色，每張下面一條字（哪一次回歸），底色抓那張照片的顏色 */
+  if(k==="pics"&&wkPicsOf(ctx.id).length) { const cs=wkCols(gid,gTheme(gid)), hv=u=>WKHC[u]?`--hc:${WKHC[u][0]};--hct:${WKHC[u][1]}`:"";   /* 像 Namuwiki：標題列用代表色，每張下面一條字（哪一次回歸），底色抓那張照片的顏色 */
     return `<div class="wk-pics3${isSolo?"":" wide"}"><b class="wkp-h" style="background:${cs.length>1?`linear-gradient(90deg,${cs.join(",")})`:cs[0]};color:${wkInk(cs[0])}">${isSolo?"歷代宣傳照":"歷代團體宣傳照"}</b><div class="wkp-g">${wkPicsOf(ctx.id).map(p=>`<figure data-src="${esc(p.u)}" style="${hv(p.u)}"><span style="background-image:url('${esc(p.u)}')"></span><figcaption>${esc(p.t||"")}</figcaption></figure>`).join("")}</div></div>`; }
   if(k==="pics"){ const ph=(isSolo?[mPhoto(key)]:[gPhoto(gid)]).filter(Boolean);   /* 團體頁只放團體照，不放成員個人照 */ return ph.length?`<div class="wk-pics${isSolo?"":" wide"}">${ph.map(u=>`<span style="background-image:url('${u}')"></span>`).join("")}</div>`:empty; }
   if(k==="nav") return `<table class="wk-nav" style="--wc:${ctx.col}"><tr><th><a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(ctx.g.name)}</a></th></tr><tr><td>${mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(wkKn(x))}</a>`).join(" · ")}</td></tr></table>`;
@@ -16288,11 +16288,11 @@ const wkFnStrip=v=>String(v||"").replace(/\u0002[^\u0003]*\u0003/g,"");
 let WKFN=[];
 function wkFnDone(html,P){ WKFN=[]; const N=P.n||{}; html=html.replace(/\u0002([^|\u0003]+)\|(\d+)\u0003/g,(m,k,i)=>{ const t=(N[k]||[])[i-1]; if(!t) return ""; WKFN.push(t); const n=WKFN.length; return `<sup class="wk-fn" data-a="wkFn" data-v="${n}">[${n}]</sup>`; });
   return WKFN.length?html.replace(/<\/article>$/,`<div class="wk-fns">${WKFN.map((t,i)=>`<p><a data-a="wkFn" data-v="${i+1}">[${i+1}]</a> ${wkTxt(t,[],"")}</p>`).join("")}</div></article>`):html; }
-function wkViewG(id){ const ctx=wkCtx(id); if(ctx.isM){ const gp=wkPage("g:"+ctx.gid).photo||gPhoto(ctx.gid); if(gp){ ctx.hsrc=gp; if(WKHC[gp]) ctx.col=WKHC[gp][0]; } } const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), can=wkCanEdit(id);
+function wkViewG(id){ const ctx=wkCtx(id); if(ctx.isM){ const gp=wkPage("g:"+ctx.gid).photo||gPhoto(ctx.gid); if(gp){ ctx.hsrc=gp; ctx.col=`var(--hc,${WKHC[gp]?WKHC[gp][0]:ctx.col})`;   /* 抓到照片色只換 CSS 變數，不重畫（切換才不會閃） */ } } const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), can=wkCanEdit(id);
   if(ui.wkEd&&ui.wkEd.startsWith(id+"#")&&can) return wkSecEditor(id,ui.wkEd.slice(id.length+1),person,{...P,...wkStg(id)},isM);
   return wkFnDone(wkViewG2(id,ctx,P,can),P); }
 function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, F=wkFnTok(P.f,"f"), T=wkFnTok(wkT(P),"s");
-  const cs=wkCols(gid,col), sol=isSolo?`;--wth:${cs[0]};--wtt:${cs[1]||wkInk(cs[0])};--wc:${cs[1]||cs[0]}`:"";
+  const cs=wkCols(gid,gTheme(gid)), sol=isSolo?`;--wth:${cs[0]};--wtt:${cs[1]||wkInk(cs[0])};--wc:${cs[1]||cs[0]}`:"";
   const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
   const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
   const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption><span>${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc((wkPage("m:"+x).f||{}).kname||MEMBERS[x].name)}</a>`).join(" · ")}</span>${(()=>{ return wkCapHtml(P,lastSong); })()}</figcaption></figure>`:"";
@@ -16379,7 +16379,7 @@ function wkHc1(u){ if(!u||WKHC[u]!==undefined) return;
     for(let i=0;i<d.length;i+=4){ const R=d[i],G=d[i+1],B=d[i+2], mx=Math.max(R,G,B), mn=Math.min(R,G,B); const w=1+(mx-mn)/32; r+=R*w; g+=G*w; b+=B*w; n+=w; }   /* 鮮豔的像素比重高 */
     r/=n; g/=n; b/=n; const L=(.299*r+.587*g+.114*b)/255; WKHC[u]=[`rgb(${r|0},${g|0},${b|0})`,L>.6?"#1D1A24":"#fff"];
     document.querySelectorAll(`[data-src="${CSS.escape(u)}"]`).forEach(el=>{ el.style.setProperty("--hc",WKHC[u][0]); el.style.setProperty("--hct",WKHC[u][1]); });
-    if(document.querySelector(`[data-hsrc="${CSS.escape(u)}"]`)){ const y=scrollY; render(); scrollTo(0,y); } }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
+    document.querySelectorAll(`[data-hsrc="${CSS.escape(u)}"]`).forEach(el=>el.style.setProperty("--hc",WKHC[u][0])); }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
 function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; location.hash=wkHash(v); window.scrollTo(0,0); }
