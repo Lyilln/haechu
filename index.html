@@ -5713,7 +5713,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028082149";
+const BUILD="20261028082607";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5947,7 +5947,7 @@ function feedDeliver(){ ptCollect(); try{ const s=session(); if(!s||s.role!=="fa
    ・cropImg(檔案或 Blob,{ratio,round,max,free}) → Blob（取消是 null）
    ・free：貼文照片用，可以選 原比例／1:1／4:5／16:9
    ========================================================= */
-function cropImg(src,{ratio=1,round=false,max=1600,free=false}={}){ return new Promise(async done=>{
+function cropImg(src,{ratio=1,round=false,max=1600,free=false,png=false}={}){ return new Promise(async done=>{
   let url, img; try{ url=URL.createObjectURL(src); img=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=url; }); }catch(e){ toast("這張照片讀不出來"); done(null); return; }
   const IW=img.naturalWidth, IH=img.naturalHeight, R0=IW/IH, RATIOS=[["原比例",R0],["1:1",1],["4:5",.8],["16:9",16/9]];
   let r=free?R0:ratio;
@@ -5982,7 +5982,7 @@ function cropImg(src,{ratio=1,round=false,max=1600,free=false}={}){ return new P
   w.querySelector(".crp-x").onclick=()=>close(null);
   w.querySelector(".crp-ok").onclick=async()=>{ const sx=(F.x-x)/s, sy=(F.y-y)/s, sw=F.w/s, sh=F.h/s, k=Math.min(1,max/Math.max(sw,sh)), c=document.createElement("canvas");
     c.width=Math.max(1,Math.round(sw*k)); c.height=Math.max(1,Math.round(sh*k)); const ctx=c.getContext("2d"); ctx.imageSmoothingQuality="high"; ctx.drawImage(img,sx,sy,sw,sh,0,0,c.width,c.height);
-    const b=await new Promise(res=>c.toBlob(res,"image/jpeg",.9)); close(b); };
+    const b=await new Promise(res=>c.toBlob(res,png?"image/png":"image/jpeg",.9)); close(b); };
   if(free) w.querySelector(".crp-rs").addEventListener("click",e=>{ const b=e.target.closest("button"); if(!b) return; w.querySelectorAll(".crp-rs button").forEach(x2=>x2.classList.toggle("on",x2===b)); r=RATIOS[+b.dataset.k][1]; layout(false); });
 }); }
 /* 各個位置的比例 */
@@ -16306,7 +16306,8 @@ function wkSaveS(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[i
   Object.assign(P,{f:F,s:T,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d:dl}].slice(-20);
   all[id]=P; S.set(WK_KEY,all); ui.wkEd=null; ui.wkSnap=null; render(); toast("已儲存"); }
 document.addEventListener("change",async e=>{ const t=e.target; if(t.id!=="wkLogo"&&t.id!=="wkPhoto") return; const f=t.files&&t.files[0], id=t.dataset.v; t.value=""; if(!f||!wkCanEdit(id)) return;
-  try{ const {blob}=await prepPhoto(f), mid="wk_"+(t.id==="wkLogo"?"logo_":"ph_")+Date.now().toString(36); let url=await hbImgUrl(mid,blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
+  try{ const isLogo=t.id==="wkLogo", pg=wkPage(id), cr=await cropImg(f,isLogo?{free:true,png:true,max:800}:{ratio:id.startsWith("m:")||(groupOf(id.slice(2))||{}).solo?3/4:4/3}); if(!cr) return;   /* 放圖都先裁切 */
+    const {blob}=isLogo?{blob:cr}:await prepPhoto(cr), mid="wk_"+(t.id==="wkLogo"?"logo_":"ph_")+Date.now().toString(36); let url=await hbImgUrl(mid,blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
     const all=wkAll(), P={...(all[id]||{})}; P[t.id==="wkLogo"?"logo":"photo"]=url; P.ts=Date.now(); all[id]=P; S.set(WK_KEY,all); toast(t.id==="wkLogo"?"Logo 換好了":"照片換好了"); const y=window.scrollY; render(); window.scrollTo(0,y); }catch(err){ toast("這張圖片讀不出來"); } });
 /* 浮動列（取代 App 導覽列）、右邊的目錄／上下按鈕、往下滑時底部的頁名膠囊 */
 const wkFloat=id=>`<div class="wk-fbar"><button data-a="wkRand" aria-label="隨機文件">⤮</button><label><span>🔍</span><input id="wkQ2" placeholder="SKpedia 搜尋" autocomplete="off"></label><button data-a="wkMenu" aria-label="選單">☰</button></div>
@@ -16414,7 +16415,7 @@ document.addEventListener("change",e=>{ const t=e.target; if(t.matches&&t.matche
 
 /* 成員照、宣傳照：選了就上傳（R2），說明字先暫存 */
 document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!t.classList.contains("wk-up")) return; const f=t.files&&t.files[0], id=t.dataset.v, m=t.dataset.m; t.value=""; if(!f||!wkCanEdit(id)) return;
-  try{ const {blob}=await prepPhoto(f); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
+  try{ const al=!!t.dataset.al, cr=await cropImg(f,al?{free:true,png:true,max:800}:{ratio:3/4}); if(!cr) return; const {blob}=al?{blob:cr}:await prepPhoto(cr); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
     const all=wkAll(), P={...(all[id]||{})}; if(t.dataset.al) P.alogo=url; else if(m) P.mph={...(P.mph||{}),[m]:url}; else { const pics=(P.pics||[]).map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); P.pics=[...pics,{u:url,t:""}]; }
     P.ts=Date.now(); all[id]=P; S.set(WK_KEY,all); toast("照片放好了"); const y=window.scrollY; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,y); }catch(err){ toast("這張圖片讀不出來"); } });
 
