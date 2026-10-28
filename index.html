@@ -5621,7 +5621,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028041319";
+const BUILD="20261028041750";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8713,7 +8713,8 @@ function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid
       <button class="cm-go" data-a="cmNotices">確認 ${esc(g.name)} 的公告 <span>→</span></button></section>
     ${cmSec("Calendar")}<section class="card cm-card">${up?`<div class="cm-up"><small>${evWhen(up.ts)}</small><b>${up.ic} ${esc(up.t)}</b></div>`:""}<button class="cm-go" data-a="cmCal">確認 ${esc(g.name)} 的行程 <span>→</span></button></section>
     ${prods.length?`${cmSec("Merch","查看更多","cmShop")}<div class="cm-merch">${prods.map(prodCard).join("")}</div>`:""}
-    ${cmSec("About")}<section class="card cm-abc">${g.solo&&ms[0]?(()=>{ const m=ms[0], gp=gPhoto(gid); return `<button class="cm-abs" data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${gp?`<span class="av-img av-bgi" role="img" aria-label="${esc(MEMBERS[m].name)}" style="background-image:url('${gp}')"></span>`:mAvIn(m)}</i><b>${esc(MEMBERS[m].name)}</b></button>`; })():`<div class="cm-ab">${ms.map(m=>`<button data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${teaserIn(m)}</i><small>${esc(MEMBERS[m].name)}</small></button>`).join("")}</div>`}<button class="cm-abm" data-a="cmAbout">查看更多 ›</button></section>`; }
+    ${cmSec("About")}<section class="card cm-abc">${g.solo&&ms[0]?(()=>{ const m=ms[0], gp=gPhoto(gid); return `<button class="cm-abs" data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${gp?`<span class="av-img av-bgi" role="img" aria-label="${esc(MEMBERS[m].name)}" style="background-image:url('${gp}')"></span>`:mAvIn(m)}</i><b>${esc(MEMBERS[m].name)}</b></button>`; })():`<div class="cm-ab">${ms.map(m=>`<button data-a="cmAbMem" data-v="${m}"><i style="background:${grad(MEMBERS[m].g)}">${teaserIn(m)}</i><small>${esc(MEMBERS[m].name)}</small></button>`).join("")}</div>`}<button class="cm-abm" data-a="cmAbout">查看更多 ›</button></section>
+    <section class="card cm-card"><button class="cm-go" data-a="wkGo" data-v="g:${gid}">在 SKpedia 看 ${esc(g.name)} <span>→</span></button></section>`; }
 function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt);
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" data-a="${n.shop?"snOpen":"gnOpen"}" data-v="${n.id}"><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
@@ -16089,10 +16090,9 @@ const wkName=id=>id.startsWith("g:")?(groupOf(id.slice(2))||{}).name||"":(MEMBER
 const wkHash=id=>(route().role==="artist"?"#/artist?tab=foc&p=wiki":route().role==="admin"?"#/admin?tab=wiki":"#/fan/core?p=wiki")+(id?"&id="+encodeURIComponent(id):"");
 /* 名字找頁：[[名字]] 用 */
 function wkFind(n){ n=nz(n); const g=GROUPS.find(x=>nz(x.name)===n); if(g) return "g:"+g.id; const m=Object.keys(MEMBERS).find(k=>!MEMBERS[k].official&&nz(MEMBERS[k].name)===n); return m?"m:"+m:null; }
-/* Namuwiki 語法（只做最常用的）：[*註腳]、[[連結]]、換行 */
-function wkTxt(t,notes){ let h=esc(t||"");
-  h=h.replace(/\[\*\s?([^\]]+)\]/g,(m,x)=>{ notes.push(x); const n=notes.length; return `<sup class="wk-fn">[${n}]</sup>`; });
-  h=h.replace(/\[\[([^\]]+)\]\]/g,(m,x)=>{ const id=wkFind(x); return id?`<a class="wk-ln" data-a="wkGo" data-v="${id}">${x}</a>`:`<span class="wk-ln no">${x}</span>`; });
+/* 不用任何特殊寫法（她 10/28：藝人不會用 wiki 語法）：文字裡出現其他藝人或團的名字，自動變成藍色連結 */
+function wkTxt(t,notes,self){ let h=esc(t||""); const names=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>[g.name,"g:"+g.id]),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m").map(k=>[MEMBERS[k].name,"m:"+k])].filter(([n,id])=>n&&n.length>=2&&id!==self).sort((a,b)=>b[0].length-a[0].length);
+  if(names.length){ const re=new RegExp(names.map(([n])=>esc(n).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"g"), map=new Map(names.map(([n,id])=>[esc(n),id])); h=h.replace(re,m=>`<a class="wk-ln" data-a="wkGo" data-v="${map.get(m)}">${m}</a>`); }
   return h.replace(/\n/g,"<br>"); }
 /* 自動資料 */
 function wkAuto(gid){ const ms=getMShow(), songs=[...(ms.songs||[]),...(ms.ended||[])].filter(s=>s.gid===gid), wins={};
@@ -16110,15 +16110,18 @@ function wkView(id){ const isG=id.startsWith("g:"), key=id.slice(2), m=isG?null:
     ${isG?row("成員",mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("、"))+WK_GF.map(([k,l])=>row(l,esc(F[k]||""))).join(""):WK_F.map(([k,l])=>row(l,esc(F[k]||""))).join("")+row("所屬",`<a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a>`)}
     ${row("出道",A.debut?wkYmd(A.debut):"")}${row("應援色",`<i class="wk-sw" style="background:${col}"></i>`)}</table>`;
   const S2=[];   // [標題, 內容, [小段]]
-  S2.push(["概要",P.ov?`<p>${wkTxt(P.ov,notes)}</p>`:`<p class="wk-empty">還沒有內容</p>`]);
+  S2.push(["概要",P.ov?`<p>${wkTxt(P.ov,notes,id)}</p>`:`<p class="wk-empty">還沒有內容</p>`]);
   const yrs={}; if(A.debut) (yrs[new Date(A.debut).getFullYear()]=yrs[new Date(A.debut).getFullYear()]||[]).push(`${wkYmd(A.debut)} 出道`);
   A.songs.forEach(s=>{ const t=idTs(s.id,/^s/); if(t) (yrs[new Date(t).getFullYear()]=yrs[new Date(t).getFullYear()]||[]).push(`《${esc(s.title)}》${A.wins[s.id]?`・打歌一位 ${A.wins[s.id]} 次`:""}`); });
   A.cc.forEach(c=>(yrs[new Date(c.startTs).getFullYear()]=yrs[new Date(c.startTs).getFullYear()]||[]).push(`演唱會「${esc(c.title)}」`));
   A.tours.forEach(t=>{ const L=tourStops(t); if(L.length) (yrs[new Date(L[0].startTs).getFullYear()]=yrs[new Date(L[0].startTs).getFullYear()]||[]).push(`世界巡演「${esc(t.title)}」${L.length} 站`); });
-  S2.push(["經歷",(P.hi?`<p>${wkTxt(P.hi,notes)}</p>`:"")+(Object.keys(yrs).length?Object.keys(yrs).sort().map(y=>`<h4>${y}年</h4><ul>${yrs[y].map(x=>`<li>${x}</li>`).join("")}</ul>`).join(""):(P.hi?"":`<p class="wk-empty">還沒有內容</p>`))]);
+  S2.push(["經歷",(P.hi?`<p>${wkTxt(P.hi,notes,id)}</p>`:"")+(Object.keys(yrs).length?Object.keys(yrs).sort().map(y=>`<h4>${y}年</h4><ul>${yrs[y].map(x=>`<li>${x}</li>`).join("")}</ul>`).join(""):(P.hi?"":`<p class="wk-empty">還沒有內容</p>`))]);
   S2.push(["作品",A.songs.length?`<table class="wk-tb"><tr><th>歌名</th><th>發行</th><th>打歌一位</th></tr>${A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<tr><td>${esc(s.title)}</td><td>${t?wkYmd(t):""}</td><td>${A.wins[s.id]||0}</td></tr>`; }).join("")}</table>`:`<p class="wk-empty">還沒有作品</p>`]);
+  { const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(isG?(e.mids||[]).some(x=>MEMBERS[x]&&MEMBERS[x].group===gid):(e.mids||[]).includes(key)));
+    if(eps.length) S2.push(["綜藝",`<table class="wk-tb"><tr><th>節目</th><th>日期</th><th>結果</th></tr>${eps.map(e=>{ const w=((e.res||{}).win||[]), t=e.ts||idTs(String(e.id).replace(/^\D+/,"x"),/^x/)||0, me=isG?(e.mids||[]).filter(x=>MEMBERS[x]&&MEMBERS[x].group===gid):[key];
+      return `<tr><td>${esc(VSHOW[e.show].name)}</td><td>${t?wkYmd(t):""}</td><td>${e.st!=="done"?"播出中":me.some(x=>w.includes(x))?"🏆 冠軍":"出演"}</td></tr>`; }).join("")}</table>`]); }
   if(A.cc.length||A.tours.length) S2.push(["演唱會・世巡",`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`]);
-  S2.push(["趣事",(P.tr||"").trim()?`<ul>${P.tr.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),notes)}</li>`).join("")}</ul>`:`<p class="wk-empty">還沒有內容</p>`]);
+  S2.push(["趣事",(P.tr||"").trim()?`<ul>${P.tr.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),notes,id)}</li>`).join("")}</ul>`:`<p class="wk-empty">還沒有內容</p>`]);
   const fold=ui.wkFold||{};
   const body=S2.map(([t,c],i)=>`<section class="wk-s ${fold[id+i]?"fold":""}"><h2 data-a="wkFold" data-v="${id+i}"><span class="wk-no">${i+1}.</span> ${t}<i class="wk-ar">▾</i></h2><div class="wk-sc">${c}</div></section>`).join("");
   const sibs=isG?mem:grpMembers(gid);
@@ -16137,7 +16140,7 @@ function wkView(id){ const isG=id.startsWith("g:"), key=id.slice(2), m=isG?null:
     ${nav}</article>`; }
 function wkEditor(id,isG,P){ const F=P.f||{};
   return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯)</small></h1></div>
-    <p class="wk-tip">資料框寫的是角色的設定，不是玩家本人。註腳寫 [*內容]，連到別的藝人寫 [[名字]]。</p>
+    <p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。直接打字就好，提到其他藝人的名字會自動變成連結。</p>
     <div class="wk-ef">${(isG?WK_GF:WK_F).map(([k,l])=>`<label><span>${l}</span><input id="wkf_${k}" maxlength="40" value="${esc(F[k]||"")}" placeholder="輸入文字"></label>`).join("")}</div>
     <label class="wk-ea"><span>1. 概要</span><textarea id="wk_ov" rows="4" maxlength="1500" placeholder="輸入文字">${esc(P.ov||"")}</textarea></label>
     <label class="wk-ea"><span>2. 經歷</span><textarea id="wk_hi" rows="6" maxlength="4000" placeholder="輸入文字">${esc(P.hi||"")}</textarea></label>
