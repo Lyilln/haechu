@@ -5268,6 +5268,16 @@ main.wk{padding-bottom:110px}
 .wkn-grid+.wkn-li{border-top:0;padding-top:0}
 .wk-ef input,.wk-ef textarea{width:100%;min-width:0;max-width:100%;box-sizing:border-box}.wk-ef input[type=date]{-webkit-appearance:none;appearance:none;display:block;text-align:left}
 .wk-tocpop{position:fixed;right:76px;bottom:calc(env(safe-area-inset-bottom,0px) + 150px);z-index:60;max-width:min(78vw,340px);max-height:60vh;overflow:auto;background:var(--wkbg,#fff);border:1px solid var(--wkb,#ccc);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.35);padding:14px 18px;display:flex;flex-direction:column;gap:10px;font-size:15px}.wk-tocpop b{font-size:18px}.wk-tocpop{color:var(--wkt)}.wk-tocpop a{color:inherit;cursor:pointer}.wk-tocpop a.lv2{padding-left:18px}.wk-tocpop .wk-no{color:var(--wkl)}
+/* 註解 */
+.wk-fn{color:var(--wkl);cursor:pointer;font-size:.72em;margin-left:1px}
+.wk-fns{margin-top:24px;padding-top:10px;border-top:1px solid var(--wkb);font-size:13px;display:grid;gap:6px}.wk-fns a{color:var(--wkl);cursor:pointer}
+.wk-fnpop{position:fixed;left:10px;right:10px;z-index:61;background:var(--wkbg);color:var(--wkt);border:1px solid var(--wkb);border-radius:8px;box-shadow:0 8px 28px rgba(0,0,0,.4);overflow:hidden}
+.wk-fnpop p{margin:0;padding:16px 18px;font-size:15px;line-height:1.6}.wk-fnpop p b{color:var(--wkl);font-weight:500}
+.wk-fnpop button{display:block;width:100%;padding:12px;border:0;border-top:1px solid var(--wkb);background:var(--wks);color:var(--wkt);font-size:14px}
+.wk-fld{display:flex;flex-direction:column;gap:6px}
+.wk-nts{display:flex;flex-direction:column;gap:6px;padding-left:12px;border-left:2px solid var(--wkb)}.wk-nts:empty{display:none}
+.wk-nt{display:flex;flex-direction:column;gap:3px;font-size:12.5px}.wk-nt input{width:100%;box-sizing:border-box}
+.wk-fnadd{align-self:flex-end;background:none;border:0;color:var(--wkl);font-size:12.5px;padding:2px 0;cursor:pointer}
 
 </style>
 </head>
@@ -5686,7 +5696,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028071717";
+const BUILD="20261028072250";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16201,7 +16211,7 @@ function wkNavbox(ctx){ const {gid,g,mem,col,isSolo}=ctx, GP=wkPage("g:"+gid), G
   const logo=GP.logo?`<img class="wkg-logo" src="${esc(GP.logo)}" alt=""><i></i>`:"";
   const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x)));
   const rel=wkSecs(gctx).flatMap(([k,t,sub])=>[[k,t],...(sub||[])]).filter(([k])=>!["ov","nav","mem"].includes(k)&&wkHas(gctx,GP,k));
-  const GT=wkT(GP), lines=ks=>ks.flatMap(k=>(GT[k]||"").split("\n")).map(x=>x.replace(/^[-・*]\s*/,"").trim()).filter(Boolean), part=isSolo?lines(["music"]):[], acts=isSolo?lines(["acting","show","radio","ad"]):[];
+  const GT=wkT(GP), lines=ks=>ks.flatMap(k=>(GT[k]||"").split("\n")).map(x=>x.replace(/^[-・*]\s*/,"").replace(/\[\d+\]/g,"").trim()).filter(Boolean), part=isSolo?lines(["music"]):[], acts=isSolo?lines(["acting","show","radio","ad"]):[];
   const tabs=[gctx.A.songs.length?["disc","音樂作品"]:null,part.length?["part","參與作品"]:null,isSolo&&(eps.length||acts.length)?["show","出演作品"]:null,rel.length?["rel","相關文件"]:null].filter(Boolean);
   const li=a=>a.length?`<ul class="wkn-li">${a.map(x=>`<li>${wkTxt(x,[],"g:"+gid)}</li>`).join("")}</ul>`:"";
   const cover=s=>{ const ph=gPhoto(gid); return ph?`style="background-image:url('${esc(ph)}')"`:`style="background:${grad(g.g||0)}"`; };
@@ -16212,8 +16222,16 @@ function wkNavbox(ctx){ const {gid,g,mem,col,isSolo}=ctx, GP=wkPage("g:"+gid), G
   return `<div class="wkg-card" style="--wc:${col}"><div class="wkg-top" data-a="wkGo" data-v="g:${gid}">${logo}<span><b>${esc(g.name)}</b><small>${esc(GF.kname||"")}</small></span></div>
     ${!isSolo&&mem.length?`<div class="wkg-mem">${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}" class="${ctx.key===x?"me":""}">${esc(MEMBERS[x].name)}</a>`).join("")}</div>`:""}
     ${tabs.length?`<div class="wkg-links">${tabs.map(([k,l])=>`<a data-a="wkNb" data-v="${gid}|${k}" class="${open===k?"on":""}">[ ${l} ]</a>`).join("")}</div>`:""}${panel}</div>`; }
-function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), F=P.f||{}, T=wkT(P), can=wkCanEdit(id);
+/* 註解：文字裡的 [1] [2]（不用 wiki 語法，編輯時按「＋ 註解」自動放），內容存在 P.n["f.欄位"/"s.段落"] */
+const wkFnTok=(o,b)=>Object.fromEntries(Object.entries(o||{}).map(([k,v])=>[k,typeof v==="string"?v.replace(/\[(\d+)\]/g,(m,i)=>`\u0002${b}.${k}|${i}\u0003`):v]));
+const wkFnStrip=v=>String(v||"").replace(/\u0002[^\u0003]*\u0003/g,"");
+let WKFN=[];
+function wkFnDone(html,P){ WKFN=[]; const N=P.n||{}; html=html.replace(/\u0002([^|\u0003]+)\|(\d+)\u0003/g,(m,k,i)=>{ const t=(N[k]||[])[i-1]; if(!t) return ""; WKFN.push(t); const n=WKFN.length; return `<sup class="wk-fn" data-a="wkFn" data-v="${n}">[${n}]</sup>`; });
+  return WKFN.length?html.replace(/<\/article>$/,`<div class="wk-fns">${WKFN.map((t,i)=>`<p><a data-a="wkFn" data-v="${i+1}">[${i+1}]</a> ${wkTxt(t,[],"")}</p>`).join("")}</div></article>`):html; }
+function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), can=wkCanEdit(id);
   if(ui.wkEd&&ui.wkEd.startsWith(id+"#")&&can) return wkSecEditor(id,ui.wkEd.slice(id.length+1),person,P,isM);
+  return wkFnDone(wkViewG2(id,ctx,P,can),P); }
+function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, F=wkFnTok(P.f,"f"), T=wkFnTok(wkT(P),"s");
   const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
   const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
   const hero=!person&&photo?`<figure class="wkg-hero" style="--wc:${col}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
@@ -16232,7 +16250,7 @@ function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,perso
     return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}</div></section>`; };
   let n=0; SS.forEach(([k,t,sub])=>{ if(!wkSecOn(ctx,P,[k,t,sub])){ if(can&&(!WK_AUTO.has(k)||(k==="perf"||k==="ov"))) empty.push([k,t]); (sub||[]).forEach(([k2,t2])=>{ if(can&&(!WK_AUTO.has(k2)||(k2==="perf"||k2==="ov"))) empty.push([k2,t2]); }); return; }
     n++; body.push(secHtml(n,k,t,1)); let j=0; (sub||[]).forEach(([k2,t2])=>{ if(wkHas(ctx,P,k2)){ j++; body.push(secHtml(`${n}.${j}`,k2,t2,2)); } else if(can&&(!WK_AUTO.has(k2)||(k2==="perf"||k2==="ov"))) empty.push([k2,t2]); }); });
-  const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isM?(F.pos||""):isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,F.co||""].filter(Boolean);
+  const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isM?wkFnStrip(F.pos):isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,wkFnStrip(F.co)].filter(Boolean);
   const H=P.hist||[];
   if(ui.wkJ&&ui.wkJ.id===id){ const k=ui.wkJ.k; ui.wkJ=null; setTimeout(()=>{ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({block:"start"}); },60); }
   return `<article class="wk-doc wk-g">
@@ -16243,16 +16261,21 @@ function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,perso
     ${toc.length?`<div class="wk-toc2 ${ui.wkTocC?"fold":""}" id="wkToc"><b data-a="wkTocT">目錄<i>⌄</i></b>${toc.join("")}</div>`:""}
     ${body.join("")}
     ${empty.length?`<div class="wk-add"><b>還沒寫的段落</b>${empty.map(([k,t])=>`<a data-a="wkEditS" data-v="${id}#${k}">＋ ${t}</a>`).join("")}</div>`:""}</article>`; }
+function wkNtRows(key,txt,N){ const nums=[...new Set([...String(txt||"").matchAll(/\[(\d+)\]/g)].map(m=>+m[1]))].sort((a,b)=>a-b);
+  return nums.map(i=>`<label class="wk-nt"><span>註解 ${i}</span><input data-nk="${key}" data-i="${i}" maxlength="300" value="${esc((N[i]!=null?N[i]:"")||"")}" placeholder="輸入文字"></label>`).join(""); }
+const wkNtUI=(key,txt,P)=>`<div class="wk-nts" data-for="${key}">${wkNtRows(key,txt,Object.fromEntries(((P.n||{})[key]||[]).map((t,i)=>[i+1,t])))}</div><button type="button" class="wk-fnadd" data-a="wkFnAdd" data-v="${key}">＋ 註解</button>`;
 function wkSecEditor(id,k,isSolo,P,isM){ const F={...(P.f||{})}, T=wkT(P), nm=k==="info"?"資料框":((isSolo?WKS_S:WKG_S).flatMap(([a,b,s])=>[[a,b],...(s||[])]).find(x=>x[0]===k)||[k,k])[1];
   if(F.bday&&!F.birth&&/^\d{4}-\d{2}-\d{2}$/.test(F.bday)) F.birth=F.bday;
   const fields=isSolo?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F):WKG_F;
-  const body=k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="60" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>`).join("")}</div>
+  const body=k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<div class="wk-fld"><label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="80" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>${ty==="date"?"":wkNtUI("f."+f,F[f],P)}</div>`).join("")}</div>
       <div class="wk-up2">${isM?"":`<label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label>`}<label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label></div>`
-    :`${k==="ov"?`<label class="wk-ea"><span>引言（可不填）</span><input data-k="s.ovq" maxlength="80" value="${esc(T.ovq||"")}" placeholder="輸入文字"></label>`:""}<label class="wk-ea"><span>${k==="tr"||k==="pre"?"一行一條":"內容"}</span><textarea data-k="s.${k}" rows="8" maxlength="4000" placeholder="輸入文字">${esc(T[k]||"")}</textarea></label>`;
+    :`${k==="ov"?`<label class="wk-ea"><span>引言（可不填）</span><input data-k="s.ovq" maxlength="80" value="${esc(T.ovq||"")}" placeholder="輸入文字"></label>`:""}<label class="wk-ea"><span>${k==="tr"||k==="pre"?"一行一條":"內容"}</span><textarea data-k="s.${k}" rows="8" maxlength="4000" placeholder="輸入文字">${esc(T[k]||"")}</textarea></label>${wkNtUI("s."+k,T[k],P)}`;
   return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯：${nm})</small></h1></div><p class="wk-tip">直接打字就好，提到其他藝人的名字會自動變成連結。</p>${body}
     <div class="ls-btns"><button class="btn btn-soft" data-a="wkCancel">取消</button><button class="btn btn-main" data-a="wkSaveS" data-v="${id}">儲存</button></div></article>`; }
 function wkSaveS(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[id]||{})}, F={...(P.f||{})}, T={...wkT(P)}, vals=[];
   document.querySelectorAll(".wk-ed [data-k]").forEach(el=>{ const [b,k]=el.dataset.k.split("."), v=el.value.trim(); vals.push(v); (b==="f"?F:T)[k]=v; if(!v) delete (b==="f"?F:T)[k]; });
+  const Nn={...(P.n||{})}; document.querySelectorAll(".wk-ed .wk-nts").forEach(b=>{ const key=b.dataset.for, arr=[]; b.querySelectorAll("[data-nk]").forEach(x=>{ arr[+x.dataset.i-1]=x.value.trim(); vals.push(x.value.trim()); }); if(arr.some(Boolean)) Nn[key]=[...arr].map(x=>x||""); else delete Nn[key]; });
+  if(Object.keys(Nn).length) P.n=Nn; else delete P.n;
   if(!isAdminAcct()&&vals.some(x=>x&&banBlock(x))) return;
   const len=o=>JSON.stringify([o.f||{},o.s||{}]).length, dl=len({f:F,s:T})-len(P); delete P.ov; delete P.hi; delete P.tr; if(F.birth) delete F.bday;
   Object.assign(P,{f:F,s:T,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d:dl}].slice(-20);
@@ -16292,6 +16315,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkCm"){ location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v); }
   else if(a==="wkTocT"){ ui.wkTocC=!ui.wkTocC; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="wkFn"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); const t=WKFN[+v-1]; if(!t) return; const r=e.target.getBoundingClientRect(), d=document.createElement("div"); d.className="wk-fnpop";
+    d.innerHTML=`<p><b>[${v}]</b> ${wkTxt(t,[],"")}</p><button data-a="wkFnX">關閉</button>`; document.querySelector("main.wk").appendChild(d);   /* 跟 Namuwiki 一樣：從被點的字上方跳出 */
+    const h=d.offsetHeight; if(r.top-h-8>60) d.style.bottom=(innerHeight-r.top+8)+"px"; else d.style.top=(r.bottom+8)+"px"; }
+  else if(a==="wkFnX"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); }
+  else if(a==="wkFnAdd") wkFnAdd(v);
   else if(a==="wkTocGo"){ const old=document.querySelector(".wk-tocpop"); if(old){ old.remove(); return; } const t=document.getElementById("wkToc"); if(!t) return;   /* 像 Namuwiki：浮出目錄，點一項就跳過去 */
     const d=document.createElement("div"); d.className="wk-tocpop"; d.innerHTML=`<b>目錄</b>${[...t.querySelectorAll("a")].map(x=>x.outerHTML).join("")}`; document.querySelector("main.wk").appendChild(d);
     const r=(e&&e.target&&e.target.closest('[data-a="wkTocGo"]')||document.querySelector('[data-a="wkTocGo"]')).getBoundingClientRect(); d.style.right=(innerWidth-r.left+8)+"px"; d.style.bottom=(innerHeight-r.top+8)+"px"; }
@@ -16310,7 +16338,23 @@ function wkLeave(){ const go=()=>{ ui.wkEd=null; ui.wkSnap=null; render(); windo
   if(ui.wkSnap!=null&&wkFormVal()!==ui.wkSnap) ask("還沒儲存，確定要離開嗎？",go,{title:"還沒儲存",ok:"離開"}); else go(); }
 document.addEventListener("click",e=>{ if(!ui.wkEd||!document.querySelector(".wk-ed")) return; const b=e.target.closest('[data-a="back"]'); if(!b||layer.contains(b)) return; e.stopPropagation(); e.preventDefault(); wkLeave(); },true);
 
+document.addEventListener("click",e=>{ const f=document.querySelector(".wk-fnpop"); if(f&&!e.target.closest(".wk-fnpop")&&!e.target.closest('[data-a="wkFn"]')) f.remove(); },true);
 document.addEventListener("click",e=>{ const p=document.querySelector(".wk-tocpop"); if(p&&!e.target.closest('[data-a="wkTocGo"]')) setTimeout(()=>p.remove(),0); },true);
+
+/* 編輯：＋ 註解 → 在游標位置放 [n]，下面多一格；刪掉 [n] 那格也消失，離開輸入框時號碼重排 */
+document.addEventListener("focusout",e=>{ const t=e.target; if(t.matches&&t.matches(".wk-ed [data-k]")) t._s=t.selectionEnd; });
+const WKNC={};   /* 暫存：整段刪掉再打回來，註解還在 */
+function wkNtVals(key){ const o={...(WKNC[key]||{})}; document.querySelectorAll(`.wk-nts[data-for="${key}"] [data-nk]`).forEach(x=>o[x.dataset.i]=x.value); return o; }
+function wkNtSync(el,renum){ const key=el.dataset.k, box=document.querySelector(`.wk-nts[data-for="${key}"]`); if(!box) return; let o=wkNtVals(key);
+  if(renum){ const map={}, o2={}; let n=0; const nv=el.value.replace(/\[(\d+)\]/g,(m,i)=>{ n++; o2[n]=o[i]!=null?o[i]:""; return `[${n}]`; }); if(nv!==el.value){ el.value=nv; } o=o2; }
+  WKNC[key]=o; const want=[...new Set([...el.value.matchAll(/\[(\d+)\]/g)].map(m=>m[1]))].sort((a,b)=>a-b).join(), have=[...box.querySelectorAll("[data-nk]")].map(x=>x.dataset.i).join();
+  if(want===have&&!renum) return; if(want===have&&renum&&[...box.querySelectorAll("[data-nk]")].every(x=>x.value===(o[x.dataset.i]||""))) return;   /* 沒變就不要重畫（不然正在打的註解格會被換掉） */
+  box.innerHTML=wkNtRows(key,el.value,o); }
+function wkFnAdd(key){ const el=document.querySelector(`.wk-ed [data-k="${key}"]`); if(!el) return; const nums=[...el.value.matchAll(/\[(\d+)\]/g)].map(m=>+m[1]), n=(nums.length?Math.max(...nums):0)+1;
+  const pos=el._s!=null?el._s:el.value.length, mark=`[${n}]`; el.value=el.value.slice(0,pos)+mark+el.value.slice(pos); const before=[...el.value.slice(0,pos).matchAll(/\[(\d+)\]/g)].length+1;
+  el._s=pos+mark.length; wkNtSync(el,true); const inp=document.querySelector(`.wk-nts[data-for="${key}"] [data-i="${before}"]`); if(inp) inp.focus(); }
+document.addEventListener("input",e=>{ const t=e.target; if(t.matches&&t.matches(".wk-ed [data-k]")&&document.querySelector(`.wk-nts[data-for="${t.dataset.k}"]`)) wkNtSync(t,false); });
+document.addEventListener("change",e=>{ const t=e.target; if(t.matches&&t.matches(".wk-ed [data-k]")&&document.querySelector(`.wk-nts[data-for="${t.dataset.k}"]`)) wkNtSync(t,true); });
 
 </script>
 </body>
