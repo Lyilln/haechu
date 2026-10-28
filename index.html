@@ -5569,7 +5569,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028010641";
+const BUILD="20261028012943";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15222,7 +15222,7 @@ function cfFront(c,w,enter){ const m=MEMBERS[c.mid], g=groupOf(m.group), name=m.
 function cfSec(t,sub,body,act=""){ return `<section class="cf-sec"><div class="cf-sh"><b>${t}</b>${sub?`<small>${sub}</small>`:""}${act}</div>${body}</section>`; }
 function viewCafe(mid){ const L=cfOpenNow();
   if(!mid){ const up=cfMids().map(m=>({m,w:cfWindow(m)})).filter(x=>x.w&&!x.w.open).sort((a,b)=>a.w.diff-b.w.diff).slice(0,6);
-    return `<main class="page cf-list">${L.length?L.map(({m,w})=>{ const c=cfGet(m,w.y); return `<button class="cf-card" data-a="cfGo" data-v="${m}">${cfFront(c,w)}</button>`; }).join(""):`<div class="cf-none"><span>☕</span><b>現在沒有營業中的生日咖啡廳</b></div>`}
+    return `<main class="page cf-list">${L.length?L.map(({m,w})=>{ const c=cfGet(m,w.y); return `<div class="cf-card">${cfFront(c,w,1)}</div>`;   /* 只有門能按（她 10/28：點門以外不要有任何動作） */ }).join(""):`<div class="cf-none"><span>☕</span><b>現在沒有營業中的生日咖啡廳</b></div>`}
       ${up.length?`<div class="section-h">即將開店</div><section class="card cf-up">${up.map(({m,w})=>`<div class="cf-upr">${vsAv(m,36)}<span><b>${esc(MEMBERS[m].name)}</b><small>${w.day.getMonth()+1} 月 ${w.day.getDate()} 日生日</small></span><em>${Math.max(0,w.diff-CF_DAYS)} 天後</em></div>`).join("")}</section>`:""}</main>`; }
   const w=cfWindow(mid); if(!w) return `<main class="page"><div class="cf-none"><b>這位藝人還沒設定生日</b></div></main>`;
   const c=cfGet(mid,w.y), em=cfMe(), fan=cfFan(), mine=!fan&&(session()||{}).member===mid, on=w.open, A=c.art||{};
@@ -15277,7 +15277,7 @@ const cfCur=mid=>{ const w=cfWindow(mid); return w?cfGet(mid,w.y):null; };
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^cf[A-Z]/.test(a)) return;
   const mid=t.dataset.v, rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
   switch(a){
-    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; render(); window.scrollTo(0,0); },420); break; }
+    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; const h=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); if(route().id!==mid) location.hash=h; else render(); window.scrollTo(0,0); },420); break; }
     case "cfOut": ui.cfIn=null; render(); window.scrollTo(0,0); break;
     case "cfZone": { const r=document.getElementById("cfRoom"), z=r&&r.querySelector(`[data-z="${t.dataset.v}"]`); if(z) r.scrollTo({left:z.offsetLeft-r.offsetLeft,behavior:"smooth"}); break; }
     case "cfGo": { const dr=e.target.closest(".cfs-door"), op=!!t.querySelector(".cfs.on");   /* 列表上直接點門：開門動畫後直接進店，不用再按一次 */
