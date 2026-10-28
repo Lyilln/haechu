@@ -5159,10 +5159,10 @@ html[data-theme="dark"] .cf-cork>.cf-hint{color:#3B2A1E!important}
 .try-again{position:relative;border:0;background:none;font:inherit;font-size:13.5px;font-weight:700;color:#C4B5FD}
 
 /* ===== SKpedia：照 Namuwiki 的樣子 ===== */
-.wk{--wkg:#00A495;--wkl:#0275D8;--wkb:#CCCCCC;--wkt:#373A3C;--wkbg:#FFFFFF;--wks:#F5F5F5;padding-top:0}
-html[data-theme="dark"] .wk{--wkl:#6BB7FF!important;--wkb:#3A3A44!important;--wkt:#DDDDDD!important;--wkbg:#1F2023!important;--wks:#2A2B30!important}
-.wk-bar{margin:0 -16px 0;padding:10px 16px;background:var(--wkg);display:flex;align-items:center}
-.wk-bar button{border:0;background:none;padding:0;font:inherit;font-size:20px;font-weight:300;color:#fff;letter-spacing:-.01em}.wk-bar b{font-weight:800}
+.wk{--wkg:#9B7FE0;--wkbar:#EDE6FF;--wkbart:#5B3FA8;--wkl:#0275D8;--wkb:#CCCCCC;--wkt:#373A3C;--wkbg:#FFFFFF;--wks:#F5F5F5;padding-top:0}
+html[data-theme="dark"] .wk{--wkbar:#3A3150!important;--wkbart:#E4DAFF!important;--wkl:#6BB7FF!important;--wkb:#3A3A44!important;--wkt:#DDDDDD!important;--wkbg:#1F2023!important;--wks:#2A2B30!important}
+.wk-bar{margin:0 -16px 0;padding:10px 16px;background:var(--wkbar);border-bottom:1px solid rgba(155,127,224,.25);display:flex;align-items:center}
+.wk-bar button{border:0;background:none;padding:0;font:inherit;font-size:20px;font-weight:300;color:var(--wkbart);letter-spacing:-.01em}.wk-bar b{font-weight:800}
 .wk-doc,.wk-home{margin:12px -16px 0;padding:16px;background:var(--wkbg);color:var(--wkt);font-size:14.5px;line-height:1.7;border-top:1px solid var(--wkb);border-bottom:1px solid var(--wkb)}
 .wk-th{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
 .wk-th h1{margin:0;font-size:26px;font-weight:700;line-height:1.3;word-break:break-word}.wk-th h1 small{font-size:15px;color:#888;font-weight:400}
@@ -5618,7 +5618,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028040206";
+const BUILD="20261028040617";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
