@@ -2177,6 +2177,7 @@ html:not([data-theme="dark"]) .a-nick,html:not([data-theme="dark"]) .nick-me.glo
 .ls-views img{max-height:64px;max-width:100%;object-fit:contain}.ls-views small{font-size:11px;color:var(--ink-3)}
 .ls-vadd{border:1.5px dashed var(--line);font-size:12.5px;font-weight:700;color:var(--violet);cursor:pointer}.ls-vadd input{display:none}
 .rp-bgm{color:inherit}.rp-bgm.on{color:var(--accent,#9B7FE0)}.rp-bgm svg{width:20px;height:20px}
+.bgm-pick{display:grid;grid-template-columns:1fr 1fr;gap:8px}
 
 /* ===== v55 對比修正（兩種模式都套用） ===== */
 
@@ -5729,7 +5730,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028131154";
+const BUILD="20261028131337";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10596,7 +10597,7 @@ function openBgmSheet(){ const mid=session().member;
     <div class="cs-h"><h3>背景音樂</h3><div class="spacer"></div><button class="icon-btn sm" data-a="closeSheet" aria-label="關閉">${XI}</button></div>${bgmPrepHtml(mid)}</div></div>`,"bgm"); }
 function bgmPrepHtml(mid){ const L=S.get(K.bgm,{})[mid]||[];
   return `<div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small><button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
-    ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button><button class="bgm-add" data-a="bgmAddV">＋ 從相簿選影片</button>`:""}</div>`; }
+    ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`${ui.bgmPick?`<div class="bgm-pick"><button class="bgm-add" data-a="bgmAddF">從檔案選音樂</button><button class="bgm-add" data-a="bgmAddV">從照片圖庫選影片</button></div>`:`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button>`}`:""}</div>`; }
 function bgmAdd(vid){ if(ui.bgmBusy) return; const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=vid?"video/*":".mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/aac,audio/x-m4a,audio/wav";   /* vid：iPhone 只有 accept 純影片才會開照片圖庫（螢幕錄影） */
   inp.onchange=async()=>{ const fs=[...(inp.files||[])]; if(!fs.length) return; const mid=session().member; let bad=0, big=0;
     for(const f of fs){ const A=S.get(K.bgm,{}), L=A[mid]||[]; if(L.length>=BGM_MAX) break;
@@ -12116,8 +12117,9 @@ document.addEventListener("click",e=>{
     case "concertOn": concertOn(); break;
     case "dlTap": { const ev=window.event, tg=ev&&ev.target; if(tg&&tg.closest&&tg.closest("form,input,.cm-tick,.host-feed,.sp-card,.dl-ask")) break; t.classList.toggle("ui-on"); ui.dlUi=t.classList.contains("ui-on"); break; }
     case "bgmTap": bgmTap(t.dataset.id); break;
-    case "bgmAdd": bgmAdd(); break;
-    case "bgmAddV": bgmAdd(true); break;
+    case "bgmAdd": ui.bgmPick=true; bgmRefresh(); break;   /* 先選：檔案或照片圖庫（iPhone 一個按鈕只能開其中一種） */
+    case "bgmAddF": ui.bgmPick=false; bgmAdd(); break;
+    case "bgmAddV": ui.bgmPick=false; bgmAdd(true); break;
     case "rpBgm": rpBgm(t.dataset.v); break;
     case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); bgmRefresh(); break; }
     case "bgmOpen": openBgmSheet(); break;
