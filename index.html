@@ -5618,7 +5618,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028040617";
+const BUILD="20261028040912";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6098,7 +6098,7 @@ function concertCreate({gid,title,startTs,mins,host,setlist,nIa}){
   const endTs=startTs+mins*60e3, clash=getConcerts().find(c=>!c.ended&&c.startTs<endTs&&c.endTs>startTs);
   if(clash) return {err:`跟「${groupOf(clash.gid).name}・${clash.title}」的時間重疊了`};
   const c={id:"cc"+Date.now(),gid,title,startTs,endTs,ended:false,notified:false,host:host||null,co:null,setlist:setlist||null,nIa:nIa||0}; saveConcerts([...S.get(K.concerts,[]),c]);
-  const g=groupOf(gid); muNotify(`📣 ${g.name} 演唱會「${title}」${evWhen(startTs)} 開始，記得到 CORE 舉起應援棒！`,gid);
+  const g=groupOf(gid); muNotify(`📣 ${g.name} 演唱會「${title}」${evWhen(startTs)} 開始，記得到 FEST 舉起應援棒！`,gid);
   return {c};
 }
 function concertTick(){   // 開演時通知粉絲；畫面上的狀態變了就重畫
@@ -8246,7 +8246,7 @@ function viewStubs(){
   const st=S.get(K.stubs,[]);
   return coreHead("燈海出席票根")+`<main class="page stubs">${st.length?st.map(x=>{const m=MEMBERS[x.member], g=groupOf(x.group);if(!m||!g) return "";const c=GRADS[m.g%GRADS.length];
     return `<article class="stub" style="--c1:${c[0]};--c2:${c[1]}"><div class="stub-l"><span>LIGHT SEA</span><b>${esc(m.name)} 燈海</b><small>${gTag(g)}${ymd(x.ts)}</small><em>${esc(x.seat)}</em></div>
-      <div class="stub-r"><span>揮棒</span><b>${fmt(x.swings)}</b><span>口號分數</span><b>${fmt(x.score)}</b></div></article>`}).join(""):emptyBox("🎫","還沒有票根","藝人開燈海時，到 CORE 舉起應援棒待滿 20 秒，離開時就會拿到")}</main>`;
+      <div class="stub-r"><span>揮棒</span><b>${fmt(x.swings)}</b><span>口號分數</span><b>${fmt(x.score)}</b></div></article>`}).join(""):emptyBox("🎫","還沒有票根","藝人開燈海時，到 FEST 舉起應援棒待滿 20 秒，離開時就會拿到")}</main>`;
 }
 
 /* 應援棒：管理員上傳的設計圖 → 3D；沒上傳的團用預設款 */
@@ -8975,12 +8975,12 @@ const NAV={
   shop:`<svg viewBox="0 0 24 24" ${NS}><path d="M7.2 4.6h9.6L20.4 9 12 19.8 3.6 9z"/><path d="M3.6 9h16.8M9.8 4.6 8.4 9 12 19.8 15.6 9l-1.4-4.4"/></svg>`,
   me:`<svg viewBox="0 0 24 24" ${NS}><path d="M5 17.4 4 8.2l4.4 3.4L12 5.6l3.6 6 4.4-3.4-1 9.2z"/><path d="M5.2 20.2h13.6"/><circle cx="12" cy="3.4" r=".6" fill="currentColor"/></svg>`,
 };
-const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","CORE",NAV.core],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
+const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","FEST",NAV.core],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
 NAV.foc=`<svg viewBox="0 0 24 24" ${NS}><path d="M7 4h5l-.6 5.2a3.5 3.5 0 0 1-7 0L4 4h3z"/><path d="M7.9 12.4V16c0 .8-.4 1.4-1.1 1.8L6 18.4h4M17 4h3l-.4 5.2a3.5 3.5 0 0 1-7 0L12 4h5z"/><path d="M16.1 12.4V16c0 .8.4 1.4 1.1 1.8l.8.6h-4"/><path d="M12 1.6v1.4"/></svg>`;
 const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)||liveGuestOf(session().member)||coInvites(session().member).length?"dot":0});
 
 /* ---------- 粉絲：通知頁 ---------- */
-const NK={tour:["TOUR","#10B981"],news:["NEWS","#0EA5E9"],core:["CORE","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
+const NK={tour:["TOUR","#10B981"],news:["NEWS","#0EA5E9"],core:["FEST","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
 function notifMsg(n){
   if(n.self) return n.text;
   const m=MEMBERS[n.member], nm=m?artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed"):"";
@@ -10567,7 +10567,7 @@ const COACH_INTRO={
 const COACH={
   fan:[[".nav-btn[data-v=home]","LOVE","藝人的動態都在這裡，可以按讚、留言。上方可以切換「動態」、「探索」、「直播」：探索找新的團，直播進藝人的文字直播間。"],
     [".nav-btn[data-v=whisper]","TIE","跟藝人的私訊。在 SHOP 買 TIE 券後，藝人傳的訊息會出現在這裡，你也可以回覆。"],
-    [".nav-btn[data-v=core]","CORE","抽小卡、幫打歌中的歌投票、演唱會時進燈海揮應援棒、報名簽售，都在這裡。"],
+    [".nav-btn[data-v=core]","FEST","抽小卡、幫打歌中的歌投票、演唱會時進燈海揮應援棒、報名簽售，都在這裡。"],
     [".nav-btn[data-v=shop]","SHOP","買 Membership、TIE 券和周邊（應援棒、專輯）。"],
     [".nav-btn[data-v=me]","ME","你的收藏、積分、設定和外觀（深色模式）。想再看一次教學，也在這裡。"],
     ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播、輪到你簽售，都會在這裡通知你。"]],
@@ -11491,7 +11491,7 @@ document.addEventListener("click",e=>{
     case "svVote": { if(3-svToday()<=0){ toast("今天的票投完了，明天再來"); break; } const k=new Date().toDateString(), mine=S.get(K.svMine,{}); S.set(K.svMine,{day:k,n:(mine.day===k?mine.n:0)+1});
       const vv=S.get(K.svVotes,{}); vv[t.dataset.v]=svVotes()[t.dataset.v]+1; S.set(K.svVotes,vv); const tr=TRAINEES.find(x=>x.id===t.dataset.v); const b=t.getBoundingClientRect(); confetti(b.left+b.width/2,b.top);
       const y=window.scrollY; render(); window.scrollTo(0,y); toast(`投給 ${tr.name} 了！今天還有 ${3-svToday()} 票`); break; }
-    case "svToggle": S.set(K.svOpen,!svOpen()); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(svOpen()?"選秀宇宙已開放，粉絲在 CORE 看得到了":"選秀宇宙已關閉"); break;
+    case "svToggle": S.set(K.svOpen,!svOpen()); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(svOpen()?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
     case "svPreview": SS.set({...session(),role:"fan",member:null}); location.hash="#/fan/core?p=survival"; break;
     case "chantStart": chantStart(); break;
     case "chantClose": { chantStop(); const b=document.getElementById("chant"); if(b){ b.hidden=true; b.innerHTML=""; } break; }
@@ -11518,7 +11518,7 @@ document.addEventListener("click",e=>{
     case "lsGlow": { const d=ui.lsDraft; if(!d) break; d.ds.glow=t.dataset.v; document.querySelectorAll('[data-a="lsGlow"]').forEach(b=>b.classList.toggle("on",b===t)); const el=document.querySelector('.ls-box[data-ls="draft"]'); if(el&&el._ls) el._ls.set("glow",t.dataset.v); break; }
     case "lsCancel": ui.lsDraft=null; lsRerender(); break;
     case "lsPublish": { const d=ui.lsDraft; if(!d) break; const gid=ui.lsGid||GROUPS[0].id, g=groupOf(gid); const all=getSticks(); all[gid]={...d.ds,updatedAt:Date.now()}; S.set(K.sticks,all); ui.lsDraft=null;
-      if(followed().includes(gid)){ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now(),kind:"core",direct:true,group:gid,text:`${g.name} 的 3D 官方應援棒上線了！到 CORE 舉起來看看 ✨`,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); S.set(K.unread,"1"); }
+      if(followed().includes(gid)){ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now(),kind:"core",direct:true,group:gid,text:`${g.name} 的 3D 官方應援棒上線了！到 FEST 舉起來看看 ✨`,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); S.set(K.unread,"1"); }
       lsRerender(); toast(`已發布 ${g.name} 的 3D 應援棒`); break; }
     case "lsRemove": ask("要把這團的應援棒恢復成預設款嗎？",()=>{ const all=getSticks(); delete all[ui.lsGid||GROUPS[0].id]; S.set(K.sticks,all); lsRerender(); toast("已恢復預設款"); }); break;
     case "coreStick": ui.coreStick=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
@@ -12485,7 +12485,7 @@ document.addEventListener("touchmove",e=>{ try{ if(!layer||!layer.firstElementCh
    ・團可以出一套、藝人也可以各自出；管理員自己做，或審核藝人送來的申請
    ========================================================= */
 const TH_STORE="TINT";
-const TH_TABS=[["home","LOVE"],["whisper","TIE"],["core","CORE"],["shop","SHOP"],["me","ME"]];
+const TH_TABS=[["home","LOVE"],["whisper","TIE"],["core","FEST"],["shop","SHOP"],["me","ME"]];
 const TH_TABS_ART=[["home","LOVE"],["live","MEET"],["whisper","TIE"],["foc","FOC"],["me","ME"]];
 const TH_TABS_ALL=[...TH_TABS,["live","MEET"],["foc","FOC"]];
 const TH_COLS=[["ac","主色"],["bg","背景"],["ink","文字"],["sub","次要文字"],["bubA","藝人對話框"],["bubAB","藝人對話框邊框"],["bubM","我的對話框"],["bubMB","我的對話框邊框"],["bar","輸入列／鍵盤"]];
@@ -13552,7 +13552,7 @@ function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getEleme
   ui.coach={kind:"tour",key:k,steps,i:0}; coachShow(); }
 
 /* ===== 新手教學：每一端一次教完（不用每個分頁各跳一次） ===== */
-const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"CORE",shop:"SHOP",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店"};
+const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店"};
 function fullTourStart(){ const ro=route().role, navs=[...document.querySelectorAll(".nav .nav-btn")].map(b=>b.dataset.v).filter(Boolean); if(!navs.length){ const c=document.getElementById("coach"); if(c) c.remove(); ui.coach=null; return; }
   const seq=[];
   ui.feedTab="feed"; tourDemoOn(ro);
