@@ -5049,6 +5049,19 @@ button.cfs-door:active{transform:scale(.98)}
 .cfs-step{height:10px;margin:0 8px;border-radius:0 0 8px 8px;background:#CDBBA6}
 html[data-theme="dark"] .cfs-step{background:#4A3D33}
 
+/* TIE 體驗券 */
+.cf-vch{display:flex;align-items:center;gap:14px;width:100%;margin-top:12px;padding:12px;border:1px dashed rgba(136,67,251,.35);border-radius:16px;background:rgba(136,67,251,.06);text-align:left;font:inherit;color:inherit}
+.cf-vch p{margin:0;display:flex;flex-direction:column;gap:2px}.cf-vch small{color:var(--ink-3);font-size:12px}
+.tv-tk{flex:none;position:relative;width:74px;height:48px;border-radius:10px;background:linear-gradient(135deg,#C7AEFF,#8843FB);color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;line-height:1.1;box-shadow:0 6px 14px -8px rgba(136,67,251,.8)}
+.tv-tk b{font-size:13px;letter-spacing:.12em}.tv-tk i{font-style:normal;font-size:9px;letter-spacing:.14em;opacity:.85}
+.tv-tk::before,.tv-tk::after{content:"";position:absolute;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:var(--bg)}.tv-tk::before{left:-5px}.tv-tk::after{right:-5px}
+.tv-ic{background:linear-gradient(135deg,#C7AEFF,#8843FB)!important;font-size:18px}
+.tv-go{font-style:normal;font-size:12.5px;font-weight:800;color:#fff;background:var(--candy);padding:5px 12px;border-radius:999px}
+.tv-pick{display:flex;flex-direction:column;gap:8px;max-height:52vh;overflow:auto;text-align:left}
+.tv-pick button{display:flex;align-items:center;gap:10px;padding:8px 10px;border:0;border-radius:14px;background:var(--s2);font:inherit;color:inherit;text-align:left}
+.tv-pick b{flex:1;font-size:14.5px}.tv-pick small{font-size:11.5px;color:var(--ink-3)}
+.tv-av{flex:none;width:36px;height:36px;border-radius:50%;overflow:hidden;display:grid;place-items:center}
+
 /* ===== 訪客試玩 ===== */
 .try-in{display:flex;align-items:center;justify-content:center;gap:8px;margin:22px auto 0;padding:12px 22px;border-radius:999px;border:1px solid rgba(155,123,255,.35);background:linear-gradient(135deg,rgba(199,174,255,.18),rgba(249,168,212,.18));font:inherit;font-size:14.5px;font-weight:800;color:var(--violet-ink);letter-spacing:.04em;box-shadow:0 8px 24px -12px rgba(120,80,220,.5)}
 .try-in span{font-size:13px;animation:softPulse 1.6s infinite}
@@ -5192,7 +5205,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
-  vsec:"daisuki_vsec", bdPush:"daisuki_bd_push", cmTr:"daisuki_cm_tr", trucks:"daisuki_trucks", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
+  vsec:"daisuki_vsec", bdPush:"daisuki_bd_push", cmTr:"daisuki_cm_tr", trucks:"daisuki_trucks", tieVch:"daisuki_tie_vouchers", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
   pcImgs:"daisuki_pc_imgs",
@@ -5254,7 +5267,7 @@ setInterval(()=>{ if(tieMigrate()) try{ render(); }catch(e){} tieForward(); tieO
 /* 每個粉絲帳號自己的資料（追蹤、TIE 券、積分、小卡、通知…）分開存：新註冊的帳號從空白開始。
    示範帳號 fan@stardream.app、管理員切換成粉絲看，都用原本的示範資料 */
 const DEMO_FAN="";   // 多人版：每個帳號的資料都分開存，沒有共用的示範帳號
-const PK_SET=new Set(["lvFix","ptRst","gcPity","lvMax","tourTix","tourStamp","online","ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow"].map(n=>K[n]).filter(Boolean));
+const PK_SET=new Set(["lvFix","ptRst","gcPity","lvMax","tourTix","tourStamp","online","ptGot","tieLeft","fanArtists","notifs","feedSeen","pollVotes","pick","unread","settings","likes","tieSubs","points","tieSet","tieCleared","tieTr","tieNotice","membership","owned","tieMs","msDone","bdayWish","cards","gachaLog","svVotes","svMine","stubs","msMine","mvLike","signedAlbums","cardMeta","repCard","albBuy","cmProf","bm","fanLetters","ltDraft","cmNotif","mcGot","mFollow","grpSeen","wRead","wSubs","annSeen","tieTrX","pwOpen","tieAgree","tieCele","boxKeep","pickNoShow","tieVch"].map(n=>K[n]).filter(Boolean));
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 const S = {
   get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
@@ -5549,7 +5562,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261027235158";
+const BUILD="20261028005618";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8809,7 +8822,7 @@ function fanHeader(withTabs,sk=null,ph=""){
 }
 function meSecBody(k,f){
   if(k==="ms") return `<section class="card me-list">${f.filter(gid=>isMember(gid)||msGrace(gid)).map(gid=>{const g=groupOf(gid), on=isMember(gid), gr=msGrace(gid);return `<button class="me-row" data-a="meShop" data-v="ms"><span class="me-ic" style="background:${grad(g.g)}">💎</span><span class="me-t"><b>${esc(g.name)}</b><small class="${on?"on":gr?"grace":""}">${on?`會員中・剩餘 ${msLeft(gid)} 天`:gr?"已到期・24 小時內續訂可保留資歷":"還不是會員"}</small></span><i>›</i></button>`}).join("")||`<p class="me-none">還沒有加入 Membership，到 SHOP 看看</p>`}</section>`;
-  if(k==="tie") return `<section class="card me-list">${Object.keys(subs()).filter(id=>MEMBERS[id]).map(id=>{const m=MEMBERS[id], st=passStatus(id);return `<button class="me-row" data-a="openChat" data-m="${id}"><span class="me-ic" style="background:${grad(m.g)};overflow:hidden">${mAvIn(id)}</span><span class="me-t"><b>${esc(artName(id,"tie"))}</b><small class="${st.cls==="on"?"on":st.cls==="grace"?"grace":""}">${st.txt}・💜 +${subDays(id)} 天</small></span><i>›</i></button>${isActive(id)&&grpMembers(m.group).filter(x=>!MEMBERS[x].official).length>1?`<button class="me-sub" data-a="tPickGo" data-m="${id}">變更藝人 ›</button>`:""}`}).join("")||`<p class="me-none">還沒有 ${WHISPER_NAME} 券，到 SHOP 選一位成員吧</p>`}</section>`;
+  if(k==="tie") return tvRows()+`${tvLive().length?`<div class="section-h">${WHISPER_NAME} 券</div>`:""}<section class="card me-list">${Object.keys(subs()).filter(id=>MEMBERS[id]).map(id=>{const m=MEMBERS[id], st=passStatus(id);return `<button class="me-row" data-a="openChat" data-m="${id}"><span class="me-ic" style="background:${grad(m.g)};overflow:hidden">${mAvIn(id)}</span><span class="me-t"><b>${esc(artName(id,"tie"))}</b><small class="${st.cls==="on"?"on":st.cls==="grace"?"grace":""}">${st.txt}・💜 +${subDays(id)} 天</small></span><i>›</i></button>${isActive(id)&&grpMembers(m.group).filter(x=>!MEMBERS[x].official).length>1?`<button class="me-sub" data-a="tPickGo" data-m="${id}">變更藝人 ›</button>`:""}`}).join("")||`<p class="me-none">還沒有 ${WHISPER_NAME} 券，到 SHOP 選一位成員吧</p>`}</section>`;
   if(k==="merch") return `<section class="card me-list">${(()=>{const o=S.get(K.owned,{}), rows=[];Object.keys(o).forEach(gid=>MERCH.forEach(it=>{ if(o[gid][it.k]&&groupOf(gid)) rows.push(`<div class="me-row"><span class="me-ic" style="background:${grad(groupOf(gid).g)}">${it.ic}</span><span class="me-t"><b>${esc(groupOf(gid).name)}・${it.name}</b><small>${ymd(o[gid][it.k])} 購買</small></span></div>`); }));return rows.join("")||`<p class="me-none">還沒有周邊，到 SHOP 的「周邊」看看</p>`})()}</section>`;
   return `<section class="card me-list">${S.get(K.sales,[]).filter(x=>x.buyer===myEmail()).slice(0,40).map(x=>`<div class="me-row"><span class="me-t"><b>${esc(saleLbl(x))}</b><small>${ago(x.ts)}</small></span><em class="me-pts">−${fmt(x.pts)}</em></div>`).join("")||`<p class="me-none">還沒有購買紀錄</p>`}</section>`;
 }
@@ -9403,6 +9416,17 @@ function openTieQPreview(){ const mid=session().member, m=MEMBERS[mid], Q=tieQ(m
   setLayer(`<div class="tq-pv" role="dialog" aria-label="預覽"><header class="tq-h"><button class="t-ib" data-a="tqBack" aria-label="返回">${TI.back}</button><b>預覽</b><span class="tq-sp"></span></header>
     <div class="tq-b">${ab?tieBgLayer(ab,"tq-bg"):(thChatBg("tq-bg")||`<div class="tq-bg t-default"></div>`)}<div class="tq-l">${Q.map(q=>`<div class="tq-m">${tieAv(m,"tq-av")}<div><div class="tq-n">${artBadge(mid)}<b>${esc(artName(mid,"tie"))}</b></div>${q.rid&&getWhispers().find(x=>x.id===q.rid)?tieRq(getWhispers().find(x=>x.id===q.rid),false,true):""}${tqBub(q,1)}</div></div>`).join("")}</div></div>
     <footer class="tq-f"><button data-a="tqBack">返回</button><button class="go" data-a="tqSend">傳送</button></footer></div>`,"tqpv"); hydrateMedia(layer); }
+
+/* ===== TIE 體驗券：不限藝人，拿到後一年內要用；用了就開通那位藝人 7 天 TIE（她 10/28 定） ===== */
+const TV_DAYS=7, TV_LIFE=365*864e5;
+const tvAll=()=>(S.get(K.tieVch,[])||[]).filter(v=>v&&v.id);
+const tvLive=()=>tvAll().filter(v=>!v.used&&v.exp>Date.now());
+function tvGive(src,from){ const L=tvAll(); if(L.some(v=>v.id==="tv_"+src)) return false; L.push({id:"tv_"+src,from,days:TV_DAYS,ts:Date.now(),exp:Date.now()+TV_LIFE}); S.set(K.tieVch,L); return true; }
+function tvUseAsk(id){ const v=tvLive().find(x=>x.id===id); if(!v) return; const f=followed(), ms=f.flatMap(gid=>grpMembers(gid).filter(m=>MEMBERS[m]&&!MEMBERS[m].official&&!isSelfGid(gid)));
+  if(!ms.length){ toast("先追蹤藝人，才能選要用在誰的聊天室"); return; }
+  tieModal(`用在誰的 ${WHISPER_NAME}？`,`<span class="tv-pick">${ms.map(m=>`<button data-a="tvUse" data-v="${id}" data-m="${m}"><span class="tv-av">${mAvIn(m)}</span><b>${esc(artName(m,"tie"))}</b><small>${isActive(m)?"使用中・會再加 7 天":esc(groupOf(MEMBERS[m].group).name)}</small></button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
+function tvUse(id,mid){ const L=tvAll(), v=L.find(x=>x.id===id); if(!v||v.used||v.exp<=Date.now()||!MEMBERS[mid]) return; v.used=Date.now(); v.mid=mid; S.set(K.tieVch,L); buyTie(mid,v.days,0); layer.innerHTML=""; render(); toast(`已開通 ${artName(mid,"tie")} 的 ${WHISPER_NAME}・${v.days} 天`); }
+const tvRows=()=>{ const L=tvLive().sort((a,b)=>a.exp-b.exp); if(!L.length) return ""; return `<div class="section-h">體驗券<span class="muted">${L.length} 張</span></div><section class="card me-list">${L.map(v=>{ const d=Math.ceil((v.exp-Date.now())/864e5); return `<button class="me-row" data-a="tvAsk" data-v="${v.id}"><span class="me-ic tv-ic">🎫</span><span class="me-t"><b>${WHISPER_NAME} ${v.days} 天體驗券</b><small>${esc(v.from||"")}・${d<=30?`剩 ${d} 天到期`:`${ymd(v.exp)} 到期`}</small></span><em class="tv-go">使用</em></button>`; }).join("")}</section>`; };
 
 /* =========================================================
    MEET（照 NSY 的直播規則）
@@ -12090,6 +12114,9 @@ document.addEventListener("click",e=>{
     case "tqItem": { const i=+t.dataset.i; iosSheet([["刪除這則","tqDel",`data-i="${i}"`]]); break; }
     case "tqDel": { const mid=session().member, Q=tieQ(mid); Q.splice(+t.dataset.i,1); tieQSet(mid,Q); layer.innerHTML=""; render(); break; }
     case "tqPreview": openTieQPreview(); break;
+    case "tvAsk": tvUseAsk(t.dataset.v); break;
+    case "tvUse": tvUse(t.dataset.v,t.dataset.m); break;
+    case "meSecGo": ui.meSec=t.dataset.v; location.hash="#/fan?tab=me"; render(); window.scrollTo(0,0); break;
     case "tqBack": layer.innerHTML=""; break;
     case "tqSend": iosAlert(`要傳送 ${WHISPER_NAME} 嗎？`,"確認後，訊息會一起傳送。",`<button data-a="tCloseLayer">取消</button><button data-a="tqSendOk">確認</button>`); break;
     case "tqSendOk": { const mid=session().member, Q=tieQ(mid); layer.innerHTML=""; if(!Q.length) break; tieQSet(mid,[]);
@@ -15142,7 +15169,7 @@ document.addEventListener("change",async e=>{ if(e.target.id!=="bzPic") return; 
 /* =========================================================
    生日咖啡廳：藝人生日的前後三天，系統自動開一間迷你小店
    ・粉絲：打卡進店、捐積分（算進藝人營收）、上傳海報／杯套、加生日特調到菜單、寫留言卡
-     有捐積分或佈置的人，拿到一張「生日限定到店小卡」
+     有捐積分的人，拿到一張「TIE 7 天體驗券」（不限藝人、一年內用完，一家店一張；她 10/28 定，取代到店小卡）
    ・藝人（全部可選，不強迫）：牆上簽名、語音感謝、到店自拍、蓋「藝人最愛」章、一張一張回留言卡
      藝人到店時，追蹤這團的粉絲會收到通知
    資料：daisuki_cafe（只放文字和照片的編號，照片本身在 R2）
@@ -15202,7 +15229,7 @@ function viewCafe(mid){ const L=cfOpenNow();
       <label>📸<span>${A.selfie?"換自拍":"到店自拍"}</span><input type="file" accept="image/*" id="cfSelfie" data-v="${mid}"></label></div>
       ${on?"":`<p class="cf-hint">開店期間才能到店</p>`}</section>`:""}
     ${fan&&on?`<section class="cf-sec cf-gift"><div class="cf-sh"><b>生日應援</b><small>你有 ${fmt(points())} 積分</small></div><div class="cf-gb">${CF_GIFT.map(n=>`<button data-a="cfGift" data-v="${mid}" data-n="${n}">☕ ${fmt(n)}</button>`).join("")}</div>
-      ${got?`<div class="cf-pc"><span class="cf-pcc" style="--cc:${grad(MEMBERS[mid].g||0)}">${A.selfie?cfImg(A.selfie):`<b>${esc(MEMBERS[mid].name)}</b>`}<i>BIRTHDAY<br>CAFÉ ${c.y}</i></span><p><b>生日限定到店小卡</b><small>謝謝你的應援 💜</small></p></div>`:`<p class="cf-hint">捐積分或幫忙佈置，就能拿到生日限定到店小卡</p>`}</section>`:""}
+      ${c.pts[em]?`<button class="cf-vch" data-a="meSecGo" data-v="tie"><span class="tv-tk">🎫<b>TIE</b><i>7 DAYS</i></span><p><b>${WHISPER_NAME} 7 天體驗券</b><small>已放進 ME 的「我的 ${WHISPER_NAME} 券」</small></p></button>`:`<p class="cf-hint">捐積分就送一張 ${WHISPER_NAME} 7 天體驗券</p>`}</section>`:""}
   </main>`;
   const sig=A.sig?`<div class="cfr-sig">${cfImg(A.sig,"sig")}<small>${esc(MEMBERS[mid].name)}・${c.y==="demo"?"":c.y}</small></div>`:"";
   return `<main class="page cf cf-inside" style="--cc:${grad(MEMBERS[mid].g||0)}">
@@ -15228,7 +15255,7 @@ function viewCafe(mid){ const L=cfOpenNow();
       <label>📸<span>${A.selfie?"換自拍":"到店自拍"}</span><input type="file" accept="image/*" id="cfSelfie" data-v="${mid}"></label></div>
       ${on?"":`<p class="cf-hint">開店期間才能到店</p>`}</section>`:""}
     ${fan&&on?`<section class="cf-sec cf-gift"><div class="cf-sh"><b>生日應援</b><small>你有 ${fmt(points())} 積分</small></div><div class="cf-gb">${CF_GIFT.map(n=>`<button data-a="cfGift" data-v="${mid}" data-n="${n}">☕ ${fmt(n)}</button>`).join("")}</div>
-      ${got?`<div class="cf-pc"><span class="cf-pcc" style="--cc:${grad(MEMBERS[mid].g||0)}">${A.selfie?cfImg(A.selfie):`<b>${esc(MEMBERS[mid].name)}</b>`}<i>BIRTHDAY<br>CAFÉ ${c.y}</i></span><p><b>生日限定到店小卡</b><small>謝謝你的應援 💜</small></p></div>`:`<p class="cf-hint">捐積分或幫忙佈置，就能拿到生日限定到店小卡</p>`}</section>`:""}
+      ${c.pts[em]?`<button class="cf-vch" data-a="meSecGo" data-v="tie"><span class="tv-tk">🎫<b>TIE</b><i>7 DAYS</i></span><p><b>${WHISPER_NAME} 7 天體驗券</b><small>已放進 ME 的「我的 ${WHISPER_NAME} 券」</small></p></button>`:`<p class="cf-hint">捐積分就送一張 ${WHISPER_NAME} 7 天體驗券</p>`}</section>`:""}
   </main>`; }
 /* 簽名板 */
 function cfSignPad(mid){ setLayer(`<div class="fs-pad-w cf-padw" role="dialog" aria-label="簽名"><div class="fs-pad"><b>在咖啡廳的牆上簽名</b><div class="cf-padc"><canvas id="cfPad" width="600" height="360"></canvas></div><div class="t-mb mrow"><button class="t-mbtn" data-a="cfPadClr">重簽</button><button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfPadOk" data-v="${mid}">完成</button></div></div></div>`,"cfpad");
@@ -15248,7 +15275,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "cfZone": { const r=document.getElementById("cfRoom"), z=r&&r.querySelector(`[data-z="${t.dataset.v}"]`); if(z) r.scrollTo({left:z.offsetLeft-r.offsetLeft,behavior:"smooth"}); break; }
     case "cfGo": ui.cfIn=null; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
     case "cfGift": { const n=+t.dataset.n, c=cfCur(mid), em=cfMe(); if(!c||!em) break; if(points()<n){ toast("積分不夠，先補充積分吧"); break; }
-      ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); rr(); toast("生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
+      ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); const gv=tvGive("cf_"+c2.id,`${MEMBERS[mid].name} 生日咖啡廳`); rr(); toast(gv?`生日應援送出了 🎂 拿到 ${WHISPER_NAME} 7 天體驗券`:"生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
     case "cfMenu": tieModal("生日特調",`<input id="cfMenuIn" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfMenuOk" data-v="${mid}">加到菜單</button>`,"row"); setTimeout(()=>document.getElementById("cfMenuIn")?.focus(),200); break;
     case "cfMenuOk": { const v=((document.getElementById("cfMenuIn")||{}).value||"").trim(); if(!v) break; if(!isAdminAcct()&&banBlock(v)) break; const c=cfCur(mid); c.menu.push({id:"m"+Date.now().toString(36),name:v,by:cfMe(),by_n:ME.name,ts:Date.now()}); c.menu=c.menu.slice(-30); cfPut(c); fanEarn("cfdeco_"+c.id,50,{cap:150,life:1,why:"幫忙佈置咖啡廳"}); layer.innerHTML=""; rr(); break; }
     case "cfCard": tieModal("生日卡片",`<textarea id="cfCardIn" class="a-nick-in sn-caped" rows="4" maxlength="150" placeholder="輸入文字"></textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfCardOk" data-v="${mid}">貼上去</button>`,"row"); setTimeout(()=>document.getElementById("cfCardIn")?.focus(),200); break;
