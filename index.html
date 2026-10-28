@@ -5295,6 +5295,8 @@ main.wk{padding-bottom:110px}
 .wk-sug{position:fixed;left:16px;right:16px;z-index:63;background:var(--wkbg);color:var(--wkt);border:1px solid var(--wkb);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.35);max-height:50vh;overflow:auto;padding:6px 0}.wk-sug a{display:flex;align-items:baseline;gap:8px;padding:11px 16px;cursor:pointer;font-size:15px}.wk-sug a+a{border-top:1px solid var(--wkb)}.wk-sug small{opacity:.6;font-size:12.5px}.wk-sug p{margin:0;padding:12px 16px;opacity:.7;font-size:14px}
 .wkg-hero figcaption a{color:inherit;cursor:pointer}
 .wkg-cap2{display:inline-flex!important;align-items:center;justify-content:center;gap:8px;opacity:1!important;font-weight:700}.wkg-cap2 img{height:2.2em;max-width:40%;object-fit:contain}
+.wk-pics2.wide span{aspect-ratio:4/3}
+.wk-pics.wide{grid-template-columns:repeat(2,minmax(0,1fr))}.wk-pics.wide span{aspect-ratio:4/3}
 
 </style>
 </head>
@@ -5713,7 +5715,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028082607";
+const BUILD="20261028082747";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16214,8 +16216,8 @@ function wkAutoSec(k,ctx){ const {gid,A,isSolo,key,isM}=ctx, mem=isM?[key]:ctx.m
   if(k==="perf") return A.cc.length||A.tours.length?`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`:"";
   if(k==="show"){ const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x))); return eps.length?`<table class="wk-tb"><tr><th>節目</th><th>結果</th></tr>${eps.map(e=>`<tr><td>${esc(VSHOW[e.show].name)}</td><td>${e.st!=="done"?"播出中":(e.mids||[]).filter(x=>mem.includes(x)).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</td></tr>`).join("")}</table>`:empty; }
   if(k==="ad"){ const L=(typeof bzAll==="function"?bzAll():[]).filter(b=>b&&mem.includes(b.mid)); return L.length?`<ul>${L.map(b=>`<li>${esc(b.brand||b.title||"代言")}</li>`).join("")}</ul>`:empty; }
-  if(k==="pics"&&(wkPage(ctx.id).pics||[]).length) return `<div class="wk-pics2">${wkPage(ctx.id).pics.map(p=>`<figure><span style="background-image:url('${esc(p.u)}')"></span>${p.t?`<figcaption>${esc(p.t)}</figcaption>`:""}</figure>`).join("")}</div>`;
-  if(k==="pics"){ const ph=[gPhoto(gid),...mem.map(x=>mPhoto(x))].filter(Boolean); return ph.length?`<div class="wk-pics">${ph.map(u=>`<span style="background-image:url('${u}')"></span>`).join("")}</div>`:empty; }
+  if(k==="pics"&&(wkPage(ctx.id).pics||[]).length) return `<div class="wk-pics2${isSolo?"":" wide"}">${wkPage(ctx.id).pics.map(p=>`<figure><span style="background-image:url('${esc(p.u)}')"></span>${p.t?`<figcaption>${esc(p.t)}</figcaption>`:""}</figure>`).join("")}</div>`;
+  if(k==="pics"){ const ph=(isSolo?[mPhoto(key)]:[gPhoto(gid)]).filter(Boolean);   /* 團體頁只放團體照，不放成員個人照 */ return ph.length?`<div class="wk-pics${isSolo?"":" wide"}">${ph.map(u=>`<span style="background-image:url('${u}')"></span>`).join("")}</div>`:empty; }
   if(k==="nav") return `<table class="wk-nav" style="--wc:${ctx.col}"><tr><th><a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(ctx.g.name)}</a></th></tr><tr><td>${mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join(" · ")}</td></tr></table>`;
   return ""; }
 /* 頁面的共同資料（團體頁 g:、SOLOIST 頁 g:(solo)、成員頁 m:） */
@@ -16415,7 +16417,7 @@ document.addEventListener("change",e=>{ const t=e.target; if(t.matches&&t.matche
 
 /* 成員照、宣傳照：選了就上傳（R2），說明字先暫存 */
 document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!t.classList.contains("wk-up")) return; const f=t.files&&t.files[0], id=t.dataset.v, m=t.dataset.m; t.value=""; if(!f||!wkCanEdit(id)) return;
-  try{ const al=!!t.dataset.al, cr=await cropImg(f,al?{free:true,png:true,max:800}:{ratio:3/4}); if(!cr) return; const {blob}=al?{blob:cr}:await prepPhoto(cr); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
+  try{ const al=!!t.dataset.al, cr=await cropImg(f,al?{free:true,png:true,max:800}:{ratio:m||(groupOf(id.slice(2))||{}).solo?3/4:4/3}); if(!cr) return; const {blob}=al?{blob:cr}:await prepPhoto(cr); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
     const all=wkAll(), P={...(all[id]||{})}; if(t.dataset.al) P.alogo=url; else if(m) P.mph={...(P.mph||{}),[m]:url}; else { const pics=(P.pics||[]).map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); P.pics=[...pics,{u:url,t:""}]; }
     P.ts=Date.now(); all[id]=P; S.set(WK_KEY,all); toast("照片放好了"); const y=window.scrollY; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,y); }catch(err){ toast("這張圖片讀不出來"); } });
 
