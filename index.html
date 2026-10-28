@@ -5725,7 +5725,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028103114";
+const BUILD="20261028103342";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16237,13 +16237,13 @@ const wkStg=id=>{ if(!ui.wkStg||ui.wkStg.id!==id) ui.wkStg={id,o:{}}; return ui.
 const wkFKey=el=>el.dataset.k||el.dataset.mi||(el.dataset.pc!=null?"pc"+el.dataset.pc:"")||(el.dataset.nk?el.dataset.nk+"|"+el.dataset.i:"");
 const wkDrK=()=>"wk_draft_"+ui.wkEd;
 function wkDraftSave(){ if(!ui.wkEd||!document.querySelector(".wk-ed")) return; const V={}; document.querySelectorAll(".wk-ed input:not([type=file]),.wk-ed textarea").forEach(el=>{ const k=wkFKey(el); if(k) V[k]=el.value; });
-  try{ localStorage.setItem(wkDrK(),JSON.stringify({v:V,stg:ui.wkStg&&ui.wkStg.o,ts:Date.now()})); }catch(e){} }
-function wkDraftDrop(){ try{ if(ui.wkEd) localStorage.removeItem(wkDrK()); }catch(e){} }
+  try{ localStorage.setItem(wkDrK(),JSON.stringify({v:V,stg:ui.wkStg&&ui.wkStg.o,ts:Date.now()})); localStorage.setItem("wk_open",JSON.stringify({h:location.hash,ed:ui.wkEd,y:scrollY,ts:Date.now()})); }catch(e){} }
+function wkDraftDrop(){ try{ if(ui.wkEd) localStorage.removeItem(wkDrK()); localStorage.removeItem("wk_open"); }catch(e){} }
 function wkDraftApply(){ if(!ui.wkEd||!document.querySelector(".wk-ed")) return; let D=null; try{ D=JSON.parse(localStorage.getItem(wkDrK())||"null"); }catch(e){} if(!D) return wkGrowAll();
   const id=ui.wkEd.split("#")[0]; if(D.stg&&Object.keys(D.stg).length&&!(ui.wkStg&&ui.wkStg.id===id&&Object.keys(ui.wkStg.o).length)){ ui.wkStg={id,o:D.stg}; const snap=ui.wkSnap; render(); ui.wkSnap=snap; }
   let n=0; document.querySelectorAll(".wk-ed input:not([type=file]),.wk-ed textarea").forEach(el=>{ const k=wkFKey(el); if(k&&D.v[k]!=null&&el.value!==D.v[k]){ el.value=D.v[k]; n++; } });
   document.querySelectorAll(".wk-nts").forEach(b=>{ const el=document.querySelector(`.wk-ed [data-k="${b.dataset.for}"]`); if(el&&typeof wkNtSync==="function"){ const V={}; Object.keys(D.v).filter(k=>k.startsWith(b.dataset.for+"|")).forEach(k=>V[k.split("|").pop()]=D.v[k]); WKNC[b.dataset.for]={...V}; wkNtSync(el,false); b.querySelectorAll("[data-nk]").forEach(x=>{ if(V[x.dataset.i]!=null) x.value=V[x.dataset.i]; }); } });
-  if(n&&ui.wkDrT!==ui.wkEd){ ui.wkDrT=ui.wkEd; toast("上次沒存的內容幫你留著了"); } wkGrowAll(); }
+  wkGrowAll(); }
 const wkGrow=el=>{ el.style.height="auto"; el.style.height=el.scrollHeight+2+"px"; };
 const wkGrowAll=()=>document.querySelectorAll(".wk-ed .wk-ta").forEach(wkGrow);
 document.addEventListener("input",e=>{ if(!e.target.closest||!e.target.closest(".wk-ed")) return; if(e.target.classList.contains("wk-ta")) wkGrow(e.target); clearTimeout(ui.wkDrS); ui.wkDrS=setTimeout(wkDraftSave,400); });
@@ -16455,6 +16455,11 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList|
   try{ const al=!!t.dataset.al, cr=await cropImg(f,al?{free:true,png:true,max:800}:{ratio:m||(groupOf(id.slice(2))||{}).solo?3/4:4/3}); if(!cr) return; const {blob}=al?{blob:cr}:await prepPhoto(cr); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
     const st=wkStg(id), P0={...wkPage(id),...st}; if(t.dataset.al) st.alogo=url; else if(m) st.mph={...(P0.mph||{}),[m]:url}; else { const pics=wkPicsOf(id).map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); st.pics=[...pics,{u:url,t:""}]; }
     wkKeepRender(); wkDraftSave(); }catch(err){ toast("這張圖片讀不出來"); } });
+
+/* 切去別的 App 抄資料，iPhone 把 HAECHU 關掉重開：回到剛剛在編輯的地方，打的字原封不動（30 分鐘內） */
+setTimeout(function wkReopen(){ let o=null; try{ o=JSON.parse(localStorage.getItem("wk_open")||"null"); }catch(e){} if(!o||Date.now()-o.ts>30*60e3) return;
+  if(typeof ME==="undefined"||!ME||!myEmail()){ if(!wkReopen.n||wkReopen.n<10){ wkReopen.n=(wkReopen.n||0)+1; setTimeout(wkReopen,500); } return; }
+  if(location.hash!==o.h) location.hash=o.h; setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
 
 </script>
 </body>
