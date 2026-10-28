@@ -5226,7 +5226,7 @@ main.wk{padding-bottom:110px}
 .wk-ih2{text-align:center;padding:12px!important;background:var(--wks)}.wk-ih2>b{display:block;font-size:20px;color:var(--wc)}.wk-ih2>small{color:var(--wc)}
 .wk-iph2{padding:0!important}.wk-iph2 span{display:block;aspect-ratio:3/4;background:center/cover}
 .wk-chip{display:inline-block;border:1px solid var(--wkt);border-radius:4px;font-size:11.5px;padding:0 5px;margin-left:4px;vertical-align:1px}.wk-chip.f{background:var(--wc);border-color:var(--wc);color:#fff;font-weight:800}
-.wk-pill{display:inline-block;background:linear-gradient(90deg,#fff,var(--wc));color:#fff;font-weight:800;padding:2px 14px;border-radius:999px;text-shadow:0 1px 2px rgba(0,0,0,.3)}
+.wk-pill{display:inline-block;background:linear-gradient(90deg,color-mix(in srgb,var(--wc) 30%,#fff),var(--wc));color:#fff;font-weight:800;padding:3px 20px 3px 16px;border-radius:2em 2.2em .7em 2em/1.2em 1.5em .5em 1.2em;text-shadow:0 1px 2px rgba(0,0,0,.35)}
 .wk-sig img,.wk-sig span{max-height:60px;max-width:150px}
 .wk-ie{text-align:right;margin:4px 0 12px;font-size:13px}.wk-ie a,.wk-ed1{color:var(--wkl);cursor:pointer;font-weight:700}
 .wk-toc2{display:inline-flex;flex-direction:column;border:1px solid var(--wkb);padding:12px 18px;margin:8px 0 16px;min-width:60%;font-size:15px}
@@ -5288,6 +5288,7 @@ main.wk{padding-bottom:110px}
 .wk-shtop button{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--wkb);background:var(--wks);color:var(--wkt);font-size:18px}
 .wk-shchips{display:flex;gap:8px;overflow-x:auto}.wk-shchips a{flex:none;padding:8px 14px;border:1px solid var(--wkb);border-radius:999px;cursor:pointer;font-size:14px}
 .wk-shcard{background:var(--wks);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}.wk-shcard div{display:flex;gap:8px;flex-wrap:wrap}.wk-shcard a{padding:7px 14px;border-radius:999px;background:var(--wkbg);cursor:pointer;font-size:14px}
+.wkg-hero{border-color:var(--hc,var(--wc))!important}.wkg-hero figcaption{background:var(--hc,var(--wks))!important;color:var(--hct,var(--wc))!important}
 
 </style>
 </head>
@@ -5706,7 +5707,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028073423";
+const BUILD="20261028074038";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16246,7 +16247,7 @@ function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,perso
 function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, F=wkFnTok(P.f,"f"), T=wkFnTok(wkT(P),"s");
   const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
   const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
-  const hero=!person&&photo?`<figure class="wkg-hero" style="--wc:${col}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
+  const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
   const row=(l,v)=>v?`<tr><th>${l}</th><td>${v}</td></tr>`:"", d=A.debut, dd=d?wkDays(d):0;
   const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
   const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a> · <a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
@@ -16313,7 +16314,14 @@ function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
     ${q?`<div class="wk-box"><b>搜尋結果</b>${hit.length?hit.map(id=>`<a class="wk-ln" data-a="wkGo" data-v="${id}">${esc(wkName(id))}</a>`).join(""):`<p class="wk-empty">找不到</p>`}</div>`:""}
     <div class="wk-box"><b>最近修改</b>${recent.length?recent.map(id=>`<a class="wk-ln" data-a="wkGo" data-v="${id}">${esc(wkName(id))}<small>${ago(all[id].ts)}</small></a>`).join(""):`<p class="wk-empty">還沒有人修改</p>`}</div>
     <div class="wk-box"><b>全部文件</b>${GROUPS.filter(g=>g.id!=="tdm_g").map(g=>`<p class="wk-gl"><a class="wk-ln" data-a="wkGo" data-v="g:${g.id}">${esc(g.name)}</a>${g.solo?"":`：${grpMembers(g.id).map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join("・")}`}</p>`).join("")}</div></div>`; }
-function viewWiki(id){ if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
+/* 團體照那一欄：從照片抓主色（像 Namuwiki 用回歸封面的顏色）；抓不到就用團代表色 */
+const WKHC={};
+function wkHeroCol(){ const f=document.querySelector(".wkg-hero[data-src]"); if(!f) return; const u=f.dataset.src; if(WKHC[u]!==undefined) return;
+  WKHC[u]=null; const im=new Image(); im.crossOrigin="anonymous"; im.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=c.height=24; const x=c.getContext("2d"); x.drawImage(im,0,0,24,24); const d=x.getImageData(0,0,24,24).data; let r=0,g=0,b=0,n=0;
+    for(let i=0;i<d.length;i+=4){ const R=d[i],G=d[i+1],B=d[i+2], mx=Math.max(R,G,B), mn=Math.min(R,G,B); const w=1+(mx-mn)/32; r+=R*w; g+=G*w; b+=B*w; n+=w; }   /* 鮮豔的像素比重高 */
+    r/=n; g/=n; b/=n; const L=(.299*r+.587*g+.114*b)/255; WKHC[u]=[`rgb(${r|0},${g|0},${b|0})`,L>.6?"#1D1A24":"#fff"];
+    document.querySelectorAll(`.wkg-hero[data-src="${CSS.escape(u)}"]`).forEach(el=>{ el.style.setProperty("--hc",WKHC[u][0]); el.style.setProperty("--hct",WKHC[u][1]); }); }catch(e){} }; im.src=u; }
+function viewWiki(id){ setTimeout(wkHeroCol,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; location.hash=wkHash(v); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
