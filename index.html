@@ -2176,6 +2176,7 @@ html:not([data-theme="dark"]) .a-nick,html:not([data-theme="dark"]) .nick-me.glo
 .ls-views{display:flex;gap:10px;margin:8px 0}.ls-views span,.ls-vadd{flex:1;min-width:0;height:96px;border-radius:14px;background:var(--s2);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:6px;overflow:hidden}
 .ls-views img{max-height:64px;max-width:100%;object-fit:contain}.ls-views small{font-size:11px;color:var(--ink-3)}
 .ls-vadd{border:1.5px dashed var(--line);font-size:12.5px;font-weight:700;color:var(--violet);cursor:pointer}.ls-vadd input{display:none}
+.rp-bgm{color:inherit}.rp-bgm.on{color:var(--accent,#9B7FE0)}.rp-bgm svg{width:20px;height:20px}
 
 /* ===== v55 對比修正（兩種模式都套用） ===== */
 
@@ -5728,7 +5729,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028130856";
+const BUILD="20261028131154";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8053,7 +8054,7 @@ async function auR2Put(sid,blob){ if(!blob||blob.size>45*1024*1024||!MEDIA_URL||
 function auShare(sid,blob){ auR2Put(sid,blob).then(u=>{ if(!u) return; try{ localStorage.setItem("au_u_"+sid,u); }catch(e){} const T=getTracks(); if(!T[sid]) return; T[sid]={...T[sid],url:u}; S.set(K.tracks,T); }); }
 const AU_DL={};
 async function auGet(sid){ let b=null; try{ b=await MDB.get("au_"+sid); }catch(e){} const u=(getTracks()[sid]||{}).url; if(b&&(!u||MDB_AU_URL(sid)===u)) return b; if(!u) return b;
-  if(!AU_DL[sid]) AU_DL[sid]=(async()=>{ try{ const r=await fetch(u); if(!r.ok) return b; const nb=await r.blob(); try{ await MDB.put("au_"+sid,nb); localStorage.setItem("au_u_"+sid,u); }catch(e){} return nb; }catch(e){ return b; } finally{ delete AU_DL[sid]; } })();
+  if(!AU_DL[sid]) AU_DL[sid]=(async()=>{ try{ const r=await fetch(u); if(!r.ok) return b; const nb=await r.blob(); try{ await MDB.put("au_"+sid,nb,true); localStorage.setItem("au_u_"+sid,u); }catch(e){} return nb; }catch(e){ return b; } finally{ delete AU_DL[sid]; } })();
   return AU_DL[sid]; }
 const MDB_AU_URL=sid=>{ try{ return localStorage.getItem("au_u_"+sid)||""; }catch(e){ return ""; } };
 /* 之前只存在管理員手機的歌：打開 App 時補傳一次 */
@@ -9782,7 +9783,7 @@ function viewReplay(id){
     :x.from==="artist"?`<div class="rp2-a ${lvWho(x,l)!==l.member?"rp2-g2":""}"><span class="rp2-av" style="background:${grad((MEMBERS[lvWho(x,l)]||m).g)}">${mAvIn(lvWho(x,l))}</span><div><b>${esc(artName(lvWho(x,l),"live"))} <span class="rp2-vf">${I.verified}</span></b>${x.reply?`<q>${repQ(x.reply)}</q>`:""}${trT("lv:"+l.id+":"+x.ts,x.text,"")}</div><time>${timeHM(x.ts)}</time></div>`
     :`<div class="rp2-f"><p><b>${esc(mineX(x)?"你":x.name||"粉絲")}</b>${mineX(x)?esc(x.text):trT("lv:"+l.id+":"+x.ts+":"+(x.name||""),x.text,"","span")}</p><time>${timeHM(x.ts)}</time></div>`;
   return `<div class="rp2"><div class="cm-bg"><span class="cm-blob b1" style="background:${c[0]}"></span><span class="cm-blob b2" style="background:${c[1]}"></span><span class="cm-blob b3"></span></div>
-    <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}${l.co&&l.co.was&&MEMBERS[l.co.mid]?" × "+esc(artName(l.co.mid,"live")):""}・${ymd(l.startTs)}・${mmss(l)}</small></span><span class="rp2-sp"></span></header>
+    <header class="rp2-h"><button class="rp2-x" data-a="back" aria-label="返回">${I.back}</button><span class="rp2-t"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}${l.co&&l.co.was&&MEMBERS[l.co.mid]?" × "+esc(artName(l.co.mid,"live")):""}・${ymd(l.startTs)}・${mmss(l)}</small></span><span class="rp2-sp"></span>${(l.bgm||[]).length?`<button class="rp2-x rp-bgm ${RPB.id===l.id&&RPB.on?"on":""}" data-a="rpBgm" data-v="${l.id}" aria-label="背景音樂">${BGM_IC}</button>`:""}</header>
     <div class="seg2 rp2-seg" style="--i:${art?1:0}"><i class="seg2-ind"></i><button class="${art?"":"on"}" data-a="rpMode" data-v="all">全部留言</button><button class="${art?"on":""}" data-a="rpMode" data-v="art">${artV?"只看我說的話":"只看藝人說的話"}</button></div>
     <main class="rp2-log seg2-pane ${ui.segAnim||""}">${log.length?log.map(row).join(""):`<p class="rp2-none">${art?"這場直播藝人還沒說話":"這場直播沒有留言"}</p>`}</main></div>`;
 }
@@ -10595,15 +10596,17 @@ function openBgmSheet(){ const mid=session().member;
     <div class="cs-h"><h3>背景音樂</h3><div class="spacer"></div><button class="icon-btn sm" data-a="closeSheet" aria-label="關閉">${XI}</button></div>${bgmPrepHtml(mid)}</div></div>`,"bgm"); }
 function bgmPrepHtml(mid){ const L=S.get(K.bgm,{})[mid]||[];
   return `<div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small><button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
-    ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button>`:""}</div>`; }
-function bgmAdd(){ if(ui.bgmBusy) return; const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=".mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/aac,audio/x-m4a,audio/wav";
+    ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button><button class="bgm-add" data-a="bgmAddV">＋ 從相簿選影片</button>`:""}</div>`; }
+function bgmAdd(vid){ if(ui.bgmBusy) return; const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=vid?"video/*":".mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/aac,audio/x-m4a,audio/wav";   /* vid：iPhone 只有 accept 純影片才會開照片圖庫（螢幕錄影） */
   inp.onchange=async()=>{ const fs=[...(inp.files||[])]; if(!fs.length) return; const mid=session().member; let bad=0, big=0;
     for(const f of fs){ const A=S.get(K.bgm,{}), L=A[mid]||[]; if(L.length>=BGM_MAX) break;
-      if(!BGM_OK.test(f.name||"")){ bad++; continue; } if(f.size>20*1024*1024){ big++; continue; }
-      ui.bgmBusy="上傳中…"; bgmRefresh();
-      try{ const dur=await audioDur(f); if(!dur){ bad++; continue; } const id="bg"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await MDB.put(id,f);
+      if(!vid&&!BGM_OK.test(f.name||"")){ bad++; continue; } if(f.size>(vid?150:20)*1024*1024){ big++; continue; }
+      ui.bgmBusy=vid?"從影片取出聲音…":"上傳中…"; bgmRefresh();
+      try{ let blob=f, dur;
+        if(vid){ const c=audioCtx(); const buf=await decodeAu(c,await f.arrayBuffer()); blob=await compactWav(buf); dur=buf.duration; } else dur=await audioDur(f);   /* 影片只留聲音（單聲道，小很多） */
+        if(!dur){ bad++; continue; } const id="bg"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await MDB.put(id,blob);
         const A2=S.get(K.bgm,{}); A2[mid]=[...(A2[mid]||[]),{mid:id,name:(f.name||"").replace(/\.[^.]+$/,"").slice(0,40)||"音樂",dur}]; S.set(K.bgm,A2); }catch(e){ bad++; } }
-    ui.bgmBusy=null; bgmRefresh(); if(bad) toast("請換成 MP3 或 M4A 檔"); else if(big) toast("檔案太大了，請小於 20MB"); };
+    ui.bgmBusy=null; bgmRefresh(); if(bad) toast(vid?"這支影片的聲音讀不出來":"請換成 MP3 或 M4A 檔"); else if(big) toast("檔案太大了，請小於 20MB"); };
   pickClick(inp); }
 const BG={a:null,on:false,lid:null,idx:-1,url:{}};
 function bgmIsOn(l,host){ return host?!l.bgmOff:(BG.on&&BG.lid===l.id); }
@@ -10637,6 +10640,16 @@ function bgmTap(id){ const l=getLive(id); if(!l||!(l.bgm||[]).length) return; co
   else a.pause();
   bgmUI(); }
 setInterval(()=>{ if(BG.on||(BG.a&&!BG.a.paused)) bgmSync(); else bgmUI(); },2000);
+
+/* 重播：按 ♪ 從頭依序放這場直播的背景音樂（音樂在 R2，第一次會下載到手機） */
+const RPB={a:null,id:null,on:false,i:0};
+async function rpBgmPlay(){ const l=getLive(RPB.id); if(!l||!RPB.on) return; const L=l.bgm||[]; if(!L.length) return; if(RPB.i>=L.length) RPB.i=0;
+  const u=await mediaSrc(L[RPB.i].mid); if(!RPB.on) return; if(!u){ RPB.i++; if(RPB.i<L.length) rpBgmPlay(); return; }
+  RPB.a.src=u; RPB.a.play().catch(()=>{}); }
+function rpBgm(id){ if(!RPB.a){ const a=new Audio(); a.setAttribute("playsinline",""); a.onended=()=>{ RPB.i++; rpBgmPlay(); }; RPB.a=a; }
+  if(RPB.on&&RPB.id===id){ RPB.on=false; RPB.a.pause(); } else { if(RPB.id!==id) RPB.i=0; RPB.id=id; RPB.on=true; RPB.a.play().catch(()=>{}); rpBgmPlay(); }
+  document.querySelectorAll(".rp-bgm").forEach(b=>b.classList.toggle("on",RPB.on)); }
+window.addEventListener("hashchange",()=>{ if(RPB.on&&!document.querySelector(".rp2")) setTimeout(()=>{ if(!document.querySelector(".rp2")){ RPB.on=false; if(RPB.a) RPB.a.pause(); } },300); });
 
 /* =========================================================
    外觀：淺色／深色／跟隨系統
@@ -12104,6 +12117,8 @@ document.addEventListener("click",e=>{
     case "dlTap": { const ev=window.event, tg=ev&&ev.target; if(tg&&tg.closest&&tg.closest("form,input,.cm-tick,.host-feed,.sp-card,.dl-ask")) break; t.classList.toggle("ui-on"); ui.dlUi=t.classList.contains("ui-on"); break; }
     case "bgmTap": bgmTap(t.dataset.id); break;
     case "bgmAdd": bgmAdd(); break;
+    case "bgmAddV": bgmAdd(true); break;
+    case "rpBgm": rpBgm(t.dataset.v); break;
     case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); bgmRefresh(); break; }
     case "bgmOpen": openBgmSheet(); break;
     case "dlChat": { ui.dlChatOff=!ui.dlChatOff; const r0=document.querySelector(".dl"); if(r0) r0.classList.toggle("chat-off",ui.dlChatOff); break; }
@@ -12431,13 +12446,13 @@ document.addEventListener("change",async e=>{
     let step="讀取檔案";
     try{ const ab=await f.arrayBuffer(); step="解碼音樂"; const c=audioCtx(); if(!c) throw new Error("這台裝置不支援播放音樂");
       const buf=await decodeAu(c,ab); step="抓節拍"; const an=analyzeBeats(buf); step="存到手機";
-      step="存到手機"; const keep=isVid||f.size>12*1024*1024?await compactWav(buf):f; try{ await MDB.put("au_"+sid,keep); }catch(err){} auBuf[sid]=buf; const kept=await idbHas("au_"+sid);
+      step="存到手機"; const keep=isVid||f.size>12*1024*1024?await compactWav(buf):f; try{ await MDB.put("au_"+sid,keep,true); }catch(err){} auBuf[sid]=buf; const kept=await idbHas("au_"+sid);
       const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",bpm:an.bpm,offset:an.offset,dur:an.dur,sec:analyzeSections(buf,an.bpm),chant:(T[sid]||{}).chant||[]}; delete T[sid].url; S.set(K.tracks,T); try{ localStorage.setItem("au_u_"+sid,""); }catch(e){} auShare(sid,keep);
       inp.value=""; ui.cmGid=sg?sg.gid:ui.cmGid; lsRerender();
       tieModal("上傳好了 🎵",`《${title}》<br>${fmtDur(an.dur)}・BPM ${an.bpm}<br><br>下一步：按「試玩」聽聽看音符有沒有對上拍子，再去「錄應援詞」。${kept?"":"<br><br><b>注意：這裡沒辦法把音樂長期存在手機上，關掉 App 再打開要重新上傳。</b>"}`,`<button class="t-mbtn main" data-a="cmTryM" data-v="${sid}">試玩</button><button class="t-mbtn" data-a="tCloseLayer">晚點再說</button>`);
     }catch(err){
       if(step==="解碼音樂"){ const dur=await mediaDur(f);   // 讀不出聲音（例如 iPhone 照片裡的 .MOV）→ 改用影片元件播放，拍子用手動對
-        if(dur>0){ try{ await MDB.put("au_"+sid,f); }catch(e2){}
+        if(dur>0){ try{ await MDB.put("au_"+sid,f,true); }catch(e2){}
           const T=getTracks(); T[sid]={...(T[sid]||{}),name:songName(sg),file:f.name||"",media:true,bpm:null,offset:0,dur,chant:(T[sid]||{}).chant||[]}; delete T[sid].url; S.set(K.tracks,T); auShare(sid,f);
           inp.value=""; ui.cmGid=sg?sg.gid:ui.cmGid; lsRerender();
           tieModal("上傳好了，還差一步 🎵",`《${title}》${fmtDur(dur)}<br><br>這個檔案 App 沒辦法自己抓拍子，請你手動對一次：按「對拍子」，音樂開始後跟著鼓聲點 8 下以上就好。`,`<button class="t-mbtn main" data-a="cmTap" data-v="${sid}">對拍子</button><button class="t-mbtn" data-a="tCloseLayer">晚點再說</button>`);
