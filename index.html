@@ -5292,6 +5292,7 @@ main.wk{padding-bottom:110px}
 .wk-info2.solo th{background:var(--wth);color:var(--wtt)}.wk-info2.solo .wk-ih2{background:var(--wth)}.wk-info2.solo .wk-ih2>b,.wk-info2.solo .wk-ih2>small{color:var(--wtt)}
 .wk-cols{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:4px 0 14px;font-size:13px}.wk-cols>span:first-child{width:100%;font-weight:700}
 .wk-col{display:inline-flex;align-items:center;gap:2px}.wk-col input{width:44px;height:34px;padding:0;border:1px solid var(--wkb);border-radius:8px;background:none}.wk-col button{border:0;background:none;color:var(--wkt);width:24px;height:24px;display:grid;place-items:center}.wk-col svg{width:13px;height:13px}
+.wk-sug{position:fixed;left:16px;right:16px;z-index:63;background:var(--wkbg);color:var(--wkt);border:1px solid var(--wkb);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.35);max-height:50vh;overflow:auto;padding:6px 0}.wk-sug a{display:flex;align-items:baseline;gap:8px;padding:11px 16px;cursor:pointer;font-size:15px}.wk-sug a+a{border-top:1px solid var(--wkb)}.wk-sug small{opacity:.6;font-size:12.5px}.wk-sug p{margin:0;padding:12px 16px;opacity:.7;font-size:14px}
 
 </style>
 </head>
@@ -5710,7 +5711,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028075256";
+const BUILD="20261028075903";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16176,7 +16177,7 @@ const wkOk=id=>{ if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.s
 function wkCanEdit(id){ try{ if(isAdminAcct()) return true; const s=session(); if(!s||s.role!=="artist") return false; const me=s.member||uniMe();
     if(id.startsWith("m:")) return id.slice(2)===me; if(id.startsWith("g:")) return !!MEMBERS[me]&&MEMBERS[me].group===id.slice(2); }catch(e){} return false; }
 const wkName=id=>id.startsWith("g:")?(groupOf(id.slice(2))||{}).name||"":(MEMBERS[id.slice(2)]||{}).name||"";
-const wkHash=id=>(route().role==="artist"?"#/artist?tab=foc&p=wiki":route().role==="admin"?"#/admin?tab=wiki":"#/fan/core?p=wiki")+(id?"&id="+encodeURIComponent(id):"");
+const wkHash=id=>(route().role==="artist"?"#/artist?tab=foc&p=wiki":route().role==="admin"?"#/admin?tab=wiki":"#/fan/core?p=wiki")+"&id="+(id?encodeURIComponent(id):"home");   /* 首頁用 id=home（藝人端沒 id 會直接開自己的頁） */
 /* 名字找頁：[[名字]] 用 */
 function wkFind(n){ n=nz(n); const g=GROUPS.find(x=>nz(x.name)===n); if(g) return "g:"+g.id; const m=Object.keys(MEMBERS).find(k=>!MEMBERS[k].official&&nz(MEMBERS[k].name)===n); return m?"m:"+m:null; }
 /* 不用任何特殊寫法（她 10/28：藝人不會用 wiki 語法）：文字裡出現其他藝人或團的名字，自動變成藍色連結 */
@@ -16371,7 +16372,15 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     document.querySelector("main.wk").appendChild(d); }
   else if(a==="wkExit"){ layer.innerHTML=""; location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"; }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
-document.addEventListener("keydown",e=>{ if(e.target.id!=="wkQ2"||e.key!=="Enter") return; e.preventDefault(); ui.wkQ=e.target.value; location.hash=wkHash(""); });
+/* 下方搜尋：打字就跳出符合的藝人／團，點了直接去；按 Enter 去第一個，沒有就到首頁看結果 */
+const wkHits=q=>{ q=nz(q||""); return q?wkIds().filter(id=>nz(wkName(id)).includes(q)||nz(((wkPage(id).f||{}).kname)||"").includes(q)).slice(0,8):[]; };
+function wkSug(inp){ document.querySelectorAll(".wk-sug").forEach(x=>x.remove()); const L=wkHits(inp.value); if(!inp.value.trim()) return; const d=document.createElement("div"); d.className="wk-sug";
+  d.innerHTML=L.length?L.map(id=>`<a data-a="wkGo" data-v="${id}">${esc(wkName(id))}${(wkPage(id).f||{}).kname?`<small>${esc(wkPage(id).f.kname)}</small>`:""}</a>`).join(""):`<p>找不到「${esc(inp.value)}」</p>`;
+  const r=inp.getBoundingClientRect(); d.style.bottom=(innerHeight-r.top+14)+"px"; document.querySelector("main.wk").appendChild(d); }
+document.addEventListener("input",e=>{ if(e.target.id==="wkQ2") wkSug(e.target); });
+document.addEventListener("click",e=>{ const g=document.querySelector(".wk-sug"); if(g&&!e.target.closest("#wkQ2")) setTimeout(()=>g.remove(),0); },true);
+document.addEventListener("keydown",e=>{ if(e.target.id!=="wkQ2"||e.key!=="Enter") return; e.preventDefault(); const v=e.target.value, L=wkHits(v); document.querySelectorAll(".wk-sug,.wk-sheet").forEach(x=>x.remove()); e.target.blur();
+  ui.wkEd=null; if(L.length){ location.hash=wkHash(L[0]); window.scrollTo(0,0); return; } ui.wkQ=v; const h=wkHash(""); if(location.hash===h) render(); else location.hash=h; });
 document.addEventListener("input",e=>{ if(e.target.id!=="wkQ") return; ui.wkQ=e.target.value; clearTimeout(ui.wkQT); ui.wkQT=setTimeout(()=>{ const p=e.target.selectionStart; render(); const i=document.getElementById("wkQ"); if(i){ i.focus(); try{ i.setSelectionRange(p,p); }catch(_){} } },250); });
 
 /* 編輯中：取消、返回鍵、左邊緣滑回去，都是回到百科頁；有改東西沒存才問一下 */
