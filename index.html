@@ -5728,7 +5728,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028120347";
+const BUILD="20261028130550";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8180,7 +8180,7 @@ function concertMusicHtml(){
     
     <div class="chips wrap">${GROUPS.map(x=>`<button class="chip ${x.id===gid?"on":""}" data-a="cmGroup" data-v="${x.id}">${esc(x.name)}</button>`).join("")}</div>
     ${songs.length?songs.map(s=>{ const t=T[s.id]; return `<div class="cm-row"><div class="cm-i"><b>《${esc(s.title)}》</b><small>${t?`${fmtDur(t.dur)}・${t.bpm?"BPM "+t.bpm:"<em class='cm-warn'>還沒對拍子</em>"}・應援詞 ${(t.chant||[]).length} 句`:"還沒有音樂"}</small></div>
-      <div class="cm-b"><label class="btn btn-soft btn-sm cm-up">${t?"換音樂":"上傳音樂"}<input type="file" class="cm-file" accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.mp4,.mov" data-sid="${s.id}"></label>${t?`<button class="btn btn-soft btn-sm" data-a="cmTap" data-v="${s.id}">對拍子</button><button class="btn btn-soft btn-sm" data-a="cmChant" data-v="${s.id}">錄應援詞</button><button class="btn btn-soft btn-sm" data-a="secOpen" data-v="${s.id}">燈光段落</button><button class="btn btn-main btn-sm" data-a="cmTry" data-v="${s.id}">試玩</button>`:""}</div>
+      <div class="cm-b"><label class="btn btn-soft btn-sm cm-up">${t?"換音樂":"上傳音樂"}<input type="file" class="cm-file" accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.mp4,.mov" data-sid="${s.id}"></label><label class="btn btn-soft btn-sm cm-up">從相簿選影片<input type="file" class="cm-file" accept="video/*" data-sid="${s.id}"></label>${t?`<button class="btn btn-soft btn-sm" data-a="cmTap" data-v="${s.id}">對拍子</button><button class="btn btn-soft btn-sm" data-a="cmChant" data-v="${s.id}">錄應援詞</button><button class="btn btn-soft btn-sm" data-a="secOpen" data-v="${s.id}">燈光段落</button><button class="btn btn-main btn-sm" data-a="cmTry" data-v="${s.id}">試玩</button>`:""}</div>
       ${t&&t.bpm?`<div class="cm-adj"><span>拍子速度</span><button data-a="cmBpm" data-v="${s.id}" data-d="-0.5">−</button><b>${t.bpm}</b><button data-a="cmBpm" data-v="${s.id}" data-d="0.5">＋</button><span>拍子位置</span><button data-a="cmOff" data-v="${s.id}" data-d="-0.03">提早</button><button data-a="cmOff" data-v="${s.id}" data-d="0.03">延後</button></div>`:""}</div>`; }).join("")
       :`<p class="me-none">這團還沒有歌。先在上面「打歌中的歌曲」新增歌名。</p>`}
     
