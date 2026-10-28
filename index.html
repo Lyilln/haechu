@@ -5278,6 +5278,16 @@ main.wk{padding-bottom:110px}
 .wk-nts{display:flex;flex-direction:column;gap:6px;padding-left:12px;border-left:2px solid var(--wkb)}.wk-nts:empty{display:none}
 .wk-nt{display:flex;flex-direction:column;gap:3px;font-size:12.5px}.wk-nt input{width:100%;box-sizing:border-box}
 .wk-fnadd{align-self:flex-end;background:none;border:0;color:var(--wkl);font-size:12.5px;padding:2px 0;cursor:pointer}
+.wk-pics2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.wk-pics2 figure{margin:0;display:flex;flex-direction:column;gap:4px}.wk-pics2 span{aspect-ratio:3/4;background:center/cover;border-radius:4px}.wk-pics2 figcaption{text-align:center;font-size:12.5px;opacity:.8}
+.wk-upl{display:flex;flex-direction:column;gap:10px;margin-bottom:12px}.wk-upi{display:flex;align-items:center;gap:10px}.wk-upi>span{width:56px;height:72px;flex:none;border-radius:6px;background:center/cover}.wk-upi>b{flex:1;min-width:0}.wk-upi .field{flex:1;min-width:0;margin:0}
+.wk-del{flex:none;width:34px;height:34px;border:0;border-radius:50%;background:var(--wks);color:var(--wkt);display:grid;place-items:center}.wk-del svg{width:16px;height:16px}
+.wk-sheet{position:fixed;inset:0;z-index:62;background:rgba(0,0,0,.35);display:flex;align-items:flex-end}
+.wk-shb{width:100%;background:var(--wkbg);color:var(--wkt);border-radius:22px 22px 0 0;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 18px);display:flex;flex-direction:column;gap:12px;box-shadow:0 -8px 30px rgba(0,0,0,.3)}
+.wk-shb>i{width:40px;height:4px;border-radius:2px;background:var(--wkb);align-self:center}
+.wk-shtop{display:flex;gap:8px;align-items:center}.wk-shtop label{flex:1;min-width:0}.wk-shtop input{width:100%;box-sizing:border-box;border-radius:999px;padding:10px 14px;border:1px solid var(--wkb);background:var(--wks);color:var(--wkt)}
+.wk-shtop button{flex:none;width:42px;height:42px;border-radius:50%;border:1px solid var(--wkb);background:var(--wks);color:var(--wkt);font-size:18px}
+.wk-shchips{display:flex;gap:8px;overflow-x:auto}.wk-shchips a{flex:none;padding:8px 14px;border:1px solid var(--wkb);border-radius:999px;cursor:pointer;font-size:14px}
+.wk-shcard{background:var(--wks);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px}.wk-shcard div{display:flex;gap:8px;flex-wrap:wrap}.wk-shcard a{padding:7px 14px;border-radius:999px;background:var(--wkbg);cursor:pointer;font-size:14px}
 
 </style>
 </head>
@@ -5696,7 +5706,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028072250";
+const BUILD="20261028073423";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16182,6 +16192,7 @@ const WKS_F=[["real","本名"],["birth","出生日期","date"],["bplace","出生
 const WKG_S=[["ov","概要"],["mem","成員",[["chem","成員間的化學反應"]]],["feat","特色"],["act","活動",[["perf","公演"],["cont","內容"],["show","綜藝"]]],["disc","作品"],["award","得獎紀錄"],["tr","趣事",[["pre","出道前"]]],["pics","歷代宣傳照"],["nav","周邊導覽"]];
 const WKS_S=[["ov","概要"],["life","生平"],["music","音樂活動",[["disc","作品"],["award","音樂節目"],["perf","公演"]]],["acting","演技活動"],["other","其他活動",[["show","綜藝"],["radio","廣播"],["ad","廣告"]]],["prize","得獎紀錄"],["ctrv","爭議"],["tr","趣事"],["nav","周邊導覽"]];
 const wkT=P=>P.s||{ov:P.ov||"",life:P.hi||"",tr:P.tr||""};   /* v330 以前的個人頁資料 */
+const WK_ED=new Set(["perf","ov","mem","pics"]);   // 自動段裡可以手動編輯的
 const WK_AUTO=new Set(["ov","mem","disc","award","perf","show","ad","pics","nav","prize"]);   // 這些段自動填（perf 自動＋可補寫）
 const wkDays=ts=>Math.floor((dayStart(Date.now())-dayStart(ts))/864e5);
 const wkAge=s=>{ const t=ymdTs(s); if(!t) return ""; const d=new Date(t), n=new Date(); let a=n.getFullYear()-d.getFullYear(); if(n.getMonth()<d.getMonth()||n.getMonth()===d.getMonth()&&n.getDate()<d.getDate()) a--; return a; };
@@ -16190,12 +16201,13 @@ function wkAutoSec(k,ctx){ const {gid,A,isSolo,key,isM}=ctx, mem=isM?[key]:ctx.m
   if(isM&&["mem","disc","award","prize","pics"].includes(k)) return "";
   if(k==="ov"){ if((wkT(wkPage(ctx.id)).ov||"").trim()) return ""; const F=(wkPage(ctx.id).f)||{}, GF=(wkPage("g:"+gid).f)||{}, co=F.co||GF.co, n=ctx.mem.length;   /* 沒寫概要：用現有資料自動一句（像 Namuwiki 開頭） */
     return `<p>${isM?`${co?wkTxt(co,[],ctx.id)+" 旗下":""}${n}人組 ${wkTxt(ctx.g.name,[],ctx.id)} 的成員${F.pos?`，擔任${esc(F.pos)}`:""}。`:isSolo?`${co?esc(co)+" 旗下的":""}SOLOIST。`:`${co?esc(co)+" 旗下的":""}${n===2?"二人組":n+"人組"}，成員是 ${ctx.mem.map(x=>wkTxt(MEMBERS[x].name,[],ctx.id)).join("、")}。`}${A.debut?` ${wkYmd(A.debut)} 出道。`:""}</p>`; }
-  if(k==="mem"){ const n=mem.length, cols=n<=2||n===4?2:3; return `<div class="wkm-grid" style="--cols:${cols};--wc:${ctx.col}">${mem.map(x=>{ const Fm=(wkPage("m:"+x).f)||{}; Fm.bday=Fm.birth||Fm.bday; return `<div class="wkm-c"><a class="wkm-ph" data-a="wkGo" data-v="m:${x}" style="background:${grad(MEMBERS[x].g||0)}">${teaserIn?teaserIn(x):mAvIn(x)}</a><b data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</b><span>${Fm.bday?`${wkDot(Fm.bday)}${wkAge(Fm.bday)!==""?` (${wkAge(Fm.bday)}歲)`:""}`:"—"}</span><span>${esc(Fm.nat||"—")}</span><span>${esc(Fm.pos||"—")}</span></div>`; }).join("")}</div>`; }
+  if(k==="mem"){ const n=mem.length, cols=n<=2||n===4?2:3; return `<div class="wkm-grid" style="--cols:${cols};--wc:${ctx.col}">${mem.map(x=>{ const Fm=(wkPage("m:"+x).f)||{}; Fm.bday=Fm.birth||Fm.bday; return `<div class="wkm-c">${(()=>{ const u=(wkPage("g:"+gid).mph||{})[x]; return u?`<a class="wkm-ph" data-a="wkGo" data-v="m:${x}" style="background:center/cover url('${esc(u)}')"></a>`:`<a class="wkm-ph" data-a="wkGo" data-v="m:${x}" style="background:${grad(MEMBERS[x].g||0)}">${teaserIn?teaserIn(x):mAvIn(x)}</a>`; })()}<b data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</b><span>${Fm.bday?`${wkDot(Fm.bday)}${wkAge(Fm.bday)!==""?` (${wkAge(Fm.bday)}歲)`:""}`:"—"}</span><span>${esc(Fm.nat||"—")}</span><span>${esc(Fm.pos||"—")}</span></div>`; }).join("")}</div>`; }
   if(k==="disc") return A.songs.length?`<table class="wk-tb"><tr><th>歌名</th><th>發行</th><th>一位</th></tr>${A.songs.map(s=>{ const t=idTs(s.id,/^s/); return `<tr><td>${esc(s.title)}</td><td>${t?wkYmd(t):""}</td><td>${A.wins[s.id]||0}</td></tr>`; }).join("")}</table>`:empty;
   if(k==="award"||k==="prize"){ const L=A.songs.filter(s=>A.wins[s.id]); return L.length?`<ul>${L.map(s=>`<li>音樂節目一位：《${esc(s.title)}》${A.wins[s.id]} 次</li>`).join("")}</ul>`:empty; }
-  if((k==="perf"||k==="ov")) return A.cc.length||A.tours.length?`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`:"";
+  if(k==="perf") return A.cc.length||A.tours.length?`<ul>${A.cc.map(c=>`<li>${wkYmd(c.startTs)}　${esc(c.title)}</li>`).join("")}${A.tours.map(t=>`<li>世界巡演「${esc(t.title)}」：${tourStops(t).map(s=>esc(s.city)).join("・")}</li>`).join("")}</ul>`:"";
   if(k==="show"){ const eps=(S.get(VS_KEY,[])||[]).filter(e=>e&&VSHOW[e.show]&&(e.mids||[]).some(x=>mem.includes(x))); return eps.length?`<table class="wk-tb"><tr><th>節目</th><th>結果</th></tr>${eps.map(e=>`<tr><td>${esc(VSHOW[e.show].name)}</td><td>${e.st!=="done"?"播出中":(e.mids||[]).filter(x=>mem.includes(x)).some(x=>((e.res||{}).win||[]).includes(x))?"🏆 冠軍":"出演"}</td></tr>`).join("")}</table>`:empty; }
   if(k==="ad"){ const L=(typeof bzAll==="function"?bzAll():[]).filter(b=>b&&mem.includes(b.mid)); return L.length?`<ul>${L.map(b=>`<li>${esc(b.brand||b.title||"代言")}</li>`).join("")}</ul>`:empty; }
+  if(k==="pics"&&(wkPage(ctx.id).pics||[]).length) return `<div class="wk-pics2">${wkPage(ctx.id).pics.map(p=>`<figure><span style="background-image:url('${esc(p.u)}')"></span>${p.t?`<figcaption>${esc(p.t)}</figcaption>`:""}</figure>`).join("")}</div>`;
   if(k==="pics"){ const ph=[gPhoto(gid),...mem.map(x=>mPhoto(x))].filter(Boolean); return ph.length?`<div class="wk-pics">${ph.map(u=>`<span style="background-image:url('${u}')"></span>`).join("")}</div>`:empty; }
   if(k==="nav") return `<table class="wk-nav" style="--wc:${ctx.col}"><tr><th><a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(ctx.g.name)}</a></th></tr><tr><td>${mem.map(x=>`<a class="wk-ln" data-a="wkGo" data-v="m:${x}">${esc(MEMBERS[x].name)}</a>`).join(" · ")}</td></tr></table>`;
   return ""; }
@@ -16245,11 +16257,11 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const info=`<table class="wk-info2" style="--wc:${col}"><tr><td colspan="2" class="wk-ih2">${head}</td></tr>${person&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
   const SS=wkSecs(ctx), fold=ui.wkFold||{}, toc=[], body=[], empty=[];
   const txt=k=>{ const v=(T[k]||"").trim(); if(!v) return ""; if(k==="tr"||k==="pre") return `<ul>${v.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),[],id)}</li>`).join("")}</ul>`; return `<p>${wkTxt(v,[],id)}</p>`; };
-  const secHtml=(n,k,t,lv)=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||(k==="perf"||k==="ov"))?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
+  const secHtml=(n,k,t,lv)=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||WK_ED.has(k))?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
     toc.push(`<a data-a="wkToK" data-v="${k}" class="lv${lv}"><span class="wk-no">${n}.</span> ${t}</a>`);
     return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}</div></section>`; };
-  let n=0; SS.forEach(([k,t,sub])=>{ if(!wkSecOn(ctx,P,[k,t,sub])){ if(can&&(!WK_AUTO.has(k)||(k==="perf"||k==="ov"))) empty.push([k,t]); (sub||[]).forEach(([k2,t2])=>{ if(can&&(!WK_AUTO.has(k2)||(k2==="perf"||k2==="ov"))) empty.push([k2,t2]); }); return; }
-    n++; body.push(secHtml(n,k,t,1)); let j=0; (sub||[]).forEach(([k2,t2])=>{ if(wkHas(ctx,P,k2)){ j++; body.push(secHtml(`${n}.${j}`,k2,t2,2)); } else if(can&&(!WK_AUTO.has(k2)||(k2==="perf"||k2==="ov"))) empty.push([k2,t2]); }); });
+  let n=0; SS.forEach(([k,t,sub])=>{ if(!wkSecOn(ctx,P,[k,t,sub])){ if(can&&(!WK_AUTO.has(k)||WK_ED.has(k))) empty.push([k,t]); (sub||[]).forEach(([k2,t2])=>{ if(can&&(!WK_AUTO.has(k2)||WK_ED.has(k2))) empty.push([k2,t2]); }); return; }
+    n++; body.push(secHtml(n,k,t,1)); let j=0; (sub||[]).forEach(([k2,t2])=>{ if(wkHas(ctx,P,k2)){ j++; body.push(secHtml(`${n}.${j}`,k2,t2,2)); } else if(can&&(!WK_AUTO.has(k2)||WK_ED.has(k2))) empty.push([k2,t2]); }); });
   const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isM?wkFnStrip(F.pos):isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,wkFnStrip(F.co)].filter(Boolean);
   const H=P.hist||[];
   if(ui.wkJ&&ui.wkJ.id===id){ const k=ui.wkJ.k; ui.wkJ=null; setTimeout(()=>{ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({block:"start"}); },60); }
@@ -16267,7 +16279,9 @@ const wkNtUI=(key,txt,P)=>`<div class="wk-nts" data-for="${key}">${wkNtRows(key,
 function wkSecEditor(id,k,isSolo,P,isM){ const F={...(P.f||{})}, T=wkT(P), nm=k==="info"?"資料框":((isSolo?WKS_S:WKG_S).flatMap(([a,b,s])=>[[a,b],...(s||[])]).find(x=>x[0]===k)||[k,k])[1];
   if(F.bday&&!F.birth&&/^\d{4}-\d{2}-\d{2}$/.test(F.bday)) F.birth=F.bday;
   const fields=isSolo?(isM?[["pos","隊內位置"],...WKS_F]:WKS_F):WKG_F;
-  const body=k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<div class="wk-fld"><label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="80" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>${ty==="date"?"":wkNtUI("f."+f,F[f],P)}</div>`).join("")}</div>
+  const body=k==="mem"?`<div class="wk-upl">${grpMembers(id.slice(2)).map(x=>{ const u=(P.mph||{})[x]; return `<div class="wk-upi"><span style="${u?`background-image:url('${esc(u)}')`:`background:${grad(MEMBERS[x].g||0)}`}"></span><b>${esc(MEMBERS[x].name)}</b><label class="btn btn-soft">${u?"換照片":"上傳照片"}<input type="file" accept="image/*" class="wk-up" data-v="${id}" data-m="${x}" hidden></label></div>`; }).join("")}</div>`
+    :k==="pics"?`<div class="wk-upl">${(P.pics||[]).map((p,i)=>`<div class="wk-upi"><span style="background-image:url('${esc(p.u)}')"></span><label class="field"><input data-pc="${i}" maxlength="40" value="${esc(p.t||"")}" placeholder="輸入文字"></label><button class="wk-del" data-a="wkPicDel" data-v="${id}|${i}" aria-label="刪除">${XI}</button></div>`).join("")}</div><label class="btn btn-soft btn-block">＋ 加照片<input type="file" accept="image/*" class="wk-up" data-v="${id}" data-m="" hidden></label>`
+    :k==="info"?`<p class="wk-tip">這裡寫的是角色的設定，不是玩家本人。</p><div class="wk-ef">${[["kname","韓文名"],...fields].map(([f,l,ty])=>`<div class="wk-fld"><label><span>${l}</span><input data-k="f.${f}" ${ty==="date"?`type="date"`:""} maxlength="80" value="${esc(F[f]||"")}" placeholder="輸入文字"></label>${ty==="date"?"":wkNtUI("f."+f,F[f],P)}</div>`).join("")}</div>
       <div class="wk-up2">${isM?"":`<label class="btn btn-soft">${P.logo?"換 Logo":"上傳 Logo"}<input type="file" accept="image/*" id="wkLogo" data-v="${id}" hidden></label>`}<label class="btn btn-soft">${P.photo?"換大張照片":"上傳大張照片"}<input type="file" accept="image/*" id="wkPhoto" data-v="${id}" hidden></label></div>`
     :`${k==="ov"?`<label class="wk-ea"><span>引言（可不填）</span><input data-k="s.ovq" maxlength="80" value="${esc(T.ovq||"")}" placeholder="輸入文字"></label>`:""}<label class="wk-ea"><span>${k==="tr"||k==="pre"?"一行一條":"內容"}</span><textarea data-k="s.${k}" rows="8" maxlength="4000" placeholder="輸入文字">${esc(T[k]||"")}</textarea></label>${wkNtUI("s."+k,T[k],P)}`;
   return `<article class="wk-doc wk-ed"><div class="wk-th"><h1>${esc(wkName(id))} <small>(編輯：${nm})</small></h1></div><p class="wk-tip">直接打字就好，提到其他藝人的名字會自動變成連結。</p>${body}
@@ -16276,6 +16290,7 @@ function wkSaveS(id){ if(!wkCanEdit(id)) return; const all=wkAll(), P={...(all[i
   document.querySelectorAll(".wk-ed [data-k]").forEach(el=>{ const [b,k]=el.dataset.k.split("."), v=el.value.trim(); vals.push(v); (b==="f"?F:T)[k]=v; if(!v) delete (b==="f"?F:T)[k]; });
   const Nn={...(P.n||{})}; document.querySelectorAll(".wk-ed .wk-nts").forEach(b=>{ const key=b.dataset.for, arr=[]; b.querySelectorAll("[data-nk]").forEach(x=>{ arr[+x.dataset.i-1]=x.value.trim(); vals.push(x.value.trim()); }); if(arr.some(Boolean)) Nn[key]=[...arr].map(x=>x||""); else delete Nn[key]; });
   if(Object.keys(Nn).length) P.n=Nn; else delete P.n;
+  if(P.pics){ P.pics=P.pics.map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); }
   if(!isAdminAcct()&&vals.some(x=>x&&banBlock(x))) return;
   const len=o=>JSON.stringify([o.f||{},o.s||{}]).length, dl=len({f:F,s:T})-len(P); delete P.ov; delete P.hi; delete P.tr; if(F.birth) delete F.bday;
   Object.assign(P,{f:F,s:T,ts:Date.now(),by:myEmail()}); P.hist=[...(P.hist||[]),{ts:Date.now(),n:ME.name||myEmail(),d:dl}].slice(-20);
@@ -16317,16 +16332,23 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="wkFn"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); const t=WKFN[+v-1]; if(!t) return; const r=e.target.getBoundingClientRect(), d=document.createElement("div"); d.className="wk-fnpop";
     d.innerHTML=`<p><b>[${v}]</b> ${wkTxt(t,[],"")}</p><button data-a="wkFnX">關閉</button>`; document.querySelector("main.wk").appendChild(d);   /* 跟 Namuwiki 一樣：從被點的字上方跳出 */
-    const h=d.offsetHeight; if(r.top-h-8>60) d.style.bottom=(innerHeight-r.top+8)+"px"; else d.style.top=(r.bottom+8)+"px"; }
+    const h=d.offsetHeight, gap=Math.min(110,Math.max(16,r.top-h-70)); if(r.top-h-gap>60) d.style.bottom=(innerHeight-r.top+gap)+"px"; else d.style.top=(r.bottom+16)+"px"; }
   else if(a==="wkFnX"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); }
   else if(a==="wkFnAdd") wkFnAdd(v);
+  else if(a==="wkPicDel"){ const [id,i]=v.split("|"); ask("要刪掉這張照片嗎？",()=>{ const all=wkAll(), P={...(all[id]||{})}; P.pics=(P.pics||[]).filter((x,j)=>j!==+i); if(!P.pics.length) delete P.pics; all[id]=P; S.set(WK_KEY,all); render(); ui.wkSnap=wkFormVal(); },{ok:"刪除"}); }
+  else if(a==="wkShX"){ const sh=document.querySelector(".wk-sheet"); if(sh) sh.remove(); }
+  else if(a==="wkShare"){ const u=location.href; (navigator.clipboard?navigator.clipboard.writeText(u):Promise.reject()).then(()=>toast("連結複製好了")).catch(()=>toast("複製不了")); }
   else if(a==="wkTocGo"){ const old=document.querySelector(".wk-tocpop"); if(old){ old.remove(); return; } const t=document.getElementById("wkToc"); if(!t) return;   /* 像 Namuwiki：浮出目錄，點一項就跳過去 */
     const d=document.createElement("div"); d.className="wk-tocpop"; d.innerHTML=`<b>目錄</b>${[...t.querySelectorAll("a")].map(x=>x.outerHTML).join("")}`; document.querySelector("main.wk").appendChild(d);
     const r=(e&&e.target&&e.target.closest('[data-a="wkTocGo"]')||document.querySelector('[data-a="wkTocGo"]')).getBoundingClientRect(); d.style.right=(innerWidth-r.left+8)+"px"; d.style.bottom=(innerHeight-r.top+8)+"px"; }
   else if(a==="wkTop") window.scrollTo({top:0,behavior:"smooth"});
   else if(a==="wkBot") window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
   else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; location.hash=wkHash(L[Math.floor(Math.random()*L.length)]); window.scrollTo(0,0); } }
-  else if(a==="wkMenu") iosSheet([["SKpedia 首頁","wkGo",'data-v=""'],["回到 "+(route().role==="artist"?"FOC":"FEST"),"wkExit",""]]);
+  else if(a==="wkMenu"){ const old=document.querySelector(".wk-sheet"); if(old){ old.remove(); return; } const id=route().id, ok=id&&wkOk(id), d=document.createElement("div"); d.className="wk-sheet";
+    d.innerHTML=`<div class="wk-shb"><i></i><div class="wk-shtop"><button data-a="wkRand" aria-label="隨機文件">⤮</button><label><input id="wkQ2" placeholder="SKpedia 搜尋" autocomplete="off"></label><button data-a="wkShX" aria-label="收起">⌄</button></div>
+      <div class="wk-shchips"><a data-a="wkGo" data-v="">首頁・最近修改</a><a data-a="wkExit">回到 ${route().role==="artist"?"FOC":"FEST"}</a></div>
+      ${ok?`<div class="wk-shcard"><b>${esc(wkName(id))}</b><div>${wkCanEdit(id)?`<a data-a="wkEditS" data-v="${id}#info">編輯</a>`:""}<a data-a="wkHist" data-v="${id}">歷史</a><a data-a="wkShare">複製連結</a></div></div>`:""}</div>`;
+    document.querySelector("main.wk").appendChild(d); }
   else if(a==="wkExit"){ layer.innerHTML=""; location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"; }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
 document.addEventListener("keydown",e=>{ if(e.target.id!=="wkQ2"||e.key!=="Enter") return; e.preventDefault(); ui.wkQ=e.target.value; location.hash=wkHash(""); });
@@ -16338,6 +16360,7 @@ function wkLeave(){ const go=()=>{ ui.wkEd=null; ui.wkSnap=null; render(); windo
   if(ui.wkSnap!=null&&wkFormVal()!==ui.wkSnap) ask("還沒儲存，確定要離開嗎？",go,{title:"還沒儲存",ok:"離開"}); else go(); }
 document.addEventListener("click",e=>{ if(!ui.wkEd||!document.querySelector(".wk-ed")) return; const b=e.target.closest('[data-a="back"]'); if(!b||layer.contains(b)) return; e.stopPropagation(); e.preventDefault(); wkLeave(); },true);
 
+document.addEventListener("click",e=>{ const sh=document.querySelector(".wk-sheet"); if(sh&&(!e.target.closest(".wk-shb")||e.target.closest(".wk-shchips a,.wk-shcard a,[data-a=wkRand]"))&&!e.target.closest('[data-a="wkMenu"]')) setTimeout(()=>sh.remove(),0); },true);
 document.addEventListener("click",e=>{ const f=document.querySelector(".wk-fnpop"); if(f&&!e.target.closest(".wk-fnpop")&&!e.target.closest('[data-a="wkFn"]')) f.remove(); },true);
 document.addEventListener("click",e=>{ const p=document.querySelector(".wk-tocpop"); if(p&&!e.target.closest('[data-a="wkTocGo"]')) setTimeout(()=>p.remove(),0); },true);
 
@@ -16355,6 +16378,12 @@ function wkFnAdd(key){ const el=document.querySelector(`.wk-ed [data-k="${key}"]
   el._s=pos+mark.length; wkNtSync(el,true); const inp=document.querySelector(`.wk-nts[data-for="${key}"] [data-i="${before}"]`); if(inp) inp.focus(); }
 document.addEventListener("input",e=>{ const t=e.target; if(t.matches&&t.matches(".wk-ed [data-k]")&&document.querySelector(`.wk-nts[data-for="${t.dataset.k}"]`)) wkNtSync(t,false); });
 document.addEventListener("change",e=>{ const t=e.target; if(t.matches&&t.matches(".wk-ed [data-k]")&&document.querySelector(`.wk-nts[data-for="${t.dataset.k}"]`)) wkNtSync(t,true); });
+
+/* 成員照、宣傳照：選了就上傳（R2），說明字先暫存 */
+document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!t.classList.contains("wk-up")) return; const f=t.files&&t.files[0], id=t.dataset.v, m=t.dataset.m; t.value=""; if(!f||!wkCanEdit(id)) return;
+  try{ const {blob}=await prepPhoto(f); let url=await hbImgUrl("wk_p_"+Date.now().toString(36),blob); if(!url) url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
+    const all=wkAll(), P={...(all[id]||{})}; if(m) P.mph={...(P.mph||{}),[m]:url}; else { const pics=(P.pics||[]).map((x,i)=>{ const el=document.querySelector(`.wk-ed [data-pc="${i}"]`); return el?{...x,t:el.value.trim()}:x; }); P.pics=[...pics,{u:url,t:""}]; }
+    P.ts=Date.now(); all[id]=P; S.set(WK_KEY,all); toast("照片放好了"); const y=window.scrollY; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,y); }catch(err){ toast("這張圖片讀不出來"); } });
 
 </script>
 </body>
