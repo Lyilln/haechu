@@ -5293,6 +5293,7 @@ main.wk{padding-bottom:110px}
 .wk-cols{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:4px 0 14px;font-size:13px}.wk-cols>span:first-child{width:100%;font-weight:700}
 .wk-col{display:inline-flex;align-items:center;gap:2px}.wk-col input{width:44px;height:34px;padding:0;border:1px solid var(--wkb);border-radius:8px;background:none}.wk-col button{border:0;background:none;color:var(--wkt);width:24px;height:24px;display:grid;place-items:center}.wk-col svg{width:13px;height:13px}
 .wk-sug{position:fixed;left:16px;right:16px;z-index:63;background:var(--wkbg);color:var(--wkt);border:1px solid var(--wkb);border-radius:14px;box-shadow:0 8px 28px rgba(0,0,0,.35);max-height:50vh;overflow:auto;padding:6px 0}.wk-sug a{display:flex;align-items:baseline;gap:8px;padding:11px 16px;cursor:pointer;font-size:15px}.wk-sug a+a{border-top:1px solid var(--wkb)}.wk-sug small{opacity:.6;font-size:12.5px}.wk-sug p{margin:0;padding:12px 16px;opacity:.7;font-size:14px}
+.wkg-hero figcaption a{color:inherit;cursor:pointer}
 
 </style>
 </head>
@@ -5711,7 +5712,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028081012";
+const BUILD="20261028081714";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16245,14 +16246,14 @@ const wkFnStrip=v=>String(v||"").replace(/\u0002[^\u0003]*\u0003/g,"");
 let WKFN=[];
 function wkFnDone(html,P){ WKFN=[]; const N=P.n||{}; html=html.replace(/\u0002([^|\u0003]+)\|(\d+)\u0003/g,(m,k,i)=>{ const t=(N[k]||[])[i-1]; if(!t) return ""; WKFN.push(t); const n=WKFN.length; return `<sup class="wk-fn" data-a="wkFn" data-v="${n}">[${n}]</sup>`; });
   return WKFN.length?html.replace(/<\/article>$/,`<div class="wk-fns">${WKFN.map((t,i)=>`<p><a data-a="wkFn" data-v="${i+1}">[${i+1}]</a> ${wkTxt(t,[],"")}</p>`).join("")}</div></article>`):html; }
-function wkViewG(id){ const ctx=wkCtx(id), {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), can=wkCanEdit(id);
+function wkViewG(id){ const ctx=wkCtx(id); if(ctx.isM){ const gp=wkPage("g:"+ctx.gid).photo||gPhoto(ctx.gid); if(gp){ ctx.hsrc=gp; if(WKHC[gp]) ctx.col=WKHC[gp][0]; } } const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, P=wkPage(id), can=wkCanEdit(id);
   if(ui.wkEd&&ui.wkEd.startsWith(id+"#")&&can) return wkSecEditor(id,ui.wkEd.slice(id.length+1),person,P,isM);
   return wkFnDone(wkViewG2(id,ctx,P,can),P); }
 function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=ctx, F=wkFnTok(P.f,"f"), T=wkFnTok(wkT(P),"s");
   const cs=wkCols(gid,col), sol=isSolo?`;--wth:${cs[0]};--wtt:${cs[1]||wkInk(cs[0])};--wc:${cs[1]||cs[0]}`:"";
   const name=isM?MEMBERS[key].name:g.name, lastSong=A.songs[A.songs.length-1], firstSong=A.songs[0];
   const photo=P.photo||(person?mPhoto(key):gPhoto(gid));
-  const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption>${mem.map(x=>esc(MEMBERS[x].name)).join(" · ")}${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
+  const hero=!person&&photo?`<figure class="wkg-hero" data-src="${esc(photo)}" style="--wc:${col}${WKHC[photo]?`;--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}"><span style="background-image:url('${esc(photo)}')"></span><figcaption><span>${mem.map(x=>`<a data-a="wkGo" data-v="m:${x}">${esc((wkPage("m:"+x).f||{}).kname||MEMBERS[x].name)}</a>`).join(" · ")}</span>${lastSong?`<small>《${esc(lastSong.title)}》</small>`:""}</figcaption></figure>`:"";
   const row=(l,v)=>v?`<tr><th>${l}</th><td>${v}</td></tr>`:"", d=A.debut, dd=d?wkDays(d):0;
   const debutRow=d?`${wkYmd(d)}${firstSong?` <span class="wk-chip f">${esc(firstSong.title)}</span>`:""}<br><small>（出道第 +${dd} 天，${Math.floor(dd/365)} 週年）</small>`:"";
   const linkRow=ui.wkLk===id?`<a class="wk-ln" data-a="wkCm" data-v="${gid}">社群頁</a> · <a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 收合 ]</a>`:`<a class="wk-ln" data-a="wkLinks" data-v="${id}">[ 展開・收合 ]</a>`;
@@ -16271,7 +16272,7 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isM?wkFnStrip(F.pos):isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,wkFnStrip(F.co)].filter(Boolean);
   const H=P.hist||[];
   if(ui.wkJ&&ui.wkJ.id===id){ const k=ui.wkJ.k; ui.wkJ=null; setTimeout(()=>{ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({block:"start"}); },60); }
-  return `<article class="wk-doc wk-g">
+  return `<article class="wk-doc wk-g"${ctx.hsrc?` data-hsrc="${esc(ctx.hsrc)}"`:""}>
     <h1 class="wk-t">${esc(name)}</h1><p class="wk-upd2">最近修改時間：${P.ts?`${ymd(P.ts)} ${timeHM(P.ts)}`:"—"}<a data-a="wkHist" data-v="${id}">歷史</a></p>
     <div class="wk-cat2 ${ui.wkCat===id?"open":""}"><span>分類：${cats.map(c=>`<a class="wk-ln">${esc(c)}</a>`).join(" | ")}</span><button data-a="wkCat" data-v="${id}">${ui.wkCat===id?"收合":"更多"}</button></div>
     ${ui.wkH===id?`<div class="wk-hist"><b>修改紀錄</b>${H.length?H.slice().reverse().map(h=>`<p><span>${ymd(h.ts)} ${timeHM(h.ts)}</span> ${esc(h.n||"")} <em class="${h.d>=0?"p":"m"}">(${h.d>=0?"+":""}${h.d})</em></p>`).join(""):`<p>還沒有修改紀錄</p>`}</div>`:""}
@@ -16328,11 +16329,12 @@ const wkDark=h=>{ const n=parseInt(h.slice(1),16), f=x=>Math.round(x*.72).toStri
 const wkPillCss=c=>{ const bg=c.length>1?c:[wkDark(c[0])]; return `background:${bg.length>1?`linear-gradient(90deg,${bg.join(",")})`:bg[0]};color:${wkInk(bg[Math.floor(bg.length/2)])}`; };
 /* 團體照那一欄：從照片抓主色（像 Namuwiki 用回歸封面的顏色）；抓不到就用團代表色 */
 const WKHC={};
-function wkHeroCol(){ const f=document.querySelector(".wkg-hero[data-src]"); if(!f) return; const u=f.dataset.src; if(WKHC[u]!==undefined) return;
+function wkHeroCol(){ const f=document.querySelector(".wkg-hero[data-src]"), m=document.querySelector("[data-hsrc]"); if(!f&&!m) return; const u=f?f.dataset.src:m.dataset.hsrc; if(WKHC[u]!==undefined) return;
   WKHC[u]=null; const im=new Image(); im.crossOrigin="anonymous"; im.onload=()=>{ try{ const c=document.createElement("canvas"); c.width=c.height=24; const x=c.getContext("2d"); x.drawImage(im,0,0,24,24); const d=x.getImageData(0,0,24,24).data; let r=0,g=0,b=0,n=0;
     for(let i=0;i<d.length;i+=4){ const R=d[i],G=d[i+1],B=d[i+2], mx=Math.max(R,G,B), mn=Math.min(R,G,B); const w=1+(mx-mn)/32; r+=R*w; g+=G*w; b+=B*w; n+=w; }   /* 鮮豔的像素比重高 */
     r/=n; g/=n; b/=n; const L=(.299*r+.587*g+.114*b)/255; WKHC[u]=[`rgb(${r|0},${g|0},${b|0})`,L>.6?"#1D1A24":"#fff"];
-    document.querySelectorAll(`.wkg-hero[data-src="${CSS.escape(u)}"]`).forEach(el=>{ el.style.setProperty("--hc",WKHC[u][0]); el.style.setProperty("--hct",WKHC[u][1]); }); }catch(e){} }; im.src=u; }
+    document.querySelectorAll(`.wkg-hero[data-src="${CSS.escape(u)}"]`).forEach(el=>{ el.style.setProperty("--hc",WKHC[u][0]); el.style.setProperty("--hct",WKHC[u][1]); });
+    if(document.querySelector(`[data-hsrc="${CSS.escape(u)}"]`)){ const y=scrollY; render(); scrollTo(0,y); } }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
 function viewWiki(id){ setTimeout(wkHeroCol,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; location.hash=wkHash(v); window.scrollTo(0,0); }
