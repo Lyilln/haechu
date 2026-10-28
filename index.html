@@ -5730,7 +5730,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261028131337";
+const BUILD="20261028131736";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -10604,10 +10604,13 @@ function bgmAdd(vid){ if(ui.bgmBusy) return; const inp=document.createElement("i
       if(!vid&&!BGM_OK.test(f.name||"")){ bad++; continue; } if(f.size>(vid?150:20)*1024*1024){ big++; continue; }
       ui.bgmBusy=vid?"從影片取出聲音…":"上傳中…"; bgmRefresh();
       try{ let blob=f, dur;
-        if(vid){ const c=audioCtx(); const buf=await decodeAu(c,await f.arrayBuffer()); blob=await compactWav(buf); dur=buf.duration; } else dur=await audioDur(f);   /* 影片只留聲音（單聲道，小很多） */
+        if(vid){ let buf=null; try{ const c=audioCtx(); buf=await Promise.race([decodeAu(c,await f.arrayBuffer()),new Promise((_,rj)=>setTimeout(()=>rj(new Error("timeout")),20000))]); }catch(e){}
+          if(buf){ blob=await compactWav(buf); dur=buf.duration; }
+          else { if(f.size>45*1024*1024){ big++; continue; } dur=await mediaDur(f); }   /* iPhone 的 .MOV 常常讀不出聲音：改存影片本身，播放時一樣只出聲音 */
+        } else dur=await audioDur(f);   /* 影片只留聲音（單聲道，小很多） */
         if(!dur){ bad++; continue; } const id="bg"+Date.now().toString(36)+Math.random().toString(36).slice(2,5); await MDB.put(id,blob);
         const A2=S.get(K.bgm,{}); A2[mid]=[...(A2[mid]||[]),{mid:id,name:(f.name||"").replace(/\.[^.]+$/,"").slice(0,40)||"音樂",dur}]; S.set(K.bgm,A2); }catch(e){ bad++; } }
-    ui.bgmBusy=null; bgmRefresh(); if(bad) toast(vid?"這支影片的聲音讀不出來":"請換成 MP3 或 M4A 檔"); else if(big) toast("檔案太大了，請小於 20MB"); };
+    ui.bgmBusy=null; bgmRefresh(); if(bad) toast(vid?"這支影片的聲音讀不出來":"請換成 MP3 或 M4A 檔"); else if(big) toast(vid?"這支影片太大了，請先在「照片」把前後剪短（45MB 以下）":"檔案太大了，請小於 20MB"); };
   pickClick(inp); }
 const BG={a:null,on:false,lid:null,idx:-1,url:{}};
 function bgmIsOn(l,host){ return host?!l.bgmOff:(BG.on&&BG.lid===l.id); }
