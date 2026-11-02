@@ -3307,7 +3307,11 @@ html[data-theme] .cele{background:rgba(28,26,32,.86)!important;color:#fff!import
 .vd-new{display:flex;flex-direction:column;gap:8px;margin:10px 0 14px}
 .vd-new select{flex:1;min-width:0;border:0;background:transparent;font:inherit;color:var(--ink)}
 .vd-r{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
-.vd-r .ap-cell{flex:0 0 96px}.vd-r>span{flex:1;min-width:0;display:flex;flex-direction:column}.vd-r b{font-size:13.5px}.vd-r small{font-size:11.5px;color:var(--ink-3)}
+.vd-r .ap-cell{flex:0 0 96px}.vd-r>span{flex:1;min-width:0;display:flex;flex-direction:column}.vd-r b{font-size:13.5px}.vd-r small{font-size:11.5px;color:var(--ink-3)}.bgc-ov{position:fixed!important;inset:0;z-index:80}
+/* 載入中圈圈：一定會轉、顏色跟著主題 */
+.t-spin{border-color:color-mix(in srgb,var(--violet,#A47BFF) 22%,transparent)!important;border-top-color:var(--violet,#A47BFF)!important;animation:tSpin .9s linear infinite!important}
+@keyframes tSpin{to{transform:rotate(360deg)}}
+
 /* ===== 打歌排行（簡化版） ===== */
 .mu2{display:flex;flex-direction:column;gap:12px}
 .mu2-wk{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:var(--s1);border:1px solid var(--line)}
@@ -5766,7 +5770,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102112955";
+const BUILD="20261102113147";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9524,6 +9528,11 @@ function viewTieBgColor(member){ const st=tieSet(member), pk=ui.bgPick, tab=ui.b
     <section class="bgc-sh"><nav><button class="${tab==="color"?"on":""}" data-a="bgcTab" data-v="color">顏色</button><button class="${tab==="pattern"?"on":""}" data-a="bgcTab" data-v="pattern">圖案</button></nav>
       <div class="bgc-g">${tab==="color"?BG_COLORS.map(c=>`<button class="${pk&&pk.mode==="color"&&pk.v===c?"on":""}" style="background:${c}" data-a="bgcPick" data-mode="color" data-v="${c}" aria-label="顏色"></button>`).join("")
         :Array.from({length:12},(_,i)=>i+1).map(n=>`<button class="tp-${n} ${pk&&pk.mode==="pattern"&&+pk.v===n?"on":""}" data-a="bgcPick" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div></section></div>`; }
+/* 換照片背景：裁完先看預覽（跟換顏色一樣），按「確認」才換 */
+function openBgPreview(img,okAct,m){ ui.bgPv=img;
+  setLayer(`<div class="bgc bgc-ov"><header class="tpk-h"><button class="t-ib" data-a="tCloseLayer" aria-label="返回">${TI.back}</button><b>變更背景</b><button class="tpk-ok on" data-a="${okAct}" data-m="${esc(m||"")}">確認</button></header>
+    <div class="bgc-pv">${tieBgLayer({bgMode:"photo",bgImage:img},"bgc-bg")}<div class="bgc-me"><span class="bgc-t">${timeHM(Date.now())}</span><span class="bgc-b me">這個怎麼樣??</span></div>
+      <div class="bgc-ot">${defAv("sm")}<div><b>${esc(APP_NAME)}</b><span class="bgc-row"><span class="bgc-b">超適合的!</span><span class="bgc-t">1<br>${timeHM(Date.now())}</span></span></div></div></div></div>`); }
 /* 長按藝人的訊息：系統選單 */
 function openMsgSheet(id){ const w=getWhispers().find(v=>v.id===id); if(!w) return; ui.copyText=w.ko||w.text; const m=route().m;
   if(w.from!=="artist"){ iosSheet([["複製","tCopy"]]); return; }
@@ -9545,7 +9554,7 @@ function viewTieSettings(member){
       ${row("tLang","翻譯結果語言",TR_LANGS[st.trLang||"zh"],{sub:"對話框中超過 1,000 字以上的對話不支援翻譯功能。"})}
       <div class="bs-r"><span class="bs-l"><b>翻譯軟體</b><small>設置翻譯軟體後，共同適用於設置相同目標翻譯語言的 ${WHISPER_NAME} 聊天室。</small></span><em>${trEngine()}</em></div>
       <hr>
-      ${row("tHistory","載入歷史對話","")}
+      ${(()=>{ const rec=subs()[member]; return rec&&((rec.periods||[]).length>1)?row("tHistory","載入歷史對話",""):""; })()}
     </main>${isActive(member)?"":`<button class="t-leave-b" data-a="tLeave" data-m="${member}">離開聊天室</button>`}</div>`;
 }
 function viewTieEdit(member,which){
@@ -9567,7 +9576,7 @@ function viewTieBg(member){
 function openTieBgMenu(member){
   const st=tieSet(member), tab=ui.tieBgTab||"color";
   setLayer(`<div class="t-sheet-w" data-a="tCloseLayer"><div class="t-sheet" role="dialog" aria-label="變更背景"><div class="grab"></div>
-    <button class="t-sb" data-a="tPickAlbum">從相簿中選擇照片</button><button class="t-sb" data-a="tPickCam">相機拍照</button>
+    <button class="t-sb" data-a="tPickAlbum">選擇照片</button>
     <div class="t-tabs"><button class="${tab==="color"?"on":""}" data-a="tBgTab" data-v="color" data-m="${member}">顏色</button><button class="${tab==="pattern"?"on":""}" data-a="tBgTab" data-v="pattern" data-m="${member}">圖案</button></div>
     <div class="t-swg">${tab==="color"?`<button class="t-swc def ${st.bgMode==="default"||st._art?"sel":""}" data-a="tBgSet" data-m="${member}" data-mode="default">預設</button>`+TIE_COLORS.map(c=>`<button class="t-swc ${!st._art&&st.bgMode==="color"&&st.bgColor===c?"sel":""}" style="background:${c}" data-a="tBgSet" data-m="${member}" data-mode="color" data-v="${c}" aria-label="顏色 ${c}"></button>`).join("")
       :[1,2,3,4,5,6,7,8].map(n=>`<button class="t-swc tp-${n} ${!st._art&&st.bgMode==="pattern"&&st.bgPattern===n?"sel":""}" data-a="tBgSet" data-m="${member}" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div>
@@ -9586,7 +9595,7 @@ function viewTieArtist(mid){
     const sh=fanShown(w,mid);
     return sep+`<div class="t-art"><span class="fan-av">${mascot("msg:"+w.id)}</span>
       <div class="t-art-c"><div class="t-art-n"><span class="from-fan">FROM FAN</span>${sh.member?(sh.name?`<b class="a-nick">${esc(sh.name)}</b>`:`<span class="a-dia" title="Membership">💎</span>`):""}${w.from==="me"&&isAdminAcct()&&!isUni()?`<span class="t-badge soft">示範粉絲</span>`:""}</div>
-      <div class="t-bw has-arw"><div class="t-b" data-lp="${w.id}">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:""}</div><button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-meta2"><span class="t-time">${timeHM(w.ts)}</span></span></div></div></div>`;
+      <div class="t-bw has-arw"><div class="t-b" data-lp="${w.id}">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:(!isZhText(w.text)&&anyLang(w.text)?(()=>{ const k="tiefan:"+w.id, tr=cmTrGet(k); if(!tr) setTimeout(()=>trNeedT(k,w.text),0); return `<div class="t-tr" data-trk2="${esc(k)}"${tr?"":" hidden"}>${esc(tr||"")}</div>`; })():"")}</div><button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-meta2"><span class="t-time">${timeHM(w.ts)}</span></span></div></div></div>`;
   }).join("");
   const draft=ui.wDraft||"", Q=tieQ(mid);
   /* 待發送的訊息（照 Bubble：先排好，預覽後一次送出） */
@@ -9618,7 +9627,7 @@ function eventCard(e,{artist=false,canDelete=false}={}){
 }/* 藝人設定 TIE 聊天室背景：沒自己換過背景的粉絲會跟著變 */
 function openArtTieBg(){ const mid=session().member, ab=artTieBg(mid), tab=ui.tieBgTab||"color";
   setLayer(`<div class="t-sheet-w" data-a="tCloseLayer"><div class="t-sheet" role="dialog" aria-label="聊天室背景"><div class="grab"></div>
-    <button class="t-sb" data-a="aBgAlbum">從相簿中選擇照片</button>
+    <button class="t-sb" data-a="aBgAlbum">選擇照片</button>
     <div class="t-tabs"><button class="${tab==="color"?"on":""}" data-a="aBgTab" data-v="color">顏色</button><button class="${tab==="pattern"?"on":""}" data-a="aBgTab" data-v="pattern">圖案</button></div>
     <div class="t-swg">${tab==="color"?`<button class="t-swc def ${!ab?"sel":""}" data-a="aBgSet" data-mode="default">預設</button>`+TIE_COLORS.map(c=>`<button class="t-swc ${ab&&ab.bgMode==="color"&&ab.bgColor===c?"sel":""}" style="background:${c}" data-a="aBgSet" data-mode="color" data-v="${c}" aria-label="顏色 ${c}"></button>`).join("")
       :[1,2,3,4,5,6,7,8].map(n=>`<button class="t-swc tp-${n} ${ab&&ab.bgMode==="pattern"&&ab.bgPattern===n?"sel":""}" data-a="aBgSet" data-mode="pattern" data-v="${n}" aria-label="圖案 ${n}"></button>`).join("")}</div>
@@ -11654,7 +11663,7 @@ document.addEventListener("change",async e=>{
   const rd=new FileReader(); rd.onload=()=>{ const img=new Image(); img.onload=()=>{
     const k=Math.min(1,900/Math.max(img.width,img.height)), c=document.createElement("canvas");
     c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-    saveTieSet(member,{bgMode:"photo",bgImage:c.toDataURL("image/jpeg",.8)}); layer.innerHTML=""; render(); toast("已換上新背景"); };
+    openBgPreview(c.toDataURL("image/jpeg",.8),"tBgPvOk",member); };
     img.src=rd.result; }; rd.readAsDataURL(f);
 });
 /* TIE 傳照片：先看原圖，想裁再按「裁剪」 */
@@ -12626,7 +12635,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "tEditSave": { const v=(ui.tieEditVal||"").trim(); if(!v){ toast("名稱不能空白"); break; } if(nameBlock(v)) break;
       saveTieSet(t.dataset.m,t.dataset.w==="name"?{chatName:v}:{nickname:v}); ui.tieEditVal=null; navBack(); toast("已儲存"); break; }
     case "tBgMenu": { const m2=t.dataset.m; if(!document.getElementById("tbgAlbum")){ const d=document.createElement("div"); d.innerHTML=`<input type="file" id="tbgAlbum" accept="image/*" hidden data-m="${m2}"><input type="file" id="tbgCam" accept="image/*" capture="environment" hidden data-m="${m2}">`; root.querySelector(".app").appendChild(d); }
-      iosSheet([["從相簿中選擇照片","tPickAlbum"],["相機攝影","tPickCam"],["變更背景顏色","tBgColor",`data-m="${m2}"`]]); break; }
+      iosSheet([["選擇照片","tPickAlbum"],["變更背景顏色","tBgColor",`data-m="${m2}"`]]); break; }
     case "tBgColor": layer.innerHTML=""; ui.bgPick=null; ui.bgcTab="color"; location.hash="#/fan/chat?m="+t.dataset.m+"&p=bgc"; break;
     case "bgcTab": ui.bgcTab=t.dataset.v; render(); break;
     case "bgcPick": ui.bgPick={mode:t.dataset.mode,v:t.dataset.v}; render(); break;
@@ -12701,9 +12710,11 @@ function clickTie(a,t,e,r){ switch(a){
       inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:cropPhone(),max:1400}); if(!f) return;
         const rd=new FileReader(); rd.onload=()=>{ const img=new Image(); img.onload=()=>{ const k=Math.min(1,900/Math.max(img.width,img.height)), c=document.createElement("canvas");
           c.width=Math.round(img.width*k); c.height=Math.round(img.height*k); c.getContext("2d").drawImage(img,0,0,c.width,c.height);
-          const A=S.get(K.tieArtBg,{})||{}; A[session().member]={bgMode:"photo",bgImage:c.toDataURL("image/jpeg",.78)}; S.set(K.tieArtBg,A); layer.innerHTML=""; render(); toast("已變更聊天室背景"); }; img.src=rd.result; }; rd.readAsDataURL(f); };
+          openBgPreview(c.toDataURL("image/jpeg",.78),"aBgPvOk"); }; img.src=rd.result; }; rd.readAsDataURL(f); };
       pickClick(inp); break; }
     case "tPickAlbum": document.getElementById("tbgAlbum").click(); break;
+    case "tBgPvOk": { if(ui.bgPv) saveTieSet(t.dataset.m,{bgMode:"photo",bgImage:ui.bgPv}); ui.bgPv=null; layer.innerHTML=""; render(); toast("已換上新背景"); break; }
+    case "aBgPvOk": { if(ui.bgPv){ const A=S.get(K.tieArtBg,{})||{}; A[session().member]={bgMode:"photo",bgImage:ui.bgPv}; S.set(K.tieArtBg,A); } ui.bgPv=null; layer.innerHTML=""; render(); toast("已變更聊天室背景"); break; }
     case "tPickCam": document.getElementById("tbgCam").click(); break;
     case "tBadge": { const m2=t.dataset.m, st=tieSet(m2);
       iosAlert(`ARTIST 徽章設置為 OFF 時，${WHISPER_NAME} 對話窗內不顯示 ARTIST 徽章。`,"",`<button data-a="tBadgeSet" data-m="${m2}" data-v="0">OFF</button><button data-a="tBadgeSet" data-m="${m2}" data-v="1">ON</button>`); break; }
