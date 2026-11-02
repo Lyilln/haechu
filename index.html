@@ -4559,6 +4559,12 @@ html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 5
 .pd-jump svg{width:20px;height:20px}
 .pd-sh .pd-sav+i{margin-left:6px!important}
 .dl-foot .mr-send{display:grid!important;place-items:center;width:40px;height:40px;padding:0!important;margin:0}.dl-foot .mr-send svg{display:block;margin:0}.dl-foot .cm-in{padding:0 6px 0 20px!important}
+/* 直播大卡：高度跟著內容（回覆、藝人的話、翻譯都看得到），太長就在卡片裡捲 */
+.dl .sp-card{height:auto!important;min-height:140px;max-height:min(46vh,360px);overflow-y:auto!important;overscroll-behavior:contain}
+.dl .sp-t,.dl .sp-t.has-tr,.dl .sp-tr,.dl .sp-duo .sp-t,.dl .sp-duo .sp-t.has-tr,.dl .sp-duo .sp-tr{display:block!important;-webkit-line-clamp:unset!important;overflow:visible!important;max-height:none!important;flex:none!important}
+.dl .sp-rep{white-space:normal!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:none}
+.dl .sp-duo .sp-card{height:auto!important;min-height:110px;max-height:min(30vh,240px)}
+.tk .tk-tr{display:block;margin-top:2px;font-size:.82em;opacity:.75;font-weight:500}.tk .tk-tr[hidden]{display:none}
 
 /* ===== SNS 影片 ===== */
 video.sn-img{background:#000}
@@ -5760,7 +5766,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102112722";
+const BUILD="20261102112955";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -8646,7 +8652,9 @@ function trFlush(){ const ks=[...trQ.keys()].slice(0,40), tx=ks.map(k=>{ const t
   translateMany(tx,"zh").then(out=>{ const all={...(S.get(K.cmTr,{})||{})}; let ch=false; ks.forEach((k,i)=>{ const t=out&&String(out[i]||"").trim(); if(t&&t!==String(ui.trSrc[k]&&ui.trSrc[k].text||"").trim()){ all[k]=t; ch=true; } });
     if(ch){ const keys=Object.keys(all); if(keys.length>3000) keys.slice(0,keys.length-3000).forEach(x=>delete all[x]); try{ S.set(K.cmTr,all); }catch(e){} ks.forEach(trPaint); } })
   .catch(()=>{}).finally(()=>{ ks.forEach(k=>trBusyK.delete(k)); if(trQ.size) trQT=setTimeout(trFlush,200); }); }
-function trPaint(k){ const s=ui.trSrc[k]; if(!s) return; document.querySelectorAll(`[data-trk="${CSS.escape(k)}"]`).forEach(el=>{ const nx=el.nextElementSibling; if(nx&&nx.classList.contains("pt-orig")&&nx.dataset.k===k) nx.remove(); el.outerHTML=s.plain?trPlain(k,s.text,s.cls,s.tag):trT(k,s.text,s.cls,s.tag,s.lazy); }); }
+function trPaint(k){ document.querySelectorAll(`[data-trk2="${CSS.escape(k)}"]`).forEach(el=>{ const t=cmTrGet(k); if(t){ el.textContent=t; el.hidden=false; } }); const s=ui.trSrc[k]; if(!s) return; document.querySelectorAll(`[data-trk="${CSS.escape(k)}"]`).forEach(el=>{ const nx=el.nextElementSibling; if(nx&&nx.classList.contains("pt-orig")&&nx.dataset.k===k) nx.remove(); el.outerHTML=s.plain?trPlain(k,s.text,s.cls,s.tag):trT(k,s.text,s.cls,s.tag,s.lazy); }); }
+/* 原文下面附一行翻譯（直播留言給藝人看）；還沒翻好先藏著 */
+function trBelow(k,text){ if(!anyLang(text)) return ""; const tr=cmTrGet(k); if(!tr) setTimeout(()=>trNeedT(k,text),0); return `<small class="tk-tr" data-trk2="${esc(k)}"${tr?"":" hidden"}>${esc(tr||"")}</small>`; }
 /* 文字＋「查看原文」按鈕 */
 function trT(k,text,cls="",tag="p",lazy=false){ const lg=anyLang(text), tr=lg&&cmTrGet(k), orig=ui.ptOrig&&ui.ptOrig.has(k); ui.trSrc[k]={text,cls,tag,lazy}; ui.trAsk=ui.trAsk||new Set();
   /* lazy（照 Weverse 粉絲留言）：先放原文，按「查看翻譯」才翻 */
@@ -9740,7 +9748,7 @@ function spotOne(l,host,who){
   return `<div class="sp-deck n${prev.length}">${prev.map((x,i)=>`<div class="sp-back b${prev.length-i}" aria-hidden="true"><p>${esc(x.text)}</p></div>`).join("")}
     <div class="sp-card ${toMe?"to-me":""}">
       <div class="sp-h"><span class="sp-av" style="background:${grad(m.g)}">${mAvIn(who)}</span><div><b>${esc(artName(who,"live"))} ${I.verified}</b><span>${cur?ago(cur.ts):"準備中"}</span></div>${toMe?'<span class="sp-me">回覆你 💜</span>':fresh?'<span class="sp-now">NOW</span>':""}</div>
-      ${cur?`${cur.reply?`<div class="sp-rep">${toMe?`回覆 @你：「${esc(cur.reply.text)}」`:repQ(cur.reply)}</div>`:""}${(()=>{ const ko=!host&&hasHangul(cur.text), tr=ko&&lvTrGet(l,cur); if(ko&&!tr) setTimeout(()=>lvTrNeed(l,cur),0); return tr?`<p class="sp-t has-tr">${esc(cur.text)}</p><p class="sp-tr">${esc(tr)}</p>`:`<p class="sp-t">${esc(cur.text)}</p>`; })()}`:`<p class="sp-t wait">${host&&who===l.member?esc(l.title||""):esc(artName(who,"live"))+(who===l.member?" 馬上就來，先跟大家打聲招呼吧 ✨":" 加入連線了 ✨")}</p>`}
+      ${cur?`${cur.reply?`<div class="sp-rep">${toMe?`回覆 @你：「${esc(cur.reply.text)}」`:repQ(cur.reply)}</div>`:""}${(()=>{ const ko=(!host||who!==(session()||{}).member)&&hasHangul(cur.text), tr=ko&&lvTrGet(l,cur);   /* 藝人端：其他藝人說的話也翻；自己的不翻 */ if(ko&&!tr) setTimeout(()=>lvTrNeed(l,cur),0); return tr?`<p class="sp-t has-tr">${esc(cur.text)}</p><p class="sp-tr">${esc(tr)}</p>`:`<p class="sp-t">${esc(cur.text)}</p>`; })()}`:`<p class="sp-t wait">${host&&who===l.member?esc(l.title||""):esc(artName(who,"live"))+(who===l.member?" 馬上就來，先跟大家打聲招呼吧 ✨":" 加入連線了 ✨")}</p>`}
       <div class="sp-typing ${typing&&!host?"on":""}"><b><i></i><i></i><i></i></b>${esc(artName(who,"live"))} 正在寫下一句…</div>
     </div></div>`;
 }
@@ -9748,10 +9756,10 @@ function tlHtml(l){ return liveArt(l).slice(0,-1).slice(-2).reverse().map(x=>`<d
 function tickHtml(l){
   const fans=l.msgs.filter(x=>x.from!=="artist"), lastIdx={}; fans.forEach((x,i)=>{ lastIdx[(x.name||"")+"|"+x.text]=i; });
   const pinned=new Set(); liveArt(l).filter(x=>x.reply).forEach(a=>{ const r=a.reply; const i=r.ts!=null?fans.findIndex(x=>x.ts===r.ts):lastIdx[r.name+"|"+r.text]; if(i!=null&&i>=0) pinned.add(i); });
-  const st=Math.max(0,fans.length-200);
+  const st=Math.max(0,fans.length-200), hostV=(session()||{}).role==="artist";   /* 藝人端：粉絲留言下面附翻譯 */
   const g0=groupOf((MEMBERS[l.member]||{}).group)||{}, note=`<div class="dl-note" data-k="note"><i>!</i>為了與 ${esc(g0.name||"")} 愉快交流，請保持禮貌！不當聊天可能會受限。</div>`;   /* 提示放在留言最前面：跟著留言一起往上捲，每次進來都看得到 */
   return note+fans.slice(-200).map((x,j)=>{ const pin=pinned.has(st+j);
-    const k=esc(x.ts+"|"+(x.name||x.from)); return mineX(x)?`<div class="tk me ${pin?"pin":""}" data-k="${k}">${pin?"<i>💬</i>":""}<b>你</b>${esc(x.text)}</div>`:`<button class="tk ${pin?"pin":""}" data-k="${k}" data-a="liveRep" data-ts="${x.ts}">${pin?"<i>💬</i>":""}<b>${esc(x.name||"粉絲")}</b>${esc(x.text)}</button>`; }).join("");
+    const k=esc(x.ts+"|"+(x.name||x.from)); return mineX(x)?`<div class="tk me ${pin?"pin":""}" data-k="${k}">${pin?"<i>💬</i>":""}<b>你</b>${esc(x.text)}</div>`:`<button class="tk ${pin?"pin":""}" data-k="${k}" data-a="liveRep" data-ts="${x.ts}">${pin?"<i>💬</i>":""}<b>${esc(x.name||"粉絲")}</b>${esc(x.text)}${hostV?trBelow("lv:"+l.id+":"+x.ts+":"+(x.name||""),x.text):""}</button>`; }).join("");
 }
 /* 直播人數：實際在這場直播裡的人（留過言的粉絲＋正在看的你），不再用假的上千人 */
 /* 粉絲留言：新的從下面推上來，舊的往上滑走（不再整排重畫、一閃一閃） */
@@ -10639,7 +10647,7 @@ function openBgmSheet(){ const mid=session().member;
   setLayer(`<div class="scrim" data-a="closeSheet"><div class="sheet bgm-sh" role="dialog" aria-label="背景音樂"><div class="grab"></div>
     <div class="cs-h"><h3>背景音樂</h3><div class="spacer"></div><button class="icon-btn sm" data-a="closeSheet" aria-label="關閉">${XI}</button></div>${bgmPrepHtml(mid)}</div></div>`,"bgm"); }
 function bgmPrepHtml(mid){ const L=S.get(K.bgm,{})[mid]||[];
-  return `<div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small><button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
+  return `<div class="bgm-prep">${L.map((x,i)=>`<div class="bgm-row"><i>${BGM_IC}</i><b>${esc(x.name)}</b><small>${fmtDur(x.dur)}</small>${i>0?`<button class="bgm-up" data-a="bgmUp" data-i="${i}" aria-label="往前移"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg></button>`:`<span class="bgm-up"></span>`}<button data-a="bgmDel" data-i="${i}" aria-label="移除">${XI}</button></div>`).join("")}
     ${ui.bgmBusy?`<div class="bgm-row busy"><b>${esc(ui.bgmBusy)}</b></div>`:L.length<BGM_MAX?`${ui.bgmPick?`<div class="bgm-pick"><button class="bgm-add" data-a="bgmAddF">從檔案選音樂</button><button class="bgm-add" data-a="bgmAddV">從照片圖庫選影片</button></div>`:`<button class="bgm-add" data-a="bgmAdd">＋ 加入音樂</button>`}`:""}</div>`; }
 function bgmAdd(vid){ if(ui.bgmBusy) return; const inp=document.createElement("input"); inp.type="file"; inp.multiple=true; inp.accept=vid?"video/*":".mp3,.m4a,.aac,.wav,audio/mpeg,audio/mp4,audio/aac,audio/x-m4a,audio/wav";   /* vid：iPhone 只有 accept 純影片才會開照片圖庫（螢幕錄影） */
   inp.onchange=async()=>{ const fs=[...(inp.files||[])]; if(!fs.length) return; const mid=session().member; let bad=0, big=0;
@@ -10664,6 +10672,9 @@ async function bgmPrep(l){ for(const x of l.bgm||[]){ if(!BG.url[x.mid]){ try{ B
 function bgmEl(){ if(!BG.a){ const a=new Audio(); a.preload="auto"; a.setAttribute("playsinline",""); a.setAttribute("webkit-playsinline",""); a.onended=()=>{ BG.idx=-1; bgmSync(); }; BG.a=a; } return BG.a; }
 function bgmSeek(a,l){ const go=()=>{ const p=bgmPos(l); if(p) try{ a.currentTime=Math.min(p.off,Math.max(0,(a.duration||p.off+1)-.3)); }catch(e){} };
   if(a.readyState>=1) go(); else a.addEventListener("loadedmetadata",go,{once:true}); }
+/* 改順序或修正長度時：正在放的那首、放到第幾秒不變（大家一起跟著） */
+function bgmKeep(l,fn){ const p=bgmPos(l), cur=p&&l.bgm[p.i]&&l.bgm[p.i].mid, off=p?p.off:0; fn(); if(!cur) return; const i=l.bgm.findIndex(x=>x.mid===cur); if(i<0) return; let st=off; for(let j=0;j<i;j++) st+=l.bgm[j].dur||0;
+  if(l.bgmOff) l.bgmAt=st; else l.bgmT0=Date.now()-st*1000; }
 function bgmSync(){ const a=BG.a, room=document.querySelector(".mr.dl"), l=BG.lid?getLive(BG.lid):null;
   if(BG.on&&(!room||!l||l.endTs)){ BG.on=false; BG.idx=-1; }
   if(!a){ bgmUI(); return; }
@@ -10671,6 +10682,8 @@ function bgmSync(){ const a=BG.a, room=document.querySelector(".mr.dl"), l=BG.li
   const p=bgmPos(l); if(!p){ bgmUI(); return; } const x=l.bgm[p.i], u=BG.url[x.mid];
   if(!u){ bgmPrep(l).then(()=>{ if(BG.url[x.mid]) bgmSync(); }); bgmUI(); return; }
   if(BG.idx!==p.i){ BG.idx=p.i; a.src=u; a.play().catch(()=>{}); bgmSeek(a,l); bgmUI(); return; }
+  if(room.classList.contains("host")&&a.readyState>=1&&isFinite(a.duration)&&a.duration>1&&Math.abs(a.duration-(x.dur||0))>1){ const d=a.duration;   /* 檔案標的長度不準：用實際長度，才不會砍掉歌尾、亂跳 */
+    bgmKeep(l,()=>{ x.dur=d; }); saveLive(l); try{ const A=S.get(K.bgm,{}), L=A[l.member]||[], q=L.find(y=>y.mid===x.mid); if(q){ q.dur=d; S.set(K.bgm,A); } }catch(e){} }
   if(a.readyState>=1&&!a.seeking&&Math.abs(a.currentTime-p.off)>2.5) bgmSeek(a,l);
   if(a.paused) a.play().catch(()=>{});
   bgmUI(); }
@@ -10691,13 +10704,16 @@ setInterval(()=>{ if(BG.on||(BG.a&&!BG.a.paused)) bgmSync(); else bgmUI(); },200
 
 /* 重播：按 ♪ 從頭依序放這場直播的背景音樂（音樂在 R2，第一次會下載到手機） */
 const RPB={a:null,id:null,on:false,i:0};
-async function rpBgmPlay(){ const l=getLive(RPB.id); if(!l||!RPB.on) return; const L=l.bgm||[]; if(!L.length) return; if(RPB.i>=L.length) RPB.i=0;
-  const u=await mediaSrc(L[RPB.i].mid); if(!RPB.on) return; if(!u){ RPB.i++; if(RPB.i<L.length) rpBgmPlay(); return; }
-  RPB.a.src=u; RPB.a.play().catch(()=>{}); }
+async function rpBgmPlay(){ const l=getLive(RPB.id); if(!l||!RPB.on) return; const L=l.bgm||[]; if(!L.length) return;
+  if(!RPB.urls||RPB.urlsId!==l.id){ RPB.urlsId=l.id; RPB.urls=await Promise.all(L.map(x=>mediaSrc(x.mid).catch(()=>null))); if(!RPB.on) return; }   /* 先全部準備好，換歌時不用等、不會跳過 */
+  for(let n=0;n<L.length;n++){ if(RPB.i>=L.length) RPB.i=0; if(RPB.urls[RPB.i]) break; RPB.i++; }
+  const u=RPB.urls[RPB.i]; if(!u) return; RPB.a.src=u; RPB.a.play().catch(()=>{}); }
 function rpBgm(id){ if(!RPB.a){ const a=new Audio(); a.setAttribute("playsinline",""); a.onended=()=>{ RPB.i++; rpBgmPlay(); }; RPB.a=a; }
   if(RPB.on&&RPB.id===id){ RPB.on=false; RPB.a.pause(); } else { if(RPB.id!==id) RPB.i=0; RPB.id=id; RPB.on=true; RPB.a.play().catch(()=>{}); rpBgmPlay(); }
   document.querySelectorAll(".rp-bgm").forEach(b=>b.classList.toggle("on",RPB.on)); }
-window.addEventListener("hashchange",()=>{ if(RPB.on&&!document.querySelector(".rp2")) setTimeout(()=>{ if(!document.querySelector(".rp2")){ RPB.on=false; if(RPB.a) RPB.a.pause(); } },300); });
+const rpBgmStop=()=>{ RPB.on=false; if(RPB.a) RPB.a.pause(); document.querySelectorAll(".rp-bgm").forEach(b=>b.classList.remove("on")); };
+window.addEventListener("hashchange",()=>{ if(RPB.on&&!/\/replay/.test(location.hash)) rpBgmStop(); });   /* 離開重播就停 */
+document.addEventListener("visibilitychange",()=>{ if(document.hidden){ if(RPB.on) rpBgmStop(); if(BG.a&&!BG.a.paused) BG.a.pause(); } else if(BG.on) setTimeout(bgmSync,300); });   /* 跳出 App 就停；回來直播音樂再對時間 */
 
 /* =========================================================
    外觀：淺色／深色／跟隨系統
@@ -12451,6 +12467,9 @@ function clickLive(a,t,e,r){ switch(a){
     case "bgmAddF": ui.bgmPick=false; bgmAdd(); break;
     case "bgmAddV": ui.bgmPick=false; bgmAdd(true); break;
     case "rpBgm": rpBgm(t.dataset.v); break;
+    case "bgmUp": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(), i=+t.dataset.i; if(i<1) break; [L[i-1],L[i]]=[L[i],L[i-1]]; A[mid]=L; S.set(K.bgm,A);   /* 藝人自己排播放順序 */
+      const lv=myLive(mid); if(lv&&!lv.endTs&&(lv.bgm||[]).length){ const B=lv.bgm.slice(), j=B.findIndex(x=>x.mid===L[i-1].mid), k=B.findIndex(x=>x.mid===L[i].mid); if(j>=0&&k>=0){ [B[j],B[k]]=[B[k],B[j]]; bgmKeep(lv,()=>{ lv.bgm=B; }); saveLive(lv); } }
+      bgmRefresh(); break; }
     case "bgmDel": { const mid=session().member, A=S.get(K.bgm,{}), L=(A[mid]||[]).slice(); L.splice(+t.dataset.i,1); A[mid]=L; S.set(K.bgm,A); bgmRefresh(); break; }
     case "bgmOpen": openBgmSheet(); break;
     case "dlChat": { ui.dlChatOff=!ui.dlChatOff; const r0=document.querySelector(".dl"); if(r0) r0.classList.toggle("chat-off",ui.dlChatOff); break; }
