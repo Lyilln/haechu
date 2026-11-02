@@ -5752,7 +5752,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102105809";
+const BUILD="20261102110128";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16599,6 +16599,23 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList|
 setTimeout(function wkReopen(){ let o=null; try{ o=JSON.parse(localStorage.getItem("wk_open")||"null"); }catch(e){} if(!o||Date.now()-o.ts>30*60e3) return;
   if(typeof ME==="undefined"||!ME||!myEmail()){ if(!wkReopen.n||wkReopen.n<10){ wkReopen.n=(wkReopen.n||0)+1; setTimeout(wkReopen,500); } return; }
   if(location.hash!==o.h) location.hash=o.h; setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
+
+/* =========================================================
+   Motion 動畫（外掛，不改原本的 HTML／CSS）
+   ・用官方 Motion（原 Framer Motion 的純 JS 版）的彈簧動畫
+   ・App 開好後才從 CDN 載入；載不到就什麼都不做，App 跟原本一樣
+   ・第一個：底部導覽列的按鈕，按下去縮一點，放開彈回來（只動 transform）
+   ========================================================= */
+const MOTION_URL="https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm";
+let MO=null;
+function moLoad(){ if(MO||moLoad.p) return moLoad.p; moLoad.p=import(MOTION_URL).then(m=>{ if(m&&typeof m.animate==="function") MO=m; return MO; }).catch(()=>null); return moLoad.p; }
+const MO_SEL=".nav .nav-btn";
+const moPress=el=>{ if(!MO) return; try{ MO.animate(el,{scale:0.86},{type:"spring",stiffness:700,damping:30}); }catch(e){} };
+const moRelease=el=>{ if(!MO) return; try{ MO.animate(el,{scale:1},{type:"spring",stiffness:420,damping:12}); }catch(e){} };   /* 放開：有一點回彈 */
+document.addEventListener("pointerdown",e=>{ const b=e.target.closest&&e.target.closest(MO_SEL); if(!b) return; moPress(b);
+  const up=()=>{ moRelease(b); document.removeEventListener("pointerup",up,true); document.removeEventListener("pointercancel",up,true); };
+  document.addEventListener("pointerup",up,true); document.addEventListener("pointercancel",up,true); },{passive:true,capture:true});   /* capture：導覽列自己的拖曳也會先經過這裡 */
+setTimeout(moLoad,1500);   /* 開場畫面跑完再載，不拖慢 App 打開 */
 
 </script>
 </body>
