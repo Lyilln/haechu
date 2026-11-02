@@ -1041,6 +1041,8 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 .nz2 .nz-th{flex:none;width:58px;height:58px;border-radius:12px;overflow:hidden;background:var(--s2)}.nz2 .nz-th img{width:100%;height:100%;object-fit:cover}
 
 .t-mecol .tq-media .t-photo{max-width:200px}.tq-media{display:block}.tq-l .tq-media .t-photo{max-width:220px}
+.t-cnt{font-style:normal!important}
+.has-arw .t-arw,.t-arw{width:28px!important;height:28px!important;min-width:28px;min-height:28px;flex:none;align-self:center;overflow:visible;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;box-sizing:border-box}
 
 /* ===== 應援棒 3D ===== */
 .ls-box{position:relative;width:100%;height:300px}
@@ -4307,6 +4309,8 @@ html[data-theme] body .st-fx button.on,.st-fx button.on{background:rgba(255,255,
 .lvh-prep .lvh-live{position:relative;left:auto;top:auto;margin:0 auto 6px;display:inline-flex}
 .lvh-prep>*{position:relative}.lvh-prep>.lvh-shade{position:absolute}
 .lvh-prep .fld-lab{color:rgba(255,255,255,.85)!important}
+.dl .sp-me,.sp-me{animation:spMeGlow 1.6s infinite!important;color:#fff!important;opacity:1!important;-webkit-text-fill-color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.25)}
+@keyframes spMeGlow{50%{box-shadow:0 0 0 4px rgba(244,114,182,.28)}}
 
 /* ===== SNS：最新 Instagram 版面 ===== */
 .sn-grid button{aspect-ratio:3/4!important}
@@ -5334,6 +5338,10 @@ main.wk{padding-bottom:110px}
 .wk-u3p{flex:none;width:64px;height:64px;border-radius:8px;background:var(--wks);display:grid;place-items:center;overflow:hidden}.wk-u3p img{width:100%;height:100%;object-fit:cover}.wk-u3p.lg img{object-fit:contain}
 .wk-u3 b{flex:1;min-width:0;font-size:13.5px;font-weight:600}.wk-u3 .btn{flex:none;padding:8px 16px;font-size:13px}
 .wkg-logo{width:auto!important;max-width:45%;object-fit:contain}
+html .lvr-i .dl-vf,html .lvr-i .dl-vf svg{color:#8843FB!important}
+.wk-shb{box-sizing:border-box}.wk-shtop input{min-width:0}
+.wk-fbar,.wk-fbar *{box-sizing:border-box}.wk-fbar label,.wk-fbar>button{margin:0!important;align-self:center}.wk-fbar>button{display:grid;place-items:center;padding:0;line-height:1}
+main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!important}
 
 </style>
 </head>
@@ -5752,7 +5760,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102110128";
+const BUILD="20261102112722";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9364,7 +9372,7 @@ const artBadge=mid=>`<span class="t-badge" style="background:${artColor(mid)}">A
 const tieAv=(m,cls="")=>`<div class="t-av ${cls}" style="background:${grad(m.g)};--ac:${artColor(midOf(m))}">${mAvIn(midOf(m),"tie")}</div>`;
 const tieHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tieHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tieHG)"/></svg><i></i></span>`;
 function tieBgLayer(st,cls="t-bgl"){
-  if(st.bgMode==="photo"&&st.bgImage) return `<div class="${cls}" style="background:#fff"><img src="${st.bgImage}" alt=""><span class="t-veil"></span></div>`;
+  if(st.bgMode==="photo"&&st.bgImage) return `<div class="${cls}" style="background:var(--bg,#16151B) center/cover no-repeat url('${st.bgImage}')"><img src="${st.bgImage}" alt="" decoding="sync"><span class="t-veil"></span></div>`;   /* 底色不用白的、照片直接當底：進聊天室不會先閃白 */
   if(st.bgMode==="color") return `<div class="${cls}" style="background:${st.bgColor}"></div>`;
   if(st.bgMode==="pattern") return `<div class="${cls} tp-${st.bgPattern}"></div>`;
   return thChatBg(cls)||`<div class="${cls} t-default"></div>`;
@@ -9695,7 +9703,7 @@ function viewFanLive(){
   const je=ui.justEnded&&getLive(ui.justEnded);
   return head+`<main class="page meet">
     ${je?`<div class="just"><button class="just-b" data-a="openReplay" data-id="${je.id}"><span class="just-ic">${PLAY}</span><span><b>剛剛結束的直播</b><small>${esc(je.title)}・點一下看重播</small></span></button><button class="just-x" data-a="justClose" aria-label="關閉">${XI}</button></div>`:""}
-    ${on.length?on.map(nowCard).join(""):`<div class="nc-none"><span class="nc-none-ic">${I.live}</span><span><b>現在沒有人在直播</b></span></div>`}
+    ${on.length?on.map(nowCard).join(""):""}
     ${rpHead()}
     ${rep.length?rpSorted(rep).slice(0,20).map(replayRow).join(""):`<p class="meet-empty">尚無重播</p>`}
     ${mine.length?`<h2 class="meet-h">我預約的活動</h2>${mine.map(e=>eventCard(e)).join("")}`:""}
@@ -9741,7 +9749,8 @@ function tickHtml(l){
   const fans=l.msgs.filter(x=>x.from!=="artist"), lastIdx={}; fans.forEach((x,i)=>{ lastIdx[(x.name||"")+"|"+x.text]=i; });
   const pinned=new Set(); liveArt(l).filter(x=>x.reply).forEach(a=>{ const r=a.reply; const i=r.ts!=null?fans.findIndex(x=>x.ts===r.ts):lastIdx[r.name+"|"+r.text]; if(i!=null&&i>=0) pinned.add(i); });
   const st=Math.max(0,fans.length-200);
-  return fans.slice(-200).map((x,j)=>{ const pin=pinned.has(st+j);
+  const g0=groupOf((MEMBERS[l.member]||{}).group)||{}, note=`<div class="dl-note" data-k="note"><i>!</i>為了與 ${esc(g0.name||"")} 愉快交流，請保持禮貌！不當聊天可能會受限。</div>`;   /* 提示放在留言最前面：跟著留言一起往上捲，每次進來都看得到 */
+  return note+fans.slice(-200).map((x,j)=>{ const pin=pinned.has(st+j);
     const k=esc(x.ts+"|"+(x.name||x.from)); return mineX(x)?`<div class="tk me ${pin?"pin":""}" data-k="${k}">${pin?"<i>💬</i>":""}<b>你</b>${esc(x.text)}</div>`:`<button class="tk ${pin?"pin":""}" data-k="${k}" data-a="liveRep" data-ts="${x.ts}">${pin?"<i>💬</i>":""}<b>${esc(x.name||"粉絲")}</b>${esc(x.text)}</button>`; }).join("");
 }
 /* 直播人數：實際在這場直播裡的人（留過言的粉絲＋正在看的你），不再用假的上千人 */
@@ -9785,7 +9794,7 @@ function viewMeetRoom(id){
   const draft=ui.lDraft||"", cur=lvLast(l), g=groupOf(m.group);
   return lvShell(l,false,`<main class="cm-main dl-main">
       <div id="cmSpot" data-k="${esc(spotKey(l))}" data-c="${cur?cur.ts:0}">${spotHtml(l)}</div>
-      <div class="dl-chat"><div class="dl-note"><i>!</i>為了與 ${esc(g?g.name:"")} 愉快交流，請保持禮貌！不當聊天可能會受限。</div><div class="cm-tickw"><div class="cm-tick" id="cmTick">${tickHtml(l)}</div><button type="button" class="tk-newp dl-down" id="tkNew" data-a="tkDown" hidden></button></div></div>
+      <div class="dl-chat"><div class="cm-tickw"><div class="cm-tick" id="cmTick">${tickHtml(l)}</div><button type="button" class="tk-newp dl-down" id="tkNew" data-a="tkDown" hidden></button></div></div>
     </main>
     <form class="cm-foot dl-foot" id="lform"><label class="cm-in"><input id="lin" autocomplete="off" placeholder="輸入訊息" value="${esc(draft)}"><button type="submit" class="mr-send ${draft.trim()?"on":""}" id="lsend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg></button></label>
       <button type="button" class="dl-hb" data-a="heart" data-id="${l.id}" aria-label="送愛心">${LV_IC.heart}</button></form>`);
@@ -11509,7 +11518,7 @@ function swapRole(){
 
 /* 搜尋規則（照 NSY）：點到搜尋列以外的任何地方，就關閉搜尋並清空關鍵字 */
 document.addEventListener("pointerdown",e=>{
-  if(!ui.srch||e.target.closest(".sh-head")||e.target.closest("#layer")) return;
+  if(!ui.srch||e.target.closest(".sh-head")||e.target.closest("#layer")||e.target.closest("main [data-a]")) return;   /* 點搜尋結果不要先把搜尋關掉（不然結果直接消失） */
   ui.srch=null; setTimeout(render,0);
 },true);
 const CLICK_NO={};   /* 點擊動作分檔（10a～10f），照順序找，第一個有的就做 */
@@ -11644,7 +11653,7 @@ function showCopyMenu(el,x,y){
   if(w.from==="artist") return;
   /* 藝人端：長按粉絲的訊息 → 回覆／複製／檢舉（取代原本的「⋯」） */
   if((session()||{}).role==="artist"){ ui.copyText=w.ko||w.text; const L=Math.min(Math.max(x,90),window.innerWidth-90)/ZM(), T=Math.max(y-64,10)/ZM();
-    layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx t-ctx3" style="left:${L}px;top:${T}px"><button data-a="tieArw" data-id="${w.id}">回覆</button><button data-a="tCopy">複製</button><button class="dg" data-a="tieRep" data-id="${w.id}">檢舉</button></div></div>`;
+    layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx t-ctx3" style="left:${L}px;top:${T}px"><button data-a="tCopy">複製</button><button class="dg" data-a="tieRep" data-id="${w.id}">檢舉</button></div></div>`;
     layer.querySelectorAll(".t-ctx3 button").forEach(b=>b.addEventListener("click",()=>{ layer.innerHTML=""; })); try{ navigator.vibrate&&navigator.vibrate(10); }catch(e){} return; }
   const st=route().m?tieSet(route().m):null, text=w.ko||w.text;
   ui.copyText=text;
@@ -13458,7 +13467,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);
-  const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
+  const body=tab==="cm"?(()=>{ const F=S.get(K.fanPosts,[]).filter(p=>p.gid===M.group).sort((a,b)=>b.ts-a.ts); return F.length?F.map(fanCard).join(""):`<div class="ux-empty"><span>💌</span><b>還沒有粉絲貼文</b></div>`; })():false?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
     :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own,prof:true})).join(""):`<p class="me-none">還沒有貼文</p>`);   // 個人社群：點貼文任何地方進貼文、頭貼不再重進個人社群
@@ -13470,7 +13479,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
-  <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
+  <nav class="ap2-tabs">${[["post","貼文"],["cm","粉絲貼文"],["media",mediaName(M.group)]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${tab!=="media"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
 function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0; b.classList.toggle("on",h.getBoundingClientRect().bottom<=bb+b.offsetHeight+90); }
 /* 滑動中每一格畫面都檢查（iPhone 快速滑時 scroll 事件來得慢，照片會先透出來一下）；提早一點點出現 */
