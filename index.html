@@ -4491,7 +4491,7 @@ html:has(.t-page),body:has(.t-page){overflow:hidden;overscroll-behavior:none;tou
 .dl .sp-t.has-tr{-webkit-line-clamp:2}.dl .sp-tr{margin:4px 0 0;font-size:14px;line-height:1.45;opacity:.72;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;flex:none}
 html.coach-lock,html.coach-lock body{overscroll-behavior:none}
 html.no-scroll,html.no-scroll body{overflow:hidden!important;overscroll-behavior:none;height:100%}
-.pt-orig{display:block;margin:6px 0 2px;font-size:13px;color:var(--sub,#8E8A99);text-decoration:underline;text-underline-offset:3px;background:none;padding:0}
+.pt-orig{display:block;margin:6px auto 2px 0;align-self:flex-start;text-align:left;font-size:13px;color:var(--sub,#8E8A99);text-decoration:underline;text-underline-offset:3px;background:none;padding:0}
 .db-media{display:flex;gap:6px;margin-top:6px}.db-th{position:relative;width:48px;height:60px;border-radius:8px;overflow:hidden;background:rgba(0,0,0,.08);flex:none}.db-th img{width:100%;height:100%;object-fit:cover}.db-th i{width:22px;height:22px;font-size:9px}
 .nw-acts{display:flex;gap:6px;flex:none}/* 直播背景音樂 */
 .bgm-prep{display:flex;flex-direction:column;gap:6px;margin:0 0 14px}
@@ -5785,7 +5785,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102115727";
+const BUILD="20261102115909";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
