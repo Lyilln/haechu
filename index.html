@@ -4733,6 +4733,8 @@ html.sn-vshrink .sn-shw{background:transparent}html.sn-vshrink .sn-sh{max-height
 .sn-tagr{margin:4px 16px 0;width:calc(100% - 32px);padding:14px 4px;border-top:.5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important;border-bottom:.5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important}
 .sn-cap{padding:14px 20px}
 
+.db-wipe{margin-left:8px;border:0;background:none;padding:2px 0;color:#E5484D;font:inherit;font-size:12px;font-weight:700}
+
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
 .vs-none{text-align:center;padding:60px 20px;color:var(--ink-3)}
@@ -5799,7 +5801,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102120306";
+const BUILD="20261102121227";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -6111,7 +6113,7 @@ function iaBanner(n){ return;   // 她決定：在 App 裡一律不跳通知（�
   let y0=0; b.addEventListener("touchstart",e=>{ y0=e.touches[0].clientY; },{passive:true}); b.addEventListener("touchmove",e=>{ if(e.touches[0].clientY-y0<-12) close(); },{passive:true}); }catch(e){} }
 /* 自己說的話（TIE、直播聊天、留言）不進通知 */
 const selfSaid=n=>n.self&&/^你傳了 |」直播間說：|的貼文留言：/.test(n.text||"");
-function getNotifications(){ return S.get(K.notifs,[]).filter(n=>!selfSaid(n)).sort((a,b)=>b.ts-a.ts); }
+function getNotifications(){ return S.get(K.notifs,[]).filter(n=>!selfSaid(n)&&!dbWipedTx(n)).sort((a,b)=>b.ts-a.ts); }
 function hasUnread(){ return S.get(K.unread,"0")==="1"; }
 function markAllRead(){ S.set(K.unread,"0"); }
 function getSettings(){ return {post:true,comment:true,live:true,whisper:true,event:true,...S.get(K.settings,{})}; }
@@ -6384,7 +6386,7 @@ function resolveReport(id,action){
 }
 function setHidden(postId,hidden){ const posts=S.get(K.posts,[]), p=posts.find(x=>x.id===postId); if(p){p.hidden=hidden;S.set(K.posts,posts)} }
 /* 置頂公告：可以同時有好幾則，通知頁上方會輪播 */
-const getAnns=()=>S.get(K.anns,[]).sort((a,b)=>b.ts-a.ts);
+const getAnns=()=>S.get(K.anns,[]).filter(a=>!dbWipedTx(a)).sort((a,b)=>b.ts-a.ts);
 (function migrateAnn(){ const old=S.get(K.announce,null); if(old&&!S.get(K.anns,[]).some(a=>a.id===old.id)){ S.set(K.anns,[old,...S.get(K.anns,[])]); } S.del(K.announce); })();
 function seedAnn(){
   if(S.get(K.seed10,false)) return; const now=Date.now();
@@ -7399,12 +7401,12 @@ const TIERS={1:{name:"日常",rate:.82},2:{name:"舞台",rate:.15},3:{name:"流�
 /* 藝人（不管團體或 SOLO，管理員也一樣）不能買自己團的任何東西，不能幫自己衝銷量 */
 /* 出道申請：粉絲在 ME 填藝名 → 管理員核准 → 自動建 SOLOIST 並綁定帳號 */
 const getDebut=()=>S.get(K.debut,[])||[];
-const myDebut=()=>{ const em=myEmail(); return em?getDebut().filter(x=>x.email===em).sort((a,b)=>b.ts-a.ts)[0]||null:null; };
+const myDebut=()=>{ const em=myEmail(); return em?getDebut().filter(x=>x.email===em&&x.status!=="gone").sort((a,b)=>b.ts-a.ts)[0]||null:null; };
 function debutSync(){ try{ const s=session(), d=myDebut(); if(!s||s.home||!d||d.status!=="ok"||!d.mid||!MEMBERS[d.mid]) return; const a=ACCOUNTS[s.email]; if(a&&!a.member) ACCOUNTS[s.email]={...a,role:a.role==="admin"?"admin":"artist",member:d.mid}; SS.set({...s,home:d.mid}); }catch(e){} }
 function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="pre"?`預告中・D-${dLeft(d.day)}`:d&&d.status==="no"?"未通過":"";
   return `<div class="section-h">出道</div><section class="card"><button class="list-btn" data-a="debutAsk">${I.star}申請出道<span class="r">${st}</span></button></section>`; }
-function debutAdmHtml(){ const L=getDebut().slice().sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
-  const row=x=>`<div class="db-row"><span class="db-av" style="background:${grad(x.g||0)}">${esc((x.name||"?")[0])}</span><span class="db-tx"><b>${esc(x.name)}</b><small>${esc(acctUser(x.email))}・${ago(x.ts)}${x.status==="wait"&&x.day?`・想在 ${mdTxt(x.day)} 出道`:""}</small>${dbMedia(x)}</span>${x.status==="wait"?`<span class="db-act"><button class="btn btn-sm btn-main db-b" data-a="dbOk" data-v="${x.id}">核准</button><button class="btn btn-sm btn-soft db-b" data-a="dbNo" data-v="${x.id}">不核准</button></span>`:`<span class="r muted">${x.status==="ok"?"已出道":x.status==="pre"?`預告中・${mdTxt(x.day)} 出道`:"未通過"}</span>`}</div>`;
+function debutAdmHtml(){ const L=getDebut().filter(x=>x.status!=="gone").sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
+  const row=x=>`<div class="db-row"><span class="db-av" style="background:${grad(x.g||0)}">${esc((x.name||"?")[0])}</span><span class="db-tx"><b>${esc(x.name)}</b><small>${esc(acctUser(x.email))}・${ago(x.ts)}${x.status==="wait"&&x.day?`・想在 ${mdTxt(x.day)} 出道`:""}</small>${dbMedia(x)}</span>${x.status==="wait"?`<span class="db-act"><button class="btn btn-sm btn-main db-b" data-a="dbOk" data-v="${x.id}">核准</button><button class="btn btn-sm btn-soft db-b" data-a="dbNo" data-v="${x.id}">不核准</button></span>`:`<span class="r muted">${x.status==="ok"?"已出道":x.status==="pre"?`預告中・${mdTxt(x.day)} 出道`:"未通過"}${x.status==="pre"||x.status==="no"?`<button class="db-wipe" data-a="dbWipe" data-v="${x.id}">刪除</button>`:""}</span>`}</div>`;
   return `<main class="page">${W.length?`<section class="card">${W.map(row).join("")}</section>`:`<div class="t-empty"><span class="t-empty-ico">${I.star}</span><p>目前沒有申請</p></div>`}${H.length?`<div class="section-h">紀錄</div><section class="card">${H.slice(0,30).map(row).join("")}</section>`:""}</main>`; }
 const debutWait=()=>getDebut().filter(x=>x.status==="wait").length;
 /* 申請出道的表單：藝名＋Teaser 照片＋MV（兩個都必填，選了就先上傳） */
@@ -11955,6 +11957,7 @@ function clickGen(a,t,e,r){ switch(a){
       dbApprove(x); S.set(K.debut,L); applyRoster(); render(); toast(`已核准「${n}」，${mdTxt(x.day)} 出道`); break; }   /* 核准＝進入出道預告，出道日到了才變成藝人（js/25） */
     case "dbLater": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v), v=ymdTs((document.getElementById("dbLaterIn")||{}).value); if(!x||x.status!=="pre") break; if(!v||v<=x.day){ toast("只能延到更晚的日期"); break; }
       x.day=v; S.set(K.debut,L); applyRoster(); feedPush({kind:"core",text:`📢 「${x.name}」出道延期到 ${mdTxt(v)}`},"all"); layer.innerHTML=""; render(); toast(`延到 ${mdTxt(v)} 了`); break; }
+    case "dbWipe": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x) break; ask(`刪除「${x.name}」的出道申請？\n預告公告、通知都會一起收回，當作沒發生過，本人可以重新申請。`,()=>{ dbWipe(x); S.set(K.debut,L); applyRoster(); render(); toast("已刪除"); }); break; }
     case "dbNo": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x) break; ask(`不核准「${x.name}」的出道申請嗎？`,()=>{ x.status="no"; x.done=Date.now(); S.set(K.debut,L); feedPush({kind:"core",self:true,text:`「${x.name}」的出道申請這次沒有通過`},"u:"+x.email); render(); }); break; }
     case "rsType": ui.rsType=t.dataset.v; { const y=window.scrollY, n=(document.getElementById("rgName")||{}).value; render(); window.scrollTo(0,y); const i=document.getElementById("rgName"); if(i&&n) i.value=n; } break;
     case "rgAdd": { const solo=ui.rsType==="solo", n=document.getElementById("rgName").value.trim(); if(!n){ toast(solo?"請輸入藝名":"請輸入團名"); break; } if(GROUPS.some(g=>g.name===n)){ toast("已經有這個名字了"); break; }
@@ -16320,7 +16323,20 @@ const mdTxt=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()}
 /* 管理員核准 → 進入預告 */
 function dbApprove(x){ const now=Date.now(); let day=x.day||dayStart(now+PRE_MIN); if(day<dayStart(now+PRE_MIN)) day=dayStart(now+PRE_MIN); x.day=day; x.status="pre"; x.appr=now;
   dbDebutNow(null,x,true);   /* 管理員在場的這一刻就把團建好、帳號綁好；出道日前先藏起來 */
-  { const a=publishAnnounce(`✨ 出道預告｜「${x.name}」將在 ${mdTxt(day)} 正式出道！`); if(x.teaser) S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,img:x.teaser}:y)); }   /* 用 HAECHU 官方公告發出道預告（不是每個人的 FOC／FEST 都掛一張卡） */ feedPush({kind:"core",self:true,text:`🎉 出道申請通過了！你的出道日是 ${mdTxt(day)}，預告已經發出去囉`},"u:"+x.email); }
+  { const a=publishAnnounce(`✨ 出道預告｜「${x.name}」將在 ${mdTxt(day)} 正式出道！`); x.annId=a.id; if(0) publishAnnounce(`✨ 出道預告｜「${x.name}」將在 ${mdTxt(day)} 正式出道！`); if(x.teaser) S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,img:x.teaser}:y)); }   /* 用 HAECHU 官方公告發出道預告（不是每個人的 FOC／FEST 都掛一張卡） */ feedPush({kind:"core",self:true,text:`🎉 出道申請通過了！你的出道日是 ${mdTxt(day)}，預告已經發出去囉`},"u:"+x.email); }
+/* 刪除出道申請（預告中／未通過）：團、帳號綁定、照片、MV、SKpedia、公告、通知全部收回，當作沒發生過；本人可以重新申請 */
+const dbWipedTx=n=>{ try{ const t=String(n&&n.text||""); if(!t.includes("「")) return false; return getDebut().some(x=>x.status==="gone"&&(n.ts||0)<=x.gone&&t.includes(`「${x.name}」`)); }catch(e){ return false; } };
+function dbWipe(x){ const gid=x.gid, mid=x.mid;
+  if(gid){ saveRoster(r=>{ r.groups=(r.groups||[]).filter(g=>g.id!==gid); delete r.members[gid+"_o"]; if(mid) delete r.members[mid]; });
+    const i=GROUPS.findIndex(g=>g.id===gid); if(i>=0) GROUPS.splice(i,1); delete MEMBERS[gid+"_o"]; if(mid) delete MEMBERS[mid];
+    { const a=ACCOUNTS[x.email]; if(a&&(!a.member||a.member===mid)) unbindArtist(x.email); }   /* 預告中帳號的綁定是藏起來的，也要解開 */
+    const drop=(k,id)=>{ const o={...(S.get(k,{})||{})}; if(id in o){ delete o[id]; S.set(k,o); } };
+    if(mid) drop(K.mPhoto,mid); drop(K.gPhoto,gid); drop(K.vsec,gid); drop("daisuki_wiki","g:"+gid); if(mid) drop("daisuki_wiki","m:"+mid);
+    S.set(K.vods,(S.get(K.vods,[])||[]).filter(v=>v.gid!==gid)); S.set(K.fanArtists,followed().filter(y=>y!==gid)); }
+  const w=`「${x.name}」`; S.set(K.anns,(S.get(K.anns,[])||[]).filter(a=>a.id!==x.annId&&!(String(a.text||"").includes(w)&&/出道/.test(a.text||""))));
+  S.set(K.feed,(S.get(K.feed,[])||[]).filter(e=>!(String(e.text||"").includes(w)&&(e.ts||0)<=Date.now())));
+  Object.assign(x,{status:"gone",gone:Date.now()}); delete x.gid; delete x.mid;
+  feedPush({kind:"core",self:true,text:"出道申請已經刪除，可以重新申請囉"},"u:"+x.email); }
 /* 出道日到了：真的建立藝人（原本核准時做的事） */
 function dbDebutNow(L,x,prep){ const n=x.name; if(GROUPS.some(g=>g.name===n)||!ACCOUNTS[x.email]||ACCOUNTS[x.email].member){ if(!prep){ x.status="ok"; x.done=Date.now(); } return; }
   const id="g"+Date.now(), gc=x.g||0, g={id,name:n,g:gc,isNew:true,solo:true}, off={name:n+" 官方",group:id,g:gc,official:true}, mid="m"+Date.now(), m={name:n,group:id,g:gc};
