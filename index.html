@@ -5801,7 +5801,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102121227";
+const BUILD="20261102130624";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -5810,9 +5810,9 @@ const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
 /* 大檔案（MV 等）：分成 32MB 一段傳到 R2，沒有大小上限 */
 async function hbUploadBig(id,blob){ const P=32*1024*1024, n=Math.ceil(blob.size/P), base=MEDIA_URL+"/mpu/"+encodeURIComponent(id);
   const call=async(q,o)=>{ for(let i=0;i<4;i++){ try{ const r=await fetch(base+q,{...o,headers:{Authorization:"Bearer "+HB.tok,...(o.headers||{})}}); if(r.status===401){ await hbRefresh(); continue; } if(r.ok||r.status===409) return r; }catch(e){} await new Promise(r=>setTimeout(r,2000*(i+1))); } return null; };
-  const s=await call("?a=start&t="+encodeURIComponent(blob.type||"video/mp4"),{method:"POST"}); if(!s){ toast("影片沒有上傳成功，請再傳一次"); return false; } if(s.status===409) return true;
+  const s=await call("?a=start&t="+encodeURIComponent(blob.type||"video/mp4"),{method:"POST"}); if(!s){ toast("超過 45MB 的影片現在傳不上去（後台還沒更新），請先傳小一點的檔案"); return false; } if(s.status===409) return true;
   const {uploadId}=await s.json(), parts=[];
-  for(let k=0;k<n;k++){ ui.upPct=Math.round(k/n*100); const r=await call(`?a=part&u=${encodeURIComponent(uploadId)}&n=${k+1}`,{method:"PUT",body:blob.slice(k*P,Math.min(blob.size,(k+1)*P))}); if(!r){ call("?u="+encodeURIComponent(uploadId),{method:"DELETE"}); ui.upPct=null; toast("影片沒有上傳成功，請再傳一次"); return false; } parts.push(await r.json()); }
+  for(let k=0;k<n;k++){ ui.upPct=Math.round(k/n*100); try{ hbUploadBig.on&&hbUploadBig.on(ui.upPct); }catch(e){} const r=await call(`?a=part&u=${encodeURIComponent(uploadId)}&n=${k+1}`,{method:"PUT",body:blob.slice(k*P,Math.min(blob.size,(k+1)*P))}); if(!r){ call("?u="+encodeURIComponent(uploadId),{method:"DELETE"}); ui.upPct=null; toast("影片沒有上傳成功，請再傳一次"); return false; } parts.push(await r.json()); }
   const d=await call("?a=done&u="+encodeURIComponent(uploadId),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(parts)}); ui.upPct=null;
   if(!d){ toast("影片沒有上傳成功，請再傳一次"); return false; } return true; }
 async function hbUpload(id,blob){ if(!HB_ON||!HB.tok||!blob||sbxOn()) return true;
@@ -6904,7 +6904,7 @@ const MDB={
     if(b&&b.ab) b=new Blob([b.ab],{type:b.type||""});
     else if(b){ try{ b=new Blob([await b.arrayBuffer()],{type:b.type||""}); }catch(e){ b=null; } }   // 舊版存的檔案：讀得出來就轉成新的，讀不出來就當作沒有
     if(!b){ try{ const du=localStorage.getItem("daisuki_m_"+id); if(du) b=b64Blob(du); }catch(e){} }
-    if(!b){ b=await hbDownload(id); if(b) this.put(id,b,true); }
+    if(!b){ b=await hbDownload(id); if(b&&b.size<45*1024*1024) this.put(id,b,true); }   /* 大影片不存進手機資料庫（iPhone 記憶體會爆） */
     if(b) memBlobs[id]=b; return b; }
 };
 async function idbHas(id){ try{ const d=await MDB.open(); return await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(!!q.result); q.onerror=()=>res(false); }); }catch(e){ return false; } }
@@ -11944,7 +11944,12 @@ function clickGen(a,t,e,r){ switch(a){
     case "dbMvt": case "dbMv": { dbKeep(); const f=ui.dbF; if(!f||f.busy) break; const isT=a==="dbMvt"; const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
       inp.onchange=async()=>{ const file=inp.files&&inp.files[0]; if(!file) return; 
         f.busy="影片處理中…"; dbReform();
-        try{ const id="vv"+Date.now().toString(36), th=await videoThumb(file); await MDB.put(id,file); let thumb=null; if(th&&th.blob){ thumb=id+"_t"; await MDB.put(thumb,th.blob); }
+        try{ const id="vv"+Date.now().toString(36), th=await videoThumb(file); let thumb=null;
+          /* 先真的傳上雲端才算放好（大影片不存進手機的資料庫：iPhone 會因為記憶體不夠重新整理，檔案就不見了） */
+          if(th&&th.blob){ thumb=id+"_t"; await MDB.put(thumb,th.blob,true); if(!await hbUpload(thumb,th.blob)) thumb=null; }
+          const pr=document.querySelector(".db-busy"); hbUploadBig.on=p=>{ f.busy=`影片上傳中… ${p}%`; const e=document.querySelector(".db-busy"); if(e) e.textContent=f.busy; }; f.busy="影片上傳中…"; if(pr) pr.textContent=f.busy;
+          const ok=await hbUpload(id,file); hbUploadBig.on=null; if(!ok){ f.busy=""; dbReform(); return; }
+          memBlobs[id]=file;
           const v={mid:id,thumb,dur:th&&th.dur||0}, pv=th&&th.blob?URL.createObjectURL(th.blob):""; if(isT){ f.mvt=v; f.mtPrev=pv; } else { f.mv=v; f.mPrev=pv; } f.busy=""; dbReform(); }catch(e){ f.busy=""; dbReform(); toast("這部影片讀不出來，換一部試試"); } }; pickClick(inp); break; }
     case "dbTsr": { const x=getDebut().find(y=>y.id===t.dataset.v); if(!x||!x.teaser) break; setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="Teaser 照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><img src="${esc(x.teaser)}" alt=""></div>`,"photo"); break; }
     case "dbMvPlay": playVideo(t.dataset.v); break;
