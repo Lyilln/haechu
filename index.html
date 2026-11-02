@@ -5846,7 +5846,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102162129";
+const BUILD="20261102162440";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7425,10 +7425,10 @@ function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) r
 /* 連續第 4 天起：每多一天扣一次，扣 30 天 TIE 券價格的 30%（ion 10%、Kirin 50% 的中間） */
 const TIE_QUIET_FINE=()=>"目前積分的 30%";
 /* 藝人的扣分（tqf2_）：從藝人自己的積分扣 */
-const artFines=(mid,since)=>ptGrants().filter(g=>g.mid===mid&&String(g.id).startsWith("tqf2_")&&(!since||g.ts>=since)).reduce((s,g)=>s+(g.n||0),0);
+const artFines=(mid,since)=>ptGrants().filter(g=>g.mid===mid&&(String(g.id).startsWith("tqf2_")||g.art)&&(!since||g.ts>=since)).reduce((s,g)=>s+(g.n||0),0);
 function tieQuietFine(){ try{ if(!isAdminAcct()||(HB_ON&&(HB.ver[K.whispers]==null||HB.ver[K.ptGrants]==null&&Object.keys(HB.ver).length<3))) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)); let add=0;
   tieQuiet().forEach(q=>{ if(q.days<4) return; const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===q.mid); if(!em) return; const b0=calDay(q.at)-3;
-    for(let d=4;d<=q.days;d++){ const id=`tqf2_${q.mid}_${b0}_${d}`; if(have.has(id)) continue; const cur=Math.max(0,((pointsOf(q.mid)||{}).net||0)+L.filter(g=>g.mid===q.mid&&String(g.id).startsWith("tqf2_")).reduce((s,g)=>s+(g.n||0),0)), n=Math.round(cur*.3); have.add(id); if(n<=0) continue; L.push({id,to:em,mid:q.mid,n:-n,why:`${WHISPER_NAME} 連續 ${d} 天沒傳訊息`,by:"auto",ts:q.at+(d-3)*864e5}); add++; } });
+    for(let d=4;d<=q.days;d++){ const id=`tqf2_${q.mid}_${b0}_${d}`; if(have.has(id)) continue; const cur=Math.max(0,((pointsOf(q.mid)||{}).net||0)+L.filter(g=>g.mid===q.mid&&(String(g.id).startsWith("tqf2_")||g.art)&&!ptGrants().some(x=>x.id===g.id)).reduce((s,g)=>s+(g.n||0),0)), n=Math.round(cur*.3); have.add(id); if(n<=0) continue; L.push({id,to:"art:"+q.mid,mid:q.mid,n:-n,why:`${WHISPER_NAME} 連續 ${d} 天沒傳訊息`,by:"auto",ts:q.at+(d-3)*864e5}); add++; } });
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
 /* 藝人生日：當天送「🎂 今天是 ○○ 的生日。留下生日祝福吧！」給追蹤的粉絲（一年一次，由管理員的手機送） */
 function bdayPush(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.feed]==null)) return; const now=new Date(), md=(now.getMonth()+1)+"-"+now.getDate(), y=now.getFullYear(), B=getBdays(), P=S.get(K.bdPush,{})||{}; let ch=false;
@@ -12422,8 +12422,8 @@ function clickAdm(a,t,e,r){ switch(a){
         else { try{ await hbLoadProfiles(); }catch(e){} }
         await setNote(key,{real_name:rn,pw}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
     case "acRole": { const keep=["acUser","acReal","acName","acPw"].map(id=>(document.getElementById(id)||{}).value||""); ui.acRole=t.dataset.v; lsRerender(); ["acUser","acReal","acName","acPw"].forEach((id,i)=>{ const el=document.getElementById(id); if(el) el.value=keep[i]; }); break; }
-    case "calClr": { const c={...(ui.calF||{})}; delete c[a.dataset.v]; ui.calF=c; const y=scrollY; render(); scrollTo(0,y); break; }
-    case "calAll": { ui.calAll={...(ui.calAll||{}),[a.dataset.v]:!(ui.calAll||{})[a.dataset.v]}; const y=scrollY; render(); scrollTo(0,y); break; }
+    case "calClr": { const c={...(ui.calF||{})}; delete c[t.dataset.v]; ui.calF=c; const y=scrollY; render(); scrollTo(0,y); break; }
+    case "calAll": { ui.calAll={...(ui.calAll||{}),[t.dataset.v]:!(ui.calAll||{})[t.dataset.v]}; const y=scrollY; render(); scrollTo(0,y); break; }
     case "acEdit": { const k=t.dataset.v, a=ACCOUNTS[k]||{}; ui.acFor=k; const pw=knownPw(k)||(a.pw||""), self=k===String((session()||{}).email||"").toLowerCase();
       const row=(l,v)=>`<div class="acm-r"><em>${l}</em><b>${v}</b></div>`;
       tieModal(esc(acctUser(k)),"",`<div class="acm-info">${row("帳號",esc(acctUser(k)))}${row("密碼",pw?`<span class="ac-pw">${esc(pw)}</span>`:`<span class="acm-mute">下次登入後顯示</span>`)}${row("身分",ROLE_ZH[a.role]||"粉絲")}${row("暱稱",esc(a.name||""))}</div>
@@ -14334,7 +14334,14 @@ const TRUCK3D=(()=>{
    ・同一位藝人同一次出道／回歸最多 3 台；送到前藝人看不到（保密），但每天 +100 積分
    ========================================================= */
 /* 可以送的人：追蹤的團先排前面，再來其他團、即將出道的新人；自己的團不能送 */
-function tkTargets(){ const f=followed(), gs=[...f,...GROUPS.map(g=>g.id).filter(id=>!f.includes(id))].filter(gid=>groupOf(gid)&&!isSelfGid(gid));
+/* 藝人也能送：只能送給正在出道／回歸的藝人（預告中、或出道／回歸一週內），用藝人自己的積分 */
+const tkIsArt=()=>{ const s=session()||{}; return s.role==="artist"&&!!s.member&&!!MEMBERS[s.member]; };
+const tkBal=()=>tkIsArt()?Math.max(0,(pointsOf(session().member)||{}).net||0):points();
+function tkPay(n,why){ if(tkIsArt()){ const mid=session().member, L=S.get(K.ptGrants,[])||[]; L.push({id:"tka_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),to:"art:"+mid,mid,n:-n,art:1,why,by:"auto",ts:Date.now()}); S.set(K.ptGrants,L.slice(-2000)); } else S.set(K.points,points()-n); }
+function artTkTargets(){ const s=session()||{}, own=(MEMBERS[s.member]||{}).group, now=Date.now(), pre=new Set((getMShow().pre||[]).filter(p=>p.day>now).map(p=>p.gid));
+  const gs=GROUPS.map(g=>g.id).filter(gid=>gid!==own&&groupOf(gid)&&(pre.has(gid)||grpOccs(gid).some(x=>x<=now&&now-x<=TRUCK_ERA)));
+  const ms=gs.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); const H=tkHidM(); Object.keys(H).forEach(id=>{ if(!ms.includes(id)&&H[id].group!==own) ms.push(id); }); return ms; }
+function tkTargets(){ if(tkIsArt()) return artTkTargets(); const f=followed(), gs=[...f,...GROUPS.map(g=>g.id).filter(id=>!f.includes(id))].filter(gid=>groupOf(gid)&&!isSelfGid(gid));
   const ms=gs.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); const H=tkHidM(); Object.keys(H).forEach(id=>{ if(!ms.includes(id)&&!isSelfGid(H[id].group)) ms.push(id); }); return ms; }
 /* 收餐車的藝人：也包括「已核准、還沒到出道日」的新人（平常藏起來，餐車要送得到） */
 const tkHidM=()=>{ const r=S.get(K.roster,{})||{}, H={}; getDebut().filter(x=>x.status==="pre"&&x.mid&&x.gid).forEach(x=>{ const m=(r.members||{})[x.mid]; if(m) H[x.mid]={...m,pre:x.day}; }); return H; };
@@ -14355,14 +14362,14 @@ function tkState(t){ if(!tkFunded(t)) return "fund"; return tkDelivered(t)?"done
 function tkCount(mid){ const gid=tkM(mid).group, O=grpOccs(gid), cur=O.filter(x=>x<=Date.now()).pop()||0;
   return getTrucks().filter(t=>t.mid===mid&&(tkState(t)!=="done"||tkDeliverTs(t)>=cur)).length; }
 const tkShare=t=>Math.ceil(TRUCK_PRICE/(t.shares||1));
-function tkBuy(deco,mid,shares){ const share=Math.ceil(TRUCK_PRICE/shares); if(points()<share){ toast("積分不夠，先補充積分吧"); return null; }
+function tkBuy(deco,mid,shares){ const share=Math.ceil(TRUCK_PRICE/shares); if(tkBal()<share){ toast("積分不夠，先補充積分吧"); return null; }
   if(tkCount(mid)>=TRUCK_MAX){ toast(`${tkM(mid).name} 這次已經有 ${TRUCK_MAX} 台餐車了`); return null; }
   const me=myEmail(), t={id:"tk"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mid,gid:tkM(mid).group,by:me,byName:ME.name,shares,deco,ts:Date.now(),paid:[{em:me,name:ME.name,ts:Date.now()}]};
-  S.set(K.points,points()-share); recordSale("truck",{mid,pts:share,label:`應援餐車・${tkM(mid).name}${shares>1?`（${shares} 人分攤）`:""}`});
+  tkPay(share,`送應援餐車給 ${tkM(mid).name}`); recordSale("truck",{mid,pts:share,label:`應援餐車・${tkM(mid).name}${shares>1?`（${shares} 人分攤）`:""}`});
   S.set(K.trucks,[...(S.get(K.trucks,[])||[]),t]); return t; }
 function tkJoin(id){ const L=S.get(K.trucks,[])||[], t=L.find(x=>x.id===id), me=myEmail(); if(!t) return false; if(tkFunded(t)){ toast("已經湊齊了"); return false; }
-  if(t.paid.some(p=>p.em===me)){ toast("你已經出過錢了"); return false; } const share=tkShare(t); if(points()<share){ toast("積分不夠，先補充積分吧"); return false; }
-  S.set(K.points,points()-share); recordSale("truck",{mid:t.mid,pts:share,label:`應援餐車・${tkM(t.mid).name}（分攤）`});
+  if(t.paid.some(p=>p.em===me)){ toast("你已經出過錢了"); return false; } const share=tkShare(t); if(tkBal()<share){ toast("積分不夠，先補充積分吧"); return false; }
+  tkPay(share,`一起送應援餐車給 ${tkM(t.mid).name}`); recordSale("truck",{mid:t.mid,pts:share,label:`應援餐車・${tkM(t.mid).name}（分攤）`});
   t.paid.push({em:me,name:ME.name,ts:Date.now()}); S.set(K.trucks,L); return true; }
 /* 送到前：藝人每天 +100（每台最多 30 天）。由管理員的手機每天結算一次，不會重複 */
 function tkDaily(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.trucks]==null)) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), now=Date.now(); let add=0;
@@ -14410,15 +14417,19 @@ function truckLive(){ clearTimeout(_tkT); _tkT=setTimeout(()=>{ tkKeep(); const 
 document.addEventListener("input",e=>{ if(e.target&&/^tk(Slogan|From|M\d)$/.test(e.target.id||"")) truckLive(); });
 
 /* ---------- 藝人：FOC → 應援餐車（送到了才看得到；第一次打開有「餐車到了」） ---------- */
-function viewTruckArtist(mid){ const L=getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").sort((a,b)=>tkDeliverTs(b)-tkDeliverTs(a)), seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]), fresh=L.filter(t=>!seen.has(t.id));
+function viewTruckArtist(mid){ if(ui.tkD){ ui._tkDeco=tkDraftDeco(); return `<main class="page foc trk"><div class="trk-stage" id="tk3d"><span class="trk-load">載入中…</span></div>${tkEditor(ui.tkD)}</main>`; }
+  const T=artTkTargets(), me=myEmail(), sent=getTrucks().filter(t=>(t.paid||[]).some(p=>p.em===me)), send=T.length?(tkBal()<TRUCK_PRICE?`<button class="btn btn-soft btn-block trk-new" disabled>送應援餐車給出道／回歸的藝人・積分不足</button>`:`<button class="btn btn-main btn-block trk-new" data-a="tkNew">送應援餐車給出道／回歸的藝人・${fmt(TRUCK_PRICE)} 積分</button>`):"";
+  const sentH=sent.length?`<div class="section-h">我送出的餐車</div><section class="card trk-list">${sent.slice().reverse().map(t=>`<div class="trk-row"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>${esc(tkM(t.mid).name)}</b><small>${TK_ST[tkState(t)]}</small></span></div>`).join("")}</section>`:"";
+  return viewTruckArtist0(mid,send,sentH); }
+function viewTruckArtist0(mid,send,sentH){ const L=getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").sort((a,b)=>tkDeliverTs(b)-tkDeliverTs(a)), seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]), fresh=L.filter(t=>!seen.has(t.id));
   if(!L.length&&demoOn()){ L.push({id:"tk_demo",mid,gid:MEMBERS[mid].group,by:"",byName:"示範粉絲",shares:3,deco:{...TRUCK_DECO0(),pal:1,slogan:"出道快樂！我們一直都在",from:"示範粉絲",menu:["草莓拿鐵","香草可頌","氣泡飲"]},ts:Date.now()-864e5,paid:[{em:"a",name:"A",ts:Date.now()-864e5},{em:"b",name:"B",ts:Date.now()-864e5},{em:"c",name:"C",ts:Date.now()-864e5}],_demo:1}); }
-  if(!L.length) return `<main class="page foc trk"><section class="card trk-empty"><b>還沒有應援餐車</b></section></main>`;
+  if(!L.length) return `<main class="page foc trk">${send}<section class="card trk-empty"><b>還沒有應援餐車</b></section>${sentH}</main>`;
   const cur=L.find(t=>t.id===ui.tkView)||fresh[0]||L[0];
   ui._tkDeco=tkDecoOf(cur); if(fresh.some(t=>t.id===cur.id)){ ui.tkDrive=true; const S2=S.get(K.tkSeen,{})||{}; S2[mid]=[...new Set([...(S2[mid]||[]),cur.id])]; setTimeout(()=>S.set(K.tkSeen,S2),2500); }
-  return `<main class="page foc trk">${fresh.length?`<div class="trk-arrive"><b>餐車到了！</b><small>From. ${esc((cur.deco&&cur.deco.from)||cur.byName||"粉絲")}</small></div>`:""}
+  return `<main class="page foc trk">${send}${fresh.length?`<div class="trk-arrive"><b>餐車到了！</b><small>From. ${esc((cur.deco&&cur.deco.from)||cur.byName||"粉絲")}</small></div>`:""}
     <div class="trk-stage" id="tkA3d"><span class="trk-load">載入中…</span></div>
     <div class="section-h">收到的餐車<span class="muted">${L.length} 台</span></div>
-    <section class="card trk-list">${L.map(t=>`<button class="trk-row ${t.id===cur.id?"on":""}" data-a="tkView" data-v="${t.id}"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>From. ${esc((t.deco&&t.deco.from)||t.byName||"粉絲")}</b><small>${ymd(tkDeliverTs(t)||t.ts)}・${t.shares>1?`${t.paid.length} 位粉絲一起送`:"一位粉絲送"}</small></span></button>`).join("")}</section></main>`; }
+    <section class="card trk-list">${L.map(t=>`<button class="trk-row ${t.id===cur.id?"on":""}" data-a="tkView" data-v="${t.id}"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>From. ${esc((t.deco&&t.deco.from)||t.byName||"粉絲")}</b><small>${ymd(tkDeliverTs(t)||t.ts)}・${t.shares>1?`${t.paid.length} 位粉絲一起送`:"一位粉絲送"}</small></span></button>`).join("")}</section>${sentH}</main>`; }
 const tkArtNew=mid=>{ const seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]); return getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done"&&!seen.has(t.id)).length; };
 
 /* ---------- 管理員：活動 → 餐車（全部都看得到） ---------- */
