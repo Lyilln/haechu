@@ -4718,6 +4718,20 @@ html.sn-vshrink .sn-shw{background:transparent}html.sn-vshrink .sn-sh{max-height
 .sn-coll{display:flex;flex-direction:column;max-height:42vh;overflow-y:auto;padding-bottom:calc(env(safe-area-inset-bottom,0px) + 12px)}.sn-coll button{display:flex;align-items:center;gap:12px;border:0;background:none;color:inherit;font:inherit;padding:8px 16px;text-align:left}
 .sn-coll button>span:nth-child(2){flex:1;display:flex;flex-direction:column}.sn-coll small{color:#8E8E8E;font-size:12px}.sn-coll i{font-style:normal;width:28px;height:28px;border-radius:50%;border:1.5px solid #C7C7CC;display:grid;place-items:center;font-size:14px}.sn-coll i.on{background:#0095F6;border-color:#0095F6;color:#fff}
 .sn-colf{display:flex;gap:6px;overflow-x:auto;padding:0 16px 10px;scrollbar-width:none}.sn-colf button{flex:none;border:1px solid var(--sn-l,#DBDBDB);border-radius:16px;background:none;color:inherit;font:inherit;font-size:13px;padding:6px 12px;display:flex;gap:6px}.sn-colf em{font-style:normal;color:#8E8E8E}.sn-colf button.on{background:var(--t,#000);color:var(--b,#fff);border-color:transparent}
+/* 新貼文／新增限時動態：重新排版 */
+.sn-pick{margin:14px 16px 4px;border-radius:20px;border:1.5px dashed color-mix(in srgb,var(--t,#fff) 22%,transparent);background:color-mix(in srgb,var(--t,#fff) 5%,transparent);aspect-ratio:4/3;gap:6px}
+.sn-pick .si{width:40px;height:40px;opacity:.85}.sn-pick b{font-size:15px}.sn-pick small{font-size:12px}
+.sn-next{padding:7px 16px;border-radius:999px;background:var(--blue,#0095F6);color:#fff!important;font-size:14px;font-weight:700}
+.sn-next:disabled{opacity:1;background:color-mix(in srgb,var(--t,#fff) 12%,transparent);color:color-mix(in srgb,var(--t,#fff) 45%,transparent)!important}
+.sn-cap{min-height:96px;border-top:0;margin-top:6px}
+.sn-aud{padding:14px 16px;gap:10px}
+.sn-aud button{flex:1 1 0;flex-direction:row!important;height:46px;padding:0 12px;gap:8px;border-radius:999px;font-size:14px;font-weight:600;white-space:nowrap;border:1px solid color-mix(in srgb,var(--t,#fff) 22%,transparent)}
+.sn-aud button.on{border-color:transparent;background:color-mix(in srgb,var(--t,#fff) 12%,transparent);font-weight:800}
+.sn-aud .cf i{display:inline-grid!important;flex:none;margin:0}
+.sn-aud .cf.on{background:color-mix(in srgb,#1CD14F 16%,transparent);border-color:transparent}
+.sn-pick:has(+.sn-aud){aspect-ratio:3/4}
+.sn-tagr{margin:4px 16px 0;width:calc(100% - 32px);padding:14px 4px;border-top:.5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important;border-bottom:.5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important}
+.sn-cap{padding:14px 20px}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5785,7 +5799,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102115909";
+const BUILD="20261102120306";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9215,7 +9229,7 @@ function viewNotifs(){
   const groups=f.map(groupOf).filter(Boolean);
   const card=n=>{const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"];
     const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
-    const m=MEMBERS[n.member], g=groupOf(n.group||(m&&m.group)), p0=n.postId&&getPosts().find(x=>x.id===n.postId), th=p0&&p0.vis!=="ms"&&(p0.media||[])[0];
+    const m=MEMBERS[n.member], g=groupOf(n.group||(m&&m.group)), p0=n.postId&&getPosts().find(x=>x.id===n.postId), th=p0&&!postLocked(p0)&&(p0.media||[])[0];   /* 私密／Membership 沒解鎖：通知不露照片 */
     const vf=`<span class="nz-vf">${I.verified}</span>`, nm=m?esc(artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed")):"";
     let tx=esc(notifMsg(n)); if(nm) tx=tx.split(nm).join(nm+vf);
     return `<button class="nz-card nz2 ${n.self?"self":""}" data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?(n.group||""):""}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||n.newsId||n.tourId||""}" data-c="${n.commentId||""}">
