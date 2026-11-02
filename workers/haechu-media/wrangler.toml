@@ -2,7 +2,7 @@
 # Cloudflare → Workers → haechu-media → Settings → Build 連到這個 repo，Root directory 填 workers/haechu-media
 name = "haechu-media"
 main = "src/index.js"
-compatibility_date = "2024-09-23"
+compatibility_date = "2026-10-20"
 keep_vars = true          # 保留在 Cloudflare 網頁上設定的 SUPABASE_URL、SUPABASE_KEY、ALLOWED_ORIGIN
 
 [[r2_buckets]]

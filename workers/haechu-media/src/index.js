@@ -16,7 +16,7 @@ export default {
   async fetch(req, env) {
     const url = new URL(req.url);
     const origin = req.headers.get("Origin") || "";
-    const allowed = (env.ALLOWED_ORIGIN || "").trim();
+    const allowed = (env.ALLOWED_ORIGIN || "").trim().replace(/\/+$/, "");   // 網址後面多打一個「/」也沒關係
     const cors = {
       "Access-Control-Allow-Origin": allowed || "*",
       "Access-Control-Allow-Methods": "GET, PUT, POST, DELETE, OPTIONS",
