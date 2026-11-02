@@ -5850,7 +5850,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102230704";
+const BUILD="20261102230719";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9280,7 +9280,7 @@ function pinnedHtml(){
   const anns=annLive(); if(!anns.length) return "";
   const N=anns.length, i=(((ui.pinIdx||0)%N)+N)%N, a=anns[i];
   return `<div id="pinWrap" class="pin-w"><span class="nz-pill">📌 平台重要置頂公告</span>
-    <div class="pin-card" data-a="preAnn" data-id="${a.id}" role="button" tabindex="0">
+    <div class="pin-card">
       <div class="pin-top"><span><i class="pin-dot"></i>NOTICE 公告（${i+1}/${N}）</span><i class="pin-ping"></i></div>
       ${a.img?`<span class="pin-img" style="background-image:url('${esc(a.img)}')"></span>`:""}<p>${esc(a.text)}</p>
       <div class="pin-foot"><span>${ago(a.ts)}</span>${N>1?`<span class="pin-nav"><button data-a="pinPrev" aria-label="上一則">‹</button><button data-a="pinNext" aria-label="下一則">›</button></span>`:""}</div>
