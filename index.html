@@ -26,10 +26,7 @@
 <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash-v2-750x1334.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1242x2208.png">
 <link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash-v2-640x1136.png">
-<script>(function(){function z(){var w=Math.min(window.innerWidth||390,screen.width||9999);var v=Math.max(.8,Math.min(.92,w/440));document.documentElement.style.zoom=v;document.documentElement.style.setProperty("--zm",v);}z();addEventListener("resize",z);addEventListener("orientationchange",function(){setTimeout(z,300)});
-/* iPhone 有時會自己把整頁放大一點點（右邊被裁掉）：換頁、打完字收起鍵盤時，如果還是放大的就彈回原本大小 */
-function unz(){var vv=window.visualViewport;if(!vv||vv.scale<=1.01)return;var a=document.activeElement;if(a&&/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName))return;var m=document.querySelector('meta[name=viewport]');if(!m)return;var c=m.getAttribute("content");m.setAttribute("content",c+",minimum-scale=1");setTimeout(function(){m.setAttribute("content",c);},60);}
-addEventListener("hashchange",function(){setTimeout(unz,50)});document.addEventListener("focusout",function(){setTimeout(unz,400)});document.addEventListener("visibilitychange",function(){if(!document.hidden)setTimeout(unz,200)});})();</script>
+<script>(function(){function z(){var w=Math.min(window.innerWidth||390,screen.width||9999);var v=Math.max(.8,Math.min(.92,w/440));document.documentElement.style.zoom=v;document.documentElement.style.setProperty("--zm",v);}z();addEventListener("resize",z);addEventListener("orientationchange",function(){setTimeout(z,300)});})();</script>
 <script>try{var m=JSON.parse(localStorage.getItem("daisuki_theme")||'"system"');var d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light");document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Huninn&family=Jua&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
@@ -4782,6 +4779,9 @@ html[data-theme="dark"] :is(.t-msgs,.t-page) .t-rp.me p{color:#F1EBFF!important}
 .sn-smus{display:block;font-size:12px;opacity:.9;max-width:50vw}
 .snm-r{display:flex;align-items:center;gap:10px}.snm-r input{flex:1}.snm-r b{flex:none;font-size:13px;font-variant-numeric:tabular-nums}
 .snm-pv{margin-top:10px;border:0;border-radius:999px;padding:8px 16px;background:color-mix(in srgb,var(--violet,#8843FB) 14%,transparent);color:var(--violet,#8843FB);font:inherit;font-weight:700}
+/* 置頂公告右上角的閃爍圓點：iPhone 放大縮小（transform）會被上下裁掉 → 改成往外擴散的光圈，圓點本身不動 */
+.pin-ping{flex:none;animation:pinPing 1.4s ease-out infinite!important;transform:none!important}
+@keyframes pinPing{0%{box-shadow:0 0 0 0 rgba(249,168,212,.75)}80%,100%{box-shadow:0 0 0 8px rgba(249,168,212,0)}}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5849,7 +5849,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102230222";
+const BUILD="20261102230420";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
