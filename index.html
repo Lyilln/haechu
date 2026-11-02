@@ -667,7 +667,7 @@ html[data-theme="dark"] .t-art-n b:not(.a-nick){color:#F1EEF7!important}
 /* ===== 通知頁（NSY 排版） ===== */
 .nz-pill{display:inline-block;padding:4px 12px;border-radius:999px;background:var(--glass-pink);border:1px solid rgba(255,255,255,.8);color:var(--violet);font-size:11px;font-weight:900;letter-spacing:.12em;margin:6px 2px 12px;box-shadow:inset 0 1px 1px rgba(255,255,255,.7),0 4px 12px -6px rgba(249,168,212,.6)}
 .nz-pill.soft{color:#B07ACF}
-.pin-card{display:block;width:100%;text-align:left;padding:18px 20px;background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(245,240,255,.85));border:1px solid rgba(196,181,253,.45);border-radius:28px;box-shadow:0 12px 26px -10px rgba(167,139,250,.45),0 0 0 4px rgba(237,233,254,.6);cursor:pointer;animation:pinIn .2s ease}
+.pin-card{display:block;width:100%;text-align:left;padding:18px 20px;background:linear-gradient(135deg,rgba(255,255,255,.92),rgba(245,240,255,.85));border:1px solid rgba(196,181,253,.45);border-radius:28px;box-shadow:0 12px 26px -10px rgba(167,139,250,.45),0 0 0 4px rgba(237,233,254,.6);cursor:default;animation:pinIn .2s ease}
 @keyframes pinIn{from{opacity:0;transform:translateX(20px)}}
 .pin-top{display:flex;justify-content:space-between;align-items:center}
 .pin-top span{font-size:10.5px;font-weight:900;color:#9B87D6;letter-spacing:.14em;display:flex;align-items:center;gap:6px}
@@ -4782,6 +4782,7 @@ html[data-theme="dark"] :is(.t-msgs,.t-page) .t-rp.me p{color:#F1EBFF!important}
 /* 置頂公告右上角的閃爍圓點：iPhone 放大縮小（transform）會被上下裁掉 → 改成往外擴散的光圈，圓點本身不動 */
 .pin-ping{flex:none;animation:pinPing 1.4s ease-out infinite!important;transform:none!important}
 @keyframes pinPing{0%{box-shadow:0 0 0 0 rgba(249,168,212,.75)}80%,100%{box-shadow:0 0 0 8px rgba(249,168,212,0)}}
+.pre-tx{white-space:pre-wrap;overflow-wrap:anywhere}.pre-ts{display:block;margin-top:8px;font-size:12px;color:var(--ink-3)}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5849,7 +5850,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102230420";
+const BUILD="20261102230704";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9279,7 +9280,7 @@ function pinnedHtml(){
   const anns=annLive(); if(!anns.length) return "";
   const N=anns.length, i=(((ui.pinIdx||0)%N)+N)%N, a=anns[i];
   return `<div id="pinWrap" class="pin-w"><span class="nz-pill">📌 平台重要置頂公告</span>
-    <div class="pin-card" data-a="pinOpen" role="button" tabindex="0">
+    <div class="pin-card" data-a="preAnn" data-id="${a.id}" role="button" tabindex="0">
       <div class="pin-top"><span><i class="pin-dot"></i>NOTICE 公告（${i+1}/${N}）</span><i class="pin-ping"></i></div>
       ${a.img?`<span class="pin-img" style="background-image:url('${esc(a.img)}')"></span>`:""}<p>${esc(a.text)}</p>
       <div class="pin-foot"><span>${ago(a.ts)}</span>${N>1?`<span class="pin-nav"><button data-a="pinPrev" aria-label="上一則">‹</button><button data-a="pinNext" aria-label="下一則">›</button></span>`:""}</div>
@@ -12302,7 +12303,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "fpRep": { const p=S.get(K.fanPosts,[]).find(x=>x.id===t.dataset.id); if(!p) break; tieModal("回覆粉絲貼文",`<textarea id="fpRepIn" class="a-nick-in fp-rin" maxlength="300" placeholder="輸入文字"></textarea>`,`<button class="t-mbtn main" data-a="fpRepOk" data-id="${p.id}">送出</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); setTimeout(()=>{ const i=document.getElementById("fpRepIn"); if(i) i.focus(); },250); break; }
     case "fpRepOk": { const tx=((document.getElementById("fpRepIn")||{}).value||"").trim(); if(!tx){ toast("請輸入回覆"); break; } const mid=(session()||{}).member, L=S.get(K.fanPosts,[]), p=L.find(x=>x.id===t.dataset.id); if(!p||!mid) break; if(!isAdminAcct()&&banBlock(tx)) break;
       p.rep=[...(p.rep||[]),{id:"fr"+Date.now(),mid,text:tx,ts:Date.now()}]; S.set(K.fanPosts,L); if(p.by) feedPush({kind:"core",member:mid,group:p.gid,text:`💬 ${artName(mid,"feed")}回覆了你的貼文：${tx.slice(0,60)}`,direct:true},"u:"+p.by); layer.innerHTML=""; const y=scrollY; render(); scrollTo(0,y); toast("已回覆"); break; }
-    case "preAnn": { const x=getAnns().find(y=>y.id===t.dataset.id); if(!x) break; tieModal(/回歸/.test(x.text)?"📢 即將回歸":"📢 即將出道",`${x.img?`<img class="pre-img" src="${esc(x.img)}" alt="">`:""}<p class="pre-tx">${esc(x.text)}</p>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
+    case "preAnn": { const x=getAnns().find(y=>y.id===t.dataset.id); if(!x) break; const pk=annPre(x); tieModal(pk?(pk.k==="cb"?"📢 即將回歸":"📢 即將出道"):"📌 公告",`${x.img?`<img class="pre-img" src="${esc(x.img)}" alt="">`:""}<p class="pre-tx">${esc(x.text)}</p><small class="pre-ts">${ymdhm(x.ts)}</small>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); break; }
     case "pinOpen": ui.feedTab="feed"; S.set(K.annSeen,""); go("fan"); window.scrollTo(0,0); break;
     case "notifClear": ask("要清除所有一般通知嗎？置頂公告不會被清掉。",()=>{ S.set(K.notifs,getNotifications().filter(n=>n.kind==="system")); markAllRead(); render(); toast("已清除通知"); }); break;
     case "report": ask("要檢舉這則留言嗎？管理員會審核。",()=>{ reportComment(t.dataset.c,t.dataset.post); renderComments(true); toast("已送出檢舉，謝謝你"); }); break;
