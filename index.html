@@ -5715,7 +5715,8 @@ async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false}={},n
   if(!noAuth&&HB.tok) h.Authorization="Bearer "+HB.tok;
   if(body!==undefined&&!(body instanceof Blob)) h["Content-Type"]="application/json";
   if(prefer) h.Prefer=prefer;
-  let res; try{ res=await fetch(HB_URL+path,{method,headers:h,body:body===undefined?undefined:body instanceof Blob?body:JSON.stringify(body)}); }catch(e){ const er=new Error("network"); er.net=true; throw er; }
+  const ac=path.startsWith("/rest/v1/kv")&&typeof AbortController!=="undefined"?new AbortController():null, tm=ac?setTimeout(()=>ac.abort(),30e3):0;   /* 資料同步卡住超過 30 秒就重來（不然整個同步會一直卡著，後面發的東西都傳不上去） */
+  let res; try{ res=await fetch(HB_URL+path,{method,headers:h,signal:ac?ac.signal:undefined,body:body===undefined?undefined:body instanceof Blob?body:JSON.stringify(body)}); }catch(e){ clearTimeout(tm); const er=new Error("network"); er.net=true; throw er; } clearTimeout(tm);
   if(res.status===401&&!noAuth&&!retried&&HB.ref){ if(await hbRefresh()) return hbFetch(path,{method,body,prefer,headers,raw},noAuth,true); }
   if(raw) return res;
   const txt=await res.text(); try{ if(typeof hbRx==="function") hbRx(txt.length); }catch(e){} let j=null; try{ j=txt?JSON.parse(txt):null; }catch(e){ j=txt; }
@@ -5789,13 +5790,21 @@ function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PE
 /* ===== 防止資料被吃掉：聊天、留言、貼文這些「只會越來越多」的資料，
    如果雲端突然變成空的、或少了一大半，而這支手機還留著完整的，就把兩邊合起來送回去（自動救回） ===== */
 const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts","daisuki_sn_stories","daisuki_sn_hl",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
+/* 限時動態只會越來越多：刪掉的換成「已刪除」記號（ts=0，舊版 App 也會當成過期不顯示）。
+   合併時任何一邊有的都留著，除非有「已刪除」記號 → 別支手機版本舊、慢一步，都不會再把限動吃掉 */
+const HB_KEEP=new Set(["daisuki_sn_stories"]);
+function hbKeep(k,out,...src){ if(!HB_KEEP.has(k)||!Array.isArray(out)) return out; const m=new Map(), ord=[], raw=[];
+  [out,...src].forEach(a=>{ if(!Array.isArray(a)) return; a.forEach(x=>{ if(!x||typeof x!=="object"||x.id==null){ if(a===out) raw.push(x); return; } const p=m.get(x.id); if(!p){ m.set(x.id,x); ord.push(x.id); } else if(x.del&&!p.del) m.set(x.id,x); }); });
+  const lim=Date.now()-14*864e5; return [...raw,...ord.map(id=>m.get(id)).filter(x=>!(x.del&&x.del<lim))]; }
 function hbGuard(k,local,remote){ if(!(HB_GUARD().has(k)||String(k).startsWith("daisuki_tie:"))||local==null) return null;
   if(remote==null) return local;
+  if(HB_KEEP.has(k)&&Array.isArray(remote)){ const o=hbKeep(k,remote,local); return hbJ(o)!==hbJ(remote)?o:null; }
   if(Array.isArray(local)&&Array.isArray(remote)&&local.length>=8&&remote.length<local.length*.6) return hbMergeArr([],local,remote);
   if(k===K.sns&&local&&typeof local==="object"&&remote&&typeof remote==="object"){ const n=o=>((o.posts||[]).length+Object.keys(o.dm||{}).length); if(n(local)>=6&&n(remote)<n(local)*.6) return hbMerge({},local,remote); }
   return null; }
 function hbRow(row,adv=true){ HB.base[row.k]=JSON.stringify(row.v===undefined?null:row.v); HB.ver[row.k]=row.ver; if(adv&&row.updated_at&&row.updated_at>HB.since) HB.since=row.updated_at; }
-async function hbPullAll(opt={}){ const rows=[]; for(let off=0;off<20000;off+=1000){ const part=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&order=k.asc&offset=${off}&limit=1000`); if(!Array.isArray(part)) break; rows.push(...part); if(part.length<1000) break; }
+async function hbPullAll(opt={}){ for(let i=0;i<80&&!KVX.ready;i++) await new Promise(r=>setTimeout(r,100));   /* 等手機的大空間讀完：不然會以為手機上沒有資料，剛發還沒傳上去的東西就被雲端舊的蓋掉 */
+  const rows=[]; for(let off=0;off<20000;off+=1000){ const part=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&order=k.asc&offset=${off}&limit=1000`); if(!Array.isArray(part)) break; rows.push(...part); if(part.length<1000) break; }
   try{ let tot=0; const sz=rows.map(r=>{ const n=JSON.stringify(r.v==null?null:r.v).length; tot+=n; return [r.k,n]; }); HB.kvSz=tot; HB.kvTop=sz.sort((a,b)=>b[1]-a[1]).slice(0,12); }catch(e){}
   if(opt.clean) hbPendSet({});   /* 試玩結束：手機上改過的全部不算，完全照雲端 */
   const pend=hbPendGet(), keep={}; Object.keys(pend).forEach(k=>{ if(hbSyncable(k)) keep[k]=hbReadLocal(k); });
@@ -5804,7 +5813,7 @@ async function hbPullAll(opt={}){ const rows=[]; for(let off=0;off<20000;off+=10
   try{ Object.keys(localStorage).filter(hbSyncable).forEach(k=>localStorage.removeItem(k)); }catch(e){} Object.keys(mem).filter(hbSyncable).forEach(k=>delete mem[k]);
   HB.base={}; HB.ver={}; HB.dirty.clear(); HB.since="";
   const seen=new Set();
-  rows.forEach(r=>{ seen.add(r.k); hbRow(r); const gd=hbGuard(r.k,snap[r.k],r.v); if(gd!=null&&!(r.k in keep)){ hbWriteLocal(r.k,gd); HB.dirty.add(r.k); return; } if(r.k in keep&&keep[r.k]==null){ hbWriteLocal(r.k,gd!=null?gd:r.v); if(gd!=null) HB.dirty.add(r.k); return; } if(r.k in keep){ const b=pend[r.k]; hbWriteLocal(r.k,hbMerge(b==null?null:JSON.parse(b),keep[r.k],r.v)); HB.dirty.add(r.k); } else hbWriteLocal(r.k,r.v); });
+  rows.forEach(r=>{ seen.add(r.k); hbRow(r); const gd=hbGuard(r.k,snap[r.k],r.v); if(gd!=null&&!(r.k in keep)){ hbWriteLocal(r.k,gd); HB.dirty.add(r.k); return; } if(r.k in keep&&keep[r.k]==null){ hbWriteLocal(r.k,gd!=null?gd:r.v); if(gd!=null) HB.dirty.add(r.k); return; } if(r.k in keep){ const b=pend[r.k]; hbWriteLocal(r.k,hbKeep(r.k,hbMerge(b==null?null:JSON.parse(b),keep[r.k],r.v),keep[r.k],r.v)); HB.dirty.add(r.k); } else hbWriteLocal(r.k,r.v); });
   Object.keys(keep).forEach(k=>{ if(!seen.has(k)&&keep[k]!=null){ hbWriteLocal(k,keep[k]); HB.dirty.add(k); } });
   Object.keys(snap).forEach(k=>{ if(!seen.has(k)&&!(k in keep)){ hbWriteLocal(k,snap[k]); HB.dirty.add(k); } });
   if(KVX.ok) bigBefore.forEach(k=>{ if(!seen.has(k)&&!(k in keep)&&!(k in snap)) kvxPut(k,null); });
@@ -5873,13 +5882,13 @@ async function hbPush0(k){ let local=hbReadLocal(k); if(local==null) return;   /
       if(Array.isArray(r)&&r[0]){ hbRow(r[0],false); return; } }
     const rows=await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&select=k,v,ver,updated_at`), row=Array.isArray(rows)&&rows[0];
     if(!row){ delete HB.ver[k]; continue; }
-    const merged=hbMerge(JSON.parse(HB.base[k]||"null"),local,row.v); hbRow(row,false); hbWriteLocal(k,merged); local=merged; if(k===K.roster) applyRoster(); hbSoon(); }
+    const merged=hbKeep(k,hbMerge(JSON.parse(HB.base[k]||"null"),local,row.v),local,row.v); hbRow(row,false); hbWriteLocal(k,merged); local=merged; if(k===K.roster) applyRoster(); hbSoon(); }
   throw new Error("conflict"); }
 /* 讀取：每幾秒問一次有沒有別人改過的資料 */
 async function hbPoll(){ if(!HB.tok||document.hidden||sbxOn()) return; let ch=false;
   try{ const rows=await hbFetch(`/rest/v1/kv?select=k,v,ver,updated_at&updated_at=gt.${encodeURIComponent(HB.since||"1970-01-01T00:00:00Z")}&order=updated_at.asc&limit=500`);
     (Array.isArray(rows)?rows:[]).forEach(row=>{ if(row.k===HB.inflight) return; /* 這份正在送出：先不套用別人的版本，送出時會自己合併（不然會把別人的新訊息吃掉） */ if(HB.ver[row.k]!=null&&row.ver<=HB.ver[row.k]){ if(row.updated_at>HB.since) HB.since=row.updated_at; return; }
-      if(HB.dirty.has(row.k)){ const m=hbMerge(JSON.parse(HB.base[row.k]||"null"),hbReadLocal(row.k),row.v); hbRow(row); hbWriteLocal(row.k,m); }
+      if(HB.dirty.has(row.k)){ const lo=hbReadLocal(row.k), m=hbKeep(row.k,hbMerge(JSON.parse(HB.base[row.k]||"null"),lo,row.v),lo,row.v); hbRow(row); hbWriteLocal(row.k,m); }
       else { const gd=hbGuard(row.k,hbReadLocal(row.k),row.v); hbRow(row); if(gd!=null){ hbWriteLocal(row.k,gd); HB.dirty.add(row.k); clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,400); } else hbWriteLocal(row.k,row.v); }
       if(row.k===K.roster||row.k===K.debut) applyRoster(); ch=true; });
     HB.n++;
@@ -5978,9 +5987,11 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103032454";
+const BUILD="20261103034922";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
+let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
+  if(ui.verNew&&ui.verNew!==BUILD&&verHid&&Date.now()-verHid>90e3&&!ui.snDraft&&![...document.querySelectorAll("textarea,input")].some(x=>x.type!=="file"&&x.type!=="range"&&x.type!=="checkbox"&&String(x.value||"").trim())){ try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew)+location.hash); } });
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
 /* 照片、語音、影片放哪裡：MEDIA_URL 有填就放 Cloudflare R2（透過 haechu-media Worker），沒填就放 Supabase Storage */
 const MEDIA_URL="https://haechu-media.vinriu715.workers.dev";
@@ -14926,7 +14937,7 @@ const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach
    不會因為手上拿的是舊的一份，就把別人剛發的蓋掉 */
 const snSave=d=>{ try{ const snap=SN_SNAP.get(d)||{}; Object.keys(SN_PARTS).forEach(p=>{ if(d[p]===undefined) return; const mine=JSON.stringify(d[p]); if(snap[p]!=null&&mine===snap[p]) return;
     const cur=S.get(snKey(p),null), curJ=JSON.stringify(cur); if(curJ===mine) return;
-    const out=snap[p]!=null&&cur!=null&&curJ!==snap[p]?hbMerge(JSON.parse(snap[p]),d[p],cur):d[p]; S.set(snKey(p),out); snap[p]=JSON.stringify(out); }); }catch(e){ toast("空間不夠，存不下來"); } };
+    const out=hbKeep(snKey(p),snap[p]!=null&&cur!=null&&curJ!==snap[p]?hbMerge(JSON.parse(snap[p]),d[p],cur):d[p],cur); S.set(snKey(p),out); snap[p]=JSON.stringify(out); }); }catch(e){ toast("空間不夠，存不下來"); } };
 const dmKey=(a,b)=>"daisuki_dm:"+[a,b].sort().join("~");
 const dmGet=other=>S.get(dmKey(snMeId(),other),[])||[];
 function dmAppend(from,to,msg){ const k=dmKey(from,to), L=S.get(k,[])||[]; L.push({...msg,from}); S.set(k,L.slice(-500)); }
@@ -14984,7 +14995,8 @@ const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics
 /* 格子裡的小圖：影片用封面，右上角放 Reels 圖示 */
 const snThumb=(p,u)=>{ const m=p.media&&p.media[0]; if(m&&m.type==="video") return `<img class="sn-img" data-mid="${m.poster||""}" alt=""><i class="sn-ri">${si("reels2","sm")}</i>`; return snMedia(p,u,0)+(snCount(p)>1?`<i class="sn-ri">❐</i>`:""); };
 const snCount=p=>p.media?p.media.length:(p.pics||[1]).length;
-function snActiveStories(d){ const lim=Date.now()-864e5, me=snMeId(); return d.stories.filter(s=>s.ts>lim&&(!s.cf||s.uid===me||((d.cf||{})[s.uid]||[]).includes(me))); }
+const snStDel=s=>({id:s.id,uid:s.uid,ts:0,del:Date.now()});   /* 刪掉的限動：留一個記號，別支手機才不會又把它合併回來 */
+function snActiveStories(d){ const lim=Date.now()-864e5, me=snMeId(); return d.stories.filter(s=>!s.del&&s.ts>lim&&(!s.cf||s.uid===me||((d.cf||{})[s.uid]||[]).includes(me))); }
 const snStoryCf=(d,uid)=>snActiveStories(d).some(s=>s.uid===uid&&s.cf);
 function snHasStory(d,uid){ return snActiveStories(d).some(s=>s.uid===uid); }
 function snStorySeen(d,uid){ const me=snMeId(), st=snActiveStories(d).filter(s=>s.uid===uid); return st.length&&st.every(s=>((d.seen[me]||{})[s.id])); }
@@ -15151,7 +15163,7 @@ function snFix1(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix1",false)) retur
   Object.keys(d.prof).forEach(id=>{ if(id.startsWith("m:")) delete d.prof[id]; else if(id.startsWith("u:")){ const e=id.slice(2), pr=d.prof[id]; if(pr&&pr.u&&(pr.u===e||pr.u===e.split("@")[0]||pr.u===e.replace(/[^a-z0-9._]/g,""))) delete pr.u; } });
   Object.keys(d.fol).forEach(id=>{ if(!ok(id)){ delete d.fol[id]; return; } if(id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; d.fol[id]=m?Object.keys(MEMBERS).filter(x=>!MEMBERS[x].official&&MEMBERS[x].group===m.group&&"m:"+x!==id).map(x=>"m:"+x):[]; } else d.fol[id]=[...new Set(d.fol[id].filter(ok))]; });
   Object.keys(d.hl||{}).forEach(id=>{ if(id.startsWith("m:")||!ok(id)) delete d.hl[id]; });
-  d.posts=d.posts.filter(p=>ok(p.uid)).map(p=>{ const q={...p}; delete q.base; return q; }); d.stories=d.stories.filter(s=>ok(s.uid));
+  d.posts=d.posts.filter(p=>ok(p.uid)).map(p=>{ const q={...p}; delete q.base; return q; }); d.stories=d.stories.map(s=>ok(s.uid)||s.del?s:snStDel(s));
   const pid=new Set(d.posts.map(p=>p.id)); Object.keys(d.rp||{}).forEach(k=>{ d.rp[k]=(d.rp[k]||[]).filter(x=>pid.has(x.id)); });
   Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.member&&MEMBERS[a.member]){ const id="u:"+String(e).toLowerCase(); (d.prof[id]=d.prof[id]||{}).priv=true; } });
   snSave(d); S.set("daisuki_sn_fix1",Date.now()); }catch(e){} }
@@ -15284,7 +15296,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snHlPick": t.classList.toggle("on"); break;
     case "snHlDel": { const id=t.dataset.v; ask("要刪除這個精選嗎？",()=>{ const d=snDB(), me=snMeId(); d.hl=d.hl||{}; d.hl[me]=(d.hl[me]||[]).filter(h=>h.id!==id); snSave(d); clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; render(); toast("已刪除精選"); }); break; }
     case "snHl": { const d=snDB(), h=snHls(d,t.dataset.v).find(x=>x.id===t.dataset.id); if(!h||!h.items.length) break; ui.snStory={order:[t.dataset.v],ui:0,si:0,list:h.items,title:h.title,hid:h.id}; snShowStory(); break; }
-    case "snHlNew": { const d=snDB(), me=snMeId(), S2=d.stories.filter(x=>x.uid===me).sort((a,b)=>a.ts-b.ts); if(!S2.length){ toast("先發一則限時動態吧"); break; }
+    case "snHlNew": { const d=snDB(), me=snMeId(), S2=d.stories.filter(x=>x.uid===me&&!x.del).sort((a,b)=>a.ts-b.ts); if(!S2.length){ toast("先發一則限時動態吧"); break; }
       tieModal("新增精選",`<input id="snHlIn" class="a-nick-in" maxlength="15" placeholder="輸入文字"><span class="sn-hlpk">${S2.slice().reverse().map((s,i)=>`<button class="${i===0?"on":""}" data-a="snHlPick" data-id="${s.id}">${snStThumb(d,s,snUser(me).g)}<i></i></button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snHlOk">新增</button>`,"row sn-hlm"); hydrateMedia(layer); setTimeout(()=>{ const i=document.getElementById("snHlIn"); if(i) i.focus(); },200); break; }
     case "snHlOk": { const v=((document.getElementById("snHlIn")||{}).value||"").trim()||"精選"; if(banBlock(v)) break; const d=snDB(), me=snMeId(); d.hl=d.hl||{}; const pk=[...document.querySelectorAll(".sn-hlpk .on")].map(b=>b.dataset.id); if(!pk.length){ toast("至少選一則"); break; } (d.hl[me]=d.hl[me]||[]).push({id:"hl"+Date.now(),title:v,items:d.stories.filter(x=>x.uid===me&&pk.includes(x.id)).sort((a,b)=>a.ts-b.ts)}); snSave(d); layer.innerHTML=""; render(); toast("已新增精選"); break; }
     case "snCreate": iosSheet([["貼文","snNewP",'data-v="post"'],["限時動態","snNewP",'data-v="story"']]); break;
@@ -15326,9 +15338,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snMusOk": snMusOk(); break;
     case "snMusX": snMusPvStop(); snMusBuf=null; ui.snMusT=null; layer.innerHTML=""; steBack(); break;
     case "snMusTg": { ui.snMusOn=!(ui.snMusOn&&snMusCur===t.dataset.k); if(ui.snMusOn) snMusPlay(t.dataset.v,t.dataset.k); else snMusStop(); break; }
-    case "snStoryDel": { const id=t.dataset.v; const d=snDB(); d.stories=d.stories.filter(x=>x.id!==id); snSave(d); toast("已刪除限時動態"); clearTimeout(ui.snStT); if(ui.snStory){ snShowStory(); } break; }
+    case "snStoryDel": { const id=t.dataset.v; const d=snDB(); d.stories=d.stories.map(x=>x.id===id&&!x.del?snStDel(x):x); snSave(d); toast("已刪除限時動態"); clearTimeout(ui.snStT); if(ui.snStory){ snShowStory(); } break; }
     case "snAdmUser": { const uid=t.dataset.v; iosSheet([["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`]]); break; }
-    case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); d.posts=d.posts.filter(p=>p.uid!==uid); d.stories=d.stories.filter(x=>x.uid!==uid); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
+    case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); d.posts=d.posts.filter(p=>p.uid!==uid); d.stories=d.stories.map(x=>x.uid===uid&&!x.del?snStDel(x):x); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
     case "snsExit": { let f=ui.snsFrom; ui.snsFrom=null;
       /* 重新整理過不知道從哪進來：找進 SNS 之前的那一頁；找不到就回首頁（不會只退一步又停在 SNS 裡） */
       if(!f){ const cur=NAV_BASE+NAV_D; for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]&&!NAV_STK[i].includes("/sns")){ f=NAV_STK[i]; break; } } }
