@@ -6003,7 +6003,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103063153";
+const BUILD="20261103071227";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -11255,19 +11255,23 @@ const nwMD=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}月${d.getDate()
 const NW_BY="HAECHU 娛樂新聞部";
 function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.ended||[])], pick=(id,a)=>a[strHash(id)%a.length];
   const tail=(id,g)=>pick(id,[`粉絲可以到 ${g.name} 的社群留言祝賀。`,`${g.name} 的社群裡已經湧入許多祝賀留言。`,`更多消息請持續關注 ${g.name} 的 HAECHU 社群。`]);
-  GROUPS.forEach(g=>{ const t=idTs(g.id,/^g/); if(!t) return; const ms=groupArtists(g.id).map(id=>MEMBERS[id]&&MEMBERS[id].name).filter(Boolean), id="au_dbt_"+g.id;
-    L.push({id,tag:"debut",ts:t,gids:[g.id],title:g.solo?`SOLO 新人 ${g.name} 今日正式出道`:`${ms.length>1?ms.length+" 人":""}新團 ${g.name} 今日正式出道`,
-      body:`【${NW_BY}】HAECHU 推出的新${g.solo?" SOLO 歌手":"團體"}「${g.name}」於 ${nwMD(t)} 正式出道。\n\n${g.solo?`${g.name} 以個人身分出道，`:ms.length?`${g.name} 由 ${ms.join("、")} 共 ${ms.length} 位成員組成，`:""}官方社群已在 HAECHU 同步開放。粉絲可以搶先加入社群、開通 TIE，第一時間接收藝人的消息。\n\n${tail(id,g)}`}); });
+  const today=t=>dayStart(t)===dayStart(Date.now()), DB=getDebut(), gT0={};
+  GROUPS.forEach(g=>{ const db=DB.find(x=>x.gid===g.id&&x.day&&x.status!=="gone"), t=db?db.day:idTs(g.id,/^g/); if(!t) return; gT0[g.id]=t; const ms=groupArtists(g.id).map(id=>MEMBERS[id]&&MEMBERS[id].name).filter(Boolean), id="au_dbt_"+g.id;   /* 出道日＝出道申請排定的那天（不是核准那天） */
+    const s0=songs.filter(s=>s.gid===g.id&&Math.abs(idTs(s.id,/^s/)-t)<3*D).sort((a,b)=>idTs(a.id,/^s/)-idTs(b.id,/^s/))[0];
+    L.push({id,tag:"debut",ts:t,gids:[g.id],...nwDebut(id,{name:g.name,solo:!!g.solo,ms:g.solo?[]:ms,t,song:s0?s0.title:"",today:today(t)})}); });
+  /* 出道預告、回歸預告：官方公告發出的那天 */
+  const AN=getAnns(), annT=aid=>(AN.find(a=>a.id===aid)||{}).ts||0;
+  DB.filter(x=>x.annId&&x.name&&x.status!=="gone"&&x.day).forEach(x=>{ const t=annT(x.annId); if(!t) return; const id="au_dbp_"+x.id; L.push({id,tag:"debut",ts:t,gids:x.gid?[x.gid]:[],...nwDebutPre(id,{name:x.name,day:x.day,t})}); });
+  (m.pre||[]).filter(p=>p.annId&&p.day).forEach(p=>{ const g=groupOf(p.gid), t=annT(p.annId); if(!g||!t) return; const id="au_cbp_"+(p.id||p.annId); L.push({id,tag:"cb",ts:t,gids:[p.gid],...nwCbPre(id,{g:g.name,s:p.title||"新曲",day:p.day,t})}); });
   const cbN={}; songs.slice().sort((a,b)=>idTs(a.id,/^s/)-idTs(b.id,/^s/)).forEach(s=>{ const t=idTs(s.id,/^s/), g=groupOf(s.gid); if(!t||!g) return; cbN[s.gid]=(cbN[s.gid]||0)+1; const n=cbN[s.gid], id="au_cb_"+s.id;
-    L.push({id,tag:"cb",ts:t,gids:[s.gid],title:`${g.name} 攜新曲《${s.title}》${n>1?`第 ${n} 次`:""}回歸…本週起登上音樂節目`,
-      body:`【${NW_BY}】${g.name} 於 ${nwMD(t)} 帶著新曲《${s.title}》正式回歸。\n\n《${s.title}》是 ${g.name} ${n>1?`出道以來第 ${n} 次回歸的主打曲`:"的首張主打曲"}。本週起，${g.name} 將陸續登上 ${SHOWS.map(x=>x.name).join("、")} 等音樂節目的打歌舞台。\n\n粉絲可以到 FEST →「打歌」為《${s.title}》應援。${tail(id,g)}`}); });
+    const prev=Math.max(gT0[s.gid]||0,...songs.filter(x=>x.gid===s.gid&&idTs(x.id,/^s/)<t).map(x=>idTs(x.id,/^s/))), gap=prev?Math.round((t-prev)/D):0;
+    const nb=nwCb(id,{g:g.name,s:s.title,n,t,gap,today:today(t)}); L.push({id,tag:"cb",ts:t,gids:[s.gid],title:nb.title,body:nb.body+tail(id,g)}); });
   const wk=Object.keys(m.wins).sort(), sN={}, gN={}, ord=SHOWS.slice().sort((a,b)=>((a.day+6)%7)-((b.day+6)%7));
   wk.forEach(w=>{ const ws=m.wins[w]||{}; ord.forEach(sh=>{ const sid=ws[sh.id], so=songOf(sid), g=so&&groupOf(so.gid); if(!g) return;
     sN[sid]=(sN[sid]||0)+1; gN[so.gid]=(gN[so.gid]||0)+1; const k=sN[sid], n=gN[so.gid], id=`au_w_${w}_${sh.id}`;
     const cr=crowned(sid,sh.id,shiftWeek(w,1))&&!crowned(sid,sh.id,w), t=wkDate(w).getTime()+((sh.day+6)%7)*D+20*36e5;
-    L.push({id,tag:cr?"crown":"win",ts:t,gids:[so.gid],
-      title:cr?`${g.name}《${so.title}》${sh.name} 連續三週一位…達成三冠王`:`${g.name}《${so.title}》拿下 ${sh.name} 一位…${n===1?"出道後首座音樂節目一位":`出道以來第 ${n} 座獎盃`}`,
-      body:`【${NW_BY}】${g.name} 在 ${nwMD(t)} 播出的 ${sh.name} 中，以《${so.title}》拿下本週一位${cr?"，並以連續三週一位達成這個節目的「三冠王」":""}。\n\n這是《${so.title}》的第 ${k} 座一位獎盃，也是 ${g.name} 出道以來的第 ${n} 座${n===1?"，意義格外特別":""}。${g.name} 本次獲得 ${fmt(MSP.win)} 打歌積分。\n\n${tail(id,g)}`}); }); });
+    const nb=nwWin(id,{g:g.name,s:so.title,show:sh.name,k,n,cr,t,days:gT0[so.gid]?Math.max(1,Math.round((t-gT0[so.gid])/D)):0});
+    L.push({id,tag:cr?"crown":"win",ts:t,gids:[so.gid],title:nb.title,body:nb.body+"\n\n"+tail(id,g)}); }); });
   songs.forEach(s=>{ const g=groupOf(s.gid); if(!g) return; const st=songStats(s.id), end=w=>wkDate(w).getTime()+6*D+21*36e5;
     st.aks.forEach(w=>{ const id=`au_ak_${s.id}_${w}`; L.push({id,tag:"ak",ts:end(w),gids:[s.gid],title:`${g.name}《${s.title}》橫掃一週 ${SHOWS.length} 大音樂節目…達成 All-Kill`,
       body:`【${NW_BY}】${g.name} 的《${s.title}》在 ${nwMD(wkDate(w).getTime())} 這一週，拿下 ${SHOWS.map(x=>x.name).join("、")} 全部 ${SHOWS.length} 個音樂節目的一位，達成 All-Kill（AK）。\n\n${g.name} 因此獲得 ${fmt(MSP.ak)} 打歌積分。\n\n${tail(id,g)}`}); });
@@ -17385,6 +17389,84 @@ function steMenOpen(){ const p=document.getElementById("stePanel"); if(!p) retur
 function stViewLayer(s){ if(!(s.stx||[]).length&&!(s.ment||[]).length) return "";
   return `<div class="stv">${(s.stx||[]).map(it=>`<div class="stv-it" style="left:${it.x*100}%;top:${it.y*100}%;transform:translate(-50%,-50%) rotate(${it.r}rad) scale(${it.s})">${stTxtHtml(it,`calc(${STE_SZ/STE_W*100}cqw)`)}</div>`).join("")}
     ${(s.ment||[]).map(m=>{ const u=snUser(m.u); return u?`<button class="stv-men" data-a="snsGo" data-v="profile" data-id="${esc(m.u)}" style="left:${m.x*100}%;top:${m.y*100}%" aria-label="@${esc(u.u)}"></button>`:""; }).join("")}</div>`; }
+
+/* =========================================================
+   娛樂新聞稿（App 自動快訊用）：照韓國娛樂新聞的寫法
+   ・標題：【公式】【快訊】【焦點】、今日（5日）、「怪物新人」、…連接
+   ・內文：誰、哪天、做了什麼 → 成員／作品 → 接下來的行程 → 粉絲可以做什麼
+   ・每則新聞用自己的編號挑句子，同一則永遠長一樣，不同則會換說法
+   ========================================================= */
+const nwP=(id,salt,a)=>a[strHash(id+"|"+salt)%a.length];
+const nwWD=ts=>"日一二三四五六"[new Date(ts).getDay()];
+const nwD=ts=>new Date(ts).getDate();
+const nwKind=solo=>solo?"SOLO 歌手":"新團";
+const nwList=a=>a.length<=1?a.join(""):a.slice(0,-1).join("、")+"和"+a[a.length-1];
+
+/* 出道當天 */
+function nwDebut(id,{name,solo,ms,t,song,today}){ const D=nwD(t), M=new Date(t).getMonth()+1, Y=new Date(t).getFullYear(), n=ms.length, k=nwKind(solo), when=today?`今日（${D}日）`:`${M}月${D}日`;
+  const title=nwP(id,"t",[
+    `【公式】${k} ${name}，${when}正式出道`,
+    `「怪物新人」${name} 登場…${M}月${D}日正式出道`,
+    `【焦點】${Y} 年最受矚目的新人？${name} 正式揭開面紗`,
+    `${name} ${when}出道…HAECHU 新人版圖再添${solo?"一位":"一組"}`,
+    `【快訊】${name} 出道！星期${nwWD(t)}正式與粉絲見面`,
+    ...(song?[`${name} 出道曲《${song}》公開…正式踏上舞台`,`新人 ${name} 以《${song}》出道…首次亮相`]:[]),
+    ...(!solo&&n>1?[`${n} 人${k} ${name} 今日出道…「完全體」正式登場`]:[]),
+    ...(solo?[`一個人也能撐起舞台…SOLO 新人 ${name} 出道`]:[])]);
+  const lead=nwP(id,"l",[
+    `${k}「${name}」於${when}正式出道，展開出道後的第一輪活動。`,
+    `備受期待的新人 ${name}，終於在 ${M}月${D}日揭開面紗。`,
+    `${name} 於 ${M}月${D}日透過 HAECHU 正式出道，成為 ${Y} 年最新加入的${solo?"歌手":"團體"}。`,
+    `經過一週的出道預告，${name} 在 ${M}月${D}日正式與大家見面。`,
+    `新人 ${name} 在 ${M}月${D}日（星期${nwWD(t)}）正式出道，一出道就成為話題。`]);
+  const who=solo?nwP(id,"w",[`${name} 以 SOLO 歌手身分出道，一個人撐起整個舞台。`,`和團體不同，${name} 選擇以個人身分出道，從舞台到社群都由自己一手包辦。`,`${name} 是 HAECHU 的 SOLO 新人，出道作品完整展現個人色彩。`])
+    :n?nwP(id,"w",[`${name} 由 ${nwList(ms)} 共 ${n} 位成員組成。`,`成員有 ${nwList(ms)}，${n} 個人各有各的魅力。`,`${n} 位成員 ${nwList(ms)} 從出道第一天起就展現出好默契。`]):"";
+  const work=song?nwP(id,"s",[`出道曲《${song}》與 MV 同步公開，在 HAECHU 上就能欣賞。`,`出道曲《${song}》是 ${name} 交出的第一張成績單，MV 一公開就引起討論。`,`《${song}》作為出道曲，濃縮了 ${name} 想讓大家看見的樣子。`])
+    :nwP(id,"s",[`出道 MV 已在 HAECHU 公開。`,`出道當天，MV 與預告照一起公開，讓人一次看見 ${name} 的完整概念。`,`${name} 的出道 MV 同步上線，成為當天最多人點開的影片。`]);
+  const next=nwP(id,"n",[`接下來 ${name} 將陸續登上音樂節目，展開出道宣傳。`,`新人獎的競爭，也因為 ${name} 的加入變得更激烈。`,`${name} 能不能在出道後拿下第一座音樂節目一位，也備受關注。`,`官方社群與 SKpedia 頁面同步開放，${name} 的出道故事正式開始。`]);
+  const fan=nwP(id,"f",[`粉絲可以搶先加入社群、開通 TIE，第一時間收到 ${name} 的消息。`,`從出道當天起，粉絲就能在 TIE 和 ${name} 直接聊天。`,`想第一個應援的話，現在就可以到 ${name} 的社群留言祝賀。`]);
+  return {title,body:`【${NW_BY}】${lead}\n\n${[who,work].filter(Boolean).join("")}\n\n${next}${fan}`}; }
+
+/* 出道預告（官方公告發出那天） */
+function nwDebutPre(id,{name,day,t}){ const M=new Date(day).getMonth()+1, D=nwD(day), left=Math.max(1,Math.round((dayStart(day)-dayStart(t))/864e5));
+  const title=nwP(id,"t",[`【公式】新人「${name}」確定 ${M}月${D}日出道`,`下一位新人是誰？${name} ${M}月${D}日出道確定`,`${name} 出道倒數 D-${left}…HAECHU 公開出道預告`,`【快訊】HAECHU 新人 ${name}，${M}月${D}日正式出道`,`「${name}」是誰？出道預告一發出就引起好奇`]);
+  const body=nwP(id,"b",[
+    `HAECHU 發布出道預告，新人「${name}」確定將在 ${M}月${D}日正式出道。\n\n預告照已在官方公告中公開，${name} 的概念引起粉絲好奇。`,
+    `新人「${name}」的出道日正式確定，就在 ${M}月${D}日。\n\n距離出道只剩 ${left} 天，HAECHU 先以預告照揭開一角。`,
+    `HAECHU 迎來新面孔。官方宣布，「${name}」將在 ${M}月${D}日出道。\n\n更多內容會在出道當天一次公開。`]);
+  const tail=nwP(id,"e",[`出道當天，官方社群和 TIE 會同步開放。`,`還沒公開的部分，就等出道那天揭曉。`,`出道倒數正式開始。`]);
+  return {title,body:`【${NW_BY}】${body}\n\n${tail}`}; }
+
+/* 回歸當天 */
+function nwCb(id,{g,s,n,t,gap,today}){ const D=nwD(t), M=new Date(t).getMonth()+1, when=today?`今日（${D}日）`:`${M}月${D}日`;
+  const title=nwP(id,"t",[
+    `${g} 攜新曲《${s}》${n>1?`第 ${n} 次`:""}回歸…本週起登上音樂節目`,
+    `【公式】${g}，${when}以《${s}》回歸`,
+    `「回歸即話題」${g} 新曲《${s}》今日上線`,
+    `${g} 第 ${n} 次回歸正式起跑…主打曲《${s}》公開`,
+    `【快訊】${g} 回來了！新曲《${s}》${when}公開`,
+    ...(gap>=30?[`${g} 睽違 ${gap} 天回歸…新曲《${s}》公開`]:[]),
+    ...(n===1?[`出道後首次回歸，${g} 以《${s}》再出發`]:[])]);
+  const lead=nwP(id,"l",[`${g} 於${when}帶著新曲《${s}》正式回歸。`,`${g} 在 ${M}月${D}日公開新曲《${s}》，正式展開回歸活動。`,`${gap>=30?`睽違 ${gap} 天，`:""}${g} 以《${s}》回到舞台。`,`${g} 的新曲《${s}》在 ${M}月${D}日（星期${nwWD(t)}）上線，宣告回歸。`]);
+  const mid=nwP(id,"m",[`《${s}》是 ${g} ${n>1?`出道以來第 ${n} 次回歸的主打曲`:"的首張主打曲"}。`,`這是 ${g} 的第 ${n} 次回歸，也是一次全新的嘗試。`,`《${s}》延續 ${g} 的風格，又多了不一樣的面貌。`]);
+  const next=nwP(id,"x",[`本週起，${g} 將陸續登上 ${SHOWS.map(x=>x.name).join("、")} 等音樂節目的打歌舞台。`,`${g} 這週就會站上音樂節目的舞台，能不能拿下一位備受關注。`,`接下來的打歌舞台，是《${s}》的第一場考驗。`]);
+  const fan=nwP(id,"f",[`粉絲可以到 FEST →「打歌」為《${s}》應援。`,`想幫 ${g} 衝一位的話，到 FEST →「打歌」投票應援。`,`《${s}》的應援，現在就可以在 FEST →「打歌」開始。`]);
+  return {title,body:`【${NW_BY}】${lead}\n\n${mid}${next}\n\n${fan}`}; }
+
+/* 回歸預告 */
+function nwCbPre(id,{g,s,day,t}){ const M=new Date(day).getMonth()+1, D=nwD(day), left=Math.max(1,Math.round((dayStart(day)-dayStart(t))/864e5));
+  const title=nwP(id,"t",[`【公式】${g} 確定 ${M}月${D}日回歸…新曲《${s}》`,`${g} 回歸倒數 D-${left}…新曲名稱《${s}》公開`,`【快訊】${g} 要回來了！${M}月${D}日帶著《${s}》回歸`]);
+  const body=nwP(id,"b",[`HAECHU 發布回歸預告，${g} 確定將在 ${M}月${D}日帶著新曲《${s}》回歸。`,`${g} 的回歸日正式確定，新曲《${s}》將在 ${M}月${D}日公開。`,`距離 ${g} 回歸只剩 ${left} 天，新曲名稱《${s}》先一步公開。`]);
+  return {title,body:`【${NW_BY}】${body}\n\n${nwP(id,"e",[`更多內容會在回歸當天公開。`,`回歸倒數正式開始。`,`粉絲已經開始準備應援。`])}`}; }
+
+/* 音樂節目一位 */
+function nwWin(id,{g,s,show,k,n,cr,t,days}){ const D=nwD(t);
+  const title=cr?nwP(id,"t",[`${g}《${s}》${show} 連續三週一位…達成三冠王`,`【快訊】${g} ${show} 三冠王！《${s}》連續三週奪冠`,`三週都是第一…${g}《${s}》${show} 三冠王`])
+    :n===1?nwP(id,"t",[`${g}《${s}》拿下 ${show} 一位…出道後首座音樂節目一位`,`【快訊】${g} 出道${days?` ${days} 天`:""}拿下第一個一位！`,`${g} 首個一位誕生…《${s}》${show} 奪冠`])
+    :nwP(id,"t",[`${g}《${s}》拿下 ${show} 一位…出道以來第 ${n} 座獎盃`,`【快訊】${g} ${show} 一位！《${s}》第 ${k} 冠`,`${g}，${show} 奪冠…《${s}》氣勢正旺`,`《${s}》又拿一位…${g} 第 ${n} 座獎盃`]);
+  const lead=nwP(id,"l",[`${g} 在 ${D}日播出的 ${show} 中，以《${s}》拿下本週一位${cr?"，並以連續三週一位達成這個節目的「三冠王」":""}。`,`${D}日播出的 ${show}，一位由 ${g} 的《${s}》拿下${cr?"，這也是連續第三週，正式達成三冠王":""}。`]);
+  const mid=`這是《${s}》的第 ${k} 座一位獎盃，也是 ${g} 出道以來的第 ${n} 座${n===1?"，意義格外特別":""}。`;
+  return {title,body:`【${NW_BY}】${lead}\n\n${mid}${g} 本次獲得 ${fmt(MSP.win)} 打歌積分。`}; }
 
 </script>
 </body>
