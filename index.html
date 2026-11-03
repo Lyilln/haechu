@@ -5726,7 +5726,7 @@ const hbPendGet=()=>{ try{ return JSON.parse(localStorage.getItem(HB_PEND)||"{}"
 function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PEND,JSON.stringify(o)); else localStorage.removeItem(HB_PEND); }catch(e){} }
 /* ===== 防止資料被吃掉：聊天、留言、貼文這些「只會越來越多」的資料，
    如果雲端突然變成空的、或少了一大半，而這支手機還留著完整的，就把兩邊合起來送回去（自動救回） ===== */
-const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
+const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts","daisuki_sn_stories","daisuki_sn_hl",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
 function hbGuard(k,local,remote){ if(!(HB_GUARD().has(k)||String(k).startsWith("daisuki_tie:"))||local==null) return null;
   if(remote==null) return local;
   if(Array.isArray(local)&&Array.isArray(remote)&&local.length>=8&&remote.length<local.length*.6) return hbMergeArr([],local,remote);
@@ -5916,7 +5916,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103025749";
+const BUILD="20261103030442";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -14858,8 +14858,13 @@ function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&H
     const dm=old.dm||{}; Object.keys(dm).forEach(k=>{ (dm[k]||[]).forEach(m=>{ if(!m||!m.from||m.from===k) return; dmAppend(m.from,k,m); }); });
     if(Object.keys(dm).length) S.set(K.sns,{...old,dm:{}}); }   /* 舊的大包裡的私訊搬走後清掉（不然大家都讀得到） */
   S.set("daisuki_sn_mig",true); }catch(e){} }
-const snDB=()=>{ snMigrate(); const d={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):v; }); return d; };
-const snSave=d=>{ try{ Object.keys(SN_PARTS).forEach(p=>{ if(d[p]===undefined) return; const cur=S.get(snKey(p),null); if(JSON.stringify(cur)!==JSON.stringify(d[p])) S.set(snKey(p),d[p]); }); }catch(e){ toast("空間不夠，存不下來"); } };
+const SN_SNAP=new WeakMap();
+const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):v; snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); return d; };
+/* 存檔只存「這次真的改了的地方」：拿讀出來那一刻當基準，跟現在手機裡（可能剛收到別人的新限動、新貼文）合起來，
+   不會因為手上拿的是舊的一份，就把別人剛發的蓋掉 */
+const snSave=d=>{ try{ const snap=SN_SNAP.get(d)||{}; Object.keys(SN_PARTS).forEach(p=>{ if(d[p]===undefined) return; const mine=JSON.stringify(d[p]); if(snap[p]!=null&&mine===snap[p]) return;
+    const cur=S.get(snKey(p),null), curJ=JSON.stringify(cur); if(curJ===mine) return;
+    const out=snap[p]!=null&&cur!=null&&curJ!==snap[p]?hbMerge(JSON.parse(snap[p]),d[p],cur):d[p]; S.set(snKey(p),out); snap[p]=JSON.stringify(out); }); }catch(e){ toast("空間不夠，存不下來"); } };
 const dmKey=(a,b)=>"daisuki_dm:"+[a,b].sort().join("~");
 const dmGet=other=>S.get(dmKey(snMeId(),other),[])||[];
 function dmAppend(from,to,msg){ const k=dmKey(from,to), L=S.get(k,[])||[]; L.push({...msg,from}); S.set(k,L.slice(-500)); }
