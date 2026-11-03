@@ -5854,7 +5854,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103001632";
+const BUILD="20261103012919";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16910,6 +16910,25 @@ function snLame(){ if(window.lamejs) return Promise.resolve(window.lamejs); if(s
 async function snMusOk(){ const dr=ui.snDraft, t=ui.snMusT; if(!dr||!t||!snMusBuf) return; t.title=((document.getElementById("snMusTi")||{}).value||"").trim()||t.title; snMusPvStop(); layer.innerHTML=""; toast("音樂處理中…");
   try{ const {blob,dur}=await snMusCut(snMusBuf,t.start), id="snm"+Date.now().toString(36); await MDB.put(id,blob,true); if(!await hbUpload(id,blob)){ toast("音樂沒有上傳成功，請再試一次"); return; }
     dr.mus={mid:id,title:t.title,dur:Math.round(dur)}; snMusBuf=null; ui.snMusT=null; render(); toast("已加入音樂"); }catch(e){ toast("音樂處理失敗，請換一首試試"); } }
+
+/* =========================================================
+   聲音總管：App 裡所有影片、音樂、語音的共同規則
+   ・離開 App（切到別的 App、回主畫面、鎖螢幕）→ 全部停
+   ・畫面上那個播放器被關掉（例如影片視窗按 ×、換頁）→ 它就停，不會在背景繼續放
+   以後新做的播放器也自動照這個規則，不用每個地方各寫一次
+   ========================================================= */
+const AUD_ALL=new Set();
+{ const P=HTMLMediaElement.prototype, play0=P.play;
+  P.play=function(){ AUD_ALL.add(this); return play0.apply(this,arguments); }; }   /* 記住每一個放過聲音的播放器（包括沒有放在畫面上的） */
+function audStopAll(){ AUD_ALL.forEach(m=>{ try{ if(!m.paused) m.pause(); }catch(e){} }); document.querySelectorAll("video,audio").forEach(m=>{ try{ if(!m.paused) m.pause(); }catch(e){} }); }
+document.addEventListener("visibilitychange",()=>{ if(document.hidden) audStopAll(); });
+addEventListener("pagehide",audStopAll);
+/* 播放器被拿掉（關視窗、換頁）：馬上停，釋放檔案 */
+new MutationObserver(ms=>{ for(const m of ms) for(const n of m.removedNodes){ if(n.nodeType!==1) continue;
+  const L=n.matches&&n.matches("video,audio")?[n]:n.querySelectorAll?[...n.querySelectorAll("video,audio")]:[];
+  L.forEach(v=>{ if(v.isConnected) return; try{ v.pause(); }catch(e){} AUD_ALL.delete(v); }); } }).observe(document.documentElement,{childList:true,subtree:true});
+/* 沒有放在畫面上的播放器（背景音樂那種）如果已經停了很久就不用再記 */
+setInterval(()=>{ AUD_ALL.forEach(m=>{ if(m.paused&&!m.isConnected) AUD_ALL.delete(m); }); },60e3);
 
 </script>
 </body>
