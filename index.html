@@ -4849,6 +4849,44 @@ html.tie2l.kb .app>.t-foot{padding-bottom:8px!important}
 html.tie2l #stkDock{position:relative!important;flex:none;bottom:auto}
 html.tie2l .app>.t-bgl{position:absolute!important;inset:0;z-index:0}
 html.tie2l .app>:not(.t-bgl){z-index:1}
+/* ===== 限動編輯（滿版，照 IG） ===== */
+.ste{position:fixed;inset:0;z-index:9500;background:#000;color:#fff;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+.ste-stage{position:absolute;left:0;right:0;top:env(safe-area-inset-top,0px);margin:0 auto;width:min(100vw,calc((100dvh - env(safe-area-inset-top,0px) - 74px)*9/16));aspect-ratio:9/16;border-radius:14px;overflow:hidden;background:#111}
+.ste-bgb{position:absolute;inset:-20px;background:center/cover;filter:blur(24px) brightness(.75)}
+.ste-media{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.ste-draw{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+.ste-items{position:absolute;inset:0}
+.ste-it{position:absolute;left:0;top:0;transform-origin:center;touch-action:none;cursor:grab;line-height:1.3;white-space:nowrap}
+.ste-it.txt{text-shadow:0 1px 6px rgba(0,0,0,.35)}.ste-it.txt span{display:inline-block;padding:.05em .35em;border-radius:.3em;box-decoration-break:clone;-webkit-box-decoration-break:clone}
+.ste-it.txt.al-center{text-align:center}.ste-it.txt.al-left{text-align:left}.ste-it.txt.al-right{text-align:right}
+.ste-it.stk img{width:100%;display:block;pointer-events:none}
+.ste-trash{position:absolute;left:50%;bottom:22px;width:52px;height:52px;margin-left:-26px;border-radius:50%;border:2px solid rgba(255,255,255,.8);display:grid;place-items:center;opacity:0;transition:.15s;pointer-events:none}
+.ste-trash.on{opacity:1}.ste-trash.hot{background:#FF3B30;border-color:#FF3B30;transform:scale(1.15)}
+.ste-top{position:absolute;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 10px);display:flex;align-items:flex-start;padding:0 12px;z-index:3;pointer-events:none}
+.ste-top>*{pointer-events:auto}.ste-tools{display:flex;flex-direction:column;gap:12px}
+.ste-ib{width:42px;height:42px;border:0;border-radius:50%;background:rgba(0,0,0,.35);color:#fff;display:grid;place-items:center;padding:0;font:inherit}.ste-ib b{font-size:17px;font-weight:800}.ste-ib .si{width:22px;height:22px}
+.ste.drawing .ste-top,.ste.drawing .ste-bot{display:none}
+.ste-mus{position:absolute;left:12px;top:calc(env(safe-area-inset-top,0px) + 62px);z-index:3;display:flex;gap:6px}.ste-mus span{padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.45);font-size:13px;font-weight:700;max-width:56vw;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ste-mus span:empty{display:none}.ste-mus button{border:0;background:rgba(0,0,0,.45);color:#fff;border-radius:50%;width:28px;height:28px;display:grid;place-items:center;padding:0}
+.ste-bot{position:absolute;left:0;right:0;bottom:0;display:flex;align-items:center;gap:10px;padding:10px 12px calc(env(safe-area-inset-bottom,0px) + 10px);background:#000;z-index:3}
+.ste-aud{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;height:44px;border:0;border-radius:999px;background:#262626;color:#fff;font:inherit;font-size:14px;font-weight:700;white-space:nowrap;min-width:0}
+.ste-aud.ste-cf i{font-style:normal;width:24px;height:24px;border-radius:50%;background:#1CD14F;display:grid;place-items:center;font-size:13px}
+.ste-go{flex:none;width:44px;height:44px;border:0;border-radius:50%;background:#0095F6;color:#fff;font-size:20px;font-weight:800}
+.ste-panel{position:absolute;left:0;right:0;bottom:0;z-index:5;display:none}
+.ste-panel.on{display:block}
+.ste-panel.txtp{top:0;background:rgba(0,0,0,.55);display:flex;flex-direction:column;padding:calc(env(safe-area-inset-top,0px) + 10px) 14px 14px}
+.ste-ptop{display:flex;align-items:center;gap:8px}
+.ste-chip{height:36px;min-width:36px;padding:0 12px;border:1.5px solid rgba(255,255,255,.85);border-radius:999px;background:transparent;color:#fff;font:inherit;font-size:13px;font-weight:700}.ste-chip.on{background:#fff;color:#000}
+.ste-done{border:0;background:none;color:#fff;font:inherit;font-size:16px;font-weight:800;padding:8px}
+.ste-ta{flex:1;margin:18px 0;border:0;outline:0;background:transparent;color:#fff;font-size:30px!important;line-height:1.3;resize:none;text-shadow:0 1px 6px rgba(0,0,0,.35)}.ste-ta.al-center{text-align:center}.ste-ta.al-right{text-align:right}
+.ste-ta::placeholder{color:rgba(255,255,255,.55)}
+.ste-cols{display:flex;gap:10px;overflow-x:auto;padding:4px 2px;scrollbar-width:none}.ste-cols::-webkit-scrollbar{display:none}
+.ste-cols button{flex:none;width:30px;height:30px;border-radius:50%;border:2.5px solid #fff;padding:0}.ste-cols button.on{transform:scale(1.18);box-shadow:0 0 0 2px rgba(255,255,255,.4)}
+.ste-panel.drawp{top:auto;padding:12px 14px calc(env(safe-area-inset-bottom,0px) + 14px);background:linear-gradient(transparent,rgba(0,0,0,.6) 30%)}
+.ste-panel.drawp .ste-ptop{margin-bottom:12px}
+.ste-sz{display:flex;gap:8px;align-items:center}.ste-sz button{width:36px;height:36px;border:0;border-radius:50%;background:rgba(255,255,255,.15);display:grid;place-items:center;padding:0}.ste-sz button.on{background:rgba(255,255,255,.4)}.ste-sz i{display:block;border-radius:50%;background:#fff}
+.ste-panel.stkp{background:#1C1C1E;border-radius:20px 20px 0 0;padding:6px 10px calc(env(safe-area-inset-bottom,0px) + 10px);color:#fff}.ste-panel.stkp .stk-tabs{align-items:center}.ste-panel.stkp .stk-grid{max-height:44vh;grid-template-columns:repeat(4,minmax(0,1fr))}
+.sn-sov{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;pointer-events:none;z-index:1}
+.ste-ta,.ste textarea{-webkit-user-select:text!important;user-select:text!important;touch-action:auto}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5916,7 +5954,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103030934";
+const BUILD="20261103031556";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -15056,7 +15094,7 @@ function snShowStory(){ const st=ui.snStory; if(!st) return; const d=snDB(); con
   const s=list[st.si], u=snUser(uid), me=snMeId(); d.seen[me]=d.seen[me]||{}; d.seen[me][s.id]=1; snSave(d);
   setLayer(`<div class="sn-story" role="dialog" aria-label="限時動態"><div class="sn-sbar">${list.map((x,i)=>`<i><u class="${i<st.si?"done":i===st.si?"run":""}"></u></i>`).join("")}</div>
     <header class="sn-sh2">${snAv(u,32)}<b>${esc(u.u)}</b><small>${st.title?esc(st.title):snsAgo(s.ts)}</small>${s.mus&&s.mus.mid?`<small class="sn-smus">${snMusTag(s.mus)}</small>`:""}<span class="sn-sp"></span>${s.cf?`<em class="sn-scf">摯友</em>`:""}${s.vid?`<button class="sn-ib" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`:""}${!st.list&&(uid===me||isAdminAcct())?`<button class="sn-ib" data-a="snStoryDel" data-v="${s.id}" aria-label="刪除">${si("dots")}</button>`:st.hid&&uid===me?`<button class="sn-ib" data-a="snHlDel" data-v="${st.hid}" aria-label="刪除精選">${si("dots")}</button>`:""}<button class="sn-ib" data-a="snStoryX" aria-label="關閉">${si("x")}</button></header>
-    <div class="sn-simg">${s.mid&&s.vid?`<video class="sn-img sn-svid" playsinline webkit-playsinline ${s.vid.poster?`data-pmid="${s.vid.poster}"`:""}></video>`:s.mid?`<img class="sn-img sn-sim" alt="">`:s.post?snStoryPost(d,s.post):snPic(s.pic,u.g,"fill")}</div>
+    <div class="sn-simg">${s.mid&&s.vid?`<video class="sn-img sn-svid" playsinline webkit-playsinline ${s.vid.poster?`data-pmid="${s.vid.poster}"`:""}></video>${s.ov?`<img class="sn-sov" data-mid="${s.ov}" alt="">`:""}`:s.mid?`<img class="sn-img sn-sim" alt="">`:s.post?snStoryPost(d,s.post):snPic(s.pic,u.g,"fill")}</div>
     <button class="sn-sprev" data-a="snStoryNav" data-v="-1" aria-label="上一則"></button><button class="sn-snext" data-a="snStoryNav" data-v="1" aria-label="下一則"></button>
     ${uid===me&&!st.list?`<button class="sn-sviews" data-a="snStViews" data-v="${s.id}">${si("eye","sm")}已查看 ${fmt(Object.keys(d.seen).filter(x=>x!==me&&(d.seen[x]||{})[s.id]).length)}</button>`:uid!==me&&!uid.startsWith("o:")?`<div class="sn-sre"><div class="sn-semo">${["😂","😮","😍","😢","👏","🔥"].map(x=>`<button data-a="snStReact" data-v="${x}" data-u="${uid}" data-id="${s.id}">${x}</button>`).join("")}</div><form id="snStReF" data-u="${uid}" data-id="${s.id}"><textarea rows="1" class="ag" id="snStReIn" placeholder="回覆 ${esc(u.u)}…" autocomplete="off"></textarea><button type="submit">${si("send","sm")}</button></form></div>`:""}</div>`,"snstory");
   hydrateMedia(layer); clearTimeout(ui.snStT); if(s.mus&&s.mus.mid) snMusPlay(s.mus.mid,"st:"+s.id); else if(snMusCur) snMusStop();
@@ -15075,7 +15113,7 @@ function snOpenShare(id){ const me=snMeId(), U=snAllUsers().filter(u=>u.id!==me)
   requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 function snFakeReply(uid){ return; if(!uid.startsWith("f:")&&!uid.startsWith("m:")) return; const R=["哈哈真的！","好喔～💜","我也這麼覺得","等等回你！","太可愛了吧 🥹"];
   setTimeout(()=>{ const d=snDB(); (d.dm[uid]=d.dm[uid]||[]).push({from:uid,text:R[Math.random()*R.length|0],ts:Date.now()}); snSave(d); if(route().sub==="sns"&&route().p==="thread"&&route().id===uid){ render(); } },2200+Math.random()*2000); }
-async function snAddFiles(files){ const dr=ui.snDraft; if(!dr) return; for(const f of files){ if(f.type.startsWith("video/")||/\.(mov|mp4|m4v|webm)$/i.test(f.name||"")){ await snAddVideo(f); return; } if(!f.type.startsWith("image/")) continue; if(dr.media.some(m=>m.type==="video")){ toast("影片要單獨發一則貼文"); break; } if(dr.media.length>=(dr.mode==="story"?1:10)) break; try{ const {blob,w,h}=await prepPhoto(f), id="sn"+Date.now()+dr.media.length; await MDB.put(id,blob); dr.media.push({mid:id,w,h}); }catch(e){ toast("這張照片讀不出來"); } } render(); }
+async function snAddFiles(files){ const dr=ui.snDraft; if(!dr) return; for(const f of files){ if(f.type.startsWith("video/")||/\.(mov|mp4|m4v|webm)$/i.test(f.name||"")){ await snAddVideo(f); return; } if(!f.type.startsWith("image/")) continue; if(dr.media.some(m=>m.type==="video")){ toast("影片要單獨發一則貼文"); break; } if(dr.media.length>=(dr.mode==="story"?1:10)) break; try{ const {blob,w,h}=await prepPhoto(f), id="sn"+Date.now()+dr.media.length; await MDB.put(id,blob); dr.media.push({mid:id,w,h}); }catch(e){ toast("這張照片讀不出來"); } } render(); if(dr.mode==="story"&&dr.media.length) stEdOpen(); }
 let snTapT=0;
 function snHeartPop(id){ const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 function snToggleLike(id,force){ const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
@@ -15190,7 +15228,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snPost": { const dr=ui.snDraft; if(!dr||!dr.media.length||dr.busy) break; const cap=((document.getElementById("snCap")||{}).value||dr.cap||"").trim(); if(cap&&!isAdminAcct()&&banBlock(cap)) break;
       const vm=dr.media.find(m=>m.type==="video"); if(vm&&vm.file){ dr.cap=cap; dr.busy=1; snVidReady(vm).then(ok=>{ dr.busy=0; if(ok){ const b=document.querySelector('[data-a="snPost"]'); if(b) b.click(); else { ui.snDraft=dr; } } }); break; }
       const d=snDB(), me=snMeId();
-      if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
+      if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(dr.ov?{ov:dr.ov}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
       else { d.posts.push({id:"sp"+Date.now(),uid:me,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice()}:{})}); toast("已分享"); }
       snSave(d); ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
     case "snStory": if(t.dataset.v) snOpenStory(t.dataset.v,t.dataset.o==="1"); break;
@@ -15242,10 +15280,25 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snStoryNav": { const st=ui.snStory; if(!st) break; clearTimeout(ui.snStT); if(+t.dataset.v<0){ if(st.si>0) st.si--; else if(st.ui>0){ st.ui--; st.si=0; } } else st.si++; snShowStory(); break; }
     case "snStoryX": clearTimeout(ui.snStT); ui.snStory=null; snMusStop(); layer.innerHTML=""; render(); break;
     case "snMusAdd": snMusPick(); break;
-    case "snMusDel": if(ui.snDraft){ ui.snDraft.mus=null; render(); } break;
+    case "snMusDel": if(ui.snDraft){ ui.snDraft.mus=null; render(); try{ steMusTag(); }catch(e){} } break;
+    case "snEdTool": { const v=t.dataset.v; if(v==="text") steTextOpen(null); else if(v==="stk") steStkOpen(); else steDrawOpen(); break; }
+    case "snEdClose": { const dr=ui.snDraft; STE=null; layer.innerHTML=""; if(dr){ dr.media=[]; dr.ov=null; } render(); break; }
+    case "snEdFont": STE.font=(STE.font+1)%STE_FONT.length; steTextRefresh(); break;
+    case "snEdBgT": STE.bg=STE.bg?0:1; steTextRefresh(); break;
+    case "snEdAlign": STE.al=STE.al==="center"?"left":STE.al==="left"?"right":"center"; steTextRefresh(); break;
+    case "snEdCol": STE.col=t.dataset.v; steTextRefresh(); break;
+    case "snEdTextOk": steTextOk(); break;
+    case "snEdStkTab": ui.stkTab=t.dataset.v; steStkOpen(); break;
+    case "snEdStkAdd": { const [sp,k]=t.dataset.v.split("|"); STE.items.push({t:"stk",tok:[sp,k],x:.5,y:.45,s:1,r:0}); const p=document.getElementById("stePanel"); if(p){ p.className="ste-panel"; p.innerHTML=""; } steRender(); break; }
+    case "snEdPanelX": { const p=document.getElementById("stePanel"); if(p){ p.className="ste-panel"; p.innerHTML=""; } break; }
+    case "snEdUndo": STE.strokes.pop(); steDrawAll(); break;
+    case "snEdPenW": STE.pen.w=+t.dataset.v; steDrawOpen(); break;
+    case "snEdPenC": STE.pen.c=t.dataset.v; steDrawOpen(); break;
+    case "snEdDrawOk": { STE.tool=null; const r=document.getElementById("steRoot"); if(r) r.classList.remove("drawing"); const p=document.getElementById("stePanel"); if(p){ p.className="ste-panel"; p.innerHTML=""; } break; }
+    case "snEdShare": steShare(t.dataset.v); break;
     case "snMusPv": snMusPv(); break;
     case "snMusOk": snMusOk(); break;
-    case "snMusX": snMusPvStop(); snMusBuf=null; ui.snMusT=null; layer.innerHTML=""; break;
+    case "snMusX": snMusPvStop(); snMusBuf=null; ui.snMusT=null; layer.innerHTML=""; steBack(); break;
     case "snMusTg": { ui.snMusOn=!(ui.snMusOn&&snMusCur===t.dataset.k); if(ui.snMusOn) snMusPlay(t.dataset.v,t.dataset.k); else snMusStop(); break; }
     case "snStoryDel": { const id=t.dataset.v; const d=snDB(); d.stories=d.stories.filter(x=>x.id!==id); snSave(d); toast("已刪除限時動態"); clearTimeout(ui.snStT); if(ui.snStory){ snShowStory(); } break; }
     case "snAdmUser": { const uid=t.dataset.v; iosSheet([["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`]]); break; }
@@ -15300,7 +15353,7 @@ async function snAddVideo(f){ const dr=ui.snDraft; if(!dr) return;
   const url=URL.createObjectURL(f); let v; try{ v=await vidLoad(url); }catch(e){ URL.revokeObjectURL(url); toast("這支影片讀不出來"); return; }
   const dur=v.duration; if(!isFinite(dur)||dur>SN_VMAX+.5){ URL.revokeObjectURL(url); toast(`影片要 ${SN_VMAX} 秒以內`); return; }
   const pb=await vidPoster(v), id="snv"+Date.now(), pid=id+"p"; if(pb) await MDB.put(pid,pb);
-  dr.media.push({mid:id,type:"video",w:v.videoWidth,h:v.videoHeight,dur:Math.round(dur*10)/10,poster:pb?pid:"",url,file:f}); render(); }
+  dr.media.push({mid:id,type:"video",w:v.videoWidth,h:v.videoHeight,dur:Math.round(dur*10)/10,poster:pb?pid:"",url,file:f}); render(); if(dr.mode==="story") stEdOpen(); }
 /* 壓縮：畫到 canvas 再用 MediaRecorder 錄下來（聲音用 WebAudio 接出來） */
 function vidMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return ""; return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } })||""; }
 async function vidCompress(f,prog){ const mime=vidMime(), c=document.createElement("canvas"); if(!mime||!c.captureStream) throw new Error("norec");
@@ -16972,7 +17025,7 @@ function snMusPick(){ const inp=document.createElement("input"); inp.type="file"
     try{ const AC=window.AudioContext||window.webkitAudioContext, c=new AC(), buf=await decodeAu(c,await f.arrayBuffer()); try{ c.close(); }catch(e){}
       snMusBuf=buf; ui.snMusT={title:f.name.replace(/\.[^.]+$/,"").slice(0,40),start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("這首歌讀不出來，請換成 MP3 或 M4A"); } };
   pickClick(inp); }
-function snMusSheet(){ const t=ui.snMusT; if(!t) return; const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
+function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
   tieModal("加入音樂",`<span class="fs-f-lab">歌名</span><input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="輸入文字" value="${esc(t.title)}">
     <span class="fs-f-lab">從哪裡開始（${SN_MUS_LEN} 秒）</span><div class="snm-r"><input type="range" id="snMusSt" min="0" max="${max}" step="1" value="${t.start}" ${max?"":"disabled"}><b id="snMusLb">${fmtDur(t.start)}–${fmtDur(Math.min(t.dur,t.start+SN_MUS_LEN))}</b></div>
     <button class="snm-pv" data-a="snMusPv" type="button">▶ 試聽</button>`,`<button class="t-mbtn main" data-a="snMusOk">完成</button><button class="t-mbtn" data-a="snMusX">取消</button>`); }
@@ -16989,9 +17042,9 @@ async function snMusCut(buf,start){ const sr=22050, len=Math.min(SN_MUS_LEN,buf.
   return {blob:await compactWav(out),dur:len}; }
 function snLame(){ if(window.lamejs) return Promise.resolve(window.lamejs); if(snLame.p) return snLame.p;
   snLame.p=new Promise(res=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"; s.onload=()=>res(window.lamejs||null); s.onerror=()=>{ snLame.p=null; res(null); }; document.head.appendChild(s); setTimeout(()=>res(window.lamejs||null),8000); }); return snLame.p; }
-async function snMusOk(){ const dr=ui.snDraft, t=ui.snMusT; if(!dr||!t||!snMusBuf) return; t.title=((document.getElementById("snMusTi")||{}).value||"").trim()||t.title; snMusPvStop(); layer.innerHTML=""; toast("音樂處理中…");
+async function snMusOk(){ const dr=ui.snDraft, t=ui.snMusT; if(!dr||!t||!snMusBuf) return; t.title=((document.getElementById("snMusTi")||{}).value||"").trim()||t.title; snMusPvStop(); layer.innerHTML=""; steBack(); toast("音樂處理中…");
   try{ const {blob,dur}=await snMusCut(snMusBuf,t.start), id="snm"+Date.now().toString(36); await MDB.put(id,blob,true); if(!await hbUpload(id,blob)){ toast("音樂沒有上傳成功，請再試一次"); return; }
-    dr.mus={mid:id,title:t.title,dur:Math.round(dur)}; snMusBuf=null; ui.snMusT=null; render(); toast("已加入音樂"); }catch(e){ toast("音樂處理失敗，請換一首試試"); } }
+    dr.mus={mid:id,title:t.title,dur:Math.round(dur)}; snMusBuf=null; ui.snMusT=null; render(); try{ steMusTag(); }catch(e){} toast("已加入音樂"); }catch(e){ toast("音樂處理失敗，請換一首試試"); } }
 
 /* =========================================================
    聲音總管：App 裡所有影片、音樂、語音的共同規則
@@ -17115,6 +17168,120 @@ function tie2After(pgChg,toEnd){ const ms=document.querySelector(".app > main.t-
   return true; }
 /* 藝人送出（只換訊息區）之後：重新包一層、回到最新一則 */
 function tie2Patched(ms){ if(!tieFxOn()||!ms) return false; tie2Wrap(ms); ms.scrollTop=0; T2.fe=0; return true; }
+
+/* =========================================================
+   限時動態編輯（照 IG，滿版）
+   ・選好照片／影片後直接進到滿版編輯畫面
+   ・Aa 加字（4 種字體、顏色、文字底色、對齊）、畫筆（顏色、粗細、復原）、吉祥物貼圖、音樂
+   ・字和貼圖：一指拖、兩指放大縮小和轉；拖到下面的垃圾桶就刪掉；點一下字可以再改
+   ・分享時把字、畫、貼圖跟照片合成一張 1080×1920 的圖再上傳（大家看到的都一樣）；
+     影片則是把字和貼圖做成一張透明圖疊在影片上
+   ========================================================= */
+const STE_W=1080, STE_H=1920;
+const STE_COL=["#FFFFFF","#000000","#FF3B6B","#FF9F0A","#FFD60A","#34C759","#0A84FF","#8843FB","#FF8FB1","#A1E3FF"];
+const STE_FONT=[["經典","800 1em -apple-system,'PingFang TC',system-ui,sans-serif"],["打字機","700 1em 'Courier New',ui-monospace,monospace"],["優雅","700 1em Georgia,'Songti TC',serif"],["圓圓","800 1em 'Arial Rounded MT Bold','Hiragino Maru Gothic ProN',ui-rounded,sans-serif"]];
+const STE_SZ=64;
+let STE_NODE=null; function steBack(){ if(!STE_NODE) return; const n=STE_NODE; STE_NODE=null; layer.innerHTML=""; layer.appendChild(n); try{ steMusTag(); }catch(e){} }   /* 字在 1080 寬的畫面上是 64px */
+let STE=null;   /* 編輯中的狀態 */
+const steEl=()=>document.getElementById("steStage");
+/* 打開編輯畫面 */
+async function stEdOpen(){ const dr=ui.snDraft; if(!dr||!dr.media.length) return; const m=dr.media[0];
+  STE={items:[],strokes:[],tool:null,col:STE_COL[0],font:0,bg:0,al:"center",pen:{c:STE_COL[2],w:14},edit:null,vid:m.type==="video",url:m.type==="video"?(m.url||""):(await mediaSrc(m.mid)||"")};
+  setLayer(`<div class="ste" id="steRoot" role="dialog" aria-label="編輯限時動態">
+    <div class="ste-stage" id="steStage"><div class="ste-bgb"></div>${STE.vid?`<video class="ste-media" src="${esc(STE.url)}" playsinline muted loop autoplay></video>`:`<img class="ste-media" src="${esc(STE.url)}" alt="">`}<canvas class="ste-draw" id="steDraw" width="${STE_W/2}" height="${STE_H/2}"></canvas><div class="ste-items" id="steItems"></div><div class="ste-trash" id="steTrash">${si("x")}</div></div>
+    <div class="ste-top"><button class="ste-ib" data-a="snEdClose" aria-label="取消">${si("x")}</button><span class="sn-sp"></span>
+      <div class="ste-tools"><button class="ste-ib" data-a="snEdTool" data-v="text" aria-label="加字"><b>Aa</b></button><button class="ste-ib" data-a="snEdTool" data-v="stk" aria-label="貼圖">${si("heart")}</button><button class="ste-ib" data-a="snMusAdd" aria-label="音樂">${si("music")}</button><button class="ste-ib" data-a="snEdTool" data-v="draw" aria-label="畫筆">${si("pen")}</button></div></div>
+    <div class="ste-mus" id="steMus"></div>
+    <div class="ste-bot"><button class="ste-aud" data-a="snEdShare" data-v="all">${snAv(snUser(snMeId()),26)}<span>你的限時動態</span></button><button class="ste-aud ste-cf" data-a="snEdShare" data-v="cf"><i>★</i><span>摯友</span></button><button class="ste-go" data-a="snEdShare" data-v="all" aria-label="分享">→</button></div>
+    <div class="ste-panel" id="stePanel"></div></div>`,"ste");
+  { const r=document.getElementById("steRoot"), z=parseFloat(getComputedStyle(document.documentElement).zoom)||1; if(r&&z!==1) r.style.zoom=String(1/z); }   /* 編輯畫面不要 App 的整體縮放：滿版就是整個螢幕 */
+  const bg=document.querySelector(".ste-bgb"); if(bg&&!STE.vid) bg.style.backgroundImage=`url('${STE.url}')`;
+  steDrawAll(); steMusTag(); steStageEvents(); requestAnimationFrame(steRender); }
+function steMusTag(){ const el=document.getElementById("steMus"), dr=ui.snDraft; if(!el) return; el.innerHTML=dr&&dr.mus?`<span>♪ ${esc(dr.mus.title)}</span><button data-a="snMusDel" aria-label="移除音樂">${si("x","sm")}</button>`:""; }
+/* ---- 字的排版：用畫布量字，畫面上和合成的圖斷行一模一樣 ---- */
+const steCtx=(()=>{ let c=null; return ()=>c||(c=document.createElement("canvas").getContext("2d")); })();
+function steLines(it){ const x=steCtx(); x.font=STE_FONT[it.font][1].replace("1em",STE_SZ+"px"); const max=STE_W*.78, out=[];
+  String(it.txt).split("\n").forEach(par=>{ let line=""; [...par].forEach(ch=>{ if(x.measureText(line+ch).width>max&&line){ out.push(line); line=ch; } else line+=ch; }); out.push(line); }); return out; }
+/* ---- 把項目畫到畫面上（位置用 0~1 的比例，畫面多大都對） ---- */
+function steRender(){ const box=document.getElementById("steItems"), st=steEl(); if(!box||!st) return; const k=st.clientWidth/STE_W;
+  box.innerHTML=STE.items.map((it,i)=>{ const tr=`transform:translate(-50%,-50%) translate(${it.x*st.clientWidth}px,${it.y*st.clientHeight}px) rotate(${it.r}rad) scale(${it.s})`;
+    if(it.t==="stk") return `<div class="ste-it stk" data-i="${i}" style="${tr};width:${360*k}px"><img src="${stkUrl(...it.tok)}" alt="" draggable="false"></div>`;
+    const L=steLines(it), fg=it.bg?(it.col==="#FFFFFF"?"#000":"#FFF"):it.col, bgc=it.bg?it.col:"transparent";
+    return `<div class="ste-it txt al-${it.al}" data-i="${i}" style="${tr};font:${STE_FONT[it.font][1]};font-size:${STE_SZ*k}px;color:${fg}"><span style="background:${bgc}">${L.map(esc).join("<br>")}</span></div>`; }).join(""); }
+/* ---- 手勢：一指拖、兩指縮放旋轉、拖到垃圾桶刪除、點一下改字 ---- */
+function steStageEvents(){ const st=steEl(); if(!st) return; const P=new Map(); let g=null;
+  const pt=e=>({x:e.clientX,y:e.clientY});
+  st.addEventListener("pointerdown",e=>{ if(STE.tool==="draw") return steDrawDown(e); const el=e.target.closest(".ste-it"); if(!el&&!g) return; if(el&&!g){ const it=STE.items[+el.dataset.i]; g={i:+el.dataset.i,el,it0:{...it},moved:false,t0:Date.now()}; }
+    P.set(e.pointerId,pt(e)); try{ st.setPointerCapture(e.pointerId); }catch(_){} g.start=new Map([...P].map(([k,v])=>[k,{...v}])); g.base={...STE.items[g.i]}; e.preventDefault(); });
+  st.addEventListener("pointermove",e=>{ if(STE.tool==="draw") return steDrawMove(e); if(!g||!P.has(e.pointerId)) return; P.set(e.pointerId,pt(e)); const it=STE.items[g.i], b=g.base, W=st.clientWidth, H=st.clientHeight;
+    const ids=[...P.keys()].filter(k=>g.start.has(k));
+    if(ids.length>=2){ const [a,c]=ids, a0=g.start.get(a), c0=g.start.get(c), a1=P.get(a), c1=P.get(c);
+      const d0=Math.hypot(c0.x-a0.x,c0.y-a0.y)||1, d1=Math.hypot(c1.x-a1.x,c1.y-a1.y), r0=Math.atan2(c0.y-a0.y,c0.x-a0.x), r1=Math.atan2(c1.y-a1.y,c1.x-a1.x);
+      it.s=Math.max(.3,Math.min(5,b.s*d1/d0)); it.r=b.r+(r1-r0); it.x=b.x+(((a1.x+c1.x)-(a0.x+c0.x))/2)/W; it.y=b.y+(((a1.y+c1.y)-(a0.y+c0.y))/2)/H; }
+    else { const id=ids[0], s0=g.start.get(id), s1=P.get(id); it.x=b.x+(s1.x-s0.x)/W; it.y=b.y+(s1.y-s0.y)/H; }
+    if(Math.abs(it.x-g.it0.x)+Math.abs(it.y-g.it0.y)>.01||it.s!==g.it0.s) g.moved=true;
+    const tr=document.getElementById("steTrash"); if(tr){ tr.classList.add("on"); const r=tr.getBoundingClientRect(), p=P.get(ids[0]); tr.classList.toggle("hot",ids.length===1&&p.x>r.left-20&&p.x<r.right+20&&p.y>r.top-30); }
+    g.el.style.transform=`translate(-50%,-50%) translate(${it.x*W}px,${it.y*H}px) rotate(${it.r}rad) scale(${it.s})`; });
+  const up=e=>{ if(STE.tool==="draw") return steDrawUp(e); if(!g) return; P.delete(e.pointerId);
+    if(P.size){ g.start=new Map([...P].map(([k,v])=>[k,{...v}])); g.base={...STE.items[g.i]}; return; }
+    const tr=document.getElementById("steTrash"), del=tr&&tr.classList.contains("hot"); if(tr) tr.classList.remove("on","hot");
+    const it=STE.items[g.i]; if(del) STE.items.splice(g.i,1); else if(!g.moved&&Date.now()-g.t0<350&&it.t==="txt") steTextOpen(g.i);
+    g=null; steRender(); };
+  st.addEventListener("pointerup",up); st.addEventListener("pointercancel",up); }
+/* ---- 加字 ---- */
+function steTextOpen(i){ const it=i!=null?STE.items[i]:null; STE.edit=i!=null?i:null; if(it){ STE.col=it.col; STE.font=it.font; STE.bg=it.bg; STE.al=it.al; }
+  const p=document.getElementById("stePanel"); if(!p) return; p.className="ste-panel txtp on";
+  p.innerHTML=`<div class="ste-ptop"><button class="ste-chip" data-a="snEdFont">${STE_FONT[STE.font][0]}</button><button class="ste-chip ${STE.bg?"on":""}" data-a="snEdBgT" aria-label="文字底色"><b>A</b></button><button class="ste-chip" data-a="snEdAlign" aria-label="對齊">${STE.al==="center"?"置中":STE.al==="left"?"靠左":"靠右"}</button><span class="sn-sp"></span><button class="ste-done" data-a="snEdTextOk">完成</button></div>
+    <textarea id="steTxt" class="ste-ta al-${STE.al}" rows="3" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea>
+    <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.col?"on":""}" data-a="snEdCol" data-v="${c}" style="background:${c}" aria-label="顏色"></button>`).join("")}</div>`;
+  setTimeout(()=>{ const t=document.getElementById("steTxt"); if(t){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } },60); }
+function steTextOk(){ const t=document.getElementById("steTxt"), v=((t||{}).value||"").replace(/\s+$/,""), p=document.getElementById("stePanel");
+  if(v&&!isAdminAcct()&&banBlock(v)) return;
+  if(STE.edit!=null){ const it=STE.items[STE.edit]; if(v) Object.assign(it,{txt:v,col:STE.col,font:STE.font,bg:STE.bg,al:STE.al}); else STE.items.splice(STE.edit,1); }
+  else if(v) STE.items.push({t:"txt",txt:v,col:STE.col,font:STE.font,bg:STE.bg,al:STE.al,x:.5,y:.42,s:1,r:0});
+  STE.edit=null; if(p){ p.className="ste-panel"; p.innerHTML=""; } if(t) t.blur(); steRender(); }
+function steTextRefresh(){ const t=document.getElementById("steTxt"); if(!t) return; const v=t.value, i=STE.edit; steTextOpen(i); const t2=document.getElementById("steTxt"); if(t2) t2.value=v; }
+/* ---- 貼圖 ---- */
+function steStkOpen(){ const p=document.getElementById("stePanel"); if(!p) return; const tab=STK_SP.includes(ui.stkTab)?ui.stkTab:"cat"; p.className="ste-panel stkp on";
+  p.innerHTML=`<i class="stk-grab"></i><div class="stk-tabs">${STK_SP.map(sp=>`<button class="${sp===tab?"on":""}" data-a="snEdStkTab" data-v="${sp}"><img src="${stkUrl(sp,"hi")}" alt=""></button>`).join("")}<span class="sn-sp"></span><button class="ste-done" data-a="snEdPanelX">完成</button></div>
+    <div class="stk-grid">${STK_K.map(k=>`<button data-a="snEdStkAdd" data-v="${tab}|${k}"><img src="${stkUrl(tab,k)}" alt=""></button>`).join("")}</div>`; }
+/* ---- 畫筆 ---- */
+let steCur=null;
+function steDrawOpen(){ STE.tool="draw"; document.getElementById("steRoot").classList.add("drawing"); const p=document.getElementById("stePanel"); if(!p) return; p.className="ste-panel drawp on";
+  p.innerHTML=`<div class="ste-ptop"><button class="ste-chip" data-a="snEdUndo">復原</button><span class="ste-sz">${[8,14,24,40].map(w=>`<button class="${STE.pen.w===w?"on":""}" data-a="snEdPenW" data-v="${w}"><i style="width:${w/2+4}px;height:${w/2+4}px"></i></button>`).join("")}</span><span class="sn-sp"></span><button class="ste-done" data-a="snEdDrawOk">完成</button></div>
+    <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.pen.c?"on":""}" data-a="snEdPenC" data-v="${c}" style="background:${c}"></button>`).join("")}</div>`; }
+function stePos(e){ const r=steEl().getBoundingClientRect(); return [(e.clientX-r.left)/r.width,(e.clientY-r.top)/r.height]; }
+function steDrawDown(e){ if(e.target.closest(".ste-panel,.ste-top")) return; steCur={c:STE.pen.c,w:STE.pen.w,pts:[stePos(e)]}; STE.strokes.push(steCur); try{ steEl().setPointerCapture(e.pointerId); }catch(_){} e.preventDefault(); steDrawAll(); }
+function steDrawMove(e){ if(!steCur) return; steCur.pts.push(stePos(e)); steDrawAll(); }
+function steDrawUp(){ steCur=null; }
+function steStroke(x,W,H,k){ STE.strokes.forEach(s=>{ x.strokeStyle=s.c; x.lineWidth=s.w*k; x.lineCap="round"; x.lineJoin="round"; x.beginPath(); s.pts.forEach(([a,b],i)=>i?x.lineTo(a*W,b*H):x.moveTo(a*W,b*H)); if(s.pts.length===1) x.lineTo(s.pts[0][0]*W+.1,s.pts[0][1]*H); x.stroke(); }); }
+function steDrawAll(){ const c=document.getElementById("steDraw"); if(!c) return; const x=c.getContext("2d"); x.clearRect(0,0,c.width,c.height); steStroke(x,c.width,c.height,c.width/STE_W); }
+/* ---- 合成：照片＋畫＋字＋貼圖 → 1080×1920 ---- */
+const steImg=src=>new Promise(r=>{ const i=new Image(); i.crossOrigin="anonymous"; i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src; });
+async function steCompose(withBg){ const c=document.createElement("canvas"); c.width=STE_W; c.height=STE_H; const x=c.getContext("2d");
+  if(withBg){ const im=await steImg(STE.url); x.fillStyle="#000"; x.fillRect(0,0,STE_W,STE_H);
+    if(im){ /* 後面：同一張照片放大、模糊、變暗；前面：整張照片放得下的大小 */
+      const t=document.createElement("canvas"); t.width=27; t.height=48; const tx=t.getContext("2d"), cs=Math.max(27/im.width,48/im.height); tx.drawImage(im,(27-im.width*cs)/2,(48-im.height*cs)/2,im.width*cs,im.height*cs);
+      x.imageSmoothingEnabled=true; x.drawImage(t,0,0,STE_W,STE_H); x.fillStyle="rgba(0,0,0,.25)"; x.fillRect(0,0,STE_W,STE_H);
+      const s=Math.min(STE_W/im.width,STE_H/im.height), cover=Math.max(STE_W/im.width,STE_H/im.height), sc=cover/s<1.25?cover:s;   /* 比例接近直的就直接填滿 */
+      x.drawImage(im,(STE_W-im.width*sc)/2,(STE_H-im.height*sc)/2,im.width*sc,im.height*sc); } }
+  steStroke(x,STE_W,STE_H,1);
+  for(const it of STE.items){ x.save(); x.translate(it.x*STE_W,it.y*STE_H); x.rotate(it.r); x.scale(it.s,it.s);
+    if(it.t==="stk"){ const im=await steImg(stkUrl(...it.tok)); if(im) x.drawImage(im,-180,-195,360,390); }
+    else { const L=steLines(it), lh=STE_SZ*1.3, fg=it.bg?(it.col==="#FFFFFF"?"#000":"#FFF"):it.col; x.font=STE_FONT[it.font][1].replace("1em",STE_SZ+"px"); x.textBaseline="middle"; x.textAlign=it.al==="center"?"center":it.al;
+      const wid=Math.max(...L.map(l=>x.measureText(l).width)), top=-L.length*lh/2, ax=it.al==="center"?0:it.al==="left"?-wid/2:wid/2;
+      if(it.bg){ x.fillStyle=it.col; L.forEach((l,i)=>{ const w=x.measureText(l).width, lx=it.al==="center"?-w/2:it.al==="left"?-wid/2:wid/2-w; steRR(x,lx-22,top+i*lh+2,w+44,lh-4,18); x.fill(); }); }
+      else { x.shadowColor="rgba(0,0,0,.35)"; x.shadowBlur=8; }
+      x.fillStyle=fg; L.forEach((l,i)=>x.fillText(l,ax,top+i*lh+lh/2)); }
+    x.restore(); }
+  return await new Promise(r=>c.toBlob(r,withBg?"image/jpeg":"image/png",.88)); }
+function steRR(x,a,b,w,h,r){ x.beginPath(); x.moveTo(a+r,b); x.arcTo(a+w,b,a+w,b+h,r); x.arcTo(a+w,b+h,a,b+h,r); x.arcTo(a,b+h,a,b,r); x.arcTo(a,b,a+w,b,r); x.closePath(); }
+async function steShare(aud){ const dr=ui.snDraft; if(!dr||!STE||STE.busy) return; STE.busy=1; toast("處理中…");
+  try{ dr.aud=aud==="cf"?"cf":"all"; const has=STE.items.length||STE.strokes.length;
+    if(!STE.vid){ if(has){ const b=await steCompose(true), id="sne"+Date.now().toString(36); await MDB.put(id,b); dr.media[0]={mid:id,w:STE_W,h:STE_H}; } }
+    else if(has){ const b=await steCompose(false), id="seo"+Date.now().toString(36); await MDB.put(id,b); dr.ov=id; }
+    layer.innerHTML=""; STE=null; const btn=document.querySelector('[data-a="snPost"]'); if(btn){ btn.disabled=false; btn.click(); } }
+  catch(e){ STE.busy=0; toast("處理失敗，請再試一次"); } }
 
 </script>
 </body>
