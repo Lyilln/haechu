@@ -6002,7 +6002,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103054430";
+const BUILD="20261103054726";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9228,6 +9228,8 @@ function openCmMore(gid){ const on=followed().includes(gid);
     ${on?`<hr><button data-a="gLeave" data-v="${gid}">${I3.out}<span>退出社群</span></button>`:""}</div></div>`,"cmmore"); }
 
 const myEmail=()=>String((session()||{}).email||"").toLowerCase();
+/* 這個人「現在這個身分」：藝人端＝m:藝人，粉絲端＝帳號。只有積分兩邊相通，按讚、購買、送東西都分開算 */
+const myId=()=>{ const s=session()||{}; return s.role==="artist"&&s.member?"m:"+s.member:myEmail(); };
 /* 「我」說的話：多人版每則都記是誰（by），別人的就當成其他粉絲 */
 const mineX=x=>!!x&&x.from==="me"&&(!x.by||x.by===myEmail());
 /* 留言是不是「我」寫的：新帳號看示範帳號的留言，要當成別人的 */
@@ -9561,7 +9563,7 @@ const PDI={share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 15 6-6 6 6"/></svg>',
   dl:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 10l5 5 5-5M5 20h14"/></svg>',
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'};
-const cLiked=c=>Array.isArray(c.likedBy)&&c.likedBy.includes(myEmail());
+const cLiked=c=>Array.isArray(c.likedBy)&&c.likedBy.includes(myId());
 const cReps=c=>(c.reps||[]).slice().sort((a,b)=>a.ts-b.ts);
 function pdMediaHtml(p){ const ms=p.media||[]; if(!ms.length) return ""; if(ms[0].kind==="video") return postMediaHtml(p);
   return `<div class="pd-imgs">${ms.map((x,i)=>`<button class="pd-img" data-a="pdView" data-v="${p.id}" data-i="${i}" style="aspect-ratio:${x.w||4}/${x.h||5}" aria-label="照片 ${i+1}"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></button>`).join("")}</div>`; }
@@ -12381,7 +12383,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "pdFold": { ui.pdFold=ui.pdFold||{}; ui.pdFold[t.dataset.v]=!ui.pdFold[t.dataset.v]; renderComments(); break; }
     case "pdGrp": { const gid=t.dataset.v; ui.sheet=null; layer.innerHTML=""; openGroup(gid); break; }
     case "pdShare": { const p0=ui.sheet&&getPosts().find(x=>x.id===ui.sheet.postId); try{ navigator.share({title:APP_NAME,text:p0?artName(p0.member,"feed")+"：「"+(p0.text||"").slice(0,60)+"」":APP_NAME,url:location.origin+location.pathname}).catch(()=>{}); }catch(err){} break; }
-    case "pdCLike": { const L=S.get(K.comments,[]), c=L.find(x=>x.id===t.dataset.c); if(!c) break; const me=myEmail()||"me", b=new Set(c.likedBy||[]); if(b.has(me)) b.delete(me); else b.add(me); c.likedBy=[...b]; S.set(K.comments,L); renderComments(); break; }
+    case "pdCLike": { const L=S.get(K.comments,[]), c=L.find(x=>x.id===t.dataset.c); if(!c) break; const me=myId()||"me", b=new Set(c.likedBy||[]); if(b.has(me)) b.delete(me); else b.add(me); c.likedBy=[...b]; S.set(K.comments,L); renderComments(); break; }
     case "pdRep": { const c=S.get(K.comments,[]).find(x=>x.id===t.dataset.c); if(!c) break; if(reportedByMe(c.id)){ toast("已經檢舉過了"); break; } iosSheet([["檢舉這則留言","report",`data-c="${c.id}" data-post="${c.postId}"`]]); break; }
     case "cmTab": { const r=route(); navReplace(grpHash(r.id,t.dataset.v)); window.scrollTo(0,0); break; }   // 社群裡 Home／Feed／LIVE／Shop 之間切換不留紀錄
     case "cmShop": { const r=route(); ui.shopCat="all"; location.hash=grpHash(r.id,"shop"); window.scrollTo(0,0); break; }
@@ -12988,7 +12990,7 @@ function clickTie(a,t,e,r){ switch(a){
         tieQSet(mid,[]); ui.tqBusy=null;
         for(const q of Q){ try{ if(q.kind){ if(!up[q.mid]) continue; sendWhisperMedia(mid,q.kind,q.mid,q.kind==="photo"?{w:q.w,h:q.h}:{dur:q.dur}); } else sendWhisper(mid,q.text,q.rid); }catch(_){} await new Promise(r=>setTimeout(r,8)); }
         try{ aiOnTie(mid,Q.map(q=>q.kind==="photo"?"（傳了一張照片）":q.kind==="voice"?"（傳了一段語音，大約 "+Math.round(q.dur||0)+" 秒，你聽不到內容）":q.text).join("\n")); }catch(_){} ui.scrollChat=true; render(); tieToast("已傳送"); })(); break; }
-    case "tkNew": { const ms=tkTargets(); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:ME.name||""}}; render(); window.scrollTo(0,0); break; }
+    case "tkNew": { const ms=tkTargets(); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:tkNm()||""}}; render(); window.scrollTo(0,0); break; }
     case "tkMid": tkKeep(); ui.tkD.mid=t.dataset.v; render(); break;
     case "tkPal": tkKeep(); ui.tkD.deco.pal=+t.dataset.v; render(); break;
     case "tkTog": tkKeep(); ui.tkD.deco[t.dataset.v]=!ui.tkD.deco[t.dataset.v]; render(); break;
@@ -14511,6 +14513,7 @@ const TRUCK3D=(()=>{
 /* 可以送的人：追蹤的團先排前面，再來其他團、即將出道的新人；自己的團不能送 */
 /* 藝人也能送：只能送給正在出道／回歸的藝人（預告中、或出道／回歸一週內），用藝人自己的積分 */
 /* 誰出的錢：同一個帳號的粉絲身分和藝人身分分開算（管理員兩邊都有） */
+const tkNm=()=>{ const s=session()||{}; return s.role==="artist"&&s.member&&MEMBERS[s.member]?artName(s.member,"feed"):ME.name; };
 const tkWho=()=>{ const s=session()||{}; return s.role==="artist"&&s.member?"m:"+s.member:"u:"+myEmail(); };
 const tkPaidMe=t=>(t.paid||[]).some(p=>(p.who||"u:"+p.em)===tkWho());
 const tkIsArt=()=>{ const s=session()||{}; return s.role==="artist"&&!!s.member&&!!MEMBERS[s.member]; };
@@ -14543,13 +14546,13 @@ function tkCount(mid){ const gid=tkM(mid).group, O=grpOccs(gid), cur=O.filter(x=
 const tkShare=t=>Math.ceil(TRUCK_PRICE/(t.shares||1));
 function tkBuy(deco,mid,shares){ const share=Math.ceil(TRUCK_PRICE/shares); if(tkBal()<share){ toast("積分不夠，先補充積分吧"); return null; }
   if(tkCount(mid)>=TRUCK_MAX){ toast(`${tkM(mid).name} 這次已經有 ${TRUCK_MAX} 台餐車了`); return null; }
-  const me=myEmail(), t={id:"tk"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mid,gid:tkM(mid).group,by:me,byName:ME.name,shares,deco,ts:Date.now(),paid:[{em:me,who:tkWho(),name:ME.name,ts:Date.now()}]};
+  const me=myEmail(), t={id:"tk"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),mid,gid:tkM(mid).group,by:me,byName:tkNm(),shares,deco,ts:Date.now(),paid:[{em:me,who:tkWho(),name:tkNm(),ts:Date.now()}]};
   tkPay(share,`送應援餐車給 ${tkM(mid).name}`); recordSale("truck",{mid,pts:share,label:`應援餐車・${tkM(mid).name}${shares>1?`（${shares} 人分攤）`:""}`});
   S.set(K.trucks,[...(S.get(K.trucks,[])||[]),t]); return t; }
 function tkJoin(id){ const L=S.get(K.trucks,[])||[], t=L.find(x=>x.id===id), me=myEmail(); if(!t) return false; if(tkFunded(t)){ toast("已經湊齊了"); return false; }
   if(tkPaidMe(t)){ toast("你已經出過錢了"); return false; } const share=tkShare(t); if(tkBal()<share){ toast("積分不夠，先補充積分吧"); return false; }
   tkPay(share,`一起送應援餐車給 ${tkM(t.mid).name}`); recordSale("truck",{mid:t.mid,pts:share,label:`應援餐車・${tkM(t.mid).name}（分攤）`});
-  t.paid.push({em:me,who:tkWho(),name:ME.name,ts:Date.now()}); S.set(K.trucks,L); return true; }
+  t.paid.push({em:me,who:tkWho(),name:tkNm(),ts:Date.now()}); S.set(K.trucks,L); return true; }
 /* 送到前：藝人每天 +100（每台最多 30 天）。由管理員的手機每天結算一次，不會重複 */
 function tkDaily(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.trucks]==null)) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), now=Date.now(); let add=0;
   /* 3 天沒湊滿：每個出錢的人退回，車取消 */
@@ -15807,7 +15810,7 @@ function bzHero(b){ return `<section class="bz-hero ${b.type}"><small>${b.type==
 function bzCard(b,base,mid){ const sub=bzSubs(b), a=mid&&((b.ans||{})[mid]||{}), need=mid&&bzOpen(b)&&!a.img&&a.st!=="no";
   return `<button class="bz-card" data-a="uniGo" data-v="${base}&id=${b.id}"><span class="bz-cv">${sub.length?bzPhoto(b,sub[0]):`<span class="bz-img ph" style="background:${grad(b.type==="mag"?1:4)}"></span>`}<em>${bzKind(b)}</em></span><span class="bz-ci"><b>${esc(b.name)}</b><small>${esc(b.mids.map(vsName).join("・"))}</small></span><i class="vs-st ${need?"on":""}">${need?"有新邀約":bzOpen(b)?vsLeft(b.end):b.type==="mag"?"發售中":"已結束"}</i></button>`; }
 /* 作品：代言＝照片＋文案＋愛心；雜誌＝買了才看得到全部 */
-function bzWorks(b,artist){ const sub=bzSubs(b); if(!sub.length) return ""; const me=myEmail(), own=artist||isAdminAcct(), bought=own||!!(b.buys||{})[me];
+function bzWorks(b,artist){ const sub=bzSubs(b); if(!sub.length) return ""; const me=myId(), own=artist||isAdminAcct(), bought=own||!!(b.buys||{})[me];
   if(b.type==="ad") return `<section class="bz-ads">${sub.map(m=>{ const a=b.ans[m], L=(b.likes||{})[m]||[]; return `<article class="bz-ad">${bzPhoto(b,m)}<div class="bz-adb"><b>${esc(vsName(m))} × ${esc(b.name)}</b>${a.text?`<p>${esc(a.text)}</p>`:""}<button class="bz-lk ${L.includes(me)?"on":""}" data-a="bzLike" data-id="${b.id}" data-v="${m}" ${artist?"disabled":""}>${L.includes(me)?"♥":"♡"} ${fmt(L.length)}</button></div></article>`; }).join("")}</section>`;
   if(!bzOut(b)&&!own) return "";
   return `<section class="bz-mag">${bought?sub.map(m=>{ const a=b.ans[m]; return `<article class="bz-page">${bzPhoto(b,m)}<h3>${esc(vsName(m))}</h3>${(b.qs||[]).map((q,i)=>a.qa&&a.qa[i]?`<div class="bz-qa"><b>Q. ${esc(q)}</b><p>${esc(a.qa[i])}</p></div>`:"").join("")}</article>`; }).join("")
@@ -15875,8 +15878,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(b.type==="ad"&&!(d.text||"").trim()){ toast("寫一句廣告文案"); break; } if(b.type==="mag"&&(b.qs||[]).some((q,i)=>!(d.qa[i]||"").trim())){ toast("每一題都要回答"); break; }
       const txt=[d.text,...d.qa].join(" "); if(!isAdminAcct()&&banBlock(txt)) break;
       b.ans[mid]={...(b.ans[mid]||{}),st:"ok",img:d.img,w:d.w,h:d.h,text:(d.text||"").trim(),qa:d.qa.map(x=>(x||"").trim()),ts:Date.now()}; bzPut(b); ui.bzD=null; rr(); toast("交件了！酬勞稍後入帳"); break; }
-    case "bzLike": { const b=bzGet(t.dataset.id), me=myEmail(); if(!b||!me) break; const L=(b.likes=b.likes||{})[t.dataset.v]=b.likes[t.dataset.v]||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else { L.push(me); fanEarn("bzlike",10,{cap:50,once:"bz_"+b.id+"_"+t.dataset.v,why:"代言按讚"}); } bzPut(b); rr(); break; }
-    case "bzBuy": { const b=bzGet(t.dataset.id), me=myEmail(); if(!b||!me||(b.buys||{})[me]) break; if(points()<b.price){ toast("積分不夠，先補充積分吧"); break; }
+    case "bzLike": { const b=bzGet(t.dataset.id), me=myId(); if(!b||!me) break; const L=(b.likes=b.likes||{})[t.dataset.v]=b.likes[t.dataset.v]||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else { L.push(me); fanEarn("bzlike",10,{cap:50,once:"bz_"+b.id+"_"+t.dataset.v,why:"代言按讚"}); } bzPut(b); rr(); break; }
+    case "bzBuy": { const b=bzGet(t.dataset.id), me=myId(); if(!b||!me||(b.buys||{})[me]) break; if(points()<b.price){ toast("積分不夠，先補充積分吧"); break; }
       ask(`用 ${fmt(b.price)} 積分買《${b.name}》？`,()=>{ const b2=bzGet(b.id); if(!b2||(b2.buys||{})[me]) return; S.set(K.points,points()-b2.price); (b2.buys=b2.buys||{})[me]=Date.now(); const sub=bzSubs(b2), share=Math.floor(b2.price/Math.max(1,sub.length));
         sub.forEach(m=>recordSale("mag",{mid:m,pts:share,label:`雜誌・${b2.name}`})); bzPut(b2); rr(); toast("買好了！"); },{ok:"購買",danger:false}); break; }
   } });
