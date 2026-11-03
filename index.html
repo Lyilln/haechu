@@ -5987,7 +5987,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103040437";
+const BUILD="20261103040453";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -14548,7 +14548,7 @@ setTimeout(tkDaily,7000); setInterval(tkDaily,30*60e3);
 const TK_ST={fund:"集資中",wait:"準備中・等回歸那天送到",done:"已經送到"};
 /* 準備中的餐車：自動看下一個日子是出道還是回歸 */
 function tkKind(t){ const m=tkM(t.mid), gid=m&&m.group, d=tkDeliverTs(t); if(!gid) return "回歸"; const db=getDebut().find(x=>x.gid===gid&&x.day); if(d&&db&&Math.abs(d-db.day)<864e5) return "出道"; if(!d&&db&&db.day>Date.now()) return "出道"; return "回歸"; }
-const tkStTxt=(t,st)=>st==="wait"?`準備中・等${tkKind(t)}那天送到`:tkStTxt(t,st);
+const tkStTxt=(t,st)=>st==="wait"?`準備中・等${tkKind(t)}那天送到`:TK_ST[st];
 function tkDraftDeco(){ const d=ui.tkD; if(!d) return null; const m=tkM(d.mid), g=m&&tkG(m.group); return {...d.deco,name:m?m.name:"",title:g?g.name:""}; }
 function tkDecoOf(t){ const m=tkM(t.mid), g=m&&tkG(m.group); return {...TRUCK_DECO0(),...(t.deco||{}),name:m?m.name:"",title:g?g.name:""}; }
 function viewTruckFan(){ const me=myEmail(), f=followed(), all=getTrucks(), mine=all.filter(t=>(t.paid||[]).some(p=>p.em===me)), open=all.filter(t=>f.includes(t.gid)&&!tkFunded(t)&&!(t.paid||[]).some(p=>p.em===me)&&!isSelfGid(t.gid));
@@ -14584,7 +14584,7 @@ document.addEventListener("input",e=>{ if(e.target&&/^tk(Slogan|From|M\d)$/.test
 /* ---------- 藝人：FOC → 應援餐車（送到了才看得到；第一次打開有「餐車到了」） ---------- */
 function viewTruckArtist(mid){ if(ui.tkD){ ui._tkDeco=tkDraftDeco(); return `<main class="page foc trk"><div class="trk-stage" id="tk3d"><span class="trk-load">載入中…</span></div>${tkEditor(ui.tkD)}</main>`; }
   const T=artTkTargets(), me=myEmail(), sent=getTrucks().filter(t=>(t.paid||[]).some(p=>p.em===me)), send=T.length?(tkBal()<TRUCK_PRICE?`<button class="btn btn-soft btn-block trk-new" disabled>送應援餐車給出道／回歸的藝人・積分不足</button>`:`<button class="btn btn-main btn-block trk-new" data-a="tkNew">送應援餐車給出道／回歸的藝人・${fmt(TRUCK_PRICE)} 積分</button>`):"";
-  const sentH=sent.length?`<div class="section-h">我送出的餐車</div><section class="card trk-list">${sent.slice().reverse().map(t=>`<div class="trk-row"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>${esc(tkM(t.mid).name)}</b><small>${TK_ST[tkState(t)]}</small></span></div>`).join("")}</section>`:"";
+  const sentH=sent.length?`<div class="section-h">我送出的餐車</div><section class="card trk-list">${sent.slice().reverse().map(t=>`<div class="trk-row"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><span class="trk-ri"><b>${esc(tkM(t.mid).name)}</b><small>${tkStTxt(t,tkState(t))}</small></span></div>`).join("")}</section>`:"";
   return viewTruckArtist0(mid,send,sentH); }
 function viewTruckArtist0(mid,send,sentH){ const L=getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").sort((a,b)=>tkDeliverTs(b)-tkDeliverTs(a)), seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]), fresh=L.filter(t=>!seen.has(t.id));
   if(!L.length&&demoOn()){ L.push({id:"tk_demo",mid,gid:MEMBERS[mid].group,by:"",byName:"示範粉絲",shares:3,deco:{...TRUCK_DECO0(),pal:1,slogan:"出道快樂！我們一直都在",from:"示範粉絲",menu:["草莓拿鐵","香草可頌","氣泡飲"]},ts:Date.now()-864e5,paid:[{em:"a",name:"A",ts:Date.now()-864e5},{em:"b",name:"B",ts:Date.now()-864e5},{em:"c",name:"C",ts:Date.now()-864e5}],_demo:1}); }
