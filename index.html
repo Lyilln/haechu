@@ -6010,7 +6010,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103075842";
+const BUILD="20261103080341";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -11278,14 +11278,14 @@ function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.
   const today=t=>dayStart(t)===dayStart(Date.now()), DB=getDebut(), gT0={};
   GROUPS.forEach(g=>{ const db=DB.find(x=>x.gid===g.id&&x.day&&x.status!=="gone"), t=db?db.day:idTs(g.id,/^g/); if(!t) return; gT0[g.id]=t; const ms=groupArtists(g.id).map(id=>MEMBERS[id]&&MEMBERS[id].name).filter(Boolean), id="au_dbt_"+g.id;   /* 出道日＝出道申請排定的那天（不是核准那天） */
     const s0=songs.filter(s=>s.gid===g.id&&Math.abs(idTs(s.id,/^s/)-t)<3*D).sort((a,b)=>idTs(a.id,/^s/)-idTs(b.id,/^s/))[0];
-    L.push({id,tag:"debut",ts:t,gids:[g.id],...nwDebut(id,{name:g.name,solo:!!g.solo,ms:g.solo?[]:ms,t,song:s0?s0.title:"",today:today(t),co:g.co||""})}); });
+    const dimg=(db&&db.teaser)||gPhotoMap()[g.id]||""; L.push({id,tag:"debut",ts:t,gids:[g.id],...(dimg?{img:dimg}:{}),...nwDebut(id,{name:g.name,solo:!!g.solo,ms:g.solo?[]:ms,t,song:s0?s0.title:"",today:today(t),co:g.co||""})}); });
   /* 出道預告、回歸預告：官方公告發出的那天 */
   const AN=getAnns(), annT=aid=>(AN.find(a=>a.id===aid)||{}).ts||0;
-  DB.filter(x=>x.annId&&x.name&&x.status!=="gone"&&x.day).forEach(x=>{ const t=annT(x.annId); if(!t) return; const id="au_dbp_"+x.id; L.push({id,tag:"debut",ts:t,gids:x.gid?[x.gid]:[],...nwDebutPre(id,{name:x.name,day:x.day,t,co:x.co||"",grp:x.kind==="group"})}); });
-  (m.pre||[]).filter(p=>p.annId&&p.day).forEach(p=>{ const g=groupOf(p.gid), t=annT(p.annId); if(!g||!t) return; const id="au_cbp_"+(p.id||p.annId); L.push({id,tag:"cb",ts:t,gids:[p.gid],...nwCbPre(id,{g:g.name,s:p.title||"新曲",day:p.day,t})}); });
+  DB.filter(x=>x.annId&&x.name&&x.status!=="gone"&&x.day).forEach(x=>{ const t=annT(x.annId); if(!t) return; const id="au_dbp_"+x.id; L.push({id,tag:"debut",ts:t,gids:x.gid?[x.gid]:[],...nwDebutPre(id,{name:x.name,day:x.day,t,co:x.co||"",grp:x.kind==="group",nm:x.kind==="group"?1+(x.mems||[]).length:0,nt:[x.teaser,...(x.teasers||[])].filter(Boolean).length}),...(x.teaser?{img:x.teaser}:{})}); });
+  (m.pre||[]).filter(p=>p.annId&&p.day).forEach(p=>{ const g=groupOf(p.gid), t=annT(p.annId); if(!g||!t) return; const id="au_cbp_"+(p.id||p.annId); const n=1+songs.filter(x=>x.gid===p.gid).length, prev=Math.max(0,...grpOccs(p.gid).filter(x=>x<t)); L.push({id,tag:"cb",ts:t,gids:[p.gid],...nwCbPre(id,{g:g.name,s:p.title||"新曲",day:p.day,t,co:g.co||"",n,gap:prev?Math.round((p.day-prev)/D):0}),...(p.teaser?{img:p.teaser}:{})}); });
   const cbN={}; songs.slice().sort((a,b)=>idTs(a.id,/^s/)-idTs(b.id,/^s/)).forEach(s=>{ const t=idTs(s.id,/^s/), g=groupOf(s.gid); if(!t||!g) return; cbN[s.gid]=(cbN[s.gid]||0)+1; const n=cbN[s.gid], id="au_cb_"+s.id;
     const prev=Math.max(gT0[s.gid]||0,...songs.filter(x=>x.gid===s.gid&&idTs(x.id,/^s/)<t).map(x=>idTs(x.id,/^s/))), gap=prev?Math.round((t-prev)/D):0;
-    const nb=nwCb(id,{g:g.name,s:s.title,n,t,gap,today:today(t),co:g.co||""}); L.push({id,tag:"cb",ts:t,gids:[s.gid],title:nb.title,body:nb.body+tail(id,g)}); });
+    const nb=nwCb(id,{g:g.name,s:s.title,n,t,gap,today:today(t),co:g.co||""}); const cimg=(getCbr().find(r=>r.gid===s.gid&&r.title===s.title&&r.teaser)||{}).teaser||""; L.push({id,tag:"cb",ts:t,gids:[s.gid],...(cimg?{img:cimg}:{}),title:nb.title,body:nb.body+tail(id,g)}); });
   const wk=Object.keys(m.wins).sort(), sN={}, gN={}, ord=SHOWS.slice().sort((a,b)=>((a.day+6)%7)-((b.day+6)%7));
   wk.forEach(w=>{ const ws=m.wins[w]||{}; ord.forEach(sh=>{ const sid=ws[sh.id], so=songOf(sid), g=so&&groupOf(so.gid); if(!g) return;
     sN[sid]=(sN[sid]||0)+1; gN[so.gid]=(gN[so.gid]||0)+1; const k=sN[sid], n=gN[so.gid], id=`au_w_${w}_${sh.id}`;
@@ -17493,14 +17493,20 @@ function nwDebut(id,{name,solo,ms,t,song,today,co}){ const D=nwD(t), M=new Date(
   return {title,body:`【${NW_BY}】${lead}\n\n${[who,work].filter(Boolean).join("")}\n\n${next}${fan}`}; }
 
 /* 出道預告（官方公告發出那天） */
-function nwDebutPre(id,{name,day,t,co,grp}){ const M=new Date(day).getMonth()+1, D=nwD(day), left=Math.max(1,Math.round((dayStart(day)-dayStart(t))/864e5));
+function nwDebutPre(id,{name,day,t,co,grp,nm,nt}){ const M=new Date(day).getMonth()+1, D=nwD(day), left=Math.max(1,Math.round((dayStart(day)-dayStart(t))/864e5)), who=grp?"新團":"新人", W=nwWD(day);
   const title=nwP(id,"t",[`【公式】新人「${name}」確定 ${M}月${D}日出道`,`下一位新人是誰？${name} ${M}月${D}日出道確定`,`${name} 出道倒數 D-${left}…HAECHU 公開出道預告`,`【快訊】HAECHU 新人 ${name}，${M}月${D}日正式出道`,`「${name}」是誰？出道預告一發出就引起好奇`,...(co?[`【公式】${co} 新${grp?"團":"人"}「${name}」${M}月${D}日出道確定`]:[]),...(grp?[`新團「${name}」${M}月${D}日出道…完整陣容即將公開`]:[])]);
-  const body=nwP(id,"b",[
-    `HAECHU 發布出道預告，新人「${name}」確定將在 ${M}月${D}日正式出道。\n\n預告照已在官方公告中公開，${name} 的概念引起粉絲好奇。`,
-    `新人「${name}」的出道日正式確定，就在 ${M}月${D}日。\n\n距離出道只剩 ${left} 天，HAECHU 先以預告照揭開一角。`,
-    `HAECHU 迎來新面孔。官方宣布，「${name}」將在 ${M}月${D}日出道。\n\n更多內容會在出道當天一次公開。`]);
-  const tail=nwP(id,"e",[`出道當天，官方社群和 TIE 會同步開放。`,`還沒公開的部分，就等出道那天揭曉。`,`出道倒數正式開始。`]);
-  return {title,body:`【${NW_BY}】${body}\n\n${tail}`}; }
+  const lead=nwP(id,"l",[
+    `HAECHU 發布出道預告，${who}「${name}」確定將在 ${M}月${D}日（星期${W}）正式出道。`,
+    `${who}「${name}」的出道日正式確定，就在 ${M}月${D}日。距離出道只剩 ${left} 天。`,
+    `HAECHU 迎來新面孔。官方宣布，「${name}」將在 ${M}月${D}日出道，出道倒數正式開始。`,
+    ...(co?[`${co} 準備已久的${who}「${name}」，終於確定出道日：${M}月${D}日。`,`所屬社 ${co} 發布出道預告，旗下${who}「${name}」將在 ${M}月${D}日與大家見面。`]:[])]);
+  const p2=grp?nwP(id,"g",[`「${name}」是一個 ${nm||"多"} 人團體。成員是誰、各自負責什麼位置，官方目前還沒有公開，預計會在出道當天一次揭曉。`,`這次出道的是 ${nm||"多"} 人團體「${name}」。目前只公開了團名和預告照，成員的名字仍是秘密。`,`「${name}」由 ${nm||"多"} 位成員組成，官方表示，完整陣容會在出道當天公開。`])
+    :nwP(id,"g",[`「${name}」將以 SOLO 歌手身分出道，從舞台到社群都由自己一個人撐起。`,`和團體不同，「${name}」選擇以個人身分出道，備受期待。`,`這次出道的是 SOLO 歌手「${name}」，目前公開的資訊只有藝名和預告照。`]);
+  const p3=nt>1?nwP(id,"p",[`官方同步公開了 ${nt} 張預告照，每一張的氛圍都不一樣，粉絲已經開始猜測出道曲的概念。`,`這次一口氣釋出 ${nt} 張預告照，從畫面就能感受到「${name}」想展現的風格。`,`${nt} 張預告照一公開，就在粉絲之間引起討論。`])
+    :nwP(id,"p",[`官方同步公開了預告照，畫面中的「${name}」讓人更好奇出道作品的模樣。`,`預告照已在 HAECHU 官方公告中公開，「${name}」的概念引起粉絲好奇。`,`第一張預告照公開後，「${name}」的名字就開始在粉絲之間流傳。`]);
+  const p4=nwP(id,"s",[`出道當天，出道 MV 會和音源一起公開。HAECHU 也將在同一天開放「${name}」的官方社群、TIE 和 SKpedia 頁面。`,`官方表示，出道 MV 將在 ${M}月${D}日當天公開。出道後，「${name}」會陸續登上音樂節目，展開第一輪宣傳。`,`${M}月${D}日當天，「${name}」的出道 MV、官方社群和 TIE 會同步上線。出道後的音樂節目舞台也已經在準備中。`]);
+  const p5=nwP(id,"e",[`想第一時間認識「${name}」的粉絲，可以先到 HAECHU 公告看預告照，出道當天再加入社群、開通 TIE。`,`距離出道還有 ${left} 天，粉絲可以先在公告留言，為「${name}」的出道加油。`,`出道倒數 D-${left}，「${name}」的故事即將開始。`]);
+  return {title,body:`【${NW_BY}】${lead}\n\n${p2}\n\n${p3}${p4}\n\n${p5}`}; }
 
 /* 回歸當天 */
 function nwCb(id,{g,s,n,t,gap,today,co}){ const D=nwD(t), M=new Date(t).getMonth()+1, when=today?`今日（${D}日）`:`${M}月${D}日`;
@@ -17519,10 +17525,13 @@ function nwCb(id,{g,s,n,t,gap,today,co}){ const D=nwD(t), M=new Date(t).getMonth
   return {title,body:`【${NW_BY}】${lead}\n\n${mid}${next}\n\n${fan}`}; }
 
 /* 回歸預告 */
-function nwCbPre(id,{g,s,day,t}){ const M=new Date(day).getMonth()+1, D=nwD(day), left=Math.max(1,Math.round((dayStart(day)-dayStart(t))/864e5));
-  const title=nwP(id,"t",[`【公式】${g} 確定 ${M}月${D}日回歸…新曲《${s}》`,`${g} 回歸倒數 D-${left}…新曲名稱《${s}》公開`,`【快訊】${g} 要回來了！${M}月${D}日帶著《${s}》回歸`]);
-  const body=nwP(id,"b",[`HAECHU 發布回歸預告，${g} 確定將在 ${M}月${D}日帶著新曲《${s}》回歸。`,`${g} 的回歸日正式確定，新曲《${s}》將在 ${M}月${D}日公開。`,`距離 ${g} 回歸只剩 ${left} 天，新曲名稱《${s}》先一步公開。`]);
-  return {title,body:`【${NW_BY}】${body}\n\n${nwP(id,"e",[`更多內容會在回歸當天公開。`,`回歸倒數正式開始。`,`粉絲已經開始準備應援。`])}`}; }
+function nwCbPre(id,{g,s,day,t,co,n,gap}){ const M=new Date(day).getMonth()+1, D=nwD(day), left=Math.max(1,Math.round((dayStart(day)-dayStart(t))/864e5)), W=nwWD(day);
+  const title=nwP(id,"t",[`【公式】${g} 確定 ${M}月${D}日回歸…新曲《${s}》`,`${g} 回歸倒數 D-${left}…新曲名稱《${s}》公開`,`【快訊】${g} 要回來了！${M}月${D}日帶著《${s}》回歸`,...(co?[`${co} 旗下的 ${g}，${M}月${D}日以《${s}》回歸`]:[]),...(gap>=60?[`睽違 ${gap} 天…${g} 確定回歸`]:[])]);
+  const lead=nwP(id,"l",[`HAECHU 發布回歸預告，${g} 確定將在 ${M}月${D}日（星期${W}）帶著新曲《${s}》回歸。`,`${g} 的回歸日正式確定，新曲《${s}》將在 ${M}月${D}日公開。`,`距離 ${g} 回歸只剩 ${left} 天，新曲名稱《${s}》先一步公開。`,...(co?[`所屬社 ${co} 宣布，${g} 將在 ${M}月${D}日以新曲《${s}》回歸。`]:[])]);
+  const p2=nwP(id,"m",[`這是 ${g} ${n>1?`出道以來的第 ${n} 次回歸`:"出道後的第一次回歸"}${gap?`，距離上一次活動已經過了 ${gap} 天`:""}。`,`${n>1?`第 ${n} 次回歸`:"首次回歸"}的 ${g}，會帶來什麼樣的新面貌，備受關注。`,`《${s}》是 ${g} ${n>1?`的第 ${n} 首主打曲`:"出道後的第一首回歸主打曲"}，官方目前還沒有透露更多細節。`]);
+  const p3=nwP(id,"s",[`回歸當天，《${s}》的 MV 會和音源一起公開，${g} 也將從那一週起登上音樂節目的打歌舞台。`,`《${s}》MV 將在 ${M}月${D}日公開。回歸後，${g} 會陸續站上 ${SHOWS.map(x=>x.name).join("、")} 的舞台。`,`官方表示，回歸當天會同步公開 MV，接下來的打歌行程也已經排定。`]);
+  const p4=nwP(id,"e",[`粉絲可以先在公告留言，回歸當天再到 FEST →「打歌」為《${s}》應援。`,`回歸倒數 D-${left}，粉絲已經開始準備應援。`,`想幫 ${g} 衝一位的粉絲，回歸當天記得到 FEST →「打歌」投票。`]);
+  return {title,body:`【${NW_BY}】${lead}\n\n${p2}${p3}\n\n${p4}`}; }
 
 /* 音樂節目一位 */
 function nwWin(id,{g,s,show,k,n,cr,t,days}){ const D=nwD(t);
