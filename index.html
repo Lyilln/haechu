@@ -5816,6 +5816,9 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 /* 結尾妖精打開時背景不能滑 */
 html.fv-lock,html.fv-lock body{overflow:hidden;overscroll-behavior:none}
 html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
+/* 教學說明卡：上面一行「第幾步」＋「結束教學」 */
+.coach-th{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.coach-end{border:0;background:none;padding:2px 0;font:600 12px/1.2 inherit;color:var(--muted,#8a8494);text-decoration:underline;text-underline-offset:2px}
 
 </style>
 </head>
@@ -6258,7 +6261,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103150616";
+const BUILD="20261103150820";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -11368,8 +11371,8 @@ function coachShow(){
   coachMount(`<div class="coach-hole" style="left:${Math.max(0,r.left-pad)}px;top:${tall?Math.max(r.top,8):r.top-pad}px;width:${Math.min(vw,r.width+pad*2)}px;height:${tall?Math.max(60,Math.min(r.bottom,vh-8)-Math.max(r.top,8)):r.height+pad*2}px"></div>
     <div class="coach-tip ${below?"below":"above"}" style="left:${left}px;width:${W}px;${tall?"bottom:24px":below?`top:${r.bottom+16}px`:`bottom:${vh-r.top+16}px`}">
       <span class="coach-arrow" style="${tall?"display:none;":""}left:${Math.max(18,Math.min(W-18,r.left+r.width/2-left))}px"></span>
-      <small>${c.kind==="full"?`${esc(c.label||"")}・`:""}${c.i+1}／${steps.length}</small><b>${title}</b><p>${text}</p>
-      <div class="coach-btns"><button class="btn btn-soft btn-sm" data-a="coachSkip">跳過</button><button class="btn btn-main btn-sm" data-a="coachNext">${c.i===steps.length-1&&!(c.kind==="full"&&c.si<(c.seq||[]).length)?"完成":"下一個"}</button></div></div>`);
+      <div class="coach-th"><small>${c.kind==="full"?`${esc(c.label||"")}・`:""}${c.i+1}／${steps.length}</small>${c.kind==="full"?`<button class="coach-end" data-a="coachSkip">結束教學</button>`:""}</div><b>${title}</b><p>${text}</p>
+      <div class="coach-btns">${c.kind==="full"?`<button class="btn btn-soft btn-sm" data-a="coachSkipSec">跳過這頁</button>`:`<button class="btn btn-soft btn-sm" data-a="coachSkip">跳過</button>`}<button class="btn btn-main btn-sm" data-a="coachNext">${c.i===steps.length-1&&!(c.kind==="full"&&c.si<(c.seq||[]).length)?"完成":"下一個"}</button></div></div>`);
 }
 function coachDone(){ if(!ui.coach) ui.coach={kind:"done"};
   coachMount(`<div class="coach-dim"></div><div class="coach-card"><div class="coach-logo">✨</div><b>準備好了！</b><p>開始探索吧。想再看一次教學，到 ME 按「重看教學」。</p><div class="coach-btns"><button class="btn btn-main btn-block" data-a="coachSkip">開始</button></div></div>`);
@@ -12964,6 +12967,7 @@ function clickAdm(a,t,e,r){ switch(a){
 function clickTheme(a,t,e,r){ switch(a){
     case "coachNext": if(ui.coach){ if(ui.coach.kind==="welcome"){ fullTourStart(); break; } ui.coach.i++; coachShow(); } break;
     case "coachSkip": coachEnd(); break;
+    case "coachSkipSec": if(ui.coach&&ui.coach.kind==="full") fullNext(); else coachEnd(); break;
     case "coachAgain": { const e=(session()||{}).email||"", d=S.get(K.onboard,{}), T=S.get(K.tours,{}); Object.keys(d).forEach(k=>{ if(k===e||k.startsWith(e+"|")) delete d[k]; }); Object.keys(T).forEach(k=>{ if(k.startsWith(e+"|")) delete T[k]; }); S.set(K.onboard,d); S.set(K.tours,T); window.scrollTo(0,0); coachWelcome(); break; }
     case "theme": location.hash="#/"+session().role+"/look"; break;
     case "thStore": location.hash="#/"+session().role+"/tint"; break;
