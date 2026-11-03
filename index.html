@@ -5854,7 +5854,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103012919";
+const BUILD="20261103013341";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7356,11 +7356,12 @@ function postMediaHtml(p){
 }
 function videoThumb(file){ return new Promise(res=>{ const u=URL.createObjectURL(file), v=document.createElement("video"); let done=false;
   const fin=x=>{ if(done) return; done=true; URL.revokeObjectURL(u); res(x); };
-  v.muted=true; v.playsInline=true; v.preload="auto";
-  v.onloadeddata=()=>{ try{ v.currentTime=Math.min(.5,(v.duration||1)/3); }catch(e){ fin(null); } };
+  v.muted=true; v.playsInline=true; v.preload="auto"; v.setAttribute("playsinline",""); v.setAttribute("muted","");
+  let sk=false; const seek=()=>{ if(sk) return; sk=true; try{ v.pause(); v.currentTime=Math.min(1,(v.duration||1)/3); }catch(e){ fin(null); } };
+  v.onloadeddata=seek; v.onloadedmetadata=()=>{ const p=v.play(); if(p&&p.then) p.then(()=>setTimeout(seek,150)).catch(()=>{}); };   /* iPhone：不先播一下常常拿不到畫面 */
   v.onseeked=()=>{ try{ const k=Math.min(1,720/Math.max(v.videoWidth,v.videoHeight)), c=document.createElement("canvas"); c.width=Math.round(v.videoWidth*k); c.height=Math.round(v.videoHeight*k);
     c.getContext("2d").drawImage(v,0,0,c.width,c.height); c.toBlob(b=>fin({blob:b,w:v.videoWidth,h:v.videoHeight,dur:v.duration}),"image/jpeg",.8); }catch(e){ fin(null); } };
-  v.onerror=()=>fin(null); setTimeout(()=>fin(null),8000); v.src=u; }); }
+  v.onerror=()=>fin(null); setTimeout(()=>fin(null),20000); v.src=u; }); }
 async function addPostMedia(files){
   const list=ui.composeMedia||(ui.composeMedia=[]);
   for(const f of files){
@@ -7372,9 +7373,16 @@ async function addPostMedia(files){
   }
 }
 
+/* 影片沒有封面（上傳時手機抓不到畫面）：有人播放時順手截一張補上，之後大家都看得到 */
+async function vThumbFix(mid,v){ try{ const L=S.get(K.debut,[])||[], hit=L.filter(x=>(x.mv&&x.mv.mid===mid&&!x.mv.thumb)||(x.mvt&&x.mvt.mid===mid&&!x.mvt.thumb)), V=S.get(K.vods,[])||[], vh=V.filter(x=>x.mid===mid&&!x.thumb); if(!hit.length&&!vh.length) return;
+  const k=Math.min(1,720/Math.max(v.videoWidth||1,v.videoHeight||1)), c=document.createElement("canvas"); c.width=Math.round(v.videoWidth*k); c.height=Math.round(v.videoHeight*k); if(!c.width) return; c.getContext("2d").drawImage(v,0,0,c.width,c.height);
+  const b=await new Promise(r=>c.toBlob(r,"image/jpeg",.8)); if(!b) return; const id=mid+"_t"; await MDB.put(id,b,true); if(!await hbUpload(id,b)) return;
+  if(hit.length){ const L2=S.get(K.debut,[])||[]; L2.forEach(x=>{ if(x.mv&&x.mv.mid===mid&&!x.mv.thumb) x.mv.thumb=id; if(x.mvt&&x.mvt.mid===mid&&!x.mvt.thumb) x.mvt.thumb=id; }); S.set(K.debut,L2); }
+  if(vh.length) S.set(K.vods,(S.get(K.vods,[])||[]).map(x=>x.mid===mid&&!x.thumb?{...x,thumb:id}:x)); }catch(e){} }
 function playVideo(mid){
   setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="影片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><video id="pvPlayer" controls playsinline autoplay></video></div>`,"video");
-  const v=document.getElementById("pvPlayer"); if(mediaURL[mid]){ v.src=mediaURL[mid]; v.play().catch(()=>{}); }
+  const v=document.getElementById("pvPlayer"); v.addEventListener("click",e=>e.stopPropagation()); v.addEventListener("timeupdate",function f(){ if(v.currentTime<1.2) return; v.removeEventListener("timeupdate",f); vThumbFix(mid,v); });
+  if(mediaURL[mid]){ v.src=mediaURL[mid]; v.play().catch(()=>{}); }
   else mediaSrc(mid).then(u=>{ if(!u){ toast("這部影片已經不在這支手機上了"); layer.innerHTML=""; return; } const w=document.getElementById("pvPlayer"); if(w){ w.src=u; w.play().catch(()=>{}); } });
 }
 
@@ -11818,7 +11826,7 @@ window.addEventListener("hashchange",()=>{ navStamp();
   render(); });
 document.addEventListener("click",()=>{ ui.navUi=performance.now(); },true);
 /* 看照片時：手指在照片視窗上滑，後面的聊天室不能跟著動 */
-document.addEventListener("touchmove",e=>{ if(e.target.closest&&e.target.closest(".ph-view")&&e.cancelable) e.preventDefault(); },{passive:false});
+document.addEventListener("touchmove",e=>{ if(e.target.closest&&e.target.closest(".ph-view")&&!e.target.closest("video")&&e.cancelable) e.preventDefault(); },{passive:false});   /* 影片的進度條要能拖 */
 /* TIE 藝人抽屜裡打開的視窗（顏色、簡介、名稱、頭貼…）關掉後，回到抽屜 */
 document.addEventListener("click",()=>{ if(!ui.tieDrw) return; clearTimeout(ui.tieDrwT); ui.tieDrwT=setTimeout(()=>{ const mid=ui.tieDrw; if(!mid) return; if(!document.querySelector(".t-rh")||!MEMBERS[mid]){ ui.tieDrw=null; return; } if(!layer.innerHTML.trim()) openTieArtDrawer(mid,true); },360); });
 addEventListener("hashchange",()=>{ ui.tieDrw=null; });
@@ -11913,7 +11921,7 @@ function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs")
 /* 底部變暗的視窗打開時：後面的頁面不能滑；簽名板、畫布上手指只畫線，畫面不跟著跑
    （只擋「沒有可以捲的東西」的滑動，視窗裡本來能捲的清單照常能捲；不動任何高度） */
 document.addEventListener("touchmove",e=>{ try{ if(!layer||!layer.firstElementChild||!layer.firstElementChild.getBoundingClientRect().width) return; const t=e.target; if(!(t instanceof Element)) return;
-  if(t.closest("input,textarea,select")) return; if(t.tagName!=="CANVAS"&&!layer.contains(t)) return;
+  if(t.closest("input,textarea,select,video,audio,input[type=range]")) return; if(t.tagName!=="CANVAS"&&!layer.contains(t)) return;
   for(let el=t; el&&el!==layer; el=el.parentElement){ if(el.tagName==="CANVAS") break; const cs=getComputedStyle(el); if(/(auto|scroll)/.test(cs.overflowY+cs.overflowX)&&(el.scrollHeight>el.clientHeight+1||el.scrollWidth>el.clientWidth+1)) return; }
   e.preventDefault(); }catch(_){} },{passive:false});
 
