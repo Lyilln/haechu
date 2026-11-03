@@ -6010,7 +6010,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103080659";
+const BUILD="20261103084018";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -17296,6 +17296,8 @@ function stkDock(on){ let d=document.getElementById("stkDock"); clearTimeout(stk
     requestAnimationFrame(()=>{ const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1; document.documentElement.style.setProperty("--stkh",(d.getBoundingClientRect().height/z)+"px");
       try{ tieFootPad(); }catch(e){} requestAnimationFrame(()=>{ const se2=document.scrollingElement||document.documentElement; window.scrollTo(0,se2.scrollHeight-innerHeight-(fe<60?0:fe)); }); }); } }
 document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="win"&&stkDockOn()) stkDock(false); });
+/* 點聊天區空白的地方：貼圖區收起來（跟 LINE 一樣）；點到訊息上的按鈕、照片就照原本的動作 */
+document.addEventListener("click",e=>{ if(!stkDockOn()) return; const t=e.target; if(!t||!t.closest||t.closest("#stkDock")||t.closest("[data-a]")||t.closest("a,button,input,textarea,img,video")) return; if(t.closest(".t-msgs")) stkDock(false); });
 addEventListener("hashchange",()=>{ if(stkDockOn()) stkDock(false); });
 
 /* =========================================================
