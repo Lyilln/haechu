@@ -4827,6 +4827,9 @@ textarea.ag::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellips
 html :is(.t-msgs,.t-page) .t-b.t-stk,html .t-b.t-stk,html .t-b.me.t-stk{background:none!important;box-shadow:none!important;border:0!important;padding:0!important;max-width:none!important}
 html[data-theme] :is(.t-msgs,.t-page) .t-b.t-stk,html[data-theme] :is(.t-msgs,.t-page) .t-b.me.t-stk,html[data-theme] .t-b.t-stk,html[data-theme] .tq-bb.t-stk{background:none!important;box-shadow:none!important;border:0!important;padding:0!important;max-width:none!important}
 .stk-grid{grid-template-columns:repeat(4,minmax(0,1fr))!important}.stk-grid button{min-width:0}
+#stkDock{position:fixed;left:0;right:0;bottom:0;z-index:26;background:var(--s1,#fff);color:var(--ink);padding:8px 6px calc(env(safe-area-inset-bottom,0px) + 8px);border-top:1px solid color-mix(in srgb,currentColor 8%,transparent)}
+#stkDock .stk-pan{border:0;padding:0 6px}#stkDock .stk-grid{height:236px;max-height:none}
+html.stko .t-foot{bottom:var(--stkh,300px)!important;transform:none!important;padding-bottom:8px!important}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5894,7 +5897,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103022104";
+const BUILD="20261103022512";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -12807,12 +12810,11 @@ function clickTie(a,t,e,r){ switch(a){
     case "tLang": { const m2=t.dataset.m, cur=tieSet(m2).trLang||"zh"; tieModal("翻譯結果語言",`<span class="t-langs">${Object.entries(TR_LANGS).map(([k,v])=>`<button class="t-lang ${cur===k?"on":""}" data-a="tLangSet" data-m="${m2}" data-v="${k}">${v}${cur===k?" ✓":""}</button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "tLangSet": { saveTieSet(t.dataset.m,{trLang:t.dataset.v}); S.set(K.tieTr,[]); layer.innerHTML=""; render(); toast("翻譯會改成 "+TR_LANGS[t.dataset.v]); break; }
     case "tRecall": recallWhisper(t.dataset.id); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("已收回訊息"); break;
-    case "stkTab": { ui.stkTab=t.dataset.v; const pn=document.querySelector(".stk-pan"); if(pn) pn.outerHTML=stkPanel(); break; }
+    case "stkTab": { ui.stkTab=t.dataset.v; const pn=document.querySelector("#stkDock .stk-pan"); if(pn) pn.outerHTML=stkPanel(); break; }
     case "stkSend": { const tok=t.dataset.v; if(!stkOf(tok)) break; const s=session();
       if(s.role==="artist"){ const mid=s.member, Q=tieQ(mid); if(Q.length>=TQ_MAX){ toast(`一次最多 ${TQ_MAX} 則，先把待發訊息送出去吧`); break; } Q.push({text:tok,rid:ui.tReply||null}); tieQSet(mid,Q); ui.tReply=null; ui.scrollChat=true; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
       const m2=route().m; if(!m2||meBlocked()) break; if(fanQuota(m2).left<=0){ quotaBar(); break; } ui.scrollChat=true; fanReply(m2,tok); render(); if(fanQuota(m2).left===0) quotaBar(); break; }
-    case "tEmojiToggle": { ui.wDraft=(document.getElementById("win")||{}).value||ui.wDraft; const i=document.getElementById("win"); if(i) i.blur();
-      setLayer(`<div class="stk-shw" data-a="tCloseLayer"><div class="stk-sh" data-a="stkIn" role="dialog" aria-label="貼圖"><i class="stk-grab"></i>${stkPanel()}</div></div>`,"stk"); break; }
+    case "tEmojiToggle": { const i=document.getElementById("win"); if(i) ui.wDraft=i.value; if(stkDockOn()){ stkDock(false); if(i) i.focus(); } else { if(i) i.blur(); stkDock(true); } break; }
     case "stkIn": break;
     case "tEmojiToggle0": ui.tieEmoji=!ui.tieEmoji; ui.wDraft=(document.getElementById("win")||{}).value||ui.wDraft; { const y=window.scrollY; render(); window.scrollTo(0,y);} break;
     case "tEmoji": { const i=document.getElementById("win"); ui.wDraft=(i?i.value:"")+t.dataset.v; i.value=ui.wDraft; document.getElementById("wsend").classList.add("on"); i.focus(); break; }
@@ -17038,6 +17040,16 @@ new MutationObserver(ms=>{ if(ms.some(m=>m.addedNodes.length)) requestAnimationF
 function stkPanel(){ const tab=STK_SP.includes(ui.stkTab)?ui.stkTab:"cat";
   return `<div class="stk-pan"><div class="stk-tabs">${STK_SP.map(sp=>`<button class="${sp===tab?"on":""}" data-a="stkTab" data-v="${sp}" aria-label="${STK_SPN[sp]}"><img src="${stkUrl(sp,"hi")}" alt=""></button>`).join("")}</div>
     <div class="stk-grid">${STK_K.map(k=>`<button data-a="stkSend" data-v="${stkTok(tab,k)}" aria-label="貼圖"><img src="${stkUrl(tab,k)}" alt=""></button>`).join("")}</div></div>`; }
+/* 貼圖區：跟 LINE 一樣，出現在原本鍵盤的位置（輸入列下面），不是另外跳一個框 */
+const stkDockOn=()=>document.documentElement.classList.contains("stko");
+function stkDock(on){ let d=document.getElementById("stkDock");
+  if(!on){ if(d) d.remove(); document.documentElement.classList.remove("stko"); document.documentElement.style.removeProperty("--stkh"); try{ tieFootPad(); }catch(e){} return; }
+  if(!d){ d=document.createElement("div"); d.id="stkDock"; d.setAttribute("role","region"); d.setAttribute("aria-label","貼圖"); document.body.appendChild(d); }
+  d.innerHTML=stkPanel(); document.documentElement.classList.add("stko");
+  requestAnimationFrame(()=>{ const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1; document.documentElement.style.setProperty("--stkh",(d.getBoundingClientRect().height/z)+"px");
+    try{ tieFootPad(); }catch(e){} const ms=document.querySelector(".t-msgs"); window.scrollTo(0,document.documentElement.scrollHeight); if(ms&&ms.classList.contains("kbbox")) ms.scrollTop=ms.scrollHeight; }); }
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="win"&&stkDockOn()) stkDock(false); });
+addEventListener("hashchange",()=>{ if(stkDockOn()) stkDock(false); });
 
 </script>
 </body>
