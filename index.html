@@ -4830,6 +4830,8 @@ html[data-theme] :is(.t-msgs,.t-page) .t-b.t-stk,html[data-theme] :is(.t-msgs,.t
 #stkDock{position:fixed;left:0;right:0;bottom:0;z-index:26;background:var(--s1,#fff);color:var(--ink);padding:8px 6px calc(env(safe-area-inset-bottom,0px) + 8px);border-top:1px solid color-mix(in srgb,currentColor 8%,transparent)}
 #stkDock .stk-pan{border:0;padding:0 6px}#stkDock .stk-grid{height:236px;max-height:none}
 html.stko .t-foot{bottom:var(--stkh,300px)!important;transform:none!important;padding-bottom:8px!important}
+/* 輸入框變高時：笑臉固定在右下角（照 LINE），不跟著跑到中間 */
+.t-inp:has(textarea.ag) .t-smile{top:auto!important;bottom:7px!important;transform:none!important}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5897,7 +5899,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103022512";
+const BUILD="20261103022635";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
