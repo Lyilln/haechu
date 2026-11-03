@@ -5809,6 +5809,13 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 /* 模塊間距 */
 .mu4{display:flex;flex-direction:column;gap:14px}.mu4>.section-h{margin:10px 0 -4px}
 .foc-thr{margin:16px 0 6px}
+/* 社群 MV 卡上的愛心 */
+.yv-mv{position:relative;flex:0 0 62%;display:block;min-width:0}.yv-mv .yv-card{width:100%}.vs-c .yv-mv{flex:none}
+.yv-lk{position:absolute;top:8px;right:8px;z-index:2;padding:5px 10px;border-radius:999px;border:0;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font:600 12px/1 inherit;font-variant-numeric:tabular-nums}
+.yv-lk.on{color:#FF6FA8}
+/* 結尾妖精打開時背景不能滑 */
+html.fv-lock,html.fv-lock body{overflow:hidden;overscroll-behavior:none}
+html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 
 </style>
 </head>
@@ -6251,7 +6258,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103143832";
+const BUILD="20261103150049";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8124,7 +8131,7 @@ const SHAPES=[{k:"book",n:"大本寫真書",d:"像一本書，最常見",w:19,h:
   {k:"cardbox",n:"卡片盒",d:"小小一盒，裡面主要是小卡",w:7.5,h:11,t:2},{k:"lp",n:"黑膠",d:"很大的正方形",w:31.5,h:31.5,t:.6},{k:"custom",n:"自己填",d:"照實際量的長寬高",w:15,h:20,t:1.5}];
 const INC=[{k:"pc",n:"隨機小卡",w:5.5,h:8.5},{k:"selfie",n:"自拍卡",w:5.5,h:8.5},{k:"unit",n:"小分隊卡",w:5.5,h:8.5},{k:"polaroid",n:"拍立得",w:5.4,h:8.6},{k:"postcard",n:"明信片",w:10,h:15},{k:"id",n:"身分證卡",w:8.6,h:5.4},
   {k:"bookmark",n:"書籤",w:5,h:15},{k:"sticker",n:"貼紙",w:9,h:12},{k:"poster",n:"折疊海報",w:14.8,h:21},{k:"lyric",n:"歌詞紙",w:12,h:12},{k:"other",n:"其他",w:10,h:10}];
-const EXR={pob:{n:"預購特典",d:"店家附送：預購期間在這家店買，每張專輯附 1 張，裝在店家的信封裡，不在專輯內；可以設定限量，送完為止",st:true},ld:{n:"Lucky Draw",d:"店家抽獎：在這家店買專輯（預購期間）就能抽，抽中的人拿這張卡、代替預購特典；張數有限，抽完就沒了",st:true},fs:{n:"簽售卡",d:"參加簽售、簽好專輯時拿到，不在專輯內"},mc:{n:"打歌節目卡",d:"打歌期間在音樂節目幫歌投票（就像去節目現場），每個節目每週拿 1 張，不在專輯內"}};
+const EXR={pob:{n:"預購特典",d:"店家附送：預購期間在這家店買，每張專輯附 1 張，裝在店家的信封裡，不在專輯內；可以設定限量，送完為止",st:true},ld:{n:"Lucky Draw",d:"店家抽獎：在這家店買專輯（預購期間）就能抽，抽中的人拿這張卡、代替預購特典；張數有限，抽完就沒了",st:true},fs:{n:"簽售卡",d:"參加簽售、簽好專輯時拿到，不在專輯內"},mc:{n:"公放卡",d:"打歌期間，每個節目每週最早幫這首歌投票的前三位（就像搶到公放席去節目現場）各拿 1 張，第四位之後沒有，不在專輯內"}};
 /* 店家：每家店的預購特典、Lucky Draw 都不一樣（管理員可以新增、改名、刪除） */
 const getStores=()=>S.get(K.stores,[]);
 const storeOf=id=>getStores().find(x=>x.id===id);
@@ -8154,11 +8161,11 @@ function seedStores(){ if(S.get(K.seedStores,false)) return; S.set(K.seedStores,
     if(!has("pob","st_plat")) a.ex.push({id:uid("i"),rule:"pob",store:"st_plat",k:"pc",name:"預購特典",w:5.5,h:8.5,pool:pool(1)});
     if(!has("ld","st_plat")) a.ex.push({id:uid("i"),rule:"ld",store:"st_plat",k:"pc",name:"Lucky Draw",w:5.5,h:8.5,cap:20,odds:10,pool:pool(1,true)});
     if(!has("pob","st_pocket")) a.ex.push({id:uid("i"),rule:"pob",store:"st_pocket",k:"pc",name:"預購特典",w:5.5,h:8.5,pool:pool(1)});
-    if(!a.ex.some(e=>e.rule==="mc")) a.ex.push({id:uid("i"),rule:"mc",k:"pc",name:"打歌節目卡",w:5.5,h:8.5,pool:pool(1)}); });
+    if(!a.ex.some(e=>e.rule==="mc")) a.ex.push({id:uid("i"),rule:"mc",k:"pc",name:"公放卡",w:5.5,h:8.5,pool:pool(1)}); });
   S.set(K.albums2,L); }
 const shapeOf=k=>SHAPES.find(x=>x.k===k)||SHAPES[5], incOf=k=>INC.find(x=>x.k===k)||INC[10];
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-const getAlbums=()=>S.get(K.albums2,[]).filter(a=>groupOf(a.gid)).sort((a,b)=>b.ts-a.ts);
+const getAlbums=()=>S.get(K.albums2,[]).filter(a=>groupOf(a.gid)).map(a=>{ (a.ex||[]).forEach(e=>{ if(e.rule==="mc"&&e.name==="打歌節目卡") e.name="公放卡"; }); return a; }).sort((a,b)=>b.ts-a.ts);
 const albumOf=id=>S.get(K.albums2,[]).find(a=>a.id===id);
 const saveAlbum=a=>{ const L=S.get(K.albums2,[]), i=L.findIndex(x=>x.id===a.id); if(i>=0) L[i]=a; else L.push(a); S.set(K.albums2,L); };
 const verOf=(a,vid)=>(a.vers||[]).find(v=>v.id===vid);
@@ -11329,29 +11336,7 @@ function suspendText(x){ return x.perm?"永久停用":`停用到 ${fsWhen(x.unti
    新手教學：第一次用這個帳號（每個身分各一次）會先看歡迎頁，再一個一個介紹下方的分頁
    ・ME 裡可以「重看教學」
    ========================================================= */
-const COACH_INTRO={
-  fan:["你是粉絲","追蹤喜歡的藝人，看他們的動態和直播、收他們的私訊、抽小卡、舉起應援棒、參加簽售。"],
-  artist:["你是藝人","發動態、開直播、傳私訊給粉絲，在打歌期拿一位、演唱會時控制燈海、參加簽售。"],
-  admin:["你是公司方","安排賽程和打歌、舉辦簽售、處理檢舉，也能切換成粉絲和藝人看看大家看到什麼。"]};
-const COACH={
-  fan:[[".nav-btn[data-v=home]","LOVE","藝人的動態都在這裡，可以按讚、留言。上方可以切換「動態」、「探索」、「直播」：探索找新的團，直播進藝人的文字直播間。"],
-    [".nav-btn[data-v=whisper]","TIE","跟藝人的私訊。在 SHOP 買 TIE 券後，藝人傳的訊息會出現在這裡，你也可以回覆。"],
-    [".nav-btn[data-v=core]","FEST","抽小卡、幫打歌中的歌投票、演唱會時進燈海揮應援棒、報名簽售，都在這裡。"],
-    [".nav-btn[data-v=shop]","SHOP","買 Membership、TIE 券和周邊（應援棒、專輯）。"],
-    [".nav-btn[data-v=me]","ME","你的收藏、積分、設定和外觀（深色模式）。想再看一次教學，也在這裡。"],
-    ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播、輪到你簽售，都會在這裡通知你。"]],
-  artist:[[".nav-btn[data-v=home]","LOVE","發動態給粉絲（可以放照片或影片），也在這裡回覆粉絲的留言。"],
-    [".nav-btn[data-v=live]","MEET","開文字直播。粉絲的留言會出現在旁邊，點一下就能回覆他。"],
-    [".nav-btn[data-v=whisper]","TIE","傳訊息給所有訂閱你的粉絲。打 @@@ 的地方，每位粉絲會看到自己的暱稱。"],
-    [".nav-btn[data-v=foc]","FOC","本週打歌階段、演唱會燈海、簽售台、MC 和打歌成績都在這裡。"],
-    [".nav-btn[data-v=me]","ME","設定 Membership 粉絲的愛稱和TIE歡迎語，也可以切換到粉絲端去追別的團。"]],
-  admin:[[".nav-btn[data-v=home]","HOME","全站總覽：數字、直播監控。"],
-    [".nav-btn[data-v=foc]","FOC","賽程階段、音樂節目一位、MC、簽售、選秀、應援棒設計圖，都在這裡安排。"],
-    [".nav-btn[data-v=reports]","REPORT","處理粉絲和藝人的檢舉，也能把外流 TIE 的帳號停用。"],
-    [".nav-btn[data-v=posts]","POST","管理全站的貼文。"],
-    [".nav-btn[data-v=announce]","NEWS","發公告給大家。"],
-    [".nav-btn[data-v=me]","ME","團與藝人管理、AI 粉絲、營收、示範按鈕，也能切換到粉絲端和藝人端。"]]};
-
+/* 教學內容在 js/40-新手教學內容.js */
 function onboardCheck(){ const s=session(); if(!s||ui.coach||layer.innerHTML||document.getElementById("coach")) return; if(!welcomeDone()){ if(document.querySelector(".nav")) coachWelcome(); return; } tourCheck(); }
 function coachEnd(){ const c0=ui.coach, s=session()||{};
   if(c0&&(c0.kind==="full"||c0.kind==="welcome")){ (s.uni?["fan","artist","admin"]:[c0.role||s.role]).forEach(fullMarkDone); }
@@ -11371,14 +11356,14 @@ function coachWelcome(){
 function coachMount(html){ let c=document.getElementById("coach"); if(!c){ c=document.createElement("div"); c.id="coach"; c.className="coach"; document.body.appendChild(c); } c.innerHTML=html; document.documentElement.classList.add("coach-lock"); coachWatch(); }
 /* 新手教學進行中：畫面不能滑；點亮起來的地方＝下一步（照著指引操作） */
 function coachWatch(){ clearInterval(coachWatch.t); coachWatch.t=setInterval(()=>{ if(!document.getElementById("coach")){ clearInterval(coachWatch.t); document.documentElement.classList.remove("coach-lock"); } },300); }
-document.addEventListener("touchmove",e=>{ if(document.getElementById("coach")&&e.cancelable) e.preventDefault(); },{passive:false});
-document.addEventListener("wheel",e=>{ if(document.getElementById("coach")) e.preventDefault(); },{passive:false});
+window.addEventListener("touchmove",e=>{ if((document.getElementById("coach")||ui.coach)&&e.cancelable) e.preventDefault(); },{passive:false,capture:true});
+window.addEventListener("wheel",e=>{ if(document.getElementById("coach")||ui.coach) e.preventDefault(); },{passive:false,capture:true});
 document.addEventListener("click",e=>{ const c=document.getElementById("coach"); if(!c||!c.contains(e.target)||e.target.closest("button")) return; const h=c.querySelector(".coach-hole"); if(!h) return; const r=h.getBoundingClientRect();
   if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){ const b=c.querySelector('[data-a="coachNext"]'); if(b) b.click(); } });
 function coachShow(){
-  const c=ui.coach; if(!c) return; const steps=c.steps||COACH[c.role]||[]; if(c.i>=steps.length){ if(c.kind==="full") return fullNext(); if(c.kind==="tour") coachEnd(); else coachDone(); return; }
+  const c=ui.coach; if(!c||c.wait) return; const steps=c.steps||COACH[c.role]||[]; if(c.i>=steps.length){ if(c.kind==="full") return fullNext(); if(c.kind==="tour") coachEnd(); else coachDone(); return; }
   const [sel,title,text]=steps[c.i], el=document.querySelector(sel); if(!el||!el.getBoundingClientRect().height){ c.i++; return coachShow(); }
-  { const rr=el.getBoundingClientRect(), vh0=window.innerHeight; if((rr.top<70||rr.bottom>vh0-110)&&c._scI!==c.i){ c._scI=c.i; el.scrollIntoView({block:"center"}); return setTimeout(coachShow,280); } }
+  { const rr=el.getBoundingClientRect(), vh0=window.innerHeight; if((rr.top<70||rr.bottom>vh0-110)&&c._scI!==c.i){ c._scI=c.i; el.scrollIntoView({block:"center"}); const ii=c.i, ss=c.steps; return setTimeout(()=>{ if(ui.coach===c&&c.i===ii&&c.steps===ss) coachShow(); },280); } }
   const z=ZM(), r0=el.getBoundingClientRect(), r={left:r0.left/z,top:r0.top/z,width:r0.width/z,height:r0.height/z,bottom:r0.bottom/z}, vw=window.innerWidth/z, vh=window.innerHeight/z, pad=6, below=r.top<vh/2&&r.bottom+16+200<vh, tall=r.height>vh*.5||(!below&&r.top<220), W=Math.min(320,vw-32), left=Math.max(16,Math.min(vw-W-16,r.left+r.width/2-W/2));
   coachMount(`<button class="coach-x" data-a="coachSkip">跳過教學</button><div class="coach-hole" style="left:${Math.max(0,r.left-pad)}px;top:${tall?Math.max(r.top,8):r.top-pad}px;width:${Math.min(vw,r.width+pad*2)}px;height:${tall?Math.max(60,Math.min(r.bottom,vh-8)-Math.max(r.top,8)):r.height+pad*2}px"></div>
     <div class="coach-tip ${below?"below":"above"}" style="left:${left}px;width:${W}px;${tall?"bottom:24px":below?`top:${r.bottom+16}px`:`bottom:${vh-r.top+16}px`}">
@@ -11488,7 +11473,8 @@ const vDur=s=>`${Math.floor(s/60)}:${pad(Math.floor(s%60))}`;
 /* 縮圖：管理員有上傳就用，沒有就用團的代表色 */
 const vodThumb=(v,cls="")=>{ const img=PCI["vth|"+v.id], g=groupOf(v.gid); return `<span class="yv-th ${cls}" style="--gt:${gTheme(v.gid)}">${v.thumb?`<img data-mid="${v.thumb}" alt="">`:img?`<img src="${img}" alt="">`:`<span class="yv-ph"><b>${esc(g?g.name:"")}</b><i>${esc(v.sec?((getSecs(v.gid).find(x=>x.id===v.sec)||{}).title||""):vcatName(v.cat))}</i></span>`}<em>${vDur(v.dur||0)}</em></span>`; };
 const vodRow=v=>`<button class="yv-row" data-a="vPlay" data-v="${v.id}">${vodThumb(v)}<span class="yv-i"><b>${esc(v.title)}</b><small>${fmtViews(v.views||0)}・${relDay(v.ts)}</small></span></button>`;
-const vodCard=v=>`<button class="yv-card" data-a="vPlay" data-v="${v.id}">${vodThumb(v)}<b>${esc(v.title)}</b><small>${fmtViews(v.views||0)}・${relDay(v.ts)}</small></button>`;
+const vodCard=v=>typeof vodIsMV==="function"&&vodIsMV(v)&&v.mid?`<span class="yv-mv">${vodCard0(v)}<button class="yv-lk ${mvLikedV(v.id)?"on":""}" data-a="mvLikeV" data-v="${v.id}" aria-label="喜歡這支 MV">${mvLikedV(v.id)?"♥":"♡"} ${fmt(mvLikesV(v.id))}</button></span>`:vodCard0(v);
+const vodCard0=v=>`<button class="yv-card" data-a="vPlay" data-v="${v.id}">${vodThumb(v)}<b>${esc(v.title)}</b><small>${fmtViews(v.views||0)}・${relDay(v.ts)}</small></button>`;
 /* SHOW / VOD 首頁：團體大卡 */
 
 /* 頻道頁 */
@@ -12885,7 +12871,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "focGo": location.hash="#/artist?tab=foc&p="+t.dataset.v; window.scrollTo(0,0); break;
     case "coreGallery": { ui.vodCat="MV"; const gl=document.createElement("div"); gl.className="glow-tr"; document.body.appendChild(gl); setTimeout(()=>gl.remove(),1200);
       ui.vTab="home"; ui.vCat="all"; ui.vSort="new"; location.hash="#/fan/core?p=gallery&id="+t.dataset.v; window.scrollTo(0,0); break; }
-    case "vPlay": { setTimeout(()=>{ try{ const v1=vodOf(t.dataset.v), pv=layer.querySelector(".ph-view"); if(v1&&v1.mid&&vodIsMV(v1)&&pv&&!pv.querySelector(".pv-like")){ const on=mvLikedV(v1.id); pv.insertAdjacentHTML("beforeend",`<button class="pv-like ${on?"on":""}" data-a="mvLikeV" data-v="${v1.id}">${on?"♥":"♡"} ${fmt(mvLikesV(v1.id))}</button>`); } }catch(e){} },30); try{ const L=S.get(K.vods,[])||[], x=L.find(y=>y.id===t.dataset.v); if(x){ x.views=(x.views||0)+1; S.set(K.vods,L); } }catch(e){}   /* 播放次數（算進打歌分數） */ const v0=vodOf(t.dataset.v); if(v0&&v0.mid){ playVideo(v0.mid); break; } openVodPlayer(t.dataset.v,t.dataset.pl); break; }
+    case "vPlay": { setTimeout(()=>{ try{ const v1=vodOf(t.dataset.v), pv=layer.querySelector(".ph-view"); if(v1&&v1.mid&&vodIsMV(v1)&&pv&&!pv.querySelector(".pv-like")){ const on=mvLikedV(v1.id); pv.insertAdjacentHTML("beforeend",`<button class="pv-like ${on?"on":""}" data-a="mvLikeV" data-v="${v1.id}">${on?"♥":"♡"} ${fmt(mvLikesV(v1.id))}</button>`); } }catch(e){} },30); const v0=vodOf(t.dataset.v); if(v0&&v0.mid){ playVideo(v0.mid); vodViewWatch(v0.id); break; } openVodPlayer(t.dataset.v,t.dataset.pl); break; }
     case "vsAdd": case "vsEd": { const gid=t.dataset.g, sid=t.dataset.v||"", cur=sid?(getSecs(gid).find(x=>x.id===sid)||{}).title||"":""; ui.vsFor={gid,sid};
       tieModal(sid?"分區名稱":"新增分區","",`<input id="vsTi" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(cur)}"><button class="t-mbtn main" data-a="vsSave">儲存</button>${sid?`<button class="t-mbtn danger" data-a="vsDel">刪除分區</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "vsSave": { const f=ui.vsFor, v=((document.getElementById("vsTi")||{}).value||"").trim(); if(!f) break; if(!v){ toast("名稱不能空白"); break; } if(nameBlock&&nameBlock(v)) break;
@@ -12958,12 +12944,12 @@ function clickAdm(a,t,e,r){ switch(a){
       ms.songs.push({id:"s"+Date.now(),gid,title:ti}); S.set(K.mshow,ms); muNotify(`🎤 ${groupOf(gid).name}《${ti}》開始打歌！`,gid); lsRerender(); toast("已加入打歌名單"); break; }
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
     case "muAlbum": { const g=groupOf(t.dataset.v); if(owns(g.id,"album")){ toast("你已經收藏這張專輯了 💿"); break; } ui.shopTab="merch"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
-    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else { t.classList.toggle("on",on); t.innerHTML=`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; } break; }
+    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ if(b.closest(".mu2-sh")) return; b.classList.toggle("on",on); b.innerHTML=`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
     case "mvLike": { const l=S.get(K.mvLike,{}), g=t.dataset.v; if(l[g]) delete l[g]; else l[g]=Date.now(); S.set(K.mvLike,l);
       if(t.closest(".player,.yv-pw")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`${l[g]?"♥":"♡"} ${fmt(mvLikes(g))}`; } else if(t.closest(".mu2-sh")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`<span>${l[g]?"♥":"♡"}</span>MV ${fmt(mvLikes(g))}`; lsRerender(); } else lsRerender(); break; }
     case "muVote": openVote(t.dataset.v); break;
     case "muVoteGo": { if(t.disabled) break; if(String(t.dataset.v).startsWith("demo_")){ const sid=t.dataset.v, sh=t.dataset.s, k=myVoteKey(sh); ui.dmMine=ui.dmMine||{}; if(ui.dmMine[k]) break; ui.dmMine[k]=sid; ui.dmV=ui.dmV||{}; ui.dmV[sid]=(ui.dmV[sid]||0)+1; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1};   /* 示範：只記在這次打開 */
-        const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } const so=songOf(sid); toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}・拿到 打歌節目卡 🎤`); break; }
+        const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } const so=songOf(sid); toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); break; }
       if(meBlocked()) break; const sid=t.dataset.v, sh=t.dataset.s, wk=curWeek(), v=S.get(K.msVotes,{}), m=S.get(K.msMine,{});
       if(m[myVoteKey(sh)]) break; if(showEnded(sh,wk)){ toast("這個節目這週已經結束了"); break; } addShowVote(sid,sh); m[myVoteKey(sh)]=sid; S.set(K.msMine,m);
       const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } { const so=songOf(sid), mc=so&&giveMcCard(so.gid,sh); toast(mc?`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}・拿到 ${itemName(mc)} 🎤`:`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); } break; }
@@ -14286,180 +14272,13 @@ function addArtistComment(postId,text){ const p=getPosts().find(x=>x.id===postId
   S.set(K.comments,[...S.get(K.comments,[]),c]); try{ feedPush({kind:"acomment",member:p.member,host:p.member,group:p.group,text:text.slice(0,80),postId:p.id,commentId:c.id,color:null},"g:"+p.group); }catch(e){} return c; }
 
 /* ---------- 新手教學 ---------- */
-const COACH_INTRO_UNI=["你是管理員","你同時也是藝人和粉絲。最上面的「粉絲｜藝人｜管理」可以隨時切換，不用換帳號。"];
-const COACH_UNI=[['.uni-sw [data-v="fan"]',"粉絲","跟一般粉絲一模一樣：看動態、直播、訂閱的 TIE、抽卡投票、購物。"],['.uni-sw [data-v="artist"]',"藝人","你自己的藝人身分：發動態、開直播、傳 TIE、舞台和應援棒。"],['.uni-sw [data-v="admin"]',"管理","公司的事：待辦、內容、活動、商店、人員。旁邊的數字是待辦。"]];
-const TOURS={
-  /* ---------- 粉絲 ---------- */
-  "fan:home":[['[data-a="ft"][data-v="feed"]',"動態","你喜歡的藝人，最新的消息都在這裡 💜"],
-    ['[data-a="ft"][data-v="live"]',"直播","藝人開直播的時候，從這裡進去陪他。"],
-    ['[data-a="ft"][data-v="discover"]',"探索","遇見新的團，按「加入」就能一起追。"],
-    [".mf-dm","有新 TIE","藝人剛傳了新的 TIE！點「立即查看」看他說了什麼。"],
-    ['[data-a="dmNext"]',"查看其他 TIE","還有別的藝人傳來的 TIE，點一下換下一則。"],
-    [".hl-i","最新公告","團的重要消息，左右滑看下一則。"],
-    ['.post [data-a="like"]',"按讚","喜歡就按愛心，讓藝人知道 ♡"],
-    ['.post [data-a="comments"]',"留言","跟藝人和大家說說話。藝人回覆你的時候，你會收到通知。"],
-    ['.post [data-a="bmTog"]',"收藏","想留著再看的動態，收進書籤。"],
-    [".pv-lock.ms","會員限定","加入 Membership 才看得到的動態。"],
-    [".pv-lock.pvk","私密貼文","藝人藏了一組密碼，猜中就能看！猜錯也沒關係，可以一直猜。"],
-    ['[data-a="shOpen"]',"搜尋","找藝人、找動態。"],
-    ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播的時候，都會在這裡告訴你。"]],
-  "fan:cm":[["#csl","留言","大家的留言都在這裡。藝人回覆的會特別標出來。"],
-    ['[data-a="replyTo"]',"回覆","想回某則留言，點「回覆」。"],
-    ['[data-a="report"]',"檢舉","看到讓人不舒服的留言，可以檢舉，我們會處理。"],
-    ["#cin","寫留言","寫下你想說的話吧。"]],
-  "fan:live":[[".nc","直播中","藝人正在直播！點進去聽他說話、留言、送心心。在直播間點一下畫面，可以叫出離開、聊天開關和縮小；縮小後在別的頁面也看得到直播。"],
-    [".rr-i","重播","錯過了也沒關係，重播都留著。可以只看藝人說的話。"]],
-  "fan:whisper":[[".t-room","TIE","你訂閱的藝人都在這裡，每一位都是你們兩個人的聊天室。"],
-    ['[data-a="shOpen"]',"搜尋","找藝人，或找以前的訊息。"],
-    ['[data-a="tListClear"]',"整理","到期的聊天室可以在這裡清掉。"]],
-  "fan:chat":[[".t-rh h3","聊天室名稱","可以幫這個聊天室取你喜歡的名字，只有你看得到。"],
-    [".t-sub","在一起的天數","你和他在一起第幾天了。紀念日會有小驚喜 🎉"],
-    ['.t-rh [data-a="shOpen"]',"搜尋訊息","找以前的訊息。"],
-    ['[data-a="tDrawer"]',"選單","點這裡打開選單，等等帶你看看裡面有什麼。"],
-    [".t-art .t-b","藝人的訊息","藝人傳給你的話。按住可以複製、收進 TIE BOX、看翻譯。"],
-    [".t-rp","藝人的回覆","藝人回覆了某位粉絲說的話，大家都看得到，但不知道是誰寫的。"],
-    [".nick-me","你的名字","藝人叫你的地方，會變成你自己設定的暱稱。"],
-    [".t-abtn","翻譯","點 A 看翻譯。"],
-    [".t-me .t-b","你的訊息","你回給藝人的話。旁邊的「1」消失，就代表他看了。"],
-    [".t-recall","收回","藝人還沒看之前，可以收回。"],
-    ["#win","回覆藝人","跟他說說話吧。訂閱越久，每則能寫的字越多。"],
-    [".t-smile","表情","加一點表情 😊"],
-    ["#wsend","送出","寫好就送出。"],
-    [".t-expired-in","已到期","TIE 券到期了，續訂就能繼續聊。"]],
-  "fan:drawer":[['[data-a="tMute"]',"通知","這個聊天室的通知可以關掉或打開。"],
-    ['[data-a="tFav"]',"我的最愛","把最常聊的藝人放到最上面。"],
-    [".t-dw-b .t-acc:not(.t-acc-art)","你的暱稱","藝人叫你的名字。"],
-    [".t-acc-art","藝人","點一下看藝人的個人頁。"],
-    ['[data-a="tBox"]',"TIE BOX","收藏起來的訊息都放在這裡。"],
-    ['[data-a="tGallery"]',"照片・影片","藝人傳過的照片和影片，一次看完。"],
-    ['[data-a="tToSettings"]',"聊天室設定","聊天室名稱、暱稱、背景，都在這裡改。"],
-    [".t-leave","離開聊天室","不想留這個聊天室了，可以離開。"]],
-  "fan:grp":[[".cmx-tabs","社群","每個團都有自己的社群：公告、行程、成員、大家的貼文、影音和商品。"],
-    ['.cmx-tabs [data-v="media"]',"影音","直播重播和影片都在這裡。"],
-    [".cm-abc","About","認識團裡的每一位。點進去可以看他們的個人頁。"],
-    [".cmx-fab","＋","寫信給藝人，或發一則貼文。"]],
-  "fan:grpfab":[['.cmx-fabm [data-a="cmLetterTo"]',"粉絲信","寫一封信給整個團，或給你最喜歡的那一位 💌"],
-    ['.cmx-fabm [data-a="cmGo"]',"貼文","在社群發一則貼文，跟其他粉絲分享。"]],
-  "fan:core":[['[data-a="coreGo"][data-v="cards"]',"小卡","用積分抽小卡，收進你的卡冊。"],
-    ['[data-a="coreGo"][data-v="promo"]',"打歌","藝人打歌的時候，幫他投票衝一位！"],
-    ['[data-a="coreGo"][data-v="concert"]',"演唱會","演唱會開始時進場，舉起應援棒一起變成燈海。開演前可以先做應援板，互動歌的時候舉起來，藝人可能會回應你！"],
-    ['[data-a="coreGo"][data-v="sns"]',"SNS","發照片和限時動態、追蹤朋友、傳私訊。"],
-    ['[data-a="coreLocked"],[data-a="coreGo"][data-v="survival"]',"選秀","選秀開始後，每天都能幫喜歡的練習生投票。"],
-    ['[data-a="coreGo"][data-v="fsl"]',"簽售","報名簽售，抽中就能跟藝人視訊聊天！"]],
-  "fan:shop":[[".ws-pts","積分","你的積分還有多少。"],
-    [".th-shop","TINT","換一套主題，整個 App 都跟著變。"],
-    [".ws-sl","推薦","現在買得到的 Membership 和專輯，左右滑看更多。"],
-    [".ws-my","My Artist","看你喜歡的團有哪些商品。"],
-    [".wsp-pc","商品","Membership、專輯、應援棒、周邊和 TIE 券。"],
-    [".pass","我的 TIE 券","還剩幾天一目瞭然，快到期可以直接續訂。"]],
-  "fan:me":[[".me-card","我的檔案","你的名字、追蹤的團、積分和 TIE 券。"],
-    ['[data-a="meNickEd"]',"名稱","點筆可以改名字。TIE 聊天室裡的暱稱要到聊天室設定改。"],
-    ['[data-a="meSec"][data-v="ms"]',"會員","你加入的 Membership。"],
-    ['[data-a="meSec"][data-v="tie"]',"TIE 券","你正在訂閱的 TIE。"],
-    ['[data-a="meSec"][data-v="merch"]',"周邊","你的應援棒和周邊。"],
-    ['[data-a="openCards"]',"小卡","抽到的小卡都在卡冊裡。"],
-    ['[data-a="openSigned"]',"簽名專輯","簽售拿到的簽名專輯。"],
-    ['[data-a="meSec"][data-v="buy"]',"購買紀錄","買過的東西。"],
-    ['[data-a="settings"]',"通知設定","想收到哪些通知，你決定。"],
-    ['[data-a="acctInfo"]',"帳號","你的登入帳號。"],
-    ['[data-a="theme"]',"外觀","淺色、深色，還有主題。"],
-    ['[data-a="coachAgain"]',"重看教學","想再看一次，隨時點這裡。"]],
-  "fan:core:cards":[[".cb-tabs","卡冊","拆專輯拿到的小卡都收在這裡。左邊是卡冊，右邊是開箱紀錄。"],[".cb-al","專輯","每張專輯一格，點進去看收集了幾張。"]],
-  "fan:core:promo":[['[data-a="coreTip"]',"賽制","宣傳週、排名週、打歌週怎麼算，看這裡。"],[".mu-wins","一位","這週每個節目拿到一位的歌。"],['[data-a="muVote"]',"投票","幫喜歡的歌投一票，排名週的票最重要。"],['[data-a="promoPick"]',"看這首歌","點進去看 MV 和成績。"]],
-  "fan:core:concert":[['[data-a="concertOn"]',"進場","演唱會開始後按這裡進場，跟大家一起變成燈海。"],['[data-a="coreStick"]',"應援棒","買了官方應援棒，進場就會舉這一支。"],["#bdText","應援板","寫一句想對藝人說的話。互動歌的時候舉起來，藝人可能會回應你！"],['[data-a="bdSave"]',"做好了","寫完按這裡存起來。"]],
-  "fan:core:fsl":[[".fs-card","簽售","正在報名的簽售都在這裡。"],['[data-a="fsJoin"]',"報名","按這裡報名，等抽籤結果。"],['[data-a="fsBuy"]',"多一次機會","多買一張專輯，抽籤機會就多一次。"],['[data-a="fsRoom"]',"進入簽售","抽中後，時間到按這裡進去跟藝人視訊。"]],
-  "fan:core:tour":[[".tr-card","世巡","藝人的世界巡演，每一站都是一場演唱會。"],['[data-a="tourBuy"]',"買票","每一站要先買票才能進場。剩兩站以上可以一次全買，打 9 折。"],[".tr-st","蓋章","去過的站會蓋章，集滿就是一整趟巡演的回憶。"]],
-  "fan:core:truck":[[".trk-stage","應援餐車","手指拖一拖可以轉來轉去看，兩指可以放大。"],['[data-a="tkNew"]',"訂一台","選要送給誰、車身顏色、橫幅照片和標語、菜單、杯套、裝飾，再決定自己買或找大家分攤。"],[".trk-join","一起出錢","別人發起的分攤，按這裡就能一起出。"]],
-  "fan:core:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
-  /* ---------- 藝人 ---------- */
-  "artist:home":[[".ap2-hero","你的個人頁","粉絲看到的你，就是這個樣子。"],
-    [".ap2-pen","換背景","選一張喜歡的照片當背景。"],
-    [".ap2-av","頭貼","換一張頭貼，動態、直播和社群會一起換。TIE 的頭貼在 TIE 右上角的「⋯」裡另外換。"],
-    [".ap2-fo","編輯個人檔案","背景、頭貼、名字和簡介都在這裡改。"],
-    [".ap2-tabs","貼文／留言","你發過的動態，和你留過的話。"],
-    [".art-fab","發表","想跟粉絲分享什麼，從這裡開始。"],
-    ['.post [data-a="comments"]',"留言","看看粉絲說了什麼，也可以回覆他們。"],
-    ['.post [data-a="del"]',"刪除","刪掉這則動態。刪了就不能復原喔。"]],
-  "artist:fab":[['.cmx-fabm [data-v="all"]',"貼文","所有粉絲都看得到。"],
-    ['.cmx-fabm [data-v="ms"]',"Membership","只給加入 Membership 的粉絲看，其他人會看到模糊的畫面。"],
-    ['.cmx-fabm [data-v="pw"]',"私密貼文","設一組密碼，讓粉絲來猜！"]],
-  "artist:write":[[".cw-t","寫內容","想說多少都可以，沒有字數限制。"],
-    ['.aw-ic[aria-label="加入照片或影片"]',"照片／影片","放四張照片，或一支影片。"],
-    ['[data-a="pollNew"]',"票選","出一題讓粉絲投票，選項也可以放圖片。"],
-    ["#pubBtn","發布","寫好就發布，粉絲會收到通知。"]],
-  "artist:live":[[".prep-card","準備開播","這是你的直播間。你說的每一句話，粉絲都會在畫面中間看到。"],
-    ["#ltitle","直播標題","幫這場直播取個名字。"],
-    ['[data-a="bgmOpen"]',"背景音樂","先放幾首歌（MP3 或 M4A，最多 8 首）。開播後按右邊的 ♪，粉絲那邊會一起聽到同一段。"],
-    ['[data-a="startLive"]',"開始直播","按下去就開播！開播後點粉絲的留言，就能直接回覆他。"],
-    [".lvr-h","重播","以前的直播都留在這裡，可以照時間排。"]],
-  "artist:room":[[".dl-title","直播間","你正在直播！上面是標題和你的名字。"],
-    [".dl-co","連線","邀請一位別團或 SOLOIST 的藝人一起直播（一次一位）。對方在 MEET 按接受就會加入，你們各自有一疊卡片。"],
-    ["#cmSpot","你說的話","你傳的每一句話，都會出現在畫面中間給粉絲看。"],
-    [".host-feed","粉絲留言","粉絲的留言在這裡。點一則就能回覆他，大家都看得到。"],
-    [".dl-bgm","背景音樂","按一下開始放音樂，粉絲按 ♪ 就能一起聽；再按一下就停，下次從停的地方接著放。"],
-    ['.dl-side [data-a="dlChat"]',"留言開關","把留言收起來，畫面比較乾淨。"],
-    ['.dl-side [data-a="dlMini"]',"縮小","把直播縮小，去看別的地方，直播不會斷。"],
-    ["#lin","說話","寫下想跟粉絲說的話，按送出。"],
-    [".dl-exit","結束直播","說完再見，按這裡結束直播。"]],
-  "artist:foc:concert":[["#acTitle","演唱會名稱","幫這場演唱會取個名字。"],[".lsp-songs","歌單","照順序點歌名，前面的數字就是第幾首。"],[".ls-seg","互動歌","前幾首是互動歌，粉絲會在燈海裡舉起應援板。"],['[data-a="acLater"]',"10 分鐘後開演","先通知粉絲，讓大家有時間做應援板。"],['[data-a="acNow"]',"現在開演","不用等，馬上開始。"],['[data-a="ccNow"]',"現在開始","時間到了就按這裡開始。"],['[data-a="stOn"]',"進入現場","走進燈海，拖動麥克風跟大家一起揮；點一下舉著應援板的粉絲就能回應他。"]],
-  "artist:foc:tour":[['[data-a="trNew"]',"申請世巡","想辦世界巡演，從這裡開始。"],["#trTi","巡演名稱","幫這次巡演取個名字。"],["#trCity","城市","選一個城市。"],["#trWhen","時間","這一站什麼時候開演。"],['[data-a="trStopAdd"]',"加入","按一下加進站點，可以加很多站。"],['[data-a="trSubmit"]',"送出申請","送給管理員審核，核准後粉絲就能買票。"],[".tr-a","你的世巡","審核結果和每一站都在這裡。"],['[data-a="trSay"]',"說一句話","開演前留一句話給這一站的粉絲。"]],
-  "artist:foc:sign":[[".fs-row","簽售","公司排好的簽售在這裡，報名人數和名單都看得到。"],['[data-a="fsDesk"]',"進簽售台","開場後按這裡，一位一位跟粉絲視訊、簽名。"]],
-  "artist:foc:honor":[[".foc-row","MC 與積分","這個月主持了哪些節目，和今年的打歌積分。"],[".foc-ms","獎項","拿過的一位、AK、PAK，都會亮起來。"]],
-  "artist:foc:stick":[[".ls-box","官方應援棒","你們團的應援棒，可以轉來轉去看。"]],
-  "artist:foc:truck":[[".trk-stage","應援餐車","粉絲送你的餐車！在出道或回歸那天才會送到，之前都是秘密。"],[".trk-list","收到的餐車","每一台都留在這裡，點一下就能再看一次。"]],
-  "artist:foc:news":[['[data-a="newsF"]',"篩選","只看某一團的新聞。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文。"]],
-  "artist:whisper":[[".t-dots","選單","點這裡打開選單，等等帶你看看。"],
-    ['[aria-label="檢舉這則訊息"]',"粉絲的回覆","粉絲回你的話會在左邊。遇到不舒服的訊息，點「⋯」檢舉。"],
-    [".t-arw","回覆","按粉絲訊息旁邊的箭頭，就能回覆那一句。大家都看得到你的回覆，但不會知道原本是誰說的。"],
-    [".t-wait","待發送","寫好的訊息會先排著（最多 10 則），按右下角的「傳送待發訊息」預覽後，再一次送出。"],
-    [".t-plus","照片／語音","傳照片或語音給粉絲。"],
-    [".t-nick","@@@","打 @@@，每位粉絲看到的都會是自己的名字。"],
-    ["#win","傳訊息","寫給所有訂閱你的粉絲，每個人都會收到。"]],
-  "artist:drawer":[[".ad-pen","背景","粉絲點你的時候看到的背景。"],
-    [".ad-av","頭貼","換一張 TIE 的頭貼，只有 TIE 會換，其他地方不會變。"],
-    ['[data-a="artNameEd"]',"TIE 名稱","粉絲聊天室上方顯示的名字，可以跟動態的名字不一樣。"],
-    ['[data-a="artBioEd"]',"個人簡介","寫幾句話介紹自己。"],
-    ['[data-a="aTieBg"]',"聊天室背景","換聊天室的背景，粉絲那邊也會一起換（自己換過背景的粉絲不會變）。"],
-    ['[data-a="tWelcome"]',"TIE 歡迎語","新粉絲訂閱時，第一則收到的話。"]],
-  "artist:foc":[[".foc-c.hero","舞台演出","這週是宣傳週、排名週還是打歌週，你們拿了幾個一位。"],
-    ['[data-a="focTip"]',"賽制","三種週怎麼算分，看這裡。"],
-    ['[data-a="focGo"][data-v="concert"]',"演唱會","你們自己開演唱會：排歌單、選前幾首是互動歌，可以 10 分鐘後開演讓粉絲先做應援板，也可以馬上開。開演後走進現場，拖動麥克風跟大家一起揮，下面換燈色、效果、下指令；燈海裡會有粉絲舉起應援板，點一下就能回應他！"],
-    ['[data-a="focGo"][data-v="sign"]',"簽售","簽售當天，在這裡一位一位跟粉絲視訊。"],
-    ['[data-a="focGo"][data-v="honor"]',"榮譽與職務","MC 任務、今年的打歌積分和拿過的獎。"],
-    ['[data-a="focGo"][data-v="stick"]',"官方應援棒","你們團的應援棒，可以轉來轉去看。"],
-    ['.tile[data-a="openSns"]',"SNS","你的個人帳號：發照片和限時動態、跟大家互動。"]],
-  "artist:me":[
-    ['[data-a="aNick"]',"粉絲的愛稱","幫 Membership 粉絲取一個專屬的愛稱。"],
-    ['[data-a="thMine"]',"做主題","設計一套你自己的 App 主題，通過審核後就會上架。"],
-    ['[data-a="tab"][data-v="points"]',"積分收入","你收到了多少積分。"],
-    ['[data-a="swapRole"]',"切換到粉絲","回到你的粉絲帳號，去追其他藝人。"],
-    ['[data-a="theme"]',"外觀","淺色、深色，還有主題。"],
-    ['[data-a="coachAgain"]',"重看教學","想再看一次，隨時點這裡。"]],
-  /* ---------- 管理 ---------- */
-  "admin:home":[[".uni-sw","三個畫面","粉絲、藝人、管理，點一下就切換。「管理」旁邊的數字是待辦。"],
-    [".uni-empty,.list-btn[data-v='#/admin?tab=reports']","待處理","被檢舉的內容和等審核的主題，點一下去處理。"],
-    [".uni-stats","今天","正在直播的、今天的新留言、接下來的活動。"],
-    [".uni-quick","快速入口","發官方公告、加積分、建立帳號、新增藝人。"],['[data-a="maintToggle"]',"維修模式","打開後只有管理員能進 App，其他人會被請出去。要更新或修東西的時候用。"]],
-  "admin:reports":[[".mod-seg","內容","檢舉、所有貼文、公告。"],
-    [".rp","檢舉","被檢舉的內容，誰檢舉的、為什麼。"],
-    [".rp-act","處理","沒問題就駁回；有問題就刪除，或禁言、停權。"]],
-  "admin:posts":[['[data-a="ag"]',"篩選","只看某一個團。"],['[data-a="hide"]',"隱藏","先藏起來，之後還能恢復。"],['[data-a="admDel"]',"刪除","直接刪掉，不能復原。"]],
-  "admin:announce":[['.uni-top [data-a="uniAnn"]',"發公告","用 HAECHU 官方發公告。"],['[data-a="annDel"],[data-a="gnDel"]',"撤下","把公告撤下來。"]],
-  "admin:foc":[[".foc-seg","活動","賽程、打歌、簽售、演唱會、選秀。"],
-    ["#focStage","本週階段","宣傳週、排名週或打歌週。不設定就照日期走。"],
-    ['[data-a="focSave"]',"儲存","按儲存，藝人和粉絲那邊馬上更新。"]],
-  "admin:shopadm":[['[data-v="#/admin?tab=albums"]',"專輯與店家","專輯、版本、特典和店家。"],['[data-v="#/admin/themes"]',"主題","審核藝人做的主題，也可以自己上架。"],['[data-v="#/admin?tab=revenue"]',"積分統計","每位藝人的積分收入。"]],
-  "admin:people":[['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人。"],
-    ['[data-v="#/admin?tab=accounts"]',"帳號","幫新人建立帳號、看所有帳號的地方。"],['[data-v="#/admin?tab=debut"]',"出道申請","粉絲申請出道會出現在這裡，看完 Teaser 和 MV 再按核准。"],['[data-v="#/admin?tab=ptadd"]',"加積分","每個月結算積分用：可以加、扣，或直接設定成某個數字。"]],
-  "admin:accounts":[["#acUser","帳號","填他們給你的帳號。"],["#acReal","本名","填他們真正的本名，只有管理員看得到。"],["#acName","暱稱","隨便填，本人之後可以自己改。"],["#acPw","密碼","填他們給你的密碼。"],['[data-a="acCreate"]',"建立帳號","四格都填好就按這裡。這裡建的都是一般粉絲帳號。"],[".ac-list","目前的帳號","大家的帳號都在這裡，點進去可以改名字、重設密碼。"]],
-  "admin:roster":[['[data-v="#/admin?tab=roster&p=new"]',"新增","按右上角的「＋」新增團體或個人藝人。"],[".rs-row","團和藝人","點進去可以加成員、綁帳號、上傳出道照和 Teaser 照。"]],
-  "admin:rosternew":[[".rs-type","團體或個人","團體：先建團，再一個一個加成員。個人（SOLOIST）：一次就建好。"],["#rgName","名字","團體就填團名，個人就填藝名。"],['[data-a="rsColor"]',"代表色","社群、卡片都會用這個顏色。"],["#rsAcc","綁定帳號","選這位藝人登入用的帳號。還沒有就選「之後再選」。"],["#rsBday","生日","月-日，例如 3-14。可以之後再填。"],['[data-a="rgAdd"]',"建立","按這裡就建好了。"]],
-  "admin:ptadd":[["#ptQ","找人","打帳號或名字找人，可以一次選很多個。"],['[data-a="ptSign"]',"加、扣、設定為","加積分、扣積分，或直接把積分設定成某個數字（每月結算用這個最方便）。"],["#ptN","積分","填數字就好。"],["#ptWhy","原因","對方會看到，例如「10 月積分結算」。"],['[data-a="ptGo"]',"送出","按下去就送出了，對方打開 App 就會收到。"]],
-  "admin:banned":[["#banTa","禁用字詞","大家不想看到的字，一行放一個。放進來的字，在 App 裡就傳不出去。"],['[data-a="banSave"]',"儲存","改完記得按儲存。"]]};
+/* 教學內容在 js/40-新手教學內容.js */
 function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="fan"&&r.sub==="chat"&&!r.p) return "fan:chat";
   if(r.role==="fan"&&r.sub==="grp"&&!r.p) return "fan:grp";
   if(r.role==="fan"&&r.sub==="core"&&r.p&&!r.id) return "fan:core:"+r.p;
+  if(r.sub==="sns"&&(!r.p||r.p==="home")) return r.role+":sns";
+  if(r.role==="fan"&&["core","shop","me"].includes(r.sub)&&!r.p) return "fan:"+r.sub;
   if(r.role==="artist"&&r.sub==="write") return "artist:write";
   if(r.role==="artist"&&!r.sub&&r.tab==="foc"&&r.p&&!r.id) return "artist:foc:"+r.p;
   if(r.role==="artist"&&!r.sub&&r.tab==="live"&&document.querySelector(".mr.dl.host")) return "artist:room";
@@ -14474,7 +14293,7 @@ function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getEleme
   ui.coach={kind:"tour",key:k,steps,i:0}; coachShow(); }
 
 /* ===== 新手教學：每一端一次教完（不用每個分頁各跳一次） ===== */
-const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店"};
+const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",sns:"SNS",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店"};
 function fullTourStart(){ const ro=route().role, navs=[...document.querySelectorAll(".nav .nav-btn")].map(b=>b.dataset.v).filter(Boolean); if(!navs.length){ const c=document.getElementById("coach"); if(c) c.remove(); ui.coach=null; return; }
   const seq=[];
   ui.feedTab="feed"; tourDemoOn(ro);
@@ -14483,14 +14302,14 @@ function fullTourStart(){ const ro=route().role, navs=[...document.querySelector
     if(ro==="fan"&&v==="whisper"){ const id=Object.keys(subs()).find(x=>MEMBERS[x]&&!roomHidden(x)); if(id){ seq.push({hash:"#/fan/chat?m="+id,lbl:"chat"}); seq.push({open:"drawer",key:"fan:drawer",lbl:"chat"}); } }
     if(ro==="artist"&&v==="home"){ seq.push({open:"fab",key:"artist:fab",lbl:"home"}); seq.push({hash:"#/artist/write?p=all",lbl:"write"}); }
     if(ro==="artist"&&v==="whisper") seq.push({open:"artdrawer",key:"artist:drawer",lbl:"whisper"});
-    if(ro==="fan"&&v==="core") [["promo","打歌"],["concert","演唱會"],["fsl","簽售"],["tour","世巡"],["cards","卡冊"],["news","新聞"]].forEach(([p,l])=>seq.push({hash:"#/fan/core?p="+p,key:"fan:core:"+p,lbl:l}));
-    if(ro==="artist"&&v==="foc") [["concert","演唱會"],["tour","世巡"],["sign","簽售"],["honor","榮譽與職務"],["stick","官方應援棒"]].forEach(([p,l])=>seq.push({hash:"#/artist?tab=foc&p="+p,key:"artist:foc:"+p,lbl:l}));
+    if(ro==="fan"&&v==="core"){ seq.push({open:"muOpen",key:"fan:core:promo",lbl:"打歌"}); [["cards","卡冊"],["news","新聞"],["wiki","SKpedia"],["truck","應援餐車"],["fsl","簽售"],["concert","演唱會"],["tour","世巡"]].forEach(([p,l])=>seq.push({hash:"#/fan/core?p="+p,key:"fan:core:"+p,lbl:l})); seq.push({hash:"#/fan/sns",key:"fan:sns",lbl:"SNS"}); }
+    if(ro==="artist"&&v==="foc"){ [["honor","打歌戰況"],["truck","應援餐車"],["news","新聞"],["sign","簽售"],["concert","演唱會"],["tour","世巡"],["stick","官方應援棒"]].forEach(([p,l])=>seq.push({hash:"#/artist?tab=foc&p="+p,key:"artist:foc:"+p,lbl:l})); seq.push({hash:"#/artist/sns",key:"artist:sns",lbl:"SNS"}); }
     if(ro==="admin"&&v==="people"){ [["accounts","帳號"],["roster","藝人與團"],["roster&p=new","新增藝人"],["ptadd","加積分"],["banned","禁用字詞"]].forEach(([t,l])=>seq.push({hash:"#/admin?tab="+t,key:"admin:"+(t==="roster&p=new"?"rosternew":t),lbl:l})); } });
   ui.coach={kind:"full",role:ro,seq,si:0,steps:[],i:0,home:location.hash}; fullNext(); }
 /* 教學時打開抽屜、留言、直播分頁 */
 const TOUR_OPEN={ ftLive:()=>{ ui.feedTab="live"; render(); },
   cm:()=>{ ui.feedTab="feed"; render(); window.scrollTo(0,0); const b=document.querySelector('.post [data-a="comments"]'); if(b) b.click(); },
-  grpfab:()=>openCmFab(route().id), drawer:()=>openTieDrawer(route().m), fab:()=>openArtFab(), artdrawer:()=>openTieArtDrawer(session().member) };
+  grpfab:()=>openCmFab(route().id), muOpen:()=>{ const f=(SHOWS[0]||{}).id; if(f) ui.muOpen={[f]:true}; location.hash="#/fan/core?p=promo"; window.scrollTo(0,0); }, drawer:()=>openTieDrawer(route().m), fab:()=>openArtFab(), artdrawer:()=>openTieArtDrawer(session().member) };
 function tourCloseOpen(){ ui.sheet=null; layer.innerHTML=""; if(ui.feedTab==="live"){ ui.feedTab="feed"; } }
 /* 教學用的示範內容：讓空的頁面也有東西可以看，教完就收掉 */
 const TDM_G={id:"tdm_g",name:"示範團",g:0}, TDM_M={name:"示範藝人",group:"tdm_g",g:2};
@@ -14525,12 +14344,12 @@ function tourDemoOff(){ try{ const T=x=>String(x&&x.id||"").startsWith("tdm_");
 function fullNext(){ const c=ui.coach; if(!c||c.kind!=="full") return;
   if(c.opened){ c.opened=false; tourCloseOpen(); }
   if(c.si>=c.seq.length){ fullMarkDone(c.role); tourDemoOff(); ui.coach=null; if(c.home&&location.hash!==c.home) location.hash=c.home; setTimeout(()=>{ window.scrollTo(0,0); ui.coach={kind:"done"}; coachDone(); },350); return; }
-  const it=c.seq[c.si++]; coachMount(`<div class="coach-dim soft"></div>`);
+  const it=c.seq[c.si++], my=c.tick=(c.tick||0)+1; c.wait=true; coachMount(`<div class="coach-dim soft"></div>`);
   if(it.nav){ const ro=c.role, v=it.nav, h=ro==="admin"&&isUni()?(UNI_ATABGO[v]||"#/admin"):ro==="fan"&&isUni()?(UNI_ROUTE[v]||"#/fan"):(v==="home"?"#/"+ro+(ro==="artist"?"?tab=home":""):"#/"+ro+"?tab="+v); navRoot(h); c.label=TOUR_LBL[v]||v; }
   else if(it.hash){ location.hash=it.hash; c.label=TOUR_LBL[it.lbl]||it.lbl||""; }
-  else if(it.open){ try{ TOUR_OPEN[it.open](); }catch(e){} c.opened=it.open!=="ftLive"||true; c.label=TOUR_LBL[it.lbl]||c.label||""; }
+  else if(it.open){ try{ TOUR_OPEN[it.open](); }catch(e){} c.opened=it.open!=="ftLive"||true; c.label=TOUR_LBL[it.lbl]||it.lbl||c.label||""; }
   setTimeout(()=>{ if(ui.coach!==c) return; if(!it.open) window.scrollTo(0,0); const k=it.key||tourKey(); const steps=(TOURS[k]||[]).filter(([sel])=>{ const el=document.querySelector(sel); return el&&el.getBoundingClientRect().height>0; });
-    if(!steps.length) return fullNext(); c.steps=steps; c.i=0; c.key=k; c._scI=-1; coachShow(); },650); }
+    if(c.tick!==my) return; c.wait=false; if(!steps.length) return fullNext(); c.steps=steps; c.i=0; c.key=k; c._scI=-1; coachShow(); },650); }
 function fullMarkDone(ro){ const s=session()||{}, T=S.get(K.tours,{}), e=s.email||""; T[e+"|full:"+ro]=true; Object.keys(TOURS).filter(k=>k.startsWith(ro+":")).forEach(k=>T[e+"|"+k]=true); S.set(K.tours,T); }
 setTimeout(tourDemoOff,0);
 /* 單頁教學：換頁就收起來，提示不會停在別的頁面上 */
@@ -17917,6 +17736,10 @@ const songMvLikes=s=>{ const v=songMv(s); return v?mvLikesV(v.id):0; };
 const songViews=s=>{ const v=songMv(s); return v?(v.views||0):0; };
 /* 投票 */
 const showVotes=(sid,show,wk)=>{ wk=wk||curWeek(); if(String(sid).startsWith("demo_")) return 3+strHash(sid+show)%40+(((ui.dmV2||{})[show]||{})[sid]||0); return ((((S.get(MSV2,{})||{})[wk]||{})[show]||{})[sid])||0; };
+const MSQ="daisuki_ms_seat";
+function showSeat(sid,show){ const wk=curWeek(), me=myEmail(); if(!me) return 99; const Q=S.get(MSQ,{})||{}, o={...((((Q[wk]||{})[show])||{})[sid]||{})};
+  if(!o[me]){ o[me]=Date.now(); const Q2={}; Object.keys(Q).sort().slice(-1).forEach(k=>{ if(k!==wk) Q2[k]=Q[k]; }); const W={...(Q[wk]||{})}; W[show]={...(W[show]||{}),[sid]:o}; Q2[wk]=W; S.set(MSQ,Q2); }
+  return Object.entries(o).sort((a,b)=>a[1]-b[1]).findIndex(x=>x[0]===me); }
 function addShowVote(sid,show){ const wk=curWeek(), V=S.get(MSV2,{})||{}; V[wk]={...(V[wk]||{})}; V[wk][show]={...(V[wk][show]||{})}; V[wk][show][sid]=(V[wk][show][sid]||0)+1; S.set(MSV2,V); }
 /* 這個節目這週的分數 */
 function showScore(sid,show,wk){ wk=wk||curWeek(); const s=songOf(sid); if(!s) return {votes:0,album:0,likes:0,views:0,total:0};
@@ -18008,7 +17831,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     if(muVotedFor(sh)) return; if(!s.demo&&showEnded(sh,curWeek())) return;
     const r=t.getBoundingClientRect(); let card=null;
     if(s.demo){ ui.dmMine={...(ui.dmMine||{}),[k]:sid}; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1}; }
-    else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); card=giveMcCard(s.gid,sh); }
+    else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); const seat=showSeat(sid,sh); card=seat<3?giveMcCard(s.gid,sh):null; if(seat>=3&&seat<99) setTimeout(()=>toast("公放席滿了"),420); }
     const tk=document.createElement("span"); tk.className="mu3-fly"; tk.innerHTML=MU_IC.tk; tk.style.left=r.left+"px"; tk.style.top=r.top+"px"; document.body.appendChild(tk); setTimeout(()=>tk.remove(),700);   /* 投票券撕下來飛出去 */
     ui.muStamp=sh+sid; setTimeout(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); setTimeout(()=>{ ui.muStamp=null; },900); if(card||s.demo) muCardPop(card,sh,s); },380); return; }
   if(a==="murGo"){ e.stopImmediatePropagation(); murGo(+t.dataset.v); return; }
@@ -18016,7 +17839,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
 },true);
 /* 拿到打歌節目卡：卡片翻出來 */
 function muCardPop(cid,sh,s){ const nm=(SHOWS.find(x=>x.id===sh)||{}).name||""; const face=cid?itemFace(cid):`<span class="mu3-cdemo s-${sh}"><b>${esc(nm)}</b><small>${esc(groupOf(s.gid)?groupOf(s.gid).name:"")}</small></span>`;
-  setLayer(`<div class="mu3-cpw" data-a="tCloseLayer"><div class="mu3-cp" role="dialog" aria-label="拿到打歌節目卡"><div class="mu3-cf">${face}</div><b>拿到 ${esc(nm)} 節目卡</b>${cid?`<button class="t-mbtn main" data-a="coreGo" data-v="cards">去卡冊看看</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">好</button></div></div>`,"mucard"); }
+  setLayer(`<div class="mu3-cpw" data-a="tCloseLayer"><div class="mu3-cp" role="dialog" aria-label="拿到公放卡"><div class="mu3-cf">${face}</div><b>搶到 ${esc(nm)} 公放席・拿到公放卡</b>${cid?`<button class="t-mbtn main" data-a="coreGo" data-v="cards">去卡冊看看</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">好</button></div></div>`,"mucard"); }
 
 /* =========================================================
    藝人：FOC 最上面「我的打歌」卡＋戰況頁（取代「榮譽與職務」）
@@ -18088,6 +17911,12 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="muMcEd"){ e.stopImmediatePropagation(); muMcSheet(t.dataset.s,t.dataset.mon); return; }
   if(a==="muMcT"){ e.stopImmediatePropagation(); const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); t.classList.toggle("on"); lsRerender(); return; }
 },true);
+/* 觀看次數：實際播放滿 30 秒才算一次（影片不到 30 秒就看完才算） */
+function vodViewWatch(vid){ const v=document.getElementById("pvPlayer"); if(!v) return; let acc=0, last=null, done=false;
+  const hit=()=>{ if(done) return; done=true; try{ const L=S.get(K.vods,[])||[], x=L.find(y=>y.id===vid); if(x){ x.views=(x.views||0)+1; S.set(K.vods,L); } }catch(e){} };
+  v.addEventListener("timeupdate",()=>{ const t=v.currentTime; if(last!=null&&t>last&&t-last<1.5&&!v.paused) acc+=t-last; last=t; if(acc>=30) hit(); });
+  v.addEventListener("seeking",()=>{ last=null; });
+  v.addEventListener("ended",()=>{ if(v.duration&&v.duration<30&&acc>=v.duration*.8) hit(); }); }
 
 /* =========================================================
    結尾妖精（ending fairy）
@@ -18109,7 +17938,7 @@ async function fairyView(sid,show,from){ const s=songOf(sid); if(!s) return; con
   fairyClose(1); const ov=document.createElement("div"); ov.className="fv2 s-"+show; ov.setAttribute("role","dialog"); ov.setAttribute("aria-label","結尾妖精");
   ov.innerHTML=`<div class="fv2-bg" data-a="fvClose"></div><div class="fv2-box"><div class="fv2-card"><div class="fv2-st" id="fvSt"></div><div class="fv2-bars">${(L.length?L:[0]).map(()=>`<i><em></em></i>`).join("")}</div><button class="fv2-prev" data-a="fvPrev" aria-label="上一位"></button><button class="fv2-next" data-a="fvNext" aria-label="下一位"></button></div>
     <div class="fv2-ti"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}・${esc(sh.name||"")} 結尾妖精</small></span><button class="fv2-x" data-a="fvClose" aria-label="關閉">${XI}</button></div></div>`;
-  document.body.appendChild(ov); FV={s,show,L,i:0,t:0,au:null,ov,from};
+  document.body.appendChild(ov); document.documentElement.classList.add("fv-lock"); FV={s,show,L,i:0,t:0,au:null,ov,from};
   const c=ov.querySelector(".fv2-card"), r=c.getBoundingClientRect(), f=from&&from.isConnected?from.getBoundingClientRect():null;
   if(f&&r.width){ c.style.transform=`translate(${f.left-r.left}px,${f.top-r.top}px) scale(${f.width/r.width},${f.height/r.height})`; c.getBoundingClientRect(); }
   requestAnimationFrame(()=>{ ov.classList.add("on"); c.style.transform=""; });
@@ -18124,10 +17953,13 @@ function fairyShow(){ if(!FV) return; const st=document.getElementById("fvSt"); 
   else { st.innerHTML=`<img src="${esc(it.m)}" alt=""><span class="fv-nm">${esc(nm)}</span>`; FV.t=setTimeout(()=>fairyGo(1),5000); } }
 function fairyGo(d){ if(!FV) return; const n=FV.i+d; if(n<0) return; if(n>=FV.L.length){ fairyClose(); return; } FV.i=n; fairyShow(); }
 function fairyStop(){ if(!FV) return; clearTimeout(FV.t); try{ if(FV.au){ FV.au.pause(); FV.au.src=""; } }catch(e){} const v=FV.ov&&FV.ov.querySelector("video"); if(v){ try{ v.pause(); v.removeAttribute("src"); v.load(); }catch(e){} } }
-function fairyClose(now){ if(!FV) return; const {ov,from}=FV; fairyStop(); FV=null; if(!ov) return;
+function fairyClose(now){ if(!FV) return; const {ov,from}=FV; fairyStop(); FV=null; document.documentElement.classList.remove("fv-lock"); if(!ov) return;
   if(now){ ov.remove(); return; } const c=ov.querySelector(".fv2-card"), r=c.getBoundingClientRect(), f=from&&from.isConnected?from.getBoundingClientRect():null;
   ov.classList.remove("on"); ov.classList.add("off"); if(f&&r.width) c.style.transform=`translate(${f.left-r.left}px,${f.top-r.top}px) scale(${f.width/r.width},${f.height/r.height})`;
   setTimeout(()=>ov.remove(),420); }
+/* 打開時背景不能滑 */
+document.addEventListener("touchmove",e=>{ if(FV&&FV.ov&&e.cancelable) e.preventDefault(); },{passive:false,capture:true});
+document.addEventListener("wheel",e=>{ if(FV&&FV.ov) e.preventDefault(); },{passive:false,capture:true});
 /* 離開 App／換分頁就關掉，不背景播放 */
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) fairyClose(1); });
 window.addEventListener("pagehide",()=>fairyClose(1)); window.addEventListener("hashchange",()=>fairyClose(1));
@@ -18206,6 +18038,270 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     sel.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,pl.days,planPts(id,pl)); });
     const g=groupOf(T.gid); ui.tg=null; layer.innerHTML=""; render(); toast(`已訂閱 ${g?g.name:""} ${sel.length} 位成員的 TIE（${pl.name}）💜`); return; }
 },true);
+
+/* =========================================================
+   新手教學內容（v444 全部重寫）
+   ・每一步：[要亮起來的地方, 標題, 說明]
+   ・畫面上找不到的地方會自動跳過，所以可以寫得很完整
+   ・教學進行中整個畫面不能滑（js/09 擋掉 touchmove／wheel）
+   ========================================================= */
+const COACH_INTRO={
+  fan:["你是粉絲","在這裡追你喜歡的藝人：看他們的動態和直播、收他們傳給你的 TIE、幫打歌投票衝一位、搶公放席拿公放卡、收集小卡、參加簽售和演唱會、送應援餐車。接下來會一頁一頁帶你看，跟著亮起來的地方走就好。"],
+  artist:["你是藝人","你可以發動態、開直播、傳 TIE 給訂閱你的粉絲、申請回歸、上音樂節目打歌、上傳結尾妖精、開演唱會、辦世巡和簽售。接下來會一頁一頁帶你看，跟著亮起來的地方走就好。"],
+  admin:["你是公司方","安排賽程和打歌、審核出道和回歸、舉辦簽售、處理檢舉、發公告和加積分。你也能切換成粉絲和藝人，看看大家看到的畫面。"]};
+const COACH={
+  fan:[[".nav-btn[data-v=home]","LOVE","藝人的動態、直播和探索都在這裡。每天打開 App 先來這裡看看他們今天說了什麼。"],
+    [".nav-btn[data-v=whisper]","TIE","你跟藝人的一對一聊天室。在 SHOP 買了 TIE 券，藝人傳的訊息就會出現在這裡，你也能回他。"],
+    [".nav-btn[data-v=core]","FEST","打歌投票、小卡、SNS、新聞、演唱會、簽售、應援餐車……所有活動的入口。"],
+    [".nav-btn[data-v=shop]","SHOP","用積分買 Membership、TIE 券、專輯、應援棒和主題。"],
+    [".nav-btn[data-v=me]","ME","你的檔案、積分、收藏、設定都在這裡。想再看一次教學也在這裡。"],
+    ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播、提到你、輪到你簽售，都會先在這裡通知你。"]],
+  artist:[[".nav-btn[data-v=home]","LOVE","你的個人頁。發動態給粉絲、回覆他們的留言。"],
+    [".nav-btn[data-v=live]","MEET","開文字直播。粉絲的留言會出現在旁邊，點一下就能回覆他。"],
+    [".nav-btn[data-v=whisper]","TIE","傳訊息給所有訂閱你的粉絲。打 @@@ 的地方，每位粉絲會看到自己的名字。"],
+    [".nav-btn[data-v=foc]","FOC","你的工作台：打歌、SNS、新聞、綜藝、代言、簽售、應援餐車、演唱會、世巡都在這裡。"],
+    [".nav-btn[data-v=me]","ME","申請回歸、看打歌戰況、設定粉絲愛稱、做主題，也能切換到粉絲端。"]],
+  admin:[[".nav-btn[data-v=home]","HOME","全站總覽和待辦。"],
+    [".nav-btn[data-v=foc]","FOC","賽程、打歌、簽售、演唱會、選秀。"],
+    [".nav-btn[data-v=me]","ME","帳號、外觀、重看教學。"]]};
+const COACH_INTRO_UNI=["你是管理員","你同時也是藝人和粉絲。最上面的「粉絲｜藝人｜管理」隨時可以切換，不用換帳號。接下來三個畫面會分別帶你看一次。"];
+const COACH_UNI=[['.uni-sw [data-v="fan"]',"粉絲","跟一般粉絲看到的一模一樣：動態、直播、TIE、打歌投票、小卡、SHOP。你的粉絲積分跟藝人積分是同一份，哪邊花掉另一邊就跟著少。"],
+  ['.uni-sw [data-v="artist"]',"藝人","你自己的藝人身分：發動態、開直播、傳 TIE、申請回歸、打歌戰況。藝人和粉絲除了積分，其他東西都是分開的。"],
+  ['.uni-sw [data-v="admin"]',"管理","公司的事：待辦、內容、活動、商店、人員。旁邊的數字是還沒處理的待辦。"]];
+
+const TOURS={
+  /* ================= 粉絲 ================= */
+  "fan:home":[['[data-a="ft"][data-v="feed"]',"動態","你追蹤的藝人發的動態都在這裡，最新的在最上面。"],
+    ['[data-a="ft"][data-v="live"]',"直播","藝人開直播的時候，從這裡進去陪他。錯過的直播也有重播。"],
+    ['[data-a="ft"][data-v="discover"]',"探索","還沒追蹤的團都在這裡。看到喜歡的按「加入」，他們的動態就會出現在你的動態裡。"],
+    [".mf-dm","有新 TIE","藝人剛傳了新的 TIE！點「立即查看」直接打開聊天室。"],
+    ['[data-a="dmNext"]',"下一則 TIE","還有別的藝人傳來的 TIE，點一下換下一則。"],
+    [".hl-i","最新公告","各團的重要消息。左右滑看下一則，點進去看全文。"],
+    [".post","一則動態","上面是誰發的、什麼時候發的；中間是內容、照片或影片。點照片可以放大看。"],
+    ['.post [data-a="like"]',"按讚","喜歡就按愛心，藝人看得到有多少人按。"],
+    ['.post [data-a="comments"]',"留言","打開留言區，跟藝人和大家說說話。藝人回覆你的時候，你會收到通知。"],
+    ['.post [data-a="bmTog"]',"收藏","想留著再看的動態，按這裡收進書籤，到 ME 就找得到。"],
+    [".pv-lock.ms","Membership 限定","加入這個團的 Membership 才看得到。到 SHOP 買 Membership 就能解鎖。"],
+    [".pv-lock.pvk","私密貼文","藝人藏了一組密碼，猜中就能看！猜錯沒關係，可以一直猜。"],
+    ['[data-a="shOpen"]',"搜尋","找藝人、找團、找以前的動態。"],
+    ['[data-a="openNotifs"]',"通知","鈴鐺上有數字就是有新通知。點進去看是誰回你、誰開了直播。"]],
+  "fan:cm":[["#csl","留言區","大家的留言都在這裡。藝人回覆的會特別標出來，一眼就看得到。"],
+    ['[data-a="replyTo"]',"回覆","想回某一則留言，點「回覆」，對方會收到通知。"],
+    ['[data-a="report"]',"檢舉","看到讓人不舒服的留言可以檢舉，管理員會處理。"],
+    ["#cin","寫留言","在這裡寫下你想說的話，按送出就好。"]],
+  "fan:live":[[".nc","直播中","藝人正在直播！點進去看他說話、留言、送心心。在直播間點一下畫面，可以叫出離開、聊天開關和縮小；縮小後在別的頁面也看得到直播。"],
+    [".rr-i","重播","錯過的直播都留在這裡，可以只看藝人說的話。"]],
+  "fan:grp":[[".cmx-tabs","團的社群","每個團都有自己的社群。上面一排切換：公告、行程、成員、大家的貼文、影音和商品。"],
+    ['.cmx-tabs [data-v="media"]',"影音","直播重播、MV、MV Teaser 都在這裡。出道和回歸的 MV 會自動放進「MV」和「MV Teaser」兩區。"],
+    [".yv-lk","MV 愛心","喜歡這支 MV 就按愛心，數字會自動加一。MV 的愛心會算進音樂節目的打歌分數。"],
+    [".yv-mv","MV 觀看","點進去看 MV。實際看滿 30 秒算一次觀看，觀看數也會算進打歌分數。"],
+    [".cm-abc","About","認識團裡的每一位成員，點進去看他們的個人頁。"],
+    [".cmx-fab","＋","寫信給藝人，或在社群發一則貼文。"]],
+  "fan:grpfab":[['.cmx-fabm [data-a="cmLetterTo"]',"粉絲信","寫一封信給整個團，或給你最喜歡的那一位 💌 藝人會在他們那邊收到。"],
+    ['.cmx-fabm [data-a="cmGo"]',"社群貼文","在這個團的社群發貼文，跟其他粉絲分享。"]],
+  "fan:whisper":[[".t-room","TIE 聊天室","你訂閱的藝人都在這裡，每一間都是你們兩個人的聊天室。有新訊息會有紅點。"],
+    ['[data-a="shOpen"]',"搜尋","找藝人，或找以前的訊息。"],
+    ['[data-a="tListClear"]',"整理","已經到期的聊天室可以在這裡清掉。"],
+    ['[data-a="goSubs"]',"還沒有 TIE","去 SHOP 買一張 TIE 券，就能跟藝人開始聊。"]],
+  "fan:chat":[[".t-rh h3","聊天室名稱","可以幫這個聊天室取你喜歡的名字，只有你看得到。"],
+    [".t-sub","在一起的天數","你和他在一起第幾天了。紀念日會有小驚喜 🎉"],
+    ['.t-rh [data-a="shOpen"]',"搜尋訊息","找以前的訊息。"],
+    ['[data-a="tDrawer"]',"選單","通知、TIE BOX、照片、聊天室設定都在這裡，等一下帶你看。"],
+    [".t-art .t-b","藝人的訊息","藝人傳給你的話。按住可以複製、收進 TIE BOX、看翻譯。"],
+    [".t-rp","藝人的回覆","藝人回覆了某位粉絲說的話。大家都看得到回覆，但不知道原本是誰寫的。"],
+    [".nick-me","你的名字","藝人叫你的地方，會變成你自己設定的暱稱。"],
+    [".t-abtn","翻譯","點 A 看翻譯。"],
+    [".t-me .t-b","你的訊息","你回給藝人的話。旁邊的「1」不見了，就是他看過了。"],
+    [".t-recall","收回","藝人還沒看之前，可以收回。"],
+    ["#win","回覆藝人","在這裡寫給他。訂閱越久，每則能寫的字越多。"],
+    [".t-smile","表情","加一點表情或貼圖 😊"],
+    ["#wsend","送出","寫好就送出。"],
+    [".t-expired-in","已到期","TIE 券到期了，續訂就能繼續聊，以前的訊息都還在。"]],
+  "fan:drawer":[['[data-a="tMute"]',"通知","這個聊天室的通知可以關掉或打開。"],
+    ['[data-a="tFav"]',"我的最愛","把最常聊的藝人放到最上面。"],
+    [".t-dw-b .t-acc:not(.t-acc-art)","你的暱稱","藝人叫你的名字，在這裡改。"],
+    [".t-acc-art","藝人","點一下看藝人的個人頁。"],
+    ['[data-a="tBox"]',"TIE BOX","收藏起來的訊息都放在這裡。"],
+    ['[data-a="tGallery"]',"照片・影片","藝人傳過的照片和影片，一次看完。"],
+    ['[data-a="tToSettings"]',"聊天室設定","聊天室名稱、暱稱、背景，都在這裡改。"],
+    [".t-leave","離開聊天室","不想留這個聊天室了，可以離開。"]],
+  "fan:core":[['[data-a="coreGo"][data-v="promo"]',"打歌","藝人上音樂節目打歌的地方。每天可以在每個節目投票，最早投的前三位還能搶到公放席、拿公放卡。"],
+    ['[data-a="coreGo"][data-v="cards"]',"小卡","買專輯拆出來的小卡、公放卡、簽售卡都收在卡冊裡。"],
+    ['[data-a="coreGo"][data-v="sns"]',"SNS","你的個人帳號：發照片和限時動態、追蹤朋友和藝人、傳私訊。"],
+    ['[data-a="coreGo"][data-v="news"]',"新聞","出道、回歸、拿一位都會上 HAECHU 娛樂新聞。"],
+    ['[data-a="coreGo"][data-v="wiki"]',"SKpedia","藝人百科：每個團和每位成員的資料。"],
+    ['[data-a="coreGo"][data-v="cafe"]',"生日咖啡廳","藝人生日那天開的咖啡廳，去逛逛、幫他慶生。"],
+    ['[data-a="coreGo"][data-v="show"]',"綜藝","看藝人上綜藝節目。"],
+    ['[data-a="coreGo"][data-v="biz"]',"代言・雜誌","藝人接的廣告和畫報。"],
+    ['[data-a="coreGo"][data-v="fsl"]',"簽售","報名簽售，抽中就能跟藝人視訊、拿簽名專輯。"],
+    ['[data-a="coreGo"][data-v="truck"]',"應援餐車","訂一台餐車送給喜歡的藝人，可以自己出錢，也可以找大家一起出。"],
+    ['[data-a="coreGo"][data-v="concert"]',"演唱會","演唱會開始時進場，舉起應援棒一起變成燈海。"],
+    ['[data-a="coreGo"][data-v="tour"]',"世巡","藝人的世界巡演，每一站買票進場、蓋章收集。"],
+    ['[data-a="coreLocked"],[data-a="coreGo"][data-v="survival"]',"選秀","選秀開始後，每天都能幫喜歡的練習生投票。"]],
+  "fan:core:promo":[[".mu2-wk","這週是什麼週","每個月第一週是宣傳週（不排名、不能投票），中間是排名週，最後一週是打歌週（月底決戰）。"],
+    ['[data-a="coreTip"]',"規則","分數怎麼算、什麼時候結束、三冠王是什麼，點這裡看完整規則，左右滑換頁。"],
+    [".mu3-thr","這個月的王座","五台冠軍、AK、PAK，這個月拿到的團會亮在這裡。還沒有人拿到就是「虛位以待」。"],
+    [".mu3-list","五個音樂節目","THE SHOW、SHOW CHAMPION、M COUNTDOWN、MUSIC BANK、INKIGAYO，每個節目各自排名、各自投票。"],
+    [".mu3-hd","打開節目","點一下展開這個節目的排行榜。收起來的時候，右邊會顯示目前第一名，或上一個排名週的一位。"],
+    [".mu3-end","倒數","每個節目在播出的時間自動結算，這裡顯示還剩多久。"],
+    [".mu3-r","排行","名次、歌、分數。分數＝投票 ×100＋專輯 ×200＋MV 愛心 ×20＋MV 觀看 ×2。"],
+    ['[data-a="muVote3"]',"投票","每個節目每天可以投 1 票。同一週同一個節目，最早投這首歌的前三位會搶到公放席，拿到一張公放卡；第四位之後就沒有了。"],
+    [".mu3-song","結尾妖精","點歌名，會從這裡彈出結尾妖精的影片，配上這首歌。每週每個節目會隨機選 1～8 位成員當結尾妖精。"],
+    [".mu3-cr","三冠王","同一首歌在同一個節目拿三次一位就是三冠王，之後不能再投。"]],
+  "fan:core:cards":[[".cb-tabs","卡冊","左邊是卡冊，右邊是開箱紀錄。"],
+    [".cb-al","專輯","每張專輯一格，點進去看你收集了幾張，還缺哪幾張。公放卡也收在這裡。"],
+    ['[data-a="goAlbums"]',"還沒有小卡","去 SHOP 買專輯，拆開就會拿到小卡。"]],
+  "fan:sns":[['[data-a="snsGo"][data-v="new"]',"限時動態","發一則 24 小時後消失的限時動態。可以放照片、文字、貼圖，還能 @ 別人，被 @ 的人會收到通知。"],
+    ['[data-a="snCreate"]',"新增","發一則貼文：選照片、寫內容、@ 朋友或藝人。"],
+    ['[data-a="snsGo"][data-v="notif"]',"通知","誰按了你的讚、誰留言、誰 @ 你、誰追蹤你。"],
+    ['[data-a="snsGo"][data-v="home"]',"首頁","你追蹤的人發的貼文和限時動態。"],
+    ['[data-a="snsGo"][data-v="reels"]',"Reels","大家的短影片，上下滑著看。"],
+    ['[data-a="snsGo"][data-v="dm"]',"私訊","跟朋友一對一聊天。"],
+    ['[data-a="snsGo"][data-v="explore"]',"探索","找新的人和熱門貼文。"],
+    ['[data-a="snsGo"][data-v="profile"]',"個人檔案","你的頭貼、簡介、發過的貼文。"],
+    ['[data-a="snsExit"]',"離開","回到 HAECHU。"]],
+  "fan:core:truck":[[".trk-stage","應援餐車","手指拖一拖可以轉來轉去看，兩指可以放大。"],
+    ['[data-a="tkNew"]',"訂一台","選要送給誰、車身顏色、橫幅照片和標語、菜單、杯套、裝飾，再決定自己出錢還是找大家一起出。餐車會在藝人出道或回歸那天送到。"],
+    [".trk-list","我的餐車","你訂的、你一起出錢的餐車都在這裡，點一下看進度。"]],
+  "fan:core:news":[['[data-a="newsF"]',"篩選","全部，或只看你追蹤的團。"],
+    [".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。點進去看全文和照片。"]],
+  "fan:core:wiki":[[".wk-box","SKpedia","每個團、每位成員的百科。"],['[data-a="wkRand"]',"隨機","隨便看一篇。"],['[data-a="wkMenu"]',"目錄","所有條目都在這裡。"]],
+  "fan:core:fsl":[[".fs-card","簽售","正在報名的簽售都在這裡。"],['[data-a="fsJoin"]',"報名","按這裡報名，等抽籤結果。抽中會收到通知。"],['[data-a="fsBuy"]',"多一次機會","多買一張專輯，抽籤機會就多一次。"],['[data-a="fsRoom"]',"進簽售室","輪到你的時候按這裡，跟藝人視訊、拿簽名專輯。"]],
+  "fan:core:concert":[['[data-a="concertOn"]',"進場","演唱會開始後按這裡進場，跟大家一起變成燈海。"],['[data-a="coreStick"]',"應援棒","買了官方應援棒，進場就會舉這一支。"],["#bdText","應援板","寫一句想對藝人說的話。互動歌的時候舉起來，藝人可能會回應你！"],[".ls-buy","還沒有應援棒","到 SHOP 買官方應援棒，演唱會就能舉起來。"]],
+  "fan:core:tour":[[".tr-card","世巡","藝人的世界巡演，每一站都是一場演唱會。"],['[data-a="tourBuy"]',"買票","每一站要先買票才能進場。剩兩站以上可以一次全買，打 9 折。"],[".tr-st","蓋章","去過的站會蓋章，看你跑了幾站。"]],
+  "fan:shop":[[".ws-pts","積分","你現在有多少積分。所有東西都用積分買。"],
+    [".th-shop","TINT","換一套主題，整個 App 的顏色都會跟著變。"],
+    [".ws-sl","推薦","現在買得到的 Membership 和專輯，左右滑看更多。"],
+    [".ws-my","My Artist","看你喜歡的團有哪些商品。"],
+    [".wsp-pc","商品","Membership、專輯、應援棒、周邊和 TIE 券。團體 TIE 券可以先選人數、再選天數、最後選成員。"],
+    [".pass","我的 TIE 券","每張還剩幾天一目瞭然，快到期可以直接續訂。"]],
+  "fan:me":[[".me-card","我的檔案","你的名字、等級、積分。等級照你現在的積分算，花掉積分等級也會跟著變。"],
+    ['[data-a="meNickEd"]',"名稱","點筆可以改名字。TIE 聊天室裡的暱稱要到聊天室設定改。"],
+    ['[data-a="meSec"][data-v="ms"]',"Membership","你加入的 Membership。"],
+    ['[data-a="meSec"][data-v="tie"]',"TIE 券","你正在訂閱的 TIE。"],
+    ['[data-a="meSec"][data-v="merch"]',"周邊","你的應援棒和周邊。"],
+    ['[data-a="openCards"]',"小卡","收集到的小卡和公放卡都在卡冊裡。"],
+    ['[data-a="openSigned"]',"簽名專輯","簽售拿到的簽名專輯。"],
+    ['[data-a="meSec"][data-v="buy"]',"購買紀錄","買過的東西和花掉的積分。"],
+    ['[data-a="settings"]',"通知設定","想收到哪些通知，你決定。"],
+    ['[data-a="acctInfo"]',"帳號","你的登入帳號。"],
+    ['[data-a="theme"]',"外觀","淺色、深色，或跟著手機。"],
+    ['[data-a="a2h"]',"加到主畫面","把 HAECHU 加到 iPhone 主畫面，用起來就像一般 App，也收得到推播。"],
+    ['[data-a="coachAgain"]',"重看教學","想再看一次這個教學，隨時點這裡。"]],
+  /* ================= 藝人 ================= */
+  "artist:home":[[".ap2-hero","你的個人頁","粉絲點你的名字時看到的就是這一頁。"],
+    [".ap2-pen","換背景","選一張喜歡的照片當背景。"],
+    [".ap2-av","頭貼","換一張頭貼，動態、直播和社群會一起換。TIE 的頭貼在 TIE 的選單裡另外換。"],
+    [".ap2-fo","編輯個人檔案","背景、頭貼、名字和簡介都在這裡改。"],
+    [".ap2-tabs","貼文／留言","你發過的動態，和你留過的話。"],
+    [".art-fab","發表","想跟粉絲分享什麼，從這裡開始。"],
+    ['.post [data-a="comments"]',"留言","看看粉絲說了什麼，也可以回覆他們，被回覆的粉絲會收到通知。"],
+    ['.post [data-a="del"]',"刪除","刪掉這則動態，刪了就不能復原。"]],
+  "artist:fab":[['.cmx-fabm [data-v="all"]',"貼文","所有粉絲都看得到。"],
+    ['.cmx-fabm [data-v="ms"]',"Membership","只給加入 Membership 的粉絲看，其他人會看到模糊的畫面。"],
+    ['.cmx-fabm [data-v="pw"]',"私密貼文","設一組密碼讓粉絲來猜，猜中的人才看得到。"]],
+  "artist:write":[[".cw-t","寫內容","想說多少都可以，沒有字數限制。"],
+    ['.aw-ic[aria-label="加入照片或影片"]',"照片／影片","放四張照片，或一支影片。"],
+    ['[data-a="pollNew"]',"票選","出一題讓粉絲投票，選項也可以放圖片。"],
+    ['[data-a="publish"],#pubBtn',"發布","寫好就發布，粉絲會收到通知。"]],
+  "artist:live":[[".prep-card","準備開播","這是你的直播間。你說的每一句話，粉絲都會在畫面中間看到。"],
+    ["#ltitle","直播標題","幫這場直播取個名字。"],
+    ['[data-a="bgmOpen"]',"背景音樂","先放幾首歌（MP3 或 M4A，最多 8 首）。開播後按 ♪，粉絲那邊會一起聽到同一段。"],
+    ['[data-a="startLive"]',"開始直播","按下去就開播！開播後點粉絲的留言，就能直接回覆他。"],
+    [".lvr-h","重播","以前的直播都留在這裡。"]],
+  "artist:room":[[".dl-title","直播間","你正在直播！上面是標題和你的名字。"],
+    [".dl-co","連線","邀請一位別團或 SOLOIST 的藝人一起直播（一次一位）。對方在 MEET 按接受就會加入。"],
+    ["#cmSpot","你說的話","你傳的每一句話，都會出現在畫面中間給粉絲看。"],
+    [".host-feed","粉絲留言","粉絲的留言在這裡。點一則就能回覆他，大家都看得到。"],
+    [".dl-bgm","背景音樂","按一下開始放音樂，再按一下就停，下次從停的地方接著放。"],
+    ['.dl-side [data-a="dlChat"]',"留言開關","把留言收起來，畫面比較乾淨。"],
+    ['.dl-side [data-a="dlMini"]',"縮小","把直播縮小去看別的地方，直播不會斷。"],
+    ["#lin","說話","寫下想跟粉絲說的話，按送出。"],
+    [".dl-exit","結束直播","說完再見，按這裡結束直播。"]],
+  "artist:whisper":[[".t-dots","選單","點這裡打開選單，等一下帶你看看。"],
+    ['[aria-label="檢舉這則訊息"]',"粉絲的回覆","粉絲回你的話在左邊。遇到不舒服的訊息，點「⋯」檢舉。"],
+    [".t-arw","回覆","按粉絲訊息旁邊的箭頭，就能回覆那一句。大家都看得到你的回覆，但不會知道原本是誰說的。"],
+    [".t-wait","待發送","寫好的訊息會先排著（最多 10 則），預覽後再一次送出。"],
+    [".t-plus","照片／語音","傳照片或語音給粉絲。"],
+    [".t-nick","@@@","打 @@@，每位粉絲看到的都會是自己的名字。"],
+    ["#win","傳訊息","寫給所有訂閱你的粉絲，每個人都會收到。"]],
+  "artist:drawer":[[".ad-pen","背景","粉絲點你的時候看到的背景。"],
+    [".ad-av","頭貼","TIE 專用的頭貼，只有 TIE 會換。"],
+    ['[data-a="artNameEd"]',"TIE 名稱","粉絲聊天室上方顯示的名字，可以跟動態的名字不一樣。"],
+    ['[data-a="artBioEd"]',"個人簡介","寫幾句話介紹自己。"],
+    ['[data-a="aTieBg"]',"聊天室背景","換聊天室的背景，粉絲那邊也會一起換（自己換過背景的粉絲不會變）。"],
+    ['[data-a="tWelcome"]',"TIE 歡迎語","新粉絲訂閱時，第一則收到的話。"]],
+  "artist:foc":[[".foc-now,.mu4-card","我的打歌","正在打歌的時候，這裡是你的歌和五個節目的名次；沒在打歌時，顯示冷卻中、可以申請回歸，或回歸倒數。點進去看完整的打歌戰況。"],
+    [".foc-thr","這個月的王座","五台冠軍、AK、PAK，這個月拿到的團會亮在這裡。"],
+    ['.tile[data-a="openSns"]',"SNS","你的個人帳號：發照片和限時動態、跟大家互動。"],
+    ['[data-a="focGo"][data-v="news"]',"新聞","出道、回歸、拿一位的新聞。"],
+    ['[data-a="focGo"][data-v="wiki"]',"SKpedia","你的百科，看看大家寫了什麼。"],
+    ['[data-a="focGo"][data-v="show"]',"綜藝","收到綜藝邀請會在這裡，輪到你的時候會提醒。"],
+    ['[data-a="focGo"][data-v="biz"]',"代言・雜誌","廣告和畫報的邀請。"],
+    ['[data-a="focGo"][data-v="cafe"]',"生日咖啡廳","設定生日後，生日那天粉絲會幫你開咖啡廳。"],
+    ['[data-a="focGo"][data-v="sign"]',"簽售","公司排好的簽售。簽售當天在這裡一位一位跟粉絲視訊。"],
+    ['[data-a="focGo"][data-v="truck"]',"應援餐車","粉絲和其他藝人送你的餐車，也可以送別人。"],
+    ['[data-a="focGo"][data-v="concert"]',"演唱會","排歌單、選互動歌、開演，走進燈海跟粉絲一起揮。"],
+    ['[data-a="focGo"][data-v="tour"]',"世巡","申請世界巡演，排好每一站。"],
+    ['[data-a="focGo"][data-v="isac"]',"偶像運動會","中秋和過年舉辦，看下一次什麼時候。"]],
+  "artist:foc:honor":[[".mu4-bt","本週戰況","你的歌在五個節目各排第幾、幾分、跟第一名差多少，還有每個節目的結算倒數。分數細項：投票、專輯、MV 愛心、MV 觀看。"],
+    [".fy-a","結尾妖精","每週每個節目會隨機選 1～8 位成員當結尾妖精。被選中的人按「上傳」放照片或影片，粉絲點你們的歌就會看到。"],
+    [".mu4-pg","這首歌的成績","五台冠軍、AK、PAK 的進度，和每個節目拿了幾次一位（三次就是三冠王）。"],
+    [".mu4-mc","MC","這個月你主持哪些節目。"],
+    [".mu4-pts","打歌積分","今年的打歌積分。"],
+    [".mu4-aw","獎項收藏","拿過的一位、AK、PAK、三冠王都會亮起來。"]],
+  "artist:foc:truck":[['[data-a="tkTab"][data-v="in"]',"收到的","粉絲和其他藝人送你的餐車。出道或回歸那天才會送到，之前都是秘密。"],
+    ['[data-a="tkTab"][data-v="out"]',"送出的","你送給其他藝人的餐車。"],
+    [".trk-stage","餐車","拖一拖轉來轉去看，兩指放大。"],
+    [".trk-list","每一台","點一下就能再看一次。"],
+    ['[data-a="tkNew"]',"送一台","也可以送餐車給別團的藝人。"]],
+  "artist:foc:concert":[["#acTitle","演唱會名稱","幫這場演唱會取個名字。"],[".lsp-songs","歌單","照順序點歌名，前面的數字就是第幾首。"],[".ls-seg","互動歌","前幾首是互動歌，粉絲會在燈海裡舉起應援板。"],['[data-a="acLater"]',"10 分鐘後開演","先通知粉絲，讓大家有時間做應援板。"],['[data-a="acNow"]',"現在開演","不用等，馬上開始。"],['[data-a="ccNow"]',"現在開始","時間到了就按這裡開始。"],['[data-a="stOn"]',"進入現場","走進燈海，拖動麥克風跟大家一起揮；點一下舉著應援板的粉絲就能回應他。"]],
+  "artist:foc:tour":[['[data-a="trNew"]',"申請世巡","想辦世界巡演，從這裡開始。"],["#trTi","巡演名稱","幫這次巡演取個名字。"],["#trCity","城市","選一個城市。"],["#trWhen","時間","這一站什麼時候開演。"],['[data-a="trStopAdd"]',"加入","加進站點，可以加很多站。"],['[data-a="trSubmit"]',"送出申請","送給管理員審核，核准後粉絲就能買票。"],[".tr-a","你的世巡","審核結果和每一站都在這裡。"],['[data-a="trSay"]',"說一句話","開演前留一句話給這一站的粉絲。"]],
+  "artist:foc:sign":[[".fs-row","簽售","公司排好的簽售，報名人數和名單都看得到。"],['[data-a="fsDesk"]',"進簽售台","開場後按這裡，一位一位跟粉絲視訊、簽名。"]],
+  "artist:foc:stick":[[".ls-box","官方應援棒","你們團的應援棒，可以轉來轉去看。"]],
+  "artist:foc:news":[['[data-a="newsF"]',"篩選","全部，或只看某一團。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。"]],
+  "artist:sns":[['[data-a="snsGo"][data-v="new"]',"限時動態","發一則 24 小時後消失的限時動態，可以 @ 粉絲或其他藝人。"],
+    ['[data-a="snCreate"]',"新增","發一則貼文。這是你藝人身分的帳號，跟你的粉絲帳號分開。"],
+    ['[data-a="snsGo"][data-v="notif"]',"通知","誰按讚、留言、@ 你。"],
+    ['[data-a="snsGo"][data-v="dm"]',"私訊","跟其他藝人或粉絲私訊。"],
+    ['[data-a="snsGo"][data-v="profile"]',"個人檔案","你的 SNS 頭貼和簡介。"],
+    ['[data-a="snsExit"]',"離開","回到 HAECHU。"]],
+  "artist:me":[[".me-card,.me-lv","你的等級","照你現在的積分算。積分跟你的粉絲帳號是同一份，哪邊花掉另一邊就跟著少。"],
+    ['[data-a="aNick"]',"粉絲的愛稱","幫 Membership 粉絲取一個專屬的愛稱。"],
+    ['[data-a="thMine"]',"做主題","設計一套你自己的 App 主題，通過審核就會上架 SHOP。"],
+    ['[data-a="cbrAsk"]',"申請回歸","填歌名、發行型態、日期，放 Teaser、MV 和 MV Teaser，送給公司審核。每間公司的冷卻期不一樣，冷卻期過了才能申請。"],
+    ['[data-a="focGo"][data-v="honor"]',"打歌戰況","打歌期間的名次、分數、結尾妖精和獎項。"],
+    ['[data-a="focGo"][data-v="stick"]',"官方應援棒","你們團的應援棒。"],
+    ['[data-a="tab"][data-v="points"]',"積分收入","你收到了多少積分。"],
+    ['[data-a="swapRole"]',"切換到粉絲","回到你的粉絲帳號，去追其他藝人。"],
+    ['[data-a="theme"]',"外觀","淺色、深色，或跟著手機。"],
+    ['[data-a="coachAgain"]',"重看教學","想再看一次這個教學，隨時點這裡。"]],
+  /* ================= 管理 ================= */
+  "admin:home":[[".uni-sw","三個畫面","粉絲、藝人、管理，點一下就切換。「管理」旁邊的數字是待辦。"],
+    [".uni-empty,.list-btn[data-v='#/admin?tab=reports']","待處理","被檢舉的內容、等審核的出道和回歸、主題，點一下去處理。"],
+    [".uni-stats","今天","正在直播的、今天的新留言、接下來的活動。"],
+    [".uni-quick","快速入口","發官方公告、加積分、建立帳號、新增藝人。"],
+    ['[data-a="maintToggle"]',"維修模式","打開後只有管理員能進 App，其他人會被請出去。要更新或修東西的時候用。"]],
+  "admin:reports":[[".mod-seg","內容","檢舉、所有貼文、公告。"],
+    [".rp","檢舉","被檢舉的內容，誰檢舉的、為什麼。"],
+    [".rp-act","處理","沒問題就駁回；有問題就刪除，或禁言、停權。"]],
+  "admin:posts":[['[data-a="ag"]',"篩選","只看某一個團。"],['[data-a="hide"]',"隱藏","先藏起來，之後還能恢復。"],['[data-a="admDel"]',"刪除","直接刪掉，不能復原。"]],
+  "admin:announce":[['.uni-top [data-a="uniAnn"]',"發公告","用 HAECHU 官方發公告。"],['[data-a="annDel"],[data-a="gnDel"]',"撤下","把公告撤下來。"]],
+  "admin:foc":[[".foc-seg","活動","賽程、打歌、影音、簽售、演唱會、選秀。"],
+    ["#focStage","本週階段","宣傳週、排名週或打歌週。不設定就照日期走。"],
+    ['[data-a="focSave"]',"儲存","按儲存，藝人和粉絲那邊馬上更新。"],
+    ['[data-a="muAdmFix"]',"手動改一位","節目會在播出時間自動結算；需要的時候可以在這裡手動改。"],
+    ['[data-a="cbrOk"]',"核准回歸","看完 Teaser、MV 和 MV Teaser 再核准，回歸當天會自動上新聞、放進 MV 區。"]],
+  "admin:shopadm":[['[data-v="#/admin?tab=albums"]',"專輯與店家","專輯、版本、特典（含公放卡）和店家。"],['[data-v="#/admin/themes"]',"主題","審核藝人做的主題，也可以自己上架。"],['[data-v="#/admin?tab=revenue"]',"積分統計","每位藝人的積分收入。"]],
+  "admin:people":[['[data-v="#/admin?tab=roster"]',"藝人與團","新增團和藝人、設定公司。"],
+    ['[data-v="#/admin?tab=accounts"]',"帳號","幫新人建立帳號、看所有帳號。"],
+    ['[data-v="#/admin?tab=debut"]',"出道申請","粉絲申請出道會出現在這裡。審核中和預告中的申請都可以修改，看完 Teaser、MV 和 MV Teaser 再核准。"],
+    ['[data-v="#/admin?tab=ptadd"]',"加積分","每個月結算積分用：可以加、扣，或直接設定成某個數字。"]],
+  "admin:accounts":[["#acUser","帳號","填他們給你的帳號。"],["#acReal","本名","填他們真正的本名，只有管理員看得到。"],["#acName","暱稱","隨便填，本人之後可以自己改。"],["#acPw","密碼","填他們給你的密碼。"],['[data-a="acCreate"]',"建立帳號","四格都填好就按這裡。這裡建的都是一般粉絲帳號。"],[".ac-list","目前的帳號","大家的帳號都在這裡，點進去可以改名字、重設密碼。"]],
+  "admin:roster":[['[data-v="#/admin?tab=roster&p=new"]',"新增","按右上角的「＋」新增團體或個人藝人。"],[".rs-row","團和藝人","點進去可以加成員、綁帳號、設定公司、上傳出道照和 Teaser 照。"]],
+  "admin:rosternew":[[".rs-type","團體或個人","團體：先建團，再一個一個加成員。個人（SOLOIST）：一次就建好。"],["#rgName","名字","團體就填團名，個人就填藝名。"],['[data-a="rsColor"]',"代表色","社群、卡片都會用這個顏色。"],["#rsAcc","綁定帳號","選這位藝人登入用的帳號。還沒有就選「之後再選」。"],["#rsBday","生日","月-日，例如 3-14。可以之後再填。"],['[data-a="rgAdd"]',"建立","按這裡就建好了。"]],
+  "admin:ptadd":[["#ptQ","找人","打帳號或名字找人，可以一次選很多個。"],['[data-a="ptSign"]',"加、扣、設定為","加積分、扣積分，或直接把積分設定成某個數字。"],["#ptN","積分","填數字就好。"],["#ptWhy","原因","對方會看到，例如「10 月積分結算」。"],['[data-a="ptGo"]',"送出","按下去就送出了，對方會收到「獲得 ○○ 積分・原因」的通知。"]],
+  "admin:banned":[["#banTa","禁用字詞","大家不想看到的字，一行放一個。放進來的字，在 App 裡就傳不出去。"],['[data-a="banSave"]',"儲存","改完記得按儲存。"]]};
 
 </script>
 </body>
