@@ -4787,6 +4787,29 @@ html[data-theme="dark"] :is(.t-msgs,.t-page) .t-rp.me p{color:#F1EBFF!important}
 .trk-pbs{display:flex;gap:8px;flex:none;align-items:center}
 .trk-pb.banner{width:78px;height:auto;aspect-ratio:360/260}.trk-pb.banner2{width:58px;height:auto;aspect-ratio:340/380}.trk-pb[data-v="sleeve"]{width:58px;height:auto;aspect-ratio:102/112}
 .trk-pb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.1}.trk-pb small{font-size:9.5px;font-weight:700}
+/* ===== 多行留言框（textarea.ag）：外觀跟原本的單行框一樣，只是會長高 ===== */
+textarea.ag{display:block;resize:none;overflow-y:hidden;line-height:1.4;font:inherit;font-size:16px;box-sizing:border-box;margin:0;-webkit-appearance:none;appearance:none;white-space:pre-wrap;word-break:break-word}
+textarea.ag.scroll{overflow-y:auto;-webkit-overflow-scrolling:touch}
+textarea.ag::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.t-inp:has(textarea.ag){height:auto;min-height:36px;border-radius:18px;align-items:center}
+.t-inp textarea.ag{flex:1;min-width:0;border:0;outline:0;background:transparent;padding:7px 40px 7px 16px;color:inherit}
+.t-inp textarea.ag::placeholder{font-size:14px;color:#9CA3AF}
+.pd-pill:has(textarea.ag){height:auto;min-height:40px;border-radius:20px;align-items:center}
+.pd-pill textarea.ag{flex:1;min-width:0;border:0;background:none;color:var(--ink);padding:9px 0;outline:none}
+.dl-foot textarea.ag,.cm-foot textarea.ag{flex:1;min-width:0}
+.fs-foot textarea.ag{flex:1;min-width:0;min-height:40px;border-radius:20px;border:0;background:#F4F0FF;padding:9px 14px}
+.sn-dmf textarea.ag{flex:1;min-width:0;min-height:42px;border-radius:21px;border:1px solid var(--l);background:var(--b);color:var(--t);padding:10px 16px;font-size:15px;outline:none}
+.sn-cf textarea.ag{flex:1;min-width:0;min-height:40px;border-radius:20px;border:1px solid rgba(128,128,128,.35);background:transparent;color:inherit;padding:9px 14px;font-size:15px;outline:none}
+.sn-sre textarea.ag{flex:1;min-width:0;border:1px solid rgba(255,255,255,.7);border-radius:22px;background:transparent;color:#fff;padding:10px 16px}
+.vs-cf textarea.ag{flex:1;min-width:0;border:1px solid var(--line,#ddd);border-radius:18px;padding:8px 14px;background:transparent;color:inherit}
+.sc-rf textarea.ag{flex:1;min-width:0;border:1px solid var(--sn-l,#DBDBDB);border-radius:16px;padding:6px 12px;background:transparent;color:inherit}
+:is(.t-foot,.pd-bar,.dl-foot,.cm-foot,.fs-foot,.sn-dmf,.sn-cf,.sn-sre form,.vs-cf,.sc-rf):has(textarea.ag){align-items:flex-end}
+/* 換行送出去的字：看的時候也要換行 */
+[data-trk],.t-b,.pd-ct,.sp-t,.sn-bub,.rp2-me p,.rp2-f p,.dl p,.cm-tick p,.fs-chat p,.vs-cm p,.sn-cl p{white-space:pre-line}
+.cm-in:has(textarea.ag){height:auto!important;min-height:44px;align-items:center;border-radius:22px!important}
+.cm-in textarea.ag{flex:1;min-width:0;border:0;outline:0;background:transparent;color:var(--ink);padding:10px 0}
+.dl-foot .cm-in textarea.ag{color:#fff!important}.dl-foot .cm-in textarea.ag::placeholder{color:rgba(255,255,255,.55)}
+.cm-in textarea.ag::placeholder{color:#B4A8D8;font-size:14px}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5854,7 +5877,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103013341";
+const BUILD="20261103021724";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -7101,7 +7124,7 @@ function viewHostRoom(l){
       <div class="dl-chat"><div class="host-feed" id="hostFeed">${hostFeedHtml(l)}</div></div>
     </main>
     ${hr?`<div class="host-rep2"><span>${repQ(hr)}</span><button class="hr-rep" data-a="hostRep">檢舉</button><button data-a="hostReplyX" aria-label="取消回覆">${XI}</button></div>`:""}
-    <form class="cm-foot dl-foot" id="lform"><label class="cm-in"><input id="lin" autocomplete="off" placeholder="輸入訊息" value="${esc(draft)}"><button type="submit" class="mr-send ${draft.trim()?"on":""}" id="lsend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg></button></label></form>`);
+    <form class="cm-foot dl-foot" id="lform"><label class="cm-in"><textarea rows="1" class="ag" id="lin" autocomplete="off" placeholder="輸入訊息">${esc(draft)}</textarea><button type="submit" class="mr-send ${draft.trim()?"on":""}" id="lsend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg></button></label></form>`);
 }
 function updSpot(l,host){
   const sp=document.getElementById("cmSpot"); if(!sp) return false;
@@ -9437,7 +9460,7 @@ function renderComments(first=false){
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";
   const bar=(ph,to)=>canWrite?`<form class="pd-in" id="cform">${to?`<div class="pd-to">正在回覆 ${esc(to)}</div>`:""}<div class="pd-bar">${cid?"":`<button type="button" class="pd-hb ${liked?"on":""}" data-a="like" data-id="${p.id}" aria-label="按讚">${I.heart}<span hidden>${fmt(likeN(p))}</span></button>${role==="fan"?bmBtn("p:"+p.id):""}`}
-      <label class="pd-pill"><input id="cin" autocomplete="off" placeholder="${ph}" value="${esc(draft)}"></label><button class="pd-send" type="submit" id="csend" ${draft.trim()?"":"disabled"} aria-label="送出">${PDI.send}</button></div></form>`:"";
+      <label class="pd-pill"><textarea rows="1" class="ag" id="cin" autocomplete="off" placeholder="${ph}">${esc(draft)}</textarea></label><button class="pd-send" type="submit" id="csend" ${draft.trim()?"":"disabled"} aria-label="送出">${PDI.send}</button></div></form>`:"";
   let html;
   if(cid){ const c=list.find(x=>x.id===cid); if(!c){ ui.sheet.cid=null; return renderComments(true); }
     const arts=[...(c.reply?[{id:c.id+"_r",author:"artist",text:c.reply.text,ts:c.reply.ts}]:[]),...cReps(c).filter(r=>r.author==="artist")], fans=cReps(c).filter(r=>r.author!=="artist");
@@ -9586,7 +9609,7 @@ function viewTieRoom(member){
     </header>
     <main class="t-msgs">${q?srchLabel("tieroom"):""}${body||(q?srchEmpty("訊息"):`<p class="t-none">還沒有訊息，等等${esc(st.chatName)}吧</p>`)}<div id="chat-end"></div></main>
     ${ui.tieEmoji?`<div class="t-emoji">${TIE_EMOJI.map(e=>`<button data-a="tEmoji" data-v="${e}">${e}</button>`).join("")}</div>`:""}
-    ${isActive(member)?(()=>{const q0=fanQuota(member).left===0;return `<form class="t-foot" id="wform"><div class="t-inp ${q0?"locked":""}" ${q0?'data-a="tQuota"':""}><input id="win" maxlength="${charLimit(member)}" autocomplete="off" ${q0?'readonly placeholder="輸入次數已用完"':`value="${esc(draft)}" placeholder=""`} aria-label="輸入訊息"><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
+    ${isActive(member)?(()=>{const q0=fanQuota(member).left===0;return `<form class="t-foot" id="wform"><div class="t-inp ${q0?"locked":""}" ${q0?'data-a="tQuota"':""}><textarea rows="1" class="ag" id="win" maxlength="${charLimit(member)}" autocomplete="off" ${q0?'readonly placeholder="輸入次數已用完"':'placeholder=""'} aria-label="輸入訊息">${q0?"":esc(draft)}</textarea><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
       <button class="t-send ${draft.trim()?"on":""}" id="wsend" type="submit" aria-label="送出">${TI.send}</button></form>`})()
     :`<div class="t-foot t-expired-in" data-a="tExpired"><div class="t-inp off"></div><span class="t-send">${TI.send}</span></div>`}`;
 }
@@ -9737,7 +9760,7 @@ function viewTieArtist(mid){
     </header>
     <main class="t-msgs">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}${qHtml}${Q.length?`<div class="t-qrow"><button type="button" class="t-qgo" data-a="tqPreview">傳送待發訊息<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l2.2 7.2L15 12l-9.4 1.2z"/></svg></button><small>${Q.length}／${TQ_MAX}</small></div>`:""}<p class="t-wait">粉絲們正在等你的訊息</p><div id="chat-end"></div></main>
     ${ui.tieEmoji?`<div class="t-emoji">${TIE_EMOJI.map(e=>`<button data-a="tEmoji" data-v="${e}">${e}</button>`).join("")}</div>`:""}
-    <form class="t-foot" id="wform">${(()=>{ const rw=ui.tReply&&getWhispers().find(x=>x.id===ui.tReply); return rw?`<div class="t-rq"><span class="t-rq-i">${TI_REPLY}</span><div class="t-rq-b"><b>回覆粉絲的訊息</b><p>${esc(rw.text)}</p></div><button type="button" data-a="tReplyX" aria-label="取消回覆">${I3.x}</button></div>`:""; })()}<button type="button" class="t-plus" data-a="tAttach" aria-label="傳照片或語音">＋</button><button type="button" class="t-nick" data-a="tNickTk" aria-label="插入 @@@（粉絲的愛稱）">@@@</button><div class="t-inp"><input id="win" maxlength="300" autocomplete="off" value="${esc(draft)}" placeholder="叫叫粉絲的愛稱 @@@ 吧 :)" aria-label="輸入訊息"><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
+    <form class="t-foot" id="wform">${(()=>{ const rw=ui.tReply&&getWhispers().find(x=>x.id===ui.tReply); return rw?`<div class="t-rq"><span class="t-rq-i">${TI_REPLY}</span><div class="t-rq-b"><b>回覆粉絲的訊息</b><p>${esc(rw.text)}</p></div><button type="button" data-a="tReplyX" aria-label="取消回覆">${I3.x}</button></div>`:""; })()}<button type="button" class="t-plus" data-a="tAttach" aria-label="傳照片或語音">＋</button><button type="button" class="t-nick" data-a="tNickTk" aria-label="插入 @@@（粉絲的愛稱）">@@@</button><div class="t-inp"><textarea rows="1" class="ag" id="win" maxlength="300" autocomplete="off" placeholder="叫叫粉絲的愛稱 @@@ 吧 :)" aria-label="輸入訊息">${esc(draft)}</textarea><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
       <button class="t-send ${draft.trim()?"on":""}" id="wsend" type="submit" aria-label="送出">${TI.send}</button></form>`;
 }
 
@@ -9944,7 +9967,7 @@ function viewMeetRoom(id){
       <div id="cmSpot" data-k="${esc(spotKey(l))}" data-c="${cur?cur.ts:0}">${spotHtml(l)}</div>
       <div class="dl-chat"><div class="cm-tickw"><div class="cm-tick" id="cmTick">${tickHtml(l)}</div><button type="button" class="tk-newp dl-down" id="tkNew" data-a="tkDown" hidden></button></div></div>
     </main>
-    <form class="cm-foot dl-foot" id="lform"><label class="cm-in"><input id="lin" autocomplete="off" placeholder="輸入訊息" value="${esc(draft)}"><button type="submit" class="mr-send ${draft.trim()?"on":""}" id="lsend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg></button></label>
+    <form class="cm-foot dl-foot" id="lform"><label class="cm-in"><textarea rows="1" class="ag" id="lin" autocomplete="off" placeholder="輸入訊息">${esc(draft)}</textarea><button type="submit" class="mr-send ${draft.trim()?"on":""}" id="lsend" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 3 10 14M21 3l-7 18-4-7-7-4z"/></svg></button></label>
       <button type="button" class="dl-hb" data-a="heart" data-id="${l.id}" aria-label="送愛心">${LV_IC.heart}</button></form>`);
 }
 function viewMeetEnd(l){
@@ -10665,7 +10688,7 @@ function viewFsFanRoom(id){
       ${note?`<div class="fs-mynote">📝 你想問：${esc(note)}</div>`:""}
       <main class="fs-chat" id="fsChat">${fsChatHtml(ev.chats[FS_ME],"fan")}</main>
       <div class="fs-albbar" id="fsAlbBar">${fsAlbBar(ev,sign,need)}</div>
-      <form class="fs-foot" id="fsForm"><input id="fsIn" autocomplete="off" aria-label="輸入訊息"><button class="mr-send on" type="submit" aria-label="送出">${TI.send}</button></form></div>`; }
+      <form class="fs-foot" id="fsForm"><textarea rows="1" class="ag" id="fsIn" autocomplete="off" aria-label="輸入訊息"></textarea><button class="mr-send on" type="submit" aria-label="送出">${TI.send}</button></form></div>`; }
   if(ev.status==="done"||nx<0) return `<div class="fs-room">${top}<main class="fs-wait"><b>簽售完成 💜</b>${mine.map(x=>{ const sg=ev.signed[fsSignKey(ev,x.s)]; return sg?fsAlbum(ev,sg,{fan:true,big:true}):""; }).join("")}<small>簽名專輯已收進 ME 的「簽名專輯」</small></main></div>`;
   const n=ev.status==="live"?nx-ev.cur:nx+1;
   return `<div class="fs-room" data-fs="${ev.id}">${top}<main class="fs-wait"><span class="fs-wait-av" style="background:${grad(g?g.g:0)}">${esc(fsName(ev)[0]||"")}</span>
@@ -10719,7 +10742,7 @@ function viewFsDesk(id){
       ${ev.toSign?`<div class="fs-tobar">✍️ To 簽：<b>${esc(fsToOf(s))}</b>${(s.greet||[]).length?`・想要：${s.greet.map(g=>esc(g)).join("、")}`:"・祝福語交給你發揮"}</div>`:""}</section>
     <main class="fs-chat" id="fsChat">${fsChatHtml(ev.chats[s.fk],"artist")}</main>
     <div class="fs-signbar"><div id="fsAlb">${fsAlbum(ev,sign,{sm:true,to:fsToOf(s)})}</div><div class="fs-signtxt" id="fsSignTxt">${fsSignTxt(ev,key)}</div><button class="btn ${mySig?"btn-soft":"btn-main"} btn-sm" data-a="fsPad" data-v="${ev.id}">✍️ ${mySig?"重簽":"簽名"}</button></div>
-    <form class="fs-foot" id="fsForm"><input id="fsIn" autocomplete="off" aria-label="輸入訊息"><button class="mr-send on" type="submit" aria-label="送出">${TI.send}</button></form></div>`;
+    <form class="fs-foot" id="fsForm"><textarea rows="1" class="ag" id="fsIn" autocomplete="off" aria-label="輸入訊息"></textarea><button class="mr-send on" type="submit" aria-label="送出">${TI.send}</button></form></div>`;
 }
 /* ---------- 管理員：安排與控場 ---------- */
 function adminFsHtml(){
@@ -14947,7 +14970,7 @@ function snDmList(d){ const me=snMeId(), q=nz((ui.snDmQ||"").trim()), TH=dmThrea
 function snThread(d,id){ const me=snMeId(), u=snUser(id); if(!u) return snDmList(d); const t=dmGet(id); if(t.length&&t[t.length-1].from!==me&&!t[t.length-1].read){ t.forEach(x=>{ if(x.from!==me) x.read=true; }); S.set(dmKey(me,id),t); }
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,30)}<span class="sn-pu"><b>${esc(u.name)}</b><small>${esc(u.u)}</small></span></button><span class="sn-sp"></span></header>
     <main class="sn-thread-b">${t.map((x,i)=>`${x.story?`<small class="sn-bst ${x.from===me?"me":""}">${x.from===me?"你回覆了對方的限時動態":"回覆了你的限時動態"}</small>`:""}<div class="sn-bub ${x.from===me?"me":""} ${x.mid?"pic":""}" data-a="snDmTap" data-v="${u.id}" data-i="${i}">${x.post?`<button class="sn-bpost" data-a="snsGo" data-v="post" data-id="${x.post}">${si("send","sm")} 分享了一則貼文</button>`:x.mid?`<img class="sn-img" data-mid="${x.mid}" alt="" style="aspect-ratio:${x.w||3}/${x.h||4}">`:esc(x.text)}${(x.lk||[]).length?`<i class="sn-blk">❤️</i>`:""}</div>`).join("")+(t.length&&t[t.length-1].from===me&&t[t.length-1].read?`<small class="sn-seen">已查看</small>`:"")||`<div class="sn-empty">${snAv(u,86)}<b>${esc(u.name)}</b><p>${esc(u.u)}</p></div>`}</main>
-    <form class="sn-dmf" id="snDmForm" data-id="${u.id}"><label class="sn-dmpic" aria-label="照片">${si("cam","sm")}<input type="file" accept="image/*" id="snDmPic" data-id="${u.id}"></label><input id="snDmIn" placeholder="傳送訊息…" autocomplete="off"><button type="submit">傳送</button></form>`; }
+    <form class="sn-dmf" id="snDmForm" data-id="${u.id}"><label class="sn-dmpic" aria-label="照片">${si("cam","sm")}<input type="file" accept="image/*" id="snDmPic" data-id="${u.id}"></label><textarea rows="1" class="ag" id="snDmIn" placeholder="傳送訊息…" autocomplete="off"></textarea><button type="submit">傳送</button></form>`; }
 function snNotifList(d){ const me=snMeId(), mine=d.posts.filter(p=>p.uid===me), L=[];
   mine.forEach(p=>{ (d.likes[p.id]||[]).filter(x=>x!==me).forEach(x=>L.push({uid:x,t:"說你的貼文讚。",p:p.id,ts:p.ts+60e3})); (d.cms[p.id]||[]).filter(c=>c.uid!==me).forEach(c=>L.push({uid:c.uid,t:`留言：${c.text}`,p:p.id,ts:c.ts})); });
   Object.keys(d.rp||{}).filter(k=>k!==me).forEach(k=>d.rp[k].forEach(x=>{ if(mine.some(p=>p.id===x.id)) L.push({uid:k,t:"轉發了你的貼文。",p:x.id,ts:x.ts}); }));
@@ -14971,7 +14994,7 @@ function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) retu
         return L.filter(c=>!c.re||!ids.has(c.re)).map(c=>row(c)+L.filter(k=>k.re===c.id).map(k=>row(k,1)).join("")).join(""); })():`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
     ${ui.snRe&&ui.snRe.p===id?`<div class="sn-reb"><span>正在回覆 ${esc(ui.snRe.u)}</span><button data-a="snCmReX" data-id="${id}" aria-label="取消">×</button></div>`:""}
     <div class="sn-cemo">${["❤️","🙌","🔥","👏","😢","😍","😮","😂"].map(x=>`<button data-a="snCmEmo" data-v="${x}">${x}</button>`).join("")}</div>
-    <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),32)}<input id="snCmIn" placeholder="新增留言…" autocomplete="off" value="${ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}"><button type="submit">發佈</button></form></div></div>`,"sncm");
+    <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),32)}<textarea rows="1" class="ag" id="snCmIn" placeholder="新增留言…" autocomplete="off">${ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit">發佈</button></form></div></div>`,"sncm");
   requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 /* 限時動態 */
 /* 從首頁那排點：看完會接著看下一個人；從個人檔案點：只看這個人 */
@@ -14984,7 +15007,7 @@ function snShowStory(){ const st=ui.snStory; if(!st) return; const d=snDB(); con
     <header class="sn-sh2">${snAv(u,32)}<b>${esc(u.u)}</b><small>${st.title?esc(st.title):snsAgo(s.ts)}</small>${s.mus&&s.mus.mid?`<small class="sn-smus">${snMusTag(s.mus)}</small>`:""}<span class="sn-sp"></span>${s.cf?`<em class="sn-scf">摯友</em>`:""}${s.vid?`<button class="sn-ib" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`:""}${!st.list&&(uid===me||isAdminAcct())?`<button class="sn-ib" data-a="snStoryDel" data-v="${s.id}" aria-label="刪除">${si("dots")}</button>`:st.hid&&uid===me?`<button class="sn-ib" data-a="snHlDel" data-v="${st.hid}" aria-label="刪除精選">${si("dots")}</button>`:""}<button class="sn-ib" data-a="snStoryX" aria-label="關閉">${si("x")}</button></header>
     <div class="sn-simg">${s.mid&&s.vid?`<video class="sn-img sn-svid" playsinline webkit-playsinline ${s.vid.poster?`data-pmid="${s.vid.poster}"`:""}></video>`:s.mid?`<img class="sn-img sn-sim" alt="">`:s.post?snStoryPost(d,s.post):snPic(s.pic,u.g,"fill")}</div>
     <button class="sn-sprev" data-a="snStoryNav" data-v="-1" aria-label="上一則"></button><button class="sn-snext" data-a="snStoryNav" data-v="1" aria-label="下一則"></button>
-    ${uid===me&&!st.list?`<button class="sn-sviews" data-a="snStViews" data-v="${s.id}">${si("eye","sm")}已查看 ${fmt(Object.keys(d.seen).filter(x=>x!==me&&(d.seen[x]||{})[s.id]).length)}</button>`:uid!==me&&!uid.startsWith("o:")?`<div class="sn-sre"><div class="sn-semo">${["😂","😮","😍","😢","👏","🔥"].map(x=>`<button data-a="snStReact" data-v="${x}" data-u="${uid}" data-id="${s.id}">${x}</button>`).join("")}</div><form id="snStReF" data-u="${uid}" data-id="${s.id}"><input id="snStReIn" placeholder="回覆 ${esc(u.u)}…" autocomplete="off"><button type="submit">${si("send","sm")}</button></form></div>`:""}</div>`,"snstory");
+    ${uid===me&&!st.list?`<button class="sn-sviews" data-a="snStViews" data-v="${s.id}">${si("eye","sm")}已查看 ${fmt(Object.keys(d.seen).filter(x=>x!==me&&(d.seen[x]||{})[s.id]).length)}</button>`:uid!==me&&!uid.startsWith("o:")?`<div class="sn-sre"><div class="sn-semo">${["😂","😮","😍","😢","👏","🔥"].map(x=>`<button data-a="snStReact" data-v="${x}" data-u="${uid}" data-id="${s.id}">${x}</button>`).join("")}</div><form id="snStReF" data-u="${uid}" data-id="${s.id}"><textarea rows="1" class="ag" id="snStReIn" placeholder="回覆 ${esc(u.u)}…" autocomplete="off"></textarea><button type="submit">${si("send","sm")}</button></form></div>`:""}</div>`,"snstory");
   hydrateMedia(layer); clearTimeout(ui.snStT); if(s.mus&&s.mus.mid) snMusPlay(s.mus.mid,"st:"+s.id); else if(snMusCur) snMusStop();
   /* 照片／影片還沒下載好：先轉圈、等下載好才開始倒數；剛發的還在上傳就多試幾次（不會黑一片） */
   const stGet=(mid,el,cb)=>{ let k=0; const go=()=>mediaSrc(mid).then(u=>{ if(!el.isConnected||ui.snStory!==st) return; if(u) return cb(u); if(++k<5) return setTimeout(go,2500); const w=el.closest(".sn-simg"); if(w) w.classList.add("sn-sfail"); ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },2500); }); go(); };
@@ -15443,7 +15466,7 @@ function vsBetHtml(ep){ const me=myEmail(), my=(ep.bets||{})[me], B=Object.value
     <div class="vs-pick amt">${VS_BETS.map(n=>`<button class="${d.n===n?"on":""}" data-a="vsBetN" data-v="${n}">${fmt(n)}</button>`).join("")}</div>
     <button class="btn btn-main btn-block" data-a="vsBetGo" data-id="${ep.id}" ${d.mid&&d.n?"":"disabled"}>押積分（你有 ${fmt(points())}）</button>`}</section>`; }
 function vsCmHtml(ep){ const L=ep.cm||[], me=myEmail(), mm=(session()||{}).role==="artist"?(session()||{}).member:"";
-  return `<section class="card vs-sec"><h3>留言<small>${fmt(L.length)}</small></h3><form class="vs-cf" id="vsCmForm" data-id="${ep.id}"><input id="vsCmIn" maxlength="200" placeholder="輸入文字" autocomplete="off"><button type="submit">發佈</button></form>
+  return `<section class="card vs-sec"><h3>留言<small>${fmt(L.length)}</small></h3><form class="vs-cf" id="vsCmForm" data-id="${ep.id}"><textarea rows="1" class="ag" id="vsCmIn" maxlength="200" placeholder="輸入文字" autocomplete="off"></textarea><button type="submit">發佈</button></form>
     ${L.slice().reverse().slice(0,80).map(c=>`<div class="vs-cm">${c.mid?vsAv(c.mid,28):`<span class="vs-av" style="--s:28px;background:${grad(strHash(c.by)%6)}">${esc((c.name||"?")[0])}</span>`}<p><b>${esc(c.mid?vsName(c.mid):c.name)}</b>${c.by===me||c.mid&&c.mid===mm?esc(c.text):trT("vs:"+c.id,c.text,"","span")}<small>${snsAgo(c.ts)}</small></p>${c.by===me||isAdminAcct()?`<button data-a="vsCmDel" data-id="${ep.id}" data-v="${c.id}" aria-label="刪除">×</button>`:""}</div>`).join("")}</section>`; }
 function viewShowFan(id){ if(id){ const ep=vsCheck(vsGet(id)); if(!ep) return `<main class="page vs"><div class="vs-none"><b>這集已下架</b></div></main>`; return `<main class="page vs">${vsHero(ep)}${vsResult(ep)}${vsBetHtml(ep)}${vsBody(ep,null)}${vsCmHtml(ep)}</main>`; }
   const f=followed(); return vsListHtml("#/fan/core?p=show",null,vsAll().map(vsCheck).sort((a,b)=>(b.st==="on")-(a.st==="on")||b.ts-a.ts).sort((a,b)=>(b.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))-a.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))))); }
@@ -15571,13 +15594,13 @@ function snScoutPage(d){ if(!isAdminAcct()) return snProfile(d,"o:scout"); const
         ${st==="debut"?"":`<div class="scx-bars">${bar("發文",s.posts,c.posts)}${bar("粉絲",s.fol,c.fol)}${bar("平均讚",s.likes,c.likes)}</div>`}
         ${x.note?`<p class="scx-note">${esc(x.note)}</p>`:""}
         <div class="scx-act"><button class="${x.signed?"on":""}" data-a="scSigned" data-v="${x.uid}">${x.signed?"✓ 已簽公司":"已簽公司"}</button><button data-a="scNote" data-v="${x.uid}">備註</button>${pk?`<button data-a="scOpen" data-v="${x.uid}">對話${dm.length?` ${dm.length}`:""}</button>`:!art&&!x.signed?`<button class="pri" data-a="scNow" data-v="${x.uid}">挖掘</button>`:""}<button class="x" data-a="scDel" data-v="${x.uid}" aria-label="移除">×</button></div>
-        ${pk&&open?`<div class="scx-chat">${dm.slice(-12).map(m=>`<p class="${m.from===who?"me":""}">${m.mid?"📷":esc(m.text||"").replace(/\n/g,"<br>")}</p>`).join("")}<form class="sc-rf" data-v="${x.uid}"><input placeholder="輸入文字" autocomplete="off"><button type="submit">傳送</button></form></div>`:""}</article>`; }).join(""):`<div class="scx-none"><span class="scx-av">✦</span><b>${rows.length?"這裡沒有人":"名單是空的"}</b>${rows.length?"":`<button class="scx-add" data-a="scAddOpen">＋ 加入第一位</button>`}</div>`}
+        ${pk&&open?`<div class="scx-chat">${dm.slice(-12).map(m=>`<p class="${m.from===who?"me":""}">${m.mid?"📷":esc(m.text||"").replace(/\n/g,"<br>")}</p>`).join("")}<form class="sc-rf" data-v="${x.uid}"><textarea rows="1" class="ag" placeholder="輸入文字" autocomplete="off"></textarea><button type="submit">傳送</button></form></div>`:""}</article>`; }).join(""):`<div class="scx-none"><span class="scx-av">✦</span><b>${rows.length?"這裡沒有人":"名單是空的"}</b>${rows.length?"":`<button class="scx-add" data-a="scAddOpen">＋ 加入第一位</button>`}</div>`}
   </main>`; }
 function scAddSheet(){ const sc=scGet(), q=nz((ui.scQ||"").trim()), U=snAllUsers().filter(u=>u.id.startsWith("u:")&&!scArtist(u.id)&&!sc.list.some(x=>x.uid===u.id)&&(!q||nz(u.u).includes(q)||nz(u.name).includes(q))).slice(0,40);
   return `<div class="sn-shw open" data-a="tCloseLayer"><div class="sn-sh" role="dialog" aria-label="加入名單"><i class="sn-grab"></i><b class="sn-sht">加入名單</b><label class="sn-q scx-q">${si("search")}<input id="scQ" placeholder="搜尋" autocomplete="off" value="${esc(ui.scQ||"")}"></label>
     <div class="sn-tpl">${U.map(u=>`<button data-a="scAdd" data-v="${u.id}">${snAv(u,40)}<span><b>${esc(u.u)}</b><small>${esc(u.name)}</small></span><em class="scx-plus">＋</em></button>`).join("")||`<p class="sn-none">找不到</p>`}</div></div></div>`; }
 document.addEventListener("input",e=>{ if(e.target.id!=="scQ") return; ui.scQ=e.target.value; const pos=e.target.selectionStart; const w=layer.querySelector(".sn-tpl"); if(w){ const tmp=document.createElement("div"); tmp.innerHTML=scAddSheet(); w.innerHTML=tmp.querySelector(".sn-tpl").innerHTML; } });
-document.addEventListener("submit",e=>{ const f=e.target.closest(".sc-rf"); if(!f) return; e.preventDefault(); const i=f.querySelector("input"), v=(i.value||"").trim(); if(!v||!isAdminAcct()) return; dmAppend(scWho(scGet(),f.dataset.v),f.dataset.v,{text:v,ts:Date.now()}); render(); });
+document.addEventListener("submit",e=>{ const f=e.target.closest(".sc-rf"); if(!f) return; e.preventDefault(); const i=f.querySelector("textarea,input"), v=(i.value||"").trim(); if(!v||!isAdminAcct()) return; dmAppend(scWho(scGet(),f.dataset.v),f.dataset.v,{text:v,ts:Date.now()}); render(); });
 
 /* ===== 廣告代言・雜誌拍攝 ===== */
 const BZ_KEY="daisuki_biz";
@@ -16937,6 +16960,22 @@ new MutationObserver(ms=>{ for(const m of ms) for(const n of m.removedNodes){ if
   L.forEach(v=>{ if(v.isConnected) return; try{ v.pause(); }catch(e){} AUD_ALL.delete(v); }); } }).observe(document.documentElement,{childList:true,subtree:true});
 /* 沒有放在畫面上的播放器（背景音樂那種）如果已經停了很久就不用再記 */
 setInterval(()=>{ AUD_ALL.forEach(m=>{ if(m.paused&&!m.isConnected) AUD_ALL.delete(m); }); },60e3);
+
+/* =========================================================
+   所有留言框、聊天框：可以換行（手機的換行鍵＝換行，不會直接送出；送出要按旁邊的送出鍵）
+   ・打越多字框越高，最多長到 8 行；再多就在框裡面上下捲
+   ・送出、清空之後自動縮回一行
+   ========================================================= */
+const AG_LINES=8;
+function agFit(el){ if(!el||!el.classList||!el.classList.contains("ag")) return; const cs=getComputedStyle(el), lh=parseFloat(cs.lineHeight)||20, pad=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0), max=lh*AG_LINES+pad;
+  const h0=el.style.height; el.style.height="auto"; const h=Math.min(el.scrollHeight,max); el.style.height=Math.ceil(h)+"px"; el.classList.toggle("scroll",el.scrollHeight>max+1);
+  if(h0!==el.style.height) try{ dispatchEvent(new Event("scroll")); }catch(e){} }   /* 框變高：讓 TIE／直播的「輸入列貼鍵盤」重新量一次 */
+const agFitAll=()=>document.querySelectorAll("textarea.ag").forEach(agFit);
+document.addEventListener("input",e=>{ if(e.target&&e.target.classList&&e.target.classList.contains("ag")) agFit(e.target); });
+/* 送出後（程式把字清掉）、換頁重畫後：重新量 */
+document.addEventListener("submit",()=>{ setTimeout(agFitAll,30); setTimeout(agFitAll,300); },true);
+new MutationObserver(ms=>{ if(ms.some(m=>[...m.addedNodes].some(n=>n.nodeType===1&&(n.matches&&n.matches("textarea.ag")||n.querySelector&&n.querySelector("textarea.ag"))))) requestAnimationFrame(agFitAll); }).observe(document.documentElement,{childList:true,subtree:true});
+{ const d=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,"value"); Object.defineProperty(HTMLTextAreaElement.prototype,"value",{configurable:true,get(){ return d.get.call(this); },set(v){ d.set.call(this,v); if(this.classList.contains("ag")) requestAnimationFrame(()=>agFit(this)); }}); }   /* 程式直接改字（清空、插入 @@@）也會跟著縮放 */
 
 </script>
 </body>
