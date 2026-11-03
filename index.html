@@ -6003,7 +6003,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103055718";
+const BUILD="20261103062055";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -6207,13 +6207,23 @@ const PT_RESET=Date.UTC(2026,9,26,12,30);
 function ptResetCheck(){ if(HB_ON&&!Object.keys(HB.ver||{}).length) return false; if((S.get(K.ptRst,0)||0)>=PT_RESET) return true;
   const got=new Set(S.get(K.ptGot,[])||[]); ptGrants().forEach(g=>{ if(g.ts<PT_RESET) got.add(g.id); });
   S.set(K.ptGot,[...got]); S.set(K.points,0); S.set(K.lvMax,0); S.set(K.ptRst,PT_RESET); return true; }
-function ptCollect(){ try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(); if(!me) return; if(!ptResetCheck()) return; const got=new Set(S.get(K.ptGot,[])||[]);
+/* 有藝人身分的帳號：管理員加／扣給這個帳號的積分，直接算進藝人積分（粉絲端、藝人端都馬上看到，在哪一端都會處理）
+   每筆變成一筆 ufg_<原編號>，固定編號所以不會重複算 */
+const PT_ART_T=1793687400000;   // 這個時間以前、粉絲端已經收過的：當時已經算進去了
+const acctMid=()=>{ const s=session(); if(!s||!s.email||(s.admin&&!s.uni)) return ""; const m=(ACCOUNTS[s.email]||{}).member||s.home; return m&&MEMBERS[m]?m:""; };
+function ptArtCollect(){ try{ const m=acctMid(); if(!m) return; if(HB_ON&&(!HB.tok||HB.ver[K.ptGrants]==null)) return; const me=myEmail(), k=K.ptGot+"@"+me, gv=store.get(k,undefined), got=new Set((gv===undefined?mem[k]:gv)||[]);
+  const all=ptGrants(), have=new Set(all.map(g=>g.id)), todo=all.filter(g=>g.to===me&&!g.art&&!have.has("ufg_"+g.id)&&!(got.has(g.id)&&g.ts<PT_ART_T)).sort((a,b)=>a.ts-b.ts); if(!todo.length) return;
+  const L=S.get(K.ptGrants,[])||[]; let net=Math.max(0,(pointsOf(m)||{}).net||0);
+  todo.forEach(g=>{ const n=g.set?Math.max(0,g.n)-net:g.n; net=Math.max(0,net+n); L.push({id:"ufg_"+g.id,to:"art:"+m,mid:m,n,art:1,why:g.set?`積分更新為 ${fmt(g.n)}${g.why?"・"+g.why:""}`:(g.why||"管理員發放"),by:g.by||"auto",ts:g.ts}); });
+  S.set(K.ptGrants,L); try{ hbSoon(); }catch(e){} }catch(e){} }
+setInterval(ptArtCollect,10e3);
+function ptCollect(){ try{ ptArtCollect(); const s=session(); if(!s||s.role!=="fan") return; const artM=acctMid(); const me=myEmail(); if(!me) return; if(!ptResetCheck()) return; const got=new Set(S.get(K.ptGot,[])||[]);
   const seen=new Set(), mine=ptGrants().filter(g=>g.to===me&&!got.has(g.id)&&!seen.has(g.id)&&seen.add(g.id)); if(!mine.length) return;
   let sum=0, cur=points(), hasSet=false; const list=S.get(K.notifs,[]); mine.slice().sort((a,b)=>a.ts-b.ts).forEach(g=>{ got.add(g.id);
     if(g.set){ hasSet=true; cur=Math.max(0,g.n); } else { cur=Math.max(0,cur+g.n); sum+=g.n; }
     list.unshift({id:"pt"+g.id,kind:"core",direct:true,text:g.set?`積分更新為 ${fmt(g.n)}${g.why?"・"+g.why:""}`:`${g.n>=0?"獲得":"扣除"} ${fmt(Math.abs(g.n))} 積分${g.why?"・"+g.why:""}`,ts:g.ts}); });
-  S.set(K.ptGot,[...got]); S.set(K.points,cur); if(hasSet) S.set(K.lvMax,0); S.set(K.notifs,list.slice(0,100)); S.set(K.unread,"1");   // 管理員「設定為」：等級的字母保底重新計算
-  if(hasSet) toast(`積分更新為 ${fmt(cur)}`); else if(mine.length===1) toast(`${sum>=0?"獲得":"扣除"} ${fmt(Math.abs(sum))} 積分${mine[0].why?"・"+mine[0].why:""}`); else toast(`積分 ${sum>=0?"+":"−"}${fmt(Math.abs(sum))}`); }catch(e){} }
+  S.set(K.ptGot,[...got]); if(!artM) S.set(K.points,cur); if(hasSet&&!artM) S.set(K.lvMax,0); S.set(K.notifs,list.slice(0,100)); S.set(K.unread,"1");   // 管理員「設定為」：等級的字母保底重新計算
+  if(hasSet) toast(artM?`積分更新・${fmt(mine.filter(g=>g.set).pop().n)}`:`積分更新為 ${fmt(cur)}`); else if(mine.length===1) toast(`${sum>=0?"獲得":"扣除"} ${fmt(Math.abs(sum))} 積分${mine[0].why?"・"+mine[0].why:""}`); else toast(`積分 ${sum>=0?"+":"−"}${fmt(Math.abs(sum))}`); }catch(e){} }
 function viewPtAdd(){ const d=ui.ptD||(ui.ptD={to:[],n:"",why:"",q:"",sign:1}), q=nz(d.q.trim());
   const L=Object.entries(ACCOUNTS).filter(([e,a])=>e!==DEMO_FAN).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e)));
   const hist0=ptGrants().slice().sort((a,b)=>b.ts-a.ts), hist=calFilter("pt",hist0,g=>g.ts);
@@ -13938,10 +13948,11 @@ function artNotifList(mid){ const m=MEMBERS[mid]; if(!m) return []; const L=[], 
   S.get(K.comments,[]).filter(c=>my.has(c.postId)&&c.author!=="artist").slice(-30).forEach(c=>L.push({ts:c.ts,k:"cm",t:"新留言",b:`${c.name}：${c.text}`,a:"comments",v:c.postId}));
   const tw=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"); if(tw.length){ const last=tw[tw.length-1]; L.push({ts:last.ts,k:"tie",t:`${WHISPER_NAME} 粉絲回覆`,b:`共 ${tw.length} 則，最新：${last.text}`,a:"tab",v:"whisper"}); }
   coInvites(mid).forEach(l=>L.push({ts:l.co.ts,k:"live",t:"連線邀請",b:`${MEMBERS[l.member].name} 邀請你一起直播：${l.title||""}`,a:"tab",v:"live"}));
+  ptGrants().filter(g=>g.mid===mid&&g.art&&!/^uf_/.test(g.id)&&!/^tka_/.test(g.id)).slice(-20).forEach(g=>L.push({ts:g.ts,k:"pt",t:"積分",b:`${g.n>=0?"獲得":"扣除"} ${fmt(Math.abs(g.n||0))} 積分${g.why?"・"+g.why:""}`,a:"tab",v:"points"}));
   { const q=tieQuiet().find(x=>x.mid===mid); if(q) L.push({ts:q.at,k:"tie",t:`${WHISPER_NAME} 提醒`,b:q.days>=4?`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，每多一天扣一次${TIE_QUIET_FINE()}。`:`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，明天再沒傳會扣${TIE_QUIET_FINE()}。`,a:"tab",v:"whisper"}); }
   return L.sort((a,b)=>b.ts-a.ts).slice(0,40); }
 const artNUnread=mid=>{ const seen=(S.get(K.artNSeen,{})[mid])||0; return artNotifList(mid).some(x=>x.ts>seen); };
-function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=artNotifList(mid), seen=(S.get(K.artNSeen,{})[mid])||0, IC={ann:I.bell,gn:I.bell,cm:I.chat,tie:TI.send};
+function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=artNotifList(mid), seen=(S.get(K.artNSeen,{})[mid])||0, IC={ann:I.bell,gn:I.bell,cm:I.chat,tie:TI.send,pt:I.star};
   setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>通知</b><span class="sh-sp"></span></header>
     <div class="tiei-body an-list">${L.length?L.map(x=>`<button class="an-it ${x.ts>seen?"new":""}" ${x.a?`data-a="${x.a}" data-v="${esc(x.v)}" data-id="${esc(x.v)}"`:""}><span class="an-ic">${IC[x.k]||I.bell}</span><span class="an-b"><b>${esc(x.t)}</b><span>${esc(x.b)}</span><small>${ago(x.ts)}</small></span></button>`).join(""):`<p class="me-none">還沒有通知</p>`}</div></div>`,"artn");
   const A=S.get(K.artNSeen,{}); A[mid]=Date.now(); S.set(K.artNSeen,A); }
