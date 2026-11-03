@@ -5730,6 +5730,48 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .mu5-mc{display:flex;flex-direction:column}.mu5-mcr{display:flex;align-items:center;gap:10px;padding:12px 2px;border:0;border-top:1px solid var(--line);background:none;font:inherit;color:var(--ink);text-align:left}
 .mu5-mcr b{width:116px;flex:none;font-size:13px}.mu5-mcr span{flex:1;min-width:0;font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mu5-mcr i{font-style:normal;color:var(--ink-3)}
 .mu5-mcp{max-height:50vh;overflow:auto}
+/* 規則：節奏帶（修正） */
+.mur-band{padding-bottom:0!important}
+.mur-band span{color:#fff!important;font-size:13px;font-weight:800}
+.mur-band .t-p{background:#7A7690!important}
+.mur-band .now{outline:0!important;box-shadow:0 0 0 2px var(--s1),0 0 0 4px #F472B6}
+.mur-here{display:flex;gap:4px;margin-top:8px}.mur-here span{flex:1;text-align:center;font-size:11px;font-weight:800;color:#F472B6;white-space:nowrap}
+.mur-here+p{margin-top:10px!important}
+.mur{touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
+.mur-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:var(--line)}.mur-dots button.on{background:#8843FB;width:18px;border-radius:4px}
+/* 節目模塊：背景會動 */
+@keyframes muScan{to{background-position:0 40px}}
+@keyframes muStripe{to{background-position:84px 0}}
+@keyframes muGrid{to{background-position:18px 18px,18px 18px}}
+@keyframes muShine{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}
+@keyframes muFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,10px)}}
+@keyframes muNeon{0%,100%{box-shadow:0 0 0 1px rgba(255,62,165,.25) inset,0 8px 24px -14px #FF3EA5}50%{box-shadow:0 0 0 1px rgba(255,62,165,.5) inset,0 8px 30px -10px #FF3EA5}}
+.mu3-sh.s-ts{animation:muNeon 3.2s ease-in-out infinite}.mu3-sh.s-ts::before{animation:muScan 3s linear infinite}
+.mu3-sh.s-sc::before{background-size:84px 100%!important;background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.16) 0 12px,transparent 12px 30px)!important;animation:muStripe 2.4s linear infinite}
+.mu3-sh.s-mcd::before{animation:muGrid 4s linear infinite}
+.mu3-sh.s-mb::after{content:"";position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:muShine 4.5s ease-in-out infinite;pointer-events:none}
+.mu3-sh.s-ink::before{animation:muFloat 6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.mu3-sh,.mu3-sh::before,.mu3-sh::after{animation:none!important}}
+/* 結尾妖精：全螢幕播放 */
+.fv{position:fixed;inset:0;z-index:320;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
+.fv-bars{display:flex;gap:4px;padding:10px 10px 0}.fv-bars i{flex:1;height:3px;border-radius:3px;background:rgba(255,255,255,.3);overflow:hidden}.fv-bars i em{display:block;height:100%;width:0;background:#fff}
+.fv-bars i.done em{width:100%}.fv-bars i.on em{animation:fvBar 5s linear forwards}
+@keyframes fvBar{to{width:100%}}
+.fv-top{display:flex;align-items:center;gap:10px;padding:10px 12px;color:#fff;position:relative;z-index:2}.fv-ti{flex:1;min-width:0;display:flex;flex-direction:column}.fv-ti b{font-size:14px}.fv-ti small{font-size:11.5px;opacity:.75}
+.fv-x{width:36px;height:36px;border:0;background:none;color:#fff;display:grid;place-items:center}.fv-x svg{width:22px;height:22px}
+.fv-st{flex:1;position:relative;display:grid;place-items:center;overflow:hidden}
+.fv-st img,.fv-st video{width:100%;height:100%;object-fit:contain}
+.fv-nm{position:absolute;left:16px;bottom:calc(24px + env(safe-area-inset-bottom,0px));padding:6px 12px;border-radius:999px;background:rgba(0,0,0,.45);color:#fff;font-size:13px;font-weight:800}
+.fv-nm:empty{display:none}
+.fv-none{display:flex;flex-direction:column;align-items:center;gap:12px;color:#fff;opacity:.85}.fv-none .mu2-cv{width:96px;height:96px;border-radius:20px}
+.fv-demo{width:78%;aspect-ratio:3/4;border-radius:24px;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;color:#fff;box-sizing:border-box}.fv-demo b{font-size:22px}.fv-demo small{opacity:.8}
+.fv-prev,.fv-next{position:absolute;top:110px;bottom:0;width:35%;border:0;background:none;z-index:1}.fv-prev{left:0}.fv-next{right:0}
+/* 藝人：結尾妖精上傳 */
+.fy-a{padding:4px 14px!important}.fy-r{display:flex;align-items:center;gap:10px;padding:10px 0}.fy-r+.fy-r{border-top:1px solid var(--line)}
+.fy-n{flex:1;display:flex;flex-direction:column}.fy-n b{font-size:13.5px}.fy-n small{font-size:11.5px;color:var(--ink-3)}
+.fy-th{width:44px;height:56px;border-radius:10px;overflow:hidden;border:0;padding:0;background:var(--s2);display:grid;place-items:center}.fy-th img{width:100%;height:100%;object-fit:cover}.fy-th i{font-style:normal}
+.fy-no{font-size:12px;color:var(--ink-3)}
+.mu4>.mu3-thr{margin-bottom:4px}
 
 </style>
 </head>
@@ -6167,7 +6209,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103140957";
+const BUILD="20261103141550";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -17868,7 +17910,6 @@ const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
 function viewPromo(){
   const wk=curWeek(), dm=musDemoOn(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), songs=promoSongs(), lr=rk?null:lastRankedWk(), open=ui.muOpen||{};
-  const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=L[0], g=s&&groupOf(s.gid); return `<div class="mu3-th ${s?"on":""}"><span class="mu3-thi">${MU_IC[ic]}</span><b>${l}</b>${s?`<span class="mu3-thw"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><i>${esc(g?g.name:"")}</i><small>《${esc(s.title)}》</small></span></span>`:`<small class="mu3-empty">虛位以待</small>`}</div>`; };
   const mod=sh=>{ const id=sh.id, R=showRank(id,wk), won=songOf((getMShow().wins[wk]||{})[id]), ended=rk&&showEnded(id,wk), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
@@ -17879,16 +17920,19 @@ function viewPromo(){
     const when=!rk?"":ended?`<em class="mu3-end">已結束</em>`:`<em class="mu3-end">${showEndTxt(id)} 結束・${muLeft(showEndTs(id,wk)-Date.now())}</em>`;
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
-      return `<div class="mu3-r"><span class="mu3-n">${i+1}</span><button class="mu3-song" data-a="muSheet" data-v="${s.id}"><span class="mu2-cv">${songCover(s.gid)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`; }).join("");
+      return `<div class="mu3-r"><span class="mu3-n">${i+1}</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`; }).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
       <div class="mu3-bd">${voted&&rk&&!ended?`<p class="mu3-vt">今天投給了《${esc((songOf(voted)||{}).title||"")}》</p>`:""}${songs.length?rows:`<p class="me-none">目前沒有打歌中的歌</p>`}</div></section>`; };
   return coreHead("")+`<main class="page mu3">
     <section class="mu2-wk mu3-wk t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"}"><span class="mu2-chip">${esc(t)}</span><span class="mu2-wt"><b>${rk?"每個節目每天可以投 1 票":"宣傳週不排名、不開放投票"}</b></span><button class="mu3-i" data-a="coreTip" aria-label="規則">${MU_IC.i}</button></section>
-    <div class="mu3-thr">${thr("five","五台冠軍","five")}${thr("ak","AK","ak")}${thr("pak","PAK","pak")}</div>
+    ${muThrones()}
     <div class="mu2-h"><h3>音樂節目</h3></div>
     <div class="mu3-list">${SHOWS.map(mod).join("")}</div>
   </main>`; }
+/* 三個王座（粉絲端、藝人端都看得到） */
+function muThrones(){ const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=L[0], g=s&&groupOf(s.gid); return `<div class="mu3-th ${s?"on":""}"><span class="mu3-thi">${MU_IC[ic]}</span><b>${l}</b>${s?`<span class="mu3-thw"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><i>${esc(g?g.name:"")}</i><small>《${esc(s.title)}》</small></span></span>`:`<small class="mu3-empty">虛位以待</small>`}</div>`; };
+  return `<div class="mu3-thr">${thr("five","五台冠軍","five")}${thr("ak","AK","ak")}${thr("pak","PAK","pak")}</div>`; }
 const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${win?"win":""}"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span>${win?`<span class="mu3-cup">${MU_IC.cup}</span>`:""}</span>`; };
 /* 點歌：應援選單（買專輯、這首歌的 MV 愛心、My Pick） */
 function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), st=s.demo?{wins:[],five:0,aks:[],pak:0,crowns:[]}:songStats(s.id), wk=curWeek(), pick=S.get(K.pick,null), wkWins=st.wins.filter(x=>x.wk===wk).length, mv=songMv(s), own=owns(s.gid,"album");
@@ -17900,12 +17944,15 @@ function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf
     <button class="mu2-pick ${pick===s.gid?"on":""}" data-a="promoPick" data-v="${s.gid}" data-s="${s.id}">${pick===s.gid?"💜 這是我的 My Pick":"設為 My Pick"}</button></div></div>`,"musheet"); }
 /* 規則：三張卡滑著看 */
 function muRules(){ const wk0=curWeek(), d0=new Date(); d0.setDate(1); const W=[]; let k=weekKey(d0.getTime()); for(let i=0;i<6;i++){ const ms=wkDate(k); if(ms.getMonth()!==d0.getMonth()&&i>0&&monthKey(ms.getTime()+3*864e5)!==monthKey(d0.getTime())) break; W.push(k); k=shiftWeek(k,1); }
-  const band=W.filter(x=>monthKey(wkDate(x).getTime()+3*864e5)===monthKey(Date.now())).map(x=>{ const t=weekType(x); return `<span class="t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"} ${x===wk0?"now":""}"><b>${t.slice(0,2)}</b>${x===wk0?`<i>你在這裡</i>`:""}</span>`; }).join("");
-  const c1=`<div class="mur-c"><h4>這個月的節奏</h4><div class="mur-band">${band}</div><p>每個月第一週是宣傳週，不排名；中間是排名週；最後一週是打歌週（月底決戰）。</p></div>`;
+  const WS=W.filter(x=>monthKey(wkDate(x).getTime()+3*864e5)===monthKey(Date.now())), band=WS.map(x=>{ const t=weekType(x); return `<span class="t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"} ${x===wk0?"now":""}">${t.slice(0,2)}</span>`; }).join(""), here=WS.map(x=>`<span>${x===wk0?"▲ 你在這裡":""}</span>`).join("");
+  const c1=`<div class="mur-c"><h4>這個月的節奏</h4><div class="mur-band">${band}</div><div class="mur-here">${here}</div><p>每個月第一週是宣傳週，不排名；中間是排名週；最後一週是打歌週（月底決戰）。</p></div>`;
   const c2=`<div class="mur-c"><h4>怎麼幫偶像</h4><ul class="mur-w"><li><b>${MU_IC.tk}</b><span>投票</span><em>1 票 = ${MS_W.vote} 分</em></li><li><b>💿</b><span>買專輯</span><em>1 張 = ${MS_W.album} 分</em></li><li><b>♡</b><span>MV 愛心</span><em>1 顆 = ${MS_W.like} 分</em></li><li><b>▶</b><span>看 MV</span><em>1 次 = ${MS_W.view} 分</em></li></ul><p>每個節目每天可以投 1 票。節目播出時間一到就結束，分數最高的拿下一位。</p></div>`;
   const c3=`<div class="mur-c"><h4>獎勵</h4><ul class="mur-w"><li><b>${MU_IC.cup}</b><span>一位</span><em>+${fmt(MSP.win)}</em></li><li><b>${MU_IC.five}</b><span>五台冠軍</span><em>+${fmt(MSP.five)}</em></li><li><b>${MU_IC.ak}</b><span>AK</span><em>+${fmt(MSP.ak)}</em></li><li><b>${MU_IC.pak}</b><span>PAK</span><em>+${fmt(MSP.pak)}</em></li></ul><p>同一首歌在同一個節目連續三週一位＝三冠王，之後這個節目就不再列入一位候選。</p></div>`;
-  tieModal("打歌規則",`<div class="mur" id="murS">${c1}${c2}${c3}</div><div class="mur-dots"><i class="on"></i><i></i><i></i></div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`,"mur-m");
-  const sc=document.getElementById("murS"); if(sc) sc.addEventListener("scroll",()=>{ const i=Math.round(sc.scrollLeft/sc.clientWidth); document.querySelectorAll(".mur-dots i").forEach((d,j)=>d.classList.toggle("on",i===j)); },{passive:true}); }
+  tieModal("打歌規則",`<div class="mur" id="murS">${c1}${c2}${c3}</div><div class="mur-dots"><button class="on" data-a="murGo" data-v="0" aria-label="第 1 張"></button><button data-a="murGo" data-v="1" aria-label="第 2 張"></button><button data-a="murGo" data-v="2" aria-label="第 3 張"></button></div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`,"mur-m");
+  const sc=document.getElementById("murS"); if(!sc) return; const dots=()=>{ const i=Math.round(sc.scrollLeft/sc.clientWidth); document.querySelectorAll(".mur-dots button").forEach((d,j)=>d.classList.toggle("on",i===j)); };
+  sc.addEventListener("scroll",dots,{passive:true});
+  /* 有些 iPhone 在彈出視窗裡橫滑不動：自己判斷左右滑 */ let x0=null,y0=0; sc.addEventListener("touchstart",e=>{ x0=e.touches[0].clientX; y0=e.touches[0].clientY; },{passive:true}); sc.addEventListener("touchend",e=>{ if(x0==null) return; const dx=e.changedTouches[0].clientX-x0, dy=e.changedTouches[0].clientY-y0; x0=null; if(Math.abs(dx)>40&&Math.abs(dx)>Math.abs(dy)){ const i=Math.round(sc.scrollLeft/sc.clientWidth)+(dx<0?1:-1); murGo(i); } },{passive:true}); }
+function murGo(i){ const sc=document.getElementById("murS"); if(!sc) return; i=Math.max(0,Math.min(2,i)); sc.scrollTo({left:i*sc.clientWidth,behavior:"smooth"}); document.querySelectorAll(".mur-dots button").forEach((d,j)=>d.classList.toggle("on",i===j)); }
 /* 點擊 */
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muShow"){ e.stopImmediatePropagation(); const id=t.dataset.v; ui.muOpen={...(ui.muOpen||{}),[id]:!(ui.muOpen||{})[id]}; const sec=t.closest(".mu3-sh"); if(sec){ sec.classList.toggle("open",!!ui.muOpen[id]); t.setAttribute("aria-expanded",ui.muOpen[id]?"true":"false"); } return; }
@@ -17916,6 +17963,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); card=giveMcCard(s.gid,sh); }
     const tk=document.createElement("span"); tk.className="mu3-fly"; tk.innerHTML=MU_IC.tk; tk.style.left=r.left+"px"; tk.style.top=r.top+"px"; document.body.appendChild(tk); setTimeout(()=>tk.remove(),700);   /* 投票券撕下來飛出去 */
     ui.muStamp=sh+sid; setTimeout(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); setTimeout(()=>{ ui.muStamp=null; },900); if(card||s.demo) muCardPop(card,sh,s); },380); return; }
+  if(a==="murGo"){ e.stopImmediatePropagation(); murGo(+t.dataset.v); return; }
   if(a==="coreTip"&&route().p==="promo"){ e.stopImmediatePropagation(); muRules(); return; }
 },true);
 /* 拿到打歌節目卡：卡片翻出來 */
@@ -17954,7 +18002,7 @@ function artPromoPage(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=cur
   const cab=sec("獎項收藏",`<section class="card mu4-cab">${aw.map(x=>`<div class="mu4-aw on"><b>${MU_IC[x.ic]}</b><span>${esc(x.t)}</span><small>《${esc(x.s)}》${x.wk?"・"+ymd(wkDate(x.wk).getTime()):""}</small></div>`).join("")}${locked.map(([k,l])=>`<div class="mu4-aw"><b>${MU_IC[k]}</b><span>${l}</span><small>還沒拿到</small></div>`).join("")}</section>`);
   const mc=sec("MC",`<section class="card mu4-mc">${mcs.length?mcs.map(x=>`<div class="mu4-mr"><b>${x.name}</b><small>每週${WDAY[x.day]}</small></div>`).join("")+`<p class="mu4-mp">每週 +${fmt(mcWeekly(mcs.length))} 積分</p>`:`<p class="me-none">這個月沒有排到 MC</p>`}</section>`);
   const pts=sec("打歌積分",`<section class="card mu4-pts"><div><small>這個月</small><b>${fmt(groupMusicPts(gid,{year:mon}))}</b></div><div><small>今年</small><b>${fmt(groupMusicPts(gid,{year:y}))}</b></div></section>`);
-  return `<main class="page foc mu4">${s?"":`<section class="card"><p class="me-none">現在沒有打歌中的歌</p></section>`}${battle}${prog}${cab}${mc}${pts}</main>`; }
+  return `<main class="page foc mu4"><div class="section-h">這個月的王座</div>${muThrones()}${s?"":`<section class="card"><p class="me-none">現在沒有打歌中的歌</p></section>`}${battle}${fairyArtHtml(mid)}${prog}${cab}${mc}${pts}</main>`; }
 
 /* =========================================================
    管理員：打歌（本週總覽＋改一位、計分方式、MC 表、打歌中的歌）
@@ -17991,6 +18039,62 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="muAdmFix"){ e.stopImmediatePropagation(); ui.muAdmOpen={...(ui.muAdmOpen||{}),[t.dataset.v]:!(ui.muAdmOpen||{})[t.dataset.v]}; lsRerender(); return; }
   if(a==="muMcEd"){ e.stopImmediatePropagation(); muMcSheet(t.dataset.s,t.dataset.mon); return; }
   if(a==="muMcT"){ e.stopImmediatePropagation(); const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); t.classList.toggle("on"); lsRerender(); return; }
+},true);
+
+/* =========================================================
+   結尾妖精（ending fairy）
+   ・每首打歌中的歌，每個節目每週隨機選 1～8 位成員當結尾妖精（像真實的打歌節目，人數不一定；SOLO 就是自己）
+   ・被選到的藝人在「打歌戰況」上傳一張照片或一段影片
+   ・粉絲在節目模塊裡點一首歌：全螢幕播這首歌這個節目的結尾妖精，有音樂就一起放
+   ・資料 daisuki_fairy：{"週|節目|歌":{藝人:{m:網址或影片編號,v:是不是影片,th:縮圖,ts}}}
+   ========================================================= */
+const FAIRY_KEY="daisuki_fairy";
+const fairyK=(wk,show,sid)=>`${wk}|${show}|${sid}`;
+function fairyPick(sid,show,wk){ wk=wk||curWeek(); const s=songOf(sid); if(!s) return []; const ms=s.demo?(groupArtists(s.gid).length?groupArtists(s.gid):["d1","d2","d3","d4"]):groupArtists(s.gid);
+  const n=1+strHash(fairyK(wk,show,sid))%8; return ms.slice().sort((a,b)=>strHash(wk+show+sid+a)-strHash(wk+show+sid+b)).slice(0,Math.min(n,ms.length)); }
+const fairyUps=(sid,show,wk)=>((S.get(FAIRY_KEY,{})||{})[fairyK(wk||curWeek(),show,sid)])||{};
+/* 粉絲：點歌 → 全螢幕播結尾妖精 */
+let FV=null;
+async function fairyView(sid,show){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), sh=SHOWS.find(x=>x.id===show)||{}, wk=curWeek(), picks=fairyPick(sid,show,wk), up=fairyUps(sid,show,wk);
+  let L=picks.filter(m=>up[m]).map(m=>({mid:m,...up[m]}));
+  if(s.demo&&!L.length) L=picks.map(m=>({mid:m,demo:1}));   /* 示範：用色塊代替 */
+  fairyStop(); FV={s,show,L,i:0,t:0,au:null};
+  setLayer(`<div class="fv s-${show}" role="dialog" aria-label="結尾妖精"><div class="fv-bars">${(L.length?L:[0]).map(()=>`<i><em></em></i>`).join("")}</div>
+    <div class="fv-top"><span class="mu2-cv sm">${songCover(s.gid)}</span><span class="fv-ti"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}・${esc(sh.name||"")} 結尾妖精</small></span><button class="fv-x" data-a="fvClose" aria-label="關閉">${XI}</button></div>
+    <div class="fv-st" id="fvSt"></div><button class="fv-prev" data-a="fvPrev" aria-label="上一位"></button><button class="fv-next" data-a="fvNext" aria-label="下一位"></button></div>`,"fairy");
+  fairyShow(); try{ const b=await auGet(sid); if(b&&FV&&FV.s===s){ const a=new Audio(URL.createObjectURL(b)); a.loop=true; a.playsInline=true; FV.au=a; a.play().catch(()=>{}); fairyMute(); } }catch(e){} }
+function fairyMute(){ const v=document.querySelector("#fvSt video"); if(v) v.muted=!!(FV&&FV.au); }
+function fairyShow(){ if(!FV) return; const st=document.getElementById("fvSt"); if(!st){ fairyStop(); return; } clearTimeout(FV.t); const it=FV.L[FV.i];
+  document.querySelectorAll(".fv-bars i").forEach((b,j)=>{ b.className=j<FV.i?"done":j===FV.i?"on":""; });
+  const nm=it&&MEMBERS[it.mid]?artName(it.mid,"feed"):"";
+  if(!it){ st.innerHTML=`<div class="fv-none">${songCover(FV.s.gid)}<b>這週還沒有結尾妖精</b></div>`; return; }
+  if(it.demo){ st.innerHTML=`<div class="fv-demo" style="background:${grad(strHash(it.mid)%8)}"><b>${esc(nm||"結尾妖精")}</b><small>示範</small></div><span class="fv-nm">${esc(nm)}</span>`; FV.t=setTimeout(()=>fairyGo(1),4000); return; }
+  if(it.v){ st.innerHTML=`<video playsinline autoplay ${FV.au?"muted":""} data-mid="${esc(it.m)}"></video><span class="fv-nm">${esc(nm)}</span>`; const v=st.querySelector("video"); mediaSrc(it.m).then(u=>{ if(u&&v.isConnected){ v.src=u; v.play().catch(()=>{}); } }); v.onended=()=>fairyGo(1); FV.t=setTimeout(()=>fairyGo(1),30000); }
+  else { st.innerHTML=`<img src="${esc(it.m)}" alt=""><span class="fv-nm">${esc(nm)}</span>`; FV.t=setTimeout(()=>fairyGo(1),5000); } }
+function fairyGo(d){ if(!FV) return; const n=FV.i+d; if(n<0) return; if(n>=FV.L.length){ fairyClose(); return; } FV.i=n; fairyShow(); }
+function fairyStop(){ if(!FV) return; clearTimeout(FV.t); try{ if(FV.au){ FV.au.pause(); FV.au.src=""; } }catch(e){} FV=null; }
+function fairyClose(){ fairyStop(); if(layer.querySelector(".fv")) layer.innerHTML=""; }
+new MutationObserver(()=>{ if(FV&&!document.querySelector(".fv")) fairyStop(); }).observe(document.getElementById("layer")||document.body,{childList:true});
+/* 藝人：打歌戰況裡上傳自己的結尾妖精 */
+function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(); if(!s) return "";
+  const mine=SHOWS.filter(x=>fairyPick(s.id,x.id,wk).includes(mid)); const all=SHOWS.map(x=>({x,n:fairyPick(s.id,x.id,wk).length}));
+  return `<div class="section-h">結尾妖精</div><section class="card fy-a">${all.map(({x,n})=>{ const me=mine.includes(x), up=fairyUps(s.id,x.id,wk)[mid];
+      return `<div class="fy-r"><span class="fy-n"><b>${x.name}</b><small>這週 ${n} 位${me?"・你被選中了":""}</small></span>${me?(up?`<button class="fy-th" data-a="fyUp" data-v="${x.id}" aria-label="換一個">${up.v?(up.th?`<img src="${esc(up.th)}" alt="">`:`<i>▶</i>`):`<img src="${esc(up.m)}" alt="">`}</button>`:`<button class="btn btn-main btn-sm" data-a="fyUp" data-v="${x.id}">上傳</button>`):`<span class="fy-no">沒有選到</span>`}</div>`; }).join("")}</section>`; }
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
+  if(a==="muFairy"){ e.stopImmediatePropagation(); fairyView(t.dataset.v,t.dataset.s); return; }
+  if(a==="fvNext"||a==="fvPrev"){ e.stopImmediatePropagation(); fairyGo(a==="fvNext"?1:-1); return; }
+  if(a==="fvClose"){ e.stopImmediatePropagation(); fairyClose(); return; }
+  if(a==="fyUp"){ e.stopImmediatePropagation(); const s0=session()||{}, mid=s0.member, show=t.dataset.v; if(!mid||!MEMBERS[mid]) return; const s=grpSong(MEMBERS[mid].group); if(!s) return;
+    const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*,video/*";
+    inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const isV=f.type.startsWith("video/")||/\.(mov|mp4|m4v|webm)$/i.test(f.name||""); toast("上傳中…");
+      try{ let rec=null;
+        if(isV){ const id="fy"+Date.now().toString(36), th=await videoThumb(f); let thumb=""; if(th&&th.blob){ const tb=await shrinkImg(th.blob,800); thumb=(HB_ON&&await hbImgUrl(id+"_t.jpg",tb))||""; }
+          await MDB.put(id,f,true); if(!await hbUpload(id,f)){ toast("影片沒有上傳成功，請再試一次"); return; } memBlobs[id]=f; rec={m:id,v:1,th:thumb,ts:Date.now()}; }
+        else { const b=await shrinkImg(f,1350), url=(HB_ON&&await hbImgUrl("fy_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); rec={m:url,v:0,ts:Date.now()}; }
+        const F=S.get(FAIRY_KEY,{})||{}, k=fairyK(curWeek(),show,s.id); F[k]={...(F[k]||{}),[mid]:rec};
+        /* 只留最近 6 週，資料不會越來越大 */ const cut=shiftWeek(curWeek(),-6); Object.keys(F).forEach(x=>{ if(x.split("|")[0]<cut) delete F[x]; });
+        S.set(FAIRY_KEY,F); lsRerender(); toast("結尾妖精上傳好了"); }catch(err){ toast("上傳失敗，請再試一次"); } };
+    pickClick(inp); return; }
 },true);
 
 </script>
