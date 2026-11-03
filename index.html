@@ -5854,7 +5854,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103000741";
+const BUILD="20261103001632";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -9277,8 +9277,9 @@ function notifMsg(n){
 /* 出道／回歸預告：出道日、回歸日一到就從置頂公告和 FEST 橫幅拿掉（管理員的公告紀錄還在） */
 function annPre(a){ const t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return {k:"db",day:x&&x.status==="pre"?x.day:0}; }
   if(a.pre==="cb"||/回歸預告｜/.test(t)){ const P=getMShow().pre||[], p=P.find(y=>y.id===a.ref)||P.find(y=>t.includes(`《${y.title}》`)); return {k:"cb",day:p?p.day:0}; } return null; }
-const annLive=()=>getAnns().filter(a=>{ const p=annPre(a); return !p||p.day>Date.now(); });
-const preAnns=()=>getAnns().map(a=>({a,p:annPre(a)})).filter(x=>x.p&&x.p.day>Date.now()).sort((x,y)=>x.p.day-y.p.day);
+const annOn=p=>p.day>Date.now()&&p.day-Date.now()<=7*864e5;   /* 出道／回歸前 7 天內才看得到 */
+const annLive=()=>getAnns().filter(a=>{ const p=annPre(a); return !p||annOn(p); });
+const preAnns=()=>getAnns().map(a=>({a,p:annPre(a)})).filter(x=>x.p&&annOn(x.p)).sort((x,y)=>x.p.day-y.p.day);
 function preBanner(){ const L=preAnns(); if(!L.length) return ""; return `<div class="pre-bn">${L.map(({a,p})=>`<button data-a="preAnn" data-id="${a.id}">${a.img?`<span class="pre-bi" style="background-image:url('${esc(a.img)}')"></span>`:""}<b>📢 即將${p.k==="db"?"出道":"回歸"}</b><span>${esc(String(a.text).replace(/^\S+\s*(出道|回歸)預告｜/,""))}</span><em>D-${dLeft(p.day)}</em></button>`).join("")}</div>`; }
 function pinnedHtml(){
   const anns=annLive(); if(!anns.length) return "";
@@ -12465,7 +12466,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "muPreDel": { const ms=getMShow(); ms.pre=(ms.pre||[]).filter(p=>p.id!==t.dataset.v); S.set(K.mshow,ms); lsRerender(); break; }
     case "muSongAdd": { const ti=(document.getElementById("muTitle").value||"").trim(); if(!ti){ toast("請輸入歌名"); break; } const ms=getMShow(), gid=ui.muGid||GROUPS[0].id, day=ymdTs((document.getElementById("muDate")||{}).value), min=dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN);
       if(!day||day<min){ toast(`回歸日最快只能選 ${mdTxt(min)}`); break; }
-      if(day>dayStart(Date.now())){ ms.pre=[...(ms.pre||[]),{id:"p"+Date.now(),gid,title:ti,day}]; S.set(K.mshow,ms); { const pid=ms.pre[ms.pre.length-1].id, a=publishAnnounce(`📢 回歸預告｜${groupOf(gid).name}《${ti}》將在 ${mdTxt(day)} 回歸！`); S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,pre:"cb",ref:pid}:y)); } lsRerender(); toast(`排好了，${mdTxt(day)} 回歸`); break; }
+      if(day>dayStart(Date.now())){ ms.pre=[...(ms.pre||[]),{id:"p"+Date.now(),gid,title:ti,day}]; S.set(K.mshow,ms); { const p=ms.pre[ms.pre.length-1]; if(day-Date.now()<=PRE_ANN){ cbAnn(p); S.set(K.mshow,ms); } } lsRerender(); toast(`排好了，${mdTxt(day)} 回歸`); break; }
       ms.songs.push({id:"s"+Date.now(),gid,title:ti}); S.set(K.mshow,ms); muNotify(`🎤 ${groupOf(gid).name}《${ti}》開始打歌！`,gid); lsRerender(); toast("已加入打歌名單"); break; }
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
     case "muAlbum": { const g=groupOf(t.dataset.v); if(owns(g.id,"album")){ toast("你已經收藏這張專輯了 💿"); break; } ui.shopTab="merch"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
@@ -14350,9 +14351,10 @@ const tkBal=()=>tkIsArt()?Math.max(0,(pointsOf(session().member)||{}).net||0):po
 function tkPay(n,why){ if(tkIsArt()){ const mid=session().member, L=S.get(K.ptGrants,[])||[]; L.push({id:"tka_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),to:"art:"+mid,mid,n:-n,art:1,why,by:"auto",ts:Date.now()}); S.set(K.ptGrants,L.slice(-2000)); } else S.set(K.points,points()-n); }
 function artTkTargets(){ const s=session()||{}, own=(MEMBERS[s.member]||{}).group, now=Date.now(), pre=new Set((getMShow().pre||[]).filter(p=>p.day>now).map(p=>p.gid));
   const gs=GROUPS.map(g=>g.id).filter(gid=>gid!==own&&groupOf(gid)&&(pre.has(gid)||grpOccs(gid).some(x=>x<=now&&now-x<=TRUCK_ERA)));
-  const ms=gs.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); const H=tkHidM(); Object.keys(H).forEach(id=>{ if(!ms.includes(id)&&H[id].group!==own) ms.push(id); }); return ms; }
+  const ms=gs.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); const H=tkHidM(); Object.keys(H).forEach(id=>{ if(!ms.includes(id)&&H[id].group!==own&&tkPreOn(id)) ms.push(id); }); return ms; }
 function tkTargets(){ if(tkIsArt()) return artTkTargets(); const f=followed(), gs=[...f,...GROUPS.map(g=>g.id).filter(id=>!f.includes(id))].filter(gid=>groupOf(gid)&&!isSelfGid(gid));
-  const ms=gs.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); const H=tkHidM(); Object.keys(H).forEach(id=>{ if(!ms.includes(id)&&!isSelfGid(H[id].group)) ms.push(id); }); return ms; }
+  const ms=gs.flatMap(gid=>grpMembers(gid).filter(id=>MEMBERS[id]&&!MEMBERS[id].official)); const H=tkHidM(); Object.keys(H).forEach(id=>{ if(!ms.includes(id)&&!isSelfGid(H[id].group)&&tkPreOn(id)) ms.push(id); }); return ms; }
+const tkPreOn=id=>getDebut().some(x=>x.mid===id&&x.annId&&x.status==="pre");   /* 預告還沒發的新人：先保密，不能送 */
 /* 收餐車的藝人：也包括「已核准、還沒到出道日」的新人（平常藏起來，餐車要送得到） */
 const tkHidM=()=>{ const r=S.get(K.roster,{})||{}, H={}; getDebut().filter(x=>x.status==="pre"&&x.mid&&x.gid).forEach(x=>{ const m=(r.members||{})[x.mid]; if(m) H[x.mid]={...m,pre:x.day}; }); return H; };
 const tkM=mid=>MEMBERS[mid]||tkHidM()[mid];
@@ -16441,7 +16443,7 @@ const mdTxt=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()}
 /* 管理員核准 → 進入預告 */
 function dbApprove(x){ const now=Date.now(); let day=x.day||dayStart(now+PRE_MIN); if(day<dayStart(now+PRE_MIN)) day=dayStart(now+PRE_MIN); x.day=day; x.status="pre"; x.appr=now;
   dbDebutNow(null,x,true);   /* 管理員在場的這一刻就把團建好、帳號綁好；出道日前先藏起來 */
-  { const a=publishAnnounce(`✨ 出道預告｜「${x.name}」將在 ${mdTxt(day)} 正式出道！`); x.annId=a.id; S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,pre:"db",ref:x.id}:y)); if(0) publishAnnounce(`✨ 出道預告｜「${x.name}」將在 ${mdTxt(day)} 正式出道！`); if(x.teaser) S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,img:x.teaser}:y)); }   /* 用 HAECHU 官方公告發出道預告（不是每個人的 FOC／FEST 都掛一張卡） */ feedPush({kind:"core",self:true,text:`🎉 出道申請通過了！你的出道日是 ${mdTxt(day)}，預告已經發出去囉`},"u:"+x.email); }
+  if(day-now<=PRE_ANN) dbAnn(x);   /* 用 HAECHU 官方公告發出道預告（不是每個人的 FOC／FEST 都掛一張卡） */ feedPush({kind:"core",self:true,text:`🎉 出道申請通過了！你的出道日是 ${mdTxt(day)}，${day-now<=PRE_ANN?"預告已經發出去囉":`出道前 7 天（${mdTxt(day-PRE_ANN)}）會發出預告，在那之前先保密喔`}`},"u:"+x.email); }
 /* 刪除出道申請（預告中／未通過）：團、帳號綁定、照片、MV、SKpedia、公告、通知全部收回，當作沒發生過；本人可以重新申請 */
 const dbWipedTx=n=>{ try{ const t=String(n&&n.text||""); if(!t.includes("「")) return false; return getDebut().some(x=>x.status==="gone"&&(n.ts||0)<=x.gone&&t.includes(`「${x.name}」`)); }catch(e){ return false; } };
 function dbWipe(x){ const gid=x.gid, mid=x.mid;
@@ -16455,6 +16457,10 @@ function dbWipe(x){ const gid=x.gid, mid=x.mid;
   S.set(K.feed,(S.get(K.feed,[])||[]).filter(e=>!(String(e.text||"").includes(w)&&(e.ts||0)<=Date.now())));
   Object.assign(x,{status:"gone",gone:Date.now()}); delete x.gid; delete x.mid;
   feedPush({kind:"core",self:true,text:"出道申請已經刪除，可以重新申請囉"},"u:"+x.email); }
+/* 出道／回歸預告：日子前 7 天才發公告（太早發大家會忘記；核准時離出道不到 7 天就馬上發） */
+const PRE_ANN=7*864e5;
+function dbAnn(x){ if(x.annId) return; const a=publishAnnounce(`✨ 出道預告｜「${x.name}」將在 ${mdTxt(x.day)} 正式出道！`); x.annId=a.id; S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,pre:"db",ref:x.id,...(x.teaser?{img:x.teaser}:{})}:y)); }
+function cbAnn(p){ if(p.annId) return; const g=groupOf(p.gid); if(!g) return; const a=publishAnnounce(`📢 回歸預告｜${g.name}《${p.title}》將在 ${mdTxt(p.day)} 回歸！`); p.annId=a.id; S.set(K.anns,S.get(K.anns,[]).map(y=>y.id===a.id?{...y,pre:"cb",ref:p.id}:y)); }
 /* 出道日到了：真的建立藝人（原本核准時做的事） */
 function dbDebutNow(L,x,prep){ const n=x.name; if(GROUPS.some(g=>g.name===n)||!ACCOUNTS[x.email]||ACCOUNTS[x.email].member){ if(!prep){ x.status="ok"; x.done=Date.now(); } return; }
   const id="g"+Date.now(), gc=x.g||0, g={id,name:n,g:gc,isNew:true,solo:true}, off={name:n+" 官方",group:id,g:gc,official:true}, mid="m"+Date.now(), m={name:n,group:id,g:gc};
@@ -16470,7 +16476,8 @@ function dbDebutNow(L,x,prep){ const n=x.name; if(GROUPS.some(g=>g.name===n)||!A
 function dbReveal(x){ x.status="ok"; x.done=Date.now(); if(!x.pushed){ x.pushed=1; feedPush({kind:"core",text:`🎉 「${x.name}」今天正式出道了！`},"all"); feedPush({kind:"core",self:true,text:`🎉 恭喜出道！到 ME 切換到藝人端吧`},"u:"+x.email); } }
 /* 回歸：預告中的新歌（ms.pre） */
 function preTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.debut]==null&&HB.ver[K.mshow]==null)) return; const now=Date.now();
-    const L=getDebut(); let ch=false; L.forEach(x=>{ if(x.status==="pre"&&x.day&&x.day<=now){ if(x.gid) dbReveal(x); else dbDebutNow(L,x); ch=true; } }); if(ch){ S.set(K.debut,L); applyRoster(); render(); }
+    const L=getDebut(); let ch=false; L.forEach(x=>{ if(x.status==="pre"&&x.day&&x.day>now&&!x.annId&&x.day-now<=PRE_ANN){ dbAnn(x); ch=true; } if(x.status==="pre"&&x.day&&x.day<=now){ if(x.gid) dbReveal(x); else dbDebutNow(L,x); ch=true; } }); if(ch){ S.set(K.debut,L); applyRoster(); render(); }
+    { const m0=getMShow(), due=(m0.pre||[]).filter(p=>p.day>now&&!p.annId&&p.day-now<=PRE_ANN); if(due.length){ due.forEach(cbAnn); S.set(K.mshow,m0); } }
     const ms=getMShow(); if((ms.pre||[]).some(p=>p.day<=now)){ ms.pre.filter(p=>p.day<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title}); const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>p.day>now); S.set(K.mshow,ms); render(); } }catch(e){} }
 setInterval(preTick,60e3); setTimeout(preTick,9e3);
 /* 新人剛出道一週內：回歸（第一首歌）可以當天開始 */
