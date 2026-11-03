@@ -4784,6 +4784,10 @@ html[data-theme="dark"] :is(.t-msgs,.t-page) .t-rp.me p{color:#F1EBFF!important}
 @keyframes pinPing{0%{box-shadow:0 0 0 0 rgba(249,168,212,.75)}80%,100%{box-shadow:0 0 0 8px rgba(249,168,212,0)}}
 .pre-tx{white-space:pre-wrap;overflow-wrap:anywhere}.pre-ts{display:block;margin-top:8px;font-size:12px;color:var(--ink-3)}
 
+.trk-pbs{display:flex;gap:8px;flex:none;align-items:center}
+.trk-pb.banner{width:78px;height:auto;aspect-ratio:360/260}.trk-pb.banner2{width:58px;height:auto;aspect-ratio:340/380}.trk-pb[data-v="sleeve"]{width:58px;height:auto;aspect-ratio:102/112}
+.trk-pb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;line-height:1.1}.trk-pb small{font-size:9.5px;font-weight:700}
+
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
 .vs-none{text-align:center;padding:60px 20px;color:var(--ink-3)}
@@ -5850,7 +5854,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261102230719";
+const BUILD="20261103000741";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -12825,7 +12829,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "tkShares": tkKeep(); ui.tkD.shares=Math.max(1,Math.min(5,ui.tkD.shares+(+t.dataset.v))); render(); break;
     case "tkCancel": ui.tkD=null; render(); break;
     case "tkImg": { tkKeep(); const k=t.dataset.v, inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
-      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0||!ui.tkD) return; const f=await cropImg(f0,{ratio:k==="banner"?3/4:1,max:1200}); if(!f) return; const b=await shrinkImg(f,560), du=b&&await blobDU(b); if(du&&ui.tkD){ ui.tkD.deco[k]=du; render(); } };
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0||!ui.tkD) return; const f=await cropImg(f0,{ratio:TK_IMG_R[k]||1,max:1200}); if(!f) return; const b=await shrinkImg(f,560), du=b&&await blobDU(b); if(du&&ui.tkD){ ui.tkD.deco[k]=du; render(); } };
       pickClick(inp); break; }
     case "tkGo": { tkKeep(); const d=ui.tkD; if(!d||!d.mid){ toast("先選要送給誰"); break; } const share=Math.ceil(TRUCK_PRICE/d.shares), m=tkM(d.mid);
       ask(d.shares>1?`發起 ${d.shares} 人分攤，送餐車給 ${m.name}？你先付 ${fmt(share)} 積分，其他人可以在「一起出錢」加入。`:`送一台應援餐車給 ${m.name}？要 ${fmt(share)} 積分。`,()=>{ const tk=tkBuy(d.deco,d.mid,d.shares); if(!tk) return; ui.tkD=null; ui.tkView=tk.id; render(); window.scrollTo(0,0);
@@ -14191,7 +14195,9 @@ const SERIF='"Playfair Display","Noto Serif TC","Songti TC",serif', SANS='"PingF
    ========================================================= */
 const TRUCK_PAL=[{n:"珍珠白",body:"#F2EEE8",trim:"#D9BC8C",deep:"#2C2733",soft:"#FBF8F3"},{n:"玫瑰霧",body:"#E7C2C6",trim:"#D2A77E",deep:"#4A2E36",soft:"#F8ECEC"},{n:"香檳",body:"#E6D5B5",trim:"#B48E5C",deep:"#3B3022",soft:"#F7F0E2"},
   {n:"午夜藍",body:"#1F2742",trim:"#D9BC8C",deep:"#141A2E",soft:"#E9ECF5"},{n:"鼠尾草",body:"#B7C4B1",trim:"#C6A271",deep:"#2E3A2C",soft:"#EEF2EB"},{n:"薰衣草",body:"#CBBFE3",trim:"#C9A57A",deep:"#352C4A",soft:"#F1EDF8"}];
-const TRUCK_DECO0=()=>({pal:0,slogan:"",from:"",menu:["","",""],banner:null,sleeve:null,balloons:true,lights:true,flowers:true,ribbon:true});
+/* 裁切框＝餐車上那一格的比例：窗口這側 360×260、另一側大橫幅 340×380、杯套 102×112 */
+const TK_IMG_R={banner:360/260,banner2:340/380,sleeve:102/112};
+const TRUCK_DECO0=()=>({pal:0,slogan:"",from:"",menu:["","",""],banner:null,banner2:null,sleeve:null,balloons:true,lights:true,flowers:true,ribbon:true});
 const TRUCK3D=(()=>{
   let inst=null;   /* 同一時間只有一台在畫（換頁時把畫布搬到新的位置，不重新載入） */
   function photo(x,img,X,Y,W,H,P,r){ X3.rr(x,X,Y,W,H,r); x.fillStyle=P.soft; x.fill(); x.save(); X3.rr(x,X,Y,W,H,r); x.clip();
@@ -14200,7 +14206,7 @@ const TRUCK3D=(()=>{
     x.restore(); }
   const loadImg=src=>new Promise(res=>{ if(!src){ res(null); return; } const i=newImg(); i.onload=()=>res(i); i.onerror=()=>res(null); i.src=src; });
   async function build(I){ const d=I.deco, P=TRUCK_PAL[d.pal]||TRUCK_PAL[0], my=++I.ver;
-    const [ban,slv]=await Promise.all([loadImg(d.banner),loadImg(d.sleeve)]); if(my!==I.ver||I.dead) return;
+    const [ban,ban2,slv]=await Promise.all([loadImg(d.banner),loadImg(d.banner2||d.banner),loadImg(d.sleeve)]);   /* 兩側各自一張（舊的餐車只有一張就兩邊共用） */ if(my!==I.ver||I.dead) return;
     try{ await Promise.race([document.fonts.load(`700 40px "Playfair Display"`),new Promise(r=>setTimeout(r,1200))]); }catch(e){}
     if(I.truck){ I.scene.remove(I.truck); I.truck.traverse(o=>{ if(o.geometry) o.geometry.dispose(); if(o.material){ if(o.material.map) o.material.map.dispose(); o.material.dispose(); } }); }
     const g=new THREE.Group(), A=I.anim={balloons:[],glows:[],steam:[]};
@@ -14253,7 +14259,7 @@ const TRUCK3D=(()=>{
       plane(.86,.98,t,.62,1.5,.962); }
     // 另一側大橫幅（-z）
     { const t=X3.ctex(1200,480,(x,w,h)=>{ const gr=x.createLinearGradient(0,0,w,0); gr.addColorStop(0,P.soft); gr.addColorStop(1,"#FFFFFF"); x.fillStyle=gr; X3.rr(x,0,0,w,h,34); x.fill(); x.strokeStyle=P.trim; x.lineWidth=7; X3.rr(x,18,18,w-36,h-36,26); x.stroke();
-        photo(x,ban,50,50,340,h-100,P,18); x.textAlign="left"; x.fillStyle=ink; x.font=`700 104px ${SERIF}`; let nm=name; while(x.measureText(nm).width>w-500&&nm.length>1) nm=nm.slice(0,-1); x.fillText(nm,440,186);
+        photo(x,ban2,50,50,340,h-100,P,18); x.textAlign="left"; x.fillStyle=ink; x.font=`700 104px ${SERIF}`; let nm=name; while(x.measureText(nm).width>w-500&&nm.length>1) nm=nm.slice(0,-1); x.fillText(nm,440,186);
         x.fillStyle=P.trim; x.fillRect(444,214,120,4); x.fillStyle=ink; x.font=`600 56px ${SANS}`; x.fillText(slogan.slice(0,13),442,300); x.fillStyle=P.trim; x.font=`italic 600 38px ${SERIF}`; x.fillText(`From. ${from}`.slice(0,26),444,386); });
       plane(2.72,1.09,t,-.42,1.5,-.962,Math.PI); }
     // 車尾菜單（黑板＋金字）
@@ -14405,7 +14411,7 @@ function tkEditor(d){ const ms=tkTargets(), D=d.deco, share=Math.ceil(TRUCK_PRIC
   return `<section class="card trk-ed">
     <span class="fld-lab">送給誰</span><div class="chips wrap">${ms.length?ms.map(id=>`<button class="chip ${d.mid===id?"on":""}" data-a="tkMid" data-v="${id}">${esc(tkM(id).name)}${tkM(id).pre?` <small>出道 ${mdTxt(tkM(id).pre)}</small>`:""}</button>`).join(""):`<p class="me-none">先加入一個社群</p>`}</div>
     <span class="fld-lab">車身</span><div class="trk-sw">${TRUCK_PAL.map((p,i)=>`<button class="${D.pal===i?"on":""}" data-a="tkPal" data-v="${i}" aria-label="${p.n}" style="background:${p.body};border-color:${p.trim}"></button>`).join("")}</div>
-    <span class="fld-lab">橫幅</span><div class="trk-ph"><button class="trk-pb ${D.banner?"has":""}" data-a="tkImg" data-v="banner">${D.banner?`<img src="${D.banner}" alt="">`:"＋ 照片"}</button><label class="field"><input id="tkSlogan" maxlength="20" placeholder="輸入文字" value="${esc(D.slogan)}"></label></div>
+    <span class="fld-lab">橫幅</span><div class="trk-ph"><span class="trk-pbs">${[["banner","窗口這側"],["banner2","另一側"]].map(([k,l])=>`<button class="trk-pb ${k} ${D[k]?"has":""}" data-a="tkImg" data-v="${k}" aria-label="${l}照片">${D[k]?`<img src="${D[k]}" alt="">`:`＋<small>${l}</small>`}</button>`).join("")}</span><label class="field"><input id="tkSlogan" maxlength="20" placeholder="輸入文字" value="${esc(D.slogan)}"></label></div>
     <span class="fld-lab">菜單</span>${[0,1,2].map(i=>`<label class="field trk-mi"><input id="tkM${i}" maxlength="11" placeholder="輸入文字" value="${esc(D.menu[i]||"")}"></label>`).join("")}
     <span class="fld-lab">杯套</span><div class="trk-ph"><button class="trk-pb ${D.sleeve?"has":""}" data-a="tkImg" data-v="sleeve">${D.sleeve?`<img src="${D.sleeve}" alt="">`:"＋ 照片"}</button></div>
     <span class="fld-lab">裝飾</span><div class="chips wrap">${tog("balloons","氣球")}${tog("lights","燈串")}${tog("flowers","花")}${tog("ribbon","緞帶")}</div>
