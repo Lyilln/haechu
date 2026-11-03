@@ -3715,6 +3715,7 @@ body:has(.nav) main.page{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 1
 .uni-quick .card svg{width:20px;height:20px;flex:none;color:var(--brand,#8843FB)}
 .uni-quick .uni-ann{margin-top:0;justify-content:flex-start}
 .uni-out{margin-top:32px}
+.pt-d b.neg{color:#E5484D}
 
 /* ===== 管理員一體化 ===== */
 .ui-ic{position:relative;display:grid;place-items:center;width:24px;height:24px}
@@ -6002,7 +6003,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103054726";
+const BUILD="20261103055319";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -13692,11 +13693,16 @@ function viewPointsAdmin(){ const since=ptSince(), sh=revShare();
 function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEMBERS[mid], sh=revShare(), ids=new Set([m.group]);
   const L=S.get(K.sales,[]).filter(x=>x.ts>=since&&((x.type==="tie"&&x.mid===mid)||(x.type!=="tie"&&x.gid&&ids.has(x.gid)))).slice(0,40);
   const share=x=>x.type==="tie"?x.pts:x.pts/Math.max(1,groupArtists(x.gid).length);
+  /* 不是賣東西來的：粉絲身分賺的／花的、併進來的粉絲積分、罰款、藝人自己送餐車… 也要看得到 */
+  const G=ptGrants().filter(g=>g.mid===mid&&(String(g.id).startsWith("tqf2_")||g.art)&&(!since||g.ts>=since)), gp=G.reduce((s,g)=>s+Math.max(0,g.n||0),0), gm=G.reduce((s,g)=>s+Math.max(0,-(g.n||0)),0);
+  const gT=g=>/^uf/.test(g.id)?"粉絲":/^tka_/.test(g.id)?"餐車":/^tqf2_/.test(g.id)?"罰款":"調整";
+  const rows=[...L.map(x=>({ts:x.ts,h:`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(saleLbl(x))}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`})),
+    ...G.map(g=>({ts:g.ts,h:`<div class="pt-d"><span class="rev-t t-grant">${gT(g)}</span><p>${esc(g.why||"")}<small>${ago(g.ts)}</small></p><b class="${g.n<0?"neg":""}">${g.n<0?"−":"+"}${fmt(Math.abs(g.n||0))}</b></div>`}))].sort((a,b)=>b.ts-a.ts).slice(0,60);
   return `<main class="page pt">${ptPeriodChips()}
-    <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
+    <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got+gp)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut+gm)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
     <p class="pt-rule">${WHISPER_NAME} 券全部算給這位藝人；Membership、周邊、主題等算給整個團，再平均分給團裡的藝人。實得是收到的 ${sh}%。</p>
-    <div class="section-h">明細<span class="muted">${L.length} 筆</span></div>
-    ${L.length?`<section class="card pt-list">${L.map(x=>`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(saleLbl(x))}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`).join("")}</section>`:`<p class="me-none">這段時間還沒有積分</p>`}
+    <div class="section-h">明細<span class="muted">${rows.length} 筆</span></div>
+    ${rows.length?`<section class="card pt-list">${rows.map(r=>r.h).join("")}</section>`:`<p class="me-none">這段時間還沒有積分</p>`}
   </main>`; }
 /* 還沒有任何團：要團才能做的設定，先帶去新增團 */
 const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增藝人</button></div>`;
