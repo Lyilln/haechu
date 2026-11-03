@@ -6010,7 +6010,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103084018";
+const BUILD="20261103084522";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9714,7 +9714,7 @@ function viewTieList(){
   const card=r=>{const m=MEMBERS[r.id];return `<button class="t-room ${r.active?"":"off"}" data-a="openChat" data-m="${r.id}">
       ${tieAv(m,"lg")}
       <div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${esc(r.st.chatName)}</b>${r.st.muted?`<span class="t-mute">${TI.bellOff}</span>`:""}${r.active?"":`<span class="t-exp">已到期</span>`}</span><span class="t-room-t">${r.last?ago(r.last.ts):""}</span></div>
-        <p>${r.active?"":"TIE 券已到期・"}${r.last?(r.last.from==="me"?"你：":"")+esc((r.last.ko||r.last.text).split(NICK_TK).join(nickFor(r.id))):"還沒有新訊息"}</p></div>
+        <p>${r.active?"":"TIE 券已到期・"}${r.last?(r.last.from==="me"?"你：":"")+(stkOf(r.last.ko||r.last.text)?"貼圖":esc((r.last.ko||r.last.text).split(NICK_TK).join(nickFor(r.id)))):"還沒有新訊息"}</p></div>
       ${r.unread?`<span class="t-cnt">${r.unread}</span>`:""}${r.st.fav?`<span class="t-fav">${TI.star}</span>`:""}
     </button>`};
   const all=fanRooms().length;
@@ -9748,16 +9748,16 @@ function viewTieRoom(member){
       const read=w.ts<=readTs;
       return sep+`<div class="t-me">
         <div class="t-meta">${read?"":`<button class="t-recall" data-a="tRecall" data-id="${w.id}" aria-label="收回訊息">${TI.trash}</button>`}<span>${read?"":`<em>1</em>`}${timeHM(w.ts)}</span></div>
-        <div class="t-b me" data-lp="${w.id}">${esc(w.text)}</div></div>`;
+        ${stkOf(w.text)?`<div class="t-b me t-stk" data-lp="${w.id}" data-stk="1">${stkImg(w.text)}</div>`:`<div class="t-b me" data-lp="${w.id}">${esc(w.text)}</div>`}</div>`;
     }
     const shown=w.ko||w.text;   // 藝人原文；開啟翻譯後按 A 會在下面顯示中文
     const lang=st.trLang||"zh", wel=w.welcome&&!w.kind&&!isZhText(w.text);   /* 歡迎語不是中文：跟藝人訊息一樣有 A，按了才顯示翻譯 */
     /* 引用的粉絲訊息不是中文：按 A 時一起翻（跟 Bubble 一樣，虛線下面紫字） */
-    const tx=wel?welTr(w,lang):trText(w,lang), mainN=wel||w.ko||(!w.kind&&!isZhText(w.text)), rqN=!!(w.reply&&w.reply.text&&!isZhText(w.reply.text)), rqT=rqN?rqTrGet(w.id,lang):"", asked=tr.has(w.id),
+    const tx=wel?welTr(w,lang):trText(w,lang), mainN=!stkOf(w.ko||w.text)&&(wel||w.ko||(!w.kind&&!isZhText(w.text))), rqN=!!(w.reply&&w.reply.text&&!isZhText(w.reply.text)), rqT=rqN?rqTrGet(w.id,lang):"", asked=tr.has(w.id),
       hasSrc=mainN||rqN; if(st.translate&&asked&&rqN&&!rqT) tieRqAuto(w.id,lang); const canTr=st.translate&&hasSrc&&!(asked&&(!mainN||tx)&&(!rqN||rqT)), showTr=st.translate&&mainN&&asked&&tx, showRq=st.translate&&rqN&&asked&&rqT;
     return sep+`<div class="t-art">${tieAv(m,"ring")}
       <div class="t-art-c"><div class="t-art-n">${st.badge?artBadge(member):""}<b>${esc(st.chatName)}</b>${w.milestone?`<span class="t-ms">🎉 ${w.milestone} 天紀念日</span>`:""}</div>
-        ${w.reply?tieRq(showRq?{text:w.reply.text,tr:rqT}:w.reply,false,!showRq):""}<div class="t-bw">${w.kind?mediaBubble(w):`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
+        ${w.reply?tieRq(showRq?{text:w.reply.text,tr:rqT}:w.reply,false,!showRq):""}<div class="t-bw">${w.kind?mediaBubble(w):stkOf(w.ko||w.text)?`<div class="t-b  t-stk" data-lp="${w.id}" data-stk="1">${stkImg(w.ko||w.text)}</div>`:`<div class="t-b" data-lp="${w.id}">${nickify(esc(shown),member)}${showTr?`<div class="t-tr">${nickify(esc(tx),member)}</div>`:""}</div>`}
           <span class="t-side">${canTr&&!w.kind?`<button class="t-abtn" data-a="tTranslate" data-id="${w.id}" aria-label="翻譯">A</button>`:""}<span class="t-tm">${timeHM(w.ts)}</span></span></div></div></div>`;
   }).join("");
   const days=subDays(member);
@@ -9906,11 +9906,11 @@ function viewTieArtist(mid){
   let lastDay="";
   const body=msgs.map(w=>{
     const d=dayLabel(w.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
-    if(w.from==="artist") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-mecol">${w.reply?tieRq(w.reply,true,true):""}${w.kind?mediaBubble(w):`<div class="t-b me">${nickTag(esc(w.kt?(w.ko||w.text):w.text))}</div>`}</div></div>`;
+    if(w.from==="artist") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-mecol">${w.reply?tieRq(w.reply,true,true):""}${w.kind?mediaBubble(w):stkOf(w.ko||w.text)?`<div class="t-b me t-stk" data-stk="1">${stkImg(w.ko||w.text)}</div>`:`<div class="t-b me">${nickTag(esc(w.kt?(w.ko||w.text):w.text))}</div>`}</div></div>`;
     const sh=fanShown(w,mid);
     return sep+`<div class="t-art"><span class="fan-av">${mascot("msg:"+w.id)}</span>
       <div class="t-art-c"><div class="t-art-n"><span class="from-fan">FROM FAN</span>${sh.member?(sh.name?`<b class="a-nick">${esc(sh.name)}</b>`:`<span class="a-dia" title="Membership">💎</span>`):""}${w.from==="me"&&isAdminAcct()&&!isUni()?`<span class="t-badge soft">示範粉絲</span>`:""}</div>
-      <div class="t-bw has-arw"><div class="t-b" data-lp="${w.id}">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:(!isZhText(w.text)&&anyLang(w.text)?(()=>{ const k="tiefan:"+w.id, tr=cmTrGet(k); if(!tr) setTimeout(()=>trNeedT(k,w.text),0); return `<div class="t-tr" data-trk2="${esc(k)}"${tr?"":" hidden"}>${esc(tr||"")}</div>`; })():"")}</div><button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-meta2"><span class="t-time">${timeHM(w.ts)}</span></span></div></div></div>`;
+      <div class="t-bw has-arw">${stkOf(w.text)?`<div class="t-b  t-stk" data-lp="${w.id}" data-stk="1">${stkImg(w.text)}</div>`:`<div class="t-b" data-lp="${w.id}">${esc(w.text)}${w.zh&&!isZhText(w.text)?`<div class="t-tr">${esc(w.zh)}</div>`:(!isZhText(w.text)&&anyLang(w.text)?(()=>{ const k="tiefan:"+w.id, tr=cmTrGet(k); if(!tr) setTimeout(()=>trNeedT(k,w.text),0); return `<div class="t-tr" data-trk2="${esc(k)}"${tr?"":" hidden"}>${esc(tr||"")}</div>`; })():"")}</div>`}<button class="t-arw" data-a="tieArw" data-id="${w.id}" aria-label="回覆這則訊息"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button><span class="t-meta2"><span class="t-time">${timeHM(w.ts)}</span></span></div></div></div>`;
   }).join("");
   const draft=ui.wDraft||"", Q=tieQ(mid);
   /* 待發送的訊息（照 Bubble：先排好，預覽後一次送出） */
@@ -9952,7 +9952,7 @@ const TQ_MAX=10;
 /* 照片、語音也先排進待發：檔案先只存在這支手機（不上傳），按「傳送」才上傳 */
 async function tqAddMedia(mid,kind,blob,meta){ const Q=tieQ(mid); if(Q.length>=TQ_MAX){ toast(`一次最多 ${TQ_MAX} 則，先把待發訊息送出去吧`); return false; }
   const id="m"+Date.now()+Math.random().toString(36).slice(2,5); await MDB.put(id,blob,true); Q.push({kind,mid:id,...meta,text:kind==="photo"?"📷 照片":"🎙️ 語音",rid:ui.tReply||null}); ui.tReply=null; tieQSet(mid,Q); ui.scrollChat=true; render(); return true; }
-const tqBub=(q,pv)=>q.kind?`<div class="tq-media">${mediaBubble({...q,from:"artist"})}</div>`:(pv?`<div class="tq-bb">${nickTag(esc(q.text))}</div>`:`<div class="t-b me">${nickTag(esc(q.text))}</div>`);
+const tqBub=(q,pv)=>stkOf(q.text)?`<div class="${pv?"tq-bb":"t-b me"} t-stk" data-stk="1">${stkImg(q.text)}</div>`:q.kind?`<div class="tq-media">${mediaBubble({...q,from:"artist"})}</div>`:(pv?`<div class="tq-bb">${nickTag(esc(q.text))}</div>`:`<div class="t-b me">${nickTag(esc(q.text))}</div>`);
 const tieQ=mid=>{ try{ return JSON.parse(localStorage.getItem("hc_tq_"+mid)||"[]")||[]; }catch(e){ return ui["tq_"+mid]||[]; } };
 const tieQSet=(mid,Q)=>{ ui["tq_"+mid]=Q; try{ localStorage.setItem("hc_tq_"+mid,JSON.stringify(Q)); }catch(e){} };
 function openTieQPreview(){ const mid=session().member, m=MEMBERS[mid], Q=tieQ(mid); if(!Q.length) return; const ab=artTieBg(mid);
