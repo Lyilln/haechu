@@ -6167,7 +6167,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103140056";
+const BUILD="20261103140957";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -14180,11 +14180,12 @@ function artNotifList(mid){ const m=MEMBERS[mid]; if(!m) return []; const L=[], 
   S.get(K.comments,[]).filter(c=>my.has(c.postId)&&c.author!=="artist").slice(-30).forEach(c=>L.push({ts:c.ts,k:"cm",t:"新留言",b:`${c.name}：${c.text}`,a:"comments",v:c.postId}));
   const tw=getWhispers().filter(w=>w.member===mid&&w.from!=="artist"); if(tw.length){ const last=tw[tw.length-1]; L.push({ts:last.ts,k:"tie",t:`${WHISPER_NAME} 粉絲回覆`,b:`共 ${tw.length} 則，最新：${last.text}`,a:"tab",v:"whisper"}); }
   coInvites(mid).forEach(l=>L.push({ts:l.co.ts,k:"live",t:"連線邀請",b:`${MEMBERS[l.member].name} 邀請你一起直播：${l.title||""}`,a:"tab",v:"live"}));
+  try{ const d=snDB(), id="m:"+mid; d.stories.filter(s=>!s.del&&s.uid!==id&&(s.ment||[]).some(x=>x.u===id)).slice(-10).forEach(s=>{ const u=snUser(s.uid)||{}; L.push({ts:s.ts,k:"sns",t:`${u.u||u.name||""} 在限時動態中提到你`,b:"",a:"openSns",v:""}); }); d.posts.filter(p=>p.uid!==id&&(p.tags||[]).includes(id)).slice(-10).forEach(p=>{ const u=snUser(p.uid)||{}; L.push({ts:p.ts,k:"sns",t:`${u.u||u.name||""} 在貼文中標註了你`,b:"",a:"openSns",v:""}); }); }catch(e){}
   ptGrants().filter(g=>g.mid===mid&&g.art&&!/^uf[_m]/.test(g.id)&&!/^tka_/.test(g.id)).slice(-20).forEach(g=>L.push({ts:g.ts,k:"pt",t:`${g.n>=0?"獲得":"扣除"} ${fmt(Math.abs(g.n||0))} 積分${g.why?"・"+g.why:""}`,b:"",a:"tab",v:"points"}));
   { const q=tieQuiet().find(x=>x.mid===mid); if(q) L.push({ts:q.at,k:"tie",t:`${WHISPER_NAME} 提醒`,b:q.days>=4?`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，每多一天扣一次${TIE_QUIET_FINE()}。`:`已經 ${q.days} 天沒有傳 ${WHISPER_NAME} 訊息了，明天再沒傳會扣${TIE_QUIET_FINE()}。`,a:"tab",v:"whisper"}); }
   return L.sort((a,b)=>b.ts-a.ts).slice(0,40); }
 const artNUnread=mid=>{ const seen=(S.get(K.artNSeen,{})[mid])||0; return artNotifList(mid).some(x=>x.ts>seen); };
-function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=artNotifList(mid), seen=(S.get(K.artNSeen,{})[mid])||0, IC={ann:I.bell,gn:I.bell,cm:I.chat,tie:TI.send,pt:I.star};
+function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=artNotifList(mid), seen=(S.get(K.artNSeen,{})[mid])||0, IC={ann:I.bell,gn:I.bell,cm:I.chat,tie:TI.send,pt:I.star,sns:I.bell};
   setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>通知</b><span class="sh-sp"></span></header>
     <div class="tiei-body an-list">${L.length?L.map(x=>`<button class="an-it ${x.ts>seen?"new":""}" ${x.a?`data-a="${x.a}" data-v="${esc(x.v)}" data-id="${esc(x.v)}"`:""}><span class="an-ic">${IC[x.k]||I.bell}</span><span class="an-b"><b>${esc(x.t)}</b>${x.b?`<span>${esc(x.b)}</span>`:""}<small>${ago(x.ts)}</small></span></button>`).join(""):`<p class="me-none">還沒有通知</p>`}</div></div>`,"artn");
   const A=S.get(K.artNSeen,{}); A[mid]=Date.now(); S.set(K.artNSeen,A); }
@@ -15214,7 +15215,7 @@ function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&H
     if(Object.keys(dm).length) S.set(K.sns,{...old,dm:{}}); }   /* 舊的大包裡的私訊搬走後清掉（不然大家都讀得到） */
   S.set("daisuki_sn_mig",true); }catch(e){} }
 const SN_SNAP=new WeakMap();
-const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); return d; };
+const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?JSON.parse(JSON.stringify(v.filter(x=>x&&!x.del))):JSON.parse(JSON.stringify(v));   /* 一定要複製一份：直接改到手機記憶體裡的那份，存的時候會以為「沒變」，就不會上傳（限動、按讚、追蹤…都會不見） */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); return d; };
 /* 存檔只存「這次真的改了的地方」：拿讀出來那一刻當基準，跟現在手機裡（可能剛收到別人的新限動、新貼文）合起來，
    不會因為手上拿的是舊的一份，就把別人剛發的蓋掉 */
 const snSave=d=>{ try{ const snap=SN_SNAP.get(d)||{}; Object.keys(SN_PARTS).forEach(p=>{ if(d[p]===undefined) return; const mine=JSON.stringify(d[p]); if(snap[p]!=null&&mine===snap[p]) return;
@@ -15277,6 +15278,8 @@ const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics
 /* 格子裡的小圖：影片用封面，右上角放 Reels 圖示 */
 const snThumb=(p,u)=>{ const m=p.media&&p.media[0]; if(m&&m.type==="video") return `<img class="sn-img" data-mid="${m.poster||""}" alt=""><i class="sn-ri">${si("reels2","sm")}</i>`; return snMedia(p,u,0)+(snCount(p)>1?`<i class="sn-ri">❐</i>`:""); };
 const snCount=p=>p.media?p.media.length:(p.pics||[1]).length;
+/* 被 @／被標註的人收到通知（粉絲帳號＝鈴鐺通知；藝人帳號＝藝人端鈴鐺從限動／貼文資料算出來） */
+function snMentNotify(ids,what){ const me=snMeId(), u=snUser(me)||{}, who=u.u||u.name||"有人"; [...new Set(ids||[])].filter(id=>id&&id!==me).forEach(id=>{ if(String(id).startsWith("u:")) feedPush({kind:"core",self:true,text:`${who} ${what}`},"u:"+id.slice(2)); }); }
 const snStDel=s=>({id:s.id,uid:s.uid,ts:0,del:Date.now()});
 /* 刪貼文：拿掉，同時留一個「已刪除」記號（別支手機才不會又合併回來） */
 const snPDel=(d,pred)=>{ const gone=d.posts.filter(pred); d.posts=[...d.posts.filter(x=>!pred(x)),...gone.map(p=>({id:p.id,uid:p.uid,ts:0,del:Date.now()}))]; return gone.length; };   /* 刪掉的限動：留一個記號，別支手機才不會又把它合併回來 */
@@ -15550,7 +15553,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       const d=snDB(), me=snMeId();
       if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(dr.ov?{ov:dr.ov}:{}),...((dr.stx||[]).length?{stx:dr.stx}:{}),...((dr.ment||[]).length?{ment:dr.ment}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
       else { d.posts.push({id:"sp"+Date.now(),uid:me,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice()}:{})}); toast("已分享"); }
-      snSave(d); ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
+      snSave(d); try{ snMentNotify(dr.mode==="story"?(dr.ment||[]).map(x=>x.u):(dr.tags||[]),dr.mode==="story"?"在限時動態中提到你":"在貼文中標註了你"); }catch(e){} ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
     case "snStory": if(t.dataset.v) snOpenStory(t.dataset.v,t.dataset.o==="1"); break;
     case "snSnd": snSndToggle(); break;
     case "snCmRe": ui.snRe={p:t.dataset.id,c:t.dataset.v,u:t.dataset.u}; snOpenCm(t.dataset.id); setTimeout(()=>{ const i=document.getElementById("snCmIn"); if(i){ i.focus(); const n=i.value.length; try{ i.setSelectionRange(n,n); }catch(e){} } },60); break;
@@ -17599,12 +17602,18 @@ function steStroke(x,W,H,k){ STE.strokes.forEach(s=>{ x.strokeStyle=s.c; x.lineW
 function steDrawAll(){ const c=document.getElementById("steDraw"); if(!c) return; const x=c.getContext("2d"); x.clearRect(0,0,c.width,c.height); steStroke(x,c.width,c.height,c.width/STE_W); }
 /* ---- 合成：照片＋畫＋字＋貼圖 → 1080×1920 ---- */
 /* 後面的模糊底：跟編輯畫面看到的一樣柔（瀏覽器支援就直接模糊；不支援就分好幾次縮小再放大，不會一格一格） */
-function steBlurBg(x,im){ const cv=Math.max(STE_W/im.width,STE_H/im.height)*1.12, w=im.width*cv, h=im.height*cv;
-  if(typeof x.filter==="string"){ x.save(); x.filter="blur(48px) brightness(.78)"; x.drawImage(im,(STE_W-w)/2,(STE_H-h)/2,w,h); x.restore(); if(x.filter!=="none"&&x.filter!=="") return; }
-  let c=document.createElement("canvas"); c.width=STE_W; c.height=STE_H; c.getContext("2d").drawImage(im,(STE_W-w)/2,(STE_H-h)/2,w,h);
-  [4,4,3].forEach(f=>{ const n=document.createElement("canvas"); n.width=Math.max(8,c.width/f|0); n.height=Math.max(14,c.height/f|0); const nx=n.getContext("2d"); nx.imageSmoothingEnabled=true; nx.imageSmoothingQuality="high"; nx.drawImage(c,0,0,n.width,n.height); c=n; });
-  for(let i=0;i<3;i++){ const n=document.createElement("canvas"); n.width=c.width*3; n.height=c.height*3; const nx=n.getContext("2d"); nx.imageSmoothingEnabled=true; nx.imageSmoothingQuality="high"; nx.drawImage(c,0,0,n.width,n.height); c=n; }
-  x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high"; x.drawImage(c,0,0,STE_W,STE_H); x.fillStyle="rgba(0,0,0,.22)"; x.fillRect(0,0,STE_W,STE_H); }
+/* 模糊背景：自己算（iPhone 的 Safari 不支援畫布的 blur，之前用縮小再放大會變成一格一格的馬賽克）
+   做法：縮到 108×192 → 盒狀模糊來回 3 次（接近高斯模糊）→ 平滑放大回 1080×1920 */
+function steBoxBlur(d,w,h,r){ const t=new Uint8ClampedArray(d.length), pass=(src,dst,hor)=>{ const L=hor?w:h, N=hor?h:w;
+    for(let j=0;j<N;j++){ let R=0,G=0,B=0,c=0; const at=i=>hor?(j*w+i)*4:(i*w+j)*4;
+      for(let i=-r;i<=r;i++){ const k=at(Math.min(L-1,Math.max(0,i))); R+=src[k]; G+=src[k+1]; B+=src[k+2]; c++; }
+      for(let i=0;i<L;i++){ const o=at(i); dst[o]=R/c; dst[o+1]=G/c; dst[o+2]=B/c; dst[o+3]=255; const a=at(Math.max(0,i-r)), b2=at(Math.min(L-1,i+r+1)); R+=src[b2]-src[a]; G+=src[b2+1]-src[a+1]; B+=src[b2+2]-src[a+2]; } } };
+  for(let n=0;n<3;n++){ pass(d,t,true); pass(t,d,false); } }
+function steBlurBg(x,im){ const cv=Math.max(STE_W/im.width,STE_H/im.height)*1.12, w=im.width*cv, h=im.height*cv, SW=108, SH=192;
+  const c=document.createElement("canvas"); c.width=SW; c.height=SH; const cx=c.getContext("2d"); cx.imageSmoothingEnabled=true; cx.imageSmoothingQuality="high"; cx.drawImage(im,(SW-w*SW/STE_W)/2,(SH-h*SH/STE_H)/2,w*SW/STE_W,h*SH/STE_H);
+  try{ const id=cx.getImageData(0,0,SW,SH); steBoxBlur(id.data,SW,SH,5); cx.putImageData(id,0,0); }catch(e){}
+  const m=document.createElement("canvas"); m.width=SW*4; m.height=SH*4; const mx=m.getContext("2d"); mx.imageSmoothingEnabled=true; mx.imageSmoothingQuality="high"; mx.drawImage(c,0,0,m.width,m.height);   /* 分兩段放大，比較滑 */
+  x.save(); x.imageSmoothingEnabled=true; x.imageSmoothingQuality="high"; x.drawImage(m,0,0,STE_W,STE_H); x.restore(); x.fillStyle="rgba(0,0,0,.22)"; x.fillRect(0,0,STE_W,STE_H); }
 const steImg=src=>new Promise(r=>{ const i=new Image(); i.crossOrigin="anonymous"; i.onload=()=>r(i); i.onerror=()=>r(null); i.src=src; });
 async function steCompose(withBg){ const c=document.createElement("canvas"); c.width=STE_W; c.height=STE_H; const x=c.getContext("2d");
   if(withBg){ const im=await steImg(STE.url); x.fillStyle="#000"; x.fillRect(0,0,STE_W,STE_H);
