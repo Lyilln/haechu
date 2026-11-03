@@ -5691,6 +5691,12 @@ const PK_SET=new Set(["lvFix","ptRst","gcPity","lvMax","tourTix","tourStamp","on
 function pk(k){ try{ if(!PK_SET.has(k)) return k; const s=SS.get(); if(!s||s.role!=="fan"||(s.admin&&!s.uni)) return k; const e=String(s.email||"").toLowerCase(); return !e||e===DEMO_FAN?k:k+"@"+e; }catch(err){ return k; } }
 /* 管理員切到粉絲端：積分跟自己的藝人身分共用同一份（花的、賺的都記在藝人積分上） */
 const uniArt=()=>{ try{ const s=SS.get(); if(!s||!s.uni||s.role!=="fan") return ""; const m=s.home||(ACCOUNTS[s.email]||{}).member; return m&&MEMBERS[m]?m:""; }catch(e){ return ""; } };
+/* 管理員以前粉絲端那份獨立的積分：一次併進藝人積分（固定編號，不會重複加） */
+function uniPtMerge(){ try{ const s=SS.get(); if(!s||!s.uni||!s.email) return true; const m=s.home||(ACCOUNTS[s.email]||{}).member; if(!m||!MEMBERS[m]) return true;
+  if(HB_ON&&(!HB.tok||HB.ver[K.ptGrants]==null)) return false; const k=K.points+"@"+String(s.email).toLowerCase(), v=store.get(k,undefined), n=Math.round(+(v===undefined?mem[k]:v)||0); if(n<=0) return true;
+  const id="ufm_"+String(s.email).toLowerCase(), L=S.get(K.ptGrants,[])||[]; if(L.some(g=>g.id===id)) return true;
+  L.push({id,to:"art:"+m,mid:m,n,art:1,why:"粉絲身分的積分併入",by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); return true; }catch(e){ return false; } }
+setTimeout(function uniPtGo(){ if(!uniPtMerge()) setTimeout(uniPtGo,5000); },9000);
 const S = {
   get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); if(k===K.points){ const m=uniArt(); if(m) return Math.max(0,((typeof pointsOf==="function"&&pointsOf(m))||{}).net||0); } k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
   set(k,v){ if(k===K.whispers&&tie2On()){ tieAllSet(v); return; }
@@ -5995,7 +6001,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103041328";
+const BUILD="20261103053832";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -6422,7 +6428,7 @@ function myLevel(){ const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.mem
   const fl=+S.get(K.lvMax,0)||0; if(li<fl){ li=fl; si=0; } else if(li>fl) S.set(K.lvMax,li);
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
   return {li,si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],art,next:nx&&(!art&&nx[0]>0?null:{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)})}; }
-function lvLine(){ try{ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:!v.art?(adm?"":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
+function lvLine(){ try{ if(uniArt()) return "";   /* 有藝人身分的人在粉絲端：只看積分，等級看藝人端 */ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:!v.art?(adm?"":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
 /* 藝人帳號的等級：用藝人自己的積分收入（分潤後實得）算，出道後至少 R1 */
 function artLevel(mid){ const p=Math.max(0,(pointsOf(mid)||{}).net||0); let li=1,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v&&i>=1){ li=i; si=j; } }));
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null; return {li,si,p,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],next:nx&&{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }
