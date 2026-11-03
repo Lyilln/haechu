@@ -4832,6 +4832,11 @@ html[data-theme] :is(.t-msgs,.t-page) .t-b.t-stk,html[data-theme] :is(.t-msgs,.t
 html.stko .t-foot{bottom:var(--stkh,300px)!important;transform:none!important;padding-bottom:8px!important}
 /* 輸入框變高時：笑臉固定在右下角（照 LINE），不跟著跑到中間 */
 .t-inp:has(textarea.ag) .t-smile{top:auto!important;bottom:7px!important;transform:none!important}
+/* TIE 輸入列：一行時跟原本一樣高、按鈕跟框對齊中間；框變高時按鈕留在最下面（照 LINE） */
+.t-inp:has(textarea.ag){min-height:36px;box-sizing:border-box}
+.t-inp textarea.ag{line-height:22px!important;padding-top:7px!important;padding-bottom:7px!important}
+.t-foot:has(textarea.ag)>:not(.t-inp){align-self:flex-end;margin-bottom:var(--tfm,5px)}
+.t-foot:has(textarea.ag)>.t-send{margin-bottom:8px}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5899,7 +5904,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261103023005";
+const BUILD="20261103023302";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
@@ -16997,7 +17002,7 @@ setInterval(()=>{ AUD_ALL.forEach(m=>{ if(m.paused&&!m.isConnected) AUD_ALL.dele
 const AG_LINES=8;
 function agFit(el){ if(!el||!el.classList||!el.classList.contains("ag")) return; const cs=getComputedStyle(el), lh=parseFloat(cs.lineHeight)||20, pad=(parseFloat(cs.paddingTop)||0)+(parseFloat(cs.paddingBottom)||0), max=lh*AG_LINES+pad;
   const h0=el.style.height; el.style.height="auto"; const h=Math.min(el.scrollHeight,max); el.style.height=Math.ceil(h)+"px"; el.classList.toggle("scroll",el.scrollHeight>max+1);
-  if(h0!==el.style.height){ const ms=el.id==="win"&&document.querySelector(".t-msgs.kbbox"), fe=ms?ms.scrollHeight-ms.scrollTop-ms.clientHeight:null;
+  if(h0!==el.style.height){ const ms=el.id==="win"&&el.value&&document.querySelector(".t-msgs.kbbox"),   /* 送出清空時不要拉：讓聊天照原本的方式跳到剛送出的那則 */ fe=ms?ms.scrollHeight-ms.scrollTop-ms.clientHeight:null;
     try{ dispatchEvent(new Event("scroll")); }catch(e){}
     if(ms) [0,1,2].forEach(i=>setTimeout(()=>requestAnimationFrame(()=>{ if(!ms.isConnected) return; ms.scrollTop=ms.scrollHeight-ms.clientHeight-fe; }),i*60)); } }   /* TIE：框變高變矮時，聊天停在原本看的地方（貼著最新一則就繼續貼著），不跳 */   /* 框變高：讓 TIE／直播的「輸入列貼鍵盤」重新量一次 */
 const agFitAll=()=>document.querySelectorAll("textarea.ag").forEach(agFit);
