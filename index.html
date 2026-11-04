@@ -6334,7 +6334,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104011408";
+const BUILD="20261104011420";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -11591,7 +11591,7 @@ function newsAuto(raw){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...
     const dimg=(db&&db.teaser)||gPhotoMap()[g.id]||""; L.push({id,tag:"debut",ts:t,gids:[g.id],...(dimg?{img:dimg}:{}),...nwDebut(id,{name:g.name,solo:!!g.solo,ms:g.solo?[]:ms,t,song:s0?s0.title:(db&&db.song)||"",rtype:(s0&&s0.rtype)||(db&&db.rtype)||"",today:today(t),co:g.co||""})}); });
   /* 出道預告、回歸預告：官方公告發出的那天 */
   const AN=getAnns(), annT=aid=>(AN.find(a=>a.id===aid)||{}).ts||0;
-  DB.filter(x=>x.annId&&x.name&&x.status!=="gone"&&x.day).forEach(x=>{ const t=annT(x.annId); if(!t) return; const id="au_dbp_"+x.id; L.push({id,tag:"debut",ts:t,gids:x.gid?[x.gid]:[],...nwDebutPre(id,{name:x.name,day:x.day,t,co:x.co||"",grp:x.kind==="group",nm:x.kind==="group"?1+(x.mems||[]).length:0,nt:[x.teaser,...(x.teasers||[])].filter(Boolean).length}),...(x.teaser?{img:x.teaser}:{})}); });
+  DB.filter(x=>x.annId&&x.name&&x.status!=="gone"&&x.day).forEach(x=>{ const t=annT(x.annId); if(!t) return; const id="au_dbp_"+x.id; L.push({id,tag:"debut",ts:t,gids:x.gid?[x.gid]:[],...nwDebutPre(id,{name:x.name,day:x.day,t,co:((groupOf(x.gid)||{}).co)||x.co||"",grp:x.kind==="group",nm:x.kind==="group"?1+(x.mems||[]).length:0,nt:[x.teaser,...(x.teasers||[])].filter(Boolean).length}),...(x.teaser?{img:x.teaser}:{})}); });
   (m.pre||[]).filter(p=>p.annId&&p.day).forEach(p=>{ const g=groupOf(p.gid), t=annT(p.annId); if(!g||!t) return; const id="au_cbp_"+(p.id||p.annId); const n=1+songs.filter(x=>x.gid===p.gid&&!x.debut).length, prev=Math.max(0,...grpOccs(p.gid).filter(x=>x<t)); L.push({id,tag:"cb",ts:t,gids:[p.gid],...nwCbPre(id,{g:g.name,s:p.title||"新曲",day:p.day,t,co:g.co||"",n,gap:prev?Math.round((p.day-prev)/D):0}),...(p.teaser?{img:p.teaser}:{})}); });
   const cbN={}; songs.slice().sort((a,b)=>idTs(a.id,/^s/)-idTs(b.id,/^s/)).forEach(s=>{ const t=idTs(s.id,/^s/), g=groupOf(s.gid); if(!t||!g||s.debut) return; cbN[s.gid]=(cbN[s.gid]||0)+1; const n=cbN[s.gid], id="au_cb_"+s.id;
     const prev=Math.max(gT0[s.gid]||0,...songs.filter(x=>x.gid===s.gid&&idTs(x.id,/^s/)<t).map(x=>idTs(x.id,/^s/))), gap=prev?Math.round((t-prev)/D):0;
