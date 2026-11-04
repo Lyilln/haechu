@@ -6334,7 +6334,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104010711";
+const BUILD="20261104011210";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18437,9 +18437,9 @@ function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec
   if(String(pr.trk||"").trim()||pr.trkImg) it.push({k:"trk"});
   if(pr.vid&&pr.vid.mid) it.push({k:pr.vk==="film"?"film":"medley",vid:pr.vid});
   if(s.mvt&&s.mvt.mid) it.push({k:"mvt",vid:s.mvt});
-  const d0=dayStart(s.appr)+D, dl=dayStart(s.day)-D, nd=Math.max(1,Math.round((dl-d0)/D)+1);
+  const st=Math.max(s.appr,s.day-PRE_ANN), d0=dayStart(st)+D, dl=dayStart(s.day)-D, nd=Math.max(1,Math.round((dl-d0)/D)+1);
   /* 排程表：核准的當下就發；其他從隔天開始平均排 */
-  const R=it.length-1; it.forEach((x,i)=>{ let ts=i===0?s.appr:d0>dl?s.appr+i*60e3:d0+Math.min(nd-1,Math.floor((i-1)*nd/Math.max(1,R)))*D+at; x.ts=Math.min(ts,s.day-60e3); x.id=`cp_${s.id}_${i}`; x.src=s; });
+  const R=it.length-1; it.forEach((x,i)=>{ let ts=i===0?st:d0>dl?st+i*60e3:d0+Math.min(nd-1,Math.floor((i-1)*nd/Math.max(1,R)))*D+at; x.ts=Math.min(ts,s.day-60e3); x.id=`cp_${s.id}_${i}`; x.src=s; });
   it.push({k:"rel",ts:s.day,id:`cp_${s.id}_rel`,src:s,imgs:[s.teaser].filter(Boolean)}); return it; }
 const coPosts=()=>{ const now=Date.now(); return promoSrcs().flatMap(promoPlan).filter(x=>x.ts<=now).sort((a,b)=>b.ts-a.ts); };
 const promoTitle=x=>{ const s=x.src, nm=s.k==="db"?`${s.name}${s.title?`《${s.title}》`:""}`:`${s.name}《${s.title}》`; return x.k==="concept"&&x.n?`${nm} ${PR_KIND.concept}・${x.n}`:`${nm} ${s.k==="db"&&x.k==="sched"?"DEBUT ":s.k==="cb"&&x.k==="sched"?"COMEBACK ":""}${PR_KIND[x.k]}`; };
@@ -18460,7 +18460,7 @@ function promoTrkCard(s){ const T=String((s.pr||{}).trk||"").split("\n").map(x=>
 const hm=ts=>{ const d=new Date(ts); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
 
 /* ---------- 一則公司官方貼文 ---------- */
-function coPostCard(x){ if(x.k==="news") return coNewsCard(x); if(x.k==="note") return coNoteCard(x); const s=x.src, c=coInfo(s.co), pr=s.pr||{}; let body="";
+function coPostCard(x){ if(x.k==="ann"){ const a=x.ann; return `<article class="card post cp">${coHead(x.co,a.ts)}<p class="cp-x cp-body">${esc(a.text)}</p>${a.img?`<button class="cp-img cp-aimg" data-a="cpPh" data-v="${esc(a.img)}"><img src="${esc(a.img)}" alt=""></button>`:""}</article>`; } if(x.k==="news") return coNewsCard(x); if(x.k==="note") return coNoteCard(x); const s=x.src, c=coInfo(s.co), pr=s.pr||{}; let body="";
   if(x.k==="sched") body=pr.sched?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.sched)}"><img src="${esc(pr.sched)}" alt=""></button>`:promoSchedCard(s);
   else if(x.k==="trk") body=pr.trkImg?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.trkImg)}"><img src="${esc(pr.trkImg)}" alt=""></button>`:promoTrkCard(s);
   else if(x.vid) body=`<button class="cp-vid" data-a="cpVid" data-v="${esc(x.vid.mid)}">${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:""}<i>▶</i></button>`;
@@ -18473,7 +18473,7 @@ function feedMix(posts){ const C=coPosts().map(x=>({ts:x.ts,h:()=>coPostCard(x)}
   setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
   return [...P,...C].sort((a,b)=>b.ts-a.ts).map(o=>o.h()).join(""); }
 /* 置頂大卡用：最近 7 天的官方貼文（有照片的） */
-const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>now-x.ts<7*864e5).map(x=>x.k==="news"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.news.title}`,img:x.news.img||""}:x.k==="note"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.note.title}`,img:""}:({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${promoTitle(x)}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
+const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>x.k!=="ann"&&now-x.ts<7*864e5).map(x=>x.k==="news"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.news.title}`,img:x.news.img||""}:x.k==="note"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.note.title}`,img:""}:({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${promoTitle(x)}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
 
 /* ---------- 申請表裡的欄位 ---------- */
 function promoFields(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); pr.cv=pr.cv||[];
@@ -18529,17 +18529,21 @@ function coNewsPosts(){ const now=Date.now(), H=S.get(K.newsHide,{})||{}, E=S.ge
   return N.filter(n=>n.co&&n.tag!=="hr"&&!H[n.id]&&n.ts0<=now).map(n=>{ const e=E[n.id], nn=e?{...n,...e}:n; return {k:"news",id:"cn_"+n.id,ts:n.ts0,news:nn,co:n.co,out:n.ts<=now}; }); }
 const coNotePosts=()=>coNotes().filter(x=>x.ts<=Date.now()).map(x=>({k:"note",id:"cnt_"+x.id,ts:x.ts,note:x,co:x.co}));
 const coOfPost=x=>x.co||(x.src&&x.src.co)||"";
+/* HAECHU 的出道／回歸預告公告：算是那間公司發的 */
+function annCo(a){ const t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return x?(x.co||coOfGid(x.gid)):""; }
+  if(a.pre==="cb"||/回歸預告｜/.test(t)){ const P=getMShow().pre||[], p=P.find(y=>y.id===a.ref)||P.find(y=>t.includes(`《${y.title}》`)), c=getCbr().find(y=>y.id===(p&&p.req)); return p?coOfGid(p.gid):c?coOfGid(c.gid):""; } return ""; }
+const coAnnPosts=()=>getAnns().map(a=>({k:"ann",id:"ca_"+a.id,ts:a.ts,ann:a,co:annCo(a)})).filter(x=>x.co);
 /* 全部官方貼文（all＝公司頁要看全部歷史） */
-function coFeed(co,all){ const now=Date.now(); return [...promoSrcs(all).flatMap(promoPlan).filter(x=>x.ts<=now),...coNewsPosts(),...coNotePosts()].filter(x=>coOfPost(x)&&(!co||coOfPost(x)===co)).sort((a,b)=>b.ts-a.ts); }
+function coFeed(co,all){ const now=Date.now(); return [...promoSrcs(all).flatMap(promoPlan).filter(x=>x.ts<=now),...coNewsPosts(),...coNotePosts(),...coAnnPosts()].filter(x=>coOfPost(x)&&(!co||coOfPost(x)===co)).sort((a,b)=>b.ts-a.ts); }
 const newsBase=()=>route().role==="artist"?"#/artist?tab=foc&p=news":"#/fan/core?p=news";
 function coNewsCard(x){ const n=x.news, p=String(n.body||"").split(/\n+/).map(s=>s.trim()).filter(Boolean)[0]||"";
   return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p>${p?`<p class="cp-x cp-clip">${esc(p)}</p>`:""}${n.img?(x.out?`<button class="cp-img cp-nimg" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}"><img src="${esc(n.img)}" alt="" loading="lazy"></button>`:`<span class="cp-img cp-nimg"><img src="${esc(n.img)}" alt="" loading="lazy"></span>`):""}${x.out?`<button class="cp-more" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}">閱讀全文 ›</button>`:""}</article>`; }
 function coNoteCard(x){ const n=x.note;
   return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p><p class="cp-x cp-body">${esc(n.body||"")}</p></article>`; }
 /* LOVE 動態最上面：公司官方公告（置頂，左右滑） */
-function coPinFeed(){ const now=Date.now(), A=(typeof annLive==="function"?annLive():[]).filter(a=>now-a.ts<14*864e5||annPre(a)), L=coFeed("",false).filter(x=>now-x.ts<7*864e5).slice(0,10); if(!A.length&&!L.length) return "";
-  const ac=a=>`<article class="card post cp">${coHead("",a.ts)}<p class="cp-x cp-body">${esc(a.text)}</p>${a.img?`<button class="cp-img cp-aimg" data-a="cpPh" data-v="${esc(a.img)}"><img src="${esc(a.img)}" alt=""></button>`:""}</article>`;
-  return `<h2 class="mf-h">公司官方公告</h2><div class="cp-pin">${A.map(a=>`<div class="cp-pi">${ac(a)}</div>`).join("")}${L.map(x=>`<div class="cp-pi">${coPostCard(x)}</div>`).join("")}</div>`; }
+function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), L=coFeed("",false).filter(x=>x.k==="ann"?live.has(x.ann.id):now-x.ts<7*864e5);
+  const A=L.filter(x=>x.k==="ann"), B=L.filter(x=>x.k!=="ann").slice(0,10); if(!A.length&&!B.length) return "";   /* 出道／回歸預告排最前面 */
+  return `<h2 class="mf-h">公司官方公告</h2><div class="cp-pin">${[...A,...B].map(x=>`<div class="cp-pi">${coPostCard(x)}</div>`).join("")}</div>`; }
 /* 公司頁：歷來公告＋旗下藝人（只列 App 裡的團） */
 function openCoPage(co,tab){ const c=coInfo(co), G=GROUPS.filter(g=>g.co===co&&!getDebut().some(x=>x.gid===g.id&&x.status==="pre")), t=tab||"ann";
   const ann=coFeed(co,true), art=G.map(g=>{ const ms=grpMembers(g.id).filter(m=>MEMBERS[m]&&!MEMBERS[m].official);
