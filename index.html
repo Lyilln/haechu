@@ -4937,6 +4937,11 @@ html.tie2l .app>:not(.t-bgl){z-index:1}
 .dl-foot .cm-in textarea.ag{padding:14px 0!important;line-height:1.45;font-size:16px;color:#fff;resize:none;max-height:calc(1.45em * 8 + 28px)}
 .dl-foot .cm-in textarea.ag::placeholder{color:rgba(255,255,255,.55)}
 .dl-foot .cm-in .mr-send{margin-bottom:6px!important}
+/* 待發訊息預覽：蓋滿整個畫面，下面的輸入列不能露出來 */
+.tq-pv{z-index:600!important;top:0!important;bottom:0!important}
+html.tie2l .tq-pv{top:var(--vvt,0px)!important;bottom:auto!important;height:var(--vvh,100dvh)!important}
+html:has(.tq-pv) .app>.t-foot,html:has(.tq-pv) #stkDock{visibility:hidden}
+#layer:has(.tq-pv){z-index:600}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5967,6 +5972,13 @@ html[data-theme="dark"] .pin-dots i{background:rgba(255,255,255,.22)}
 .cp-tt{font-family:"Playfair Display",Georgia,"Noto Serif TC",serif!important;font-style:italic;font-weight:700;letter-spacing:.005em;background:none!important;-webkit-background-clip:border-box!important;background-clip:border-box!important;color:var(--ink)!important;font-size:1.12em;padding-right:0}
 .cp-nm{font-family:"Playfair Display",Georgia,"Noto Serif TC",serif;font-style:normal;font-weight:700;letter-spacing:.01em;font-size:1.06em}
 html[data-theme="dark"] .cp-tt{color:#F3F1F7!important}
+/* 小提醒：霧面深色膠囊＋小愛心，輕輕彈出來、3 秒後淡掉 */
+.toast,html[data-theme] body .toast{display:flex;align-items:center;gap:8px;padding:10px 16px 10px 12px!important;border-radius:999px!important;background:rgba(28,22,40,.78)!important;color:#fff!important;border:1px solid rgba(255,255,255,.12)!important;-webkit-backdrop-filter:blur(18px) saturate(160%)!important;backdrop-filter:blur(18px) saturate(160%)!important;box-shadow:0 10px 30px -12px rgba(60,20,120,.55)!important;font-size:13.5px;font-weight:700;letter-spacing:.01em;animation:toastIn .38s cubic-bezier(.2,1.4,.4,1) both}
+.toast.out{animation:toastOut .26s ease forwards}
+.toast-ic{flex:none;width:20px;height:20px;border-radius:50%;background:linear-gradient(135deg,#B794FF,#FF8FC7);position:relative}
+.toast-ic::after{content:"♥";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:11px;font-style:normal;line-height:1}
+@keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.9)}to{opacity:1;transform:none}}
+@keyframes toastOut{to{opacity:0;transform:translateY(6px) scale(.96)}}
 
 </style>
 </head>
@@ -6396,8 +6408,8 @@ try{ if(HB_ON&&"serviceWorker" in navigator) navigator.serviceWorker.register("s
 const b64u=s=>{ const p="=".repeat((4-s.length%4)%4), b=atob((s+p).replace(/-/g,"+").replace(/_/g,"/")); return Uint8Array.from([...b].map(c=>c.charCodeAt(0))); };
 async function pushSub(){ try{ const r=await navigator.serviceWorker.ready; return await r.pushManager.getSubscription(); }catch(e){ return null; } }
 /* 登入後：這支手機已經開過推播，就改成通知現在登入的這個帳號 */
-async function pushResync(){ ui.pushOn=false; if(!pushSupported()||Notification.permission!=="granted") return; const s=await pushSub(); if(!s) return;
-  try{ await hbFetch("/rest/v1/rpc/save_push",{method:"POST",body:{p_sub:s.toJSON()}}); ui.pushOn=true; }catch(e){} }
+async function pushResync(){ ui.pushOn=false; try{ if(!pushSupported()||Notification.permission!=="granted") return; const s=await pushSub(); if(!s) return;
+  try{ await hbFetch("/rest/v1/rpc/save_push",{method:"POST",body:{p_sub:s.toJSON()}}); ui.pushOn=true; }catch(e){} } finally{ ui.pushChk=true; } }
 async function pushEnable(){
   if(isIOS&&!isStandalone()){ tieModal("先加入主畫面","iPhone 要從主畫面的 HAECHU 打開，才能收到通知：<br>1. 點 Safari 下方的分享按鈕<br>2. 選「加入主畫面」<br>3. 從主畫面的 HAECHU 打開，再到這裡開啟",`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); return; }
   if(!pushSupported()){ toast("這支手機的瀏覽器不支援通知"); return; }
@@ -6411,7 +6423,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104054253";
+const BUILD="20261104055143";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9917,7 +9929,7 @@ function viewNotifs(){
         ${groups.map(g=>`<button class="chip ${ui.notifFilter===g.id?"on":""}" data-a="nf" data-v="${g.id}">${g.name}</button>`).join("")}
       </div>
       ${pinnedHtml()}
-      ${HB_ON&&!ui.pushOn?`<button class="btn btn-soft btn-block" style="margin:0 0 12px" data-a="pushToggle">開啟手機通知</button>`:""}
+      ${HB_ON&&ui.pushChk&&!ui.pushOn&&!(typeof pushSupported==="function"&&pushSupported()&&Notification.permission==="granted")?`<button class="btn btn-soft btn-block" style="margin:0 0 12px" data-a="pushToggle">開啟手機通知</button>`:""}
       <span class="nz-pill soft">一般粉絲專屬動態</span>
       ${list.length?`<div class="nz-list">${list.map(card).join("")}</div>`:`<p class="nz-empty">尚無一般互動訊息 🔮</p>`}
       ${list.length?`<div class="nz-foot"><button data-a="notifClear">清除所有通知</button></div>`:""}
@@ -12212,12 +12224,13 @@ let toastTimer;
 const OK_RE=/^(✅\s*)?已|完成|成功|設定為|換成|恢復|✨$|💜$/;
 function tieToast(msg){ ui._tieOk=true; try{ toast(msg); } finally{ ui._tieOk=false; } }
 function toast(msg,actLabel,actName){
-  try{ const s=session(), r=route(); if(!ui._tieOk&&s&&(s.role==="artist"||r.role==="artist")&&OK_RE.test(String(msg).replace(/<[^>]+>/g,"").trim())) return; }catch(e){}
+  /* 「已傳送」這類完成小提醒：只在 TIE 裡出現（粉絲、藝人都一樣）；提醒錯誤、要你做事的照常出現 */
+  try{ const inTie=ui._tieOk||!!document.querySelector(".app > main.t-msgs"); if(!inTie&&OK_RE.test(String(msg).replace(/<[^>]+>/g,"").trim())) return; }catch(e){}
   clearTimeout(toastTimer);
   const el=document.createElement("div"); el.className="toast"; if(ui.sheet){el.style.bottom="auto";el.style.top="calc(env(safe-area-inset-top,0px) + 14px)";} el.setAttribute("role","status");
-  el.innerHTML=`<span>${msg}</span>${actLabel?`<button data-a="${actName}">${actLabel}</button>`:""}`;
+  el.innerHTML=`<i class="toast-ic" aria-hidden="true"></i><span>${msg}</span>${actLabel?`<button data-a="${actName}">${actLabel}</button>`:""}`;
   document.querySelectorAll(".toast").forEach(t=>t.remove()); document.body.appendChild(el);
-  toastTimer=setTimeout(()=>el.remove(),actLabel?4200:2600);
+  toastTimer=setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),260); },actLabel?4200:3000);
 }
 /* 換頁就收掉提示（有按鈕的除外），才不會一直蓋著下一頁 */
 window.addEventListener("hashchange",()=>{ document.querySelectorAll(".toast").forEach(t=>{ if(!t.querySelector("button")) t.remove(); }); });
@@ -17534,11 +17547,11 @@ function stkPanel(){ const tab=STK_SP.includes(ui.stkTab)?ui.stkTab:"cat";
 /* 貼圖區：跟 LINE 一樣，出現在原本鍵盤的位置（輸入列下面），不是另外跳一個框 */
 const stkDockOn=()=>document.documentElement.classList.contains("stko");
 function stkDock(on){ let d=document.getElementById("stkDock"); clearTimeout(stkDock.t);
-  if(!on){ if(d) d.remove(); document.documentElement.classList.remove("stko"); document.documentElement.style.removeProperty("--stkh"); try{ tieFootPad(); }catch(e){} return; }
+  if(!on){ if(d) d.remove(); stkDock.el=null; document.documentElement.classList.remove("stko"); document.documentElement.style.removeProperty("--stkh"); try{ tieFootPad(); }catch(e){} return; }
   /* 鍵盤還開著：先收鍵盤，等它完全收好（LINE 也是這樣）再出現，才不會疊在一起、聊天也不會亂跳 */
   const vv=window.visualViewport, kbUp=()=>vv&&vv.height<(screen.height||innerHeight)*0.8, a=document.activeElement; if(a&&a.id==="win") a.blur();
   const t0=Date.now(), wait=()=>{ if(kbUp()&&Date.now()-t0<900){ stkDock.t=setTimeout(wait,60); return; } stkDock.t=setTimeout(show,Date.now()-t0>80?320:0); }; wait();
-  function show(){ if(tieFxOn()){ const app=document.querySelector(".app"); if(!d){ d=document.createElement("div"); d.id="stkDock"; d.setAttribute("role","region"); d.setAttribute("aria-label","貼圖"); } if(app&&d.parentNode!==app) app.appendChild(d); d.innerHTML=stkPanel(); document.documentElement.classList.add("stko"); return; }   /* 固定外殼：貼圖區就是框裡最下面一塊，訊息區自己會讓開 */
+  function show(){ if(tieFxOn()){ const app=document.querySelector(".app"); if(!d){ d=document.createElement("div"); d.id="stkDock"; d.setAttribute("role","region"); d.setAttribute("aria-label","貼圖"); } stkDock.el=d; if(app&&d.parentNode!==app) app.appendChild(d); d.innerHTML=stkPanel(); document.documentElement.classList.add("stko"); return; }   /* 固定外殼：貼圖區就是框裡最下面一塊，訊息區自己會讓開 */
     const se=document.scrollingElement||document.documentElement, fe=Math.max(0,se.scrollHeight-(scrollY+innerHeight));
     if(!d){ d=document.createElement("div"); d.id="stkDock"; d.setAttribute("role","region"); d.setAttribute("aria-label","貼圖"); document.body.appendChild(d); }
     d.innerHTML=stkPanel(); document.documentElement.classList.add("stko");
@@ -17574,10 +17587,11 @@ addEventListener("scroll",()=>{ if(!tieFxOn()) return; if(scrollY) scrollTo(0,0)
 document.addEventListener("scroll",e=>{ const el=e.target; if(!tieFxOn()||!el||!el.matches||!el.matches("main.t-msgs")) return; T2.fe=Math.max(0,-el.scrollTop); T2.key=location.hash; },true);
 /* 每次畫完：是 TIE 聊天室就套固定外殼 */
 function tie2After(pgChg,toEnd){ const ms=document.querySelector(".app > main.t-msgs"), on=TIE2()&&!!ms&&!!document.getElementById("wform"), de=document.documentElement;
-  if(!on){ if(de.classList.contains("tie2l")){ de.classList.remove("tie2l","kb"); de.style.removeProperty("--vvh"); de.style.removeProperty("--vvt"); } return false; }
+  if(!on){ if(de.classList.contains("stko")&&!document.getElementById("stkDock")){ de.classList.remove("stko"); de.style.removeProperty("--stkh"); } if(de.classList.contains("tie2l")){ de.classList.remove("tie2l","kb"); de.style.removeProperty("--vvh"); de.style.removeProperty("--vvt"); } return false; }
   de.classList.add("tie2l"); tie2Wrap(ms); tie2Sync();
   const go=pgChg||toEnd||T2.key!==location.hash?0:T2.fe; ms.scrollTop=-go; requestAnimationFrame(()=>{ ms.scrollTop=-go; }); if(!go) T2.fe=0; T2.key=location.hash;
-  const d=document.getElementById("stkDock"); if(d&&d.parentNode!==ms.parentNode) ms.parentNode.appendChild(d);
+  const d=document.getElementById("stkDock")||(de.classList.contains("stko")&&stkDock.el)||null; if(d&&d.parentNode!==ms.parentNode) ms.parentNode.appendChild(d);
+  if(!d&&de.classList.contains("stko")){ de.classList.remove("stko"); de.style.removeProperty("--stkh"); }
   return true; }
 /* 藝人送出（只換訊息區）之後：重新包一層、回到最新一則 */
 function tie2Patched(ms){ if(!tieFxOn()||!ms) return false; tie2Wrap(ms); ms.scrollTop=0; T2.fe=0; return true; }
