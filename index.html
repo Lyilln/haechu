@@ -3716,6 +3716,11 @@ body:has(.nav) main.page{padding-bottom:calc(env(safe-area-inset-bottom,0px) + 1
 .uni-quick .uni-ann{margin-top:0;justify-content:flex-start}
 .uni-out{margin-top:32px}
 .pt-d b.neg{color:#E5484D}
+/* 重播：深色模式的藝人留言（主播、連線的藝人）字要看得清楚 */
+html[data-theme="dark"] .rp2-a>div{background:rgba(255,255,255,.1)!important;border-color:rgba(255,255,255,.14)!important}
+html[data-theme="dark"] .rp2-a.rp2-g2>div{background:rgba(255,120,180,.14)!important;border-color:rgba(255,150,200,.28)!important}
+html[data-theme="dark"] .rp2-a p,html[data-theme="dark"] .rp2-a [data-trk]{color:#F3F1F7!important}
+html[data-theme="dark"] .rp2-a b{color:#C9C3D6!important}html[data-theme="dark"] .rp2-a q{color:#A9A3B8!important}
 
 /* ===== 管理員一體化 ===== */
 .ui-ic{position:relative;display:grid;place-items:center;width:24px;height:24px}
@@ -4927,6 +4932,11 @@ html.tie2l .app>:not(.t-bgl){z-index:1}
 .stv{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(100cqw,calc(100cqh * 9 / 16));height:min(100cqh,calc(100cqw * 16 / 9));container-type:inline-size;pointer-events:none;z-index:2}
 .stv-it{position:absolute;transform-origin:center}
 .stv-men{position:absolute;width:40%;height:7%;transform:translate(-50%,-50%);border:0;background:transparent;pointer-events:auto}
+/* 直播輸入框跟 TIE 一樣：字多了框會長高（最多 8 行），不會硬擠在一行裡 */
+.dl-foot .cm-in{height:auto!important;min-height:52px;align-items:flex-end!important;padding:0 6px 0 20px!important}
+.dl-foot .cm-in textarea.ag{padding:14px 0!important;line-height:1.45;font-size:16px;color:#fff;resize:none;max-height:calc(1.45em * 8 + 28px)}
+.dl-foot .cm-in textarea.ag::placeholder{color:rgba(255,255,255,.55)}
+.dl-foot .cm-in .mr-send{margin-bottom:6px!important}
 
 /* ===== 綜藝 ===== */
 .vs .section-h{margin-top:14px}
@@ -5819,6 +5829,7 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 /* 教學說明卡：上面一行「第幾步」＋「結束教學」 */
 .coach-th{display:flex;align-items:center;justify-content:space-between;gap:8px}
 .coach-end{border:0;background:none;padding:2px 0;font:600 12px/1.2 inherit;color:var(--muted,#8a8494);text-decoration:underline;text-underline-offset:2px}
+.mu-wk button{background:none!important;box-shadow:none!important;border:0!important}
 
 /* 公司官方帳號 */
 .co-av{width:40px;height:40px;border-radius:50%;flex:0 0 40px;overflow:hidden;display:grid;place-items:center;background:var(--card2,#f2eff7);font-weight:700}
@@ -5926,6 +5937,14 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .cp-swd{display:flex;justify-content:center;gap:5px;margin-top:8px}.cp-swd i{width:6px;height:6px;border-radius:50%;background:var(--muted,#999);opacity:.35;transition:opacity .2s,transform .2s}.cp-swd i.on{opacity:1;transform:scale(1.2);background:var(--accent,#8b5cf6)}
 .post.cp>.cp-one{margin-top:10px;border-radius:14px}.post.cp>.cp-one img{width:100%;display:block}
 .cp-one-w{margin-bottom:8px}.cp-one-w .post{margin:0}
+/* 置頂大卡：左右滑 */
+.pin-trk{display:flex;align-items:stretch;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;gap:0;margin:0 -2px;padding:2px}.pin-trk::-webkit-scrollbar{display:none}
+.pin-trk .pin-card{flex:0 0 100%;scroll-snap-align:center;scroll-snap-stop:always;display:flex;flex-direction:column;box-sizing:border-box}
+.pin-trk .pin-card p{flex:1;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.pin-dots{display:flex;justify-content:center;gap:6px;padding-top:10px}
+.pin-dots i{width:6px;height:6px;border-radius:999px;background:#E4DAFB;transition:width .3s ease,background .3s ease}
+.pin-dots i.on{width:16px;background:linear-gradient(90deg,#A47BFF,#F472B6)}
+html[data-theme="dark"] .pin-dots i{background:rgba(255,255,255,.22)}
 
 </style>
 </head>
@@ -6370,7 +6389,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104034439";
+const BUILD="20261104040558";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9836,20 +9855,21 @@ const annOn=p=>{ const r=p.rel||p.day; return r>Date.now()&&p.day-Date.now()<=7*
 const annLive=()=>getAnns().filter(a=>{ const p=annPre(a); return !p||annOn(p); });
 const preAnns=()=>getAnns().map(a=>({a,p:annPre(a)})).filter(x=>x.p&&annOn(x.p)).sort((x,y)=>x.p.day-y.p.day);
 function preBanner(){ const L=preAnns(); if(!L.length) return ""; return `<div class="pre-bn">${L.map(({a,p})=>`<button data-a="preAnn" data-id="${a.id}">${a.img?`<span class="pre-bi" style="background-image:url('${esc(a.img)}')"></span>`:""}<b>📢 即將${p.k==="db"?"出道":"回歸"}</b><span>${esc(String(a.text).replace(/^\S+\s*(出道|回歸)預告｜/,""))}</span><em>D-${dLeft(p.day)}</em></button>`).join("")}</div>`; }
+/* 置頂大卡：左右滑換一則（每張一樣高），下面的點點跟著滑；每 5 秒自動換下一則 */
 function pinnedHtml(){
   const anns=[...annLive(),...coPinList().sort((a,b)=>b.ts-a.ts)]; if(!anns.length) return "";   /* HAECHU 平台公告永遠排最前面，公司官方貼文接在後面 */
-  const N=anns.length, i=(((ui.pinIdx||0)%N)+N)%N, a=anns[i];
+  const N=anns.length;
   return `<div id="pinWrap" class="pin-w"><span class="nz-pill">📌 平台重要置頂公告</span>
-    <div class="pin-card">
-      <div class="pin-top"><span><i class="pin-dot"></i>NOTICE 公告（${i+1}/${N}）</span><i class="pin-ping"></i></div>
-      ${a.img?`<span class="pin-img" style="background-image:url('${esc(a.img)}')"></span>`:""}<p>${esc(a.text)}</p>
-      <div class="pin-foot"><span>${ago(a.ts)}</span>${N>1?`<span class="pin-nav"><button data-a="pinPrev" aria-label="上一則">‹</button><button data-a="pinNext" aria-label="下一則">›</button></span>`:""}</div>
-    </div>
-    ${N>1?`<div class="pin-dots">${anns.map((_,k)=>`<button class="${k===i?"on":""}" data-a="pinDot" data-v="${k}" aria-label="第 ${k+1} 則"></button>`).join("")}</div>`:""}
+    <div class="pin-trk" id="pinTrk">${anns.map((a,i)=>`<div class="pin-card"><div class="pin-top"><span><i class="pin-dot"></i>NOTICE 公告（${i+1}/${N}）</span><i class="pin-ping"></i></div>
+      ${a.img?`<span class="pin-img" style="background-image:url('${esc(a.img)}')"></span>`:""}<p>${esc(a.text)}</p><div class="pin-foot"><span>${ago(a.ts)}</span></div></div>`).join("")}</div>
+    ${N>1?`<div class="pin-dots">${anns.map((_,k)=>`<i class="${k===0?"on":""}"></i>`).join("")}</div>`:""}
     <div class="nz-div"></div></div>`;
 }
-function refreshPin(){ const w=document.getElementById("pinWrap"); if(w) w.outerHTML=pinnedHtml(); }
-setInterval(()=>{ if((route().sub==="notifications"||document.querySelector(".artn-pin"))&&annLive().length+coPinList().length>1&&!document.querySelector("#pinWrap:hover")){ ui.pinIdx=(ui.pinIdx||0)+1; refreshPin(); } },5000);
+const pinIdxNow=t=>Math.round(t.scrollLeft/Math.max(1,t.clientWidth));
+function refreshPin(){ const t=document.getElementById("pinTrk"); if(!t) return; const n=t.children.length; if(n<2) return; const i=(pinIdxNow(t)+1)%n; t.scrollTo({left:i*t.clientWidth,behavior:"smooth"}); }
+let pinTouchT=0; document.addEventListener("touchstart",e=>{ if(e.target.closest&&e.target.closest("#pinTrk")) pinTouchT=Date.now(); },{passive:true});
+document.addEventListener("scroll",e=>{ const t=e.target; if(!t||t.id!=="pinTrk") return; const i=pinIdxNow(t); t.parentNode.querySelectorAll(".pin-dots i").forEach((d,j)=>d.classList.toggle("on",i===j)); },true);
+setInterval(()=>{ if(document.hidden||Date.now()-pinTouchT<8000) return; if(route().sub==="notifications"||document.querySelector(".artn-pin")) refreshPin(); },5000);
 function viewNotifs(){
   const f=followed();
   const all=getNotifications().filter(n=>n.kind!=="system"&&(n.direct||f.includes(n.group)));
@@ -12046,7 +12066,7 @@ function viewAdmin(tab){
     if(!seg){ const pend=getTours().filter(x=>x.status==="pending").length;
       const tl=(v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="focSeg" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
       return adminHead("FOC")+`<main class="page foc">
-        ${secH("clock","每週")}<div class="tiles">${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("vod","play","影音","MV・影片")}${tl("news","news","新聞",newsSub())}</div>
+        ${secH("clock","每週")}<div class="tiles">${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}</div>
         ${secH("star","檔期")}<div class="tiles">${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}</div>
         ${secH("trophy","大型活動")}<div class="tiles">${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}</div>
         </main>`; }
