@@ -6138,13 +6138,15 @@ async function hbSetProfile(username,patch){ if(!HB_ON||!HB.tok) return true; tr
 /* 讀進團與藝人（管理員在「藝人與團」建的） */
 try{ if(!HB_ON){ Object.assign(REAL,JSON.parse(localStorage.getItem("daisuki_real_local")||"{}")); Object.assign(PWS,JSON.parse(localStorage.getItem("daisuki_pw_local")||"{}")); } }catch(e){}
 /* 出道預告中（核准時已經建好團、綁好帳號）：出道日還沒到就先藏起來，時間到每支手機自己顯示，不用等任何人 */
-const debutHidden=()=>{ const now=Date.now(), H=new Set(); try{ (S.get(K.debut,[])||[]).forEach(x=>{ if(x&&x.status==="pre"&&x.gid&&x.day>now) H.add(x.gid); }); }catch(e){} return H; };
+/* 出道的那一刻＝出道日＋申請時選的發布時間（沒選就晚上 6 點） */
+const relTime=(day,pr)=>{ const m=/^(\d{1,2}):(\d{2})$/.exec((pr||{}).time||"")||[0,18,0]; return day+((+m[1])*60+(+m[2]))*60e3; };
+const debutHidden=()=>{ const now=Date.now(), H=new Set(); try{ (S.get(K.debut,[])||[]).forEach(x=>{ if(x&&x.status==="pre"&&x.gid&&relTime(x.day,x.pr)>now) H.add(x.gid); }); }catch(e){} return H; };
 let _dhT=0;
 function acctGate(){ try{ Object.values(ACCOUNTS).forEach(a=>{ if(!a) return; if(a.member&&!MEMBERS[a.member]&&a._hidOk!==a.member){ const r=S.get(K.roster,{})||{}; if(r.members&&r.members[a.member]){ a._hid=a.member; delete a.member; if(a.role==="artist") a.role="fan"; } }
     else if(a._hid&&MEMBERS[a._hid]){ a.member=a._hid; delete a._hid; if(a.role==="fan") a.role="artist"; } }); }catch(e){} }
 function applyRoster(){ try{ const r=S.get(K.roster,{groups:[],members:{}})||{}, hid=debutHidden();
   const keepT=GROUPS.filter(g=>g.id==="tdm_g"), mT=MEMBERS.tdm_m;
-  clearTimeout(_dhT); { const now=Date.now(), nx=(S.get(K.debut,[])||[]).filter(x=>x&&x.status==="pre"&&x.gid&&x.day>now).map(x=>x.day).sort((a,b)=>a-b)[0]; if(nx) _dhT=setTimeout(()=>{ applyRoster(); try{ render(); }catch(e){} },Math.min(nx-now+800,6*36e5)); }
+  clearTimeout(_dhT); { const now=Date.now(), nx=(S.get(K.debut,[])||[]).filter(x=>x&&x.status==="pre"&&x.gid&&relTime(x.day,x.pr)>now).map(x=>relTime(x.day,x.pr)).sort((a,b)=>a-b)[0]; if(nx) _dhT=setTimeout(()=>{ applyRoster(); try{ render(); }catch(e){} },Math.min(nx-now+800,6*36e5)); }
   GROUPS.length=0; (r.groups||[]).forEach(g0=>{ if(GROUPS.some(x=>x.id===g0.id)||hid.has(g0.id)) return; const g={...g0};
     /* SOLOIST：外面一律顯示藝名；社群名字只在點進個人社群後才顯示 */
     GROUPS.push(g); }); keepT.forEach(g=>GROUPS.push(g));
@@ -6361,7 +6363,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104013846";
+const BUILD="20261104014338";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -16960,7 +16962,7 @@ function dbDebutNow(L,x,prep){ const n=x.name; if(GROUPS.some(g=>g.name===n)||!A
 /* 出道日到了：團早就建好了，只要改狀態、發通知（後台 haechu_tick 也會準時做；誰先做都只做一次） */
 function dbReveal(x){ x.status="ok"; x.done=Date.now(); if(!x.pushed){ x.pushed=1; feedPush({kind:"core",text:`🎉 「${x.name}」今天正式出道了！`},"all"); dbEms(x).forEach(e=>feedPush({kind:"core",self:true,text:`🎉 恭喜出道！到 ME 切換到藝人端吧`},"u:"+e)); } }
 /* 真正出道／回歸的時刻＝那天＋藝人選的發布時間（沒選就晚上 6 點），跟 OUT NOW 同一刻 */
-const relAtPr=(day,pr)=>{ const m=/^(\d{1,2}):(\d{2})$/.exec((pr||{}).time||"")||[0,18,0]; return day+((+m[1])*60+(+m[2]))*60e3; };
+const relAtPr=relTime;
 const dbRelAt=x=>relAtPr(x.day,x.pr);
 const cbRelAt=p=>{ const c=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req); return relAtPr(p.day,c&&c.pr); };
 /* 回歸：預告中的新歌（ms.pre） */
@@ -18722,17 +18724,17 @@ const kW=ts=>["SUN","MON","TUE","WED","THU","FRI","SAT"][KST(ts).w];
 const kWzh=ts=>"日一二三四五六"[KST(ts).w];
 const kZh=ts=>{ const k=KST(ts); return `${k.y} 年 ${k.m} 月 ${k.d} 日（${kWzh(ts)}）${k.h<12?"上午":k.h<18?"下午":"晚上"} ${k.h%12||12} 點${k.mi?` ${k.mi} 分`:""}`; };
 const REL_EN={"單曲":"Single","數位單曲":"Digital Single","EP":"EP","迷你專輯":"Mini Album","正規專輯":"Album","改版專輯":"Repackage Album","電子專輯":"E-Album"};
-const relEn=s=>REL_EN[s.rtype]||"Album";
+const relEn=s=>REL_EN[s.rtype]||"";   /* 沒選發行型態就不寫，不要亂寫成 Album */
 const tag=v=>"#"+String(v||"").replace(/[\s'"「」《》【】<>\[\]]/g,"");
 const lc=v=>String(v||"").toLowerCase();
 /* 這一則要用的時間：預告、排程表寫發行時間；其他寫自己的時間 */
 function capTimes(s,x){ const plan=promoPlan(s), rel=plan.find(y=>y.k==="rel"), relTs=rel?rel.ts:s.day, days=Math.max(0,Math.ceil((relTs-((x&&x.ts)||Date.now()))/864e5)); return {relTs,days}; }
 
-function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", {relTs,days}=capTimes(s,x), n=x.no||1, tot=x.tot||1, R=relEn(s), RZ=s.rtype||"專輯";
+function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", {relTs,days}=capTimes(s,x), n=x.no||1, tot=x.tot||1, R=relEn(s), RZ=s.rtype||"作品", R1=R?`${db?"The 1st ":""}${R} `:"";
   const kindEn={sched:"Scheduler",teaser:"Teaser Image",concept:"Concept Photo",trk:"Track List",medley:"Highlight Medley",film:"Concept Film",mvt:"MV Teaser"};
   switch(co){
-  case "SM": { const hd=`${N} ${db?"The 1st ":""}${R} 【${T}】`, when=`➫ ${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)}`;
-    if(k==="annDb") return {t:"SM NEW ARTIST",b:`${N}\n${db?"The 1st ":""}${R} 【${T}】\n\n${when}\n\n${tg}`};
+  case "SM": { const hd=`${N} ${R1}【${T}】`, when=`➫ ${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)}`;
+    if(k==="annDb") return {t:"SM NEW ARTIST",b:`${N}\n${R1}【${T}】\n\n${when}\n\n${tg}`};
     if(k==="annCb") return {t:hd,b:`${when}\n\n${tg}`};
     if(k==="rel") return {t:hd,b:`➫ NOW ON SALE\n\n${tg}`};
     if(k==="concept") return {t:hd,b:`${x.n?`'${x.n}' `:""}Concept Photo${tot>1?` #${n}`:""}\n${when}\n\n${tg}`};
@@ -18749,21 +18751,21 @@ function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", 
     if(k==="sched") return {t:`${N} '${T}' Promotion Schedule`,b:`${when}\n${tg}`};
     return {t:`${N} '${T}' ${kindEn[k]}`,b:`${when}\n${tg}`}; }
   case "JYP": { const when=`${kDot(relTs)} (${kW(relTs)}) ${kAP(relTs)} KST`, tg=`${tag(N)} ${tag(T)}`, hd=`${N} <${T}>`;
-    if(k==="annDb") return {t:"JYP NEW ARTIST",b:`${N}\n1st ${R} <${T}>\n\n${when}\n\n${tg}`};
-    if(k==="annCb") return {t:hd,b:`${R}\n\n${when}\n\n${tg}`};
+    if(k==="annDb") return {t:"JYP NEW ARTIST",b:`${N}\n${R?`1st ${R} `:""}<${T}>\n\n${when}\n\n${tg}`};
+    if(k==="annCb") return {t:hd,b:`${R?R+"\n\n":""}${when}\n\n${tg}`};
     if(k==="rel") return {t:hd,b:`"${T}" M/V\nOUT NOW\n\n${tg}`};
     if(k==="mvt") return {t:`${N} "${T}" M/V Teaser`,b:`${when}\n\n${tg}`};
     if(k==="concept") return {t:hd,b:`Concept Photo${x.n?` - ${x.n}`:` ${n}`}\n\n${when}\n\n${tg}`};
     if(k==="teaser") return {t:hd,b:`Teaser Image ${n}\n\n${when}\n\n${tg}`};
     return {t:hd,b:`${kindEn[k]}\n\n${when}\n\n${tg}`}; }
-  case "YG": { const U=String(N).toUpperCase(), RU=(db?"1ST ":"")+R.toUpperCase(), when=`${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)} #YG`;
+  case "YG": { const U=String(N).toUpperCase(), RU=R?((db?"1ST ":"")+R.toUpperCase()+" "):"", when=`${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)} #YG`;
     if(k==="annDb") return {t:"WHO'S NEXT?",b:`YG NEW ARTIST\n${U}\n\n${when}\n\n${tg}`};
-    if(k==="annCb") return {t:`${U} - ${RU} [${T}]`,b:`COMING SOON\n${when}\n\n${tg}`};
+    if(k==="annCb") return {t:`${U} - ${RU}[${T}]`,b:`COMING SOON\n${when}\n\n${tg}`};
     if(k==="rel") return {t:`${U} - '${T}' M/V`,b:`OUT NOW\n\n${tg}`};
     if(k==="mvt") return {t:`[${U}] '${T}' M/V TEASER`,b:`${when}\n\n${tg}`};
-    if(k==="teaser") return {t:`${U} - ${RU} [${T}] TEASER POSTER`,b:`${tot>1?`#${n}\n`:""}${when}\n\n${tg}`};
-    if(k==="concept") return {t:`${U} - ${RU} [${T}] ${x.n?String(x.n).toUpperCase()+" ":""}CONCEPT PHOTO`,b:`${when}\n\n${tg}`};
-    if(k==="sched") return {t:`${U} - ${RU} [${T}] PROMOTION SCHEDULE`,b:`${when}\n\n${tg}`};
+    if(k==="teaser") return {t:`${U} - ${RU}[${T}] TEASER POSTER`,b:`${tot>1?`#${n}\n`:""}${when}\n\n${tg}`};
+    if(k==="concept") return {t:`${U} - ${RU}[${T}] ${x.n?String(x.n).toUpperCase()+" ":""}CONCEPT PHOTO`,b:`${when}\n\n${tg}`};
+    if(k==="sched") return {t:`${U} - ${RU}[${T}] PROMOTION SCHEDULE`,b:`${when}\n\n${tg}`};
     return {t:`${U} - [${T}] ${kindEn[k].toUpperCase()}`,b:`${when}\n\n${tg}`}; }
   case "PAPERMOON": { const n0=lc(N), when=`${kDot(relTs)} · ${k24(relTs)}`;
     if(k==="annDb") return {t:"🌙 papermoon letter",b:`紙做的月亮上，又多了一顆星。\n\n${n0}\n「${lc(T)}」\n${when} kst\n\n一起等月亮升起吧。`};
@@ -18783,7 +18785,7 @@ function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", 
     if(k==="concept") return {t:`[${U}] ${T}`,b:`CONCEPT PHOTO ── ${String(x.n||n).toUpperCase()}\n${d}\n${cd}`};
     return {t:`[${U}] ${T}`,b:`${kindEn[k].toUpperCase()}\n${d}\n${cd}`}; }
   case "DOLPUNG Lab.": { const i=(x.idx||0)+1, all=x.all||1, pct=k==="rel"?100:Math.round(i/all*100), bar="▓".repeat(Math.round(pct/10))+"░".repeat(10-Math.round(pct/10)), rep=`REPORT #${String((strHash(s.id)%900)+100)}-${p2(i)}`, launch=`${kDash(relTs)} ${k24(relTs)} KST`;
-    if(k==="annDb"||k==="annCb") return {t:`DOLPUNG Lab. ${rep}`,b:`PROJECT  ${N}\nTYPE  ${db?"DEBUT":"COMEBACK"} · ${R.toUpperCase()}\nTITLE  ${T}\nLAUNCH  ${launch}\n\nWE BELIEVE IN INNOVATION.`};
+    if(k==="annDb"||k==="annCb") return {t:`DOLPUNG Lab. ${rep}`,b:`PROJECT  ${N}\nTYPE  ${db?"DEBUT":"COMEBACK"}${R?" · "+R.toUpperCase():""}\nTITLE  ${T}\nLAUNCH  ${launch}\n\nWE BELIEVE IN INNOVATION.`};
     if(k==="rel") return {t:`DOLPUNG Lab. / ${N}`,b:`PROJECT ${N} — LAUNCHED.\n${T} OUT NOW.\nPROGRESS ${bar} 100%`};
     const f={sched:"EXPERIMENT SCHEDULE",teaser:`FILE ${p2(n)} — TEASER IMAGE`,concept:`FILE ${p2(n)} — CONCEPT PHOTO${x.n?` (${String(x.n).toUpperCase()})`:""}`,trk:"TRACK DATA",medley:"AUDIO SAMPLE — HIGHLIGHT MEDLEY",film:"VISUAL DATA — CONCEPT FILM",mvt:"VISUAL DATA — MV TEASER"}[k]||kindEn[k];
     return {t:`DOLPUNG Lab. / ${N}`,b:`${f}\nLAUNCH ${launch}\nPROGRESS ${bar} ${pct}%`}; }
