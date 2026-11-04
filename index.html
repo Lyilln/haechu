@@ -6432,7 +6432,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104055940";
+const BUILD="20261104070540";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -17486,9 +17486,16 @@ async function snMusOk(){ const dr=ui.snDraft, t=ui.snMusT; if(!dr||!t||!snMusBu
    以後新做的播放器也自動照這個規則，不用每個地方各寫一次
    ========================================================= */
 const AUD_ALL=new Set();
-{ const P=HTMLMediaElement.prototype, play0=P.play;
-  P.play=function(){ AUD_ALL.add(this); return play0.apply(this,arguments); }; }   /* 記住每一個放過聲音的播放器（包括沒有放在畫面上的） */
-function audStopAll(){ AUD_ALL.forEach(m=>{ try{ if(!m.paused) m.pause(); }catch(e){} }); document.querySelectorAll("video,audio").forEach(m=>{ try{ if(!m.paused) m.pause(); }catch(e){} }); }
+{ const P=HTMLMediaElement.prototype, play0=P.play, pause0=P.pause;
+  P.play=function(){ AUD_ALL.add(this); this._want=true; audGuard(this); return play0.apply(this,arguments); };   /* 記住每一個放過聲音的播放器（包括沒有放在畫面上的） */
+  P.pause=function(){ this._want=false; return pause0.apply(this,arguments); }; }
+/* 有人傳 TIE、跳推播的時候，iPhone 會把 App 的聲音「中斷再恢復」，順手把已經停掉的影片／音樂又放出來。
+   App 自己停掉的播放器（_want＝false）如果被系統偷偷又放起來，馬上再停掉 */
+let audTapT=0; ["pointerdown","touchend","click","keydown"].forEach(ev=>addEventListener(ev,()=>{ audTapT=Date.now(); },{capture:true,passive:true}));
+function audGuard(m){ if(m._g) return; m._g=1; m.addEventListener("play",()=>{ if(Date.now()-audTapT<1500&&!document.hidden){ m._want=true; return; }   /* 自己按播放鍵：照放 */
+  if(m._want===false||document.hidden){ try{ HTMLMediaElement.prototype.pause.call(m); }catch(e){} } }); }
+document.addEventListener("play",e=>{ const m=e.target; if(m&&m.tagName&&/^(VIDEO|AUDIO)$/.test(m.tagName)) audGuard(m); },true);
+function audStopAll(){ AUD_ALL.forEach(m=>{ try{ m.pause(); }catch(e){} }); document.querySelectorAll("video,audio").forEach(m=>{ try{ m.pause(); }catch(e){} }); try{ if(navigator.mediaSession) navigator.mediaSession.playbackState="none"; }catch(e){} }
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) audStopAll(); });
 addEventListener("pagehide",audStopAll);
 /* 播放器被拿掉（關視窗、換頁）：馬上停，釋放檔案 */
