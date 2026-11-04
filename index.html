@@ -6370,7 +6370,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104014624";
+const BUILD="20261104033153";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8021,7 +8021,7 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
     :`<span class="fs-f-lab">藝名</span><input id="dbName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(f.name)}"><span class="fs-f-lab">生日</span><input id="dbBd" class="a-nick-in" type="date" max="${ymdIn(Date.now())}" value="${esc(f.bd||"")}">`;
   tieModal(f.editId?"修改出道申請":"申請出道",`${kind}${who}
     <span class="fs-f-lab">出道曲</span><input id="dbSong" class="a-nick-in" maxlength="30" placeholder="輸入文字" value="${esc(f.song||"")}">
-    <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"","dbRel")}
+    <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"","dbRel")}${promoTrk(f)}
     <span class="fs-f-lab">公司</span>${coChips(f.co||"","dbCo")}
     <span class="fs-f-lab">出道日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(Date.now()+PRE_MIN)}" value="${esc(f.date||ymdIn(Date.now()+PRE_MIN))}">
     <span class="fs-f-lab">Teaser 照片</span><div class="db-up4"><button class="db-slot t" data-a="dbTeaser" data-i="0" aria-label="Teaser 照片">${t}<small>主圖</small></button>${tx}</div>
@@ -8230,6 +8230,7 @@ function spin3d(obj,host,{onTap,auto=false,rx=-6,ry=-18}={}){ let vx=0, vy=0, dr
   apply(); loop();
   return { flip(){ vx=0; vy=0; const from=ry, to=Math.round((ry+180)/180)*180, t0=performance.now(); (function f(now){ const k=Math.min(1,(now-t0)/600), e2=1-Math.pow(1-k,3); ry=from+(to-from)*e2; apply(); if(k<1) requestAnimationFrame(f); })(t0); idle=performance.now(); },
     face(){ const n=Math.round(ry/360)*360; rx=-6; ry=n-18; apply(); }, get:()=>({rx,ry}), stop(){ alive=false; cancelAnimationFrame(raf); } }; }
+
 /* =========================================================
    專輯 v2：照真實的韓團專輯建出來
    ・一張專輯有好幾個版本；每個版本有自己的外型、長寬高（公分）、封面、封底、價格、預購期間
@@ -8488,6 +8489,7 @@ async function cardGyro(){
     const b=layer.querySelector('[data-a="cardGyro"]'); if(b) b.remove(); toast("傾斜手機看看光澤 ✨");
   }catch(e){ toast("這裡還不能用傾斜，先用手指拖動看看"); }
 }
+
 
 /* =========================================================
    SURVIVAL PROJECT（選秀宇宙）：先做好內容，管理員在 FOC 決定要不要開放
@@ -12610,7 +12612,7 @@ function clickGen(a,t,e,r){ switch(a){
         const busy=rows.find(x=>getDebut().some(y=>y.id!==f.editId&&(y.status==="wait"||y.status==="pre")&&dbEms(y).includes(x.acc))); if(busy){ toast(`「${busy.acc}」已經在別的出道申請裡`); break; }
         const accs=rows.map(x=>x.acc), names=[n,...rows.map(x=>x.name)].map(x=>x.toLowerCase()); if(new Set(accs).size!==accs.length){ toast("有重複的帳號"); break; } if(new Set(names).size!==names.length){ toast("成員的藝名不能重複"); break; }
         mems=rows.map(x=>({name:x.name,email:x.acc,bd:x.bd})); }
-      if(!f.teaser&&(f.tx||[]).some(Boolean)){ const i=f.tx.findIndex(Boolean); f.teaser=f.tx[i]; f.tPrev0=(f.txP||[])[i]||""; f.tx[i]=null; if(f.txP) f.txP[i]=""; } if(!f.teaser){ toast("請至少放一張 Teaser 照片"); break; } if(!f.mv){ toast("請放上 MV"); break; } if(!f.mvt){ toast("請放上 MV Teaser"); break; }
+      if(!f.teaser&&(f.tx||[]).some(Boolean)){ const i=f.tx.findIndex(Boolean); f.teaser=f.tx[i]; f.tPrev0=(f.txP||[])[i]||""; f.tx[i]=null; if(f.txP) f.txP[i]=""; } if(!f.teaser){ toast("請至少放一張 Teaser 照片"); break; } if(!f.mv){ toast("請放上 MV"); break; } if(!f.mvt){ toast("請放上 MV Teaser"); break; } { const pe=promoCheck(f); if(pe){ toast(pe); break; } }
       const dday=ymdTs(f.date); if(!dday||dday<dayStart(Date.now()+PRE_MIN)){ toast(`出道日最快只能選 ${mdTxt(Date.now()+PRE_MIN)}`); break; }
       const taken=x=>{ const low=x.toLowerCase(); return GROUPS.some(g=>g.name.toLowerCase()===low)||Object.values(MEMBERS).some(m=>!m.official&&String(m.name).toLowerCase()===low)||getDebut().some(y=>y.id!==f.editId&&(y.status==="wait"||y.status==="pre")&&(y.name.toLowerCase()===low||String(y.me||"").toLowerCase()===low||(y.mems||[]).some(m=>m.name.toLowerCase()===low))); };
       const tk=[nm,...(grp?[n,...mems.map(x=>x.name)]:[])].find(taken); if(tk){ toast(`已經有「${tk}」這個名字了`); break; }
@@ -13838,6 +13840,7 @@ function seedThemes(){ if(S.get(K.seedThemes2,false)) return; S.set(K.seedThemes
     ...k2,cover:thCoverSvg(P2,MEMBERS[luna].name.split(" ").pop(),k2),status:"on",ts:Date.now()-DAY};
   const L=getThemes().filter(t=>t.id!=="th_demo1"&&t.id!=="th_demo2"); saveThemes([T1,T2,...L]); }
 
+
 /* =========================================================
    官方免費主題：四隻候選吉祥物（貓咪、小狗、狐狸、蜥蜴）—— 名字還沒定
    全部是自己畫的向量圖：大頭圓身、粗描邊、腮紅、手拿應援棒
@@ -14903,6 +14906,7 @@ const tkArtNew=mid=>{ const seen=new Set((S.get(K.tkSeen,{})||{})[mid]||[]); ret
 function truckAdminHtml(){ const L=getTrucks().slice().sort((a,b)=>b.ts-a.ts);
   return `<section class="card studio"><div class="foc-cfg-h"><h3>應援餐車</h3><span class="badge">${L.length} 台</span></div>
     ${L.length?L.map(t=>{ const st=tkState(t), dv=tkDeliverTs(t); return `<div class="trk-adm"><span class="trk-dot" style="background:${(TRUCK_PAL[(t.deco||{}).pal]||TRUCK_PAL[0]).body}"></span><div><b>${esc(tkM(t.mid).name)}<em>${tkStTxt(t,st)}</em></b><small>From. ${esc((t.deco&&t.deco.from)||t.byName||"")}・${(t.paid||[]).map(p=>esc(p.name||"")).join("、")}（${t.paid.length}／${t.shares}）${dv?`・${ymd(dv)} 送到`:""}</small></div><button class="btn btn-soft btn-sm" data-a="tkDel" data-v="${t.id}">刪除</button></div>`; }).join(""):`<p class="me-none">還沒有餐車</p>`}</section>`; }
+
 
 /* =========================================================
    演唱會應援棒 3D（高級款）：珍珠白握把、香檳金環、玻璃燈頭、裡面的光跟著燈色
@@ -17792,7 +17796,7 @@ function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; const gid=f.gid, min=c
   const tp=f.tPrev||f.teaser, t=tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`, vid=(v,pv)=>v?(pv?`<img src="${esc(pv)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
   const tx=[1,2,3].map(i=>{ const u=f.txP[i-1]||f.tx[i-1]; return `<button class="db-slot t sm" data-a="dbTeaser" data-i="${i}" aria-label="Teaser 照片 ${i+1}">${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}</button>`; }).join("");
   tieModal(f.editId?"修改回歸申請":"申請回歸",`<span class="fs-f-lab">歌名</span><input id="cbTitle" class="a-nick-in" maxlength="30" placeholder="輸入文字" value="${esc(f.title||"")}">
-    <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"","cbrRel")}
+    <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"","cbrRel")}${promoTrk(f)}
     <span class="fs-f-lab">回歸日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(min)}" value="${esc(f.date&&ymdTs(f.date)>=min?f.date:ymdIn(min))}">
     <span class="fs-f-lab">Teaser 照片</span><div class="db-up4"><button class="db-slot t" data-a="dbTeaser" data-i="0" aria-label="Teaser 照片">${t}<small>主圖</small></button>${tx}</div>
     <div class="db-up"><button class="db-slot v" data-a="dbMv" aria-label="MV">${vid(f.mv,f.mPrev)}<small>MV</small></button><button class="db-slot v" data-a="dbMvt" aria-label="MV Teaser">${vid(f.mvt,f.mtPrev)}<small>MV Teaser</small></button></div>${promoFields(f)}${f.busy?`<p class="db-busy">${f.busy}</p>`:""}`,
@@ -17812,7 +17816,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="cbrRel"){ dbKeep(); const f=ui.dbF; if(!f) return; f.rtype=f.rtype===t.dataset.v?"":t.dataset.v; cbrForm(); return; }
   if(a==="cbrSend"){ dbKeep(); const f=ui.dbF; if(!f||!f.cb) return; if(f.busy){ toast(f.busy); return; } const ti=(f.title||"").trim(), gid=f.gid;
     if(!ti){ toast("請輸入歌名"); return; } if(!f.editId&&banBlock(ti)) return; if(!f.editId&&cbrMine(gid)){ toast("這團已經有一筆在審核了"); return; }
-    if(!f.rtype){ toast("請選擇發行型態"); return; } if(!f.mv){ toast("請放上 MV"); return; } if(!f.mvt){ toast("請放上 MV Teaser"); return; }
+    if(!f.rtype){ toast("請選擇發行型態"); return; } if(!f.mv){ toast("請放上 MV"); return; } if(!f.mvt){ toast("請放上 MV Teaser"); return; } { const pe=promoCheck(f); if(pe){ toast(pe); return; } }
     const day=ymdTs(f.date), min=cbrMin(gid); if(!day||day<min){ toast(`回歸日最快只能選 ${mdTxt(min)}`); return; }
     if(!f.teaser&&(f.tx||[]).some(Boolean)){ const i=f.tx.findIndex(Boolean); f.teaser=f.tx[i]; f.tx[i]=null; }
     if(f.editId){ const L=getCbr(), x=L.find(y=>y.id===f.editId); if(!x) return; Object.assign(x,{title:ti,rtype:f.rtype,day,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mv:f.mv,mvt:f.mvt,pr:promoClean(f.pr),edited:Date.now()}); S.set(CBR_KEY,L); ui.dbF=null; layer.innerHTML=""; render(); toast("已修改"); return; }
@@ -18479,7 +18483,7 @@ function promoSrcs(all){ const L=[], now=Date.now();
 function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec(pr.time||"")||[0,18,0], at=((+tm[1])*60+(+tm[2]))*60e3, it=[{k:"sched"}];
   [s.teaser,...(s.teasers||[])].filter(Boolean).forEach(u=>it.push({k:"teaser",imgs:[u]}));
   (pr.cv||[]).filter(v=>(v.ph||[]).some(Boolean)).forEach(v=>it.push({k:"concept",n:v.n||"",imgs:v.ph.filter(Boolean)}));
-  if(String(pr.trk||"").trim()||pr.trkImg) it.push({k:"trk"});
+  if((String(pr.trk||"").trim()||pr.trkImg)&&(!s.rtype||needsTrk(s.rtype))) it.push({k:"trk"});
   if(pr.vid&&pr.vid.mid) it.push({k:pr.vk==="film"?"film":"medley",vid:pr.vid});
   if(s.mvt&&s.mvt.mid) it.push({k:"mvt",vid:s.mvt});
   const st=Math.max(s.appr,s.day-PRE_ANN), d0=dayStart(st)+D, dl=dayStart(s.day)-D, nd=Math.max(1,Math.round((dl-d0)/D)+1);
@@ -18521,11 +18525,17 @@ function feedMix(posts){ const C=coPosts().map(x=>({ts:x.ts,h:()=>coPostCard(x)}
 const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>x.k!=="ann"&&now-x.ts<7*864e5).map(x=>x.k==="news"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.news.title}`,img:x.news.img||""}:x.k==="note"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.note.title}`,img:""}:({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${coCap(x.src.co,x.k,x.src,x).t}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
 
 /* ---------- 申請表裡的欄位 ---------- */
+/* 不是單曲／數位單曲 → 要填曲目表 */
+const needsTrk=rt=>!!rt&&!["單曲","數位單曲"].includes(rt);
+const promoCheck=f=>needsTrk(f.rtype)&&!String((f.pr||{}).trk||"").split("\n").some(x=>x.trim())?"請填曲目表（一行一首）":"";
+/* 曲目表：選了發行型態就接在下面（單曲、數位單曲不用填） */
+function promoTrk(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const img=(u,ex)=>`<button class="db-slot t sm" data-a="prImg" ${ex}>${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}</button>`;
+  return `${needsTrk(f.rtype)?`<span class="fs-f-lab">曲目表</span><textarea id="prTrk" class="a-nick-in pr-trk" rows="4" placeholder="輸入文字">${esc(pr.trk||"")}</textarea><div class="db-up4 one">${img(pr.trkP||pr.trkImg,'data-k="trk"',"")}</div>`:""}`; }
 function promoFields(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); pr.cv=pr.cv||[];
   const img=(u,ex,lab)=>`<button class="db-slot t sm" data-a="prImg" ${ex}>${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}${lab?`<small>${lab}</small>`:""}</button>`;
   return `<span class="fs-f-lab">每天發布時間</span><input id="prTime" class="a-nick-in" type="time" value="${esc(pr.time||"18:00")}">
     <span class="fs-f-lab">排程表</span><div class="db-up4 one">${img(pr.schedP||pr.sched,'data-k="sched"',"")}</div>
-    <span class="fs-f-lab">曲目表</span><textarea id="prTrk" class="a-nick-in pr-trk" rows="4" placeholder="輸入文字">${esc(pr.trk||"")}</textarea><div class="db-up4 one">${img(pr.trkP||pr.trkImg,'data-k="trk"',"")}</div>
+
     <span class="fs-f-lab">概念照</span>${pr.cv.map((v,i)=>`<div class="pr-cv"><div class="pr-cvh"><input id="prCv${i}" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(v.n||"")}"><button class="pr-x" data-a="prCvDel" data-i="${i}" aria-label="刪除這個版本">${XI}</button></div><div class="db-up4">${[0,1,2,3].map(j=>img((v.phP||[])[j]||(v.ph||[])[j],`data-k="cv" data-i="${i}" data-j="${j}"`,"")).join("")}</div></div>`).join("")}${pr.cv.length<4?`<button class="btn btn-soft btn-sm pr-add" data-a="prCvAdd">＋ 新增版本</button>`:""}
     <span class="fs-f-lab">影片</span><div class="chips"><button class="chip ${pr.vk==="medley"?"on":""}" data-a="prVk" data-v="medley">Highlight Medley</button><button class="chip ${pr.vk==="film"?"on":""}" data-a="prVk" data-v="film">概念影片</button></div>
     ${pr.vk?`<div class="db-up"><button class="db-slot v" data-a="prVid" aria-label="${pr.vk==="film"?"概念影片":"Highlight Medley"}">${pr.vid?(pr.vidP?`<img src="${esc(pr.vidP)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`}<small>${pr.vk==="film"?"概念影片":"Highlight Medley"}</small></button></div>`:""}`; }
