@@ -5898,8 +5898,6 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .copg-gt{flex:1;min-width:0;display:flex;flex-direction:column}
 .copg-chev{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;color:var(--muted);transition:transform .25s ease}.copg-chev svg{width:18px;height:18px}
 .copg-g.open .copg-chev{transform:rotate(180deg)}
-.copg-x{overflow:hidden}
-.copg-x{display:block;max-height:0;transition:max-height .3s ease}.copg-g.open .copg-x{max-height:900px}
 .copg-r{display:flex;align-items:center;gap:10px;padding:10px 0;border-top:1px solid var(--line,rgba(127,127,127,.18))}
 .copg-g.open .copg-r:first-child{margin-top:12px}
 .copg-r .av.sm{width:34px;height:34px;flex:0 0 34px;border-radius:50%;display:grid;place-items:center;color:#fff;overflow:hidden;font-size:13px}
@@ -5907,6 +5905,19 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .copg-ics{display:flex;gap:6px}
 .copg-ib{width:36px;height:36px;border-radius:50%;border:0;background:var(--chip,rgba(139,92,246,.1));color:var(--accent,#8b5cf6);display:grid;place-items:center}.copg-ib svg{width:18px;height:18px}
 .copg-hd b svg{color:#3BA4F5}
+
+/* 展開：高度和內容一起滑順地出來 */
+.copg-x{display:grid;grid-template-rows:0fr;transition:grid-template-rows .42s cubic-bezier(.22,.9,.24,1)}
+.copg-g.open .copg-x{grid-template-rows:1fr}
+.copg-xi{min-height:0;overflow:hidden;opacity:0;transform:translateY(-6px);transition:opacity .3s ease,transform .42s cubic-bezier(.22,.9,.24,1)}
+.copg-g.open .copg-xi{opacity:1;transform:none;transition-delay:.06s}
+.copg-chev{transition:transform .42s cubic-bezier(.22,.9,.24,1)}
+.copg-r.ctr{justify-content:center}.copg-r.ctr .copg-ics{gap:14px}
+/* 按下去的反饋 */
+.copg-ib{transition:transform .15s ease,background-color .15s ease,box-shadow .15s ease;-webkit-tap-highlight-color:transparent}
+.copg-ib:active{transform:scale(.88);background:var(--accent,#8b5cf6);color:#fff;box-shadow:0 0 0 6px rgba(139,92,246,.18)}
+.copg-gh{-webkit-tap-highlight-color:transparent;transition:transform .15s ease}.copg-gh:active{transform:scale(.98)}
+.copg-gh:active .copg-chev{background:rgba(139,92,246,.14)}
 
 </style>
 </head>
@@ -6349,7 +6360,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104011735";
+const BUILD="20261104013135";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18572,7 +18583,7 @@ function openCoPage(co,tab){ const c=coInfo(co), G=GROUPS.filter(g=>g.co===co&&!
   const row=(m,solo,gid)=>`<div class="copg-r"><span class="av sm" style="background:${grad(MEMBERS[m].g||0)}">${mAvIn(m)}</span><b>${esc(artName(m,"feed"))}</b><span class="copg-ics">${solo&&fan?ic("#/fan/grp?id="+gid,CO_IC.cm,"社群"):""}${fan?ic("#/fan/chat?m="+m,CO_IC.tie,"TIE"):""}${(fan||artist)?ic(snsH(m),CO_IC.sns,"SNS"):""}${ic(wk("m:"+m),CO_IC.wk,"SKpedia")}</span></div>`;
   const art=G.map(g=>{ const ms=grpMembers(g.id).filter(m=>MEMBERS[m]&&!MEMBERS[m].official);
     return `<section class="card copg-g ${open[g.id]?"open":""}"><button class="copg-gh" data-a="coGx" data-v="${g.id}" aria-expanded="${open[g.id]?"true":"false"}"><span class="av" style="background:${grad(g.g||0)}">${gPhoto(g.id)?`<img src="${esc(gPhoto(g.id))}" alt="">`:esc(g.name[0])}</span><span class="copg-gt"><b>${esc(g.name)}</b><small>${g.solo?"SOLO":`${ms.length} 位成員`}</small></span><i class="copg-chev">${CO_IC.chev}</i></button>
-      <div class="copg-x">${g.solo?(ms[0]?row(ms[0],true,g.id):""):`<div class="copg-r grp"><b>${esc(g.name)}</b><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${ic(wk("g:"+g.id),CO_IC.wk,"SKpedia")}</span></div>${ms.map(m=>row(m,false,g.id)).join("")}`}</div></section>`; }).join("");
+      <div class="copg-x"><div class="copg-xi">${g.solo?(ms[0]?`<div class="copg-r ctr"><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${fan?ic("#/fan/chat?m="+ms[0],CO_IC.tie,"TIE"):""}${(fan||artist)?ic(snsH(ms[0]),CO_IC.sns,"SNS"):""}${ic(wk("m:"+ms[0]),CO_IC.wk,"SKpedia")}</span></div>`:""):`<div class="copg-r ctr"><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${ic(wk("g:"+g.id),CO_IC.wk,"SKpedia")}</span></div>${ms.map(m=>row(m,false,g.id)).join("")}`}</div></div></section>`; }).join("");
   setLayer(`<div class="tiei copg"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(c.n)}</b><span class="sh-sp"></span></header>
     <div class="tiei-body"><div class="copg-hd">${coAv(co,"lg")}<b>${esc(c.n)} ${I.verified}</b><small>官方帳號・${G.length} 組藝人</small></div>
       <div class="chips copg-tabs"><button class="chip ${t==="ann"?"on":""}" data-a="coTab" data-v="ann" data-c="${esc(co)}">公告</button><button class="chip ${t==="art"?"on":""}" data-a="coTab" data-v="art" data-c="${esc(co)}">藝人</button></div>
