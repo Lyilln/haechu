@@ -6404,7 +6404,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104053848";
+const BUILD="20261104054004";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18863,12 +18863,15 @@ function coCap0(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db",
   default: return {t:k==="annDb"?`✨ 出道預告｜「${N}」`:k==="annCb"?`📢 回歸預告｜${N}《${T}》`:`${N}《${T}》${PR_KIND[k]||""}`,b:k==="annDb"||k==="annCb"?`${mdTxt(relTs)} 見！`:""}; } }
 /* 歌名／專輯名：不要【】<>[]「」這些括號，改用粗體特殊字；標題裡的歌名自己換一行 */
 const TT0="\u0001", TT1="\u0002";
-function coCap(co,k,s,x){ const c=coCap0(co,k,s,x), T=(s&&s.title)||""; if(!T) return c;
+/* 歌手、團體名字也不要括號 */
+function capNoBr(c,N){ if(!N) return c; const es=v=>String(v).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), alt=[N,N.toLowerCase(),N.toUpperCase()].map(es).join("|");
+  const re=new RegExp(`[【<\\[「'"]\\s*(${alt})\\s*[】>\\]」'"]`,"g"), f=v=>String(v||"").replace(re,"$1"); return {t:f(c.t),b:f(c.b)}; }
+function coCap(co,k,s,x){ const c=capNoBr(coCap0(co,k,s,x),s&&s.name), T=(s&&s.title)||""; if(!T) return c;
   const es=v=>String(v).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), alt=[T,T.toLowerCase(),T.toUpperCase()].map(es).join("|");
   const re=new RegExp(`(^|[^#\\w-])[【<\\[「'"]?(${alt})[】>\\]」'"]?(?![\\w-])`,"g"), mark=v=>String(v||"").replace(re,(m,p1,g)=>p1+TT0+g+TT1);
   let t=mark(c.t), b=mark(c.b); const i=t.indexOf(TT0); if(i>0) t=t.slice(0,i).replace(/\s+$/,"")+"\n"+t.slice(i);
   return {t,b}; }
-const capRich=v=>esc(v).replace(/\u0001([\s\S]*?)\u0002/g,'<b class="cp-tt">$1</b>').replace(/\n/g,"<br>");
+const capRich=v=>esc(String(v||"").replace(/「([^」《》]{1,30})」(?=[^\s，。！？、｜）)])/g,"$1 ").replace(/「([^」《》]{1,30})」/g,"$1")).replace(/\u0001([\s\S]*?)\u0002/g,'<b class="cp-tt">$1</b>').replace(/\n/g,"<br>");
 const capPlain=v=>String(v||"").replace(/[\u0001\u0002]/g,"");
 const capHtml=c=>`<p class="cp-t">${capRich(c.t)}</p>${c.b?`<p class="cp-x cp-cap">${capRich(c.b)}</p>`:""}`;
 
