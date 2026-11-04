@@ -5957,6 +5957,9 @@ html[data-theme="dark"] .pin-dots i{background:rgba(255,255,255,.22)}
 .pin-trk{margin:0 -8px!important;padding:6px 8px 20px!important;scroll-padding:0 8px!important}
 .pin-trk+.pin-dots{margin-top:-10px}
 .pin-trk{margin:0 -16px!important;padding:8px 16px 26px!important;scroll-padding:0 16px!important;gap:32px!important}
+/* 歌名／專輯名：粗體特殊字 */
+.cp-tt{font-weight:800;font-style:italic;letter-spacing:.01em;background:linear-gradient(90deg,#A47BFF,#F472B6);-webkit-background-clip:text;background-clip:text;color:transparent;padding-right:.08em}
+.cp-cap{white-space:normal}
 
 </style>
 </head>
@@ -6401,7 +6404,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104053425";
+const BUILD="20261104053848";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9873,7 +9876,7 @@ function pinnedHtml(){
   const N=anns.length;
   return `<div id="pinWrap" class="pin-w"><span class="nz-pill">📌 平台重要置頂公告</span>
     <div class="pin-trk" id="pinTrk">${anns.map((a,i)=>`<div class="pin-card"><div class="pin-top"><span><i class="pin-dot"></i>NOTICE 公告（${i+1}/${N}）</span><i class="pin-ping"></i></div>
-      ${a.img?`<span class="pin-img" style="background-image:url('${esc(a.img)}')"></span>`:""}<p>${esc(a.text)}</p><div class="pin-foot"><span>${ago(a.ts)}</span></div></div>`).join("")}</div>
+      ${a.img?`<span class="pin-img" style="background-image:url('${esc(a.img)}')"></span>`:""}<p>${typeof capRich==="function"?capRich(a.text):esc(a.text)}</p><div class="pin-foot"><span>${ago(a.ts)}</span></div></div>`).join("")}</div>
     ${N>1?`<div class="pin-dots">${anns.map((_,k)=>`<i class="${k===0?"on":""}"></i>`).join("")}</div>`:""}
     <div class="nz-div"></div></div>`;
 }
@@ -18798,7 +18801,7 @@ const lc=v=>String(v||"").toLowerCase();
 /* 這一則要用的時間：預告、排程表寫發行時間；其他寫自己的時間 */
 function capTimes(s,x){ const plan=promoPlan(s), rel=plan.find(y=>y.k==="rel"), relTs=rel?rel.ts:s.day, days=Math.max(0,Math.ceil((relTs-((x&&x.ts)||Date.now()))/864e5)); return {relTs,days}; }
 
-function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", {relTs,days}=capTimes(s,x), n=x.no||1, tot=x.tot||1, R=relEn(s), RZ=s.rtype||"作品", R1=R?`${db?"The 1st ":""}${R} `:"";
+function coCap0(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", {relTs,days}=capTimes(s,x), n=x.no||1, tot=x.tot||1, R=relEn(s), RZ=s.rtype||"作品", R1=R?`${db?"The 1st ":""}${R} `:"";
   const kindEn={sched:"Scheduler",teaser:"Teaser Image",concept:"Concept Photo",trk:"Track List",medley:"Highlight Medley",film:"Concept Film",mvt:"MV Teaser"};
   switch(co){
   case "SM": { const hd=`${N} ${R1}【${T}】`, when=`➫ ${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)}`;
@@ -18858,7 +18861,16 @@ function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", 
     const f={sched:"EXPERIMENT SCHEDULE",teaser:`FILE ${p2(n)} — TEASER IMAGE`,concept:`FILE ${p2(n)} — CONCEPT PHOTO${x.n?` (${String(x.n).toUpperCase()})`:""}`,trk:"TRACK DATA",medley:"AUDIO SAMPLE — HIGHLIGHT MEDLEY",film:"VISUAL DATA — CONCEPT FILM",mvt:"VISUAL DATA — MV TEASER"}[k]||kindEn[k];
     return {t:`DOLPUNG Lab. / ${N}`,b:`${f}\nLAUNCH ${launch}\nPROGRESS ${bar} ${pct}%`}; }
   default: return {t:k==="annDb"?`✨ 出道預告｜「${N}」`:k==="annCb"?`📢 回歸預告｜${N}《${T}》`:`${N}《${T}》${PR_KIND[k]||""}`,b:k==="annDb"||k==="annCb"?`${mdTxt(relTs)} 見！`:""}; } }
-const capHtml=c=>`<p class="cp-t">${esc(c.t)}</p>${c.b?`<p class="cp-x cp-cap">${esc(c.b)}</p>`:""}`;
+/* 歌名／專輯名：不要【】<>[]「」這些括號，改用粗體特殊字；標題裡的歌名自己換一行 */
+const TT0="\u0001", TT1="\u0002";
+function coCap(co,k,s,x){ const c=coCap0(co,k,s,x), T=(s&&s.title)||""; if(!T) return c;
+  const es=v=>String(v).replace(/[.*+?^${}()|[\]\\]/g,"\\$&"), alt=[T,T.toLowerCase(),T.toUpperCase()].map(es).join("|");
+  const re=new RegExp(`(^|[^#\\w-])[【<\\[「'"]?(${alt})[】>\\]」'"]?(?![\\w-])`,"g"), mark=v=>String(v||"").replace(re,(m,p1,g)=>p1+TT0+g+TT1);
+  let t=mark(c.t), b=mark(c.b); const i=t.indexOf(TT0); if(i>0) t=t.slice(0,i).replace(/\s+$/,"")+"\n"+t.slice(i);
+  return {t,b}; }
+const capRich=v=>esc(v).replace(/\u0001([\s\S]*?)\u0002/g,'<b class="cp-tt">$1</b>').replace(/\n/g,"<br>");
+const capPlain=v=>String(v||"").replace(/[\u0001\u0002]/g,"");
+const capHtml=c=>`<p class="cp-t">${capRich(c.t)}</p>${c.b?`<p class="cp-x cp-cap">${capRich(c.b)}</p>`:""}`;
 
 </script>
 </body>
