@@ -6370,7 +6370,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104033153";
+const BUILD="20261104034439";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18503,10 +18503,13 @@ function promoSchedCard(s){ const L=promoPlan(s).filter(x=>x.k!=="sched");
   return `<div class="pr-auto" style="--c:${(GRADS[s.g%GRADS.length]||[])[0]||"#8b5cf6"}">${s.teaser?`<span class="pr-abg" style="background-image:url('${esc(s.teaser)}')"></span>`:""}
     <div class="pr-ah"><em>${s.k==="db"?"DEBUT":"COMEBACK"} SCHEDULE</em><b>${esc(s.name)}</b>${s.title?`<small>《${esc(s.title)}》</small>`:""}</div>
     <ol class="pr-al">${L.map(x=>`<li><time>${mdTxt(x.ts)}${x.k==="rel"?"":" "+hm(x.ts)}</time><span>${x.k==="concept"&&x.n?`Concept Photo・${esc(x.n)}`:PR_KIND[x.k]}</span></li>`).join("")}</ol></div>`; }
+/* 曲目照藝人自己排；跟出道曲／回歸歌名一樣的那一首才標 TITLE */
+const trkNorm=v=>String(v||"").toLowerCase().replace(/[\s'"「」《》【】<>()（）\[\]]/g,"");
+const trkIsTitle=(t,s)=>!!s.title&&trkNorm(t)===trkNorm(s.title);
 function promoTrkCard(s){ const T=String((s.pr||{}).trk||"").split("\n").map(x=>x.trim()).filter(Boolean);
   return `<div class="pr-auto trk" style="--c:${(GRADS[s.g%GRADS.length]||[])[0]||"#8b5cf6"}">${s.teaser?`<span class="pr-abg" style="background-image:url('${esc(s.teaser)}')"></span>`:""}
     <div class="pr-ah"><em>TRACK LIST</em><b>${esc(s.name)}</b>${s.rtype?`<small>${esc(s.rtype)}</small>`:""}</div>
-    <ol class="pr-at">${T.map((t,i)=>`<li><i>${String(i+1).padStart(2,"0")}</i><span>${esc(t)}</span>${i===0?`<em>TITLE</em>`:""}</li>`).join("")}</ol></div>`; }
+    <ol class="pr-at">${T.map((t,i)=>`<li><i>${String(i+1).padStart(2,"0")}</i><span>${esc(t)}</span>${trkIsTitle(t,s)?`<em>TITLE</em>`:""}</li>`).join("")}</ol></div>`; }
 const hm=ts=>{ const d=new Date(ts); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
 
 /* ---------- 一則公司官方貼文 ---------- */
