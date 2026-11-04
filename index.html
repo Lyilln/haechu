@@ -5953,6 +5953,10 @@ html[data-theme="dark"] .pin-dots i{background:rgba(255,255,255,.22)}
 /* 置頂大卡之間要有間距，滑完剛好停在一張上 */
 .pin-trk{gap:14px;margin:0;padding:6px 0;scroll-padding:0}
 .pin-trk .pin-card{flex:0 0 100%;scroll-snap-align:start}
+/* 卡片的外框、陰影不要被左右／下面切掉：軌道往外多留一點空間 */
+.pin-trk{margin:0 -8px!important;padding:6px 8px 20px!important;scroll-padding:0 8px!important}
+.pin-trk+.pin-dots{margin-top:-10px}
+.pin-trk{margin:0 -16px!important;padding:8px 16px 26px!important;scroll-padding:0 16px!important;gap:32px!important}
 
 </style>
 </head>
@@ -6397,7 +6401,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104041724";
+const BUILD="20261104053425";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
