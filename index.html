@@ -5918,6 +5918,7 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .copg-ib:active{transform:scale(.88);background:var(--accent,#8b5cf6);color:#fff;box-shadow:0 0 0 6px rgba(139,92,246,.18)}
 .copg-gh{-webkit-tap-highlight-color:transparent;transition:transform .15s ease}.copg-gh:active{transform:scale(.98)}
 .copg-gh:active .copg-chev{background:rgba(139,92,246,.14)}
+.cp-cap{white-space:pre-wrap;line-height:1.6}
 
 </style>
 </head>
@@ -6360,7 +6361,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104013135";
+const BUILD="20261104013614";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18457,9 +18458,9 @@ const PR_KIND={sched:"SCHEDULE",teaser:"Teaser Image",concept:"Concept Photo",tr
 
 /* ---------- 有哪些出道／回歸要發 ---------- */
 function promoSrcs(all){ const L=[], now=Date.now();
-  getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0}));
+  getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0,solo:x.kind!=="group"}));
   const P=getMShow().pre||[];
-  getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0}); });
+  getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo}); });
   return all?L:L.filter(s=>now-s.day<45*864e5); }
 /* 一筆出道／回歸的排程：核准隔天開始，平均排到前一天，最後一格是發行 */
 function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec(pr.time||"")||[0,18,0], at=((+tm[1])*60+(+tm[2]))*60e3, it=[{k:"sched"}];
@@ -18471,7 +18472,8 @@ function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec
   const st=Math.max(s.appr,s.day-PRE_ANN), d0=dayStart(st)+D, dl=dayStart(s.day)-D, nd=Math.max(1,Math.round((dl-d0)/D)+1);
   /* 排程表：核准的當下就發；其他從隔天開始平均排 */
   const R=it.length-1; it.forEach((x,i)=>{ let ts=i===0?st:d0>dl?st+i*60e3:d0+Math.min(nd-1,Math.floor((i-1)*nd/Math.max(1,R)))*D+at; x.ts=Math.min(ts,s.day-60e3); x.id=`cp_${s.id}_${i}`; x.src=s; });
-  it.push({k:"rel",ts:s.day,id:`cp_${s.id}_rel`,src:s,imgs:[s.teaser].filter(Boolean)}); return it; }
+  it.push({k:"rel",ts:s.day+at,id:`cp_${s.id}_rel`,src:s,imgs:[s.teaser].filter(Boolean)});
+  const cnt={}; it.forEach(x=>{ cnt[x.k]=(cnt[x.k]||0)+1; x.no=cnt[x.k]; }); it.forEach((x,i)=>{ x.tot=cnt[x.k]; x.idx=i; x.all=it.length; }); return it; }
 const coPosts=()=>{ const now=Date.now(); return promoSrcs().flatMap(promoPlan).filter(x=>x.ts<=now).sort((a,b)=>b.ts-a.ts); };
 const promoTitle=x=>{ const s=x.src, nm=s.k==="db"?`${s.name}${s.title?`《${s.title}》`:""}`:`${s.name}《${s.title}》`; return x.k==="concept"&&x.n?`${nm} ${PR_KIND.concept}・${x.n}`:`${nm} ${s.k==="db"&&x.k==="sched"?"DEBUT ":s.k==="cb"&&x.k==="sched"?"COMEBACK ":""}${PR_KIND[x.k]}`; };
 const promoText=x=>{ const s=x.src; if(x.k==="rel") return s.k==="db"?`${s.name} 今天正式出道！${s.title?`出道曲《${s.title}》`:""}${s.rtype?`（${s.rtype}）`:""} MV 與專輯同步公開。`:`${s.name}《${s.title}》${s.rtype?`（${s.rtype}）`:""}今天正式回歸！MV 與專輯同步公開。`;
@@ -18491,20 +18493,19 @@ function promoTrkCard(s){ const T=String((s.pr||{}).trk||"").split("\n").map(x=>
 const hm=ts=>{ const d=new Date(ts); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
 
 /* ---------- 一則公司官方貼文 ---------- */
-function coPostCard(x){ if(x.k==="ann"){ const a=x.ann; return `<article class="card post cp">${coHead(x.co,a.ts)}<p class="cp-x cp-body">${esc(a.text)}</p>${a.img?`<button class="cp-img cp-aimg" data-a="cpPh" data-v="${esc(a.img)}"><img src="${esc(a.img)}" alt=""></button>`:""}</article>`; } if(x.k==="news") return coNewsCard(x); if(x.k==="note") return coNoteCard(x); const s=x.src, c=coInfo(s.co), pr=s.pr||{}; let body="";
+function coPostCard(x){ if(x.k==="ann"){ const a=x.ann, src=annSrc(a), cap=src?coCap(x.co,src.k==="db"?"annDb":"annCb",src,{ts:a.ts}):null; return `<article class="card post cp">${coHead(x.co,a.ts)}${cap?capHtml(cap):`<p class="cp-x cp-body">${esc(a.text)}</p>`}${a.img?`<button class="cp-img cp-aimg" data-a="cpPh" data-v="${esc(a.img)}"><img src="${esc(a.img)}" alt=""></button>`:""}</article>`; } if(x.k==="news") return coNewsCard(x); if(x.k==="note") return coNoteCard(x); const s=x.src, c=coInfo(s.co), pr=s.pr||{}; let body="";
   if(x.k==="sched") body=pr.sched?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.sched)}"><img src="${esc(pr.sched)}" alt=""></button>`:promoSchedCard(s);
   else if(x.k==="trk") body=pr.trkImg?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.trkImg)}"><img src="${esc(pr.trkImg)}" alt=""></button>`:promoTrkCard(s);
   else if(x.vid) body=`<button class="cp-vid" data-a="cpVid" data-v="${esc(x.vid.mid)}">${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:""}<i>▶</i></button>`;
   else if((x.imgs||[]).length) body=`<div class="cp-imgs n${Math.min(4,x.imgs.length)}">${x.imgs.slice(0,4).map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`;
-  const tx=promoText(x);
-  return `<article class="card post cp" id="post-${x.id}">${coHead(s.co,x.ts)}
-    <p class="cp-t">${esc(promoTitle(x))}</p>${tx?`<p class="cp-x">${esc(tx)}</p>`:""}${body}</article>`; }
+  const cap=coCap(s.co,x.k,s,x);
+  return `<article class="card post cp" id="post-${x.id}">${coHead(s.co,x.ts)}${capHtml(cap)}${body}</article>`; }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
 function feedMix(posts){ const C=coPosts().map(x=>({ts:x.ts,h:()=>coPostCard(x)})), P=posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)}));
   setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
   return [...P,...C].sort((a,b)=>b.ts-a.ts).map(o=>o.h()).join(""); }
 /* 置頂大卡用：最近 7 天的官方貼文（有照片的） */
-const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>x.k!=="ann"&&now-x.ts<7*864e5).map(x=>x.k==="news"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.news.title}`,img:x.news.img||""}:x.k==="note"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.note.title}`,img:""}:({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${promoTitle(x)}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
+const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>x.k!=="ann"&&now-x.ts<7*864e5).map(x=>x.k==="news"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.news.title}`,img:x.news.img||""}:x.k==="note"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.note.title}`,img:""}:({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${coCap(x.src.co,x.k,x.src,x).t}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
 
 /* ---------- 申請表裡的欄位 ---------- */
 function promoFields(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); pr.cv=pr.cv||[];
@@ -18546,7 +18547,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
 
 /* ---------- 專輯跟著發行：發行前 SHOP 看不到 ---------- */
 const relSrcOf=a=>a&&a.rel?promoSrcs().find(s=>s.id===a.rel):null;
-const albumOn=a=>{ if(!a||!a.rel) return true; const s=relSrcOf(a); return !s||Date.now()>=s.day; };
+const albumOn=a=>{ if(!a||!a.rel) return true; const s=relSrcOf(a); if(!s) return true; const r=promoPlan(s).find(x=>x.k==="rel"); return Date.now()>=(r?r.ts:s.day); };
 function aeRelHtml(a){ const L=promoSrcs().filter(s=>s.gid===a.gid&&(s.day>Date.now()||s.id===a.rel)); if(!L.length&&!a.rel) return "";
   return `<section class="ae-v"><div class="ae-vh"><b>上架時間</b></div><div class="chips"><button class="chip ${a.rel?"":"on"}" data-a="aeRel" data-v="">現在就上架</button>${L.map(s=>`<button class="chip ${a.rel===s.id?"on":""}" data-a="aeRel" data-v="${s.id}">跟著${s.k==="db"?"出道":"回歸"}・${mdTxt(s.day)}</button>`).join("")}</div></section>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="aeRel"]'); if(!t) return; e.stopImmediatePropagation(); const a=aeA(); if(!a) return; const L=S.get(K.albums2,[]), x=L.find(y=>y.id===a.id); if(!x) return; if(t.dataset.v) x.rel=t.dataset.v; else delete x.rel; S.set(K.albums2,L); a.rel=x.rel; layer.querySelectorAll('[data-a="aeRel"]').forEach(b=>b.classList.toggle("on",(b.dataset.v||"")===(x.rel||""))); toast(x.rel?"發行那一刻才會上架":"已上架"); },true);
@@ -18563,6 +18564,9 @@ const coOfPost=x=>x.co||(x.src&&x.src.co)||"";
 /* HAECHU 的出道／回歸預告公告：算是那間公司發的 */
 function annCo(a){ const t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return x?(coOfGid(x.gid)||x.co||""):""; }
   if(a.pre==="cb"||/回歸預告｜/.test(t)){ const P=getMShow().pre||[], p=P.find(y=>y.id===a.ref)||P.find(y=>t.includes(`《${y.title}》`)), c=getCbr().find(y=>y.id===(p&&p.req)); return p?coOfGid(p.gid):c?coOfGid(c.gid):""; } return ""; }
+/* 預告公告是哪一筆出道／回歸 */
+function annSrc(a){ const L=promoSrcs(true), t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return x?L.find(s=>s.id===x.id)||null:null; }
+  const P=getMShow().pre||[], p=P.find(y=>y.id===a.ref)||P.find(y=>t.includes(`《${y.title}》`)); return p?L.find(s=>s.id===p.req)||null:null; }
 const coAnnPosts=()=>getAnns().map(a=>({k:"ann",id:"ca_"+a.id,ts:a.ts,ann:a,co:annCo(a)})).filter(x=>x.co);
 /* 全部官方貼文（all＝公司頁要看全部歷史） */
 function coFeed(co,all){ const now=Date.now(); return [...promoSrcs(all).flatMap(promoPlan).filter(x=>x.ts<=now),...coNewsPosts(),...coNotePosts(),...coAnnPosts()].filter(x=>coOfPost(x)&&(!co||coOfPost(x)===co)).sort((a,b)=>b.ts-a.ts); }
@@ -18689,6 +18693,98 @@ function hrRefund(){ try{ const D=S.get(HR_DEP,{})||{}; if(!Object.keys(D).lengt
   if(pts>0){ S.set(K.points,points()+pts); const L=S.get(K.notifs,[]); L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,text:`退還 ${fmt(pts)} 積分・${why.join("、")}（照剩下的天數）`,ts:Date.now()}); S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); }
   if(ch||cm) setTimeout(()=>{ if(!document.querySelector("input:focus,textarea:focus")) render(); },0); }catch(e){} }
 setTimeout(hrRefund,4000); setInterval(()=>{ if(!document.hidden) hrRefund(); },5*60e3);
+
+/* =========================================================
+   各公司的官方文案（出道／回歸預告、排程表、Teaser、概念照、曲目表、影片、發行）
+   ・四大公司照真實官方帳號的寫法：
+     SM   ：英文標籤式，專輯名用【】，「➫ 2025.02.24 6PM (KST)」，最後一排 hashtag
+     HYBE ：Weverse 公告式（[Notice]、您好，這裡是…），內容貼文用 '單引號' 和 Ver.
+     JYP  ：<專輯名>、日期後面加（星期）、M/V Teaser
+     YG   ：全大寫、[專輯名]、TEASER POSTER、0AM (KST)、出道用 WHO'S NEXT?
+   ・自創三間：參考中小公司，各自一種風格
+     PAPERMOON   ：月亮、紙信、小寫、詩句
+     BLUE HOUR   ：時刻表、倒數、時間碼
+     DOLPUNG Lab.：實驗室報告、編號、進度條
+   ・App 裡的時間就當作 KST
+   ========================================================= */
+/* App 裡的時間就當作 KST（藝人選的發布時間原樣顯示） */
+const KST=ts=>{ const d=new Date(ts); return {y:d.getFullYear(),m:d.getMonth()+1,d:d.getDate(),h:d.getHours(),mi:d.getMinutes(),w:d.getDay()}; };
+const p2=n=>String(n).padStart(2,"0");
+const kDot=ts=>{ const k=KST(ts); return `${k.y}.${p2(k.m)}.${p2(k.d)}`; };
+const kDash=ts=>{ const k=KST(ts); return `${k.y}-${p2(k.m)}-${p2(k.d)}`; };
+const kAP=ts=>{ const k=KST(ts), h=k.h%12||12; return `${h}${k.mi?":"+p2(k.mi):""}${k.h<12?"AM":"PM"}`.replace(/^12AM$/,"0AM"); };
+const k24=ts=>{ const k=KST(ts); return `${p2(k.h)}:${p2(k.mi)}`; };
+const kW=ts=>["SUN","MON","TUE","WED","THU","FRI","SAT"][KST(ts).w];
+const kWzh=ts=>"日一二三四五六"[KST(ts).w];
+const kZh=ts=>{ const k=KST(ts); return `${k.y} 年 ${k.m} 月 ${k.d} 日（${kWzh(ts)}）${k.h<12?"上午":k.h<18?"下午":"晚上"} ${k.h%12||12} 點${k.mi?` ${k.mi} 分`:""}`; };
+const REL_EN={"單曲":"Single","數位單曲":"Digital Single","EP":"EP","迷你專輯":"Mini Album","正規專輯":"Album","改版專輯":"Repackage Album","電子專輯":"E-Album"};
+const relEn=s=>REL_EN[s.rtype]||"Album";
+const tag=v=>"#"+String(v||"").replace(/[\s'"「」《》【】<>\[\]]/g,"");
+const lc=v=>String(v||"").toLowerCase();
+/* 這一則要用的時間：預告、排程表寫發行時間；其他寫自己的時間 */
+function capTimes(s,x){ const plan=promoPlan(s), rel=plan.find(y=>y.k==="rel"), relTs=rel?rel.ts:s.day, days=Math.max(0,Math.ceil((relTs-((x&&x.ts)||Date.now()))/864e5)); return {relTs,days}; }
+
+function coCap(co,k,s,x){ x=x||{}; const N=s.name, T=s.title||N, db=s.k==="db", {relTs,days}=capTimes(s,x), n=x.no||1, tot=x.tot||1, R=relEn(s), RZ=s.rtype||"專輯";
+  const kindEn={sched:"Scheduler",teaser:"Teaser Image",concept:"Concept Photo",trk:"Track List",medley:"Highlight Medley",film:"Concept Film",mvt:"MV Teaser"};
+  switch(co){
+  case "SM": { const hd=`${N} ${db?"The 1st ":""}${R} 【${T}】`, when=`➫ ${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)}`;
+    if(k==="annDb") return {t:"SM NEW ARTIST",b:`${N}\n${db?"The 1st ":""}${R} 【${T}】\n\n${when}\n\n${tg}`};
+    if(k==="annCb") return {t:hd,b:`${when}\n\n${tg}`};
+    if(k==="rel") return {t:hd,b:`➫ NOW ON SALE\n\n${tg}`};
+    if(k==="concept") return {t:hd,b:`${x.n?`'${x.n}' `:""}Concept Photo${tot>1?` #${n}`:""}\n${when}\n\n${tg}`};
+    if(k==="teaser") return {t:hd,b:`Teaser Image #${n}\n${when}\n\n${tg}`};
+    if(k==="mvt") return {t:hd,b:`'${T}' MV Teaser\n${when}\n\n${tg}`};
+    return {t:hd,b:`${kindEn[k]}\n${when}\n\n${tg}`}; }
+  case "HYBE": { const when=`${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)}`;
+    if(k==="annDb"||k==="annCb") return {t:db?`[Notice] ${N} 出道相關公告`:`[Notice] ${N} ${RZ}《${T}》發行相關公告`,
+      b:`您好，這裡是 HYBE。\n\n${db?`新人${s.solo?"SOLO 藝人":""} ${N} 將於 ${kZh(relTs)}（韓國時間）發行出道${RZ}《${T}》，正式出道。`:`${N} 將於 ${kZh(relTs)}（韓國時間）發行${RZ}《${T}》。`}\n\n發行前將陸續公開概念照、預告影片等內容，詳細日程請參考之後公開的排程表。\n\n請大家給予 ${N} 溫暖的關注與支持。\n謝謝。`};
+    if(k==="rel") return {t:`${N} '${T}' Official MV`,b:`Out Now\n\n${tg}`};
+    if(k==="concept") return {t:`${N} '${T}' Concept Photo`,b:`${x.n?`'${x.n}' Ver.`:`Ver. ${n}`}\n\n${when}\n${tg}`};
+    if(k==="teaser") return {t:`${N} '${T}' Teaser Image`,b:`${tot>1?`#${n}\n\n`:""}${when}\n${tg}`};
+    if(k==="mvt") return {t:`${N} '${T}' Official MV Teaser`,b:`${when}\n${tg}`};
+    if(k==="sched") return {t:`${N} '${T}' Promotion Schedule`,b:`${when}\n${tg}`};
+    return {t:`${N} '${T}' ${kindEn[k]}`,b:`${when}\n${tg}`}; }
+  case "JYP": { const when=`${kDot(relTs)} (${kW(relTs)}) ${kAP(relTs)} KST`, tg=`${tag(N)} ${tag(T)}`, hd=`${N} <${T}>`;
+    if(k==="annDb") return {t:"JYP NEW ARTIST",b:`${N}\n1st ${R} <${T}>\n\n${when}\n\n${tg}`};
+    if(k==="annCb") return {t:hd,b:`${R}\n\n${when}\n\n${tg}`};
+    if(k==="rel") return {t:hd,b:`"${T}" M/V\nOUT NOW\n\n${tg}`};
+    if(k==="mvt") return {t:`${N} "${T}" M/V Teaser`,b:`${when}\n\n${tg}`};
+    if(k==="concept") return {t:hd,b:`Concept Photo${x.n?` - ${x.n}`:` ${n}`}\n\n${when}\n\n${tg}`};
+    if(k==="teaser") return {t:hd,b:`Teaser Image ${n}\n\n${when}\n\n${tg}`};
+    return {t:hd,b:`${kindEn[k]}\n\n${when}\n\n${tg}`}; }
+  case "YG": { const U=String(N).toUpperCase(), RU=(db?"1ST ":"")+R.toUpperCase(), when=`${kDot(relTs)} ${kAP(relTs)} (KST)`, tg=`${tag(N)} ${tag(T)} #YG`;
+    if(k==="annDb") return {t:"WHO'S NEXT?",b:`YG NEW ARTIST\n${U}\n\n${when}\n\n${tg}`};
+    if(k==="annCb") return {t:`${U} - ${RU} [${T}]`,b:`COMING SOON\n${when}\n\n${tg}`};
+    if(k==="rel") return {t:`${U} - '${T}' M/V`,b:`OUT NOW\n\n${tg}`};
+    if(k==="mvt") return {t:`[${U}] '${T}' M/V TEASER`,b:`${when}\n\n${tg}`};
+    if(k==="teaser") return {t:`${U} - ${RU} [${T}] TEASER POSTER`,b:`${tot>1?`#${n}\n`:""}${when}\n\n${tg}`};
+    if(k==="concept") return {t:`${U} - ${RU} [${T}] ${x.n?String(x.n).toUpperCase()+" ":""}CONCEPT PHOTO`,b:`${when}\n\n${tg}`};
+    if(k==="sched") return {t:`${U} - ${RU} [${T}] PROMOTION SCHEDULE`,b:`${when}\n\n${tg}`};
+    return {t:`${U} - [${T}] ${kindEn[k].toUpperCase()}`,b:`${when}\n\n${tg}`}; }
+  case "PAPERMOON": { const n0=lc(N), when=`${kDot(relTs)} · ${k24(relTs)}`;
+    if(k==="annDb") return {t:"🌙 papermoon letter",b:`紙做的月亮上，又多了一顆星。\n\n${n0}\n「${lc(T)}」\n${when} kst\n\n一起等月亮升起吧。`};
+    if(k==="annCb") return {t:"🌙 papermoon letter",b:`${n0} 寫了一封新的信。\n\n「${lc(T)}」\n${when} kst\n\n請在月亮最圓的那天打開它。`};
+    if(k==="rel") return {t:`🌙 ${n0} — 「${lc(T)}」`,b:`今晚，月亮升起了。\nout now.`};
+    if(k==="sched") return {t:`🌙 ${n0} — moon calendar`,b:`還有 ${days} 個夜晚。\n${when} kst`};
+    if(k==="teaser") return {t:`🌙 ${n0} — 「${lc(T)}」`,b:`teaser image no.${n}\n${when} kst`};
+    if(k==="concept") return {t:`🌙 ${n0} — 「${lc(T)}」`,b:`concept photo · ${lc(x.n||"no."+n)}\n${when} kst`};
+    if(k==="trk") return {t:`🌙 ${n0} — tracklist`,b:`這封信裡，一共有幾首歌呢？\n${when} kst`};
+    return {t:`🌙 ${n0} — 「${lc(T)}」`,b:`${lc(kindEn[k])}\n${when} kst`}; }
+  case "BLUE HOUR": { const U=String(N).toUpperCase(), d=`${p2(KST(relTs).m)}.${p2(KST(relTs).d)} ${kW(relTs)} ${k24(relTs)} KST`, cd=days>0?`T-${days} DAYS`:"T-0";
+    if(k==="annDb") return {t:`BLUE HOUR ── ${k24(relTs)}`,b:`[ NEW ARTIST ]\n${U}\n${T}\n\n${d}\n${cd}`};
+    if(k==="annCb") return {t:`BLUE HOUR ── ${k24(relTs)}`,b:`[ ${U} ]\n${T}\n\n${d}\n${cd}`};
+    if(k==="rel") return {t:`[${U}] ${T}`,b:`── 00:00:00\nNOW PLAYING`};
+    if(k==="sched") return {t:`[${U}] ${T}`,b:`TIMETABLE\n${d}\n${cd}`};
+    if(k==="teaser") return {t:`[${U}] ${T}`,b:`TEASER IMAGE ${n}/${tot}\n${d}\n${cd}`};
+    if(k==="concept") return {t:`[${U}] ${T}`,b:`CONCEPT PHOTO ── ${String(x.n||n).toUpperCase()}\n${d}\n${cd}`};
+    return {t:`[${U}] ${T}`,b:`${kindEn[k].toUpperCase()}\n${d}\n${cd}`}; }
+  case "DOLPUNG Lab.": { const i=(x.idx||0)+1, all=x.all||1, pct=k==="rel"?100:Math.round(i/all*100), bar="▓".repeat(Math.round(pct/10))+"░".repeat(10-Math.round(pct/10)), rep=`REPORT #${String((strHash(s.id)%900)+100)}-${p2(i)}`, launch=`${kDash(relTs)} ${k24(relTs)} KST`;
+    if(k==="annDb"||k==="annCb") return {t:`DOLPUNG Lab. ${rep}`,b:`PROJECT  ${N}\nTYPE  ${db?"DEBUT":"COMEBACK"} · ${R.toUpperCase()}\nTITLE  ${T}\nLAUNCH  ${launch}\n\nWE BELIEVE IN INNOVATION.`};
+    if(k==="rel") return {t:`DOLPUNG Lab. / ${N}`,b:`PROJECT ${N} — LAUNCHED.\n${T} OUT NOW.\nPROGRESS ${bar} 100%`};
+    const f={sched:"EXPERIMENT SCHEDULE",teaser:`FILE ${p2(n)} — TEASER IMAGE`,concept:`FILE ${p2(n)} — CONCEPT PHOTO${x.n?` (${String(x.n).toUpperCase()})`:""}`,trk:"TRACK DATA",medley:"AUDIO SAMPLE — HIGHLIGHT MEDLEY",film:"VISUAL DATA — CONCEPT FILM",mvt:"VISUAL DATA — MV TEASER"}[k]||kindEn[k];
+    return {t:`DOLPUNG Lab. / ${N}`,b:`${f}\nLAUNCH ${launch}\nPROGRESS ${bar} ${pct}%`}; }
+  default: return {t:k==="annDb"?`✨ 出道預告｜「${N}」`:k==="annCb"?`📢 回歸預告｜${N}《${T}》`:`${N}《${T}》${PR_KIND[k]||""}`,b:k==="annDb"||k==="annCb"?`${mdTxt(relTs)} 見！`:""}; } }
+const capHtml=c=>`<p class="cp-t">${esc(c.t)}</p>${c.b?`<p class="cp-x cp-cap">${esc(c.b)}</p>`:""}`;
 
 </script>
 </body>
