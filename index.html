@@ -5979,6 +5979,15 @@ html[data-theme="dark"] .cp-tt{color:#F3F1F7!important}
 .toast-ic::after{content:"♥";position:absolute;inset:0;display:grid;place-items:center;color:#fff;font-size:11px;font-style:normal;line-height:1}
 @keyframes toastIn{from{opacity:0;transform:translateY(10px) scale(.9)}to{opacity:1;transform:none}}
 @keyframes toastOut{to{opacity:0;transform:translateY(6px) scale(.96)}}
+/* 申請表等彈窗：不能左右滑；所有輸入框同一種底色（iPhone 深色模式不會變成黑框） */
+.t-modal{overflow-x:hidden!important}
+.t-modal .t-mb{min-width:0;max-width:100%}
+.a-nick-in{background:#fff;box-sizing:border-box;max-width:100%;min-width:0}
+html[data-theme="dark"] .a-nick-in{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.14)!important;color:var(--ink)!important}
+input[type="time"].a-nick-in{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;height:44px;line-height:44px;padding-top:0;padding-bottom:0;text-align:center}
+input[type="time"].a-nick-in::-webkit-date-and-time-value{text-align:center;margin:0}
+/* 選項膠囊：換行排，不要被框切出一條硬邊 */
+.t-modal .chips{flex-wrap:wrap;overflow:visible;padding:2px 2px 4px;margin-left:-2px;margin-right:-2px}
 
 </style>
 </head>
@@ -6423,7 +6432,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104055524";
+const BUILD="20261104055940";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -12227,7 +12236,7 @@ function toast(msg,actLabel,actName){
   /* 「已傳送」這類完成小提醒：哪裡都不出現（TIE 裡也不要）；提醒錯誤、要你做事的照常出現 */
   try{ if(OK_RE.test(String(msg).replace(/<[^>]+>/g,"").trim())) return; }catch(e){}
   clearTimeout(toastTimer);
-  const el=document.createElement("div"); el.className="toast"; if(ui.sheet){el.style.bottom="auto";el.style.top="calc(env(safe-area-inset-top,0px) + 14px)";} el.setAttribute("role","status");
+  const el=document.createElement("div"); el.className="toast"; if(ui.sheet||(layer&&layer.innerHTML)){el.style.bottom="auto";el.style.top="calc(env(safe-area-inset-top,0px) + 14px)";}   /* 有彈窗時放上面，不要蓋到按鈕 */ el.setAttribute("role","status");
   el.innerHTML=`<i class="toast-ic" aria-hidden="true"></i><span>${msg}</span>${actLabel?`<button data-a="${actName}">${actLabel}</button>`:""}`;
   document.querySelectorAll(".toast").forEach(t=>t.remove()); document.body.appendChild(el);
   toastTimer=setTimeout(()=>{ el.classList.add("out"); setTimeout(()=>el.remove(),260); },actLabel?4200:3000);
