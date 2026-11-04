@@ -5889,6 +5889,8 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .copg-hd b{display:inline-flex;align-items:center;gap:4px}.copg-hd b svg{width:18px;height:18px;flex:0 0 18px}
 .cp-pin{align-items:flex-start}.cp-pi .post{height:auto}
 .cp-pi .cp-imgs .cp-img img{aspect-ratio:1/1}.cp-pi .post.cp>.cp-img img{max-height:340px;object-fit:cover}
+.hr-body{min-height:220px;line-height:1.6;resize:vertical}
+.hr-body,.pr-trk{text-align:left;font-size:14px}
 
 </style>
 </head>
@@ -6331,7 +6333,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104004703";
+const BUILD="20261104005847";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -11576,11 +11578,11 @@ function adminVodHtml(){ const gid=ui.vodG||GROUPS[0].id, vs=getVods(gid), al=ge
 const ymd=ts=>{const t=new Date(ts);return `${t.getFullYear()}.${pad(t.getMonth()+1)}.${pad(t.getDate())}`};
 function coreHead(title){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title core-t${/[\u3400-\u9FFF\uAC00-\uD7AF]/.test(title)?" cjk":""}">${title}</div><span class="sh-sp"></span></div></header>`; }
 /* ===== 娛樂新聞 NEWS：管理員手動發＋App 自動快訊（出道、回歸、一位、三冠王、AK、PAK）。粉絲、藝人、管理員看到同一份 ===== */
-const NEWS_TAG={tour:["世巡","#10B981"],debut:["出道","#F472B6"],cb:["回歸","#8B5CF6"],win:["一位","#F59E0B"],crown:["三冠王","#D97706"],ak:["AK","#EF4444"],pak:["PAK","#DC2626"],off:["新聞","#0EA5E9"]};
+const NEWS_TAG={hr:["人事","#64748B"],tour:["世巡","#10B981"],debut:["出道","#F472B6"],cb:["回歸","#8B5CF6"],win:["一位","#F59E0B"],crown:["三冠王","#D97706"],ak:["AK","#EF4444"],pak:["PAK","#DC2626"],off:["新聞","#0EA5E9"]};
 const idTs=(id,re)=>{ const t=+String(id).replace(re,""); return t>1.5e12&&t<4e12?t:0; };
 const nwMD=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}月${d.getDate()}日`; };
 const NW_BY="HAECHU 娛樂新聞部";
-function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.ended||[])], pick=(id,a)=>a[strHash(id)%a.length];
+function newsAuto(raw){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.ended||[])], pick=(id,a)=>a[strHash(id)%a.length];
   const tail=(id,g)=>pick(id,[`粉絲可以到 ${g.name} 的社群留言祝賀。`,`${g.name} 的社群裡已經湧入許多祝賀留言。`,`更多消息請持續關注 ${g.name} 的 HAECHU 社群。`]);
   const today=t=>dayStart(t)===dayStart(Date.now()), DB=getDebut(), gT0={};
   GROUPS.forEach(g=>{ const db=DB.find(x=>x.gid===g.id&&x.day&&x.status!=="gone"), t=db?db.day:idTs(g.id,/^g/); if(!t) return; gT0[g.id]=t; const ms=groupArtists(g.id).map(id=>MEMBERS[id]&&MEMBERS[id].name).filter(Boolean), id="au_dbt_"+g.id;   /* 出道日＝出道申請排定的那天（不是核准那天） */
@@ -11611,7 +11613,9 @@ function newsAuto(){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...(m.
       L.push({id,tag:"tour",ts:c.endTs,gids:[t.gid],title:`${g.name}「${t.title}」${st.city}站圓滿落幕`,body:`【${NW_BY}】${g.name} 的世界巡演「${t.title}」第 ${i+1} 站${st.city}站，於 ${nwMD(c.endTs)} 圓滿落幕。\n\n${i+1<Ls.length?`下一站是 ${nwMD(Ls[i+1].startTs)} 的${Ls[i+1].city}站。`:"這也是這次巡演的最後一站。"}\n\n${tail(id,g)}`}); });
     if(wtDone(t)){ const last=stopCC(Ls[Ls.length-1]), id=`au_trd_${t.id}`; L.push({id,tag:"tour",ts:last.endTs+60e3,gids:[t.gid],title:`${g.name}「${t.title}」全 ${Ls.length} 站巡演圓滿落幕`,
       body:`【${NW_BY}】${g.name} 的世界巡演「${t.title}」在${Ls[Ls.length-1].city}站畫下句點，全 ${Ls.length} 站圓滿落幕。\n\n${g.name} 因這次巡演共獲得 ${fmt(Ls.length*TOUR_STOP_PTS+TOUR_DONE_PTS)} 積分。\n\n${tail(id,g)}`}); } });
-  const now=Date.now(); return L.map(x=>({...x,auto:true,ts:Math.min(x.ts,now)})); }
+  try{ coNotes().filter(n=>!n.noNews).forEach(n=>L.push({id:"nwhr_"+n.id,tag:"hr",ts:n.ts,gids:n.gid&&groupOf(n.gid)?[n.gid]:[],co:n.co,title:n.newsTitle||n.title,body:n.newsBody||n.body})); }catch(e){}
+  /* 有公司的團：公司先發，新聞晚 10 分鐘 */
+  const now=Date.now(); return L.map(x=>{ const co=x.co||(x.gids||[]).map(g=>(groupOf(g)||{}).co).find(Boolean)||""; const late=co&&x.ts<=now; return {...x,auto:true,co,ts0:Math.min(x.ts,now),ts:late?x.ts+600e3:Math.min(x.ts,now)}; }).filter(x=>raw||x.ts<=now); }
 const getNewsM=()=>S.get(K.news,[])||[];
 function newsAll(withHidden){ const H=S.get(K.newsHide,{})||{}, cut=Date.now()-120*864e5;
   return [...getNewsM().map(x=>({...x,tag:"off"})),...newsAuto().filter(x=>x.ts>cut).map(x=>{ const e=(S.get(K.newsEd,{})||{})[x.id]; return e?{...x,...e,auto:true}:x; })].filter(x=>withHidden||!H[x.id]).sort((a,b)=>b.ts-a.ts); }
@@ -11978,7 +11982,7 @@ function viewAdmin(tab){
     if(tab==="cbreq") return uniHead("回歸申請")+cbrAdmHtml();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
       if(r0.p==="new") return uniHead("新增藝人")+`<main class="page roster">${h.slice(a,b)}</main>`;
-      const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}</main>`;
+      const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}${hrHtml(GROUPS[gi])}</main>`;
       const fd=S.get(K.fandom,{});
       return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span>${esc(g.name)}<span class="r">${g.co?esc(g.co)+"・":""}${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
     if(tab==="shopadm") return uniMainHead("商店")+viewShopAdmin();
@@ -18516,18 +18520,18 @@ document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="aeRel"
 
 /* ---------- 公司官方帳號：新聞（晚 10 分鐘轉發）、人事公告、公司頁 ---------- */
 const CO_NOTE="daisuki_co_notice";   /* 管理員發的人事公告：{id,co,gid,mid,kind,title,body,ts} */
-const coNotes=()=>(S.get(CO_NOTE,[])||[]).filter(x=>x&&x.id&&x.co);
+const coNotes=()=>(S.get(CO_NOTE,[])||[]).filter(x=>x&&x.id);
 const coOfGid=gid=>(groupOf(gid)||{}).co||"";
 const coHead=(co,ts)=>`<div class="post-head"><button class="co-go" data-a="coPage" data-v="${esc(co)}" aria-label="${esc(coInfo(co).n)}">${coAv(co)}</button><button class="who co-go" data-a="coPage" data-v="${esc(co)}"><b>${esc(coInfo(co).n)} ${I.verified} <span class="badge">官方</span></b><span>${ymdhm(ts)}</span></button></div>`;
-function coNewsPosts(){ const now=Date.now(); let N=[]; try{ N=newsAll(); }catch(e){}
-  return N.filter(n=>n.ts+600e3<=now).flatMap(n=>[...new Set((n.gids||[]).map(coOfGid).filter(Boolean))].map(co=>({k:"news",id:"cn_"+n.id+"_"+co,ts:n.ts+600e3,news:n,co}))); }
+function coNewsPosts(){ const now=Date.now(), H=S.get(K.newsHide,{})||{}, E=S.get(K.newsEd,{})||{}; let N=[]; try{ N=newsAuto(true); }catch(e){}
+  return N.filter(n=>n.co&&n.tag!=="hr"&&!H[n.id]&&n.ts0<=now).map(n=>{ const e=E[n.id], nn=e?{...n,...e}:n; return {k:"news",id:"cn_"+n.id,ts:n.ts0,news:nn,co:n.co,out:n.ts<=now}; }); }
 const coNotePosts=()=>coNotes().filter(x=>x.ts<=Date.now()).map(x=>({k:"note",id:"cnt_"+x.id,ts:x.ts,note:x,co:x.co}));
 const coOfPost=x=>x.co||(x.src&&x.src.co)||"";
 /* 全部官方貼文（all＝公司頁要看全部歷史） */
 function coFeed(co,all){ const now=Date.now(); return [...promoSrcs(all).flatMap(promoPlan).filter(x=>x.ts<=now),...coNewsPosts(),...coNotePosts()].filter(x=>coOfPost(x)&&(!co||coOfPost(x)===co)).sort((a,b)=>b.ts-a.ts); }
 const newsBase=()=>route().role==="artist"?"#/artist?tab=foc&p=news":"#/fan/core?p=news";
 function coNewsCard(x){ const n=x.news, p=String(n.body||"").split(/\n+/).map(s=>s.trim()).filter(Boolean)[0]||"";
-  return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p>${p?`<p class="cp-x cp-clip">${esc(p)}</p>`:""}${n.img?`<button class="cp-img cp-nimg" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}"><img src="${esc(n.img)}" alt="" loading="lazy"></button>`:""}<button class="cp-more" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}">閱讀全文 ›</button></article>`; }
+  return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p>${p?`<p class="cp-x cp-clip">${esc(p)}</p>`:""}${n.img?(x.out?`<button class="cp-img cp-nimg" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}"><img src="${esc(n.img)}" alt="" loading="lazy"></button>`:`<span class="cp-img cp-nimg"><img src="${esc(n.img)}" alt="" loading="lazy"></span>`):""}${x.out?`<button class="cp-more" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}">閱讀全文 ›</button>`:""}</article>`; }
 function coNoteCard(x){ const n=x.note;
   return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p><p class="cp-x cp-body">${esc(n.body||"")}</p></article>`; }
 /* LOVE 動態最上面：公司官方公告（置頂，左右滑） */
@@ -18547,6 +18551,100 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="coTab"){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tiei-body")||{}).scrollTop||0; openCoPage(t.dataset.c,t.dataset.v); return; }
   if(a==="coGrp"){ e.stopImmediatePropagation(); if(route().role!=="fan") return; layer.innerHTML=""; location.hash="#/fan/grp?id="+t.dataset.v; return; }
 },true);
+
+/* =========================================================
+   人事異動（管理員：人員 → 藝人與團 → 點團 → 人事異動）
+   ・合約到期不續約／提前解約 → 團變「無所屬」
+   ・轉到別的公司 → 冷卻期照新公司算（coGap 讀 g.co）
+   ・成員退團 → 貼文刪掉、TIE 結束（粉絲那邊照剩下的天數退積分）、帳號變回一般粉絲；退到沒人＝解散
+   ・解散 → 全部成員退團，團從名單拿掉
+   ・公司帳號先發聲明，新聞晚 10 分鐘（js/09 newsAuto 會從 CO_NOTE 做新聞）
+   ・沒有公司的團：用 HAECHU 公告發
+   ========================================================= */
+const HR_DEP="daisuki_departed";   /* {"m:<mid>":{ts,name,gid}, "g:<gid>":{ts,name}} → 粉絲那邊拿來退積分 */
+const HR_KIND={coEnd:"合約到期不續約",term:"提前解約",move:"轉到別的公司",leave:"成員退團",disband:"解散"};
+const hrMembers=gid=>grpMembers(gid).filter(m=>MEMBERS[m]&&!MEMBERS[m].official);
+const hrYmd=ts=>{ const d=new Date(ts); return `${d.getFullYear()} 年 ${d.getMonth()+1} 月 ${d.getDate()} 日`; };
+/* 聲明範本（照真實公司聲明的順序：問候 → 說明 → 感謝 → 祝福 → 之後怎麼走） */
+function hrDraft(o){ const g=groupOf(o.gid)||{name:""}, G=g.name, co=coInfo(g.co||"").n, co2=o.co2?coInfo(o.co2).n:"", date=hrYmd(o.eff||Date.now()), yrs=Math.max(1,Math.round((Date.now()-(idTs(o.gid,/^g/)||Date.now()))/(365*864e5))), hasCo=!!g.co;
+  const who=(o.mids||[]).map(m=>artName(m,"feed")).join("、"), rest=hrMembers(o.gid).filter(m=>!(o.mids||[]).includes(m)).length, me=hasCo?co:APP_NAME;
+  if(o.kind==="coEnd"||o.kind==="term") return {title:`[公告] ${G} 專屬合約${o.kind==="term"?"終止":"到期"}相關說明`,
+    body:`您好，這裡是 ${co}。\n\n首先，感謝一直以來支持 ${G} 的粉絲們。\n\n${o.kind==="term"?`經過長時間的慎重討論，${G} 與本公司雙方協議，決定自 ${date} 起提前終止專屬合約。`:`${G} 與本公司的專屬合約已於 ${date} 到期。經過長時間的慎重討論，雙方決定不續約，並尊重彼此的選擇。`}\n\n${G} 出道以來，以真誠的音樂與舞台陪伴著大家。本公司由衷感謝 ${G} 這段期間付出的努力，也感謝始終給予支持的粉絲們。\n\n雖然與本公司的旅程在此告一段落，我們會真心為 ${G} 的新開始加油，也懇請大家繼續給予 ${G} 溫暖的支持。\n\n謝謝。`,
+    newsTitle:`${G} 與 ${co} ${o.kind==="term"?"提前終止專屬合約":"合約到期，決定不續約"}`,
+    newsBody:`${co} 今天發表官方聲明，宣布${o.kind==="term"?`與 ${G} 經雙方協議，自 ${date} 起提前終止專屬合約`:`與 ${G} 的專屬合約已於 ${date} 到期，雙方決定不續約`}。\n\n${co} 在聲明中感謝 ${G} 這段期間的努力，並表示會真心支持 ${G} 的新開始。\n\n${G} 今後的動向，請持續關注 HAECHU 娛樂新聞。`};
+  if(o.kind==="move"&&!hasCo) return {title:`[公告] 歡迎 ${G} 加入 ${co2}`,
+    body:`您好，這裡是 ${co2}。\n\n我們很高興地宣布，${G} 已與本公司簽訂專屬合約，自 ${date} 起成為 ${co2} 的一員。\n\n本公司將全力支持 ${G} 今後的活動，請大家多多期待 ${G} 在 ${co2} 的新篇章。\n\n謝謝。`,
+    newsTitle:`${G} 簽約 ${co2}`, newsBody:`${co2} 今天發表官方聲明，${G} 自 ${date} 起與 ${co2} 簽訂專屬合約。\n\n${co2} 表示將全力支持 ${G} 今後的活動。`};
+  if(o.kind==="move") return {title:`[公告] ${G} 專屬合約相關說明`,
+    body:`您好，這裡是 ${co}。\n\n首先，感謝一直以來支持 ${G} 的粉絲們。\n\n${G} 與本公司經過長時間的討論，決定自 ${date} 起結束專屬合約，${G} 將轉往 ${co2} 繼續活動。\n\n本公司由衷感謝 ${G} 這段期間的努力，也會真心為 ${G} 的新篇章加油。懇請大家今後也繼續給予 ${G} 溫暖的支持。\n\n謝謝。`,
+    welcome:`您好，這裡是 ${co2}。\n\n我們很高興地宣布，${G} 已與本公司簽訂專屬合約，自 ${date} 起成為 ${co2} 的一員。\n\n本公司將全力支持 ${G} 今後的活動，請大家多多期待 ${G} 在 ${co2} 的新篇章。\n\n謝謝。`,
+    newsTitle:`${G} 簽約 ${co2}，開啟新篇章`,
+    newsBody:`${co} 與 ${co2} 今天先後發表官方聲明，${G} 將自 ${date} 起結束與 ${co} 的合約，轉往 ${co2} 繼續活動。\n\n${co2} 表示將全力支持 ${G} 今後的活動。`};
+  if(o.kind==="disband"||(o.kind==="leave"&&rest===0)) return {title:`[公告] ${G} 團體活動結束相關說明`,
+    body:`您好，這裡是 ${me}。\n\n首先，向一直以來深愛 ${G} 的粉絲們致上深深的感謝。\n\n在此告知，${G} 將於 ${date} 結束團體活動，正式解散。${hasCo?"本公司與成員們經過長時間的討論，最終決定尊重每一位成員對未來的選擇。":""}\n\n${G} 這 ${yrs} 年來帶給大家許多珍貴的回憶，這一切都是因為有粉絲們的陪伴。突然傳達這個消息，讓大家擔心了，我們深感抱歉。\n\n雖然 ${G} 的旅程在此畫下句點，請大家記得一起度過的時光，也為成員們各自的新開始送上祝福。\n\n謝謝。`,
+    newsTitle:`${G} 宣布解散，結束 ${yrs} 年團體活動`,
+    newsBody:`${me} 今天發表官方聲明，宣布 ${G} 將於 ${date} 結束團體活動，正式解散。\n\n聲明中表示，這是尊重每位成員對未來的選擇後做出的決定，並感謝粉絲們一路以來的陪伴。`};
+  if(o.kind==="leave") return {title:`[公告] ${G} 成員 ${who} 相關說明`,
+    body:`您好，這裡是 ${me}。\n\n在此向一直以來支持 ${G} 的粉絲們，告知關於成員 ${who} 的消息。\n\n${who} 經過長時間的思考，表達了希望走上不同道路的意願。${hasCo?"本公司與成員們":"成員們"}經過多次慎重討論後，決定尊重 ${who} 的決定。${who} 將自 ${date} 起退出 ${G}${hasCo?"，並結束與本公司的專屬合約":""}。\n\n突然傳達這個消息，讓粉絲們擔心，我們深感抱歉。\n\n${G} 今後將以 ${rest} 人體制繼續活動${hasCo?"，本公司也會全力支持成員們":""}。請大家為 ${who} 的新開始，以及繼續前進的 ${G} 送上溫暖的支持。\n\n謝謝。`,
+    newsTitle:`${who} 退出 ${G}，${G} 將以 ${rest} 人體制繼續活動`,
+    newsBody:`${me} 今天發表官方聲明，${G} 成員 ${who} 將自 ${date} 起退出團體。\n\n聲明表示，這是尊重 ${who} 希望走上不同道路的意願後做出的決定。${G} 今後將以 ${rest} 人體制繼續活動。`};
+  return {title:"",body:""}; }
+
+/* 管理員：團的頁面最下面 */
+function hrHtml(g){ if(!g) return ""; const b=(k,l,d)=>`<button class="list-btn" data-a="hrNew" data-v="${k}" data-g="${g.id}">${l}<span class="r">${d||""}</span></button>`;
+  return `<div class="section-h">人事異動</div><section class="card hr-c">${g.co?b("coEnd","合約到期不續約",esc(g.co))+b("term","提前解約")+b("move","轉到別的公司"):b("move","簽約公司","無所屬")}${g.solo?"":b("leave","成員退團")}${b("disband",g.solo?"結束活動":"解散")}</section>`; }
+function hrSheet(){ const o=ui.hr; if(!o) return; const g=groupOf(o.gid); if(!g) return; const ms=hrMembers(o.gid);
+  if(!o.edited){ const d=hrDraft(o); o.title=d.title; o.body=d.body; }
+  const opts=o.kind==="move"?`<span class="fs-f-lab">新公司</span><div class="chips wrap co-chips">${SK_COS.filter(c=>c!==g.co).map(c=>`<button class="chip ${o.co2===c?"on":""}" data-a="hrCo" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`
+    :o.kind==="leave"?`<span class="fs-f-lab">退團的成員</span><div class="chips wrap">${ms.map(m=>`<button class="chip ${(o.mids||[]).includes(m)?"on":""}" data-a="hrMem" data-v="${m}">${esc(artName(m,"feed"))}</button>`).join("")}</div>`:"";
+  tieModal(`${esc(g.name)}・${g.co||o.kind!=="move"?HR_KIND[o.kind]:"簽約公司"}`,`${opts}<span class="fs-f-lab">生效日期</span><input id="hrEff" class="a-nick-in" type="date" value="${esc(ymdIn(o.eff||Date.now()))}">
+    <span class="fs-f-lab">公告標題</span><input id="hrTi" class="a-nick-in" maxlength="60" placeholder="輸入文字" value="${esc(o.title||"")}">
+    <span class="fs-f-lab">公告內容</span><textarea id="hrBody" class="a-nick-in hr-body" rows="12" placeholder="輸入文字">${esc(o.body||"")}</textarea>`,
+    `<button class="t-mbtn main" data-a="hrGo">發布</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); }
+function hrKeep(){ const o=ui.hr; if(!o) return; const v=id=>{ const e=document.getElementById(id); return e?e.value:null; }, ti=v("hrTi"), bd=v("hrBody"), ef=v("hrEff");
+  if(ef!=null){ const t=ymdTs(ef); if(t&&t!==o.eff){ o.eff=t; } } if(ti!=null&&bd!=null&&(ti!==o.title||bd!==o.body)){ o.title=ti; o.body=bd; o.edited=true; } }
+/* 真的執行 */
+function hrRemoveMember(mid,now){ const m=MEMBERS[mid]; if(!m) return; const D=S.get(HR_DEP,{})||{}; D["m:"+mid]={ts:now,name:m.name,gid:m.group}; S.set(HR_DEP,D);
+  const P=S.get(K.posts,[])||[], gone=new Set(P.filter(p=>p.member===mid).map(p=>p.id)); if(gone.size){ S.set(K.posts,P.filter(p=>!gone.has(p.id))); S.set(K.comments,(S.get(K.comments,[])||[]).filter(c=>!gone.has(c.postId))); }
+  Object.keys(ACCOUNTS).filter(e=>(ACCOUNTS[e]||{}).member===mid).forEach(e=>unbindArtist(e));
+  saveRoster(r=>{ delete r.members[mid]; }); delete MEMBERS[mid]; }
+function hrDisband(gid,now){ const g=groupOf(gid); if(!g) return; hrMembers(gid).forEach(m=>hrRemoveMember(m,now)); const D=S.get(HR_DEP,{})||{}; D["g:"+gid]={ts:now,name:g.name}; S.set(HR_DEP,D);
+  saveRoster(r=>{ r.groups=(r.groups||[]).filter(x=>x.id!==gid); delete r.members[gid+"_o"]; }); const i=GROUPS.findIndex(x=>x.id===gid); if(i>=0) GROUPS.splice(i,1); delete MEMBERS[gid+"_o"]; }
+function hrSetCo(gid,co){ saveRoster(r=>{ const x=(r.groups||[]).find(y=>y.id===gid); if(x){ if(co) x.co=co; else delete x.co; } }); const g=groupOf(gid); if(g){ if(co) g.co=co; else delete g.co; } }
+function hrGo(){ hrKeep(); const o=ui.hr, g=o&&groupOf(o.gid); if(!g) return; const now=Date.now(), title=(o.title||"").trim(), body=(o.body||"").trim();
+  if(o.kind==="move"&&!o.co2){ toast("請選新公司"); return; } if(o.kind==="leave"&&!(o.mids||[]).length){ toast("請選退團的成員"); return; } if(!title||!body){ toast("請輸入公告內容"); return; }
+  const d=hrDraft(o), oldCo=g.co||"", disb=o.kind==="disband"||(o.kind==="leave"&&hrMembers(o.gid).every(m=>o.mids.includes(m))), L=S.get(CO_NOTE,[])||[];
+  if(o.kind==="move"&&!oldCo) L.push({id:"hr"+now.toString(36),co:o.co2,gid:o.gid,kind:"join",title,body,ts:now,newsTitle:d.newsTitle,newsBody:d.newsBody,gname:g.name});
+  else if(oldCo) L.push({id:"hr"+now.toString(36),co:oldCo,gid:o.gid,kind:o.kind,title,body,ts:now,newsTitle:d.newsTitle,newsBody:d.newsBody,gname:g.name});
+  else { publishAnnounce(title); L.push({id:"hr"+now.toString(36),co:"",gid:o.gid,kind:o.kind,title,body,ts:now,newsTitle:d.newsTitle,newsBody:d.newsBody,gname:g.name}); }
+  if(o.kind==="move"&&oldCo) L.push({id:"hw"+now.toString(36),co:o.co2,gid:o.gid,kind:"join",title:`[公告] 歡迎 ${g.name} 加入 ${coInfo(o.co2).n}`,body:d.welcome||"",ts:now+1000,noNews:1,gname:g.name});
+  S.set(CO_NOTE,L);
+  if(o.kind==="coEnd"||o.kind==="term") hrSetCo(o.gid,"");
+  else if(o.kind==="move") hrSetCo(o.gid,o.co2);
+  else if(disb) hrDisband(o.gid,now);
+  else o.mids.forEach(m=>hrRemoveMember(m,now));
+  ui.hr=null; layer.innerHTML=""; if(disb) location.hash="#/admin?tab=roster"; render(); toast("已發布"); }
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^hr[A-Z]/.test(t.dataset.a)) return; e.stopImmediatePropagation(); const a=t.dataset.a;
+  if(a==="hrNew"){ ui.hr={kind:t.dataset.v,gid:t.dataset.g,mids:[],eff:dayStart(Date.now())}; hrSheet(); return; }
+  hrKeep(); const o=ui.hr; if(!o) return;
+  if(a==="hrCo"){ o.co2=o.co2===t.dataset.v?"":t.dataset.v; hrSheet(); return; }
+  if(a==="hrMem"){ const v=t.dataset.v; o.mids=o.mids.includes(v)?o.mids.filter(x=>x!==v):[...o.mids,v]; hrSheet(); return; }
+  if(a==="hrGo"){ const g=groupOf(o.gid), n=o.kind==="leave"?(o.mids||[]).map(m=>artName(m,"feed")).join("、"):(g||{}).name;
+    ask(o.kind==="leave"||o.kind==="disband"?`確定要發布嗎？${n} 的貼文會刪掉、TIE 會結束（粉絲照剩下的天數退積分），帳號變回一般粉絲。`:"確定要發布嗎？",hrGo); return; }
+},true);
+/* 選項變了、還沒自己改過內容 → 範本跟著換 */
+document.addEventListener("change",e=>{ if(e.target&&e.target.id==="hrEff"&&ui.hr){ hrKeep(); if(!ui.hr.edited) hrSheet(); } });
+
+/* ---------- 粉絲那邊：藝人退團／解散 → TIE、Membership 結束，照剩下的天數退積分 ---------- */
+function hrRefund(){ try{ const D=S.get(HR_DEP,{})||{}; if(!Object.keys(D).length) return; const s=session(); if(!s) return;
+  const day=864e5, tieRate=(PLANS.find(p=>p.id==="d30")||PLANS[0]), msRate=(MS_PLANS.find(p=>p.id==="m30")||MS_PLANS[0]); let pts=0; const why=[];
+  const A=subs(); let ch=false; Object.keys(A).forEach(mid=>{ const d=D["m:"+mid]; if(!d) return; const left=Math.max(0,(A[mid].expires||0)-d.ts); const n=Math.round(left/day*tieRate.pts/tieRate.days); if(n>0){ pts+=n; why.push(`${d.name} 的 ${WHISPER_NAME}`); } delete A[mid]; ch=true; });
+  if(ch) S.set(K.tieSubs,A);
+  const M=getMS(); let cm=false; Object.keys(M).forEach(gid=>{ const d=D["g:"+gid]; if(!d) return; const left=Math.max(0,(M[gid].expires||0)-d.ts); const n=Math.round(left/day*msRate.pts/msRate.days); if(n>0){ pts+=n; why.push(`${d.name} 的 Membership`); } delete M[gid]; cm=true; });
+  if(cm) S.set(K.membership,M);
+  if(pts>0){ S.set(K.points,points()+pts); const L=S.get(K.notifs,[]); L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,text:`退還 ${fmt(pts)} 積分・${why.join("、")}（照剩下的天數）`,ts:Date.now()}); S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); }
+  if(ch||cm) setTimeout(()=>{ if(!document.querySelector("input:focus,textarea:focus")) render(); },0); }catch(e){} }
+setTimeout(hrRefund,4000); setInterval(()=>{ if(!document.hidden) hrRefund(); },5*60e3);
 
 </script>
 </body>
