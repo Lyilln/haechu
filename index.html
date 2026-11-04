@@ -5950,6 +5950,9 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .pin-dots i{width:6px;height:6px;border-radius:999px;background:#E4DAFB;transition:width .3s ease,background .3s ease}
 .pin-dots i.on{width:16px;background:linear-gradient(90deg,#A47BFF,#F472B6)}
 html[data-theme="dark"] .pin-dots i{background:rgba(255,255,255,.22)}
+/* 置頂大卡之間要有間距，滑完剛好停在一張上 */
+.pin-trk{gap:14px;margin:0;padding:6px 0;scroll-padding:0}
+.pin-trk .pin-card{flex:0 0 100%;scroll-snap-align:start}
 
 </style>
 </head>
@@ -6394,7 +6397,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104041526";
+const BUILD="20261104041724";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9870,8 +9873,9 @@ function pinnedHtml(){
     ${N>1?`<div class="pin-dots">${anns.map((_,k)=>`<i class="${k===0?"on":""}"></i>`).join("")}</div>`:""}
     <div class="nz-div"></div></div>`;
 }
-const pinIdxNow=t=>Math.round(t.scrollLeft/Math.max(1,t.clientWidth));
-function refreshPin(){ const t=document.getElementById("pinTrk"); if(!t) return; const n=t.children.length; if(n<2) return; const i=(pinIdxNow(t)+1)%n; t.scrollTo({left:i*t.clientWidth,behavior:"smooth"}); }
+const pinStep=t=>{ const c=t.children; return c.length>1?c[1].offsetLeft-c[0].offsetLeft:Math.max(1,t.clientWidth); };   /* 一張卡＋間距 */
+const pinIdxNow=t=>Math.round(t.scrollLeft/pinStep(t));
+function refreshPin(){ const t=document.getElementById("pinTrk"); if(!t) return; const n=t.children.length; if(n<2) return; const i=(pinIdxNow(t)+1)%n; t.scrollTo({left:i*pinStep(t),behavior:"smooth"}); }
 let pinTouchT=0; document.addEventListener("touchstart",e=>{ if(e.target.closest&&e.target.closest("#pinTrk")) pinTouchT=Date.now(); },{passive:true});
 document.addEventListener("scroll",e=>{ const t=e.target; if(!t||t.id!=="pinTrk") return; const i=pinIdxNow(t); t.parentNode.querySelectorAll(".pin-dots i").forEach((d,j)=>d.classList.toggle("on",i===j)); },true);
 setInterval(()=>{ if(document.hidden||Date.now()-pinTouchT<8000) return; if(route().sub==="notifications"||document.querySelector(".artn-pin")) refreshPin(); },5000);
