@@ -5919,6 +5919,13 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .copg-gh{-webkit-tap-highlight-color:transparent;transition:transform .15s ease}.copg-gh:active{transform:scale(.98)}
 .copg-gh:active .copg-chev{background:rgba(139,92,246,.14)}
 .cp-cap{white-space:pre-wrap;line-height:1.6}
+/* 多張照片：左右滑 */
+.cp-sw{margin-top:10px;position:relative}
+.cp-swr{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;border-radius:14px;scrollbar-width:none;gap:0}.cp-swr::-webkit-scrollbar{display:none}
+.cp-swr .cp-img{flex:0 0 100%;scroll-snap-align:center}.cp-swr .cp-img img{width:100%;aspect-ratio:4/5;object-fit:cover;display:block}
+.cp-swd{display:flex;justify-content:center;gap:5px;margin-top:8px}.cp-swd i{width:6px;height:6px;border-radius:50%;background:var(--muted,#999);opacity:.35;transition:opacity .2s,transform .2s}.cp-swd i.on{opacity:1;transform:scale(1.2);background:var(--accent,#8b5cf6)}
+.post.cp>.cp-one{margin-top:10px;border-radius:14px}.post.cp>.cp-one img{width:100%;display:block}
+.cp-one-w{margin-bottom:8px}.cp-one-w .post{margin:0}
 
 </style>
 </head>
@@ -6363,7 +6370,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104014338";
+const BUILD="20261104014624";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18503,7 +18510,7 @@ function coPostCard(x){ if(x.k==="ann"){ const a=x.ann, src=annSrc(a), cap=src?c
   if(x.k==="sched") body=pr.sched?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.sched)}"><img src="${esc(pr.sched)}" alt=""></button>`:promoSchedCard(s);
   else if(x.k==="trk") body=pr.trkImg?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.trkImg)}"><img src="${esc(pr.trkImg)}" alt=""></button>`:promoTrkCard(s);
   else if(x.vid) body=`<button class="cp-vid" data-a="cpVid" data-v="${esc(x.vid.mid)}">${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:""}<i>▶</i></button>`;
-  else if((x.imgs||[]).length) body=`<div class="cp-imgs n${Math.min(4,x.imgs.length)}">${x.imgs.slice(0,4).map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`;
+  else if((x.imgs||[]).length) body=x.imgs.length>1?`<div class="cp-sw"><div class="cp-swr">${x.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div><div class="cp-swd">${x.imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div></div>`:`<button class="cp-img cp-one" data-a="cpPh" data-v="${esc(x.imgs[0])}"><img src="${esc(x.imgs[0])}" alt="" loading="lazy"></button>`;   /* 很多張：左右滑 */
   const cap=coCap(s.co,x.k,s,x);
   return `<article class="card post cp" id="post-${x.id}">${coHead(s.co,x.ts)}${capHtml(cap)}${body}</article>`; }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
@@ -18582,9 +18589,9 @@ function coNewsCard(x){ const n=x.news, p=String(n.body||"").split(/\n+/).map(s=
 function coNoteCard(x){ const n=x.note;
   return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p><p class="cp-x cp-body">${esc(n.body||"")}</p></article>`; }
 /* LOVE 動態最上面：公司官方公告（置頂，左右滑） */
-function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), L=coFeed("",false).filter(x=>x.k==="ann"?live.has(x.ann.id):now-x.ts<7*864e5);
-  const A=L.filter(x=>x.k==="ann"), B=L.filter(x=>x.k!=="ann").slice(0,10); if(!A.length&&!B.length) return "";   /* 出道／回歸預告排最前面 */
-  return `<h2 class="mf-h">公司官方公告</h2><div class="cp-pin">${[...A,...B].map(x=>`<div class="cp-pi">${coPostCard(x)}</div>`).join("")}</div>`; }
+/* LOVE 動態置頂：只放最新的那一則（當天發什麼就是什麼）；排程表只在公司頁看 */
+function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), x=coFeed("",false).filter(y=>y.k!=="sched"&&(y.k==="ann"?live.has(y.ann.id):now-y.ts<7*864e5)).sort((a,b)=>b.ts-a.ts)[0];
+  return x?`<h2 class="mf-h">公司官方公告</h2><div class="cp-one-w">${coPostCard(x)}</div>`:""; }
 /* 公司頁：歷來公告＋旗下藝人（只列 App 裡的團） */
 function openCoPage(co,tab){ const c=coInfo(co), G=GROUPS.filter(g=>g.co===co&&!getDebut().some(x=>x.gid===g.id&&x.status==="pre")), t=tab||"ann";
   const ann=coFeed(co,true), fan=route().role==="fan", artist=route().role==="artist", open=ui.coOpen||{};
@@ -18605,6 +18612,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="coLink"){ e.stopImmediatePropagation(); layer.innerHTML=""; location.hash=t.dataset.v; window.scrollTo(0,0); return; }
   if(a==="newsOpen"&&t.closest("#layer")) setTimeout(()=>{ layer.innerHTML=""; },0);   /* 公司頁裡按「閱讀全文」：先把公司頁關掉 */
 },true);
+/* 多張照片滑動時，下面的小點跟著動 */
+document.addEventListener("scroll",e=>{ const r=e.target; if(!r.classList||!r.classList.contains("cp-swr")) return; const i=Math.round(r.scrollLeft/Math.max(1,r.clientWidth)); r.parentNode.querySelectorAll(".cp-swd i").forEach((d,j)=>d.classList.toggle("on",i===j)); },true);
 
 /* =========================================================
    人事異動（管理員：人員 → 藝人與團 → 點團 → 人事異動）
@@ -18718,7 +18727,7 @@ const KST=ts=>{ const d=new Date(ts); return {y:d.getFullYear(),m:d.getMonth()+1
 const p2=n=>String(n).padStart(2,"0");
 const kDot=ts=>{ const k=KST(ts); return `${k.y}.${p2(k.m)}.${p2(k.d)}`; };
 const kDash=ts=>{ const k=KST(ts); return `${k.y}-${p2(k.m)}-${p2(k.d)}`; };
-const kAP=ts=>{ const k=KST(ts), h=k.h%12||12; return `${h}${k.mi?":"+p2(k.mi):""}${k.h<12?"AM":"PM"}`.replace(/^12AM$/,"0AM"); };
+const kAP=ts=>{ const k=KST(ts), h=k.h===0?0:(k.h%12||12); return `${h}${k.mi?":"+p2(k.mi):""}${k.h<12?"AM":"PM"}`; };   /* 午夜寫 0AM（韓國公司的寫法） */
 const k24=ts=>{ const k=KST(ts); return `${p2(k.h)}:${p2(k.mi)}`; };
 const kW=ts=>["SUN","MON","TUE","WED","THU","FRI","SAT"][KST(ts).w];
 const kWzh=ts=>"日一二三四五六"[KST(ts).w];
