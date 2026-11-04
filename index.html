@@ -5863,6 +5863,32 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .artn-pin:empty{display:none}.artn-pin .pin-w{margin-bottom:12px}
 .pr-cv .db-up4{grid-template-columns:repeat(4,1fr);margin-bottom:0}
 .db-up4.one{grid-template-columns:1fr 1fr 1fr 1fr}
+/* 公司頭像可以點 */
+.co-go{border:0;background:none;padding:0;text-align:left;color:inherit;font:inherit}.post.cp .who.co-go{display:flex;flex-direction:column;min-width:0}
+.cp-clip{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.cp-body{white-space:pre-wrap}
+.cp-nimg{margin-top:10px;border-radius:14px}.cp-nimg img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.cp-more{margin-top:10px;border:0;background:none;padding:0;color:var(--accent,#8b5cf6);font:600 13.5px/1.4 inherit}
+/* LOVE 動態置頂：左右滑 */
+.cp-pin{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x mandatory;margin:0 -16px 8px;padding:0 16px 4px;scrollbar-width:none}.cp-pin::-webkit-scrollbar{display:none}
+.cp-pi{flex:0 0 88%;scroll-snap-align:center;min-width:0}.cp-pi .post{height:100%;margin:0}
+.cp-pin:has(.cp-pi:only-child) .cp-pi{flex-basis:100%}
+/* 公司頁 */
+.copg .tiei-body{display:flex;flex-direction:column;gap:14px}
+.copg-hd{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 0 4px;text-align:center}
+.co-av.lg{width:96px;height:96px;flex-basis:96px;box-shadow:0 6px 20px rgba(0,0,0,.12)}
+.copg-hd b{font-size:18px}.copg-hd small{color:var(--muted);font-size:12.5px}
+.copg-tabs{justify-content:center}
+.copg-g{display:flex;flex-direction:column;gap:12px}
+.copg-gh{display:flex;align-items:center;gap:12px;border:0;background:none;padding:0;text-align:left;color:inherit;font:inherit}
+.copg-gh .av{width:48px;height:48px;border-radius:50%;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:700}.copg-gh .av img{width:100%;height:100%;object-fit:cover}
+.copg-gh span:nth-child(2){flex:1;display:flex;flex-direction:column}.copg-gh small{color:var(--muted);font-size:12px}.copg-gh i{font-style:normal;color:var(--muted);font-size:20px}
+.copg-ms{display:flex;flex-wrap:wrap;gap:12px}
+.copg-m{display:flex;flex-direction:column;align-items:center;gap:4px;width:56px}.copg-m .av.sm{width:44px;height:44px;border-radius:50%;display:grid;place-items:center;color:#fff;overflow:hidden}.copg-m small{font-size:11px;text-align:center;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.copg .tiei-body>*{flex-shrink:0}
+.copg-hd b{display:inline-flex;align-items:center;gap:4px}.copg-hd b svg{width:18px;height:18px;flex:0 0 18px}
+.cp-pin{align-items:flex-start}.cp-pi .post{height:auto}
+.cp-pi .cp-imgs .cp-img img{aspect-ratio:1/1}.cp-pi .post.cp>.cp-img img{max-height:340px;object-fit:cover}
 
 </style>
 </head>
@@ -6305,7 +6331,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104003540";
+const BUILD="20261104004703";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9658,8 +9684,8 @@ function viewFan(tab){
     const fa=followed(), f=scopeF(); let body=""; const q=srchQ("love"); if(ui.feedTab!=="discover"&&ui.feedTab!=="live") ui.feedTab="feed"; if(ui.feedTab==="live") return viewFanLive();
     if(ui.feedTab==="feed"){
       const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p));
-      body=(q?"":myFeedTop())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+
-        srchLabel("love")+(!q&&coPosts().length?feedMix(posts):posts.length?posts.map(p=>postCard(p)).join(""):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
+      body=(q?"":myFeedTop())+(q?"":coPinFeed())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+
+        srchLabel("love")+(posts.length?posts.map(p=>postCard(p)).join(""):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
     } else if(ui.feedTab==="discover"){
       const posts=getPosts().filter(p=>!fa.includes(p.group)&&!p.hidden&&postHit(q,p)&&groupOf(p.group));
       body=(q?"":exploreTop())+`<h2 class="mf-h">你可能也會喜歡</h2>`+srchLabel("love")+(posts.length?posts.map(p=>postCard(p)+`<button class="ex-join" data-a="gJoin" data-v="${p.group}">＋ 加入${esc(groupOf(p.group).name)}</button>`).join(""):q?srchEmpty("動態"):emptyBox(I.star,"你已經加入所有社群了","目前沒有其他社群可以推薦"));
@@ -18394,11 +18420,11 @@ const coAv=(co,cls="")=>{ const c=coInfo(co); return `<span class="co-av ${cls}"
 const PR_KIND={sched:"SCHEDULE",teaser:"Teaser Image",concept:"Concept Photo",trk:"Track List",medley:"Highlight Medley",film:"Concept Film",mvt:"MV Teaser",rel:"OUT NOW"};
 
 /* ---------- 有哪些出道／回歸要發 ---------- */
-function promoSrcs(){ const L=[], now=Date.now();
+function promoSrcs(all){ const L=[], now=Date.now();
   getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0}));
   const P=getMShow().pre||[];
   getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0}); });
-  return L.filter(s=>now-s.day<45*864e5); }
+  return all?L:L.filter(s=>now-s.day<45*864e5); }
 /* 一筆出道／回歸的排程：核准隔天開始，平均排到前一天，最後一格是發行 */
 function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec(pr.time||"")||[0,18,0], at=((+tm[1])*60+(+tm[2]))*60e3, it=[{k:"sched"}];
   [s.teaser,...(s.teasers||[])].filter(Boolean).forEach(u=>it.push({k:"teaser",imgs:[u]}));
@@ -18428,20 +18454,20 @@ function promoTrkCard(s){ const T=String((s.pr||{}).trk||"").split("\n").map(x=>
 const hm=ts=>{ const d=new Date(ts); return `${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
 
 /* ---------- 一則公司官方貼文 ---------- */
-function coPostCard(x){ const s=x.src, c=coInfo(s.co), pr=s.pr||{}; let body="";
+function coPostCard(x){ if(x.k==="news") return coNewsCard(x); if(x.k==="note") return coNoteCard(x); const s=x.src, c=coInfo(s.co), pr=s.pr||{}; let body="";
   if(x.k==="sched") body=pr.sched?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.sched)}"><img src="${esc(pr.sched)}" alt=""></button>`:promoSchedCard(s);
   else if(x.k==="trk") body=pr.trkImg?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.trkImg)}"><img src="${esc(pr.trkImg)}" alt=""></button>`:promoTrkCard(s);
   else if(x.vid) body=`<button class="cp-vid" data-a="cpVid" data-v="${esc(x.vid.mid)}">${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:""}<i>▶</i></button>`;
   else if((x.imgs||[]).length) body=`<div class="cp-imgs n${Math.min(4,x.imgs.length)}">${x.imgs.slice(0,4).map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`;
   const tx=promoText(x);
-  return `<article class="card post cp" id="post-${x.id}"><div class="post-head">${coAv(s.co)}<div class="who"><b>${esc(c.n)} ${I.verified} <span class="badge">官方</span></b><span>${ymdhm(x.ts)}</span></div></div>
+  return `<article class="card post cp" id="post-${x.id}">${coHead(s.co,x.ts)}
     <p class="cp-t">${esc(promoTitle(x))}</p>${tx?`<p class="cp-x">${esc(tx)}</p>`:""}${body}</article>`; }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
 function feedMix(posts){ const C=coPosts().map(x=>({ts:x.ts,h:()=>coPostCard(x)})), P=posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)}));
   setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
   return [...P,...C].sort((a,b)=>b.ts-a.ts).map(o=>o.h()).join(""); }
 /* 置頂大卡用：最近 7 天的官方貼文（有照片的） */
-const coPinList=()=>{ const now=Date.now(); return coPosts().filter(x=>now-x.ts<7*864e5).map(x=>({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${promoTitle(x)}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
+const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>now-x.ts<7*864e5).map(x=>x.k==="news"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.news.title}`,img:x.news.img||""}:x.k==="note"?{id:x.id,ts:x.ts,text:`${coInfo(x.co).n}｜${x.note.title}`,img:""}:({id:x.id,ts:x.ts,text:`${coInfo(x.src.co).n}｜${promoTitle(x)}`,img:(x.imgs||[])[0]||(x.k==="sched"&&(x.src.pr||{}).sched)||(x.k==="trk"&&(x.src.pr||{}).trkImg)||x.src.teaser||"",co:x.src.co})); };
 
 /* ---------- 申請表裡的欄位 ---------- */
 function promoFields(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); pr.cv=pr.cv||[];
@@ -18487,6 +18513,40 @@ const albumOn=a=>{ if(!a||!a.rel) return true; const s=relSrcOf(a); return !s||D
 function aeRelHtml(a){ const L=promoSrcs().filter(s=>s.gid===a.gid&&(s.day>Date.now()||s.id===a.rel)); if(!L.length&&!a.rel) return "";
   return `<section class="ae-v"><div class="ae-vh"><b>上架時間</b></div><div class="chips"><button class="chip ${a.rel?"":"on"}" data-a="aeRel" data-v="">現在就上架</button>${L.map(s=>`<button class="chip ${a.rel===s.id?"on":""}" data-a="aeRel" data-v="${s.id}">跟著${s.k==="db"?"出道":"回歸"}・${mdTxt(s.day)}</button>`).join("")}</div></section>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="aeRel"]'); if(!t) return; e.stopImmediatePropagation(); const a=aeA(); if(!a) return; const L=S.get(K.albums2,[]), x=L.find(y=>y.id===a.id); if(!x) return; if(t.dataset.v) x.rel=t.dataset.v; else delete x.rel; S.set(K.albums2,L); a.rel=x.rel; layer.querySelectorAll('[data-a="aeRel"]').forEach(b=>b.classList.toggle("on",(b.dataset.v||"")===(x.rel||""))); toast(x.rel?"發行那一刻才會上架":"已上架"); },true);
+
+/* ---------- 公司官方帳號：新聞（晚 10 分鐘轉發）、人事公告、公司頁 ---------- */
+const CO_NOTE="daisuki_co_notice";   /* 管理員發的人事公告：{id,co,gid,mid,kind,title,body,ts} */
+const coNotes=()=>(S.get(CO_NOTE,[])||[]).filter(x=>x&&x.id&&x.co);
+const coOfGid=gid=>(groupOf(gid)||{}).co||"";
+const coHead=(co,ts)=>`<div class="post-head"><button class="co-go" data-a="coPage" data-v="${esc(co)}" aria-label="${esc(coInfo(co).n)}">${coAv(co)}</button><button class="who co-go" data-a="coPage" data-v="${esc(co)}"><b>${esc(coInfo(co).n)} ${I.verified} <span class="badge">官方</span></b><span>${ymdhm(ts)}</span></button></div>`;
+function coNewsPosts(){ const now=Date.now(); let N=[]; try{ N=newsAll(); }catch(e){}
+  return N.filter(n=>n.ts+600e3<=now).flatMap(n=>[...new Set((n.gids||[]).map(coOfGid).filter(Boolean))].map(co=>({k:"news",id:"cn_"+n.id+"_"+co,ts:n.ts+600e3,news:n,co}))); }
+const coNotePosts=()=>coNotes().filter(x=>x.ts<=Date.now()).map(x=>({k:"note",id:"cnt_"+x.id,ts:x.ts,note:x,co:x.co}));
+const coOfPost=x=>x.co||(x.src&&x.src.co)||"";
+/* 全部官方貼文（all＝公司頁要看全部歷史） */
+function coFeed(co,all){ const now=Date.now(); return [...promoSrcs(all).flatMap(promoPlan).filter(x=>x.ts<=now),...coNewsPosts(),...coNotePosts()].filter(x=>coOfPost(x)&&(!co||coOfPost(x)===co)).sort((a,b)=>b.ts-a.ts); }
+const newsBase=()=>route().role==="artist"?"#/artist?tab=foc&p=news":"#/fan/core?p=news";
+function coNewsCard(x){ const n=x.news, p=String(n.body||"").split(/\n+/).map(s=>s.trim()).filter(Boolean)[0]||"";
+  return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p>${p?`<p class="cp-x cp-clip">${esc(p)}</p>`:""}${n.img?`<button class="cp-img cp-nimg" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}"><img src="${esc(n.img)}" alt="" loading="lazy"></button>`:""}<button class="cp-more" data-a="newsOpen" data-v="${esc(n.id)}" data-b="${newsBase()}">閱讀全文 ›</button></article>`; }
+function coNoteCard(x){ const n=x.note;
+  return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p><p class="cp-x cp-body">${esc(n.body||"")}</p></article>`; }
+/* LOVE 動態最上面：公司官方公告（置頂，左右滑） */
+function coPinFeed(){ const now=Date.now(), L=coFeed("",false).filter(x=>now-x.ts<7*864e5).slice(0,10); if(!L.length) return "";
+  return `<h2 class="mf-h">公司官方公告</h2><div class="cp-pin">${L.map(x=>`<div class="cp-pi">${coPostCard(x)}</div>`).join("")}</div>`; }
+/* 公司頁：歷來公告＋旗下藝人（只列 App 裡的團） */
+function openCoPage(co,tab){ const c=coInfo(co), G=GROUPS.filter(g=>g.co===co&&!getDebut().some(x=>x.gid===g.id&&x.status==="pre")), t=tab||"ann";
+  const ann=coFeed(co,true), art=G.map(g=>{ const ms=grpMembers(g.id).filter(m=>MEMBERS[m]&&!MEMBERS[m].official);
+    return `<section class="card copg-g"><button class="copg-gh" data-a="coGrp" data-v="${g.id}"><span class="av" style="background:${grad(g.g||0)}">${gPhoto(g.id)?`<img src="${esc(gPhoto(g.id))}" alt="">`:esc(g.name[0])}</span><span><b>${esc(g.name)}</b><small>${g.solo?"SOLO":`${ms.length} 位成員`}</small></span><i>›</i></button>
+      ${g.solo?"":`<div class="copg-ms">${ms.map(m=>`<span class="copg-m"><span class="av sm" style="background:${grad(MEMBERS[m].g||0)}">${mAvIn(m)}</span><small>${esc(artName(m,"feed"))}</small></span>`).join("")}</div>`}</section>`; }).join("");
+  setLayer(`<div class="tiei copg"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(c.n)}</b><span class="sh-sp"></span></header>
+    <div class="tiei-body"><div class="copg-hd">${coAv(co,"lg")}<b>${esc(c.n)} ${I.verified}</b><small>官方帳號・${G.length} 組藝人</small></div>
+      <div class="chips copg-tabs"><button class="chip ${t==="ann"?"on":""}" data-a="coTab" data-v="ann" data-c="${esc(co)}">公告</button><button class="chip ${t==="art"?"on":""}" data-a="coTab" data-v="art" data-c="${esc(co)}">藝人</button></div>
+      ${t==="ann"?(ann.length?ann.map(coPostCard).join(""):`<p class="me-none">還沒有公告</p>`):(art||`<p class="me-none">還沒有藝人</p>`)}</div></div>`,"copg"); }
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
+  if(a==="coPage"){ e.stopImmediatePropagation(); openCoPage(t.dataset.v); return; }
+  if(a==="coTab"){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tiei-body")||{}).scrollTop||0; openCoPage(t.dataset.c,t.dataset.v); return; }
+  if(a==="coGrp"){ e.stopImmediatePropagation(); if(route().role!=="fan") return; layer.innerHTML=""; location.hash="#/fan/grp?id="+t.dataset.v; return; }
+},true);
 
 </script>
 </body>
