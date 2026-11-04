@@ -6334,7 +6334,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261104011210";
+const BUILD="20261104011408";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18426,7 +18426,7 @@ const PR_KIND={sched:"SCHEDULE",teaser:"Teaser Image",concept:"Concept Photo",tr
 
 /* ---------- 有哪些出道／回歸要發 ---------- */
 function promoSrcs(all){ const L=[], now=Date.now();
-  getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0}));
+  getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0}));
   const P=getMShow().pre||[];
   getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0}); });
   return all?L:L.filter(s=>now-s.day<45*864e5); }
@@ -18530,7 +18530,7 @@ function coNewsPosts(){ const now=Date.now(), H=S.get(K.newsHide,{})||{}, E=S.ge
 const coNotePosts=()=>coNotes().filter(x=>x.ts<=Date.now()).map(x=>({k:"note",id:"cnt_"+x.id,ts:x.ts,note:x,co:x.co}));
 const coOfPost=x=>x.co||(x.src&&x.src.co)||"";
 /* HAECHU 的出道／回歸預告公告：算是那間公司發的 */
-function annCo(a){ const t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return x?(x.co||coOfGid(x.gid)):""; }
+function annCo(a){ const t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return x?(coOfGid(x.gid)||x.co||""):""; }
   if(a.pre==="cb"||/回歸預告｜/.test(t)){ const P=getMShow().pre||[], p=P.find(y=>y.id===a.ref)||P.find(y=>t.includes(`《${y.title}》`)), c=getCbr().find(y=>y.id===(p&&p.req)); return p?coOfGid(p.gid):c?coOfGid(c.gid):""; } return ""; }
 const coAnnPosts=()=>getAnns().map(a=>({k:"ann",id:"ca_"+a.id,ts:a.ts,ann:a,co:annCo(a)})).filter(x=>x.co);
 /* 全部官方貼文（all＝公司頁要看全部歷史） */
