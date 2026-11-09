@@ -5996,6 +5996,10 @@ html.mo .nav-lens.mo-run::before{opacity:1}
 .an-burst{position:fixed;z-index:200;width:0;height:0;pointer-events:none}
 .an-burst i{position:absolute;left:-7px;top:-7px;width:14px;height:14px;display:block}
 .an-burst svg{width:100%;height:100%;display:block}
+/* 小卡／專輯真 3D */
+.c3-cv{display:block;touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent}
+.s3.c3-on{padding:0}
+.ab-scene.c3-on{perspective:none}
 </style>
 </head>
 <body>
@@ -6520,7 +6524,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109104255";
+const BUILD="20261109110646";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8489,10 +8493,10 @@ function abStart(r,idx=0){ cancelAnimationFrame(gcRaf); const a=albumOf(r.aid), 
     <div class="gc-tb">${N>1?`<span class="ab-cnt">${idx+1} / ${N}</span>`:""}<button class="gc-ib" data-a="gdSnd" aria-label="音效開關">${sfxOn()?"🔊":"🔈"}</button><button class="gc-ib gc-skip" data-a="abSkip">${N>1?"全部拆開 ››":"跳過 ››"}</button></div>
     <div class="ab-stage"><div class="ab-scene" id="abSc">${albumBox(a,v,{id:"abBox",maxPx:Math.min(230,innerWidth*.55)})}</div><div class="ab-cards" id="abCards"></div></div><div class="ab-xs" id="abXs"></div>
     <p class="ab-hint" id="abHint">拖動專輯轉一轉，看看封面和封底<br><small>點一下專輯，拆開它</small></p><div class="ab-foot" id="abFoot"></div></div>`,"ab"+Date.now());
-  gcBg(); ui.ab.spin=spin3d(document.getElementById("abBox"),document.getElementById("abSc"),{auto:true,rx:-12,ry:-28,onTap:()=>abOpen()});
+  gcBg(); ui.ab.spin=spin3d(document.getElementById("abBox"),document.getElementById("abSc"),{auto:true,rx:-12,ry:-28,onTap:()=>abOpen()}); C3.upAlbum(document.getElementById("abSc"),a,v,ui.ab,()=>abOpen());
   if(matchMedia("(prefers-reduced-motion: reduce)").matches) abOpen(true); }
 function abOpen(fast){ const st=ui.ab; if(!st||st.open) return; st.open=true; const w=document.getElementById("abW"); if(!w) return; sfx("whoosh");
-  const box=document.getElementById("abBox"); if(st.spin){ const {ry}=st.spin.get(); st.spin.stop(); const n=Math.round(ry/360)*360; box.style.transition="none"; box.style.transform=`rotateX(-12deg) rotateY(${ry}deg)`; void box.offsetWidth; box.style.transition="transform .7s ease"; box.style.transform=`rotateX(6deg) rotateY(${n-6}deg)`; }
+  const box=document.getElementById("abBox"); if(st.gl) st.gl.open(); else if(st.spin){ const {ry}=st.spin.get(); st.spin.stop(); const n=Math.round(ry/360)*360; box.style.transition="none"; box.style.transform=`rotateX(-12deg) rotateY(${ry}deg)`; void box.offsetWidth; box.style.transition="transform .7s ease"; box.style.transform=`rotateX(6deg) rotateY(${n-6}deg)`; }
   w.classList.add("opening"); document.getElementById("abHint").textContent=""; const T=fast?0:1;
   setTimeout(()=>{ if(ui.ab===st) gcBurst(innerWidth/2,innerHeight*.42,1,50,6); },800*T);
   setTimeout(()=>{ if(ui.ab!==st) return; w.classList.add("cards"); abDeal(); },1500*T); }
@@ -8508,7 +8512,7 @@ function abFlip(i){ const st=ui.ab; if(!st) return; const el=document.querySelec
 function abView(i){ const st=ui.ab, cid=st.r.opens[st.idx].got[i], w=document.getElementById("abW"); if(!w||!cid) return;
   const v=document.createElement("div"); v.className="s3v"; v.innerHTML=`<button class="ph-x" data-a="s3Close" aria-label="關閉">${XI}</button><div class="s3">${item3d(cid,Math.min(260,innerWidth*.62))}</div>
     <p class="s3-l">${esc(itemName(cid))}</p><div class="s3-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button></div><small class="s3-tip">手指拖動，往哪轉都可以</small>`;
-  w.appendChild(v); ui.s3=spin3d(v.querySelector(".s3-obj"),v.querySelector(".s3"),{rx:-4,ry:-200}); setTimeout(()=>{ if(ui.s3) ui.s3.flip(); },120); }
+  w.appendChild(v); ui.s3=spin3d(v.querySelector(".s3-obj"),v.querySelector(".s3"),{rx:-4,ry:-200}); setTimeout(()=>{ if(ui.s3) ui.s3.flip(); },120); C3.upItem(v.querySelector(".s3"),cid,Math.min(260,innerWidth*.62)); }
 function abDone(){ const st=ui.ab, r=st.r, o=r.opens[st.idx], a=albumOf(r.aid), v=verOf(a,r.vid), nw=o.fresh.length, sp=o.got.filter(c=>{ const x=parseIt(c); return x&&x.p.sp; }).length, more=st.idx+1<r.opens.length;
   const xs=o.extra||[], stn=storeOf(r.sid)?storeOf(r.sid).name:"店家";
   document.getElementById("abHint").innerHTML=`${nw?`新的 ${nw} 樣`:"都是收過的，張數 +1"}${sp?`・珠光 ${sp} 張`:""}${!xs.length&&o.ldTry?"・這張沒抽中 Lucky Draw":""}<br><small>點東西可以拿到眼前轉著看</small>`;
@@ -8534,7 +8538,7 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${n?`擁有 ${n} 張`:"還沒有"}</small></div>
     <div class="cv-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button>${n?`<button class="btn ${rep?"btn-soft":"btn-main"} btn-sm" data-a="cardRep" data-v="${cid}">${rep?"✓ 我的代表卡":"設為代表卡"}</button>`:""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
-  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); }
+  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); }
 function viewCards(){
   const own=getCards(), f=followed(), al=getAlbums().filter(a=>f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`))), tb=ui.cbTab||"book", rep=S.get(K.repCard,""), {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
@@ -8695,8 +8699,68 @@ function acOpenCard(mid){ const gid=MEMBERS[mid].group, T=getTracks(), ms=getMSh
     <span class="lsp-l">互動歌</span><div class="ls-seg"><button data-a="acIa" data-v="-1">－</button><button class="on">前 ${n} 首</button><button data-a="acIa" data-v="1">＋</button></div>
     <button class="btn btn-main btn-block" style="margin-top:10px" data-a="acLater">10 分鐘後開演</button><button class="btn btn-soft btn-block" style="margin-top:8px" data-a="acNow">現在開演</button></div>`; }
 
-/* 燈海畫布：顏色、效果、排字、自己的座位都畫在這裡 */
-function seaRun(cv,color){
+/* 燈海 3D：從舞台看出去的整個場館，幾千支應援棒一階一階排上去
+   ・顏色、呼吸／閃爍／波浪／彩虹、亮白燈、排字、揮棒熱度（SEA.boost）、燈暗（dim）全部跟著燈控台
+   ・webgl-noise 讓每一支的亮度有自然的起伏，不會整片一模一樣
+   ・先照原本的 2D 畫，three.js 載好再換成 3D；不支援 WebGL 就一直用 2D */
+function seaRun(cv,color){ seaRun2D(cv,color); if(!cv||!C3.gl()) return; loadThree().then(()=>{ if(!cv.isConnected) return; try{ sea3D(cv,color); }catch(e){ console.warn("sea3D",e); } }).catch(()=>{}); }
+function sea3D(old,color){
+  const cv=document.createElement("canvas"); cv.className=old.className; cv.setAttribute("aria-hidden","true");
+  const R=new THREE.WebGLRenderer({canvas:cv,antialias:false,alpha:true,powerPreference:"high-performance"}), dpr=Math.min(2,devicePixelRatio||1); R.setClearColor(0x000000,0); R.setPixelRatio(dpr);
+  old.replaceWith(cv);
+  const sc=new THREE.Scene(), cam=new THREE.PerspectiveCamera(50,1,.1,120);
+  const pos=[], grid=[], ph=[], ROWS=34;
+  for(let r=0;r<ROWS;r++){ const rad=7.5+r*.6, y=r*.36, A=1.18, n=Math.round(rad*A*2/.3);
+    for(let i=0;i<n;i++){ const u=(i+.5+(Math.random()-.5)*.6)/n, a=(u-.5)*2*A, j=(Math.random()-.5)*.2; pos.push(Math.sin(a)*(rad+j),y+(Math.random()-.5)*.14,-Math.cos(a)*(rad+j)); grid.push(u,r/(ROWS-1)); ph.push(Math.random()*6.2832); } }
+  const N=ph.length, mk=new Float32Array(N), g=new THREE.BufferGeometry();
+  g.setAttribute("position",new THREE.Float32BufferAttribute(pos,3)); g.setAttribute("aGrid",new THREE.Float32BufferAttribute(grid,2)); g.setAttribute("aPh",new THREE.Float32BufferAttribute(ph,1)); g.setAttribute("aMask",new THREE.BufferAttribute(mk,1));
+  const U={uT:{value:0},uCol:{value:new THREE.Color(color||"#C7AEFF")},uFx:{value:0},uBoost:{value:0},uDim:{value:1},uWhite:{value:0},uMask:{value:0},uPx:{value:dpr},uH:{value:300},uPal:{value:LS_COLORS.map(h=>new THREE.Color(h))}};
+  const mat=new THREE.ShaderMaterial({uniforms:U,transparent:true,depthWrite:false,blending:THREE.CustomBlending,blendSrc:THREE.OneFactor,blendDst:THREE.OneFactor,blendSrcAlpha:THREE.OneFactor,blendDstAlpha:THREE.OneFactor,
+    vertexShader:`attribute vec2 aGrid; attribute float aPh; attribute float aMask;
+      uniform float uT; uniform float uFx; uniform float uBoost; uniform float uDim; uniform float uWhite; uniform float uMask; uniform float uPx; uniform float uH; uniform vec3 uCol; uniform vec3 uPal[7];
+      varying vec3 vCol; varying float vA;
+      ${C3_NOISE}
+      void main(){
+        vec3 p=position; float sw=sin(uT*(0.9+fract(aPh)*1.4)+aPh);
+        p.x+=sw*0.07*(1.0+uBoost*2.5); p.y+=abs(sw)*0.05*(1.0+uBoost*3.0);
+        float gx=aGrid.x, gy=aGrid.y, a;
+        if(uFx<0.5) a=0.3+0.3*(0.5+0.5*sin(uT*2.3+aPh))+0.25*max(0.0,sin(uT*1.7-gx*7.0));
+        else if(uFx<1.5) a=sin(uT*9.0+aPh*0.2)>0.0?0.85:0.12;
+        else if(uFx<2.5) a=0.15+0.8*max(0.0,sin(uT*2.4-gx*9.0+gy*2.0));
+        else a=0.45+0.35*(0.5+0.5*sin(uT*2.0+aPh));
+        a+=0.14*snoise(vec3(gx*6.0,gy*5.0,uT*0.45));
+        vec3 c=uCol;
+        if(uFx>2.5){ float k=mod(floor(gx*6.0+uT*0.8),7.0); for(int i=0;i<7;i++){ if(abs(float(i)-k)<0.5) c=uPal[i]; } }
+        if(uWhite>0.5) c=vec3(1.0);
+        float big=1.0;
+        if(uMask>0.5){ if(aMask>0.5){ a=0.95+0.05*sin(uT*5.0); c=vec3(1.0); big=1.3; } else a=0.05; }
+        a=clamp(min(1.0,a+0.5*uBoost)*uDim,0.0,1.0);
+        vCol=c; vA=a;
+        vec4 mv=modelViewMatrix*vec4(p,1.0); gl_Position=projectionMatrix*mv;
+        gl_PointSize=uPx*uH*0.26*big/(-mv.z);
+      }`,
+    fragmentShader:`varying vec3 vCol; varying float vA;
+      void main(){ vec2 q=gl_PointCoord-0.5; float d=length(q); if(d>0.5) discard;
+        float glow=exp(-d*d*14.0), core=smoothstep(0.16,0.0,d);
+        vec3 c=(vCol*glow+vec3(1.0)*core*0.85)*vA; gl_FragColor=vec4(c,max(c.r,max(c.g,c.b))); }`});
+  sc.add(new THREE.Points(g,mat));
+  /* 排字：把字畫在 200×100 的小畫布，觀眾席上對到字的那幾支亮白燈 */
+  const textMask=txt=>{ const c=document.createElement("canvas"); c.width=200; c.height=100; const x=c.getContext("2d"); x.fillStyle="#fff"; x.font="900 64px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(txt,100,52,190); return x.getImageData(0,0,200,100).data; };
+  let maskKey=null, raf=0, W0=0, H0=0; const t0=performance.now();
+  const done=()=>{ cancelAnimationFrame(raf); try{ g.dispose(); mat.dispose(); R.dispose(); if(R.forceContextLoss) R.forceContextLoss(); }catch(e){} };
+  (function f(now){ if(!cv.isConnected){ done(); return; } raf=requestAnimationFrame(f);
+    const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return; if(W!==W0||H!==H0){ W0=W; H0=H; R.setSize(W,H,false); cam.aspect=W/H; cam.updateProjectionMatrix(); U.uH.value=H; }
+    const t=(now-t0)/1000, ls=lightsea(), cmd=activeCmd(), cue=typeof lsCue==="function"?lsCue():null, fx=cue?cue.fx:ls&&ls.fx||"breath";
+    SEA.dim=cue?cue.dim:1; SEA.boost*=.965;
+    U.uT.value=t; U.uCol.value.set(SEA.color||color||"#C7AEFF"); U.uFx.value=({breath:0,flash:1,wave:2,rainbow:3})[fx]??0; U.uBoost.value=SEA.boost; U.uDim.value=SEA.dim==null?1:SEA.dim; U.uWhite.value=cmd&&cmd.type==="white"?1:0;
+    const txt=cmd&&cmd.type==="text"?cmd.text:""; if(txt!==maskKey){ maskKey=txt; U.uMask.value=txt?1:0;
+      if(txt){ const m=textMask(txt), v=new THREE.Vector3(); cam.position.set(0,1.5,3); cam.lookAt(0,3.6,-14); cam.updateMatrixWorld();   /* 照畫面上看到的位置排字，手機直拿也不會切到 */
+        for(let i=0;i<N;i++){ v.set(pos[i*3],pos[i*3+1],pos[i*3+2]).project(cam); const mx=Math.floor(((v.x+1)/2-.05)/.9*200), my=Math.floor(((1-v.y)/2-.08)/.5*100); mk[i]=mx>=0&&mx<200&&my>=0&&my<100&&m[(my*200+mx)*4+3]>80?1:0; } g.attributes.aMask.needsUpdate=true; } }
+    cam.position.set(Math.sin(t*.13)*.3,1.5+Math.sin(t*.21)*.08,3); cam.lookAt(0,3.6,-14);
+    R.render(sc,cam); })(t0);
+}
+/* 燈海畫布（2D）：顏色、效果、排字、自己的座位都畫在這裡 */
+function seaRun2D(cv,color){
   const ctx=cv.getContext("2d"), dots=Array.from({length:380},()=>{ const d=Math.pow(Math.random(),.8); return {x:Math.random(),d,ph:Math.random()*6.28,sp:.8+Math.random()*1.6}; }).sort((a,b)=>a.d-b.d);
   const t0=performance.now(); let maskKey="", mask=null;
   const textMask=(txt,W,H)=>{ const c=document.createElement("canvas"); c.width=200; c.height=100; const x=c.getContext("2d"); x.fillStyle="#fff"; x.font="900 64px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(txt,100,52,190); return x.getImageData(0,0,200,100).data; };
@@ -13020,7 +13084,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "stAdd": { const L=getStores(); L.push({id:uid("st"),name:"新店家"}); S.set(K.stores,L); render(); break; }
     case "stDel": { const id=t.dataset.v, st=storeOf(id); ask(`要刪除「${st?st.name:""}」嗎？這家店的預購特典和 Lucky Draw 也會一起刪掉。`,()=>{ S.set(K.stores,getStores().filter(x=>x.id!==id)); const L=S.get(K.albums2,[]); L.forEach(a=>a.ex=(a.ex||[]).filter(e=>e.store!==id)); S.set(K.albums2,L); render(); toast("已刪除店家"); },{title:"刪除店家",ok:"刪除"}); break; }
     case "abNext": { const st=ui.ab; if(!st) break; abStart(st.r,st.idx+1); break; }
-    case "abSumV": { const w=document.getElementById("abW"); if(!w) break; const v=document.createElement("div"); v.className="s3v"; v.innerHTML=`<button class="ph-x" data-a="s3Close" aria-label="關閉">${XI}</button><div class="s3">${item3d(t.dataset.v,Math.min(260,innerWidth*.62))}</div><p class="s3-l">${esc(itemName(t.dataset.v))}</p><div class="s3-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button></div>`; w.appendChild(v); ui.s3=spin3d(v.querySelector(".s3-obj"),v.querySelector(".s3"),{rx:-4,ry:-18}); break; }
+    case "abSumV": { const w=document.getElementById("abW"); if(!w) break; const v=document.createElement("div"); v.className="s3v"; v.innerHTML=`<button class="ph-x" data-a="s3Close" aria-label="關閉">${XI}</button><div class="s3">${item3d(t.dataset.v,Math.min(260,innerWidth*.62))}</div><p class="s3-l">${esc(itemName(t.dataset.v))}</p><div class="s3-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button></div>`; w.appendChild(v); ui.s3=spin3d(v.querySelector(".s3-obj"),v.querySelector(".s3"),{rx:-4,ry:-18}); C3.upItem(v.querySelector(".s3"),t.dataset.v,Math.min(260,innerWidth*.62)); break; }
     case "pQty": { ui.pQty=Math.max(1,Math.min(20,(ui.pQty||1)+(+t.dataset.v))); const p=prodBy(ui.prod); const q=document.getElementById("pQ"); if(q) q.textContent=ui.pQty; const b=layer.querySelector('[data-a="pBuy"]'); if(b&&p) b.textContent=`${storeOf(ui.pStore)?"在 "+storeOf(ui.pStore).name+" 買":"買"} ${ui.pQty} 張・${fmt(p.pts*ui.pQty)} 積分`; break; }
     case "aeNew": { const gid=ui.albG||GROUPS[0].id, a={id:uid("ab"),gid,title:"新專輯",ord:"The 1st Mini Album",ts:Date.now(),vers:[{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}],ex:[]}; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
@@ -14760,8 +14824,8 @@ setInterval(()=>{ const s=session(); if(!s||s.role!=="fan") return; const L=bdAl
    ========================================================= */
 let _threeP=null;
 function loadThree(){ if(window.THREE) return Promise.resolve(window.THREE); if(_threeP) return _threeP;
-  _threeP=new Promise((res,rej)=>{ const s=document.createElement("script"); s.src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"; s.async=true;
-    s.onload=()=>window.THREE?res(window.THREE):rej(new Error("three")); s.onerror=()=>{ _threeP=null; s.remove(); rej(new Error("three")); }; document.head.appendChild(s); });
+  const add=(src,next)=>{ const s=document.createElement("script"); s.src=src; s.async=true; s.onload=()=>window.THREE?res(window.THREE):rej(new Error("three")); s.onerror=()=>{ s.remove(); if(next) add(next); else { _threeP=null; rej(new Error("three")); } }; document.head.appendChild(s); };
+  let res,rej; _threeP=new Promise((a,b)=>{ res=a; rej=b; }); add("vendor/three-r128.min.js","https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js");
   return _threeP; }
 
 /* ---------- 共用：攝影棚燈光、材質、小工具 ---------- */
@@ -14789,6 +14853,153 @@ const X3={
     R.toneMapping=THREE.ACESFilmicToneMapping; R.toneMappingExposure=1.05; R.physicallyCorrectLights=false; return R; }
 };
 const SERIF='"Playfair Display","Noto Serif TC","Songti TC",serif', SANS='"PingFang TC","Noto Sans TC","Microsoft JhengHei",sans-serif';
+
+/* =========================================================
+   小卡／專輯 真 3D（three.js ＋ webgl-noise）
+   ・小卡、明信片、拍立得…：照公分比例做成有厚度的亮面卡，正面背面都是真的，手指往哪拖就往哪轉
+   ・珠光卡：用 webgl-noise 的 simplex noise 做雷射光澤，轉的角度不同顏色就流過去，還有細碎閃粉
+   ・專輯：照長寬高做成立體盒，有封面、封底、書背、外面一層收縮膜；點一下撕膜、封面翻開、裡面發光
+   ・three.js 還沒載好、或手機不支援 WebGL：照原本的 CSS 立體，不會壞
+   ========================================================= */
+/* webgl-noise（Ashima Arts / Stefan Gustavson，MIT）：3D simplex noise */
+const C3_NOISE=`
+vec3 mod289(vec3 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 mod289(vec4 x){return x-floor(x*(1.0/289.0))*289.0;}
+vec4 permute(vec4 x){return mod289(((x*34.0)+10.0)*x);}
+vec4 taylorInvSqrt(vec4 r){return 1.79284291400159-0.85373472095314*r;}
+float snoise(vec3 v){
+  const vec2 C=vec2(1.0/6.0,1.0/3.0); const vec4 D=vec4(0.0,0.5,1.0,2.0);
+  vec3 i=floor(v+dot(v,C.yyy)); vec3 x0=v-i+dot(i,C.xxx);
+  vec3 g=step(x0.yzx,x0.xyz); vec3 l=1.0-g; vec3 i1=min(g.xyz,l.zxy); vec3 i2=max(g.xyz,l.zxy);
+  vec3 x1=x0-i1+C.xxx; vec3 x2=x0-i2+C.yyy; vec3 x3=x0-D.yyy;
+  i=mod289(i);
+  vec4 p=permute(permute(permute(i.z+vec4(0.0,i1.z,i2.z,1.0))+i.y+vec4(0.0,i1.y,i2.y,1.0))+i.x+vec4(0.0,i1.x,i2.x,1.0));
+  float n_=0.142857142857; vec3 ns=n_*D.wyz-D.xzx;
+  vec4 j=p-49.0*floor(p*ns.z*ns.z); vec4 x_=floor(j*ns.z); vec4 y_=floor(j-7.0*x_);
+  vec4 x=x_*ns.x+ns.yyyy; vec4 y=y_*ns.x+ns.yyyy; vec4 h=1.0-abs(x)-abs(y);
+  vec4 b0=vec4(x.xy,y.xy); vec4 b1=vec4(x.zw,y.zw);
+  vec4 s0=floor(b0)*2.0+1.0; vec4 s1=floor(b1)*2.0+1.0; vec4 sh=-step(h,vec4(0.0));
+  vec4 a0=b0.xzyw+s0.xzyw*sh.xxyy; vec4 a1=b1.xzyw+s1.xzyw*sh.zzww;
+  vec3 p0=vec3(a0.xy,h.x); vec3 p1=vec3(a0.zw,h.y); vec3 p2=vec3(a1.xy,h.z); vec3 p3=vec3(a1.zw,h.w);
+  vec4 norm=taylorInvSqrt(vec4(dot(p0,p0),dot(p1,p1),dot(p2,p2),dot(p3,p3)));
+  p0*=norm.x; p1*=norm.y; p2*=norm.z; p3*=norm.w;
+  vec4 m=max(0.5-vec4(dot(x0,x0),dot(x1,x1),dot(x2,x2),dot(x3,x3)),0.0); m=m*m;
+  return 105.0*dot(m*m,vec4(dot(p0,x0),dot(p1,x1),dot(p2,x2),dot(p3,x3)));
+}`;
+const C3={
+  ok:null,
+  gl(){ if(C3.ok!=null) return C3.ok; try{ const c=document.createElement("canvas"); C3.ok=!!(window.WebGLRenderingContext&&(c.getContext("webgl")||c.getContext("experimental-webgl"))); }catch(e){ C3.ok=false; } return C3.ok; },
+  /* 圖片裁成卡片比例（跟原本的 object-fit:cover 一樣）；沒有圖就畫原本的漸層＋字 */
+  pic(url,W,H,fallback){ return new Promise(res=>{ const done=img=>res(X3.ctex(W,H,(x)=>{ if(img){ const s=Math.max(W/img.width,H/img.height), w=img.width*s, h=img.height*s; x.drawImage(img,(W-w)/2,(H-h)/2,w,h); } else fallback(x,W,H); }));
+    if(!url) return done(null); const im=new Image(); if(/^https?:/.test(url)&&!url.startsWith(location.origin)) im.crossOrigin="anonymous"; im.onload=()=>done(im); im.onerror=()=>done(null); im.src=url; }); },
+  grad(x,W,H,c1,c2){ const g=x.createLinearGradient(0,0,W,H); g.addColorStop(0,c1); g.addColorStop(1,c2); x.fillStyle=g; x.fillRect(0,0,W,H); },
+  txt(x,s,X,Y,font,col,max,al="center"){ x.font=font; x.fillStyle=col; x.textAlign=al; x.textBaseline="middle"; x.fillText(String(s||""),X,Y,max); },
+  dims(W0,H0,max=1024){ const k=max/Math.max(W0,H0); return [Math.round(W0*k),Math.round(H0*k)]; },
+  shape(w,h,r){ const s=new THREE.Shape(), x=-w/2, y=-h/2; s.moveTo(x+r,y); s.lineTo(x+w-r,y); s.quadraticCurveTo(x+w,y,x+w,y+r); s.lineTo(x+w,y+h-r); s.quadraticCurveTo(x+w,y+h,x+w-r,y+h); s.lineTo(x+r,y+h); s.quadraticCurveTo(x,y+h,x,y+h-r); s.lineTo(x,y+r); s.quadraticCurveTo(x,y,x+r,y); return s; },
+  plane(w,h,r){ const g=new THREE.ShapeGeometry(C3.shape(w,h,r),10), p=g.attributes.position, uv=g.attributes.uv; for(let i=0;i<p.count;i++) uv.setXY(i,p.getX(i)/w+.5,p.getY(i)/h+.5); uv.needsUpdate=true; return g; },
+  /* 珠光：雷射彩虹＋流動的 noise＋細碎閃粉，跟著卡片角度變色 */
+  holo(k=1){ return new THREE.ShaderMaterial({ transparent:true, depthWrite:false, blending:THREE.AdditiveBlending, uniforms:{uT:{value:0},uK:{value:k}},
+    vertexShader:`varying vec2 vUv; varying vec3 vWN; varying vec3 vVD;
+      void main(){ vUv=uv; vec4 wp=modelMatrix*vec4(position,1.0); vWN=normalize(mat3(modelMatrix)*normal); vVD=normalize(cameraPosition-wp.xyz); gl_Position=projectionMatrix*viewMatrix*wp; }`,
+    fragmentShader:`uniform float uT; uniform float uK; varying vec2 vUv; varying vec3 vWN; varying vec3 vVD;
+      ${C3_NOISE}
+      void main(){
+        float n=snoise(vec3(vUv*vec2(1.6,2.4),uT*0.08));
+        vec3 r=reflect(-vVD,vWN);
+        float ph=vUv.x*0.9+vUv.y*0.7+r.x*1.7+r.y*1.3+n*0.5;
+        vec3 rb=0.5+0.5*cos(6.2832*(vec3(0.0,0.33,0.67)+ph));
+        float band=pow(0.5+0.5*sin((vUv.x-vUv.y)*8.0+r.x*7.0+r.y*3.0+n*3.0),3.0);
+        float fres=pow(1.0-max(dot(vWN,vVD),0.0),2.0);
+        float sp=snoise(vec3(vUv*vec2(70.0,108.0),floor(uT*5.0)*0.37+r.x*3.0+r.y*2.0));
+        sp=smoothstep(0.80,1.0,sp)*1.4;
+        float edge=smoothstep(0.43,0.5,max(abs(vUv.x-0.5),abs(vUv.y-0.5)));
+        vec3 col=rb*(0.0+0.34*band*band+0.18*fres+0.55*edge)+vec3(sp)*(0.2+0.6*band);
+        gl_FragColor=vec4(col*uK,1.0);
+      }` }); },
+  /* 共用舞台：透明背景、攝影棚反光、柔光 */
+  stage(host,W,H){ const R=X3.renderer(true); R.setSize(W,H); R.setClearColor(0x000000,0); R.toneMappingExposure=1.08;
+    const cv=R.domElement; cv.className="c3-cv"; cv.style.width=W+"px"; cv.style.height=H+"px";
+    const sc=new THREE.Scene(); sc.environment=X3.env(R);
+    sc.add(new THREE.AmbientLight(0xffffff,.55)); const key=new THREE.DirectionalLight(0xffffff,.9); key.position.set(2,4,6); sc.add(key); const rim=new THREE.DirectionalLight(0xC7AEFF,.5); rim.position.set(-4,-1,-3); sc.add(rim);
+    const cam=new THREE.PerspectiveCamera(26,W/H,.1,200); return {R,cv,sc,cam,W,H,disp:[sc.environment]}; },
+  fit(st,w,h,pad=1.3){ const f=st.cam.fov*Math.PI/360, dH=(h/2)/Math.tan(f), dW=(w/2)/(Math.tan(f)*st.cam.aspect); st.cam.position.set(0,0,Math.max(dH,dW)*pad); st.cam.lookAt(0,0,0); },
+  /* 跟原本 spin3d 一樣的手感：拖到哪轉到哪、放開有慣性、一陣子沒碰會慢慢自己轉 */
+  spin(st,obj,host,{onTap,auto=false,rx=-6,ry=-18,tick}={}){ let vx=0,vy=0,drag=null,raf=0,alive=true,idle=performance.now(),tw=null; const t0=performance.now(), D=Math.PI/180;
+    const apply=()=>{ obj.rotation.x=-rx*D; obj.rotation.y=ry*D; };
+    const dispose=()=>{ alive=false; cancelAnimationFrame(raf); try{ st.sc.traverse(o=>{ if(o.geometry) o.geometry.dispose(); const ms=o.material?(Array.isArray(o.material)?o.material:[o.material]):[]; ms.forEach(m=>{ ["map","alphaMap","emissiveMap"].forEach(k=>m[k]&&m[k]!==X3._g&&m[k].dispose()); m.dispose(); }); }); st.disp.forEach(t=>t&&t.dispose&&t.dispose()); st.R.dispose(); if(st.R.forceContextLoss) st.R.forceContextLoss(); }catch(e){} };
+    const loop=now=>{ if(!alive) return; if(!st.cv.isConnected){ dispose(); return; }
+      if(tw){ const k=Math.min(1,(now-tw.t0)/tw.d), e=1-Math.pow(1-k,3); rx=tw.fx+(tw.tx-tw.fx)*e; ry=tw.fy+(tw.ty-tw.fy)*e; if(k>=1) tw=null; }
+      else if(!drag){ if(Math.abs(vx)+Math.abs(vy)>.03){ vx*=.95; vy*=.95; rx+=vx; ry+=vy; idle=now; } else if(auto&&now-idle>1800) ry+=.25; }
+      apply(); if(tick) tick((now-t0)/1000); st.R.render(st.sc,st.cam); raf=requestAnimationFrame(loop); };
+    host.style.touchAction="none";
+    const down=e=>{ if(!alive||e.target.closest("button")) return; drag={x:e.clientX,y:e.clientY,mv:0}; vx=vy=0; tw=null; try{ host.setPointerCapture(e.pointerId); }catch(_){} };
+    const move=e=>{ if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; drag.mv+=Math.abs(dx)+Math.abs(dy); drag.x=e.clientX; drag.y=e.clientY; ry+=dx*.55; rx-=dy*.45; vy=dx*.55; vx=-dy*.45; idle=performance.now(); };
+    const up=()=>{ if(!drag) return; const tap=drag.mv<8; drag=null; idle=performance.now(); if(tap){ vx=vy=0; if(onTap) onTap(); } };
+    host.addEventListener("pointerdown",down); host.addEventListener("pointermove",move); host.addEventListener("pointerup",up); host.addEventListener("pointercancel",up);
+    apply(); raf=requestAnimationFrame(loop);
+    const to=(x,y,d=600)=>{ vx=vy=0; tw={fx:rx,fy:ry,tx:x,ty:y,t0:performance.now(),d}; idle=performance.now(); };
+    return { gl:true, flip(){ to(rx,Math.round((ry+180)/180)*180); }, face(){ const n=Math.round(ry/360)*360; rx=-6; ry=n-18; apply(); }, get:()=>({rx,ry}), to, stop(){ if(alive) dispose(); }, get alive(){ return alive; } }; },
+  /* 把 CSS 版換成 3D：先照原本的 CSS 顯示，three.js 載好再換掉 */
+  swap(host,make){ if(!host||!C3.gl()) return Promise.resolve(null); return loadThree().then(()=>{ if(!host.isConnected) return null; try{ return make(); }catch(e){ console.warn("C3",e); return null; } }).catch(()=>null); },
+  /* ---------- 小卡、明信片、拍立得… ---------- */
+  async item(host,cid,maxPx){ const o=parseIt(cid); if(!o) return null; const {a,it,p}=o, g=groupOf(a.gid)||{name:"",g:0}, m=MEMBERS[p.mid], C=GRADS[(m?m.g:g.g)%GRADS.length], C2=GRADS[g.g%GRADS.length];
+    const w=it.w, h=it.h, r=Math.min(w,h)*.06, th=.06;
+    const [TW,TH]=C3.dims(w,h,1024);
+    const [ft,bt]=await Promise.all([
+      C3.pic(PCI[`ph|${a.id}|${p.id}|f`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C[0],C[1]); const R0=Math.min(W,H)*.2; x.fillStyle="rgba(255,255,255,.28)"; x.beginPath(); x.arc(W/2,H*.42,R0,0,7); x.fill();
+        C3.txt(x,m?ini(m.name):ini(g.name),W/2,H*.42,`700 ${R0*1.05}px ${SANS}`,"#fff"); C3.txt(x,m?m.name:g.name,W/2,H*.68,`700 ${Math.min(W,H)*.09}px ${SANS}`,"#fff",W*.86); C3.txt(x,it.name,W/2,H*.76,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }),
+      C3.pic(PCI[`ph|${a.id}|${p.id}|b`]||PCI[`ib|${a.id}|${it.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C2[0],C2[1]); C3.txt(x,g.name,W/2,H*.46,`700 ${Math.min(W,H)*.1}px ${SERIF}`,"#fff",W*.86); C3.txt(x,a.title,W/2,H*.56,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }) ]);
+    if(!host.isConnected){ ft.dispose(); bt.dispose(); return null; }
+    const z=(typeof ZM==="function"?ZM():1)||1, VW=Math.round(Math.min(innerWidth/z*.94,420)), VH=Math.round(Math.min(innerHeight/z*.56,(maxPx||250)*1.75));
+    const st=C3.stage(host,VW,VH), obj=new THREE.Group(); st.sc.add(obj); st.disp.push(ft,bt);
+    const card=(tex,back)=>{ const mesh=new THREE.Mesh(C3.plane(w,h,r),new THREE.MeshPhysicalMaterial({map:tex,roughness:.42,metalness:0,clearcoat:.7,clearcoatRoughness:.12,envMapIntensity:.32})); mesh.position.z=back?-th/2-.001:th/2+.001; if(back) mesh.rotation.y=Math.PI; return mesh; };
+    obj.add(card(ft,false),card(bt,true));
+    const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; obj.add(edge);
+    let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; obj.add(hm); }); }
+    C3.fit(st,w,h,1.32);
+    host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
+    return C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t; }}); },
+  /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */
+  upItem(host,cid,maxPx,after){ const old=ui.s3; C3.swap(host,()=>C3.item(host,cid,maxPx)).then(api=>{ if(!api) return; if(ui.s3!==old||!host.isConnected){ api.stop(); return; } if(old) old.stop(); ui.s3=api; if(after) after(api); }); },
+  /* ---------- 專輯 ---------- */
+  async album(host,a,v,{onTap}={}){ const g=groupOf(a.gid)||{name:"",g:0}, C=GRADS[g.g%GRADS.length], sp=v.spine||C[0];
+    const w=v.w, h=v.h, t=Math.max(.35,v.t), cvT=Math.min(.14,t*.12);
+    const [TW,TH]=C3.dims(w,h,1024), trk=[a.title,"Intro","Midnight Call","Every Moment","Outro"];
+    const [cov,bk]=await Promise.all([
+      C3.pic(PCI[`vc|${a.id}|${v.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C[0],C[1]); const U=Math.min(W,H); C3.txt(x,a.ord,W*.08,H*.08,`600 ${U*.045}px ${SANS}`,"rgba(255,255,255,.85)",W*.8,"left");
+        C3.txt(x,g.name,W/2,H*.44,`800 ${U*.13}px ${SERIF}`,"#fff",W*.86); C3.txt(x,a.title,W/2,H*.55,`italic 500 ${U*.07}px ${SERIF}`,"rgba(255,255,255,.92)",W*.86);
+        x.strokeStyle="rgba(255,255,255,.7)"; x.lineWidth=U*.004; const vw=Math.min(W*.5,x.measureText(v.name).width+U*.12); X3.rr(x,W/2-vw/2,H*.83,vw,U*.07,U*.035); x.stroke(); C3.txt(x,v.name,W/2,H*.83+U*.035,`600 ${U*.038}px ${SANS}`,"#fff",vw); }),
+      C3.pic(PCI[`vb|${a.id}|${v.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C[1],C[0]); const U=Math.min(W,H); C3.txt(x,g.name,W*.1,H*.12,`800 ${U*.075}px ${SERIF}`,"#fff",W*.8,"left"); C3.txt(x,`${a.ord}・${v.name}`,W*.1,H*.19,`500 ${U*.04}px ${SANS}`,"rgba(255,255,255,.85)",W*.8,"left");
+        trk.forEach((s,i)=>C3.txt(x,`${String(i+1).padStart(2,"0")}  ${i===0?"[TITLE] ":""}${s}`,W*.1,H*(.32+i*.075),`500 ${U*.042}px ${SANS}`,"rgba(255,255,255,.92)",W*.8,"left"));
+        x.fillStyle="#fff"; x.fillRect(W*.62,H*.82,W*.28,H*.1); x.fillStyle="#111"; for(let i=0,X=W*.635;X<W*.88;i++){ const bw=U*(.003+((i*7)%5)*.0018); x.fillRect(X,H*.835,bw,H*.07); X+=bw+U*.004; } }) ]);
+    if(!host.isConnected){ cov.dispose(); bk.dispose(); return null; }
+    const spT=X3.ctex(128,Math.round(128*h/t),(x,W,H)=>{ x.fillStyle=sp; x.fillRect(0,0,W,H); x.save(); x.translate(W/2,H/2); x.rotate(-Math.PI/2); C3.txt(x,`${g.name}・${a.title}・${v.name}`,0,0,`700 ${W*.42}px ${SANS}`,"#fff",H*.9); x.restore(); });
+    const inT=X3.ctex(512,Math.round(512*h/w),(x,W,H)=>{ const gr=x.createRadialGradient(W/2,H/2,0,W/2,H/2,Math.max(W,H)*.7); gr.addColorStop(0,"#FFFFFF"); gr.addColorStop(.5,C[0]); gr.addColorStop(1,C[1]); x.fillStyle=gr; x.fillRect(0,0,W,H); });
+    const z=(typeof ZM==="function"?ZM():1)||1, VW=Math.round(innerWidth/z), VH=Math.round(Math.min(innerHeight/z*.62,640));
+    const st=C3.stage(host,VW,VH), obj=new THREE.Group(); st.sc.add(obj); st.disp.push(cov,bk,spT,inT);
+    const paper=new THREE.MeshStandardMaterial({color:X3.C("#F3EEE6"),roughness:.85,envMapIntensity:.5}), gloss=(map)=>new THREE.MeshPhysicalMaterial({map,roughness:.3,clearcoat:1,clearcoatRoughness:.08,envMapIntensity:.85}), plain=new THREE.MeshPhysicalMaterial({color:X3.C(sp),roughness:.35,clearcoat:.6,envMapIntensity:.7});
+    /* 內頁（盒身）：+x 右側紙邊、-x 書背、上下紙邊、+z 裡面那頁、-z 封底 */
+    const body=new THREE.Mesh(new THREE.BoxGeometry(w,h,t-cvT),[paper,gloss(spT),paper,paper,new THREE.MeshStandardMaterial({map:inT,roughness:.6,emissive:new THREE.Color(0xffffff),emissiveMap:inT,emissiveIntensity:0}),gloss(bk)]);
+    body.position.z=-cvT/2; obj.add(body);
+    /* 封面：以書背那邊當軸，翻開 */
+    const hinge=new THREE.Group(); hinge.position.set(-w/2,0,(t-cvT)/2); obj.add(hinge);
+    const cover=new THREE.Mesh(new THREE.BoxGeometry(w,h,cvT),[plain,plain,plain,plain,gloss(cov),new THREE.MeshStandardMaterial({color:X3.C("#FBF8F4"),roughness:.7})]); cover.position.set(w/2,0,cvT/2); hinge.add(cover);
+    /* 收縮膜 */
+    const wrap=new THREE.Mesh(new THREE.BoxGeometry(w+.08,h+.08,t+.08),new THREE.MeshPhysicalMaterial({color:0xffffff,transparent:true,opacity:.14,roughness:.04,metalness:0,clearcoat:1,clearcoatRoughness:0,envMapIntensity:2.4,depthWrite:false})); obj.add(wrap);
+    /* 打開時裡面的光 */
+    const glow=new THREE.Sprite(new THREE.SpriteMaterial({map:X3.glowTex(),color:X3.C(C[0]),transparent:true,opacity:0,blending:THREE.AdditiveBlending,depthWrite:false})); glow.scale.set(w*2.4,h*2.4,1); glow.position.z=t/2+.2; obj.add(glow);
+    const pl=new THREE.PointLight(X3.C(C[0]),0,Math.max(w,h)*3); pl.position.set(0,0,t/2+2); obj.add(pl);
+    C3.fit(st,Math.hypot(w,t)*1.05,h,1.75); const camZ=st.cam.position.z;
+    host.querySelectorAll(".ab-box").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
+    let opening=null;
+    const api=C3.spin(st,obj,host,{auto:true,rx:-12,ry:-28,onTap,tick:()=>{ if(!opening) return; const k=Math.max(0,Math.min(1,(performance.now()-opening)/1050)), e=k<.5?4*k*k*k:1-Math.pow(-2*k+2,3)/2;
+      const wk=Math.min(1,k*3); wrap.material.opacity=.14*(1-wk); wrap.scale.setScalar(1+wk*.08);
+      const ck=Math.max(0,Math.min(1,(k-.15)/.85)), ce=1-Math.pow(1-ck,3); hinge.rotation.y=-ce*Math.PI*.9;
+      glow.material.opacity=ce*.95; glow.scale.set(w*(2.4+ce*1.2),h*(2.4+ce*1.2),1); pl.intensity=ce*2.2; body.material[4].emissiveIntensity=ce*.55; obj.position.x=ce*w*.42; st.cam.position.z=camZ*(1+ce*.5); }});
+    api.open=()=>{ const {ry}=api.get(); api.to(8,Math.round(ry/360)*360-10,500); opening=performance.now()+120; };
+    return api; },
+  upAlbum(host,a,v,st0,onTap){ C3.swap(host,()=>C3.album(host,a,v,{onTap})).then(api=>{ if(!api) return; const st=ui.ab; if(st!==st0||st.open||!host.isConnected){ api.stop(); return; } if(st.spin) st.spin.stop(); st.spin=api; st.gl=api; }); },
+};
 
 /* =========================================================
    應援餐車 3D
