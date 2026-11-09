@@ -6107,7 +6107,7 @@ html body .foc-conc .lsp-songs button.on{background:var(--violet);color:#fff}
 .dbx-ck p{margin:0;font-size:12px;color:var(--ink-3)}
 .dbx-pv{margin-top:16px;padding-top:12px;border-top:1px dashed var(--line)}.dbx-pv>b{font-size:13px}
 .dbx-pl{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px}.dbx-pl li{display:flex;gap:12px;font-size:13px}.dbx-pl time{flex:none;width:84px;color:var(--ink-3);font-variant-numeric:tabular-nums}
-.dbx-send{margin-top:6px}.dbx .db-up .db-slot{aspect-ratio:16/10}
+.dbx-send{margin-top:6px}.dbx .db-up .db-slot{aspect-ratio:16/10}.db-slot.ghost{visibility:hidden}
 .cp-rx{margin-top:10px;display:flex;flex-direction:column;gap:6px}.cp-ra{margin:0;font-weight:700}.cp-rc{margin:0;font-size:12.5px;color:var(--ink-3);line-height:1.6}
 .cp-ly{font-size:13px}.cp-ly summary{cursor:pointer;color:var(--violet);font-weight:700}.cp-ly p{margin:8px 0 0;line-height:1.7;color:var(--ink-2)}
 .db2{padding:14px 2px}.db2+.db2{border-top:1px solid var(--line)}
@@ -6641,7 +6641,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109154723";
+const BUILD="20261109155154";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8330,6 +8330,7 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
 function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||"");
   return `<span class="fs-f-lab">專輯名稱 <em>選填</em></span><input id="prX_album" class="a-nick-in" maxlength="40" placeholder="例：The 1st Mini Album『Sequence 01』" value="${X("album")}">
     <span class="fs-f-lab">${songLab}</span><input id="${songId}" class="a-nick-in" maxlength="30" placeholder="輸入文字" value="${esc(sv)}">
+    <span class="fs-f-lab">第二首主打（雙主打）<em>選填</em></span><input id="prX_t2" class="a-nick-in" maxlength="30" placeholder="例：BOOMBAYAH＋WHISTLE 這種" value="${X("t2")}"><p class="dbx-d">兩首主打會一起打歌、互相比分數；之後回歸才會一起下檔。</p>
     <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"",songId==="cbTitle"?"cbrRel":"dbRel")}${promoTrk(f)}
     <span class="fs-f-lab">專輯介紹 <em>選填</em></span><textarea id="prX_desc" class="a-nick-in dbx-ta" rows="4" placeholder="這張專輯想說的故事、概念">${X("desc")}</textarea>
     <span class="fs-f-lab">主打歌製作人員 <em>選填</em></span><textarea id="prX_credit" class="a-nick-in dbx-ta" rows="3" placeholder="作詞：&#10;作曲：&#10;編曲：">${X("credit")}</textarea>
@@ -8341,7 +8342,7 @@ function dbPromoF(f,dateF){ const tp=f.tPrev||f.teaser, vid=(v,pv)=>v?(pv?`<img 
     <span class="fs-f-lab">Teaser 照片</span><div class="db-up4"><button class="db-slot t" data-a="dbTeaser" data-i="0" aria-label="Teaser 照片">${tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`}<small>主圖</small></button>${tx}</div>
     <span class="fs-f-lab">概念照 <em>可以有好幾個版本</em></span>${prCvF(f)}
     <span class="fs-f-lab">預告影片 <em>選填</em></span>${prVidF(f)}
-    <span class="fs-f-lab">MV</span><div class="db-up"><button class="db-slot v" data-a="dbMvt" aria-label="MV Teaser">${vid(f.mvt,f.mtPrev)}<small>MV Teaser</small></button><button class="db-slot v" data-a="dbMv" aria-label="MV">${vid(f.mv,f.mPrev)}<small>MV</small></button></div>`; }
+    <span class="fs-f-lab">MV</span><div class="db-up"><button class="db-slot v" data-a="dbMvt" aria-label="MV Teaser">${vid(f.mvt,f.mtPrev)}<small>MV Teaser</small></button><button class="db-slot v" data-a="dbMv" aria-label="MV">${vid(f.mv,f.mPrev)}<small>MV</small></button></div><div class="db-up"><button class="db-slot v" data-a="dbMv2" aria-label="第二首主打 MV">${vid(prOf(f).mv2,prOf(f).mv2P)}<small>${String(prOf(f).t2||"").trim()?`《${esc(prOf(f).t2)}》MV`:"第二首主打 MV（雙主打才要）"}</small></button><span class="db-slot ghost" aria-hidden="true"></span></div>`; }
 function dbDayF(f,w){ const pr=prOf(f); return `<span class="fs-f-lab">${w} Showcase 時間 <em>選填，沒有就留空</em></span><input id="prX_sc" class="a-nick-in" type="time" value="${esc(pr.sc||"")}"><p class="dbx-d">${w}當天：MV、專輯照「每天發布時間」同時公開，主打歌開始打歌${pr.sc?`；${esc(pr.sc)} 發 Showcase 公告`:""}。</p>`; }
 /* 跟真實的出道／回歸宣傳比，還缺什麼 */
 function dbCheck(f){ const pr=prOf(f), cv=(pr.cv||[]).filter(v=>(v.ph||[]).some(Boolean)||(v.phP||[]).some(Boolean)).length, db=!f.cb;
@@ -13004,7 +13005,7 @@ function clickGen(a,t,e,r){ switch(a){
         try{ const b=await shrinkImg(c,1350); f.tPrev=URL.createObjectURL(b); f.busy="上傳中…"; dbReform();
           const url=(HB_ON&&await hbImgUrl("debut_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
           const ti=+(t.dataset.i||0); if(ti>0){ f.tx[ti-1]=url; f.txP[ti-1]=f.tPrev; f.tPrev=f.tPrev0||""; } else { if(f.teaser&&f.teaser!==url) mediaDel(f.teaser); f.teaser=url; f.tPrev0=f.tPrev; } f.busy=""; dbReform(); }catch(e){ f.busy=""; dbReform(); toast("這張圖讀不出來"); } }; pickClick(inp); break; }
-    case "dbMvt": case "dbMv": { dbKeep(); const f=ui.dbF; if(!f||f.busy) break; const isT=a==="dbMvt"; const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
+    case "dbMvt": case "dbMv": case "dbMv2": { dbKeep(); const f=ui.dbF; if(!f||f.busy) break; const isT=a==="dbMvt", is2=a==="dbMv2"; const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
       inp.onchange=async()=>{ const file=inp.files&&inp.files[0]; if(!file) return; 
         f.busy="影片處理中…"; dbReform();
         try{ const id="vv"+Date.now().toString(36), th=await videoThumb(file); let thumb=null;
@@ -13013,7 +13014,7 @@ function clickGen(a,t,e,r){ switch(a){
           const pr=document.querySelector(".db-busy"); hbUploadBig.on=p=>{ f.busy=`影片上傳中… ${p}%`; const e=document.querySelector(".db-busy"); if(e) e.textContent=f.busy; }; f.busy="影片上傳中…"; if(pr) pr.textContent=f.busy;
           const ok=await hbUpload(id,file); hbUploadBig.on=null; if(!ok){ f.busy=""; dbReform(); return; }
           memBlobs[id]=file;
-          const v={mid:id,thumb,dur:th&&th.dur||0}, pv=th&&th.blob?URL.createObjectURL(th.blob):""; if(isT){ f.mvt=v; f.mtPrev=pv; } else { f.mv=v; f.mPrev=pv; f.au=""; mvAudioUpload(file).then(a=>{ if(ui.dbF===f&&f.mv===v) f.au=a; }); } f.busy=""; dbReform(); }catch(e){ f.busy=""; dbReform(); toast("這部影片讀不出來，換一部試試"); } }; pickClick(inp); break; }
+          const v={mid:id,thumb,dur:th&&th.dur||0}, pv=th&&th.blob?URL.createObjectURL(th.blob):""; if(is2){ const pr=prOf(f); pr.mv2=v; pr.mv2P=pv; } else if(isT){ f.mvt=v; f.mtPrev=pv; } else { f.mv=v; f.mPrev=pv; f.au=""; mvAudioUpload(file).then(a=>{ if(ui.dbF===f&&f.mv===v) f.au=a; }); } f.busy=""; dbReform(); }catch(e){ f.busy=""; dbReform(); toast("這部影片讀不出來，換一部試試"); } }; pickClick(inp); break; }
     case "dbTsr": { const x=getDebut().find(y=>y.id===t.dataset.v); if(!x||!x.teaser) break; setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="Teaser 照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><img src="${esc(x.teaser)}" alt=""></div>`,"photo"); break; }
     case "dbMvPlay": playVideo(t.dataset.v); break;
     case "dbKind": { dbKeep(); const f=ui.dbF; if(!f) break; f.kind=t.dataset.v==="group"?"group":"solo"; debutForm(); break; }
@@ -17701,8 +17702,8 @@ const cbRelAt=p=>{ const c=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id
 function preTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.debut]==null&&HB.ver[K.mshow]==null)) return; const now=Date.now();
     const L=getDebut(); let ch=false; L.forEach(x=>{ if(x.status==="pre"&&x.day&&x.day>now&&!x.annId&&x.day-now<=PRE_ANN){ dbAnn(x); ch=true; } if(x.status==="pre"&&x.day&&dbRelAt(x)<=now){ if(x.gid) dbReveal(x); else dbDebutNow(L,x); ch=true; } }); if(ch){ S.set(K.debut,L); applyRoster(); render(); }
     { const m0=getMShow(), due=(m0.pre||[]).filter(p=>p.day>now&&!p.annId&&p.day-now<=PRE_ANN); if(due.length){ due.forEach(cbAnn); S.set(K.mshow,m0); } }
-    { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song,mv:x.mv,mvt:x.mvt}); }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
-    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
+    { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song,mv:x.mv,mvt:x.mvt}); { const t2=String((x.pr||{}).t2||"").trim(); if(t2&&!m1.songs.some(s=>s.id===sid+"b")){ m1.songs.push({id:sid+"b",gid:x.gid,title:t2,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{})}); cbrMvPublish({gid:x.gid,title:t2,mv:x.pr.mv2}); } } }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
+    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); { const c2=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), t2=String(((c2||{}).pr||{}).t2||"").trim(); if(t2&&!ms.songs.some(s=>s.id===sid+"b")){ ms.songs.push({id:sid+"b",gid:p.gid,title:t2,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{})}); cbrMvPublish({gid:p.gid,title:t2,mv:c2.pr.mv2}); } } const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
 setInterval(preTick,60e3); setTimeout(preTick,9e3);
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
@@ -17710,7 +17711,7 @@ function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow
       const title=(/《([^》]+)》/.exec(v.title||"")||[])[1]||String(v.title||"").replace(/^.*[｜|]\s*/,"").replace(/\s*(official\s*)?(m\/?v)(\s*teaser)?\s*$/i,"").trim()||"新歌";
       m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id}); ch=true; const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》MV 公開，開始打歌！`,v.gid); });
     /* 回歸：同一團有新歌，舊歌下檔 */
-    const byG={}; m.songs.forEach(x=>{ const r=songRel(x); if(!byG[x.gid]||r>songRel(byG[x.gid])) byG[x.gid]=x; }); const old=m.songs.filter(x=>songRel(x)&&byG[x.gid]!==x&&songRel(byG[x.gid])>songRel(x)); if(old.length){ m.songs=m.songs.filter(x=>!old.includes(x)); m.ended=[...(m.ended||[]),...old.map(x=>({...x,endTs:now}))]; ch=true; }
+    const byG={}; m.songs.forEach(x=>{ const r=songRel(x); if(!byG[x.gid]||r>songRel(byG[x.gid])) byG[x.gid]=x; }); const old=m.songs.filter(x=>songRel(x)&&byG[x.gid]!==x&&songRel(byG[x.gid])-songRel(x)>MDAY); if(old.length){ m.songs=m.songs.filter(x=>!old.includes(x)); m.ended=[...(m.ended||[]),...old.map(x=>({...x,endTs:now}))]; ch=true; }
     /* 社群（團的社群，不是個人社群）：MV 公開時自動貼一則 NOTICE，社群的影音也看得到 */
     { const GN=S.get(K.gNotices,[])||[]; let gch=false; (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<7*MDAY).forEach(v=>{ if(GN.some(n=>n.mv===v.id)) return; const g=groupOf(v.gid), tt=(/《([^》]+)》/.exec(v.title||"")||[])[1]||v.title||"新歌";
         GN.unshift({id:"gn"+v.ts,group:v.gid,mv:v.id,title:`[MV] ${g.name}《${tt}》Official MV 公開`,body:`${g.name}《${tt}》MV 公開了！\n到社群的影音就看得到，打歌也從現在開始，一起幫忙投票吧 💜`,ts:v.ts}); gch=true; }); if(gch){ S.set(K.gNotices,GN); ch=true; } }
@@ -19258,7 +19259,7 @@ function promoSchedCard(s){ const L=promoPlan(s).filter(x=>x.k!=="sched");
     <ol class="pr-al">${L.map(x=>`<li><time>${mdTxt(x.ts)}${x.k==="rel"?"":" "+hm(x.ts)}</time><span>${x.k==="concept"&&x.n?`Concept Photo・${esc(x.n)}`:PR_KIND[x.k]}</span></li>`).join("")}</ol></div>`; }
 /* 曲目照藝人自己排；跟出道曲／回歸歌名一樣的那一首才標 TITLE */
 const trkNorm=v=>String(v||"").toLowerCase().replace(/[\s'"「」《》【】<>()（）\[\]]/g,"");
-const trkIsTitle=(t,s)=>!!s.title&&trkNorm(t)===trkNorm(s.title);
+const trkIsTitle=(t,s)=>(!!s.title&&trkNorm(t)===trkNorm(s.title))||(!!(s.pr||{}).t2&&trkNorm(t)===trkNorm(s.pr.t2));
 function promoTrkCard(s){ const T=String((s.pr||{}).trk||"").split("\n").map(x=>x.trim()).filter(Boolean);
   return `<div class="pr-auto trk" style="--c:${(GRADS[s.g%GRADS.length]||[])[0]||"#8b5cf6"}">${s.teaser?`<span class="pr-abg" style="background-image:url('${esc(s.teaser)}')"></span>`:""}
     <div class="pr-ah"><em>TRACK LIST</em><b>${esc(s.name)}</b>${s.rtype?`<small>${esc(s.rtype)}</small>`:""}</div>
@@ -19309,8 +19310,8 @@ const prVidF=f=>{ const pr=prOf(f); return `<div class="chips"><button class="ch
 function promoFields(f){ return `<span class="fs-f-lab">每天發布時間</span>${prTimeF(f)}<span class="fs-f-lab">排程表</span>${prSchedF(f)}<span class="fs-f-lab">概念照</span>${prCvF(f)}<span class="fs-f-lab">影片</span>${prVidF(f)}`; }
 function promoKeep(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const v=id=>{ const e=document.getElementById(id); return e?e.value:null; }; const tm=v("prTime"), tk=v("prTrk"); if(tm!=null) pr.time=tm||"18:00"; if(tk!=null) pr.trk=tk; PR_EX.forEach(k=>{ const x=v("prX_"+k); if(x!=null) pr[k]=x; }); (pr.cv||[]).forEach((c,i)=>{ const n=v("prCv"+i); if(n!=null) c.n=n; }); }
 /* 存進申請：預覽用的 blob 網址不存 */
-const PR_EX=["album","desc","credit","lyr","sc","fan","intro"];
-const promoClean=pr=>pr?{...Object.fromEntries(PR_EX.filter(k=>String(pr[k]||"").trim()).map(k=>[k,String(pr[k]).trim()])),time:pr.time||"18:00",sched:pr.sched||"",trk:pr.trk||"",trkImg:pr.trkImg||"",cv:(pr.cv||[]).map(c=>({n:c.n||"",ph:(c.ph||[]).filter(Boolean)})).filter(c=>c.ph.length||c.n),vk:pr.vid?pr.vk:"",vid:pr.vk&&pr.vid?pr.vid:null}:null;
+const PR_EX=["album","desc","credit","lyr","sc","fan","intro","t2"];
+const promoClean=pr=>pr?{...(pr.mv2&&pr.mv2.mid&&String(pr.t2||"").trim()?{mv2:pr.mv2}:{}),...Object.fromEntries(PR_EX.filter(k=>String(pr[k]||"").trim()).map(k=>[k,String(pr[k]).trim()])),time:pr.time||"18:00",sched:pr.sched||"",trk:pr.trk||"",trkImg:pr.trkImg||"",cv:(pr.cv||[]).map(c=>({n:c.n||"",ph:(c.ph||[]).filter(Boolean)})).filter(c=>c.ph.length||c.n),vk:pr.vid?pr.vk:"",vid:pr.vk&&pr.vid?pr.vid:null}:null;
 const promoLoad=pr=>pr?{...JSON.parse(JSON.stringify(pr)),cv:(pr.cv||[]).map(c=>({n:c.n,ph:[...(c.ph||[])]}))}:{time:"18:00",cv:[],vk:"",trk:""};
 async function prImgUp(file){ const b=await shrinkImg(file,1600), prev=URL.createObjectURL(b);
   const url=(HB_ON&&await hbImgUrl("promo_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); return {url,prev}; }
