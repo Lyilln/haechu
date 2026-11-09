@@ -6116,6 +6116,7 @@ html body .foc-conc .lsp-songs button.on{background:var(--violet);color:#fff}
 .db2-i{margin:8px 0 0 54px;font-size:12.5px;line-height:1.6;color:var(--ink-2)}.db2-i span{white-space:nowrap}.db2-i span+span::before{content:" · ";white-space:pre;color:var(--ink-3)}
 .db2 .db-media{display:flex;flex-wrap:nowrap;gap:6px;margin:10px 0 0 54px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.db2 .db-media::-webkit-scrollbar{display:none}.db2 .db-th{width:64px;height:80px;border-radius:10px}
 .db2-a{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.db2-a:empty{display:none}.db2-a .btn{min-width:64px}.db2-del{color:#E5484D!important}
+.dbx-ro{margin:0;padding:10px 14px;border-radius:14px;background:var(--s2);color:var(--ink-3);font-weight:700}
 </style>
 </head>
 <body>
@@ -6641,7 +6642,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109155154";
+const BUILD="20261109155417";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8319,12 +8320,16 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
     <span class="fs-f-lab">其他成員（藝名・帳號・生日）</span><div class="db-mems">${f.mems.map((x,i)=>`<div class="db-mem"><input id="dbMn${i}" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(x.name||"")}"><input id="dbMa${i}" class="a-nick-in" maxlength="40" placeholder="輸入文字" autocapitalize="off" autocomplete="off" value="${esc(x.acc||"")}">${f.mems.length>1?`<button class="db-mx" data-a="dbMemDel" data-i="${i}" aria-label="移除這位成員">✕</button>`:"<i></i>"}<input id="dbMb${i}" class="a-nick-in db-mbd" type="date" max="${ymdIn(Date.now())}" value="${esc(x.bd||"")}" aria-label="生日"></div>`).join("")}</div>${f.mems.length<DB_MAXM?`<button class="t-pill db-madd" data-a="dbMemAdd">＋ 加一位成員</button>`:""}`
     :`<span class="fs-f-lab">藝名</span><input id="dbName" class="a-nick-in" maxlength="16" placeholder="輸入文字" value="${esc(f.name)}"><span class="fs-f-lab">生日</span><input id="dbBd" class="a-nick-in" type="date" max="${ymdIn(Date.now())}" value="${esc(f.bd||"")}">`;
   const pr=prOf(f), X=k=>esc(pr[k]||"");
-  dbPage(f.editId?"修改出道申請":"出道申請","debutOk",f,[
-    ["基本資料","",`${kind}${who}<span class="fs-f-lab">公司</span>${coChips(f.co||"","dbCo")}
+  const whoPre=f.pre?`<p class="dbx-d">已經核准，${grp?"團名、成員":"藝名"}不能改；其他都可以改。</p><span class="fs-f-lab">${grp?"團名":"藝名"}</span><p class="dbx-ro">${esc(grp?f.gname:f.name)}</p>
+    <span class="fs-f-lab">${grp?`${esc(f.name)} 的生日`:"生日"}</span><input id="dbBd" class="a-nick-in" type="date" max="${ymdIn(Date.now())}" value="${esc(f.bd||"")}">
+    ${grp?f.mems.map((x,i)=>`<span class="fs-f-lab">${esc(x.name)} 的生日</span><input id="dbMb${i}" class="a-nick-in" type="date" max="${ymdIn(Date.now())}" value="${esc(x.bd||"")}">`).join(""):""}`:"";
+  const dMin=f.pre?Date.now()+864e5:Date.now()+PRE_MIN;
+  dbPage(f.pre?"修改出道資料":f.editId?"修改出道申請":"出道申請","debutOk",f,[
+    ["基本資料","",`${f.pre?whoPre:kind+who}<span class="fs-f-lab">公司</span>${coChips(f.co||"","dbCo")}
       <span class="fs-f-lab">粉絲名 <em>選填</em></span><input id="prX_fan" class="a-nick-in" maxlength="16" placeholder="例：MY、CARAT" value="${X("fan")}">
       <span class="fs-f-lab">${grp?"團名":"藝名"}的由來 <em>選填</em></span><textarea id="prX_intro" class="a-nick-in dbx-ta" rows="3" placeholder="輸入文字">${X("intro")}</textarea>`],
     ["作品","出道專輯和主打歌",dbWorkF(f,"dbSong","出道曲（主打歌）")],
-    ["宣傳排程","核准後會照日期自動發；出道前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">出道日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(Date.now()+PRE_MIN)}" value="${esc(f.date||ymdIn(Date.now()+PRE_MIN))}">`)],
+    ["宣傳排程","核准後會照日期自動發；出道前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">出道日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(dMin)}" value="${esc(f.date||ymdIn(dMin))}">`)],
     ["出道當天","",dbDayF(f,"出道")]]); }
 /* ---------- 出道／回歸申請：獨立一頁（照真實 K-POP 宣傳會有的東西分區） ---------- */
 function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||"");
@@ -8350,11 +8355,11 @@ function dbCheck(f){ const pr=prOf(f), cv=(pr.cv||[]).filter(v=>(v.ph||[]).some(
 function dbPlanPv(f){ const day=ymdTs(f.date); if(!day) return ""; const sv={k:f.cb?"cb":"db",id:"pv",name:f.cb?((groupOf(f.gid)||{}).name||""):(f.kind==="group"?f.gname:f.name)||"",title:f.cb?f.title:f.song,day,appr:Date.now(),teaser:f.teaser||f.tPrev||"",teasers:(f.tx||[]).filter(Boolean),mvt:f.mvt,pr:{...prOf(f),vid:prOf(f).vid},rtype:f.rtype||""};
   let L=[]; try{ L=promoPlan(sv); }catch(e){ return ""; } return `<ol class="dbx-pl">${L.map(x=>`<li><time>${x.k==="sched"?"核准後馬上":mdTxt(x.ts)+" "+hm(x.ts)}</time><span>${x.k==="concept"&&x.n?`Concept Photo・${esc(x.n)}`:PR_KIND[x.k]||x.k}</span></li>`).join("")}</ol>`; }
 function dbPage(title,okAct,f,secs){ const old=layer.querySelector(".dbx-b"), y=old?old.scrollTop:0, ck=dbCheck(f), miss=ck.filter(x=>!x[1]).length;
-  setLayer(`<div class="dbx" role="dialog" aria-label="${esc(title)}"><header class="dbx-h"><button class="dbx-x" data-a="tCloseLayer">取消</button><b>${esc(title)}</b><button class="dbx-ok" data-a="${okAct}" ${f.busy?"disabled":""}>送出</button></header>
+  setLayer(`<div class="dbx" role="dialog" aria-label="${esc(title)}"><header class="dbx-h"><button class="dbx-x" data-a="tCloseLayer">取消</button><b>${esc(title)}</b><button class="dbx-ok" data-a="${okAct}" ${f.busy?"disabled":""}>${f.editId?"儲存":"送出"}</button></header>
     <div class="dbx-b">${f.busy?`<p class="db-busy">${f.busy}</p>`:""}
       <section class="dbx-ck"><div class="dbx-ckh"><b>宣傳完整度</b><em>${ck.length-miss}／${ck.length}</em></div><div class="dbx-ckl">${ck.map(([l,ok])=>`<span class="${ok?"ok":""}">${ok?"✓":"○"} ${l}</span>`).join("")}</div>${miss?`<p>真實的${f.cb?"回歸":"出道"}通常會有這些，越完整，粉絲越有期待感。</p>`:`<p>全部都有了！</p>`}</section>
       ${secs.map(([h,d,body],i)=>`<section class="dbx-s"><h4><i>${i+1}</i>${h}</h4>${d?`<p class="dbx-d">${d}</p>`:""}${body}${h==="宣傳排程"?`<div class="dbx-pv"><b>自動發文時間表</b>${dbPlanPv(f)||`<p class="dbx-d">選好日期就會出現</p>`}</div>`:""}</section>`).join("")}
-      <button class="btn btn-main btn-block dbx-send" data-a="${okAct}" ${f.busy?"disabled":""}>送出申請</button></div></div>`,"dbx");
+      <button class="btn btn-main btn-block dbx-send" data-a="${okAct}" ${f.busy?"disabled":""}>${f.editId?"儲存修改":"送出申請"}</button></div></div>`,"dbx");
   const b=layer.querySelector(".dbx-b"); if(b&&y) b.scrollTop=y; }
 
 const dbReform=()=>{ if(document.getElementById("cbTitle")){ dbKeep(); cbrForm(); } else if(document.getElementById("dbName")){ dbKeep(); debutForm(); } };
@@ -13023,15 +13028,8 @@ function clickGen(a,t,e,r){ switch(a){
     case "dbMemAdd": { dbKeep(); const f=ui.dbF; if(!f||(f.mems||[]).length>=DB_MAXM) break; f.mems.push({name:"",acc:""}); debutForm(); setTimeout(()=>{ const e=document.getElementById("dbMn"+(f.mems.length-1)); if(e) e.focus(); },60); break; }
     case "dbMemDel": { dbKeep(); const f=ui.dbF; if(!f) break; f.mems.splice(+t.dataset.i,1); if(!f.mems.length) f.mems.push({name:"",acc:""}); debutForm(); break; }
     /* 已核准（預告中）：團已經建好了，只能改公司、生日、出道日 */
-    case "dbPreEdit": { const x=getDebut().find(y=>y.id===t.dataset.v); if(!x||x.status!=="pre") break; if(t.closest(".db-row")) ui.dbPreCo=null; const grp=x.kind==="group", co=ui.dbPreCo&&ui.dbPreCo.id===x.id?ui.dbPreCo.v:(x.co||""), v=id=>{ const e=document.getElementById(id); return e?e.value:null; };
-      const P=[{k:"me",n:grp?(x.me||x.name):x.name,bd:x.bd||""},...(grp?(x.mems||[]).map((m,i)=>({k:"m"+i,n:m.name,bd:m.bd||""})):[])], keepBd=k=>{ const c=v("dbPb_"+k); return c!=null?c:null; };
-      if(ui.dbPreCo&&ui.dbPreCo.id===x.id) P.forEach(p=>{ const c=keepBd(p.k); if(c!=null) p.bd=c; });
-      const day=(ui.dbPreCo&&ui.dbPreCo.id===x.id&&v("dbPd"))||ymdIn(x.day);
-      const rt=ui.dbPreCo&&ui.dbPreCo.id===x.id&&ui.dbPreCo.r!=null?ui.dbPreCo.r:(x.rtype||""), sg=(ui.dbPreCo&&ui.dbPreCo.id===x.id&&v("dbPs")!=null)?v("dbPs"):(x.song||"");
-      tieModal("修改出道資料",`<span class="info-row"><em>${grp?"團名":"藝名"}</em>${esc(x.name)}</span><span class="fs-f-lab">出道曲</span><input id="dbPs" class="a-nick-in" maxlength="30" placeholder="輸入文字" value="${esc(sg||"")}"><span class="fs-f-lab">發行型態</span>${relChips(rt,"dbPreRel").replace(/data-a="dbPreRel"/g,`data-a="dbPreRel" data-id="${x.id}"`)}<span class="fs-f-lab">公司</span>${coChips(co,"dbPreCoSet").replace(/data-a="dbPreCoSet"/g,`data-a="dbPreCoSet" data-id="${x.id}"`)}
-        <span class="fs-f-lab">出道日</span><input id="dbPd" class="a-nick-in" type="date" min="${ymdIn(Date.now()+864e5)}" value="${esc(day)}">
-        ${P.map(p=>`<span class="fs-f-lab">${esc(p.n)} 的生日</span><input id="dbPb_${p.k}" class="a-nick-in" type="date" max="${ymdIn(Date.now())}" value="${esc(p.bd)}">`).join("")}`,
-        `<button class="t-mbtn main" data-a="dbPreOk" data-v="${x.id}">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "dbPreEdit": { const x=getDebut().find(y=>y.id===t.dataset.v); if(!x||x.status!=="pre") break; const grp=x.kind==="group";   /* 預告中：跳進同一個申請頁（填好的資料都帶進去） */
+      ui.dbF={editId:x.id,pre:true,kind:grp?"group":"solo",name:grp?(x.me||""):x.name,gname:grp?x.name:"",bd:x.bd||"",song:x.song||"",rtype:x.rtype||"",co:x.co||"",date:ymdIn(x.day),mems:grp?(x.mems||[]).map(m=>({name:m.name,acc:m.email,bd:m.bd||""})):[{name:"",acc:""}],teaser:x.teaser||"",tx:[...(x.teasers||[])],txP:[],mv:x.mv,mvt:x.mvt,pr:promoLoad(x.pr),busy:""}; debutForm(); break; }
     case "dbPreRel": { const id=t.dataset.id, x0=getDebut().find(y=>y.id===id)||{}, P0=ui.dbPreCo&&ui.dbPreCo.id===id?ui.dbPreCo:{id,v:x0.co||"",r:x0.rtype||""}, cur=P0.r!=null?P0.r:(x0.rtype||""); ui.dbPreCo={...P0,r:cur===t.dataset.v?"":t.dataset.v}; const b=document.createElement("button"); b.dataset.v=id; b.dataset.a="dbPreEdit"; document.body.appendChild(b); b.click(); b.remove(); break; }
     case "dbPreCoSet": { const id=t.dataset.id, P0=ui.dbPreCo&&ui.dbPreCo.id===id?ui.dbPreCo:null, cur=P0?P0.v:((getDebut().find(y=>y.id===id)||{}).co||""); ui.dbPreCo={...(P0||{id}),v:cur===t.dataset.v?"":t.dataset.v}; const b=document.createElement("button"); b.dataset.v=id; b.dataset.a="dbPreEdit"; document.body.appendChild(b); b.click(); b.remove(); break; }
     case "dbPreOk": { const L=getDebut(), x=L.find(y=>y.id===t.dataset.v); if(!x||x.status!=="pre") break; const grp=x.kind==="group", val=id=>((document.getElementById(id)||{}).value||"");
@@ -13045,6 +13043,19 @@ function clickGen(a,t,e,r){ switch(a){
     case "dbAdmEdit": { const x=getDebut().find(y=>y.id===t.dataset.v); if(!x) break; const grp=x.kind==="group";   /* 管理員修改申請 */
       ui.dbF={editId:x.id,kind:grp?"group":"solo",name:grp?(x.me||""):x.name,gname:grp?x.name:"",bd:x.bd||"",song:x.song||"",rtype:x.rtype||"",co:x.co||"",date:ymdIn(x.day),mems:grp?(x.mems||[]).map(m=>({name:m.name,acc:m.email,bd:m.bd||""})):[{name:"",acc:""}],teaser:x.teaser||"",tx:[...(x.teasers||[])],txP:[],mv:x.mv,mvt:x.mvt,pr:promoLoad(x.pr),busy:""}; debutForm(); break; }
     case "debutOk": { dbKeep(); const f=ui.dbF||{}, ed=f.editId?getDebut().find(y=>y.id===f.editId):null, em=ed?ed.email:myEmail(), grp=f.kind==="group"; if(!em) break; if(f.busy){ toast(f.busy); break; }
+      if(f.pre){ const L=getDebut(), x=L.find(y=>y.id===f.editId); if(!x||x.status!=="pre"){ toast("這筆已經不是預告中了"); break; }
+        const sg=(f.song||"").trim(), day=ymdTs(f.date); if(!sg){ toast("請輸入出道曲"); break; } if(!f.rtype){ toast("請選擇發行型態"); break; } if(!f.co){ toast("請選擇公司"); break; } if(!day||day<=dayStart(Date.now())){ toast("出道日要選明天以後"); break; }
+        if(!f.teaser&&(f.tx||[]).some(Boolean)){ const k=f.tx.findIndex(Boolean); f.teaser=f.tx[k]; f.tx[k]=null; } if(!f.teaser){ toast("請至少放一張 Teaser 照片"); break; } if(!f.mv){ toast("請放上 MV"); break; } if(!f.mvt){ toast("請放上 MV Teaser"); break; } { const pe=promoCheck(f); if(pe){ toast(pe); break; } }
+        const oldMv=x.mv&&x.mv.mid, oldMvt=x.mvt&&x.mvt.mid, oldT=x.teaser, moved=day!==x.day;
+        Object.assign(x,{song:sg,rtype:f.rtype,co:f.co,bd:f.bd||x.bd||"",teaser:f.teaser,teasers:(f.tx||[]).filter(Boolean),mv:f.mv,mvt:f.mvt,day,pr:promoClean(f.pr),edited:Date.now()}); if(grp) (x.mems||[]).forEach((m,k)=>{ const b=((f.mems||[])[k]||{}).bd; if(b) m.bd=b; });
+        S.set(K.debut,L);
+        if(x.gid){ saveRoster(r=>{ const g=(r.groups||[]).find(y=>y.id===x.gid); if(g){ g.co=f.co; if((x.pr||{}).intro) g.intro=x.pr.intro; } }); const g=groupOf(x.gid)||GROUPS.find(y=>y.id===x.gid); if(g){ g.co=f.co; if((x.pr||{}).intro) g.intro=x.pr.intro; }
+          if(oldT!==x.teaser){ const G={...(S.get(K.gPhoto,{})||{})}; if(G[x.gid]===oldT){ G[x.gid]=x.teaser; S.set(K.gPhoto,G); } if(x.mid){ const M={...(S.get(K.mPhoto,{})||{})}; if(M[x.mid]===oldT){ M[x.mid]=x.teaser; S.set(K.mPhoto,M); } } }
+          const swap=(o,n)=>{ if(!o||!n||o===n.mid) return; S.set(K.vods,(S.get(K.vods,[])||[]).map(v=>v.mid===o?{...v,mid:n.mid,thumb:n.thumb,dur:n.dur||v.dur}:v)); }; swap(oldMv,x.mv); swap(oldMvt,x.mvt);
+          if((x.pr||{}).fan){ const FD={...(S.get(K.fandom,{})||{})}; FD[x.gid]=x.pr.fan; S.set(K.fandom,FD); } }
+        { const md=v=>{ const m=/^\d{4}-(\d{2})-(\d{2})$/.exec(v||""); return m?`${+m[1]}-${+m[2]}`:""; }, B={...(S.get(K.bdays,{})||{})}; let ch=false; dbEms(x).forEach(e=>{ const mid=(x.mids||{})[e]||(e===x.email?x.mid:""), b=md(e===x.email?x.bd:((x.mems||[]).find(m=>m.email===e)||{}).bd); if(mid&&b){ B[mid]=b; ch=true; } }); if(ch) S.set(K.bdays,B); }
+        if(moved&&x.annId) feedPush({kind:"core",text:`📢 「${x.name}」出道日改到 ${mdTxt(day)}`},"all");
+        ui.dbF=null; applyRoster(); layer.innerHTML=""; render(); toast("已儲存"); break; }
       const n=(f.name||"").trim(), gn=(f.gname||"").trim(), nm=grp?gn:n; if(grp&&!gn){ toast("請輸入團名"); break; } if(!n){ toast(grp?"請輸入你的藝名":"請輸入藝名"); break; } if(nameBlock(nm)||(grp&&nameBlock(n))) break;
       if(!f.bd){ toast("請填生日"); break; } const song=(f.song||"").trim(); if(!song){ toast("請輸入出道曲"); break; } if(!f.rtype){ toast("請選擇發行型態"); break; } if(!f.co){ toast("請選擇公司"); break; }
       let mems=[]; if(grp){ const rows=(f.mems||[]).map(x=>({name:(x.name||"").trim(),acc:normAcct(x.acc),bd:x.bd||""})).filter(x=>x.name||x.acc); if(!rows.length){ toast("團體至少要再加一位成員"); break; }
