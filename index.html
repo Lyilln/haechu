@@ -6642,7 +6642,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109234412";
+const BUILD="20261109235012";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7772,6 +7772,8 @@ async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; const b=await
 /* 圖片：記下每張圖的長寬比，畫面重畫時先把高度留好，圖還沒解碼也不會塌下去再彈回來（公司公告一閃一閃） */
 const IMR=new Map(); document.addEventListener("load",e=>{ const im=e.target; if(im&&im.tagName==="IMG"&&im.naturalWidth){ const k=im.getAttribute("src"); if(k&&!IMR.has(k)) IMR.set(k,im.naturalWidth+" / "+im.naturalHeight); } },true);
 function imgKeep(scope){ try{ scope.querySelectorAll("img[src]").forEach(im=>{ const r=IMR.get(im.getAttribute("src")); if(r&&!im.style.aspectRatio) im.style.aspectRatio=r; }); }catch(e){} }
+/* 日期欄位：選到 min 之前／max 之後，直接拉回能選的那天（不跳提示） */
+["change","input","blur"].forEach(k=>document.addEventListener(k,e=>{ const el=e.target; if(!el||el.tagName!=="INPUT"||el.type!=="date"||!el.value) return; if(el.min&&el.value<el.min) el.value=el.min; else if(el.max&&el.value>el.max) el.value=el.max; },true));
 function hydrateMedia(scope){ imgKeep(scope); try{ scope.querySelectorAll(".pd button.pm-video[data-mid]").forEach(b=>setTimeout(()=>pmInline(b,false),60)); }catch(e){} scope.querySelectorAll(".t-vc[data-vid]").forEach(v=>{ mediaSrc(v.dataset.vid); });
   scope.querySelectorAll("img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; else { const b=el.closest(".t-photo,button"); if(b) b.classList.add("gone"); } }); }
 const fmtDur=s=>{ s=Math.max(0,Math.round(s||0)); return Math.floor(s/60)+":"+pad(s%60); };
@@ -13044,7 +13046,8 @@ function clickGen(a,t,e,r){ switch(a){
       ui.dbF={editId:x.id,kind:grp?"group":"solo",name:grp?(x.me||""):x.name,gname:grp?x.name:"",bd:x.bd||"",song:x.song||"",rtype:x.rtype||"",co:x.co||"",date:ymdIn(x.day),mems:grp?(x.mems||[]).map(m=>({name:m.name,acc:m.email,bd:m.bd||""})):[{name:"",acc:""}],teaser:x.teaser||"",tx:[...(x.teasers||[])],txP:[],mv:x.mv,mvt:x.mvt,pr:promoLoad(x.pr),busy:""}; debutForm(); break; }
     case "debutOk": { dbKeep(); const f=ui.dbF||{}, ed=f.editId?getDebut().find(y=>y.id===f.editId):null, em=ed?ed.email:myEmail(), grp=f.kind==="group"; if(!em) break; if(f.busy){ toast(f.busy); break; }
       if(f.pre){ const L=getDebut(), x=L.find(y=>y.id===f.editId); if(!x||x.status!=="pre"){ toast("這筆已經不是預告中了"); break; }
-        const sg=(f.song||"").trim(), day=ymdTs(f.date); if(!sg){ toast("請輸入出道曲"); break; } if(!f.rtype){ toast("請選擇發行型態"); break; } if(!f.co){ toast("請選擇公司"); break; } { const x0=getDebut().find(y=>y.id===f.editId)||{}; if(!day||(day<dayStart(Date.now()+PRE_MIN)&&day<(x0.day||0))){ toast(`出道日最快只能選 ${mdTxt(Math.min(Date.now()+PRE_MIN,x0.day||Infinity))}（粉絲要有時間訂應援餐車）`); break; } }
+        { const x0=getDebut().find(y=>y.id===f.editId)||{}, mn=dayStart(Math.min(Date.now()+PRE_MIN,x0.day||Infinity)), d0=ymdTs(f.date); if(!d0||d0<mn) f.date=ymdIn(mn); }
+        const sg=(f.song||"").trim(), day=ymdTs(f.date); if(!sg){ toast("請輸入出道曲"); break; } if(!f.rtype){ toast("請選擇發行型態"); break; } if(!f.co){ toast("請選擇公司"); break; } 
         if(!f.teaser&&(f.tx||[]).some(Boolean)){ const k=f.tx.findIndex(Boolean); f.teaser=f.tx[k]; f.tx[k]=null; } if(!f.teaser){ toast("請至少放一張 Teaser 照片"); break; } if(!f.mv){ toast("請放上 MV"); break; } if(!f.mvt){ toast("請放上 MV Teaser"); break; } { const pe=promoCheck(f); if(pe){ toast(pe); break; } }
         const oldMv=x.mv&&x.mv.mid, oldMvt=x.mvt&&x.mvt.mid, oldT=x.teaser, moved=day!==x.day;
         Object.assign(x,{song:sg,rtype:f.rtype,co:f.co,bd:f.bd||x.bd||"",teaser:f.teaser,teasers:(f.tx||[]).filter(Boolean),mv:f.mv,mvt:f.mvt,day,pr:promoClean(f.pr),edited:Date.now()}); if(grp) (x.mems||[]).forEach((m,k)=>{ const b=((f.mems||[])[k]||{}).bd; if(b) m.bd=b; });
@@ -13068,7 +13071,7 @@ function clickGen(a,t,e,r){ switch(a){
         const accs=rows.map(x=>x.acc), names=[n,...rows.map(x=>x.name)].map(x=>x.toLowerCase()); if(new Set(accs).size!==accs.length){ toast("有重複的帳號"); break; } if(new Set(names).size!==names.length){ toast("成員的藝名不能重複"); break; }
         mems=rows.map(x=>({name:x.name,email:x.acc,bd:x.bd})); }
       if(!f.teaser&&(f.tx||[]).some(Boolean)){ const i=f.tx.findIndex(Boolean); f.teaser=f.tx[i]; f.tPrev0=(f.txP||[])[i]||""; f.tx[i]=null; if(f.txP) f.txP[i]=""; } if(!f.teaser){ toast("請至少放一張 Teaser 照片"); break; } if(!f.mv){ toast("請放上 MV"); break; } if(!f.mvt){ toast("請放上 MV Teaser"); break; } { const pe=promoCheck(f); if(pe){ toast(pe); break; } }
-      const dday=ymdTs(f.date); if(!dday||dday<dayStart(Date.now()+PRE_MIN)){ toast(`出道日最快只能選 ${mdTxt(Date.now()+PRE_MIN)}`); break; }
+      { const mn=dayStart(Date.now()+PRE_MIN), d0=ymdTs(f.date); if(!d0||d0<mn) f.date=ymdIn(mn); } const dday=ymdTs(f.date);
       const taken=x=>{ const low=x.toLowerCase(); return GROUPS.some(g=>g.name.toLowerCase()===low)||Object.values(MEMBERS).some(m=>!m.official&&String(m.name).toLowerCase()===low)||getDebut().some(y=>y.id!==f.editId&&(y.status==="wait"||y.status==="pre")&&(y.name.toLowerCase()===low||String(y.me||"").toLowerCase()===low||(y.mems||[]).some(m=>m.name.toLowerCase()===low))); };
       const tk=[nm,...(grp?[n,...mems.map(x=>x.name)]:[])].find(taken); if(tk){ toast(`已經有「${tk}」這個名字了`); break; }
       if(ed){ const L=getDebut(), x=L.find(y=>y.id===ed.id); if(!x) break; Object.assign(x,{kind:grp?"group":"solo",name:nm,bd:f.bd,song,rtype:f.rtype,co:f.co,teaser:f.teaser,teasers:(f.tx||[]).filter(Boolean),mv:f.mv,mvt:f.mvt,day:dday,pr:promoClean(f.pr),edited:Date.now()}); if(grp){ x.me=n; x.mems=mems; } else { delete x.me; delete x.mems; } S.set(K.debut,L); ui.dbF=null; layer.innerHTML=""; render(); toast("已修改"); break; }
@@ -13511,8 +13514,8 @@ function clickAdm(a,t,e,r){ switch(a){
     case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); lsRerender(); break; }
     case "muGid": ui.muGid=t.dataset.v; lsRerender(); break;
     case "muPreDel": { const ms=getMShow(); ms.pre=(ms.pre||[]).filter(p=>p.id!==t.dataset.v); S.set(K.mshow,ms); lsRerender(); break; }
-    case "muSongAdd": { const ti=(document.getElementById("muTitle").value||"").trim(); if(!ti){ toast("請輸入歌名"); break; } const ms=getMShow(), gid=ui.muGid||GROUPS[0].id, day=ymdTs((document.getElementById("muDate")||{}).value), min=dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN);
-      if(!day||day<min){ toast(`回歸日最快只能選 ${mdTxt(min)}`); break; }
+    case "muSongAdd": { const ti=(document.getElementById("muTitle").value||"").trim(); if(!ti){ toast("請輸入歌名"); break; } const ms=getMShow(), gid=ui.muGid||GROUPS[0].id, min=dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN); let day=ymdTs((document.getElementById("muDate")||{}).value);
+      if(!day||day<min){ const e=document.getElementById("muDate"); if(e) e.value=ymdIn(min); day=min; }
       if(day>dayStart(Date.now())){ ms.pre=[...(ms.pre||[]),{id:"p"+Date.now(),gid,title:ti,day}]; S.set(K.mshow,ms); { const p=ms.pre[ms.pre.length-1]; if(day-Date.now()<=PRE_ANN){ cbAnn(p); S.set(K.mshow,ms); } } lsRerender(); toast(`排好了，${mdTxt(day)} 回歸`); break; }
       ms.songs.push({id:"s"+Date.now(),gid,title:ti,rel:Date.now()}); S.set(K.mshow,ms); muNotify(`🎤 ${groupOf(gid).name}《${ti}》開始打歌！`,gid); lsRerender(); toast("已加入打歌名單"); break; }
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
@@ -18557,7 +18560,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="cbrSend"){ dbKeep(); const f=ui.dbF; if(!f||!f.cb) return; if(f.busy){ toast(f.busy); return; } const ti=(f.title||"").trim(), gid=f.gid;
     if(!ti){ toast("請輸入歌名"); return; } if(!f.editId&&banBlock(ti)) return; if(!f.editId&&cbrMine(gid)){ toast("這團已經有一筆在審核了"); return; }
     if(!f.rtype){ toast("請選擇發行型態"); return; } if(!f.mv){ toast("請放上 MV"); return; } if(!f.mvt){ toast("請放上 MV Teaser"); return; } { const pe=promoCheck(f); if(pe){ toast(pe); return; } }
-    const day=ymdTs(f.date), min=cbrMin(gid); if(!day||day<min){ toast(`回歸日最快只能選 ${mdTxt(min)}`); return; }
+    const min=cbrMin(gid); { const d0=ymdTs(f.date); if(!d0||d0<min) f.date=ymdIn(min); } const day=ymdTs(f.date);
     if(!f.teaser&&(f.tx||[]).some(Boolean)){ const i=f.tx.findIndex(Boolean); f.teaser=f.tx[i]; f.tx[i]=null; }
     if(f.editId){ const L=getCbr(), x=L.find(y=>y.id===f.editId); if(!x) return; Object.assign(x,{title:ti,rtype:f.rtype,day,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mv:f.mv,mvt:f.mvt,pr:promoClean(f.pr),edited:Date.now()}); S.set(CBR_KEY,L); ui.dbF=null; layer.innerHTML=""; render(); toast("已修改"); return; }
     const L=getCbr(); L.push({id:"cr"+Date.now(),gid,by:myEmail(),byName:stageNm(s.member),title:ti,rtype:f.rtype,...(f.au?{au:f.au}:{}),day,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mv:f.mv,mvt:f.mvt,pr:promoClean(f.pr),ts:Date.now(),status:"wait"}); S.set(CBR_KEY,L);
