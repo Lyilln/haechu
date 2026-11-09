@@ -6597,7 +6597,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109125744";
+const BUILD="20261109125859";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7644,7 +7644,7 @@ function sessSave(v){ try{ if(v) localStorage.setItem("daisuki_session",JSON.str
 function sessLoad(){ try{ const o=JSON.parse(localStorage.getItem("daisuki_session")||"null"); if(!o||!o.v||Date.now()-(o.ts||0)>SESS_DAYS*864e5) return null; return o.v; }catch(e){ return null; } }
 function sessTouch(){ try{ const o=JSON.parse(localStorage.getItem("daisuki_session")||"null"); if(o&&o.v&&Date.now()-(o.ts||0)>3600e3){ o.ts=Date.now(); localStorage.setItem("daisuki_session",JSON.stringify(o)); } }catch(e){} }
 const isAdminAcct=()=>{ const s=session(); if(!(s&&s.admin)) return false; let k=s.email; try{ k=acctKey(s.email)||s.email; }catch(e){} const a=ACCOUNTS[k]||ACCOUNTS[s.email]; return !!(a&&a.role==="admin"); };   /* 只認後台名單上真的是管理員的帳號（測試帳號、一般粉絲就算 session 裡有 admin 也不算） */
-const canModerate=()=>isAdminAcct()&&!sbxOn()&&(session()||{}).role==="admin";   /* 只有在「管理」端才有管理按鈕；切到粉絲端、藝人端、試玩模式都跟一般人一樣 */
+const canModerate=()=>isAdminAcct()&&!sbxOn();   /* 管理員帳號在哪一端都能直接處理不當內容；不是管理員的帳號、試玩模式看不到 */
 
 /* ===== 確認視窗（App 內建，取代瀏覽器的 confirm） ===== */
 function ask(text,fn,{title="確認一下",ok="確定",danger=true}={}){
