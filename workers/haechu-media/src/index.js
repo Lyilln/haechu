@@ -19,8 +19,8 @@ export default {
     const allowed = (env.ALLOWED_ORIGIN || "").trim().replace(/\/+$/, "");   // 網址後面多打一個「/」也沒關係
     const cors = {
       "Access-Control-Allow-Origin": allowed || "*",
-      "Access-Control-Allow-Methods": "GET, PUT, POST, DELETE, OPTIONS",
-      "Access-Control-Allow-Headers": "authorization, content-type",
+      "Access-Control-Allow-Methods": "GET, HEAD, PUT, POST, DELETE, OPTIONS",
+      "Access-Control-Allow-Headers": "authorization, content-type, range",
       "Access-Control-Max-Age": "86400",
       "Vary": "Origin",
     };
@@ -78,14 +78,28 @@ export default {
     if (!m) return reply({ error: "not_found" }, 404);
     const key = m[1];
 
-    if (req.method === "GET") {
-      const obj = await env.MEDIA.get(key);
+    // 下載：支援「分段讀取」（Range），影片一按就能邊下載邊播（iPhone 一定要這個才能直接播網址）
+    if (req.method === "GET" || req.method === "HEAD") {
+      const rh = req.headers.get("Range");
+      const obj = await env.MEDIA.get(key, rh ? { range: req.headers } : undefined);
       if (!obj) return reply({ error: "not_found" }, 404);
       const h = new Headers(cors);
       obj.writeHttpMetadata(h);
       h.set("ETag", obj.httpEtag);
       h.set("Cache-Control", "public, max-age=31536000, immutable");
-      return new Response(obj.body, { headers: h });
+      h.set("Accept-Ranges", "bytes");
+      h.set("Access-Control-Expose-Headers", "Content-Range, Content-Length, Accept-Ranges");
+      const body = req.method === "HEAD" ? null : obj.body;
+      if (rh && obj.range) {
+        const r = obj.range;
+        const off = "suffix" in r ? obj.size - r.suffix : (r.offset || 0);
+        const len = "suffix" in r ? r.suffix : (r.length != null ? r.length : obj.size - off);
+        h.set("Content-Range", `bytes ${off}-${off + len - 1}/${obj.size}`);
+        h.set("Content-Length", String(len));
+        return new Response(body, { status: 206, headers: h });
+      }
+      h.set("Content-Length", String(obj.size));
+      return new Response(body, { headers: h });
     }
 
     if (req.method === "PUT") {
