@@ -6006,6 +6006,47 @@ html.mo .nav-lens.mo-run::before{opacity:1}
 .kp-bar button{border:0;border-radius:999px;background:var(--s2,#F3EFFA);color:var(--ink,#1D1A24);font:inherit;font-size:13px;font-weight:700;padding:6px 12px;min-height:34px}
 .kp-stks{display:flex;gap:4px}.kp-bar .kp-stk{padding:4px 8px;font-size:18px;min-width:36px}
 .kp-bar .kp-del{background:#FFE4EE;color:#C2185B}
+/* 貼文頁留言列（照 Weverse）：平常＝愛心、書籤、外框輸入框；點進輸入框＝只剩輸入框；打了字才出現送出鍵 */
+.pd-in{border-top:0!important;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 10px)!important}
+.pd.kb .pd-in{padding-bottom:8px!important}
+.pd-bar{gap:12px!important}
+.pd-hb{width:30px!important;height:40px!important}.pd-hb svg{width:25px!important;height:25px!important}
+.pd-bar .act.bm{width:30px!important;height:40px!important}
+.pd-pill{height:46px!important;background:transparent!important;border:1.5px solid var(--line-strong,rgba(127,120,145,.45));padding:0 18px!important}
+.pd-pill textarea{font-size:15.5px!important;line-height:1.35}
+.pd-send{width:42px!important;height:42px!important;flex:none}
+.pd-bar:has(textarea:placeholder-shown) .pd-send{display:none}
+.pd-in:focus-within .pd-hb,.pd-in:focus-within .act.bm{display:none}
+.pd.kb{bottom:auto}
+/* 直播大卡：陰影跟卡片貼在一起、不要紫色光暈（跟主題色衝突） */
+.nc.lvh{box-shadow:0 12px 28px -14px rgba(0,0,0,.55)!important;border:1px solid rgba(255,255,255,.1)!important;margin-bottom:16px}
+/* 生日咖啡廳簽名板：深色模式也是淺色的牆，簽名才看得到 */
+html[data-theme] body .cf-padc{background:repeating-linear-gradient(0deg,#F6EBDD 0 2px,#FBF4EA 2px 22px)!important}
+html[data-theme] body .cf-padc canvas{background:transparent!important}
+/* 探索：我的社群照 Weverse 比例（大方圓角頭像，名字在下面） */
+.ex-my{gap:16px!important;padding:6px 2px 10px!important}
+.ex-mg{width:96px!important;gap:10px!important}
+.ex-mg i{width:96px!important;height:96px!important;border-radius:32px!important;font-size:30px!important;overflow:hidden}
+.ex-mg i img{width:100%;height:100%;object-fit:cover}
+.ex-mg i em{top:2px!important;right:2px!important;width:16px!important;height:16px!important}
+.ex-mg small{font-size:13.5px!important;max-width:96px!important;color:var(--ink)!important;font-weight:600}
+.ex-gi i{width:62px!important;height:62px!important;border-radius:22px!important;overflow:hidden}
+.ex-gi{gap:16px!important}.ex-g{padding:10px 0!important}
+/* 打歌：週期條字置中、虛擬對手 */
+.mur-band span{display:flex!important;align-items:center;justify-content:center;line-height:1;padding:0!important}
+.mur-band span b{font-weight:800;font-size:12.5px;line-height:1}
+.mu3-r.npc{opacity:.72}.mu3-r.npc .mu3-song{cursor:default}
+.mu2-cv.npc{display:grid;place-items:center;background:linear-gradient(135deg,#6B6680,#3B3748)!important;color:#fff;font-weight:800;font-size:12px}
+.mu2-wt small{display:block;margin-top:3px;font-size:11.5px;opacity:.8}
+/* 留言卡、粉絲貼文卡：中間要有間距，不要黏在一起 */
+.card.fp{margin:0 0 12px}
+/* 賽程、新聞等管理頁：卡片不要貼著標題列 */
+.uni-mh+.page,.uni-mh+main,.sub-head+main.page,.sub-head+.page{padding-top:16px}
+main.page.foc-sub{padding-top:18px!important}
+.btn-block[data-a="nwImg"],.nw-adimg{margin-bottom:14px!important}
+.sch-songs{display:flex;flex-direction:column;gap:8px}.sch-s{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--s2)}.sch-s small{color:var(--ink-3);font-size:12px}
+.sn-lock{margin:40px 8px;padding:28px 22px;border-radius:24px;background:var(--s1);border:1px solid var(--line);text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
+.sn-lock b{font-size:17px}.sn-lock p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.6}.sn-lock em{font-style:normal;font-size:26px;font-weight:800;color:var(--violet)}.sn-lock small{color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -6147,6 +6188,7 @@ const ACCOUNTS = {
 
 /* localStorage keys（沿用交接文件的 key） */
 const K = {
+  usedNames:"daisuki_used_names", snRetired:"daisuki_sn_retired",
   vsec:"daisuki_vsec", bdPush:"daisuki_bd_push", cmTr:"daisuki_cm_tr", trucks:"daisuki_trucks", tieVch:"daisuki_tie_vouchers", tkSeen:"daisuki_truck_seen", lvFix:"daisuki_lv_fix", ptRst:"daisuki_pt_rst", revB:"daisuki_rev_b", tieQ0:"daisuki_tie_q0", bgm:"daisuki_live_bgm", tieArtBg:"daisuki_tie_artbg", mPhoto:"daisuki_member_photo", wtours:"daisuki_wtours", debut:"daisuki_debut", liveTr:"daisuki_live_tr", postTr:"daisuki_post_tr", gcPity:"daisuki_gc_pity", lvMax:"daisuki_lv_max", tourTix:"daisuki_tour_tix", tourStamp:"daisuki_tour_stamp", online:"daisuki_online", news:"daisuki_news", newsHide:"daisuki_news_hide", newsEd:"daisuki_news_ed",
   ptGrants:"daisuki_pt_grants", ptGot:"daisuki_pt_got",
   albums2:"daisuki_albums2", seedAlb2:"daisuki_seed_alb2",
@@ -6483,7 +6525,7 @@ async function hbResume(){ const h0=location.hash, sv=sessLoad(); let a=null; tr
     else ui.loginErr="連不上伺服器，請檢查網路";
     try{ render(); }catch(x){} return false; } }
 /* 登入／註冊 */
-async function hbAuth(u,pw,signup,name){ const un=normAcct(u); ui.loginErr=""; ui.authBusy=true; try{ render(); }catch(e){}
+async function hbAuth(u,pw,signup,name){ const un=normAcct(u); ui.loginErr=""; if(signup&&(usedName(un)||(name&&usedName(name)))){ ui.loginErr="這個帳號名或暱稱以前有人用過，不能再用，換一個吧"; try{ render(); }catch(e){} return; } ui.authBusy=true; try{ render(); }catch(e){}
   try{ const body={email:hbEmail(un),password:hbPw(pw)};
     let r;
     if(signup) r=await hbFetch("/auth/v1/signup",{method:"POST",body:{...body,data:{username:un,name:name||un}}},true);
@@ -6530,7 +6572,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109111910";
+const BUILD="20261109120301";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7576,7 +7618,8 @@ const SESS_DAYS=90;
 function sessSave(v){ try{ if(v) localStorage.setItem("daisuki_session",JSON.stringify({v,ts:Date.now()})); else localStorage.removeItem("daisuki_session"); }catch(e){} }
 function sessLoad(){ try{ const o=JSON.parse(localStorage.getItem("daisuki_session")||"null"); if(!o||!o.v||Date.now()-(o.ts||0)>SESS_DAYS*864e5) return null; return o.v; }catch(e){ return null; } }
 function sessTouch(){ try{ const o=JSON.parse(localStorage.getItem("daisuki_session")||"null"); if(o&&o.v&&Date.now()-(o.ts||0)>3600e3){ o.ts=Date.now(); localStorage.setItem("daisuki_session",JSON.stringify(o)); } }catch(e){} }
-const isAdminAcct=()=>{ const s=session(); return !!(s&&s.admin); };
+const isAdminAcct=()=>{ const s=session(); if(!(s&&s.admin)) return false; let k=s.email; try{ k=acctKey(s.email)||s.email; }catch(e){} const a=ACCOUNTS[k]||ACCOUNTS[s.email]; return !!(a&&a.role==="admin"); };   /* 只認後台名單上真的是管理員的帳號（測試帳號、一般粉絲就算 session 裡有 admin 也不算） */
+const canModerate=()=>isAdminAcct()&&!sbxOn();   /* 試玩模式：當成一般人，看不到管理按鈕 */
 
 /* ===== 確認視窗（App 內建，取代瀏覽器的 confirm） ===== */
 function ask(text,fn,{title="確認一下",ok="確定",danger=true}={}){
@@ -7607,7 +7650,7 @@ function pageAnim(){
 const PTR={y0:null,x0:0,pull:0,busy:false};
 function ptrEl(){ let p=document.getElementById("ptr"); if(!p){ p=document.createElement("div"); p.id="ptr"; p.className="ptr"; p.setAttribute("aria-hidden","true");
   p.innerHTML=`<svg class="ptr-ring" viewBox="0 0 36 36"><circle class="ptr-bg" cx="18" cy="18" r="13"/><circle class="ptr-arc" cx="18" cy="18" r="13" pathLength="100"/></svg>`; document.body.appendChild(p); } return p; }
-const ptrOk=()=>!document.documentElement.classList.contains("tie2l")&&!document.querySelector(".crp")&&!!document.querySelector(".nav,.t-msgs")&&!((document.querySelector(".t-page")||{}).scrollTop>0)&&!layer.innerHTML.trim()&&!document.querySelector(".concert,.mr")&&window.scrollY<=0&&!(document.getElementById("askLayer")||{}).innerHTML;
+const ptrOk=()=>!document.getElementById("coach")&&!document.querySelector(".coach")&&!document.documentElement.classList.contains("tie2l")&&!document.querySelector(".crp")&&!!document.querySelector(".nav,.t-msgs")&&!((document.querySelector(".t-page")||{}).scrollTop>0)&&!layer.innerHTML.trim()&&!document.querySelector(".concert,.mr")&&window.scrollY<=0&&!(document.getElementById("askLayer")||{}).innerHTML;
 function ptrSet(y){ const p=ptrEl(); p.style.transform=`translate(-50%,${y-56}px)`; p.style.opacity=Math.min(1,y/40); if(!p.classList.contains("spin")) p.querySelector(".ptr-arc").style.strokeDasharray=`${Math.min(85,y/72*85)} 100`; }
 /* 手指下面有「自己會捲」而且已經往下捲的區塊（例如 SNS 整頁）：那是在往回捲，不是下拉更新 */
 const ptrInner=t=>{ for(let el=t; el&&el!==document.body&&el.nodeType===1; el=el.parentElement){ if(el.scrollTop>0){ const oy=getComputedStyle(el).overflowY; if(oy==="auto"||oy==="scroll") return true; } } return false; };
@@ -9317,7 +9360,7 @@ function mountSticks(scope){
 function rpPaint(id,hc){ const o=document.querySelector(".rp2-log"), y=o&&!hc?o.scrollTop:0; paint(viewReplay(id),false); if(y){ const n=document.querySelector(".rp2-log"); if(n) n.scrollTop=y; } }
 function render(){
   if(!KVX.ready){ KVX.want=true; return; }   /* 手機的大空間還在讀：讀完才畫，不會先畫出空白的聊天室 */
-  try{ debutSync(); }catch(e){}
+  try{ debutSync(); }catch(e){} try{ snRetireCheck(); }catch(e){}
   const r=route(), s=session(); if(s) sessTouch();
   const hashChanged=ui._h!==location.hash; if(hashChanged) ui._prevH=ui._h; ui._h=location.hash;
   if(s&&suspendOf(s.email)){ const sp=suspendOf(s.email); SS.del(); ui.loginErr=`這個帳號因為外流 TIE 內容，${suspendText(sp)}`; return go("auth"); }
@@ -9328,6 +9371,8 @@ function render(){
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
+  if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)){ const L=snLockOf(s.member), dl=Math.ceil((L.until-Date.now())/864e5), dt=new Date(L.until);
+    return paint(`<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page"><div class="sn-lock"><b>🔒 個人 SNS 還沒開放</b><p>${esc(L.co)} 規定出道滿 ${L.mo} 個月才能開個人 SNS。</p><em>還有 ${dl} 天</em><small>${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} 解鎖</small></div></main>`,false); }
   if(r.sub==="sns"){ /* SNS 的分頁列跟 App 的一樣放在頁面外面：換頁不重畫，鏡片滑過去、可以按住拖 */
     let h=viewSns(r.p||"home",r.id), nv=""; h=h.replace(/<nav class="nav sn-nav2"[\s\S]*?<\/nav>/,m=>{ nv=m; return ""; }); return nv?paint(h,true,nv):paint(h,false); }
   if(r.sub==="look") return paint(viewLook(),false);
@@ -9372,6 +9417,12 @@ function lvLockSync(){ const on=!!document.querySelector(".mr.dl"); document.doc
 function lvFit(){ const mr=document.querySelector(".mr.dl"), vv=window.visualViewport; if(!mr||!vv) return; const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, kb=window.innerHeight-vv.height>80;
   if(kb){ mr.style.top=(vv.offsetTop/z)+"px"; mr.style.bottom="auto"; mr.style.height=(vv.height/z)+"px"; } else { mr.style.top=""; mr.style.bottom=""; mr.style.height=""; } }
 if(window.visualViewport){ visualViewport.addEventListener("resize",lvFit); visualViewport.addEventListener("scroll",lvFit); }
+/* 貼文頁打字：整個貼文頁縮到鍵盤上面（照 Weverse），留言列貼著鍵盤，不會被頂開露出下面的畫面 */
+function pdFit(){ const pd=document.querySelector(".pd"), vv=window.visualViewport; if(!pd||!vv) return; const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, kb=window.innerHeight-vv.height>80&&document.activeElement&&!!document.activeElement.closest(".pd-in");
+  if(kb){ pd.style.top=(vv.offsetTop/z)+"px"; pd.style.bottom="auto"; pd.style.height=(vv.height/z)+"px"; pd.classList.add("kb"); } else if(pd.classList.contains("kb")){ pd.style.top=""; pd.style.bottom=""; pd.style.height=""; pd.classList.remove("kb"); } }
+if(window.visualViewport){ visualViewport.addEventListener("resize",pdFit); visualViewport.addEventListener("scroll",pdFit); }
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) [0,120,350].forEach(t=>setTimeout(pdFit,t)); });
+document.addEventListener("focusout",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) setTimeout(pdFit,80); });
 document.addEventListener("touchmove",e=>{ const mr=e.target.closest&&e.target.closest(".mr.dl"); if(!mr||!e.cancelable) return; const sc=e.target.closest("#cmTick,.cm-tick"); if(sc&&sc.scrollHeight>sc.clientHeight+2) return; e.preventDefault(); },{passive:false});
 document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="lin") setTimeout(()=>{ window.scrollTo(0,0); lvFit(); },60); });
 addEventListener("scroll",()=>{ try{ const r=route(); if(r.sub==="chat"&&!r.p&&document.getElementById("chat-end")){ const de=document.documentElement; ui.chatPos={m:r.m,y:window.scrollY,bottom:window.scrollY+window.innerHeight>=de.scrollHeight-60}; } }catch(e){} },{passive:true});
@@ -9511,7 +9562,7 @@ function postCard(p,{mine=false,prof=false}={}){
     <div class="post-head">
       ${viewerFan()&&!mine&&!prof?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
       <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
-      ${isAdminAcct()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
+      ${canModerate()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
     </div>
     ${p.tag&&p.tag!=="日常"?`<span class="post-tag t-${POST_TAGS.indexOf(p.tag)}">${p.tag==="劇透"?"⚠ ":""}${esc(p.tag)}</span>`:""}
     ${!viewerFan()&&p.vis?`<span class="post-vis">${p.vis==="ms"?"💎 Membership 限定":`🔒 私密貼文・密碼 ${esc(p.pw||"")}`}</span>`:""}
@@ -9931,7 +9982,7 @@ const snsAgo=ts=>{ const m=Math.floor((Date.now()-ts)/60000); return m<60?`${Mat
 /* ---------- 粉絲：主畫面 ---------- */
 function fanHeader(withTabs,sk=null,ph=""){
   return `<header class="top sh-head"><div class="top-row">
-    ${sk&&srchOn(sk)?srchBar(ph):`${sk?srchBtn(sk):'<span class="sh-sp"></span>'}
+    ${sk&&srchOn(sk)?srchBar(ph):`${sk&&!(withTabs&&ui.feedTab==="discover")?srchBtn(sk):'<span class="sh-sp"></span>'}
     <div class="logo center">${APP_NAME}</div>
     <button class="icon-btn" data-a="openNotifs" aria-label="通知${hasUnread()?"（有新通知）":""}">${I.bell}${hasUnread()?'<span class="dot"></span>':""}</button>`}
   </div>
@@ -10413,7 +10464,7 @@ function showCele(member,kind,d){ const m=MEMBERS[member];
   clearTimeout(ui.celeT); ui.celeT=setTimeout(()=>{ const c=layer.querySelector(".cele"); if(c) layer.innerHTML=""; },5200); }
 /* 第一次（或斷掉後重新訂閱）點輸入框：先同意規範 */
 const tieAgreed=member=>(S.get(K.tieAgree,{}))[member]===tiePeriod(member);
-function openTieAgree(member,enter){ const nm=esc(artName(member,"tie")||"藝人");   /* 進聊天室只問一次：隱私＋發訊息規範合在一起 */
+function openTieAgree(member,enter){ const nm="ARTIST";   /* 照 Bubble：同意視窗不寫藝人的名字，一律寫 ARTIST */   /* 進聊天室只問一次：隱私＋發訊息規範合在一起 */
   tieModal(`進入 ${nm} 的 TIE`,`・請不要截圖或錄影外流聊天室的內容。<br>・發送損害 ${nm} 名譽或侵犯私生活的訊息，會被限制使用，並可能負法律責任。`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="tAgree" data-m="${member}"${enter?' data-v="enter"':""}>我同意</button>`,"mrow"); }
 /* 選擇 ARTIST：同一團裡換一位收訊息的成員；一段 TIE 券期間只能換 1 次 */
 function viewTiePick(member){ const m=MEMBERS[member], g=groupOf(m.group), ms=grpMembers(m.group).filter(id=>!MEMBERS[id].official), own=ms.filter(id=>isActive(id)), k=own.length;
@@ -10872,6 +10923,23 @@ function dtDefault(){const t=new Date(Date.now()+864e5);t.setHours(20,0,0,0);ret
    ========================================================= */
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"MUSIC BANK",day:5},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
+/* ===== 打歌：每首歌自己的活動期（MV 放出那一刻起算），大家不用照同一個月曆 =====
+   ・第 1 週（0～6 天）：宣傳期，不排名
+   ・第 2～4 週（7～27 天）：活動期，五個節目每週都可以拿一位
+   ・第 28 天起：活動結束，自動下檔
+   ・同一個節目的參賽歌不到 3 首：自動補虛擬對手，分數要超過它們才拿得到一位，一個人也不會白拿 */
+const MSA={PROMO:7,END:28,MIN:3}, MDAY=864e5;
+function songRel(s){ if(!s) return 0; if(s.rel) return s.rel; const m=/^s(\d{12,13})$/.exec(String(s.id)); return m?+m[1]:0; }
+function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const d=((at||Date.now())-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":d<MSA.END?"act":"end"; }
+const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
+const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
+const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];
+/* 虛擬對手：分數照這週已經過了多少慢慢長上去，節目播出時到最終分數 */
+function npcRivals(show,wk){ wk=wk||curWeek(); if(musDemoOn()) return []; const n=showRank(show,wk).length; if(!n||n>=MSA.MIN) return [];
+  const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], fin=1800+((h>>>(k*4+1))%2800); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
+const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
+const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
 const MSP={win:1000,five:5000,ak:10000,pak:15000}, MC_PTS=[0,500,1000,1500,2000,3000];
 function wkDate(wk){ const [y,m,d]=wk.split("-").map(Number); return new Date(y,m-1,d); }
 function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -10883,7 +10951,7 @@ function autoWeekType(wk){ const d=wkDate(wk||curWeek()), nx=new Date(d); nx.set
 const parseType=s=>/宣傳/.test(s)?"宣傳週":/打歌/.test(s)?"打歌週":/排名/.test(s)?"排名週":null;
 const getMShow=()=>({songs:[],ended:[],wins:{},wtype:{},mc:{},...S.get(K.mshow,{})});
 function weekType(wk){ wk=wk||curWeek(); if(wk===curWeek()) return parseType(getSched().stage)||autoWeekType(wk); return getMShow().wtype[wk]||autoWeekType(wk); }
-const ranked=wk=>weekType(wk)!=="宣傳週";
+const ranked=wk=>true;   /* 每週都排名；能不能參加看每首歌自己的活動期（songActIn） */
 const songOf=id=>{ if(String(id).startsWith("demo_")) return MUS_DEMO().find(s=>s.id===id); const m=getMShow(); return m.songs.find(s=>s.id===id)||(m.ended||[]).find(s=>s.id===id); };
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：沒有打歌中的歌時，放 3 首示範歌，投票只記在這支手機的這次打開，不存、不上雲端 */
 const musDemo=()=>{ try{ if(ui.tourDemo) return true; const s=session(); if(s&&s.role==="artist") return typeof demoOn==="function"&&demoOn(); if(!s||s.role!=="fan") return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""], g=m&&groupOf(m.group), U=x=>String(x||"").toUpperCase()==="HUSSEY"; return U(a.name)||U(m&&m.name)||!!(g&&U(g.name)); }catch(e){ return false; } };
@@ -12280,11 +12348,9 @@ function viewAdmin(tab){
         </main>`; }
     const SEGN={sched:"賽程",music:"打歌",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
     const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
-    const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>本週階段</h3><span class="badge">即時同步中</span></div>
-        <label class="field"><input id="focStage" value="${esc(st)}"></label>
-        <div class="chips wrap">${STAGE_PRESETS.map(p=>`<button class="chip ${st===p?"on":""}" data-a="focPreset" data-v="${p}">${p}</button>`).join("")}</div>
-        <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
-        ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}</section>
+    const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>打歌週期</h3><span class="badge">自動</span></div>
+        <p class="reach" style="margin:6px 0 10px">不用再設定「本週階段」。每首歌從 MV 公開那一刻起算：第 1 週宣傳、第 2～4 週可以拿一位、之後自動下檔；參賽歌不到 3 首時自動補虛擬對手。</p>
+        ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="promo"?"宣傳期":ph==="act"?`活動期・第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
         <div class="ls-btns"><button class="btn ${svOpen()?"btn-soft":"btn-main"}" data-a="svToggle">${svOpen()?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
@@ -13288,7 +13354,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "muSongAdd": { const ti=(document.getElementById("muTitle").value||"").trim(); if(!ti){ toast("請輸入歌名"); break; } const ms=getMShow(), gid=ui.muGid||GROUPS[0].id, day=ymdTs((document.getElementById("muDate")||{}).value), min=dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN);
       if(!day||day<min){ toast(`回歸日最快只能選 ${mdTxt(min)}`); break; }
       if(day>dayStart(Date.now())){ ms.pre=[...(ms.pre||[]),{id:"p"+Date.now(),gid,title:ti,day}]; S.set(K.mshow,ms); { const p=ms.pre[ms.pre.length-1]; if(day-Date.now()<=PRE_ANN){ cbAnn(p); S.set(K.mshow,ms); } } lsRerender(); toast(`排好了，${mdTxt(day)} 回歸`); break; }
-      ms.songs.push({id:"s"+Date.now(),gid,title:ti}); S.set(K.mshow,ms); muNotify(`🎤 ${groupOf(gid).name}《${ti}》開始打歌！`,gid); lsRerender(); toast("已加入打歌名單"); break; }
+      ms.songs.push({id:"s"+Date.now(),gid,title:ti,rel:Date.now()}); S.set(K.mshow,ms); muNotify(`🎤 ${groupOf(gid).name}《${ti}》開始打歌！`,gid); lsRerender(); toast("已加入打歌名單"); break; }
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
     case "muAlbum": { const g=groupOf(t.dataset.v); if(owns(g.id,"album")){ toast("你已經收藏這張專輯了 💿"); break; } ui.shopTab="merch"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
     case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ if(b.closest(".mu2-sh")) return; b.classList.toggle("on",on); b.innerHTML=`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
@@ -13380,7 +13446,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "ptP": ui.ptP=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "ptShare": iosAlert("藝人分得比例","藝人收到的積分裡，有幾 % 歸藝人（其餘是扣除的部分）",`<button data-a="tCloseLayer">取消</button><button data-a="ptShareOk">儲存</button>`,`<label class="pt-in"><input id="ptShareIn" type="number" inputmode="numeric" min="0" max="100" value="${revShare()}"><span>%</span></label>`); break;
     case "ptShareOk": { const v=Math.max(0,Math.min(100,parseInt((document.getElementById("ptShareIn")||{}).value,10)||0)); S.set(K.revShare,v); layer.innerHTML=""; render(); toast(`已改成 ${v}%`); break; }
-    case "postMod": { const p=getPosts().find(x=>x.id===t.dataset.id); if(!p) break; iosSheet([[p.hidden?"恢復顯示":"隱藏這則","hide",`data-id="${p.id}"`],["刪除","admDel",`data-id="${p.id}"`]]); break; }
+    case "postMod": { const p=getPosts().find(x=>x.id===t.dataset.id); if(!p||!canModerate()) break; iosSheet([[p.hidden?"恢復顯示":"隱藏這則","hide",`data-id="${p.id}"`],["刪除","admDel",`data-id="${p.id}"`]]); break; }
     case "thGuide": openThGuide(); break;
     case "thAutoCol": { const d=thDraft(r.id); thAutoColor(d).then(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); }); break; }
     case "thDarkGen": { const d=thDraft(r.id); thDarkFrom(d); ui.thEdV="dark"; { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("已產生深色版，可以再微調"); break; }
@@ -14535,7 +14601,10 @@ function hasBanned(t){ const x=String(t||"").toLowerCase().replace(/\s+/g,""); r
 /* 歧視、仇恨字眼：不管管理員清單怎麼設都一律擋（含變形寫法） */
 const SLUR_RE=[/n+[i1!l|y]+[gq6]+[gq6]*[e3a4@]*r+/,/n+[i1!l|y]+[gq6]+[gq6]+[a4@]+h*/,/f+[a4@]+[gq]+[gq]*[o0]+t/,/ch[i1]nk/,/k[i1]ke/,/retard/,/黑鬼/,/支那/,/死gay/];
 function hasSlur(t){ const x=String(t||"").toLowerCase().replace(/[0-9]/g,c=>({"0":"o","1":"i","3":"e","4":"a","6":"g"})[c]||c).replace(/[^a-z\u4e00-\u9fff@!|]/g,""); return SLUR_RE.some(r=>r.test(x)); }
-function nameBlock(t){ if(!hasBanned(t)&&!hasSlur(t)) return false; toast("這個名稱不能用，換一個吧"); return true; }
+function nameBlock(t){ if(usedName(t)){ toast("這個名稱以前有人用過，不能再用，換一個吧"); return true; } if(!hasBanned(t)&&!hasSlur(t)) return false; toast("這個名稱不能用，換一個吧"); return true; }
+/* 粉絲帳號轉成藝人帳號後，舊的帳號名、名稱記在後台，誰都不能再用（避免冒充） */
+const nameKey=t=>String(t||"").normalize("NFKC").toLowerCase().replace(/[\s._\-·・]/g,"");
+const usedName=t=>{ const k=nameKey(t); return !!k&&(S.get(K.usedNames,[])||[]).some(x=>nameKey(x.v)===k); };
 function banBlock(t){ if(hasSlur(t)){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(!hasBanned(t)) return false; toast("訊息裡有禁用的字詞，沒辦法送出"); return true; }
 function viewBanned(){ return `<main class="page"><section class="card studio"><span class="fld-lab">禁用字詞（一行一個）</span><label class="field th-ta"><textarea id="banTa" rows="12" placeholder="輸入文字">${esc(bannedList().join("\n"))}</textarea></label><button class="btn btn-main btn-block" data-a="banSave">儲存</button></section></main>`; }
 
@@ -15450,15 +15519,16 @@ const STICK3D=(()=>{
     const btn=new THREE.Mesh(new THREE.SphereGeometry(.018,16,12),X3.emit(c.glow,1.6)); btn.position.set(0,-.36,.225); g.add(btn);
     /* 光圈（跟著燈色亮）＋鍍鉻領口 */
     const core=new THREE.Mesh(new THREE.TorusGeometry(.214,.03,16,96),new THREE.MeshStandardMaterial({color:X3.C(c.glow),emissive:X3.C(c.glow),emissiveIntensity:1.8,roughness:.3})); core.rotation.x=Math.PI/2; core.position.y=.2; g.add(core);
-    lathe([[0,.215],[.215,.215],[.23,.25],[.26,.34],[.31,.44],[.355,.49],[.36,.5],[0,.5]],chrome);
-    /* 網罩：鍍鉻網＋裡面黑海綿＋中間一圈接縫 */
-    const HY=.93, HR=.47;
+    /* 鍍鉻頸圈：短短一截，接著網罩（真的手持麥克風沒有喇叭口） */
+    lathe([[0,.215],[.212,.215],[.218,.24],[.222,.3],[.232,.34],[.236,.35],[0,.35]],chrome);
+    /* 網罩：一顆略扁的鍍鉻網球，底部收進頸圈；裡面黑海綿，沒有中間那圈接縫 */
+    const HR=.4, HY=.35+HR*.82;
     const holes=X3.ctex(512,256,(x,w,h)=>{ x.fillStyle="#fff"; x.fillRect(0,0,w,h); x.fillStyle="#000"; const s=8; for(let yy=0;yy<h;yy+=s) for(let xx=-s;xx<w;xx+=s){ x.beginPath(); x.arc(xx+s/2+((yy/s)%2?s/2:0),yy+s/2,s*.36,0,Math.PI*2); x.fill(); } });
     holes.encoding=THREE.LinearEncoding; holes.wrapS=holes.wrapT=THREE.RepeatWrapping; holes.generateMipmaps=false; holes.minFilter=THREE.LinearFilter;
     const foam=new THREE.Mesh(new THREE.SphereGeometry(HR*.95,48,32),new THREE.MeshStandardMaterial({color:X3.C("#1A1820"),roughness:1,metalness:0})); foam.position.y=HY; g.add(foam);
-    const grill=new THREE.Mesh(new THREE.SphereGeometry(HR,96,64,0,Math.PI*2,0,Math.PI*.86),new THREE.MeshStandardMaterial({color:X3.C("#EEF0F4"),metalness:1,roughness:.22,envMapIntensity:1.6,alphaMap:holes,alphaTest:.5,side:THREE.DoubleSide})); grill.position.y=HY; g.add(grill);
-    const seam=new THREE.Mesh(new THREE.TorusGeometry(HR*1.005,.016,16,128),chrome); seam.rotation.x=Math.PI/2; seam.position.y=HY; g.add(seam);
-    const seam2=new THREE.Mesh(new THREE.TorusGeometry(HR*.83,.012,12,128),satin); seam2.rotation.x=Math.PI/2; seam2.position.y=HY-HR*.56; g.add(seam2);
+    const grill=new THREE.Mesh(new THREE.SphereGeometry(HR,96,64,0,Math.PI*2,0,Math.PI-Math.asin(.236/HR)),new THREE.MeshStandardMaterial({color:X3.C("#EEF0F4"),metalness:1,roughness:.22,envMapIntensity:1.6,alphaMap:holes,alphaTest:.5,side:THREE.DoubleSide})); grill.position.y=HY; g.add(grill);
+    grill.scale.set(1,.96,1); foam.scale.set(1,.96,1);
+    const lip=new THREE.Mesh(new THREE.TorusGeometry(.236,.012,12,96),chrome); lip.rotation.x=Math.PI/2; lip.position.y=.35; g.add(lip);   /* 網罩跟頸圈接起來的那一圈 */
     const out={g,core,btn,headY:HY,c,mic:true}; models.set(key,out); g.visible=false; scene.add(g); return out; }
   /* 照設計圖做的模型：用辨識出來的輪廓（圓的做旋轉體、愛心星星做成鼓起來的立體板），表面貼設計圖本身，燈頭會發光 */
   const dsKey=ds=>ds._k||(ds._k="ds"+Math.random().toString(36).slice(2,9));
@@ -15749,6 +15819,17 @@ function dmThreads(){ const me=snMeId(), out=[], ks=new Set(Object.keys(mem||{})
   return out.sort((a,b)=>b.t[b.t.length-1].ts-a.t[a.t.length-1].ts); }
 /* 預設的用戶名稱：不再用登入帳號（會洩漏大家的帳號），改用名字或隨機代號 */
 const snHandle=(name,seed,pre)=>{ const a=String(name||"").toLowerCase().normalize("NFKD").replace(/[^a-z0-9._]/g,""); return a.length>=2?a:pre+"_"+(strHash(seed)%1679616).toString(36).padStart(4,"0"); };
+/* ===== 粉絲帳號 → 藝人帳號 =====
+   ・藝人的個人 SNS 不會馬上開：照公司規定，出道滿一段時間才解鎖
+   ・原本粉絲身分的 SNS：內容清空、變成私人帳號；用過的帳號名、名稱記到後台，之後不能再用 */
+const SNS_UNLOCK_MO={YG:1.5,SM:2.5,JYP:5,HYBE:3.5,PAPERMOON:2,"BLUE HOUR":3.5,"DOLPUNG Lab.":.8};
+function snDebutOf(mid){ try{ const x=getDebut().filter(y=>y.status==="ok"&&(y.mid===mid||Object.values(y.mids||{}).includes(mid))).sort((a,b)=>(b.day||0)-(a.day||0))[0]; if(!x) return null; return {co:x.co||"",ts:dbRelAt(x)||x.day||0}; }catch(e){ return null; } }
+function snLockOf(mid){ const d=snDebutOf(mid); if(!d||!d.ts) return null; const mo=SNS_UNLOCK_MO[d.co]; if(mo==null) return null; const until=d.ts+Math.round(mo*30*864e5); return until>Date.now()?{co:d.co,mo,until}:null; }
+function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEMBERS[s.member]) return; const em=String(s.email||"").toLowerCase(), a=ACCOUNTS[em]||{}; if(a.role==="admin") return; const done=S.get(K.snRetired,{})||{}; if(done[em]) return;
+    const d=snDB(), uid="u:"+em, pr=d.prof[uid]||{}, nick=(S.get(K.nicks,{})||{})[em], had=(d.posts||[]).some(p=>p.uid===uid)||pr.u||nick;
+    if(had){ const L=S.get(K.usedNames,[])||[]; [pr.u,nick].filter(Boolean).forEach(v=>{ if(!L.some(x=>nameKey(x.v)===nameKey(v))) L.push({v,acc:em,ts:Date.now()}); }); S.set(K.usedNames,L);
+      d.posts=(d.posts||[]).filter(p=>p.uid!==uid); d.stories=(d.stories||[]).filter(x=>x.uid!==uid); if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
+    done[em]=Date.now(); S.set(K.snRetired,done); }catch(e){} }
 function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member]) return "m:"+s.member; return "u:"+String(s.email||"me").toLowerCase(); }
 function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
   if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:(s.co||"")+" 星探",g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
@@ -16032,7 +16113,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
     case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snToggleLike(id,true); const y=window.scrollY; render(); window.scrollTo(0,y); snHeartPop(id); snTapT=0; } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")) setTimeout(()=>{ if(snTapT===now) snSndToggle(); },330); } break; }
-    case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id); const y=window.scrollY; render(); window.scrollTo(0,y); if(!had) snHeartPop(id); break; }
+    case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id);   /* 只改這顆按鈕，不整頁重畫（整頁重畫會跳回最上面） */
+      const d2=snDB(), p=(d2.posts||[]).find(x=>x.id===id); document.querySelectorAll('[data-a="snLike"]').forEach(b=>{ if(b.dataset.id!==id) return; b.classList.toggle("liked",!had); const n=b.querySelector("b"); if(n&&p) n.textContent=fmt(snLikes(d2,p)); });
+      if(!p){ const sc=document.querySelector(".sn-scroll,.sn-page,.sn"), y=sc?sc.scrollTop:window.scrollY; render(); if(sc&&document.querySelector(".sn-scroll,.sn-page,.sn")) document.querySelector(".sn-scroll,.sn-page,.sn").scrollTop=y; else window.scrollTo(0,y); }
+      if(!had) snHeartPop(id); break; }
     case "snCm": snOpenCm(t.dataset.id); break;
     case "snCmDel": { const d=snDB(), L=d.cms[t.dataset.id]||[]; d.cms[t.dataset.id]=L.filter(c=>c.id!==t.dataset.v); snSave(d); snOpenCm(t.dataset.id); toast("已刪除留言"); break; }
     case "snShare": snOpenShare(t.dataset.id); break;
@@ -17472,9 +17556,17 @@ const cbRelAt=p=>{ const c=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id
 function preTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.debut]==null&&HB.ver[K.mshow]==null)) return; const now=Date.now();
     const L=getDebut(); let ch=false; L.forEach(x=>{ if(x.status==="pre"&&x.day&&x.day>now&&!x.annId&&x.day-now<=PRE_ANN){ dbAnn(x); ch=true; } if(x.status==="pre"&&x.day&&dbRelAt(x)<=now){ if(x.gid) dbReveal(x); else dbDebutNow(L,x); ch=true; } }); if(ch){ S.set(K.debut,L); applyRoster(); render(); }
     { const m0=getMShow(), due=(m0.pre||[]).filter(p=>p.day>now&&!p.annId&&p.day-now<=PRE_ANN); if(due.length){ due.forEach(cbAnn); S.set(K.mshow,m0); } }
-    { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song}); }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
-    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
+    { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song}); }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
+    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
 setInterval(preTick,60e3); setTimeout(preTick,9e3);
+function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
+    (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
+      const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
+      const title=(/《([^》]+)》/.exec(v.title||"")||[])[1]||String(v.title||"").replace(/^.*[｜|]\s*/,"").replace(/\s*(official\s*)?(m\/?v)(\s*teaser)?\s*$/i,"").trim()||"新歌";
+      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id}); ch=true; const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》MV 公開，開始打歌！第一週是宣傳期`,v.gid); });
+    const done=m.songs.filter(x=>songPhase(x)==="end"); if(done.length){ m.songs=m.songs.filter(x=>songPhase(x)!=="end"); m.ended=[...(m.ended||[]),...done.map(x=>({...x,endTs:now}))]; ch=true; }
+    if(ch){ S.set(K.mshow,m); try{ render(); }catch(e){} } }catch(e){} }
+setInterval(mvSongTick,60e3); setTimeout(mvSongTick,10e3);
 /* 新人剛出道一週內：回歸（第一首歌）可以當天開始 */
 const grpFresh=gid=>{ const t=idTs(gid,/^g/); return !!t&&Date.now()-t<PRE_MIN; };
 /* 「即將出道／即將回歸」卡片（CORE、FOC 最上面） */
@@ -18353,13 +18445,15 @@ function showScore(sid,show,wk){ wk=wk||curWeek(); const s=songOf(sid); if(!s) r
   const votes=showVotes(sid,show,wk), album=s.demo?strHash(sid)%6:albumSales(s.gid,wkDate(wk).getTime()), likes=s.demo?strHash(sid)%30:songMvLikes(s), views=s.demo?strHash(sid)%400:songViews(s);
   return {votes,album,likes,views,total:votes*MS_W.vote+album*MS_W.album+likes*MS_W.like+views*MS_W.view}; }
 const promoSongs=()=>{ const d=MUS_DEMO(); return d.length?d:getMShow().songs.filter(x=>groupOf(x.gid)); };
-function showRank(show,wk){ wk=wk||curWeek(); return promoSongs().map(s=>({s,sc:showScore(s.id,show,wk),cr:!s.demo&&crowned(s.id,show,wk)})).sort((a,b)=>b.sc.total-a.sc.total); }
+function showRank(show,wk){ wk=wk||curWeek(); return promoSongs().filter(s=>s.demo||songActIn(s,show,wk)).map(s=>({s,sc:showScore(s.id,show,wk),cr:!s.demo&&crowned(s.id,show,wk)})).sort((a,b)=>b.sc.total-a.sc.total); }
 /* 有排名週以來最近一個排名週（宣傳週要顯示上一個排名週的一位） */
 function lastRankedWk(){ const w=getMShow().wins, ks=Object.keys(w).filter(k=>k<curWeek()&&ranked(k)&&Object.keys(w[k]||{}).length).sort(); return ks[ks.length-1]||null; }
 /* 自動結算：管理員的手機每分鐘看一次 */
 function msAutoSettle(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null)) return; const ms=getMShow(); if(!ms.songs.length) return; let n=0;
   [shiftWeek(curWeek(),-1),curWeek()].forEach(wk=>{ if(!ranked(wk)) return; SHOWS.forEach(sh=>{ const ws=(getMShow().wins[wk]||{}), man=((getMShow().manual||{})[wk]||{}); if(ws[sh.id]||man[sh.id]||!showEnded(sh.id,wk)) return;
-    const top=showRank(sh.id,wk).find(x=>!x.cr&&x.sc.total>0); if(!top) return; setWinner(sh.id,top.s.id,wk); n++; }); });
+    if(npcWon(sh.id,wk)) return; const top=showRank(sh.id,wk).find(x=>!x.cr&&x.sc.total>0); if(!top) return;
+    const nb=npcTop(sh.id,wk); if(nb&&nb.total>=top.sc.total){ const m2=getMShow(); m2.npcWin={...(m2.npcWin||{})}; m2.npcWin[wk]={...(m2.npcWin[wk]||{}),[sh.id]:{name:nb.name,title:nb.title,total:nb.total}}; S.set(K.mshow,m2); n++; return; }   /* 虛擬對手比較高：這週這個節目沒有人拿到一位 */
+    setWinner(sh.id,top.s.id,wk); n++; }); });
   if(n) try{ render(); }catch(e){} }catch(e){} }
 setInterval(msAutoSettle,60e3); setTimeout(msAutoSettle,12e3);
 /* 這個月拿到的王座（五台冠軍、AK、PAK） */
@@ -18387,23 +18481,27 @@ const MU_IC={
 const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["MUSIC","BANK"],ink:["INKI","GAYO"]};
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
 function viewPromo(){
-  const wk=curWeek(), dm=musDemoOn(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), songs=promoSongs(), lr=rk?null:lastRankedWk(), open=ui.muOpen||{};
+  const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), rk=dm||songs.some(x=>songPhase(x)==="act"), t=rk?"排名週":"宣傳週", lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=dm?[]:songs.filter(x=>songPhase(x)==="promo");
   const mod=sh=>{ const id=sh.id, R=showRank(id,wk), won=songOf((getMShow().wins[wk]||{})[id]), ended=rk&&showEnded(id,wk), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
     else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
     else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
+    else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-st">${esc(nw.name)}（虛擬對手）</span>`; }
+    else if(!ended&&npcTop(id,wk)&&(!R[0]||npcTop(id,wk).total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(npcTop(id,wk).name)}（虛擬對手）</span>`;
     else if(ended) head=`<span class="mu3-st muted">本週沒有一位</span>`;
     else head=R[0]&&R[0].sc.total>0?`<span class="mu3-lb">目前第一名</span>${muWho(R[0].s,false)}`:`<span class="mu3-st muted">還沒有人投票</span>`;
     const when=!rk?"":ended?`<em class="mu3-end">已結束</em>`:`<em class="mu3-end">${showEndTxt(id)} 結束・${muLeft(showEndTs(id,wk)-Date.now())}</em>`;
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
-      return `<div class="mu3-r"><span class="mu3-n">${i+1}</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`; }).join("");
+      return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
+      .concat(rk&&R.length?npcRivals(id,wk).map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><span class="mu3-song"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}・虛擬對手</small></span></span><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
+      .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
       <div class="mu3-bd">${voted&&rk&&!ended?`<p class="mu3-vt">今天投給了《${esc((songOf(voted)||{}).title||"")}》</p>`:""}${songs.length?rows:`<p class="me-none">目前沒有打歌中的歌</p>`}</div></section>`; };
   return coreHead("")+`<main class="page mu3">
-    <section class="mu2-wk mu3-wk t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"}"><span class="mu2-chip">${esc(t)}</span><span class="mu2-wt"><b>${rk?"每個節目每天可以投 1 票":"宣傳週不排名、不開放投票"}</b></span><button class="mu3-i" data-a="coreTip" aria-label="規則">${MU_IC.i}</button></section>
+    <section class="mu2-wk mu3-wk t-${rk?"r":"p"}"><span class="mu2-chip">${rk?"打歌中":"宣傳期"}</span><span class="mu2-wt"><b>${rk?"每個節目每天可以投 1 票":songs.length?"新歌宣傳期中，下週開始排名":"目前沒有打歌中的歌"}</b>${pro.length?`<small>${pro.map(x=>`${esc(songName(x))} ${Math.max(1,Math.ceil((songRel(x)+MSA.PROMO*MDAY-Date.now())/MDAY))} 天後開始排名`).join("・")}</small>`:""}</span>${(session()||{}).role!=="fan"?`<button class="mu3-i" data-a="coreTip" aria-label="規則">${MU_IC.i}</button>`:""}</section>
     ${muThrones()}
     <div class="mu2-h"><h3>音樂節目</h3></div>
     <div class="mu3-list">${SHOWS.map(mod).join("")}</div>
@@ -18423,7 +18521,9 @@ function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf
 /* 規則：三張卡滑著看 */
 function muRules(){ const wk0=curWeek(), d0=new Date(); d0.setDate(1); const W=[]; let k=weekKey(d0.getTime()); for(let i=0;i<6;i++){ const ms=wkDate(k); if(ms.getMonth()!==d0.getMonth()&&i>0&&monthKey(ms.getTime()+3*864e5)!==monthKey(d0.getTime())) break; W.push(k); k=shiftWeek(k,1); }
   const WS=W.filter(x=>monthKey(wkDate(x).getTime()+3*864e5)===monthKey(Date.now())), band=WS.map(x=>{ const t=weekType(x); return `<span class="t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"} ${x===wk0?"now":""}">${t.slice(0,2)}</span>`; }).join(""), here=WS.map(x=>`<span>${x===wk0?"▲ 你在這裡":""}</span>`).join("");
-  const c1=`<div class="mur-c"><h4>這個月的節奏</h4><div class="mur-band">${band}</div><div class="mur-here">${here}</div><p>每個月第一週是宣傳週，不排名；中間是排名週；最後一週是打歌週（月底決戰）。</p></div>`;
+  const my=(()=>{ const s0=session()||{}, mg=s0.member&&MEMBERS[s0.member]?MEMBERS[s0.member].group:""; return getMShow().songs.filter(x=>x.gid===mg).sort((a,b)=>songRel(b)-songRel(a))[0]||null; })(), wn=my?Math.min(4,Math.max(1,songWeekNo(my))):0;
+  const cyc=[["p","宣傳"],["r","第 2 週"],["r","第 3 週"],["f","最後一週"]].map(([c,l],i)=>`<span class="t-${c} ${wn===i+1?"now":""}"><b>${l}</b></span>`).join(""), here2=[0,1,2,3].map(i=>`<span>${wn===i+1?"▲ 你在這裡":""}</span>`).join("");
+  const c1=`<div class="mur-c"><h4>週期</h4><div class="mur-band">${cyc}</div><div class="mur-here">${here2}</div><p>每首歌從 MV 公開那一刻起算，各算各的：第 1 週宣傳、不排名；第 2～4 週每週五個節目都能拿一位；第 4 週結束後下檔。參賽的歌不到 3 首時會有虛擬對手，分數要超過它們才拿得到一位。${my?`<br>你的《${esc(my.title)}》${songPhase(my)==="promo"?"還在宣傳期":songPhase(my)==="act"?`在第 ${songWeekNo(my)} 週`:"活動已結束"}。`:""}</p></div>`;
   const c2=`<div class="mur-c"><h4>怎麼幫偶像</h4><ul class="mur-w"><li><b>${MU_IC.tk}</b><span>投票</span><em>1 票 = ${MS_W.vote} 分</em></li><li><b>💿</b><span>買專輯</span><em>1 張 = ${MS_W.album} 分</em></li><li><b>♡</b><span>MV 愛心</span><em>1 顆 = ${MS_W.like} 分</em></li><li><b>▶</b><span>看 MV</span><em>1 次 = ${MS_W.view} 分</em></li></ul><p>每個節目每天可以投 1 票。節目播出時間一到就結束，分數最高的拿下一位。</p></div>`;
   const c3=`<div class="mur-c"><h4>獎勵</h4><ul class="mur-w"><li><b>${MU_IC.cup}</b><span>一位</span><em>+${fmt(MSP.win)}</em></li><li><b>${MU_IC.five}</b><span>五台冠軍</span><em>+${fmt(MSP.five)}</em></li><li><b>${MU_IC.ak}</b><span>AK</span><em>+${fmt(MSP.ak)}</em></li><li><b>${MU_IC.pak}</b><span>PAK</span><em>+${fmt(MSP.pak)}</em></li></ul><p>同一首歌在同一個節目連續三週一位＝三冠王，之後這個節目就不再列入一位候選。</p></div>`;
   tieModal("打歌規則",`<div class="mur" id="murS">${c1}${c2}${c3}</div><div class="mur-dots"><button class="on" data-a="murGo" data-v="0" aria-label="第 1 張"></button><button data-a="murGo" data-v="1" aria-label="第 2 張"></button><button data-a="murGo" data-v="2" aria-label="第 3 張"></button></div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`,"mur-m");
