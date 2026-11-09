@@ -6071,6 +6071,7 @@ html[data-th] .toast button{color:var(--violet)!important}
 .toast span{text-align:center;line-height:1.45}
 /* 貼文頁標題的藍勾勾：跟動態裡一樣是藍底白勾（不要跟著字變白） */
 html body .pd-pw b svg{width:15px!important;height:15px!important;color:#3BA4F5!important;flex:none}
+article.card.post.post-tap{cursor:pointer}
 </style>
 </head>
 <body>
@@ -6596,7 +6597,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261109124401";
+const BUILD="20261109125359";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9559,6 +9560,10 @@ function viewSelect(){
 /* 貼文權限：💎 只限 Membership、🔒 私密（要猜中藝人設的密碼） */
 const viewerFan=()=>{ const s=session(); return !!s&&s.role==="fan"; };
 const pwOpened=id=>S.get(K.pwOpen,[]).includes(id);
+/* 動態卡片：點頭貼、點名字、點照片、點卡片任何地方都進貼文頁（按讚、書籤、⋯、投票、影片播放、展開全文照原本的功能） */
+document.addEventListener("click",e=>{ const card=e.target.closest&&e.target.closest("article.card.post[data-id]"); if(!card||card.closest(".pd")) return;
+  const a=e.target.closest("[data-a]"); if(a&&a!==card&&!["goArtist","pmGal","comments","post"].includes(a.dataset.a)) return;
+  if(a===card) return; e.preventDefault(); e.stopImmediatePropagation(); card.dispatchEvent(new MouseEvent("click",{bubbles:true})); },true);
 /* Membership 貼文：沒買會員時，按讚、留言（打開貼文）、書籤都先跳出 Membership 視窗 */
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="like"],[data-a="comments"],[data-a="bmTog"],[data-a="pdLike"],[data-a="cmLike"]'); if(!t) return;
   const id=t.dataset.id||String(t.dataset.v||"").replace(/^p:/,""); if(!id) return; const p=(S.get(K.posts,[])||[]).find(x=>x.id===id); if(!p||postLocked(p)!=="ms") return;
@@ -9586,7 +9591,7 @@ function pwTry(id){ const p=getPosts().find(x=>x.id===id), i=document.getElement
 function postCard(p,{mine=false,prof=false}={}){
   const m=MEMBERS[p.member], g=groupOf(p.group), liked=likedSet().has(p.id); if(!m||!g) return "";   // 發文的藝人或團已刪除：跳過，不要讓整頁卡住
   const long=p.text.length>90 && !ui.expanded.has(p.id);
-  return `<article class="card post ${prof?"post-tap":""}" id="post-${p.id}"${prof?` data-a="comments" data-id="${p.id}"`:""}>
+  return `<article class="card post post-tap" id="post-${p.id}" data-a="comments" data-id="${p.id}">
     <div class="post-head">
       ${viewerFan()&&!mine&&!prof?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
       <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
