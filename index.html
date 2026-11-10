@@ -6119,6 +6119,11 @@ html body .foc-conc .lsp-songs button.on{background:var(--violet);color:#fff}
 .dbx-ro{margin:0;padding:10px 14px;border-radius:14px;background:var(--s2);color:var(--ink-3);font-weight:700}
 .mu3-r .mu3-n,.mu3-r .mu2-cv{display:none!important}.mu3-r{padding:10px 14px}
 .dbx-warn{margin:8px 0 0;font-size:12px;color:var(--ink-3)}
+.vs-pv{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:16/9;border-radius:20px;border:1.5px dashed var(--line);background:var(--s1);color:var(--ink-3);font:inherit;overflow:hidden;margin-bottom:6px}
+.vs-pv b{font-size:30px;font-weight:400;color:var(--violet)}.vs-pv span{position:absolute;bottom:22%;font-size:13px;font-weight:700}
+.vs-pv.on{border:0;background:#000}.vs-pv img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.vs-pv i{position:relative;display:grid;place-items:center;width:48px;height:48px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;font-style:normal;font-size:18px}
+.vs-pv em{position:absolute;right:10px;bottom:10px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;font-style:normal;font-size:12px;font-weight:700}
+.vs-re{display:block;margin:0 0 14px auto;background:none;border:0;font:inherit;font-size:13px;font-weight:700;color:var(--violet)}
 </style>
 </head>
 <body>
@@ -6644,7 +6649,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110002307";
+const BUILD="20261110003057";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -11104,7 +11109,7 @@ const ranked=wk=>weekType(wk)!=="宣傳週";
 const songOf=id=>{ if(String(id).startsWith("demo_")) return MUS_DEMO().find(s=>s.id===id); const m=getMShow(); return m.songs.find(s=>s.id===id)||(m.ended||[]).find(s=>s.id===id); };
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：沒有打歌中的歌時，放 3 首示範歌，投票只記在這支手機的這次打開，不存、不上雲端 */
 const musDemo=()=>{ try{ if(ui.tourDemo) return true; const s=session(); if(s&&s.role==="artist") return typeof demoOn==="function"&&demoOn(); if(!s||s.role!=="fan") return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""], g=m&&groupOf(m.group), U=x=>String(x||"").toUpperCase()==="HUSSEY"; return U(a.name)||U(m&&m.name)||!!(g&&U(g.name)); }catch(e){ return false; } };
-const mvSongTitle=gid=>{ const mv=(S.get(K.vods,[])||[]).filter(v=>v.gid===gid&&typeof vodIsMV==="function"&&vodIsMV(v)).sort((a,b)=>(b.ts||0)-(a.ts||0))[0]; return mv?((/《([^》]+)》/.exec(mv.title||"")||[])[1]||String(mv.title||"").replace(/^.*[｜|]\s*/,"").replace(/\s*(official\s*)?m\/?v.*$/i,"").trim()):""; };
+const mvSongTitle=gid=>{ const mv=(S.get(K.vods,[])||[]).filter(v=>v.gid===gid&&typeof vodIsMV==="function"&&vodIsMV(v)).sort((a,b)=>(b.ts||0)-(a.ts||0))[0]; return mv?mvTitleOf(mv.title):""; };
 const grpKnownSong=gid=>{ try{ const ms=getMShow(), e=[...(ms.ended||[])].filter(x=>x.gid===gid).sort((a,b)=>(b.endTs||0)-(a.endTs||0))[0]; if(e) return e.title; const c=(typeof getCbr==="function"?getCbr():[]).filter(x=>x.gid===gid&&x.status==="ok"&&x.day<=Date.now()).sort((a,b)=>b.day-a.day)[0]; if(c) return c.title; const d=getDebut().find(x=>x.gid===gid&&x.song); return d?d.song:""; }catch(e){ return ""; } };
 /* 示範：只放自己的團（歌名用最新一支 MV），其他名次由虛擬歌手補上 */
 const MUS_DEMO=()=>{ if(!musDemo()||getMShow().songs.length) return []; const s=session()||{}, a=ACCOUNTS[s.email]||{}, mid=s.member||a.member||s.home||"", own=MEMBERS[mid]?MEMBERS[mid].group:"", g=groupOf(own)||GROUPS.find(x=>x.id!=="tdm_g")||GROUPS[0]; return g?[{id:"demo_"+g.id,gid:g.id,title:mvSongTitle(g.id)||grpKnownSong(g.id)||"出道曲",demo:1}]:[]; };
@@ -12025,6 +12030,16 @@ function vsecHtml(gid,edit){ const secs=getSecs(gid), vs=getVods(gid);
   return `${edit?`<button class="vs-add" data-a="vsAdd" data-g="${gid}">＋ 新增分區</button>`:""}${secs.map(sc=>{ const L=vs.filter(v=>v.sec===sc.id); if(!edit&&!L.length) return "";
     return `<div class="cm-sh"><h3>${esc(sc.title)}</h3>${edit?`<span class="vs-tools"><button data-a="vsEd" data-g="${gid}" data-v="${sc.id}" aria-label="改名稱">${UI_S.pen}</button><button data-a="vsUp" data-g="${gid}" data-v="${sc.id}" aria-label="上傳影片">＋</button></span>`:""}</div>
       ${L.length?`<div class="cm-lv">${L.map(v=>`<span class="vs-c">${vodCard(v)}${edit?`<button class="vs-x" data-a="vsVDel" data-v="${v.id}" aria-label="刪除">${XI}</button>`:""}</span>`).join("")}</div>`:`<p class="me-none">還沒有影片</p>`}`; }).join("")}`; }
+/* 社群 MEDIA 上傳影片：獨立一頁（預覽、標題、分區），MV 分區會自動接上打歌 */
+function vsUpPage(){ const u=ui.vsUp, f=ui.vsFor; if(!u||!f) return; const secs=getSecs(f.gid), sec=secs.find(x=>x.id===f.sid)||{}, isMv=isMvLabel(sec.title), old=layer.querySelector("#vsVt"), ti=old?old.value:u.ti, g=groupOf(f.gid)||{};
+  const guess=mvTitleOf(ti), mm=u.dur?`${Math.floor(u.dur/60)}:${String(Math.round(u.dur%60)).padStart(2,"0")}`:"";
+  setLayer(`<div class="dbx" role="dialog" aria-label="上傳影片"><header class="dbx-h"><button class="dbx-x" data-a="tCloseLayer">取消</button><b>上傳影片</b><button class="dbx-ok" data-a="vsUpOk" ${u.busy?"disabled":""}>上傳</button></header>
+    <div class="dbx-b">${u.busy?`<p class="db-busy">${u.busy}</p>`:""}
+      <button class="vs-pv ${u.file?"on":""}" data-a="vsPick" aria-label="選擇影片">${u.pv?`<img src="${esc(u.pv)}" alt=""><i>▶</i>${mm?`<em>${mm}</em>`:""}`:u.file?`<i>▶</i>`:`<b>＋</b><span>選擇影片</span>`}</button>${u.file?`<button class="vs-re" data-a="vsPick">換一部</button>`:""}
+      <section class="dbx-s"><span class="fs-f-lab" style="margin-top:0">影片標題</span><input id="vsVt" class="a-nick-in" maxlength="60" placeholder="${isMv?`例：${esc(g.name||"HUSSEY")} - 歌名 M/V`:"輸入文字"}" value="${esc(ti||"")}">
+        ${isMv?`<p class="dbx-d">${guess?`會當成歌曲《${esc(guess)}》，自動接上打歌和社群公告。`:"MV 分區的影片會自動接上打歌和社群公告，標題裡寫歌名就好。"}</p>`:""}
+        <span class="fs-f-lab">分區</span><div class="chips">${secs.map(x=>`<button class="chip ${x.id===f.sid?"on":""}" data-a="vsSec" data-v="${x.id}">${esc(x.title)}</button>`).join("")}</div></section></div></div>`,"vsup");
+  const inp=layer.querySelector("#vsVt"); if(inp&&!inp.dataset.w){ inp.dataset.w="1"; inp.addEventListener("input",()=>{ u.ti=inp.value; const d=layer.querySelector(".dbx-s .dbx-d"); if(d&&isMv){ const gs=mvTitleOf(inp.value); d.textContent=gs?`會當成歌曲《${gs}》，自動接上打歌和社群公告。`:"MV 分區的影片會自動接上打歌和社群公告，標題裡寫歌名就好。"; } }); } }
 document.addEventListener("change",e=>{ if(e.target.id!=="vsFile") return; const f=e.target.files&&e.target.files[0]; ui.vsFile=f||null; const n=document.getElementById("vsFn"); if(n) n.textContent=f?f.name:""; });
 const getVods=gid=>S.get(K.vods,[]).filter(v=>!gid||v.gid===gid).sort((a,b)=>b.ts-a.ts);
 const vodOf=id=>S.get(K.vods,[]).find(v=>v.id===id);
@@ -13453,11 +13468,18 @@ function clickAdm(a,t,e,r){ switch(a){
     case "vsSave": { const f=ui.vsFor, v=((document.getElementById("vsTi")||{}).value||"").trim(); if(!f) break; if(!v){ toast("名稱不能空白"); break; } if(nameBlock&&nameBlock(v)) break;
       const M=S.get(K.vsec,{})||{}, L=[...(M[f.gid]||[])]; if(f.sid){ const x=L.find(y=>y.id===f.sid); if(x) x.title=v; } else L.push({id:uid("s"),title:v}); M[f.gid]=L; S.set(K.vsec,M); layer.innerHTML=""; lsRerender(); break; }
     case "vsDel": { const f=ui.vsFor; if(!f||!f.sid) break; const has=getVods(f.gid).some(v=>v.sec===f.sid); if(has){ toast("先把這個分區裡的影片刪掉"); break; } const M=S.get(K.vsec,{})||{}; M[f.gid]=(M[f.gid]||[]).filter(x=>x.id!==f.sid); S.set(K.vsec,M); layer.innerHTML=""; lsRerender(); break; }
-    case "vsUp": { ui.vsFor={gid:t.dataset.g,sid:t.dataset.v}; ui.vsFile=null;
-      tieModal("上傳影片","",`<input id="vsVt" class="a-nick-in" maxlength="40" placeholder="輸入文字"><label class="t-mbtn vs-pick">選擇影片<input type="file" id="vsFile" accept="video/*" hidden></label><small id="vsFn" class="vs-fn"></small><button class="t-mbtn main" data-a="vsUpOk">上傳</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
-    case "vsUpOk": { const f=ui.vsFor, file=ui.vsFile, ti=((document.getElementById("vsVt")||{}).value||"").trim(); if(!f) break; if(!ti){ toast("請輸入影片標題"); break; } if(!file){ toast("先選一部影片"); break; } 
-      layer.innerHTML=""; toast("上傳中…"); (async()=>{ try{ const id="vv"+Date.now().toString(36), th=await videoThumb(file); await MDB.put(id,file); let thumb=null; if(th&&th.blob){ thumb=id+"_t"; await MDB.put(thumb,th.blob); }
-        const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:th&&th.dur||0,ts:Date.now(),views:0,by:session().member||uniMe()}); S.set(K.vods,L); toast("影片上傳好了"); lsRerender(); }catch(e){ toast("這部影片讀不出來，換一部試試"); } })(); break; }
+    case "vsUp": { ui.vsFor={gid:t.dataset.g,sid:t.dataset.v}; ui.vsUp={ti:"",file:null,pv:"",dur:0,th:null,busy:""}; vsUpPage(); break; }
+    case "vsSec": { const u=ui.vsUp, f=ui.vsFor; if(!u||!f) break; u.ti=((document.getElementById("vsVt")||{}).value||u.ti); f.sid=t.dataset.v; vsUpPage(); break; }
+    case "vsPick": { const u=ui.vsUp; if(!u||u.busy) break; u.ti=((document.getElementById("vsVt")||{}).value||u.ti); const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
+      inp.onchange=async()=>{ const file=inp.files&&inp.files[0]; if(!file) return; u.busy="讀取影片中…"; vsUpPage(); try{ const th=await videoThumb(file); u.file=file; u.th=th&&th.blob||null; u.pv=u.th?URL.createObjectURL(u.th):""; u.dur=th&&th.dur||0; }catch(e){ toast("這部影片讀不出來，換一部試試"); } u.busy=""; vsUpPage(); }; pickClick(inp); break; }
+    case "vsUpOk": { const f=ui.vsFor, u=ui.vsUp; if(!f||!u||u.busy) break; const ti=((document.getElementById("vsVt")||{}).value||"").trim(); if(!u.file){ toast("先選一部影片"); break; } if(!ti){ toast("請輸入影片標題"); break; }
+      u.ti=ti; u.busy="上傳中…"; vsUpPage();
+      (async()=>{ try{ const id="vv"+Date.now().toString(36); let thumb=null;
+          if(u.th){ thumb=id+"_t"; await MDB.put(thumb,u.th,true); if(!await hbUpload(thumb,u.th)) thumb=null; }
+          hbUploadBig.on=pc=>{ u.busy=`上傳中… ${pc}%`; const e=document.querySelector(".db-busy"); if(e) e.textContent=u.busy; };
+          const ok=(HB_ON&&!sbxOn())?await hbUpload(id,u.file):(await MDB.put(id,u.file),true); hbUploadBig.on=null; if(!ok){ u.busy=""; vsUpPage(); toast("上傳失敗，再試一次"); return; }
+          memBlobs[id]=u.file; const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:u.dur||0,ts:Date.now(),views:0,by:session().member||uniMe()}); S.set(K.vods,L);
+          ui.vsUp=null; layer.innerHTML=""; try{ mvSongTick(); }catch(e){} lsRerender(); toast("影片上傳好了"); }catch(e){ hbUploadBig.on=null; u.busy=""; vsUpPage(); toast("這部影片讀不出來，換一部試試"); } })(); break; }
     case "vsVDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); lsRerender(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
     case "vodG": ui.vodG=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "vodNewCat": ui.vodNewCat=t.dataset.v; { const y=window.scrollY, ti=(document.getElementById("vdTitle")||{}).value, li=(document.getElementById("vdLink")||{}).value; render(); window.scrollTo(0,y); const a=document.getElementById("vdTitle"), b=document.getElementById("vdLink"); if(a&&ti) a.value=ti; if(b&&li) b.value=li; } break;
@@ -17722,12 +17744,12 @@ setInterval(preTick,60e3); setTimeout(preTick,9e3);
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
-      const title=(/《([^》]+)》/.exec(v.title||"")||[])[1]||String(v.title||"").replace(/^.*[｜|]\s*/,"").replace(/\s*(official\s*)?(m\/?v)(\s*teaser)?\s*$/i,"").trim()||"新歌";
+      const title=mvTitleOf(v.title)||"新歌";
       m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id}); ch=true; const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》MV 公開，開始打歌！`,v.gid); });
     /* 回歸：同一團有新歌，舊歌下檔 */
     const byG={}; m.songs.forEach(x=>{ const r=songRel(x); if(!byG[x.gid]||r>songRel(byG[x.gid])) byG[x.gid]=x; }); const old=m.songs.filter(x=>songRel(x)&&byG[x.gid]!==x&&songRel(byG[x.gid])-songRel(x)>MDAY); if(old.length){ m.songs=m.songs.filter(x=>!old.includes(x)); m.ended=[...(m.ended||[]),...old.map(x=>({...x,endTs:now}))]; ch=true; }
     /* 社群（團的社群，不是個人社群）：MV 公開時自動貼一則 NOTICE，社群的影音也看得到 */
-    { const GN=S.get(K.gNotices,[])||[]; let gch=false; (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<7*MDAY).forEach(v=>{ if(GN.some(n=>n.mv===v.id)) return; const g=groupOf(v.gid), tt=(/《([^》]+)》/.exec(v.title||"")||[])[1]||v.title||"新歌";
+    { const GN=S.get(K.gNotices,[])||[]; let gch=false; (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<7*MDAY).forEach(v=>{ if(GN.some(n=>n.mv===v.id)) return; const g=groupOf(v.gid), tt=mvTitleOf(v.title)||v.title||"新歌";
         GN.unshift({id:"gn"+v.ts,group:v.gid,mv:v.id,title:`[MV] ${g.name}《${tt}》Official MV 公開`,body:`${g.name}《${tt}》MV 公開了！\n到社群的影音就看得到，打歌也從現在開始，一起幫忙投票吧 💜`,ts:v.ts}); gch=true; }); if(gch){ S.set(K.gNotices,GN); ch=true; } }
     const done=m.songs.filter(x=>songPhase(x)==="end"); if(done.length){ m.songs=m.songs.filter(x=>songPhase(x)!=="end"); m.ended=[...(m.ended||[]),...done.map(x=>({...x,endTs:now}))]; ch=true; }
     if(ch){ S.set(K.mshow,m); try{ render(); }catch(e){} } }catch(e){} }
@@ -18603,7 +18625,16 @@ const showEndTxt=show=>{ const [d,h,m]=SHOW_END[show]||[0,20,0]; return `星期$
 const muLeft=ms=>{ const h=Math.floor(ms/36e5), mm=Math.floor(ms%36e5/6e4); return h>=24?`剩 ${Math.floor(h/24)} 天 ${h%24} 小時`:h?`剩 ${h} 小時 ${mm} 分`:`剩 ${Math.max(1,mm)} 分`; };
 /* 影片：哪些是 MV；這首歌的 MV */
 const vodSecT=v=>{ const L=(S.get(K.vsec,{})||{})[v.gid]||[]; return (L.find(x=>x.id===v.sec)||{}).title||""; };
-const vodIsMV=v=>!!v&&(v.cat==="MV"||vodSecT(v)==="MV");
+/* MV 偵測：分區叫 MV／M/V／Music Video 都算；標題有 M/V、MV 也算（預告、幕後、練習不算） */
+const isMvLabel=t=>/^\s*(official\s*)?(m\s*\/?\s*v|music\s*videos?|뮤직\s*비디오|音樂錄影帶)s?\s*$/i.test(String(t||""));
+const MV_NOT=/teaser|預告|티저|behind|making|幕後|花絮|reaction|practice|練習|cover|翻唱|live|直拍|fancam/i;
+const vodIsMV=v=>!!v&&!MV_NOT.test(v.title||"")&&(v.cat==="MV"||isMvLabel(vodSecT(v))||/(^|[^a-z])m\s*\/\s*v([^a-z]|$)|(^|[^a-z])mv([^a-z]|$)|music\s*video/i.test(v.title||""));
+/* 從 MV 標題抓歌名：「HUSSEY (핫세) - SUPA DUA LUV M/V」→ SUPA DUA LUV；有《》『』「」“”'' 就拿括號裡的 */
+function mvTitleOf(t){ t=String(t||"").trim(); if(!t) return "";
+  const q=/《([^》]+)》/.exec(t)||/『([^』]+)』/.exec(t)||/「([^」]+)」/.exec(t)||/“([^”]+)”/.exec(t)||/"([^"]+)"/.exec(t)||/'([^']+)'\s*(?:\(|（|official|m\s*\/?\s*v|music|$)/i.exec(t); if(q) return q[1].trim();
+  let x=t.replace(/[\(（\[【][^\)）\]】]*(m\s*\/?\s*v|music\s*video|official|teaser)[^\)）\]】]*[\)）\]】]/ig," ").replace(/\s*(official\s*)?(m\s*\/?\s*v|music\s*video)(\s*teaser\s*\d*)?\s*$/i,"").trim();
+  const parts=x.split(/\s+[-–—_]\s+|\s*[｜|]\s*/).filter(y=>y.replace(/[\s\-–—~]/g,"")); if(parts.length>1) x=parts[parts.length-1];
+  return x.replace(/^[\s\-–—~·・]+|[\s\-–—~·・]+$/g,"").trim(); }
 function songMv(s){ if(!s) return null; const V=(S.get(K.vods,[])||[]).filter(v=>v.gid===s.gid&&vodIsMV(v)); return V.find(v=>String(v.title||"").includes(s.title))||V.sort((a,b)=>(b.ts||0)-(a.ts||0))[0]||null; }
 const mvLikesV=vid=>Object.keys(((S.get(MVL2,{})||{})[vid])||{}).length;
 const mvLikedV=vid=>!!(((S.get(MVL2,{})||{})[vid])||{})[myId()];
@@ -18728,7 +18759,7 @@ function muCardPop(cid,sh,s){ const nm=(SHOWS.find(x=>x.id===sh)||{}).name||""; 
    藝人：FOC 最上面「我的打歌」卡＋戰況頁（取代「榮譽與職務」）
    ========================================================= */
 const grpSong=gid=>{ const m=getMShow(), on=m.songs.filter(s=>s.gid===gid).sort((a,b)=>songRel(b)-songRel(a))[0]; if(on) return on; const old=(m.ended||[]).filter(s=>s.gid===gid).sort((a,b)=>songRel(b)-songRel(a))[0]; if(old) return {...old,_done:1};
-  const mv=(S.get(K.vods,[])||[]).filter(v=>v.gid===gid&&vodIsMV(v)).sort((a,b)=>(b.ts||0)-(a.ts||0))[0]; if(mv) return {id:"mv_"+mv.id,gid,title:(/《([^》]+)》/.exec(mv.title||"")||[])[1]||String(mv.title||"").replace(/^.*[｜|]\s*/,"").replace(/\s*(official\s*)?m\/?v.*$/i,"").trim()||"最新歌曲",_done:1};   /* 打歌開始前就出道的：放最新一支 MV 的歌名 */
+  const mv=(S.get(K.vods,[])||[]).filter(v=>v.gid===gid&&vodIsMV(v)).sort((a,b)=>(b.ts||0)-(a.ts||0))[0]; if(mv) return {id:"mv_"+mv.id,gid,title:mvTitleOf(mv.title)||"最新歌曲",_done:1};   /* 打歌開始前就出道的：放最新一支 MV 的歌名 */
   return MUS_DEMO().find(s=>s.gid===gid)||null; };
 /* 這首歌在每個節目最後一次的名次（拿過一位就寫一位幾次） */
 function songLastRk(sid,show){ const m=getMShow(), w=Object.keys(m.wins||{}).filter(k=>(m.wins[k]||{})[show]===sid).length; if(w) return {cls:"win",t:w>1?`一位 ×${w}`:"一位"}; const ks=Object.keys(m.rk||{}).sort().reverse(); for(const k of ks){ const r=((m.rk[k]||{})[show]||{})[sid]; if(r) return {cls:"end",t:`第 ${r} 名`}; } return {cls:"end",t:"—"}; }
