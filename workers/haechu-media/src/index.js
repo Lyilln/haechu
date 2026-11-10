@@ -48,6 +48,80 @@ export default {
       }
       return reply({ bytes, count, kinds });
     }
+    // 試玩頁（/try）的 TIE：訪客不用登入，訊息存在 R2 的 try/<id>.json
+    //   GET  /try/<id>            訪客讀自己的對話
+    //   PUT  /try/<id>            訪客送訊息（只收 from:"fan"，不能假冒偶像）
+    //   GET  /try                 管理員列出全部對話（要登入＋admin）
+    //   POST /try/<id>?a=reply    管理員以示範偶像身分回覆（要登入＋admin）
+    const tm = url.pathname.match(/^\/try(?:\/([a-z0-9]{8,32}))?$/);
+    if (tm) {
+      const id = tm[1];
+      const isAdmin = async () => {
+        const tok = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
+        if (!tok) return null;
+        const who = await fetch(env.SUPABASE_URL + "/auth/v1/user", { headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + tok } });
+        if (!who.ok) return null;
+        const uid = (await who.json()).id;
+        const pr = await fetch(env.SUPABASE_URL + "/rest/v1/profiles?select=role,username,name&id=eq." + encodeURIComponent(uid), { headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + tok } });
+        const me = pr.ok ? (await pr.json())[0] : null;
+        return me && me.role === "admin" ? me : null;
+      };
+      const load = async k => { const o = await env.MEDIA.get(k); if (!o) return { v: null, etag: null }; let v = null; try { v = JSON.parse(await o.text()); } catch (e) {} return { v, etag: o.etag }; };
+      const clean = s => String(s == null ? "" : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").trim();
+      // 讀＋改＋寫，用 etag 防止兩邊同時寫互相蓋掉
+      const update = async (k, fn) => {
+        for (let i = 0; i < 5; i++) {
+          const { v, etag } = await load(k);
+          const nv = fn(v || { nick: "", ts: Date.now(), msgs: [] });
+          if (!nv) return v;
+          const body = JSON.stringify(nv);
+          if (body.length > 120000) return "too_big";
+          const r = await env.MEDIA.put(k, body, { httpMetadata: { contentType: "application/json" }, ...(etag ? { onlyIf: { etagMatches: etag } } : {}) });
+          if (r) return nv;
+        }
+        return null;
+      };
+      if (!id) {
+        if (req.method !== "GET") return reply({ error: "method" }, 405);
+        if (!(await isAdmin())) return reply({ error: "forbidden" }, 403);
+        const out = []; let cursor;
+        for (let i = 0; i < 10; i++) {
+          const l = await env.MEDIA.list({ prefix: "try/", cursor, limit: 1000 });
+          const got = await Promise.all(l.objects.filter(o => Date.now() - o.uploaded.getTime() < 60 * 864e5).map(async o => { const { v } = await load(o.key); return v && { id: o.key.slice(4, -5), ...v }; }));
+          got.forEach(x => x && out.push(x));
+          if (!l.truncated) break; cursor = l.cursor;
+        }
+        return reply(out);
+      }
+      const k = "try/" + id + ".json";
+      if (req.method === "GET") { const { v } = await load(k); return reply(v || { nick: "", msgs: [] }); }
+      if (req.method === "PUT") {
+        if (allowed && origin !== allowed) return reply({ error: "origin" }, 403);
+        let b; try { b = await req.json(); } catch (e) { return reply({ error: "json" }, 400); }
+        const nick = clean(b && b.nick).slice(0, 12);
+        const inc = (Array.isArray(b && b.msgs) ? b.msgs : []).filter(m => m && m.from === "fan" && typeof m.id === "string" && /^[a-z0-9]{4,24}$/.test(m.id)).slice(-20)
+          .map(m => ({ id: m.id, from: "fan", text: clean(m.text).slice(0, 300), ts: Math.min(Number(m.ts) || Date.now(), Date.now()) })).filter(m => m.text);
+        const res = await update(k, v => {
+          const have = new Set((v.msgs || []).map(m => m.id)), add = inc.filter(m => !have.has(m.id));
+          if ((v.msgs || []).filter(m => m.from === "fan").length + add.length > 200) return null;
+          if (!add.length && (v.nick || "") === (nick || v.nick || "")) return null;
+          return { ...v, nick: nick || v.nick || "", ts: Date.now(), msgs: [...(v.msgs || []), ...add].sort((a, c) => a.ts - c.ts) };
+        });
+        if (res === "too_big") return reply({ error: "too_big" }, 413);
+        const { v } = await load(k);
+        return reply(v || { nick, msgs: [] });
+      }
+      if (req.method === "POST" && url.searchParams.get("a") === "reply") {
+        const me = await isAdmin(); if (!me) return reply({ error: "forbidden" }, 403);
+        let b; try { b = await req.json(); } catch (e) { return reply({ error: "json" }, 400); }
+        const text = clean(b && b.text).slice(0, 500); if (!text) return reply({ error: "empty" }, 400);
+        const m = { id: "i" + Date.now().toString(36) + Math.random().toString(36).slice(2, 5), from: "idol", text, ts: Date.now(), by: me.username || "", byName: me.name || me.username || "" };
+        const res = await update(k, v => ({ ...v, ts: Date.now(), msgs: [...(v.msgs || []), m] }));
+        if (!res || res === "too_big") return reply({ error: "save" }, 500);
+        return reply(res);
+      }
+      return reply({ error: "method" }, 405);
+    }
     // 大檔案（MV 等）分段上傳：沒有大小上限（每段 ≤ 40MB）
     const mp = url.pathname.match(/^\/mpu\/([A-Za-z0-9._-]{1,160})$/);
     if (mp) {

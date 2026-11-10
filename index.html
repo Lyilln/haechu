@@ -6913,7 +6913,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110151557";
+const BUILD="20261110153450";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -12904,7 +12904,7 @@ function viewAdmin(tab){
     if(tab==="revenue") return uniHead("積分統計")+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
     if(tab==="people") return viewUniPeople();
-    if(tab==="try") return uniHead("試玩訊息")+viewTryInbox();
+    if(tab==="try"){ tryFetch(true); return uniHead("試玩訊息")+viewTryInbox(); }
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="ptadd") return uniHead("加積分")+viewPtAdd();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
@@ -20132,18 +20132,30 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t||t.id!=="c
    ・四位管理員都看得到，誰有空誰回；回覆會以 LUMI 的身分出現在訪客那邊
    ========================================================= */
 const TRY_IDOL="LUMI";
-function tryConvs(){ const ks=new Set(); try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){} Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){}
-  return [...ks].map(k=>{ const v=S.get(k,null); if(!v||!Array.isArray(v.msgs)||!v.msgs.length) return null; const L=v.msgs.slice().sort((a,b)=>a.ts-b.ts), last=L[L.length-1]; return {k,nick:v.nick||"訪客",msgs:L,last,wait:last.from==="fan"}; }).filter(Boolean).sort((a,b)=>b.last.ts-a.last.ts); }
+/* 訪客訊息放在媒體伺服器（haechu-media Worker 的 /try），管理員登入後每 20 秒抓一次 */
+let TRYW=null, TRYT=0;
+async function tryFetch(force){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||!isAdminAcct()) return; if(Date.now()-TRYT<(force?4000:20000)) return; TRYT=Date.now();
+  const r=await fetch(MEDIA_URL+"/try",{headers:{Authorization:"Bearer "+HB.tok},cache:"no-store"}); if(!r.ok) return; const L=await r.json(); const before=JSON.stringify(TRYW); TRYW=Array.isArray(L)?L:[]; if(JSON.stringify(TRYW)!==before){ hbSoon(); if(ui.tryOpenK&&document.getElementById("tryBody")) tryChat(ui.tryOpenK); } }catch(e){} }
+setInterval(()=>{ if(!document.hidden) tryFetch(); },20000); setTimeout(()=>tryFetch(true),4000);
+function tryConvs(){ const out=new Map();
+  (TRYW||[]).forEach(v=>{ if(v&&v.id&&Array.isArray(v.msgs)&&v.msgs.length) out.set("w:"+v.id,v); });
+  const ks=new Set(); try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){} Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){}
+  ks.forEach(k=>{ const v=S.get(k,null); if(v&&Array.isArray(v.msgs)&&v.msgs.length) out.set(k,v); });
+  return [...out.entries()].map(([k,v])=>{ const L=v.msgs.slice().sort((a,b)=>a.ts-b.ts), last=L[L.length-1]; return {k,nick:v.nick||"訪客",msgs:L,last,wait:last.from==="fan"}; }).sort((a,b)=>b.last.ts-a.last.ts); }
+const tryGet=k=>{ if(k.startsWith("w:")){ const id=k.slice(2); return (TRYW||[]).find(v=>v.id===id)||null; } return S.get(k,null); };
 const tryUnread=()=>{ try{ return isAdminAcct()?tryConvs().filter(c=>c.wait).length:0; }catch(e){ return 0; } };
 function viewTryInbox(){ const C=tryConvs();
   return `<main class="page"><p class="reach" style="margin:4px 2px 12px">訪客在試玩頁（${esc(location.origin+location.pathname.replace(/[^/]*$/,""))}try/）傳給 ${TRY_IDOL} 的訊息。四位管理員都看得到，你的回覆會以 ${TRY_IDOL} 的身分出現。</p>
     ${C.length?`<section class="card">${C.map(c=>`<button class="list-btn try-row" data-a="tryOpen" data-v="${esc(c.k)}"><span class="try-rl"><b>${esc(c.nick)}</b><small>${c.last.from==="fan"?"":"你們："}${esc(String(c.last.text).slice(0,40))}・${ago(c.last.ts)}</small></span><span class="r">${c.wait?`<em class="t-cnt">待回覆</em>`:"已回覆"}</span></button>`).join("")}</section>`:`<section class="card uni-empty">還沒有訪客傳訊息</section>`}</main>`; }
-function tryChat(k){ const v=S.get(k,null); if(!v) return; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts);
+function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts);
   setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(v.nick||"訪客")}</b><span class="sh-sp"></span></header>
     <div class="tiei-body try-chat" id="tryBody">${L.map(m=>`<div class="try-m ${m.from==="fan"?"fan":"idol"}"><p>${esc(m.text)}</p><small>${m.from==="idol"?esc(m.byName||TRY_IDOL)+"・":""}${ymdhm(m.ts)}</small></div>`).join("")}</div>
     <form class="try-f" data-k="${esc(k)}"><input id="tryIn" maxlength="300" placeholder="以 ${TRY_IDOL} 的身分回覆" autocomplete="off"><button type="submit" class="btn btn-main btn-sm">送出</button></form></div>`,"try");
   setTimeout(()=>{ const b=document.getElementById("tryBody"); if(b) b.scrollTop=b.scrollHeight; },30); }
-document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k, v=S.get(k,null)||{msgs:[]};
+document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k;
+  if(k.startsWith("w:")){ const id=k.slice(2); i.value=""; i.disabled=true;
+    fetch(MEDIA_URL+"/try/"+id+"?a=reply",{method:"POST",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":"application/json"},body:JSON.stringify({text:tx})}).then(r=>r.ok?r.json():Promise.reject(r.status)).then(v=>{ TRYW=(TRYW||[]).filter(x=>x.id!==id).concat([{id,...v}]); hbSoon(); tryChat(k); }).catch(er=>{ i.disabled=false; i.value=tx; toast(er===404||er===405?"媒體伺服器還沒更新，請先重新部署 haechu-media":"沒有送出，請再試一次"); }); return; }
+  const v=S.get(k,null)||{msgs:[]};
   const me=myEmail(), nm=(ACCOUNTS[me]||{}).name||(session()||{}).name||"管理員"; S.set(k,{...v,msgs:[...(v.msgs||[]),{id:"i"+Date.now().toString(36),from:"idol",text:tx,ts:Date.now(),by:me,byName:nm}]}); try{ hbSoon(); }catch(x){} tryChat(k); },true);
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; if(t.dataset.a==="tryOpen"){ e.stopImmediatePropagation(); tryChat(t.dataset.v); } },true);
 const MHEAL={};

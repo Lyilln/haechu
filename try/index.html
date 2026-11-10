@@ -45,20 +45,26 @@ main{flex:1;display:flex;flex-direction:column}
 .intro li em{font-style:normal;font-size:20px}
 .intro .next{width:100%;max-width:330px;margin:0}
 /* TIE */
-.chat{flex:1;display:flex;flex-direction:column;background:#F8E6FA}
-.chat-h{display:flex;align-items:center;justify-content:center;flex-direction:column;padding:12px 16px;background:#2B2A33;border-radius:0 0 20px 20px;color:#fff}
+.pane.pn-tie{height:calc(100dvh - var(--hh,110px));flex:none}
+.chat{flex:1;min-height:0;display:flex;flex-direction:column;background:#F8E6FA}
+.chat-h{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:14px 16px 16px;background:#2B2A33;border-radius:0 0 20px 20px;color:#fff}
+.chat-h .nx{position:absolute;right:14px;top:50%;transform:translateY(-50%);border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700}
 .chat-h b{font-size:17px}.chat-h small{font-size:12px;color:#C9C3D6;margin-top:3px}
-.msgs{flex:1;overflow-y:auto;padding:16px 12px;display:flex;flex-direction:column;gap:10px;min-height:46dvh;background-image:radial-gradient(#fff 2px,transparent 2px);background-size:26px 26px}
+.msgs{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:22px 18px 26px;display:flex;flex-direction:column;gap:18px;background-image:radial-gradient(#fff 2px,transparent 2px);background-size:26px 26px}
 .day{align-self:center;font-size:12px;color:#fff;background:rgba(0,0,0,.25);border-radius:999px;padding:3px 12px}
-.m{display:flex;gap:8px;align-items:flex-end;max-width:88%}
+.m{display:flex;gap:10px;align-items:flex-end;max-width:80%}
+.m.me+.m.me,.m.idol+.m.idol{margin-top:-10px}
+.m.idol+.m.idol .av{visibility:hidden}.m.idol+.m.idol .who{display:none}
 .m .av{width:34px;height:34px;font-size:13px;border:2px solid var(--v);align-self:flex-start}
-.m .b{background:#fff;color:#111;border-radius:18px;padding:10px 14px;font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}
-.m .who{font-size:12px;color:#5b5466;margin:0 0 4px 2px;display:flex;align-items:center;gap:6px}.m .who em{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--v);border-radius:6px;padding:1px 6px}
+.m .b{background:#fff;color:#111;border-radius:18px;padding:11px 15px;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
+.m .who{font-size:12px;color:#5b5466;margin:0 0 6px 2px;display:flex;align-items:center;gap:6px}.m .who em{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--v);border-radius:6px;padding:1px 6px}
 .m time{font-size:11px;color:#8a7f98;flex:none}
 .m.me{align-self:flex-end;flex-direction:row-reverse}.m.me .b{background:var(--v);color:#fff}
-.m .col{display:flex;flex-direction:column}
-.sys{align-self:center;font-size:12px;color:#6f6680;text-align:center;line-height:1.6;max-width:85%}
-.bar{display:flex;gap:8px;align-items:center;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);background:#2B2A33}
+.m .col{display:flex;flex-direction:column;min-width:0}
+.m.me .col{align-items:flex-end}
+.m .st{font-size:11.5px;color:#C2185B;margin:5px 4px 0}.m .st.p{color:#8a7f98}
+.sys{align-self:center;font-size:12px;color:#6f6680;text-align:center;line-height:1.7;max-width:86%;margin-top:4px;background:rgba(255,255,255,.7);border-radius:12px;padding:8px 14px}
+.bar{display:flex;gap:10px;align-items:center;padding:12px 14px calc(env(safe-area-inset-bottom) + 12px);background:#2B2A33}
 .bar input{flex:1;min-width:0;height:42px;border-radius:21px;border:0;background:#3A3845;color:#fff;padding:0 16px;font:inherit;font-size:16px;outline:none}
 .bar button{width:42px;height:42px;border-radius:50%;border:0;background:var(--v);color:#fff;display:grid;place-items:center}
 .bar button svg{width:20px;height:20px}
@@ -118,13 +124,12 @@ main{flex:1;display:flex;flex-direction:column}
 <script>
 /* =========================================================
    HAECHU 試玩（獨立頁，不用登入）
-   ・TIE：訊息會送到 HAECHU 後台，管理員們以示範偶像的身分真人回覆
-     （訪客第一次傳訊息時，自動建一個只給試玩用的匿名帳號；資料只放 daisuki_try_<帳號>）
+   ・TIE：訊息送到 HAECHU 媒體伺服器（try/<訪客代號>.json），管理員們以示範偶像的身分真人回覆
+     （訪客不用帳號；代號是這支手機隨機產生的）
    ・SNS、打歌、應援棒：只在這支手機上玩，不存任何東西
    ========================================================= */
 const IDOL={name:"LUMI",full:"LUMI 루미",tag:"HAECHU 示範偶像"};
 const JOIN="https://line.me/ti/g2/7iT3j2hGOM4GHpnkZeunPHVJbPUODoTZg5zA_Q";
-const HB_URL="https://fgkyikpzqoovfffdulum.supabase.co", HB_KEY="sb_publishable_4ZJ--hfIpHsZUtiUn8EWdw_rqTFC_Rg";
 const VF='<svg class="vf" viewBox="0 0 24 24" fill="#3BA4F5"><path d="M12 2 14.6 4.3 18 4l.7 3.3L21.7 9 20.3 12l1.4 3-3 1.7L18 20l-3.4-.3L12 22l-2.6-2.3L6 20l-.7-3.3L2.3 15 3.7 12 2.3 9l3-1.7L6 4l3.4.3z"/><path d="m8 12 3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
 const HEART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.2s-7.6-4.7-7.6-10.4A4.4 4.4 0 0 1 12 7.1a4.4 4.4 0 0 1 7.6 2.7c0 5.7-7.6 10.4-7.6 10.4z"/></svg>';
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
@@ -133,46 +138,32 @@ function toast(t){ const el=document.getElementById("toast"); el.textContent=t; 
 const hm=ts=>{ const d=new Date(ts); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
 const ST={tab:"intro",done:LS.get("done",{}),liked:{},voted:false,col:"#C7AEFF",waves:0};
 
-/* ---------- 後台（只有 TIE 用） ---------- */
-const NET={tok:null,ref:null,exp:0,user:null,ver:null};
-const hexU=u=>"u"+[...new TextEncoder().encode(u)].map(b=>b.toString(16).padStart(2,"0")).join("")+"@haechu.app";
-async function api(path,{method="GET",body,prefer}={},auth=true){ const h={apikey:HB_KEY}; if(auth&&NET.tok) h.Authorization="Bearer "+NET.tok; if(body!==undefined) h["Content-Type"]="application/json"; if(prefer) h.Prefer=prefer;
-  const r=await fetch(HB_URL+path,{method,headers:h,body:body===undefined?undefined:JSON.stringify(body)}); const t=await r.text(); let j=null; try{ j=t?JSON.parse(t):null; }catch(e){ j=t; } if(!r.ok){ const e=new Error((j&&(j.msg||j.message||j.error_description))||("HTTP "+r.status)); e.status=r.status; throw e; } return j; }
-function setTok(r){ NET.tok=r.access_token; NET.ref=r.refresh_token||NET.ref; NET.exp=Date.now()+(r.expires_in||3600)*1000; }
-async function ensureAuth(){ if(NET.tok&&Date.now()<NET.exp-60e3) return true;
-  let acc=LS.get("acc",null);
-  if(acc&&acc.ref){ try{ setTok(await api("/auth/v1/token?grant_type=refresh_token",{method:"POST",body:{refresh_token:acc.ref}},false)); LS.set("acc",{...acc,ref:NET.ref}); NET.user=acc.u; return true; }catch(e){} }
-  if(acc&&acc.u&&acc.p){ try{ setTok(await api("/auth/v1/token?grant_type=password",{method:"POST",body:{email:hexU(acc.u),password:acc.p}},false)); LS.set("acc",{...acc,ref:NET.ref}); NET.user=acc.u; return true; }catch(e){} }
-  const u="try_"+Math.random().toString(36).slice(2,10), p="hc:"+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2);
-  const r=await api("/auth/v1/signup",{method:"POST",body:{email:hexU(u),password:p,data:{username:u,name:"試玩訪客"}}},false); if(!r||!r.access_token) throw new Error("signup");
-  setTok(r); NET.user=u; LS.set("acc",{u,p,ref:NET.ref}); return true; }
-const KEY=()=>"daisuki_try_"+NET.user;
-async function pull(){ const rows=await api(`/rest/v1/kv?k=eq.${encodeURIComponent(KEY())}&select=k,v,ver`); const row=Array.isArray(rows)&&rows[0]; if(!row) return null; NET.ver=row.ver; return row.v; }
+/* ---------- 後台（只有 TIE 用）：訊息放在 HAECHU 的媒體伺服器，訪客不用帳號 ---------- */
+const TRY_API="https://haechu-media.vinriu715.workers.dev/try/";
+const rid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,8);
+let MYID=LS.get("id",""); if(!/^[a-z0-9]{8,32}$/.test(MYID)){ MYID=(Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)+Date.now().toString(36)).replace(/[^a-z0-9]/g,"").slice(0,24); LS.set("id",MYID); }
+async function tapi(method,body){ const r=await fetch(TRY_API+MYID,{method,headers:body?{"Content-Type":"application/json"}:{},body:body?JSON.stringify(body):undefined,cache:"no-store"}); if(!r.ok) throw new Error("HTTP "+r.status); return r.json(); }
+const pull=()=>tapi("GET");
+const push=local=>tapi("PUT",{nick:local.nick,msgs:local.msgs.filter(m=>m.from==="fan").slice(-20)});
 function mergeMsgs(a,b){ const M=new Map(); [...(a||[]),...(b||[])].forEach(m=>{ if(m&&m.id) M.set(m.id,{...(M.get(m.id)||{}),...m}); }); return [...M.values()].sort((x,y)=>x.ts-y.ts); }
-async function push(local){ for(let i=0;i<4;i++){ try{
-    if(NET.ver==null){ const cur=await pull(); if(!cur){ const r=await api("/rest/v1/kv",{method:"POST",body:{k:KEY(),v:local},prefer:"return=representation"}); if(Array.isArray(r)&&r[0]) NET.ver=r[0].ver; return local; } local={...cur,...local,msgs:mergeMsgs(cur.msgs,local.msgs)}; }
-    const r=await api(`/rest/v1/kv?k=eq.${encodeURIComponent(KEY())}&ver=eq.${NET.ver}`,{method:"PATCH",body:{v:local},prefer:"return=representation"});
-    if(Array.isArray(r)&&r[0]){ NET.ver=r[0].ver; return local; }
-    const cur=await pull(); if(cur) local={...cur,...local,msgs:mergeMsgs(cur.msgs,local.msgs)}; }catch(e){ if(e.status===401){ NET.tok=null; await ensureAuth(); } else if(i===3) throw e; } }
-  throw new Error("conflict"); }
 
 /* ---------- TIE ---------- */
-const WELCOME="嗨～我是 LUMI ✨\n這裡是只屬於我們兩個的 TIE 💜\n跟我說說話吧！我看到就會回你～";
+const WELCOME="嗨～我是 LUMI ✨\n這裡是只屬於我們的 TIE 💜\n跟我說說話吧！我看到就會回你～";
 let CH=LS.get("chat",{nick:"",msgs:[]}), POLL=0;
 function chatHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.now()},...CH.msgs];
-  return `<div class="chat"><div class="chat-h"><b>${IDOL.name} ${VF}</b><small>${IDOL.tag}</small></div>
-    <div class="msgs" id="msgs"><span class="day">今天</span>${L.map(m=>m.from==="fan"?`<div class="m me"><div class="b">${esc(m.text)}</div><time>${hm(m.ts)}${m.pend?" ・傳送中":m.fail?" ・未送出，等一下會自動重傳":""}</time></div>`
-      :`<div class="m"><span class="av">L</span><div class="col"><span class="who"><em>ARTIST</em>${IDOL.name}</span><div class="b">${esc(m.text)}</div></div><time>${hm(m.ts)}</time></div>`).join("")}
+  return `<div class="chat"><div class="chat-h"><b>${IDOL.name} ${VF}</b><small>${IDOL.tag}</small><button class="nx" data-go="sns">下一關 →</button></div>
+    <div class="msgs" id="msgs"><span class="day">今天</span>${L.map(m=>m.from==="fan"?`<div class="m me"><div class="col"><div class="b">${esc(m.text)}</div>${m.pend?`<small class="st p">傳送中…</small>`:m.fail?`<small class="st">還沒送出，會自動再傳</small>`:""}</div><time>${hm(m.ts)}</time></div>`
+      :`<div class="m idol"><span class="av">L</span><div class="col"><span class="who"><em>ARTIST</em>${IDOL.name}</span><div class="b">${esc(m.text)}</div></div><time>${hm(m.ts)}</time></div>`).join("")}
       ${CH.msgs.length?`<p class="sys">${IDOL.name} 是真人回覆的，可能要等一下下～你可以先去玩下一關，回來再看 💜</p>`:""}</div>
     <form class="bar" id="tieF"><input id="tieIn" maxlength="200" placeholder="${CH.nick?"傳訊息給 "+IDOL.name:"先取一個暱稱再開始聊天"}" autocomplete="off"><button type="submit" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 12 20 4l-4 16-4-7z"/><path d="m12 13 8-9"/></svg></button></form></div>
-    <button class="next ghost" data-go="sns">下一關：滑 SNS →</button>`; }
+`; }
 function scrollMsgs(){ const m=document.getElementById("msgs"); if(m) m.scrollTop=m.scrollHeight; }
 function nickSheet(){ document.body.insertAdjacentHTML("beforeend",`<div class="sheet-w" id="nickW"><div class="sheet"><div class="grab"></div><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你</p><input id="nickIn" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="next" id="nickOk">開始 TIE</button></div></div>`); setTimeout(()=>document.getElementById("nickIn").focus(),50); }
-async function sendMsg(text){ const m={id:"f"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m); if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
-  try{ await ensureAuth(); const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>({...x,pend:0})),v.msgs).map(x=>{ const o={...x}; delete o.pend; return o; }); LS.set("chat",CH); render(); startPoll(); }
+async function sendMsg(text){ const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m); if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
+  try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; return o; })}); const ok=new Set((v.msgs||[]).map(x=>x.id)); CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; if(ok.has(o.id)) delete o.fail; else if(o.from==="fan"&&o.id===m.id) o.fail=1; return o; }); LS.set("chat",CH); render(); startPoll(); }
   catch(e){ m.pend=0; m.fail=1; LS.set("chat",CH); render(); toast("沒傳出去，等一下會自動重傳"); startPoll(); } }
-async function resend(){ if(!CH.msgs.some(x=>x.fail)) return; try{ await ensureAuth(); const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; delete o.fail; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>{ const o={...x}; delete o.fail; return o; }),v.msgs); LS.set("chat",CH); render(); }catch(e){} }
-async function poll(){ if(document.hidden) return; await resend(); if(!LS.get("acc",null)) return; try{ await ensureAuth(); const v=await pull(); if(!v) return; const before=CH.msgs.length; CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; return o; }); if(CH.msgs.length!==before){ LS.set("chat",CH); if(CH.msgs.slice(before).some(x=>x.from==="idol")) toast(`💜 ${IDOL.name} 回你了！`); if(ST.tab==="tie") render(); } }catch(e){} }
+async function resend(){ if(!CH.msgs.some(x=>x.fail)) return; try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; delete o.fail; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>{ const o={...x}; delete o.fail; return o; }),v.msgs); LS.set("chat",CH); render(); }catch(e){} }
+async function poll(){ if(document.hidden) return; await resend(); if(!CH.msgs.length) return; try{ const v=await pull(); if(!v) return; const before=CH.msgs.length; CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; return o; }); if(CH.msgs.length!==before){ LS.set("chat",CH); if(CH.msgs.slice(before).some(x=>x.from==="idol")) toast(`💜 ${IDOL.name} 回你了！`); if(ST.tab==="tie") render(); } }catch(e){} }
 function startPoll(){ if(POLL) return; POLL=setInterval(poll,8000); }
 
 /* ---------- SNS ---------- */
@@ -216,7 +207,8 @@ function render(){ const a=document.getElementById("app");
     <button class="next" data-go="tie">開始 →</button></div>`; return; }
   const body={tie:chatHtml,sns:snsHtml,show:showHtml,ls:lsHtml,end:endHtml}[ST.tab]();
   a.innerHTML=`<header class="top"><div class="top-r"><span class="wm">HAECHU</span><span class="pill">試玩</span></div>
-    <nav class="tabs">${TABS.map(([k,l],i)=>`<button class="${ST.tab===k?"on":""} ${ST.done[k]?"done":""}" data-go="${k}"><i>${ST.done[k]?"✓":i+1}</i>${l}</button>`).join("")}</nav></header><main><section class="pane on">${body}</section></main>`;
+    <nav class="tabs">${TABS.map(([k,l],i)=>`<button class="${ST.tab===k?"on":""} ${ST.done[k]?"done":""}" data-go="${k}"><i>${ST.done[k]?"✓":i+1}</i>${l}</button>`).join("")}</nav></header><main><section class="pane on pn-${ST.tab}">${body}</section></main>`;
+  const hd=a.querySelector(".top"); if(hd) document.documentElement.style.setProperty("--hh",hd.offsetHeight+"px");
   if(ST.tab==="tie") requestAnimationFrame(scrollMsgs); }
 function go(k){ ST.tab=k; if(k==="end") done("end"); render(); window.scrollTo(0,0); if(k==="tie"&&!CH.nick) setTimeout(nickSheet,300); }
 
@@ -233,7 +225,7 @@ document.addEventListener("pointerup",e=>{ const p=e.target.closest("[data-dbl]"
   if(lastTap.id===id&&now-lastTap.t<320){ lastTap={id:null,t:0}; const h=p.querySelector(".heart"); h.classList.add("go"); setTimeout(()=>h.classList.remove("go"),650); setTimeout(()=>like(id,true),250); } else lastTap={id,t:now}; });
 document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; i.value=""; done("tie"); sendMsg(v); });
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) poll(); });
-if(LS.get("acc",null)||CH.msgs.some(x=>x.fail)) { startPoll(); poll(); }
+if(CH.msgs.length) { startPoll(); poll(); }
 render();
 </script>
 </body>
