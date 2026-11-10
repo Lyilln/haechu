@@ -2658,6 +2658,7 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .ofm-t{display:block;position:relative;width:100%;aspect-ratio:16/9;border:0;padding:0;background:#1d1824;overflow:hidden;cursor:pointer}.ofm-t>img{width:100%;height:100%;object-fit:cover;display:block}
 .ofm-b{display:block;width:100%;border:0;background:none;text-align:left;font-family:inherit;color:var(--ink);padding:12px 14px 4px;cursor:pointer}
 .ofm-h{display:flex;align-items:center;gap:9px;min-width:0}.ofm-h .av{width:34px;height:34px;flex:none}.ofm-h>span{display:flex;flex-direction:column;min-width:0}
+.cm-avi{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}.pd-av,.fp-h>i{overflow:hidden}
 .ofm-go{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex}.ofm-b{cursor:pointer}
 .ofm-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:3px}.ofm-n svg{width:15px;height:15px;color:#3BA4F5}.ofm-h small{font-size:11.5px;color:var(--ink-3)}
 .ofm-tt{margin:10px 0 2px;font-size:14.5px;line-height:1.4}
@@ -6882,7 +6883,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110115007";
+const BUILD="20261110115448";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8814,7 +8815,7 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList|
     const cr=key.startsWith("cmav|")?{ratio:1,round:true,max:1080}:key.startsWith("cmbg|")?{ratio:hero?hero.clientWidth/Math.max(1,hero.clientHeight):CROP_PROF}:key.startsWith("vth|")?{ratio:16/9}:ar&&ar[0]?{ratio:ar.length>1&&ar[1]?ar[0]/ar[1]:ar[0]}:null;
     if(cr){ const c=await cropImg(f,cr); t.value=""; if(!c) return; f=c; } }
   if(cell) cell.classList.add("busy");
-  try{ const b=await shrinkImg(f, key.startsWith("vc")||key.startsWith("vb")?1400:1000); if(!b) throw 0; await PIMG.put(key,b); if(key.startsWith("vc|")) await aeCoverAuto(key); else toast("照片上傳好了"); }catch(err){ toast("這張照片讀不出來，換一張試試"); }
+  try{ const b=await shrinkImg(f, key.startsWith("vc")||key.startsWith("vb")?1400:1000); if(!b) throw 0; await PIMG.put(key,b); if(key.startsWith("cmav|")) cmAvSync(key.slice(5),b); if(key.startsWith("vc|")) await aeCoverAuto(key); else toast("照片上傳好了"); }catch(err){ toast("這張照片讀不出來，換一張試試"); }
   if(layer.querySelector(".ae")) openAlbumEditor(ui.aeId); else if(/^(cm(av|bg)|vth)\|/.test(key)) render(); });
 /* ===== 自由轉：手指往哪拖就往哪轉，放開會順著慣性轉一下；正面、背面都看得到 ===== */
 function spin3d(obj,host,{onTap,auto=false,rx=-6,ry=-18}={}){ let vx=0, vy=0, drag=null, raf=0, alive=true, idle=performance.now();
@@ -10181,7 +10182,16 @@ const I3={dots:'<svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy=
   cam:'<svg viewBox="0 0 24 24" fill="currentColor"><path d="M9 4h6l1.5 2H20a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h3.5z"/><circle cx="12" cy="12.5" r="3.5" fill="#fff"/></svg>'};
 /* 預設頭像（沒有照片、或網路不好照片跑不出來時）：漸層圓 + App 的「星」字標 */
 const defAv=(cls="")=>`<span class="lav ${cls}"><i>${esc(((typeof ME!=="undefined"&&ME&&ME.name)||"粉").trim()[0]||"粉")}</i></span>`;
-const cmAvatar=(gid,cls="")=>PCI[`cmav|${gid}`]?`<span class="lav img ${cls}"><img src="${PCI[`cmav|${gid}`]}" alt=""></span>`:defAv(cls);
+const CMAVU="daisuki_cmav_u";
+const cmAvU=(by,gid)=>{ try{ const M=(S.get(CMAVU,{})||{})[String(by||"").toLowerCase()]||{}; return M[gid]||M._||""; }catch(e){ return ""; } };
+const cmAvatar=(gid,cls="")=>{ const u=PCI[`cmav|${gid}`]||cmAvU(myEmail(),gid); return u?`<span class="lav img ${cls}"><img src="${esc(u)}" alt=""></span>`:defAv(cls); };
+/* 留言、粉絲貼文的頭貼：作者在這個社群現在的頭貼，沒有就用字 */
+const cmWhoAv=(o,gid,cls,g)=>{ const u=o&&o.by&&cmAvU(o.by,gid); return u?`<span class="${cls}" style="background:${grad(g)}"><img class="cm-avi" src="${esc(u)}" alt=""></span>`:`<span class="${cls}" style="background:${grad(g)}">${esc(ini(shownName(o)))}</span>`; };
+async function cmAvSync(gid,blob){ try{ const me=myEmail(); if(!me||!blob) return; const b=await shrinkImg(blob,320); let url=HB_ON?await hbImgUrl("cmav_"+me.replace(/[^a-z0-9]/g,"_")+"_"+gid+"_"+Date.now().toString(36)+".jpg",b):null;
+  if(!url) url=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); });
+  const A={...(S.get(CMAVU,{})||{})}; A[me]={...(A[me]||{}),[gid]:url}; S.set(CMAVU,A); render(); }catch(e){} }
+/* 之前換過、只存在這支手機的社群頭貼：補傳一次，大家才看得到 */
+setTimeout(async()=>{ try{ const me=myEmail(); if(!me) return; for(const k of (S.get(K.pcImgs,[])||[]).filter(k=>k.startsWith("cmav|"))){ const gid=k.slice(5); if(cmAvU(me,gid)||!PCI[k]) continue; const b=await (await fetch(PCI[k])).blob(); await cmAvSync(gid,b); } }catch(e){} },9000);
 function cmProf(gid){ const P=S.get(K.cmProf,{}); let x=P[gid]; if(!x){ x={nick:ME.name,intro:"",hide:false,joined:Date.now()}; P[gid]=x; S.set(K.cmProf,P); } return {...x,nick:ME.name}; }
 const bmSet=()=>new Set(S.get(K.bm,[]));
 const bmBtn=key=>`<button class="act bm ${bmSet().has(key)?"on":""}" data-a="bmTog" data-v="${key}" aria-label="書籤">${I3.bm}</button>`;
@@ -10319,7 +10329,7 @@ const mineX=x=>!!x&&x.from==="me"&&(!x.by||x.by===myEmail());
 /* 留言是不是「我」寫的：新帳號看示範帳號的留言，要當成別人的 */
 const isMeC=c=>c.author==="me"&&(c.by?c.by===myEmail():(((session()||{}).role!=="fan"||(session()||{}).admin)?true:myEmail()===DEMO_FAN));
 const isMine=p=>p.mine&&(p.by?p.by===myEmail():myEmail()===DEMO_FAN);
-const fanCard=p=>`<section class="card fp"><div class="fp-h">${isMine(p)?cmAvatar(p.gid,"sm"):`<i style="background:${grad(p.g||3)}">${esc((p.name||"粉")[0])}</i>`}<b>${esc(shownName(p))}</b><small>${ago(p.ts)}</small>${canModerate()&&!isMine(p)?`<button class="uni-more fp-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>${trT("f:"+p.id,p.text,"")}${fpReps(p)}<div class="fp-f">${p.hideArt?'<span class="fp-hid">藝人看不到</span>':""}${fpCanRep(p)?`<button class="fp-rb" data-a="fpRep" data-id="${p.id}">回覆</button>`:""}${bmBtn("f:"+p.id)}</div></section>`;
+const fanCard=p=>`<section class="card fp"><div class="fp-h">${isMine(p)?cmAvatar(p.gid,"sm"):(p.by&&cmAvU(p.by,p.gid)?`<i style="background:${grad(p.g||3)}"><img class="cm-avi" src="${esc(cmAvU(p.by,p.gid))}" alt=""></i>`:`<i style="background:${grad(p.g||3)}">${esc((shownName(p)||"粉")[0])}</i>`)}<b>${esc(shownName(p))}</b><small>${ago(p.ts)}</small>${canModerate()&&!isMine(p)?`<button class="uni-more fp-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>${trT("f:"+p.id,p.text,"")}${fpReps(p)}<div class="fp-f">${p.hideArt?'<span class="fp-hid">藝人看不到</span>':""}${fpCanRep(p)?`<button class="fp-rb" data-a="fpRep" data-id="${p.id}">回覆</button>`:""}${bmBtn("f:"+p.id)}</div></section>`;
 /* 粉絲貼文：這團的藝人可以回覆（大家都看得到，發文的粉絲會收到通知） */
 function fpOpen(id,focus){ const p=S.get(K.fanPosts,[]).find(x=>x.id===id); if(!p){ layer.innerHTML=""; return; }
   setLayer(`<div class="pd ${focus?"in":""}" role="dialog" aria-label="粉絲貼文"><header class="pd-top"><button class="pd-ib" data-a="fpClose" aria-label="返回">${I.back}</button><span class="pd-tt"><b>粉絲貼文</b></span><span class="pd-ib"></span></header>
@@ -10669,7 +10679,7 @@ function renderComments(first=false){
   const m=MEMBERS[p.member], g=groupOf(p.group), role=session().role, isArtist=role==="artist"&&session().member===p.member;
   const list=getComments(postId), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
   const who=c=>c.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:`${esc(shownName(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
-  const av=c=>c.author==="artist"?`<span class="pd-av" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:`<span class="pd-av" style="background:${grad(c.g)}">${esc(ini(c.name))}</span>`;
+  const av=c=>c.author==="artist"?`<span class="pd-av" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:cmWhoAv(c,p.group,"pd-av",c.g);
   const more=c=>c.author==="artist"||isMeC(c)?"":canModerate()?`<button class="pd-more" data-a="amC" data-c="${c.id}" aria-label="管理">${PDI.more}</button>`:role==="fan"?`<button class="pd-more" data-a="pdRep" data-c="${c.id}" aria-label="更多">${PDI.more}</button>`:"";
   const tr=c=>role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="pd-tr">${esc(c.zh)}</p>`:"";
   const nRep=c=>cReps(c).length+(c.reply?1:0);
@@ -10678,7 +10688,7 @@ function renderComments(first=false){
       ${isMeC(c)?`<p class="pd-ct">${esc(c.text)}</p>`:trT("c:"+c.id,c.text,"pd-ct","p",c.author!=="artist")}
       <div class="pd-ca"><button class="pd-lk ${cLiked(c)?"on":""}" data-a="pdCLike" data-c="${c.id}" aria-label="喜歡">${I.heart}${(c.likedBy||[]).length?`<span>${fmt(c.likedBy.length)}</span>`:""}</button>
         ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:""}</div></div></div>`;
-  const repItem=r=>`<div class="pd-c" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):`<span class="pd-av" style="background:${grad(r.g)}">${esc(ini(r.name))}</span>`}<div class="pd-cb">
+  const repItem=r=>`<div class="pd-c" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
       <div class="pd-ch"><b>${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}</div></div>`;
   const sec=(t,n,body,k)=>`<section class="pd-sec"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${k==="ac"||k==="ar"?`<span class="pd-sav" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:""}${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
@@ -15037,7 +15047,8 @@ function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView())
 /* 管理員端（管理那一段）看到的都是管理員在後台設的原本名字，不管本人怎麼改 */
 const adminView=()=>{ try{ return route().role==="admin"&&!!session()&&session().role==="admin"; }catch(e){ return false; } };
 function origName(by,fallback){ const e=String(by||"").toLowerCase(); const a=e&&ACCOUNTS[e]; return realName(e)||(a&&a.name)||fallback||"粉絲"; }
-const shownName=o=>adminView()&&o&&o.by?origName(o.by,o.name):(o&&o.name)||"粉絲";
+const liveNick=by=>{ try{ return by?((S.get(K.nicks,{})||{})[String(by).toLowerCase()]||""):""; }catch(e){ return ""; } };
+const shownName=o=>adminView()&&o&&o.by?origName(o.by,o.name):(o&&o.by&&liveNick(o.by))||(o&&o.name)||"粉絲";
 function setArtProf(mid,patch){ const all=S.get(K.artProf,{}); all[mid]={...(all[mid]||{}),...patch}; Object.keys(all[mid]).forEach(k=>{ if(!all[mid][k]) delete all[mid][k]; }); try{ S.set(K.artProf,all); return true; }catch(e){ toast("圖片太大，存不下來"); return false; } }
 /* 頭貼照片裁成正方形（取中間），圓形頭貼才不會變形 */
 async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=u; });
