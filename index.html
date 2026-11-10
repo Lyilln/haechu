@@ -5827,8 +5827,9 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .foc-thr{margin:16px 0 6px}
 /* 社群 MV 卡上的愛心 */
 .yv-mv{position:relative;flex:0 0 62%;display:block;min-width:0}.yv-mv .yv-card{width:100%}.vs-c .yv-mv{flex:none}
-.yv-lk{position:absolute;top:8px;right:8px;z-index:2;padding:5px 10px;border-radius:999px;border:0;background:rgba(0,0,0,.42);-webkit-backdrop-filter:blur(8px);backdrop-filter:blur(8px);color:#fff;font:600 12px/1 inherit;font-variant-numeric:tabular-nums}
-.yv-lk.on{color:#FF6FA8}
+.yv-mv{position:relative;display:block}.yv-mv .yv-card small{padding-right:56px}
+.yv-lk{position:absolute;right:0;bottom:-5px;z-index:2;display:flex;align-items:center;gap:4px;padding:6px 2px 6px 8px;border:0;background:none;color:var(--ink-3);font:600 13px/1 inherit;font-variant-numeric:tabular-nums}
+.yv-lk .si{width:17px;height:17px}html body .yv-lk.on:not(.dk-keep){color:rgb(255,48,64)!important}html body .yv-lk.on:not(.dk-keep) .si{fill:rgb(255,48,64)!important;stroke:rgb(255,48,64)!important}
 /* 結尾妖精打開時背景不能滑 */
 html.fv-lock,html.fv-lock body{overflow:hidden;overscroll-behavior:none}
 html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
@@ -6161,6 +6162,14 @@ html[data-theme="dark"] .sn-sh.cm{--sn-b:#1C1D21}
 .fy-res{margin-top:12px;border-top:1px solid var(--line);padding-top:6px}.fy-rr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px}.fy-rr b{font-weight:700}.fy-rr span{color:var(--ink-3);font-size:13px}
 .fy-a .fy-hint{margin:10px 0 0;font-size:12.5px;color:var(--ink-3)}
 .fy-rr b small{font-weight:500;color:var(--ink-3);font-size:12px}.fy-rr.done span{color:var(--ink);font-weight:700}
+.mu4-top{display:flex;flex-direction:column;gap:2px;margin:4px 2px 2px}.mu4-top b{font-size:18px}.mu4-top small{font-size:12.5px;color:var(--ink-3)}
+.mu4-bt2{padding:12px 16px}.mu4-sh{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}.mu4-sh span{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:12px;background:var(--s2);font-size:12px;color:var(--ink-3)}.mu4-sh b{font-size:16px;color:var(--ink)}
+.mu4-l{display:flex;align-items:center;gap:10px;padding:11px 0}.mu4-l+.mu4-l{border-top:1px solid var(--line)}.mu4-ln{flex:0 0 112px;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mu4-lr{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--s2);font-size:12.5px;font-weight:800}html body .mu4-lr.top{background:var(--violet);color:#fff}.mu4-top{align-items:flex-start;text-align:left}.fy-a:has(.fy-dt){padding:14px 16px}
+.mu4-ls{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.mu4-ls b{font-size:14px}.mu4-ls small{font-size:11.5px;color:var(--ink-3)}
+.mu4-l em{flex:none;font-style:normal;font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:3px}.mu4-l em svg{width:14px;height:14px}
+.mu4-aws{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;align-items:center}.mu4-aws>small{width:100%;font-size:12px;color:var(--ink-3)}.mu4-awc{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;background:var(--violet-soft);font-size:12px}.mu4-awc svg{width:14px;height:14px}.mu4-awc i{font-style:normal;color:var(--ink-3)}
+.fy-dt summary{display:flex;justify-content:space-between;align-items:center;gap:8px;list-style:none;cursor:pointer;font-size:13.5px}.fy-dt summary::-webkit-details-marker{display:none}.fy-dt summary i{font-style:normal;color:var(--violet);font-weight:700;font-size:12.5px;flex:none}.fy-dt[open] summary i{opacity:.5}.fy-dt .fy-res{margin-top:10px}
 </style>
 </head>
 <body>
@@ -6686,7 +6695,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110042114";
+const BUILD="20261110043040";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -12081,7 +12090,8 @@ function vsUpPage(){ const u=ui.vsUp, f=ui.vsFor; if(!u||!f) return; const secs=
       <button class="vs-pv ${u.file?"on":""}" data-a="vsPick" aria-label="選擇影片">${u.pv?`<img src="${esc(u.pv)}" alt=""><i>▶</i>${mm?`<em>${mm}</em>`:""}`:u.file?`<i>▶</i>`:`<b>＋</b><span>選擇影片</span>`}</button>${u.file?`<button class="vs-re" data-a="vsPick">換一部</button>`:""}
       <section class="dbx-s"><span class="fs-f-lab" style="margin-top:0">影片標題</span><input id="vsVt" class="a-nick-in" maxlength="60" placeholder="${isMv?`例：${esc(g.name||"HUSSEY")} - 歌名 M/V`:"輸入文字"}" value="${esc(ti||"")}">
         ${isMv?`<p class="dbx-d">${guess?`會當成歌曲《${esc(guess)}》，自動接上打歌和社群公告。`:"MV 分區的影片會自動接上打歌和社群公告，標題裡寫歌名就好。"}</p>`:""}
-        <span class="fs-f-lab">分區</span><div class="chips">${secs.map(x=>`<button class="chip ${x.id===f.sid?"on":""}" data-a="vsSec" data-v="${x.id}">${esc(x.title)}</button>`).join("")}</div></section></div></div>`,"vsup");
+        <span class="fs-f-lab">分區</span><div class="chips">${secs.map(x=>`<button class="chip ${x.id===f.sid?"on":""}" data-a="vsSec" data-v="${x.id}">${esc(x.title)}</button>`).join("")}</div></section>
+      ${isMv?`<section class="dbx-s"><h4>結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></h4><p class="dbx-d">MV 一上傳就開始打歌，結尾妖精會在那時候全部抽好，所以要先放好。</p>${(()=>{ const ms=groupArtists(f.gid).slice().sort(), fy=u.fy||{}; return `<div class="fy-g">${ms.map(m=>fairyThumb(fy[m],stageNm(m),`data-a="vsFy" data-k="${m}"`,false)).join("")}</div><p class="dbx-d">每位成員一段（影片，最多 ${FAIRY_MAX_SEC} 秒）。⚠️ 只能放人設（皮相）的片段。</p>`; })()}</section>`:""}</div></div>`,"vsup");
   const inp=layer.querySelector("#vsVt"); if(inp&&!inp.dataset.w){ inp.dataset.w="1"; inp.addEventListener("input",()=>{ u.ti=inp.value; const d=layer.querySelector(".dbx-s .dbx-d"); if(d&&isMv){ const gs=mvTitleOf(inp.value); d.textContent=gs?`會當成歌曲《${gs}》，自動接上打歌和社群公告。`:"MV 分區的影片會自動接上打歌和社群公告，標題裡寫歌名就好。"; } }); } }
 document.addEventListener("change",e=>{ if(e.target.id!=="vsFile") return; const f=e.target.files&&e.target.files[0]; ui.vsFile=f||null; const n=document.getElementById("vsFn"); if(n) n.textContent=f?f.name:""; });
 const getVods=gid=>S.get(K.vods,[]).filter(v=>!gid||v.gid===gid).sort((a,b)=>b.ts-a.ts);
@@ -12091,7 +12101,7 @@ const vDur=s=>`${Math.floor(s/60)}:${pad(Math.floor(s%60))}`;
 /* 縮圖：管理員有上傳就用，沒有就用團的代表色 */
 const vodThumb=(v,cls="")=>{ const img=PCI["vth|"+v.id], g=groupOf(v.gid); return `<span class="yv-th ${cls}" style="--gt:${gTheme(v.gid)}">${v.thumb?`<img data-mid="${v.thumb}" alt="">`:img?`<img src="${img}" alt="">`:`<span class="yv-ph"><b>${esc(g?g.name:"")}</b><i>${esc(v.sec?((getSecs(v.gid).find(x=>x.id===v.sec)||{}).title||""):vcatName(v.cat))}</i></span>`}<em>${vDur(v.dur||0)}</em></span>`; };
 const vodRow=v=>`<button class="yv-row" data-a="vPlay" data-v="${v.id}">${vodThumb(v)}<span class="yv-i"><b>${esc(v.title)}</b><small>${fmtViews(v.views||0)}・${relDay(v.ts)}</small></span></button>`;
-const vodCard=v=>typeof vodIsMV==="function"&&vodIsMV(v)&&v.mid?`<span class="yv-mv">${vodCard0(v)}<button class="yv-lk ${mvLikedV(v.id)?"on":""}" data-a="mvLikeV" data-v="${v.id}" aria-label="喜歡這支 MV">${mvLikedV(v.id)?"♥":"♡"} ${fmt(mvLikesV(v.id))}</button></span>`:vodCard0(v);
+const vodCard=v=>typeof vodIsMV==="function"&&vodIsMV(v)&&v.mid?`<span class="yv-mv">${vodCard0(v)}<button class="yv-lk ${mvLikedV(v.id)?"on":""}" data-a="mvLikeV" data-v="${v.id}" aria-label="喜歡這支 MV">${si("heart")}<span>${fmt(mvLikesV(v.id))}</span></button></span>`:vodCard0(v);
 const vodCard0=v=>`<button class="yv-card" data-a="vPlay" data-v="${v.id}">${vodThumb(v)}<b>${esc(v.title)}</b><small>${fmtViews(v.views||0)}・${relDay(v.ts)}</small></button>`;
 /* SHOW / VOD 首頁：團體大卡 */
 
@@ -13514,6 +13524,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "vsDel": { const f=ui.vsFor; if(!f||!f.sid) break; const has=getVods(f.gid).some(v=>v.sec===f.sid); if(has){ toast("先把這個分區裡的影片刪掉"); break; } const M=S.get(K.vsec,{})||{}; M[f.gid]=(M[f.gid]||[]).filter(x=>x.id!==f.sid); S.set(K.vsec,M); layer.innerHTML=""; lsRerender(); break; }
     case "vsUp": { ui.vsFor={gid:t.dataset.g,sid:t.dataset.v}; ui.vsUp={ti:"",file:null,pv:"",dur:0,th:null,busy:""}; vsUpPage(); break; }
     case "vsSec": { const u=ui.vsUp, f=ui.vsFor; if(!u||!f) break; u.ti=((document.getElementById("vsVt")||{}).value||u.ti); f.sid=t.dataset.v; vsUpPage(); break; }
+    case "vsFy": { const u=ui.vsUp; if(!u||u.busy) break; u.ti=((document.getElementById("vsVt")||{}).value||u.ti); const k=t.dataset.k; fairyPickFile(async file=>{ u.busy="結尾妖精上傳中…"; vsUpPage(); try{ const rec=await fairyUploadFile(file); if(rec) u.fy={...(u.fy||{}),[k]:rec}; }catch(e){ toast("上傳失敗，請再試一次"); } u.busy=""; vsUpPage(); }); break; }
     case "vsPick": { const u=ui.vsUp; if(!u||u.busy) break; u.ti=((document.getElementById("vsVt")||{}).value||u.ti); const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
       inp.onchange=async()=>{ const file=inp.files&&inp.files[0]; if(!file) return; u.busy="讀取影片中…"; vsUpPage(); try{ const th=await videoThumb(file); u.file=file; u.th=th&&th.blob||null; u.pv=u.th?URL.createObjectURL(u.th):""; u.dur=th&&th.dur||0; }catch(e){ toast("這部影片讀不出來，換一部試試"); } u.busy=""; vsUpPage(); }; pickClick(inp); break; }
     case "vsUpOk": { const f=ui.vsFor, u=ui.vsUp; if(!f||!u||u.busy) break; const ti=((document.getElementById("vsVt")||{}).value||"").trim(); if(!u.file){ toast("先選一部影片"); break; } if(!ti){ toast("請輸入影片標題"); break; }
@@ -13522,7 +13533,7 @@ function clickAdm(a,t,e,r){ switch(a){
           if(u.th){ thumb=id+"_t"; await MDB.put(thumb,u.th,true); if(!await hbUpload(thumb,u.th)) thumb=null; }
           hbUploadBig.on=pc=>{ u.busy=`上傳中… ${pc}%`; const e=document.querySelector(".db-busy"); if(e) e.textContent=u.busy; };
           const ok=(HB_ON&&!sbxOn())?await hbUpload(id,u.file):(await MDB.put(id,u.file),true); hbUploadBig.on=null; if(!ok){ u.busy=""; vsUpPage(); toast("上傳失敗，再試一次"); return; }
-          memBlobs[id]=u.file; const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:u.dur||0,ts:Date.now(),views:0,by:session().member||uniMe()}); S.set(K.vods,L);
+          memBlobs[id]=u.file; const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:u.dur||0,ts:Date.now(),views:0,by:session().member||uniMe(),...(u.fy&&Object.keys(u.fy).length?{fy:Object.fromEntries(Object.entries(u.fy).map(([k,r])=>{ const o={...r}; delete o._pv; return [k,o]; }))}:{})}); S.set(K.vods,L);
           ui.vsUp=null; layer.innerHTML=""; try{ mvSongTick(); }catch(e){} lsRerender(); toast("影片上傳好了"); }catch(e){ hbUploadBig.on=null; u.busy=""; vsUpPage(); toast("這部影片讀不出來，換一部試試"); } })(); break; }
     case "vsVDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); lsRerender(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
     case "vodG": ui.vodG=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
@@ -13586,7 +13597,7 @@ function clickAdm(a,t,e,r){ switch(a){
       ms.songs.push({id:"s"+Date.now(),gid,title:ti,rel:Date.now()}); S.set(K.mshow,ms); muNotify(`🎤 ${groupOf(gid).name}《${ti}》開始打歌！`,gid); lsRerender(); toast("已加入打歌名單"); break; }
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
     case "muAlbum": { const g=groupOf(t.dataset.v); if(owns(g.id,"album")){ toast("你已經收藏這張專輯了 💿"); break; } ui.shopTab="merch"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
-    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ if(b.closest(".mu2-sh")) return; b.classList.toggle("on",on); b.innerHTML=`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
+    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ if(b.closest(".mu2-sh")) return; b.classList.toggle("on",on); b.innerHTML=b.classList.contains("yv-lk")?`${si("heart")}<span>${fmt(mvLikesV(t.dataset.v))}</span>`:`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
     case "mvLike": { const l=S.get(K.mvLike,{}), g=t.dataset.v; if(l[g]) delete l[g]; else l[g]=Date.now(); S.set(K.mvLike,l);
       if(t.closest(".player,.yv-pw")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`${l[g]?"♥":"♡"} ${fmt(mvLikes(g))}`; } else if(t.closest(".mu2-sh")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`<span>${l[g]?"♥":"♡"}</span>MV ${fmt(mvLikes(g))}`; lsRerender(); } else lsRerender(); break; }
     case "muVote": openVote(t.dataset.v); break;
@@ -17803,7 +17814,7 @@ function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
       const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v);
-      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{})}); ch=true; const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
+      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{})}); ch=true; try{ if(v.fy){ fairySetClips("s"+v.ts,v.fy); } }catch(e){} const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
     /* v494 先建好的歌：如果是出道 MV，補上「出道曲」，公告標題也改過來 */
     { const V=S.get(K.vods,[])||[]; [...m.songs,...(m.ended||[])].forEach(x=>{ if(!x.mv||x.debut) return; const v=V.find(y=>y.id===x.mv); if(v&&mvIsDebut(v)){ x.debut=1; ch=true; const GN=S.get(K.gNotices,[])||[], n=GN.find(y=>y.mv===v.id); if(n&&/Official MV 公開/.test(n.title)){ n.title=n.title.replace("Official MV 公開","出道 MV 公開"); n.body=n.body.replace(/^(.+?)《/,"$1的出道曲《"); S.set(K.gNotices,GN); } } }); }
     /* 回歸：同一團有新歌，舊歌下檔 */
@@ -18834,25 +18845,26 @@ function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=cur
 function artPromoPage(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), rk=musDemoOn()||ranked(wk), mcs=mcShows(mid), m=getMShow(), now=new Date(), y=String(now.getFullYear()), mon=`${y}-${pad(now.getMonth()+1)}`;
   const sec=(h,b)=>`<div class="section-h">${h}</div>${b}`;
   let battle="";
-  if(s&&rk) battle=sec("本週戰況",`<section class="card mu4-bt">${SHOWS.map(x=>{ const R=showRank(x.id,wk), i=R.findIndex(r=>r.s.id===s.id), me=R[i], top=R[0], won=(m.wins[wk]||{})[x.id], ended=showEnded(x.id,wk);
-      const gap=!me?"":i===0?(R[1]?`領先 ${fmt(me.sc.total-R[1].sc.total)} 分`:"領先"):`差第一名 ${fmt(top.sc.total-me.sc.total)} 分`;
-      return `<div class="mu4-r"><div class="mu4-rh"><b>${x.name}</b><em>${won===s.id?`${MU_IC.cup}本週一位`:ended?"已結束":`${showEndTxt(x.id)} 結束・${muLeft(showEndTs(x.id,wk)-Date.now())}`}</em></div>
-        ${me?`<div class="mu4-rk"><span class="mu4-n">${i+1}</span><span class="mu4-s"><b>${fmt(me.sc.total)} 分</b><small>${won&&won!==s.id?"":gap}</small></span></div><div class="mu4-bd"><span>投票 <b>${fmt(me.sc.votes)}</b></span><span>專輯 <b>${fmt(me.sc.album)}</b></span><span>MV 愛心 <b>${fmt(me.sc.likes)}</b></span><span>播放 <b>${fmt(me.sc.views)}</b></span></div>`:""}</div>`; }).join("")}</section>`);
+  if(s&&rk){ const rows=SHOWS.map(x=>{ const R=showRank(x.id,wk), i=R.findIndex(r=>r.s.id===s.id); return {x,R,i,me:R[i],won:(m.wins[wk]||{})[x.id],ended:showEnded(x.id,wk)}; }), any=rows.find(r=>r.me);
+    battle=sec("本週戰況",`<section class="card mu4-bt2">${any?`<div class="mu4-sh"><span>專輯<b>${fmt(any.me.sc.album)}</b></span><span>MV 愛心<b>${fmt(any.me.sc.likes)}</b></span><span>播放<b>${fmt(any.me.sc.views)}</b></span></div>`:""}
+      ${rows.map(({x,R,i,me,won,ended})=>{ const gap=!me?"":i===0?(R[1]?`領先 ${fmt(me.sc.total-R[1].sc.total)}`:"領先"):`差 ${fmt(R[0].sc.total-me.sc.total)}`;
+        return `<div class="mu4-l"><b class="mu4-ln">${x.name}</b>${me?`<span class="mu4-lr ${i===0?"top":""}">${i+1}</span><span class="mu4-ls"><b>${fmt(me.sc.total)} 分</b><small>票 ${fmt(me.sc.votes)}${won&&won!==s.id?"":"・"+gap}</small></span>`:`<span class="mu4-ls"><small>—</small></span>`}<em>${won===s.id?`${MU_IC.cup}一位`:ended?"已結束":muLeft(showEndTs(x.id,wk)-Date.now())}</em></div>`; }).join("")}</section>`); }
   else if(s) battle=sec("本週戰況",`<section class="card"><p class="me-none">宣傳週不排名</p></section>`);
   let prog="";
   if(s){ const st=songStats(s.id), ks=Object.keys(m.wins).sort(), run3=sh=>{ let n=0; for(let i=ks.length-1;i>=0;i--){ const k=ks[i]; if(!ranked(k)) continue; if((m.wins[k]||{})[sh]===s.id) n++; else break; } return Math.min(3,n); };
     const pakRun=(()=>{ let n=0; for(let i=ks.length-1;i>=0;i--){ const k=ks[i]; if(!ranked(k)) continue; if(SHOWS.some(x=>(m.wins[k]||{})[x.id]===s.id)) n++; else break; } return Math.min(4,n); })(), akN=SHOWS.filter(x=>(m.wins[wk]||{})[x.id]===s.id).length;
     const bar=(l,n,max,on)=>`<div class="mu4-p ${on?"on":""}"><span>${l}</span><i><em style="width:${Math.round(n/max*100)}%"></em></i><b>${n} / ${max}</b></div>`;
-    prog=sec(`《${esc(s.title)}》的成績`,`<section class="card mu4-pg">${bar("五台冠軍",st.shows.size,SHOWS.length,st.five)}${bar("AK（本週）",akN,SHOWS.length,st.aks.length)}${bar("PAK",pakRun,4,!!st.pak)}<div class="mu4-cr">${SHOWS.map(x=>{ const n=run3(x.id); return `<span class="${st.crowns.includes(x.id)?"on":""}"><i>${(MU_SHN[x.id]||[x.name])[1]||x.name}</i><b>${MU_IC.crown}</b><small>三冠王 ${n}/3</small></span>`; }).join("")}</div></section>`); }
+    prog=`<section class="card mu4-pg">${bar("五台冠軍",st.shows.size,SHOWS.length,st.five)}${bar("AK（本週）",akN,SHOWS.length,st.aks.length)}${bar("PAK",pakRun,4,!!st.pak)}<div class="mu4-cr">${SHOWS.map(x=>{ const n=run3(x.id); return `<span class="${st.crowns.includes(x.id)?"on":""}"><i>${(MU_SHN[x.id]||[x.name])[1]||x.name}</i><b>${MU_IC.crown}</b><small>三冠王 ${n}/3</small></span>`; }).join("")}</div>@@AW@@</section>`; }
   /* 獎項收藏 */
   const all=[...m.songs,...(m.ended||[])].filter(x=>x.gid===gid), aw=[];
   all.forEach(x=>{ const st=songStats(x.id); st.wins.forEach(w=>aw.push({ic:"cup",t:`${(SHOWS.find(z=>z.id===w.show)||{}).name} 一位`,s:x.title,wk:w.wk})); if(st.five) aw.push({ic:"five",t:"五台冠軍",s:x.title,wk:st.wins[st.wins.length-1]&&st.wins[st.wins.length-1].wk}); st.aks.forEach(k=>aw.push({ic:"ak",t:"ALL-KILL",s:x.title,wk:k})); if(st.pak) aw.push({ic:"pak",t:"PAK",s:x.title,wk:st.pak}); st.crowns.forEach(c=>aw.push({ic:"crown",t:`${(SHOWS.find(z=>z.id===c)||{}).name} 三冠王`,s:x.title,wk:""})); });
   aw.sort((a,b)=>(b.wk||"")<(a.wk||"")?-1:1);
   const locked=[["five","五台冠軍"],["ak","ALL-KILL"],["pak","PAK"]].filter(([k])=>!aw.some(x=>x.ic===k));
-  const cab=sec("獎項收藏",`<section class="card mu4-cab">${aw.map(x=>`<div class="mu4-aw on"><b>${MU_IC[x.ic]}</b><span>${esc(x.t)}</span><small>《${esc(x.s)}》${x.wk?"・"+ymd(wkDate(x.wk).getTime()):""}</small></div>`).join("")}${locked.map(([k,l])=>`<div class="mu4-aw"><b>${MU_IC[k]}</b><span>${l}</span><small>還沒拿到</small></div>`).join("")}</section>`);
-  const mc=sec("MC",`<section class="card mu4-mc">${mcs.length?mcs.map(x=>`<div class="mu4-mr"><b>${x.name}</b><small>每週${WDAY[x.day]}</small></div>`).join("")+`<p class="mu4-mp">每週 +${fmt(mcWeekly(mcs.length))} 積分</p>`:`<p class="me-none">這個月沒有排到 MC</p>`}</section>`);
-  const pts=sec("打歌積分",`<section class="card mu4-pts"><div><small>這個月</small><b>${fmt(groupMusicPts(gid,{year:mon}))}</b></div><div><small>今年</small><b>${fmt(groupMusicPts(gid,{year:y}))}</b></div></section>`);
-  return `<main class="page foc mu4">${s?"":`<section class="card"><p class="me-none">現在沒有打歌中的歌</p></section>`}${battle}${fairyArtHtml(mid)}${prog}${cab}${mc}${pts}</main>`; }
+  const awH=aw.length?`<div class="mu4-aws"><small>拿過的獎</small>${aw.map(x=>`<span class="mu4-awc">${MU_IC[x.ic]}<b>${esc(x.t)}</b><i>《${esc(x.s)}》</i></span>`).join("")}</div>`:"";
+  prog=prog?sec("成績",prog.replace("@@AW@@",awH)):(aw.length?sec("成績",`<section class="card mu4-pg">${awH}</section>`):"");
+  const mc=mcs.length?sec("MC",`<section class="card mu4-mc">${mcs.map(x=>`<div class="mu4-mr"><b>${x.name}</b><small>每週${WDAY[x.day]}</small></div>`).join("")}<p class="mu4-mp">每週 +${fmt(mcWeekly(mcs.length))} 積分</p></section>`):"";
+  const top=`<div class="mu4-top">${s?`<b>《${esc(s.title)}》</b>`:""}<small>打歌積分・這個月 ${fmt(groupMusicPts(gid,{year:mon}))}・今年 ${fmt(groupMusicPts(gid,{year:y}))}</small></div>`;
+  return `<main class="page foc mu4">${top}${s?"":`<section class="card"><p class="me-none">現在沒有打歌中的歌</p></section>`}${battle}${fairyArtHtml(mid)}${prog}${mc}</main>`; }
 
 /* =========================================================
    管理員：打歌（本週總覽＋改一位、計分方式、MC 表、打歌中的歌）
@@ -18888,8 +18900,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="muMcT"){ e.stopImmediatePropagation(); const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); t.classList.toggle("on"); lsRerender(); return; }
 },true);
 /* 觀看次數：實際播放滿 30 秒才算一次（影片不到 30 秒就看完才算） */
+/* 自己的 MV、同團成員的 MV：看了不算觀看數（不然自己就能幫自己刷分）；粉絲重播不設上限 */
+function vodSelfView(v){ try{ const g=selfGroup(); return !!(g&&g===v.gid); }catch(e){ return false; } }
 function vodViewWatch(vid){ const v=document.getElementById("pvPlayer"); if(!v) return; let acc=0, last=null, done=false;
-  const hit=()=>{ if(done) return; done=true; try{ const L=S.get(K.vods,[])||[], x=L.find(y=>y.id===vid); if(x){ x.views=(x.views||0)+1; S.set(K.vods,L); } }catch(e){} };
+  const hit=()=>{ if(done) return; done=true; try{ const L=S.get(K.vods,[])||[], x=L.find(y=>y.id===vid); if(x&&vodSelfView(x)) return; if(x){ x.views=(x.views||0)+1; S.set(K.vods,L); } }catch(e){} };
   v.addEventListener("timeupdate",()=>{ const t=v.currentTime; if(last!=null&&t>last&&t-last<1.5&&!v.paused) acc+=t-last; last=t; if(acc>=30) hit(); });
   v.addEventListener("seeking",()=>{ last=null; });
   v.addEventListener("ended",()=>{ if(v.duration&&v.duration<30&&acc>=v.duration*.8) hit(); }); }
@@ -19000,8 +19014,9 @@ const fairyThumb=(c,lab,act,mine)=>`<button class="fy-s ${c?"on":""} ${mine?"me"
 function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid); if(!s||s._done||s.demo) return ""; const g=groupOf(gid)||{}; if(g.solo||groupArtists(gid).length<2) return "";
   const P=fairyPlan(s.id); if(!P) return ""; const now=Date.now(), past=P.filter(x=>x.ts<=now).slice(-3), next=P.filter(x=>x.ts>now).slice(0,4), nm=x=>(SHOWS.find(y=>y.id===x.show)||{}).name||"", dt=t=>`${mdTxt(t)}（${WDAY[new Date(t).getDay()]}）${hm(t)}`;
   const who=x=>{ const L=stMids(x); return L.length?(L.includes(mid)?"🧚 你！"+(L.length>1?`＋${L.filter(m=>m!==mid).map(m=>esc(stageNm(m))).join("、")}`:""):L.map(m=>esc(stageNm(m))).join("、")):"—"; };
+  const nx=next[0];
   return `<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>
-    <section class="card fy-a"><div class="fy-res" style="margin:0;border:0;padding:0">${[...past.map(x=>`<div class="fy-rr done"><b>${nm(x)}<small> ${mdTxt(x.ts)}</small></b><span>${who(x)}</span></div>`),...next.map(x=>`<div class="fy-rr"><b>${nm(x)}</b><span>${dt(x.ts)} 揭曉</span></div>`)].join("")}</div></section>`; }
+    <section class="card fy-a"><details class="fy-dt"><summary><span>${nx?`下一場：${nm(nx)}・${dt(nx.ts)} 揭曉`:"這次打歌的結尾妖精都揭曉了"}</span>${past.length?`<i>看結果</i>`:""}</summary>${past.length?`<div class="fy-res">${past.map(x=>`<div class="fy-rr done"><b>${nm(x)}<small> ${mdTxt(x.ts)}</small></b><span>${who(x)}</span></div>`).join("")}</div>`:""}</details></section>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muFairy"){ e.stopImmediatePropagation(); fairyView(t.dataset.v,t.dataset.s,t.closest(".mu3-r")||t); return; }
   if(a==="fvNext"||a==="fvPrev"){ e.stopImmediatePropagation(); fairyGo(a==="fvNext"?1:-1); return; }
