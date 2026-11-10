@@ -3413,6 +3413,17 @@ html body .snlk-b.on:not(.dk-keep){background:rgba(127,127,127,.2)!important;col
 .snsh.big,.snsr{height:62vh!important;transition:height .28s cubic-bezier(.2,.9,.3,1),transform .3s cubic-bezier(.2,.9,.25,1)}.snsh.big.full,.snsr.full{height:92vh!important;max-height:92vh!important}
 .snsh-gr,.sn-grab{position:relative;touch-action:none;cursor:grab}.snsh-gr::before,.sn-grab::before{content:"";position:absolute;left:-60vw;right:-60vw;top:-14px;bottom:-12px}
 .snsh-t,.sn-sht{touch-action:none}
+.sn-meta p{white-space:pre-line}
+.snof-h{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:center;overflow:hidden;background:#141019}.snof-h .pr-auto{margin:0!important;border-radius:0!important;height:100%;box-sizing:border-box;overflow:hidden}
+.snof-card{position:relative;isolation:isolate;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:24px;text-align:center;color:#fff;background:radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--c) 70%,#000),#0b0910)}
+.snof-bg{position:absolute;inset:0;z-index:-1;background-size:cover;background-position:center;opacity:.35;filter:blur(2px)}
+.snof-card em{font-style:normal;font-size:13px;font-weight:800;letter-spacing:.24em;opacity:.85}.snof-card b{font-size:30px;font-weight:800;line-height:1.15}.snof-card small{font-size:15px;opacity:.85}
+.snof-h.mini{align-items:center;gap:4px;padding:8px;text-align:center;color:#fff;background:linear-gradient(160deg,#2a1f3d,#0b0910)}.snof-h.mini b{font-size:12px;letter-spacing:.12em}.snof-h.mini small{font-size:10px;opacity:.7}
+.sn-subto{display:flex;align-items:center;gap:10px;margin:8px 16px;padding:10px 12px;border-radius:12px;background:rgba(127,127,127,.14);font-size:13px;line-height:1.4}
+.sn-asr{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:8px 16px;padding:10px 12px;border-radius:12px;background:rgba(127,127,127,.14);font-size:14px}.sn-asr select{max-width:62%;border:0;background:none;color:inherit;font:inherit;font-weight:600;text-align:right}
+.sn-prep-h{display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px 16px!important;text-align:center}.sn-prep-h b{font-size:16px;margin-top:6px}.sn-prep-h small{opacity:.65}.sn-prep-h p{margin:10px 0 0;font-size:15px;font-weight:600}
+.sn-subl{padding:4px 0!important}.sn-subr{display:flex;align-items:center;gap:12px;padding:10px 14px}.sn-subr+.sn-subr{border-top:.5px solid var(--line)}.sn-subth{width:46px;height:46px;border-radius:8px;object-fit:cover;background:var(--s2);flex:none}.sn-subr>span{flex:1;min-width:0;display:flex;flex-direction:column}.sn-subr b{font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sn-subr small{font-size:12px;opacity:.6}
+.sn-subr em{font-style:normal;font-size:12px;font-weight:700;padding:4px 10px;border-radius:999px;background:var(--s2);white-space:nowrap;max-width:46%;overflow:hidden;text-overflow:ellipsis}html body .sn-subr em.ok:not(.dk-keep){background:rgba(28,209,79,.16)!important;color:rgb(20,150,60)!important}html body .sn-subr em.no:not(.dk-keep){background:rgba(237,73,86,.14)!important;color:rgb(220,50,65)!important}
 .snsh-w{position:fixed;inset:0;z-index:90;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,0);transition:background .22s}
 .snsh-w.open{background:rgba(0,0,0,.42)}
 .snsh{width:100%;max-width:520px;max-height:86vh;overflow:auto;background:#F2F2F2;color:#000;border-radius:16px 16px 0 0;padding:6px 12px calc(14px + env(safe-area-inset-bottom));display:flex;flex-direction:column;gap:10px;transform:translateY(100%);transition:transform .3s cubic-bezier(.2,.9,.25,1);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Text","PingFang TC",sans-serif}
@@ -6791,7 +6802,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110072851";
+const BUILD="20261110075734";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -9658,8 +9669,8 @@ function render(){
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
-  if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)){ const L=snLockOf(s.member), dl=Math.ceil((L.until-Date.now())/864e5), dt=new Date(L.until);
-    return paint(`<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page"><div class="sn-lock"><b>🔒 個人 SNS 還沒開放</b><p>${esc(L.co)} 規定出道滿 ${L.mo} 個月才能開個人 SNS。</p><em>還有 ${dl} 天</em><small>${dt.getFullYear()}/${dt.getMonth()+1}/${dt.getDate()} 解鎖</small></div></main>`,false); }
+  if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
+    try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }
   if(r.sub==="sns"){ /* SNS 的分頁列跟 App 的一樣放在頁面外面：換頁不重畫，鏡片滑過去、可以按住拖 */
     let h=viewSns(r.p||"home",r.id), nv=""; h=h.replace(/<nav class="nav sn-nav2"[\s\S]*?<\/nav>/,m=>{ nv=m; return ""; }); return nv?paint(h,true,nv):paint(h,false); }
   if(r.sub==="look") return paint(viewLook(),false);
@@ -16152,7 +16163,7 @@ const SNS_FANS=[];   // 正式版：沒有假的粉絲帳號
 const SNS_CAPS=["今天的天空好美 ☁️","練習結束，回家路上 🌙","咖啡續命中 ☕","週末小確幸 🍰","新買的手機殼 💜","彩排後的宵夜 🍜","雨天聽歌最對味 🎧","今日穿搭 👗"];
 /* SNS 資料分開存（貼文、按讚、留言、追蹤…各一份）：按一個讚不用整包重存，人多也不會互相蓋掉
    私訊：每兩個人一份（daisuki_dm:甲~乙），只有這兩個人的對話，不再混在一起 */
-const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{},cf:{},folAt:{},intr:{},col:{}};
+const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{},cf:{},folAt:{},intr:{},col:{},slk:{},sub:[]};
 const snKey=p=>"daisuki_sn_"+p;
 function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&HB.ver[K.sns]==null&&!Object.keys(HB.ver||{}).length) return;
   const old=S.get(K.sns,null); if(old&&typeof old==="object"){ Object.keys(SN_PARTS).forEach(p=>{ if(old[p]!=null&&S.get(snKey(p),null)==null) S.set(snKey(p),old[p]); });
@@ -16160,7 +16171,7 @@ function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&H
     if(Object.keys(dm).length) S.set(K.sns,{...old,dm:{}}); }   /* 舊的大包裡的私訊搬走後清掉（不然大家都讀得到） */
   S.set("daisuki_sn_mig",true); }catch(e){} }
 const SN_SNAP=new WeakMap();
-const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 不複製（太慢，滑動會卡）；snSave 用拿出來時記下的樣子比對，改到同一份也存得到 */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); return d; };
+const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 不複製（太慢，滑動會卡）；snSave 用拿出來時記下的樣子比對，改到同一份也存得到 */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); try{ (d.posts||[]).forEach(x=>{ if(x&&x.of) snOfFill(x); }); }catch(e){} return d; };
 /* 存檔只存「這次真的改了的地方」：拿讀出來那一刻當基準，跟現在手機裡（可能剛收到別人的新限動、新貼文）合起來，
    不會因為手上拿的是舊的一份，就把別人剛發的蓋掉 */
 /* 存：跟「拿出來那時候」比，有變才存。手機裡的那份如果是同一個（直接改到的）→ 直接存；如果別人的新資料已經進來（不是同一個）→ 三方合併 */
@@ -16189,13 +16200,15 @@ function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEM
     done[em]=Date.now(); S.set(K.snRetired,done); }catch(e){} }
 function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member]) return "m:"+s.member; return "u:"+String(s.email||"me").toLowerCase(); }
 function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
+  if(String(id).startsWith("o:co_")){ const co=ofCoOf(id.slice(5)); if(!co) return null; const c=coInfo(co); return {id,u:OF_CO[co],name:c.n,g:6,ver:true,bio:"",av:c.l||"",co,of:1}; }
+  if(String(id).startsWith("o:g_")){ const gid=id.slice(4), g=groupOf(gid); if(!g||g.solo) return null; return {id,u:ofGH(g),name:g.name,g:g.g||0,ver:true,bio:coInfo(coOfGid(gid)).n,av:gPhoto(gid)||"",gid,of:1}; }
   if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:(s.co||"")+" 星探",g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
   if(id.startsWith("m:")){ const mid=id.slice(2), m=MEMBERS[mid]; if(!m) return null; const acc=Object.keys(ACCOUNTS).find(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid), du=snHandle(m.name,"m:"+mid,"artist"); return {id,u:pr.u||du,name:pr.name!=null?pr.name:"",g:m.g,ver:true,bio:pr.bio!=null?pr.bio:`${groupOf(m.group)?groupOf(m.group).name:""} 🎤`,av:pr.av||"",mid}; }   /* 藝人的 SNS 跟藝人個人帳號分開：名稱、頭貼都是 SNS 自己的，不跟著個人帳號 */
   if(id.startsWith("f:")){ const f=SNS_FANS.find(x=>x[0]===id.slice(2)); if(!f) return null; return {id,u:f[0],name:f[1],g:f[2],ver:false,bio:"🌙 每天都是追星日",av:"",fake:true}; }
   if(id.startsWith("u:")){ const e=id.slice(2), a=ACCOUNTS[e]||{}, me=id===snMeId(); const nm=adminView()?(a.name||e):me?ME.name:(S.get(K.nicks,{})[e]||a.name||e.split("@")[0]);
     return {id,u:pr.u||(a.role==="admin"&&!a.member?"haechu.official":snHandle("", "u:"+e,"haechu")),name:pr.name!=null?pr.name:nm,g:3,ver:a.role==="admin",bio:pr.bio||"",av:pr.av||"",acc:e}; }
   return null; }
-function snAllUsers(){ const L=[]; Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).forEach(id=>L.push("m:"+id)); SNS_FANS.forEach(f=>L.push("f:"+f[0])); Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.role!=="artist") L.push("u:"+e); }); L.push("o:scout"); return L.map(snUser).filter(Boolean); }
+function snAllUsers(){ const L=[]; Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&!snLockOf(id)).forEach(id=>L.push("m:"+id)); snOfAccs().forEach(id=>L.push(id)); SNS_FANS.forEach(f=>L.push("f:"+f[0])); Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.role!=="artist") L.push("u:"+e); }); L.push("o:scout"); return L.map(snUser).filter(Boolean); }
 function snSeed(){ return; const d=snDB(); if(d.seeded&&d.seed2) return; if(d.seeded){ const now=Date.now(); d.notes=d.notes||{"f:moonlight_daily":{text:"今晚直播誰要一起看 🌙",ts:now-2*3600e3},"f:sunny.doll":{text:"小卡交換中～",ts:now-6*3600e3}}; d.seed2=true; snSave(d); return; }
   d.seed2=true; const now=Date.now(); let k=0;
   Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).forEach(mid=>{ for(let i=0;i<3;i++) d.posts.push({id:"sp"+(k++),uid:"m:"+mid,pics:Array.from({length:1+strHash(mid+i)%3},(_,j)=>mid+i+"_"+j),cap:SNS_CAPS[(strHash(mid)+i)%SNS_CAPS.length],ts:now-(i*30+strHash(mid)%20+2)*3600e3,base:300+strHash(mid+i)%4000}); });
@@ -16212,7 +16225,7 @@ const snFol=(d,uid)=>{ if(!d.fol[uid]){ d.fol[uid]=uid===snMeId()?snFolDef():[];
 function snFolFix(d){ const me=snMeId(), k="daisuki_sn_folfix", done=S.get(k,{})||{}; if(done[me]) return; done[me]=1; S.set(k,done); const L=d.fol[me]; if(!L) return;
   const all=Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).map(id=>"m:"+id); if(L.length===all.length&&all.every(x=>L.includes(x))){ d.fol[me]=snFolDef(); snSave(d); } }
 /* 推薦追蹤：還沒追蹤的藝人，粉絲多的排前面 */
-function snSuggest(d){ const me=snMeId(), fol=snFol(d,me); let dis=[]; try{ dis=JSON.parse(localStorage.getItem("hc_sndis_"+me)||"[]"); }catch(e){} return Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&"m:"+id!==me&&!fol.includes("m:"+id)&&!dis.includes("m:"+id)).map(id=>"m:"+id).sort((a,b)=>snFollowers(d,b)-snFollowers(d,a)).slice(0,12); }
+function snSuggest(d){ const me=snMeId(), fol=snFol(d,me); let dis=[]; try{ dis=JSON.parse(localStorage.getItem("hc_sndis_"+me)||"[]"); }catch(e){} return Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&"m:"+id!==me&&!fol.includes("m:"+id)&&!dis.includes("m:"+id)&&!snLockOf(id)).map(id=>"m:"+id).sort((a,b)=>snFollowers(d,b)-snFollowers(d,a)).slice(0,12); }
 /* 私人帳號：要對方按「確認」才能追蹤；沒追蹤的人看不到貼文、限時動態 */
 const snPriv=(d,uid)=>!!((d.prof[uid]||{}).priv);
 const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid)||isAdminAcct(); };
@@ -16233,11 +16246,11 @@ const snAv=(u,sz=32,ring=false,seen=false,cf=false)=>{ if(!u) return ""; const i
   return `<span class="sn-av ${ring?"ring":""} ${seen?"seen":""} ${ring&&cf&&!seen?"cf":""}" style="--s:${sz}px">${has?`<i class="dflt">${SN_DFAV}${im}</i>`:`<i class="dflt">${SN_DFAV}</i>`}</span>`; };
 const snPic=(seed,g,cls="")=>`<span class="sn-pic ${cls}" style="background:${grad((g||0)+(strHash(String(seed))%5))}"></span>`;
 const snIsVid=p=>!!(p&&p.media&&p.media.some(m=>m.type==="video"));
-const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics?p.pics[i]:p.id+i,u?u.g:0,"fill");
+const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics?p.pics[i]:p.id+i,u?u.g:0,"fill"); if(m.type==="html") return `<div class="snof-h">${m.h}</div>`; if(m.url&&m.type!=="video") return `<img class="sn-img" src="${esc(m.url)}" alt="" loading="lazy">`;
   if(m.type==="video") return `<video class="sn-img sn-vid" data-vmid="${m.mid}" data-pmid="${m.poster||""}" muted playsinline webkit-playsinline loop preload="none"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;
   return `<img class="sn-img" data-mid="${m.mid}" alt="">`; };
 /* 格子裡的小圖：影片用封面，右上角放 Reels 圖示 */
-const snThumb=(p,u)=>{ const m=p.media&&p.media[0]; if(m&&m.type==="video") return `<img class="sn-img" data-mid="${m.poster||""}" alt=""><i class="sn-ri">${si("reels2","sm")}</i>`; return snMedia(p,u,0)+(snCount(p)>1?`<i class="sn-ri">${si("carousel")}</i>`:""); };
+const snThumb=(p,u)=>{ const m=p.media&&p.media[0]; if(m&&m.type==="html") return `<div class="snof-h mini"><b>${esc(m.t||"")}</b><small>${esc(u?u.name:"")}</small></div>`; if(m&&m.type==="video") return `<img class="sn-img" data-mid="${m.poster||""}" alt=""><i class="sn-ri">${si("reels2","sm")}</i>`; return snMedia(p,u,0)+(snCount(p)>1?`<i class="sn-ri">${si("carousel")}</i>`:""); };
 const snCount=p=>p.media?p.media.length:(p.pics||[1]).length;
 /* 被 @／被標註的人收到通知（粉絲帳號＝鈴鐺通知；藝人帳號＝藝人端鈴鐺從限動／貼文資料算出來） */
 function snMentNotify(ids,what){ const me=snMeId(), u=snUser(me)||{}, who=u.u||u.name||"有人"; [...new Set(ids||[])].filter(id=>id&&id!==me).forEach(id=>{ if(String(id).startsWith("u:")) feedPush({kind:"core",self:true,text:`${who} ${what}`},"u:"+id.slice(2)); }); }
@@ -16252,14 +16265,14 @@ const snTabs=(p)=>{ const me=snMeId(), un=dmThreads().filter(x=>{ const l=x.t[x.
   /* 跟 App 的導覽列同一套：液態玻璃鏡片、按住左右拖切換 */
   const K=["home","reels","dm","explore","profile"], cur=p==="thread"?"dm":p==="profile"&&route().id?"":p, i=K.indexOf(cur), f=NAVP.sns; if(i>=0) NAVP.sns=i; const go=i>=0&&f!=null&&f!==i;
   return `<nav class="nav sn-nav2" aria-label="SNS 選單"><div class="nav-in" style="--n:5">${i>=0?`<span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>`:""}${[["home","home"],["reels","reels2"],["dm","send"],["explore","search"]].map(([k,ic])=>`<button class="nav-btn ${cur===k?"on":""}" data-a="snsGo" data-v="${k}" aria-label="${k}"><span class="nav-ico">${si(ic)}${k==="dm"&&un?`<span class="nbadge">${un>99?"99+":un}</span>`:""}</span></button>`).join("")}<button class="nav-btn ${cur==="profile"?"on":""}" data-a="snsGo" data-v="profile" aria-label="個人檔案"><span class="nav-ico">${snAv(snUser(snMeId()),26,cur==="profile")}</span></button></div></nav>`; };
-function viewSns(p,id){ snSeed(); const d=snDB();
+function viewSns(p,id){ snSeed(); snOfSync(); const d=snDB();
   const body=p==="explore"?snExplore(d):p==="reels"?snReels(d,id):p==="profile"?snProfile(d,id):p==="new"?snNew(d):p==="dm"?snDmList(d):p==="thread"?snThread(d,id):p==="notif"?snNotif(d):p==="post"?snPostPage(d,id):p==="edit"?snEdit(d):p==="tag"?snTagPage(d,id):p==="cf"?snCfPage(d):p==="sug"?snSugPage(d):p==="scout"?snScoutPage(d):p==="fl"?snFlPage(d,id):snHome(d);
   setTimeout(()=>{ const c=document.querySelector(".sn-thread-b"); if(c) c.scrollTop=c.scrollHeight; },0);
   return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf","sug"].includes(p)?"":snTabs(p)}</div>`; }
 const snRp=(d,uid)=>d.rp&&d.rp[uid]||[];
 const snN=n=>n?fmtW(n).replace(" 萬","萬"):"";   /* IG 的數字：0 不顯示、1,059、2.5萬 */
 const snRpCount=(d,p)=>Object.values(d.rp||{}).filter(L=>L.some(x=>x.id===p.id)).length;
-function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u) return ""; const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
+function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
   return `<article class="sn-post" id="snp-${p.id}" ${p.mus&&p.mus.mid?`data-mus="${esc(p.mus.mid)}" data-pid="${p.id}"`:""}>${bu?`<div class="sn-rpby">${si("repost","sm")}<b>${esc(bu.id===me?"你":bu.u)}</b> 已轉發</div>`:""}<header><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,32,snHasStory(d,u.id),snStorySeen(d,u.id))}<span class="sn-pu"><b>${esc(u.u)}${u.ver?`${SN_VER}`:""}</b>${p.mus&&p.mus.mid?`<small>${snMusTag(p.mus,"p:"+p.id,p.uid)}</small>`:snSugg(d,u.id)?`<small>為你推薦</small>`:""}</span></button>${snSugg(d,u.id)?`<button class="sn-fb" data-a="snFollow" data-v="${u.id}">追蹤</button>`:""}<button class="sn-ib" data-a="snMore" data-id="${p.id}" aria-label="更多">${si("dots")}</button></header>
     <div class="sn-media"><div class="sn-car" data-a="snTap" data-id="${p.id}">${Array.from({length:n},(_,i)=>`<div class="sn-sl">${snMedia(p,u,i)}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}<i class="sn-heart">${si("heart")}</i>${p.mus&&p.mus.mid?`<button class="sn-mbtn" data-a="snMusTg" data-k="p:${p.id}" data-v="${esc(p.mus.mid)}" aria-label="聲音"><i class="off">${si("mute","sm")}</i><i class="onn">${si("sound","sm")}</i></button>`:""}</div>
     ${n>1?`<div class="sn-dots">${Array.from({length:n},(_,i)=>`<i class="${i===0?"on":""}"></i>`).join("")}</div>`:""}
@@ -16302,7 +16315,8 @@ function snReels(d,id){ const me=snMeId(), I=(d.intr||{})[me]||{}, no=new Set(I.
 function snHls(d,uid){ return ((d.hl||{})[uid]||[]).filter(h=>h&&h.items&&h.items.length); }
 /* 限時動態／精選的小圖：照片、或分享的貼文的第一張 */
 function snStThumb(d,s,g){ if(s.vid&&s.vid.poster) return `<img class="sn-img" data-mid="${s.vid.poster}" alt="">`; if(s.mid&&!s.vid) return `<img class="sn-img" data-mid="${s.mid}" alt="">`; if(s.post){ const p=d.posts.find(x=>x.id===s.post); if(p&&p.media&&p.media[0]) return `<img class="sn-img" data-mid="${p.media[0].poster||p.media[0].mid}" alt="">`; } return snPic(s.pic||s.id,g,"fill"); }
-function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=u.id===me, P=d.posts.filter(x=>x.uid===u.id).sort((a,b)=>b.ts-a.ts), tab=ui.snTab||"grid", fo=snFol(d,me).includes(u.id);
+function snProfile(d,id){ { const me0=snMeId(), u0=snUser(id||me0); if(u0&&u0.mid&&u0.id!==me0&&snLockOf(u0.mid)) return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><span class="sn-sp"></span></header><div class="sn-empty"><span>${si("user")}</span><b>無法查看這個帳號</b><p>這個帳號目前還沒開放。</p></div>`; }
+  const me=snMeId(), u=snUser(id||me)||snUser(me), mine=u.id===me, P=d.posts.filter(x=>x.uid===u.id).sort((a,b)=>b.ts-a.ts), tab=ui.snTab||"grid", fo=snFol(d,me).includes(u.id);
   const base=0;
   const colF=tab==="saved"&&mine&&ui.snColF?(((d.col||{})[me]||[]).find(c=>c.id===ui.snColF)||null):null;
   const list=tab==="reels"?P.filter(snIsVid):tab==="saved"&&mine?(colF?colF.items:(d.saved[me]||[])).map(x=>d.posts.find(p=>p.id===x)).filter(Boolean):tab==="reposts"?snRp(d,u.id).map(x=>d.posts.find(p=>p.id===x.id)).filter(Boolean):tab==="tagged"?d.posts.filter(p=>(p.tags||[]).includes(u.id)&&snCanSee(d,p.uid)).sort((a,b)=>b.ts-a.ts):P;
@@ -16313,7 +16327,7 @@ function snProfile(d,id){ const me=snMeId(), u=snUser(id||me)||snUser(me), mine=
       :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`${SN_VER}`:""}</b><span class="sn-sp"></span>${u.id==="o:scout"&&isAdminAcct()?`<button class="sn-ib" data-a="snsGo" data-v="scout" aria-label="星探設定">${si("menu")}</button>`:isAdminAcct()&&!u.mid?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
     <section class="sn-ph"><span class="sn-pav"><button class="sn-hu" data-a="${see&&snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,86,snHasStory(d,u.id),snStorySeen(d,u.id),snStoryCf(d,u.id))}</button>${mine?`<button class="sn-padd" data-a="snNewP" data-v="story" aria-label="新增限時動態">${si("plusP")}</button>`:""}</span><div class="sn-phr">${u.name?`<b class="sn-pnm">${esc(u.name)}</b>`:""}<div class="sn-stat"><span><b>${snN(P.length)||0}</b>貼文</span><button data-a="snFl" data-v="${u.id}" data-k="fol"><b>${snN(base+snFollowers(d,u.id))||0}</b>位粉絲</button><button data-a="snFl" data-v="${u.id}" data-k="ing"><b>${snN(snFol(d,u.id).length)||0}</b>追蹤中</button></div></div></section>
     <div class="sn-bio">${u.bio?`<p>${esc(u.bio)}</p>`:""}${!mine?(()=>{ const mu=snFol(d,me).filter(x=>x!==u.id&&(d.fol[x]||[]).includes(u.id)).map(snUser).filter(Boolean); return mu.length?`<button class="sn-mut" data-a="snFl" data-v="${u.id}" data-k="fol"><span class="sn-lbav">${mu.slice(0,3).map(x=>snAv(x,18)).join("")}</span><span><b>${esc(mu[0].u)}</b>${mu.length>1?` 和其他 ${mu.length-1} 人`:""} 也追蹤了</span></button>`:""; })():""}</div>
-    <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button><button class="sn-bi" data-a="snsGo" data-v="sug" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?`追蹤中 ${si("chev","sm")}`:snReqd(d,u.id)?"已要求":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button><button class="sn-bi" data-a="snsGo" data-v="sug" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`}</div>
+    <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button><button class="sn-bi" data-a="snsGo" data-v="sug" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?`追蹤中 ${si("chev","sm")}`:snReqd(d,u.id)?"已要求":"追蹤"}</button>${u.of?"":`<button data-a="snsGo" data-v="thread" data-id="${u.id}">發送訊息</button>`}<button class="sn-bi" data-a="snsGo" data-v="sug" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`}</div>
     ${mine?snSugHtml(d,"探索用戶"):""}
     ${hls.length||mine?`<div class="sn-hls">${mine?`<button data-a="snHlNew"><span class="sn-hlc add">${si("plusP")}</span><small>新增</small></button>`:""}${hls.map(h=>`<button data-a="snHl" data-v="${u.id}" data-id="${h.id}"><span class="sn-hlc">${snStThumb(d,h.items[0],u.g)}</span><small>${esc(h.title)}</small></button>`).join("")}</div>`:""}
     ${see?"":lockH}${see?`<nav class="sn-pt">${[["grid","grid","貼文"],["reels","reels2","Reels"],["tagged","tag","被標註"]].map(([k,ic,l])=>`<button class="${tab===k?"on":""}" data-a="snsPTab" data-v="${k}" aria-label="${l}">${si(ic)}</button>`).join("")}</nav>
@@ -16327,14 +16341,15 @@ function snEdit(d){ const me=snMeId(), u=snUser(me);
       <label class="sn-fb2"><small>用戶名稱</small><input id="snUIn" name="sn-handle" value="${esc(u.u)}" autocomplete="off" autocapitalize="none" autocorrect="off" spellcheck="false"></label>
       <label class="sn-fb2"><small>簡介</small><textarea id="snBioIn" rows="3" maxlength="150" placeholder="簡介">${esc(u.bio||"")}</textarea></label></div>
     <div class="sn-edf"><button class="sn-prv" data-a="snPrivT"><span>私人帳號</span><i class="sn-sw ${snPriv(d,me)?"on":""}"></i></button></div>`; }
-function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":"post"}), n=dr.media.length;
-  return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n?"":"disabled"}>分享</button></header>
+function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":route().id==="sub"?"sub":"post"}), n=dr.media.length, subU=dr.mode==="sub"?snUser(snSubTo((session()||{}).member)):null;
+  return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":dr.mode==="sub"?"投稿":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n?"":"disabled"}>${dr.mode==="sub"?"送出":"分享"}</button></header>
+    ${subU?`<div class="sn-subto">${snAv(subU,28)}<span>投稿到 <b>${esc(subU.u)}</b>，公司審核後會用官方帳號發布（會加上你的名字）</span></div>`:""}${isAdminAcct()&&dr.mode==="post"?`<label class="sn-asr"><span>發文身分</span><select id="snAs"><option value="">自己（${esc(snUser(snMeId()).u)}）</option>${snOfAccs().map(snUser).filter(Boolean).map(x=>`<option value="${esc(x.id)}" ${dr.as===x.id?"selected":""}>${esc(x.u)}（${esc(x.name)}）</option>`).join("")}</select></label>`:""}
     ${n?`<div class="sn-media"><div class="sn-car">${dr.media.map(x=>`<div class="sn-sl">${x.type==="video"?`<video class="sn-img" src="${x.url||""}" playsinline muted loop autoplay></video><em class="sn-vdur">${fmtDur(x.dur)}</em>`:`<img class="sn-img" data-mid="${x.mid}" alt="">`}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}</div>`:`<label class="sn-pick">${si("cam")}<b>從相簿選擇</b><small>${dr.mode==="story"?`一張照片或 ${SN_VMAX} 秒內的影片`:`最多 10 張・影片 ${SN_VMAX} 秒內`}</small><input type="file" accept="image/*,video/*" ${dr.mode==="story"?"":"multiple"} id="snFile"></label>`}
     ${n&&dr.mode!=="story"&&n<10&&!dr.media.some(m=>m.type==="video")?`<label class="sn-addm">＋ 再加相片<input type="file" accept="image/*" multiple id="snFile"></label>`:""}
-    ${dr.mode==="story"?"":`<textarea id="snCap" class="sn-cap" placeholder="輸入說明文字…">${esc(dr.cap)}</textarea><button class="sn-tagr" data-a="snTagPick">${si("tag","sm")}<span>標註人物</span><em>${(dr.tags||[]).map(snUser).filter(Boolean).map(x=>esc(x.u)).join("、")}</em>${si("chev","sm")}</button>`}
+    ${dr.mode==="story"?"":`<textarea id="snCap" class="sn-cap" placeholder="輸入說明文字…">${esc(dr.cap)}</textarea>${dr.mode==="sub"?"":`<button class="sn-tagr" data-a="snTagPick">${si("tag","sm")}<span>標註人物</span><em>${(dr.tags||[]).map(snUser).filter(Boolean).map(x=>esc(x.u)).join("、")}</em>${si("chev","sm")}</button>`}`}
     ${dr.mode==="story"?`<div class="sn-aud"><button class="${dr.aud!=="cf"?"on":""}" data-a="snAud" data-v="all">${snAv(snUser(snMeId()),24)}你的限時動態</button><button class="cf ${dr.aud==="cf"?"on":""}" data-a="snAud" data-v="cf"><i>${si("star","sm")}</i>摯友</button></div>`:""}
-    ${dr.mus?`<div class="sn-musr"><button class="sn-musb on" data-a="snMusAdd">${si("music","sm")}<span>${esc(snMusLabel(dr.mus))}</span></button><button class="sn-ib" data-a="snMusDel" aria-label="移除音樂">${si("x")}</button></div>`:`<button class="sn-musb" data-a="snMusAdd">${si("music","sm")}<span>加入音樂</span>${si("chev","sm")}</button>`}
-    <nav class="sn-mode"><button class="${dr.mode==="post"?"on":""}" data-a="snMode" data-v="post">貼文</button><button class="${dr.mode==="story"?"on":""}" data-a="snMode" data-v="story">限時動態</button></nav>`; }
+    ${dr.mode==="sub"?"":dr.mus?`<div class="sn-musr"><button class="sn-musb on" data-a="snMusAdd">${si("music","sm")}<span>${esc(snMusLabel(dr.mus))}</span></button><button class="sn-ib" data-a="snMusDel" aria-label="移除音樂">${si("x")}</button></div>`:`<button class="sn-musb" data-a="snMusAdd">${si("music","sm")}<span>加入音樂</span>${si("chev","sm")}</button>`}
+    ${dr.mode==="sub"?"":`<nav class="sn-mode"><button class="${dr.mode==="post"?"on":""}" data-a="snMode" data-v="post">貼文</button><button class="${dr.mode==="story"?"on":""}" data-a="snMode" data-v="story">限時動態</button></nav>`}`; }
 function snDmList(d){ const me=snMeId(), q=nz((ui.snDmQ||"").trim()), TH=dmThreads(); d.dm=Object.fromEntries(TH.map(x=>[x.id,x.t])); const ids=TH.map(x=>x.id);
   const list=(q?snAllUsers().filter(u=>u.id!==me&&(nz(u.u).includes(q)||nz(u.name).includes(q))).map(u=>u.id):ids).map(snUser).filter(Boolean);
   return `<header class="sn-top"><b class="sn-un">${esc(snUser(me).u)}</b><span class="sn-sp"></span></header>
@@ -16476,6 +16491,60 @@ function snActTxt(ts){ if(!ts) return ""; const m=(Date.now()-ts)/60000; if(m<5)
 const snAgoS=ts=>{ const m=Math.floor((Date.now()-ts)/60000); return m<60?`${Math.max(1,m)} 分鐘`:m<1440?`${Math.floor(m/60)} 小時`:m<10080?`${Math.floor(m/1440)} 天`:`${Math.floor(m/10080)} 週`; };
 const snMutual=(d,id)=>{ const me=snMeId(); return snFol(d,me).filter(x=>(d.fol[x]||[]).includes(id)).length; };
 /* 推薦卡：跟 IG 一樣大頭貼、共同朋友的小頭像 */
+/* =========================================================
+   官方帳號（公司、團體）＋還沒開通個人 SNS 的藝人投稿
+   ・公司官方帳號：帳號名稱照真實公司；全部自動發（出道／回歸宣傳、MV、一位祝賀、巡演、公告）
+   ・團體官方帳號：「團名_official」；自動發同一套（只發自己團的），管理員可以用它手動發文
+   ・SOLOIST 沒有團體帳號，宣傳在公司帳號
+   ・還沒開通的藝人：投稿到團體官方帳號（SOLOIST 投公司帳號），後台自動審：沒有禁用字詞就隨機 1 分鐘～2 小時後發出
+   ・貼文只存「是哪一則」，照片和文字畫面上再去拿（不重複存圖、宣傳改了這裡也跟著變）
+   ========================================================= */
+const OF_CO={YG:"yg_ent_official",SM:"smtown",JYP:"jypentertainment",HYBE:"hybe_labels",PAPERMOON:"papermoon_official","BLUE HOUR":"bluehour_official","DOLPUNG Lab.":"dolpung_labels"};
+const ofCoKey=co=>String(co).toLowerCase().replace(/[^a-z]/g,"");
+const ofCoOf=k=>Object.keys(OF_CO).find(co=>ofCoKey(co)===k)||"";
+const ofCoId=co=>OF_CO[co]?"o:co_"+ofCoKey(co):"";
+const ofGH=g=>(String(g.name||"").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]/g,"")||"group"+(strHash(String(g.id))%10000))+"_official";
+const snOfAccs=()=>[...Object.keys(OF_CO).map(ofCoId),...GROUPS.filter(g=>!g.solo).map(g=>"o:g_"+g.id)];
+/* 還沒開通的藝人投稿到哪：有團＝團體官方帳號；SOLOIST＝公司官方帳號 */
+function snSubTo(mid){ const m=MEMBERS[mid], g=m&&groupOf(m.group); if(g&&!g.solo) return "o:g_"+g.id; return ofCoId(coOfGid(m&&m.group))||""; }
+let OFM={t:0,m:null};
+function snOfMap(){ if(OFM.m&&Date.now()-OFM.t<4000) return OFM.m; const m={}; try{ promoSrcs(true).flatMap(promoPlan).forEach(x=>m["cp:"+x.id]=x); }catch(e){} try{ coAnnPosts().forEach(x=>m["ca:"+x.id]=x); }catch(e){} try{ coNotePosts().forEach(x=>m["cn:"+x.id]=x); }catch(e){} OFM={t:Date.now(),m}; return m; }
+const ofTag=v=>"#"+String(v||"").replace(/[\s#]+/g,"");
+const ofCard=(em,b,sm,g,bg)=>`<div class="snof-card" style="--c:${(GRADS[(g||0)%GRADS.length]||[])[0]||"#8b5cf6"}">${bg?`<span class="snof-bg" style="background-image:url('${esc(bg)}')"></span>`:""}<em>${esc(em)}</em><b>${esc(b)}</b>${sm?`<small>${esc(sm)}</small>`:""}</div>`;
+const ofCap=c=>c?String(c.t||"").replace(/[\u0001\u0002]/g,"")+(c.b?"\n\n"+String(c.b).replace(/[\u0001\u0002]/g,""):""):"";
+/* 一則官方貼文的照片和文字 */
+function snOfFill(p){ if(p._ofT===OFM.t&&OFM.m) return; const o=p.of, M=snOfMap(), set=(k,v)=>Object.defineProperty(p,k,{value:v,writable:true,configurable:true,enumerable:false}); let media=[], cap="", gone=false;
+  try{
+    if(o.t==="cp"){ const x=M["cp:"+o.id]; if(!x) gone=true; else { const s0=x.src, pr=s0.pr||{}; cap=ofCap(coCap(s0.co,x.k,s0,x));
+      if(x.k==="sched") media=pr.sched?[{type:"image",url:pr.sched}]:[{type:"html",h:promoSchedCard(s0),t:"SCHEDULE"}];
+      else if(x.k==="trk") media=pr.trkImg?[{type:"image",url:pr.trkImg}]:[{type:"html",h:promoTrkCard(s0),t:"TRACK LIST"}];
+      else if(x.vid&&x.vid.mid) media=[{type:"video",mid:x.vid.mid,poster:x.vid.thumb||""}];
+      else if((x.imgs||[]).length) media=x.imgs.map(u=>({type:"image",url:u}));
+      else media=[{type:"html",h:ofCard(x.k==="sc"?"SHOWCASE":PR_KIND[x.k]||"NOTICE",s0.name,s0.title?`《${s0.title}》`:"",s0.g,s0.teaser),t:PR_KIND[x.k]||""}]; } }
+    else if(o.t==="ca"){ const x=M["ca:"+o.id]; if(!x) gone=true; else { const a=x.ann, src=annSrc(a), c=src?coCap(x.co,src.k==="db"?"annDb":"annCb",src,{ts:a.ts}):{t:a.text||""}; cap=ofCap(c); media=a.img?[{type:"image",url:a.img}]:[{type:"html",h:ofCard("NOTICE",coInfo(x.co).n,"",6),t:"NOTICE"}]; } }
+    else if(o.t==="cn"){ const x=M["cn:"+o.id]; if(!x) gone=true; else { const n=x.note; cap=ofCap({t:n.title,b:n.body}); media=[{type:"html",h:ofCard("NOTICE",n.title||"",coInfo(x.co).n,6),t:"NOTICE"}]; } }
+    else if(o.t==="win"){ const so=songOf(o.sid), g=so&&groupOf(so.gid), sh=SHOWS.find(z=>z.id===o.sh); if(!so||!g||!sh) gone=true; else { cap=`🏆 ${g.name}《${so.title}》${sh.name} 1位\n\n謝謝大家的愛與支持，這個一位是大家一起拿下的 💜\n\n${ofTag(g.name)} ${ofTag(so.title)} ${ofTag(sh.name)}`; media=[{type:"html",h:ofCard(`${sh.name} 1位`,g.name,`《${so.title}》`,g.g,gPhoto(g.id)),t:"1位"}]; } }
+    else if(o.t==="tour"){ const t=getTours().find(z=>z.id===o.id), g=t&&groupOf(t.gid); if(!t||!g) gone=true; else { const Ls=tourStops(t).filter(st=>stopState(st)!=="off"); cap=`${g.name} WORLD TOUR〈${t.title}〉\n\n${Ls.map(x=>x.city).join(" · ")}\n\n購票請到 FEST →「世巡」\n${ofTag(g.name)} ${ofTag(t.title)}`; media=[{type:"html",h:ofCard("WORLD TOUR",t.title,Ls.map(x=>x.city).join(" · "),g.g,gPhoto(g.id)),t:"WORLD TOUR"}]; } }
+  }catch(e){ gone=true; }
+  set("media",media); set("cap",cap); set("_gone",gone); set("_ofT",OFM.t); }
+/* 該有哪些官方貼文（每一則都有固定的編號：每支手機算出來都一樣，存到雲端會自動合併、不會重複） */
+function snOfWant(d){ const W=[], now=Date.now(), D=864e5, add=(id,uid,ts,of)=>{ if(uid&&ts&&ts<=now) W.push({id,uid,ts,of}); };
+  Object.entries(snOfMap()).forEach(([key,x])=>{ const t=key.slice(0,2), co=coOfPost(x); add(`of_c_${x.id}`,ofCoId(co),x.ts,{t,id:x.id}); const s0=x.src, g=s0&&groupOf(s0.gid); if(t==="cp"&&g&&!g.solo&&!s0.solo) add(`of_g_${x.id}`,"o:g_"+g.id,x.ts,{t,id:x.id}); });
+  try{ const ms=getMShow(); Object.entries(ms.wins||{}).forEach(([wk,o])=>Object.entries(o||{}).forEach(([sh,sid])=>{ const S0=SHOWS.find(z=>z.id===sh), so=songOf(sid), g=so&&groupOf(so.gid); if(!S0||!g) return; const ts=wkDate(wk).getTime()+((S0.day+6)%7)*D+20*36e5, of={t:"win",wk,sh,sid};
+    add(`of_cw_${wk}_${sh}`,ofCoId(coOfGid(g.id)),ts,of); if(!g.solo) add(`of_gw_${wk}_${sh}`,"o:g_"+g.id,ts,of); })); }catch(e){}
+  try{ getTours().filter(t=>t.status==="approved").forEach(t=>{ const g=groupOf(t.gid); if(!g) return; const ts=t.okTs||t.ts, of={t:"tour",id:t.id}; add(`of_ct_${t.id}`,ofCoId(coOfGid(g.id)),ts,of); if(!g.solo) add(`of_gt_${t.id}`,"o:g_"+g.id,ts,of); }); }catch(e){}
+  (d.sub||[]).forEach(x=>{ if(x.st==="ok"&&x.at<=now&&x.to) W.push({id:"of_s_"+x.id,uid:x.to,ts:x.at,media:x.media,cap:x.cap,by:"m:"+x.mid}); });
+  return W; }
+let OFS=0;
+function snOfSync(){ if(Date.now()-OFS<20000) return; OFS=Date.now(); try{ if(HB_ON&&HB.ver[snKey("posts")]==null) { OFS=0; return; } const raw=S.get(snKey("posts"),[])||[], have=new Set(raw.map(x=>x&&x.id)), d=snDB(), add=snOfWant(d).filter(x=>!have.has(x.id)); if(!add.length) return; d.posts.push(...add); snSave(d); OFM.t=0; }catch(e){} }
+setInterval(()=>{ if(/\/sns(\?|$)/.test(location.hash)) snOfSync(); },60e3);
+/* 還沒開通：「準備中」頁 */
+function snPrepPage(mid,days){ const d=snDB(), to=snSubTo(mid), tu=snUser(to), L=(d.sub||[]).filter(x=>x.mid===mid).sort((a,b)=>b.ts-a.ts), pub=new Set((d.posts||[]).map(x=>x.id)), me=snUser(snMeId());
+  return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page sn-prep">
+    <section class="card sn-prep-h">${snAv(me,72)}<b>${esc(me.u)}</b>${me.name?`<small>${esc(me.name)}</small>`:""}<p>公司跟你說再等 ${days} 天就可以開通了</p></section>
+    <section class="card"><button class="list-btn" data-a="snsGo" data-v="edit">${I.edit||""}先設定個人檔案<span class="r">開通前只有你看得到</span></button>${tu?`<button class="list-btn" data-a="snSubNew">${I.star||""}投稿到 ${esc(tu.u)}<span class="r">${esc(tu.name)}</span></button>`:""}</section>
+    ${L.length?`<div class="section-h">我的投稿</div><section class="card sn-subl">${L.map(x=>{ const st=x.st==="no"?["no","退回："+(x.why||"")]:pub.has("of_s_"+x.id)?["ok","已發布"]:["wait","審核中"]; return `<div class="sn-subr">${x.media&&x.media[0]?`<img class="sn-subth" data-mid="${esc(x.media[0].poster||x.media[0].mid)}" alt="">`:`<span class="sn-subth"></span>`}<span><b>${esc(String(x.cap||"").replace(/^\[[^\]]*\]\s*/,"")||"（沒有文字）")}</b><small>${ago(x.ts)}</small></span><em class="${st[0]}">${esc(st[1])}</em></div>`; }).join("")}</section>`:""}
+  </main>`; }
 /* 「和其他 N 人都說讚」→ 按讚的人（IG：搜尋、頭貼、帳號、名稱、追蹤／追蹤中；點人進個人檔案，不公開的帳號就看到鎖頭） */
 function snLkBtn(d,uid){ const me=snMeId(); if(uid===me||String(uid).startsWith("o:")) return ""; const fo=snFol(d,me).includes(uid), rq=!fo&&snReqd(d,uid);
   return `<button class="snlk-b ${fo||rq?"on":""}" data-a="snLkFol" data-v="${uid}">${fo?"追蹤中":rq?"已要求":"追蹤"}</button>`; }
@@ -16484,6 +16553,7 @@ function snLikers(pid){ const d=snDB(), me=snMeId(), p=(d.posts||[]).find(x=>x.i
     <label class="snlk-q">${si("search")}<input id="snLkQ" placeholder="搜尋" autocomplete="off"></label>
     <div class="snlk-l">${O.map(id=>{ const u=snUser(id); return `<div class="snlk-r" data-q="${esc((u.u+" "+(u.name||"")).toLowerCase())}"><button class="snlk-u" data-a="snsGo" data-v="profile" data-id="${id}">${snAv(u,48,snHasStory(d,id),snStorySeen(d,id))}<span><b>${esc(u.u)}${u.ver?SN_VER:""}</b>${u.name&&u.name!==u.u?`<small>${esc(u.name)}</small>`:""}</span></button>${snLkBtn(d,id)}</div>`; }).join("")||`<p class="snlk-none">還沒有人說讚</p>`}</div></div></div>`,"ios");
   requestAnimationFrame(()=>{ const w=layer.querySelector(".snsh-w"); if(w) w.classList.add("open"); }); }
+document.addEventListener("change",e=>{ if(e.target.id==="snAs"&&ui.snDraft) ui.snDraft.as=e.target.value; });
 document.addEventListener("input",e=>{ if(e.target.id!=="snSrQ") return; const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".snsr-u").forEach(r=>{ r.hidden=!!q&&!r.dataset.q.includes(q); }); });
 document.addEventListener("input",e=>{ if(e.target.id!=="snLkQ") return; const q=e.target.value.trim().toLowerCase(); document.querySelectorAll(".snlk-r").forEach(r=>{ r.hidden=!!q&&!r.dataset.q.includes(q); }); });
 function snSugCard(d,id){ const u=snUser(id); if(!u) return ""; const me=snMeId(), M=snFol(d,me).filter(x=>(d.fol[x]||[]).includes(id)), mu=M.slice(0,2).map(snUser).filter(Boolean);
@@ -16561,11 +16631,14 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(u&&snAllUsers().some(x=>x.id!==me&&x.u===u)){ toast("這個用戶名稱有人用了"); break; } if(u&&nameBlock(u)) break; if(b&&!isAdminAcct()&&banBlock(b)) break; const sg=((document.getElementById("snSongIn")||{}).value||"").trim(); if(sg&&!isAdminAcct()&&banBlock(sg)) break; { const nI=document.getElementById("snNIn"); if(nI){ const nv=nI.value.trim().slice(0,30); if(nv&&!isAdminAcct()&&banBlock(nv)) break; pr.name=nv; } } if(u) pr.u=u; pr.bio=b; snSave(d); navBack(); toast("已更新個人檔案"); break; }
     case "snMode": { const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:"post"}); dr.mode=t.dataset.v; if(dr.mode==="story") dr.media=dr.media.slice(0,1); render(); break; }
     case "snNewX": ui.snDraft=null; navBack(); break;
-    case "snPost": { const dr=ui.snDraft; if(!dr||!dr.media.length||dr.busy) break; const cap=((document.getElementById("snCap")||{}).value||dr.cap||"").trim(); if(cap&&!isAdminAcct()&&banBlock(cap)) break;
+    case "snPost": { const dr=ui.snDraft; if(!dr||!dr.media.length||dr.busy) break; const cap=((document.getElementById("snCap")||{}).value||dr.cap||"").trim(); if(cap&&!isAdminAcct()&&dr.mode!=="sub"&&banBlock(cap)) break;
       const vm=dr.media.find(m=>m.type==="video"); if(vm&&vm.file){ dr.cap=cap; dr.busy=1; snVidReady(vm).then(ok=>{ dr.busy=0; if(ok){ const b=document.querySelector('[data-a="snPost"]'); if(b) b.click(); else { ui.snDraft=dr; } } }); break; }
       const d=snDB(), me=snMeId();
+      if(dr.mode==="sub"){ const mid=(session()||{}).member, to=snSubTo(mid), now=Date.now(), bad=!!cap&&(hasSlur(cap)||hasBanned(cap)), nm=(MEMBERS[mid]||{}).name||"";
+        (d.sub=d.sub||[]).push({id:"sb"+now.toString(36),mid,to,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap:`[${nm}] ${cap}`.trim(),ts:now,st:bad?"no":"ok",why:bad?"內容有不能用的字詞":"",at:now+Math.round((60+Math.random()*7140)*1000)});
+        snSave(d); toast(bad?"投稿被退回：內容有不能用的字詞":"已送出，公司審核後會發布"); ui.snDraft=null; navBack(); break; }
       if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(dr.ov?{ov:dr.ov}:{}),...((dr.stx||[]).length?{stx:dr.stx}:{}),...((dr.ment||[]).length?{ment:dr.ment}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
-      else { d.posts.push({id:"sp"+Date.now(),uid:me,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice()}:{})}); toast("已分享"); }
+      else { const as=isAdminAcct()&&dr.as&&snOfAccs().includes(dr.as)?dr.as:me; d.posts.push({id:"sp"+Date.now(),uid:as,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice()}:{})}); toast("已分享"); }
       snSave(d); try{ snMentNotify(dr.mode==="story"?(dr.ment||[]).map(x=>x.u):(dr.tags||[]),dr.mode==="story"?"在限時動態中提到你":"在貼文中標註了你"); }catch(e){} ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
     case "snStory": if(t.dataset.v) snOpenStory(t.dataset.v,t.dataset.o==="1"); break;
     case "snSnd": snSndToggle(); break;
@@ -16586,6 +16659,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snTagT": { const dr=ui.snDraft; if(!dr) break; const L=dr.tags=dr.tags||[], i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=20) toast("最多標註 20 人"); else L.push(t.dataset.v); t.classList.toggle("on",i<0); break; }
     case "snTagDone": layer.innerHTML=""; render(); break;
     case "snLikers": snLikers(t.dataset.id); break;
+    case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; location.hash="#/"+session().role+"/sns?p=new&id=sub"; break;
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }
     case "snLkX": { layer.innerHTML=""; if(ui.snLkDirty){ ui.snLkDirty=0; render(); } break; }
     case "snLkFol": { const d=snDB(), me=snMeId(), v=t.dataset.v, L=snFol(d,me), i=L.indexOf(v); d.req=d.req||{};
