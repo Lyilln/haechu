@@ -6803,7 +6803,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110081042";
+const BUILD="20261110081544";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -13663,7 +13663,8 @@ function clickAdm(a,t,e,r){ switch(a){
           hbUploadBig.on=pc=>{ u.busy=`上傳中… ${pc}%`; const e=document.querySelector(".db-busy"); if(e) e.textContent=u.busy; };
           const ok=(HB_ON&&!sbxOn())?await hbUpload(id,u.file):(await MDB.put(id,u.file),true); hbUploadBig.on=null; if(!ok){ u.busy=""; vsUpPage(); toast("上傳失敗，再試一次"); return; }
           memBlobs[id]=u.file; const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:u.dur||0,ts:Date.now(),views:0,by:session().member||uniMe(),...(u.fy&&Object.keys(u.fy).length?{fy:Object.fromEntries(Object.entries(u.fy).map(([k,r])=>{ const o={...r}; delete o._pv; return [k,o]; }))}:{})}); S.set(K.vods,L);
-          ui.vsUp=null; layer.innerHTML=""; try{ mvSongTick(); }catch(e){} lsRerender(); toast("影片上傳好了"); }catch(e){ hbUploadBig.on=null; u.busy=""; vsUpPage(); toast("這部影片讀不出來，換一部試試"); } })(); break; }
+          ui.vsUp=null; layer.innerHTML=""; try{ mvSongTick(); }catch(e){} lsRerender(); toast("影片上傳好了");
+          { const vf=u.file, vid0=L[L.length-1].id; if(isMvLabel((getSecs(f.gid).find(x=>x.id===f.sid)||{}).title)||vodIsMV(L[L.length-1])) mvAudioUpload(vf).then(aid=>{ if(!aid) return; const V=S.get(K.vods,[])||[], v=V.find(y=>y.id===vid0); if(v){ v.au=aid; S.set(K.vods,V); } const m=getMShow(), so=[...m.songs,...(m.ended||[])].find(y=>y.mv===vid0); if(so) songAuSet(so.id,aid); }).catch(()=>{}); } }catch(e){ hbUploadBig.on=null; u.busy=""; vsUpPage(); toast("這部影片讀不出來，換一部試試"); } })(); break; }
     case "vsVDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); lsRerender(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
     case "vodG": ui.vodG=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "vodNewCat": ui.vodNewCat=t.dataset.v; { const y=window.scrollY, ti=(document.getElementById("vdTitle")||{}).value, li=(document.getElementById("vdLink")||{}).value; render(); window.scrollTo(0,y); const a=document.getElementById("vdTitle"), b=document.getElementById("vdLink"); if(a&&ti) a.value=ti; if(b&&li) b.value=li; } break;
@@ -18066,7 +18067,7 @@ function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
       const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v);
-      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{})}); ch=true; try{ if(v.fy){ fairySetClips("s"+v.ts,v.fy); } }catch(e){} const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
+      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{}),...(v.au?{au:v.au}:{})}); ch=true; try{ if(v.fy){ fairySetClips("s"+v.ts,v.fy); } }catch(e){} const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
     /* v494 先建好的歌：如果是出道 MV，補上「出道曲」，公告標題也改過來 */
     { const V=S.get(K.vods,[])||[]; [...m.songs,...(m.ended||[])].forEach(x=>{ if(!x.mv||x.debut) return; const v=V.find(y=>y.id===x.mv); if(v&&mvIsDebut(v)){ x.debut=1; ch=true; const GN=S.get(K.gNotices,[])||[], n=GN.find(y=>y.mv===v.id); if(n&&/Official MV 公開/.test(n.title)){ n.title=n.title.replace("Official MV 公開","出道 MV 公開"); n.body=n.body.replace(/^(.+?)《/,"$1的出道曲《"); S.set(K.gNotices,GN); } } }); }
     /* 回歸：同一團有新歌，舊歌下檔 */
@@ -18496,7 +18497,7 @@ function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ S
     <span class="fs-f-lab">App 裡的歌</span><div class="snm-list">${L.length?L.map(x=>{ const g=groupOf(x.gid); return `<button class="snm-song" data-a="snMusSong" data-id="${esc(x.id)}" type="button"><span class="snm-cv">${songCover(x.gid)}</span><span><b>${esc(x.title)}</b><small>${esc(g.name)}</small></span></button>`; }).join(""):`<p class="snm-empty">還沒有歌</p>`}</div>`,
     `<button class="t-mbtn" data-a="snMusX">取消</button>`); }
 async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||!g) return; toast("讀取中…"); snMusUnlock();
-  try{ const b=await songAudio(x); if(!b){ toast("這首歌還沒有音訊"); return; } const AC=window.AudioContext||window.webkitAudioContext, c=new AC(); const buf=await decodeAu(c,await b.arrayBuffer()); try{ c.close(); }catch(e){}
+  try{ let b=await songAudio(x); if(!b) b=await songAuFromMv(x,true); if(!b){ toast("這首歌的 MV 還沒有聲音可以用"); return; } const AC=window.AudioContext||window.webkitAudioContext, c=new AC(); const buf=await decodeAu(c,await b.arrayBuffer()); try{ c.close(); }catch(e){}
     if(!buf||!buf.duration) throw 0; snMusBuf=buf; ui.snMusT={title:x.title,artist:g.name,gid:x.gid,sid:x.id,src:"app",start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("這首歌的音訊讀不出來"); } }
 function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
   tieModal("加入音樂",`${t.src?`<div class="snm-lock">${si("note","sm")}${esc(snMusLabel(t))}</div>`:`<span class="fs-f-lab">歌名</span><input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="輸入文字" value="${esc(t.title)}">`}
@@ -18514,7 +18515,8 @@ async function snMusCut(buf,start){ const sr=22050, len=Math.min(SN_MUS_LEN,buf.
   try{ const L=await snLame(); if(L){ const enc=new L.Mp3Encoder(1,sr,64), pcm=new Int16Array(d.length); for(let i=0;i<d.length;i++) pcm[i]=Math.max(-32768,Math.min(32767,d[i]*32767)); const parts=[]; for(let i=0;i<pcm.length;i+=1152){ const m=enc.encodeBuffer(pcm.subarray(i,i+1152)); if(m.length) parts.push(new Uint8Array(m)); } const e=enc.flush(); if(e.length) parts.push(new Uint8Array(e)); return {blob:new Blob(parts,{type:"audio/mpeg"}),dur:len}; } }catch(e){}
   return {blob:await compactWav(out),dur:len}; }
 function snLame(){ if(window.lamejs) return Promise.resolve(window.lamejs); if(snLame.p) return snLame.p;
-  snLame.p=new Promise(res=>{ const s=document.createElement("script"); s.src="https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js"; s.onload=()=>res(window.lamejs||null); s.onerror=()=>{ snLame.p=null; res(null); }; document.head.appendChild(s); setTimeout(()=>res(window.lamejs||null),8000); }); return snLame.p; }
+  const load=src=>new Promise(res=>{ const s=document.createElement("script"); s.src=src; s.onload=()=>res(window.lamejs||null); s.onerror=()=>res(null); document.head.appendChild(s); setTimeout(()=>res(window.lamejs||null),8000); });
+  snLame.p=(async()=>{ const L=await load("https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js")||await load("https://unpkg.com/lamejs@1.2.1/lame.min.js"); if(!L) snLame.p=null; return L; })(); return snLame.p; }
 async function snMusOk(){ const dr=ui.snDraft, t=ui.snMusT; if(!dr||!t||!snMusBuf) return; { const ti=document.getElementById("snMusTi"); if(ti&&!t.src) t.title=(ti.value||"").trim()||t.title; } snMusPvStop(); layer.innerHTML=""; steBack(); toast("音樂處理中…");
   try{ const {blob,dur}=await snMusCut(snMusBuf,t.start), id="snm"+Date.now().toString(36); await MDB.put(id,blob,true); if(!await hbUpload(id,blob)){ toast("音樂沒有上傳成功，請再試一次"); return; }
     dr.mus={mid:id,title:t.title,dur:Math.round(dur)}; ["src","artist","uid","gid","sid"].forEach(k=>{ if(t[k]) dr.mus[k]=t[k]; }); snMusBuf=null; ui.snMusT=null; render(); try{ steMusTag(); }catch(e){} toast("已加入音樂"); }catch(e){ toast("音樂處理失敗，請換一首試試"); } }
@@ -19315,16 +19317,21 @@ async function mvToAudio(blob){ try{ if(!blob||blob.size>200*1024*1024) return n
     try{ buf=await decodeAu(c,await blob.arrayBuffer()); } finally{ try{ c.close(); }catch(e){} } if(!buf) return null;
     const sr=22050, len=Math.min(buf.duration,360), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(1,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf; s.connect(oc.destination); s.start(0,0,len);
     const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); }); const d=out.getChannelData(0);
-    const L=await snLame(); if(!L) return null; const enc=new L.Mp3Encoder(1,sr,64), pcm=new Int16Array(d.length); for(let i=0;i<d.length;i++) pcm[i]=Math.max(-32768,Math.min(32767,d[i]*32767));
+    const L=await snLame(); if(!L) return await compactWav(out);   /* MP3 轉檔工具載不到：改存 WAV（大一點，但一定有聲音） */ const enc=new L.Mp3Encoder(1,sr,64), pcm=new Int16Array(d.length); for(let i=0;i<d.length;i++) pcm[i]=Math.max(-32768,Math.min(32767,d[i]*32767));
     const parts=[]; for(let i=0;i<pcm.length;i+=1152){ const m=enc.encodeBuffer(pcm.subarray(i,i+1152)); if(m.length) parts.push(new Uint8Array(m)); } const e=enc.flush(); if(e.length) parts.push(new Uint8Array(e));
     return new Blob(parts,{type:"audio/mpeg"}); }catch(e){ return null; } }
 async function mvAudioUpload(blob){ const a=await mvToAudio(blob); if(!a) return ""; const id="mva"+Date.now().toString(36); await MDB.put(id,a,true); return (await hbUpload(id,a))?id:""; }
 /* 這首歌的音樂（song.au＞演唱會音檔） */
 async function songAudio(s){ if(!s) return null; if(s.au){ const b=await MDB.get(s.au); if(b) return b; } return await auGet(s.id); }
-/* 管理員：以前的歌補轉（一次一首，失敗的記下來不重試） */
+/* 歌還沒有音訊：直接從這首歌的 MV 取出聲音（誰先用到就誰轉，轉好存起來大家共用） */
+let auFromBusy={};
+async function songAuFromMv(s,say){ const v=songMv(s); if(!v||!v.mid) return null; if(v.au){ const b=await MDB.get(v.au); if(b){ songAuSet(s.id,v.au); return b; } } if(auFromBusy[s.id]) return null; auFromBusy[s.id]=1;
+  try{ if(say) toast("正在從 MV 取出聲音，第一次會久一點…"); const mv=await MDB.get(v.mid); if(!mv) return null; const a=await mvToAudio(mv); if(!a) return null; const id="mva"+Date.now().toString(36); await MDB.put(id,a,true); if(await hbUpload(id,a)) songAuSet(s.id,id); return a; }catch(e){ return null; } finally{ delete auFromBusy[s.id]; } }
+function songAuSet(sid,id){ try{ const m=getMShow(), x=[...m.songs,...(m.ended||[])].find(y=>y.id===sid); if(x&&x.au!==id){ x.au=id; delete x.auNo; S.set(K.mshow,m); } }catch(e){} }
+/* 管理員：以前的歌補轉（一次一首；失敗的 12 小時後再試，不會永遠卡住） */
 let muAuBusy=false;
-async function muAudioJob(){ if(muAuBusy||!isAdminAcct()||(HB_ON&&HB.ver[K.mshow]==null)) return; const ms=getMShow(), s=ms.songs.find(x=>!x.au&&!x.auNo&&songMv(x)&&songMv(x).mid); if(!s) return; muAuBusy=true;
-  try{ const v=songMv(s), b=await MDB.get(v.mid), id=b?await mvAudioUpload(b):""; const m2=getMShow(), x=m2.songs.find(y=>y.id===s.id); if(x){ if(id) x.au=id; else x.auNo=1; S.set(K.mshow,m2); } }catch(e){} muAuBusy=false; }
+async function muAudioJob(){ if(muAuBusy||!isAdminAcct()||(HB_ON&&HB.ver[K.mshow]==null)) return; const ms=getMShow(), now0=Date.now(), s=ms.songs.find(x=>!x.au&&(!x.auNo||(x.auNo>1e12&&now0-x.auNo>12*36e5))&&songMv(x)&&songMv(x).mid); if(!s) return; muAuBusy=true;
+  try{ const v=songMv(s), b=await MDB.get(v.mid), id=b?await mvAudioUpload(b):""; const m2=getMShow(), x=m2.songs.find(y=>y.id===s.id); if(x){ if(id){ x.au=id; delete x.auNo; } else x.auNo=Date.now(); S.set(K.mshow,m2); } }catch(e){} muAuBusy=false; }
 setInterval(muAudioJob,5*60e3); setTimeout(muAudioJob,40e3);
 
 /* =========================================================
