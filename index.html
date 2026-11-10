@@ -3370,7 +3370,7 @@ html[data-theme="dark"] .sn,.sn.dark{--b:#000;--t:#F5F5F5;--s:#A8A8A8;--l:#36363
 .sn-post{margin-bottom:12px}
 .sn-post>header{display:flex;align-items:center;gap:10px;padding:8px 6px 8px 12px}
 .sn-pu{flex:1;min-width:0;display:flex;flex-direction:column}.sn-pu b{font-size:13.5px;font-weight:600}.sn-pu small{font-size:11.5px;color:var(--t)}
-.sn-media{position:relative}
+.sn-media{position:relative;isolation:isolate}
 .sn-pic{display:block;width:100%;position:relative;overflow:hidden}
 .sn-pic::after{content:"";position:absolute;inset:0;background:radial-gradient(120% 80% at 30% 20%,rgba(255,255,255,.28),transparent 60%)}
 .sn-pic.sq{aspect-ratio:4/5}.sn-pic.full{position:absolute;inset:0;height:100%}.sn-pic.th{width:44px;height:44px;flex:none;aspect-ratio:auto}
@@ -4045,6 +4045,7 @@ html[data-theme="dark"] .logo,html[data-theme="dark"] .hc-wm,html[data-theme="da
 .sn-heart{position:absolute;left:50%;top:50%;width:96px;height:96px;margin:-48px 0 0 -48px;color:#fff;opacity:0;pointer-events:none;filter:drop-shadow(0 4px 12px rgba(0,0,0,.3))}
 .sn-heart .si{width:100%;height:100%;fill:#fff;stroke:#fff}
 .sn-heart.pop{animation:snPop .9s cubic-bezier(.3,1.6,.5,1) forwards}
+.sn-heart{z-index:6;-webkit-transform:translateZ(0);will-change:transform,opacity}
 @keyframes snPop{0%{opacity:0;transform:scale(.2)}15%{opacity:1;transform:scale(1.1)}30%{transform:scale(.95)}45%{transform:scale(1)}80%{opacity:1}100%{opacity:0;transform:scale(1)}}
 .sn-acts button.liked{color:#FF3040}.sn-acts button.liked .si,.sn-rr button.liked .si{fill:#FF3040;stroke:#FF3040}
 .sn-acts button.saved .si{fill:currentColor}
@@ -6650,7 +6651,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110014335";
+const BUILD="20261110014610";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -16227,8 +16228,9 @@ async function snAddFiles(files){ const dr=ui.snDraft; if(!dr) return; for(const
 let snTapT=0;
 /* 任何重畫（別人的新資料、定時檢查…）都把 SNS 的捲動位置放回去：iPhone 上換掉內容的當下設 scrollTop 常常沒用，下一格畫面再補一次 */
 { const R0=render; render=function(){ const h=location.hash, sn=document.querySelector(".sn"), sy=sn?sn.scrollTop:0; const r=R0.apply(this,arguments);
+    try{ const sp=ui.snPop; if(sp&&Date.now()-sp.ts<600&&location.hash===h){ const el=document.querySelector(`#snp-${CSS.escape(sp.id)} .sn-heart`); if(el&&!el.classList.contains("pop")){ el.classList.add("pop"); } } }catch(e){}
     if(sy>0&&location.hash===h){ const fix=()=>{ const s2=document.querySelector(".sn"); if(s2&&Math.abs(s2.scrollTop-sy)>2) s2.scrollTop=sy; }; fix(); requestAnimationFrame(fix); setTimeout(fix,80); setTimeout(fix,250); } return r; }; }
-function snHeartPop(id){ const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
+function snHeartPop(id){ ui.snPop={id,ts:Date.now()}; const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 function snToggleLike(id,force){ const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
 
 /* ===== 一次性整理（管理員的手機做一次，大家共用）：
