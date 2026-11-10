@@ -5730,7 +5730,7 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .mu4-card{display:flex;flex-direction:column;gap:12px;width:100%;padding:14px;border:1px solid var(--line);border-radius:20px;background:var(--s1);font:inherit;color:var(--ink);text-align:left}
 .mu4-card.foc-now{flex-direction:row}
 .mu4-top{display:flex;align-items:center;gap:12px}.mu4-ti{flex:1;min-width:0;display:flex;flex-direction:column}.mu4-ti b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mu4-ti small{font-size:12px;color:var(--ink-3)}
-.mu4-go{font-size:20px;color:var(--ink-3)}
+.mu4-go{font-size:20px;color:var(--ink-3)}.mu4-top .mu2-cv{width:48px;height:48px;flex:none}
 .mu4-strip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
 .mu4-c{display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 2px;border-radius:12px;background:var(--s2);min-width:0}
 .mu4-c i{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.04em;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
@@ -6184,10 +6184,10 @@ html[data-theme="dark"] .sn-sh.cm{--sn-b:#1C1D21}
 .fy-res{margin-top:12px;border-top:1px solid var(--line);padding-top:6px}.fy-rr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px}.fy-rr b{font-weight:700}.fy-rr span{color:var(--ink-3);font-size:13px}
 .fy-a .fy-hint{margin:10px 0 0;font-size:12.5px;color:var(--ink-3)}
 .fy-rr b small{font-weight:500;color:var(--ink-3);font-size:12px}.fy-rr.done span{color:var(--ink);font-weight:700}
-.mu4-top{display:flex;flex-direction:column;gap:2px;margin:4px 2px 2px}.mu4-top b{font-size:18px}.mu4-top small{font-size:12.5px;color:var(--ink-3)}
+.mu4-pt{display:flex;flex-direction:column;gap:2px;margin:4px 2px 2px}.mu4-pt b{font-size:18px}.mu4-pt small{font-size:12.5px;color:var(--ink-3)}
 .mu4-bt2{padding:12px 16px}.mu4-sh{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:6px}.mu4-sh span{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0;border-radius:12px;background:var(--s2);font-size:12px;color:var(--ink-3)}.mu4-sh b{font-size:16px;color:var(--ink)}
 .mu4-l{display:flex;align-items:center;gap:10px;padding:11px 0}.mu4-l+.mu4-l{border-top:1px solid var(--line)}.mu4-ln{flex:0 0 112px;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mu4-lr{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--s2);font-size:12.5px;font-weight:800}html body .mu4-lr.top{background:var(--violet);color:#fff}.mu4-top{align-items:flex-start;text-align:left}.fy-a:has(.fy-dt){padding:14px 16px}
+.mu4-lr{flex:none;display:grid;place-items:center;width:24px;height:24px;border-radius:7px;background:var(--s2);font-size:12.5px;font-weight:800}html body .mu4-lr.top{background:var(--violet);color:#fff}.mu4-pt{align-items:flex-start;text-align:left}.fy-a:has(.fy-dt){padding:14px 16px}
 .mu4-ls{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}.mu4-ls b{font-size:14px}.mu4-ls small{font-size:11.5px;color:var(--ink-3)}
 .mu4-l em{flex:none;font-style:normal;font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:3px}.mu4-l em svg{width:14px;height:14px}
 .mu4-aws{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px;align-items:center}.mu4-aws>small{width:100%;font-size:12px;color:var(--ink-3)}.mu4-awc{display:inline-flex;align-items:center;gap:4px;padding:5px 10px;border-radius:999px;background:var(--violet-soft);font-size:12px}.mu4-awc svg{width:14px;height:14px}.mu4-awc i{font-style:normal;color:var(--ink-3)}
@@ -6717,7 +6717,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110053834";
+const BUILD="20261110055248";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18923,7 +18923,7 @@ function artPromoPage(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=cur
   const awH=aw.length?`<div class="mu4-aws"><small>拿過的獎</small>${aw.map(x=>`<span class="mu4-awc">${MU_IC[x.ic]}<b>${esc(x.t)}</b><i>《${esc(x.s)}》</i></span>`).join("")}</div>`:"";
   prog=prog?sec("成績",prog.replace("@@AW@@",awH)):(aw.length?sec("成績",`<section class="card mu4-pg">${awH}</section>`):"");
   const mc=mcs.length?sec("MC",`<section class="card mu4-mc">${mcs.map(x=>`<div class="mu4-mr"><b>${x.name}</b><small>每週${WDAY[x.day]}</small></div>`).join("")}<p class="mu4-mp">每週 +${fmt(mcWeekly(mcs.length))} 積分</p></section>`):"";
-  const top=`<div class="mu4-top">${s?`<b>《${esc(s.title)}》</b>`:""}<small>打歌積分・這個月 ${fmt(groupMusicPts(gid,{year:mon}))}・今年 ${fmt(groupMusicPts(gid,{year:y}))}</small></div>`;
+  const top=`<div class="mu4-pt">${s?`<b>《${esc(s.title)}》</b>`:""}<small>打歌積分・這個月 ${fmt(groupMusicPts(gid,{year:mon}))}・今年 ${fmt(groupMusicPts(gid,{year:y}))}</small></div>`;
   return `<main class="page foc mu4">${top}${s?"":`<section class="card"><p class="me-none">現在沒有打歌中的歌</p></section>`}${battle}${fairyArtHtml(mid)}${prog}${mc}</main>`; }
 
 /* =========================================================
