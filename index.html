@@ -2659,6 +2659,16 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .ofm-b{display:block;width:100%;border:0;background:none;text-align:left;font-family:inherit;color:var(--ink);padding:12px 14px 4px;cursor:pointer}
 .ofm-h{display:flex;align-items:center;gap:9px;min-width:0}.ofm-h .av{width:34px;height:34px;flex:none}.ofm-h>span{display:flex;flex-direction:column;min-width:0}
 .cm-avi{width:100%;height:100%;object-fit:cover;border-radius:inherit;display:block}.pd-av,.fp-h>i{overflow:hidden}
+.pd-body.rp .pd-c.top{border:0;background:none;padding:14px 16px 8px}.pd-body.rp .pd-c.top>.pd-cb{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:12px 16px 10px;margin-left:-4px}
+.pd-body.rp .pd-sec{border-top:8px solid var(--s2);padding:4px 16px 4px 56px}.pd-body.rp .pd-sec:first-of-type{border-top:0}
+.pd-body.rp .pd-sh b{font-size:17px}.pd-body.rp .pd-sh em{font-size:17px;font-weight:700;color:var(--ink-3)}
+.pd-body.rp .pd-r{position:relative;padding:10px 0}.pd-body.rp .pd-r .pd-av{width:30px;height:30px;font-size:12px}.pd-body.rp .pd-r::before{content:"";position:absolute;left:14px;top:46px;bottom:4px;width:2px;border-radius:1px;background:var(--line)}
+.pd-ch b.art{color:#3BA4F5}.pd-ch b svg{width:14px;height:14px;color:#3BA4F5;vertical-align:-2px;margin-left:2px}
+.ap2-sort{border:0;background:none;color:var(--ink-3);font:inherit;font-size:14px;font-weight:600;display:flex;align-items:center;gap:6px;padding:6px 2px 12px}.ap2-sort svg{width:16px;height:16px}
+.ap2-cmc{position:relative;display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;border:0;padding:16px 16px 16px 50px;margin-bottom:12px;font-family:inherit;color:var(--ink);border-radius:18px}
+.ap2-cmc .ap2-cl{position:absolute;left:22px;top:20px;width:20px;height:20px;border-radius:50%;background:var(--s2)}.ap2-cmc .ap2-cl::after{content:"";position:absolute;left:9px;top:26px;width:2px;height:calc(100% + 40px);background:var(--line)}
+.ap2-cmc .ap2-cq{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.ap2-cmc .ap2-cq b{font-size:15px;display:flex;align-items:center;gap:3px}.ap2-cmc .ap2-cq em{font-style:normal;font-size:15px;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
+.ap2-cmc .ap2-ch{display:flex;align-items:center;gap:4px}.ap2-cmc .ap2-ch b{font-size:15px}.ap2-cmc .ap2-ch small{color:var(--ink-3);font-size:13px;margin-left:6px}.ap2-cmc .ap2-vf svg{width:14px;height:14px;color:#3BA4F5;display:block}.ap2-cmc .ap2-ct{font-size:15px;line-height:1.45}
 .ofm-go{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex}.ofm-b{cursor:pointer}
 .ofm-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:3px}.ofm-n svg{width:15px;height:15px;color:#3BA4F5}.ofm-h small{font-size:11.5px;color:var(--ink-3)}
 .ofm-tt{margin:10px 0 2px;font-size:14.5px;line-height:1.4}
@@ -6885,7 +6895,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110122241";
+const BUILD="20261110124104";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10695,9 +10705,10 @@ function renderComments(first=false){
       <div class="pd-ch"><b>${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}</div>
       ${isMeC(c)?`<p class="pd-ct">${esc(c.text)}</p>`:trT("c:"+c.id,c.text,"pd-ct","p",c.author!=="artist")}
       <div class="pd-ca"><button class="pd-lk ${cLiked(c)?"on":""}" data-a="pdCLike" data-c="${c.id}" aria-label="喜歡">${I.heart}${(c.likedBy||[]).length?`<span>${fmt(c.likedBy.length)}</span>`:""}</button>
-        ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:""}</div></div></div>`;
-  const repItem=r=>`<div class="pd-c" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
-      <div class="pd-ch"><b>${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}</div></div>`;
+        ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:`<span class="pd-rp">${PDI.reply}<span>${fmt(nRep(c))}</span></span>`}</div></div></div>`;
+  const rLk=r=>{ const L=r.likedBy||[]; return `<div class="pd-ca"><button class="pd-lk ${L.includes(myEmail())?"on":""}" data-a="pdRLike" data-c="${r.cid||""}" data-r="${r.id}" aria-label="喜歡">${I.heart}${L.length?`<span>${fmt(L.length)}</span>`:""}</button></div>`; };
+  const repItem=r=>`<div class="pd-c pd-r" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
+      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
   const sec=(t,n,body,k)=>`<section class="pd-sec"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${k==="ac"||k==="ar"?`<span class="pd-sav" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:""}${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";
@@ -10705,8 +10716,8 @@ function renderComments(first=false){
       <label class="pd-pill"><textarea rows="1" class="ag" id="cin" autocomplete="off" placeholder="${ph}">${esc(draft)}</textarea></label><button class="pd-send" type="submit" id="csend" ${draft.trim()?"":"disabled"} aria-label="送出">${PDI.send}</button></div></form>`:"";
   let html;
   if(cid){ const c=list.find(x=>x.id===cid); if(!c){ ui.sheet.cid=null; return renderComments(true); }
-    const arts=[...(c.reply?[{id:c.id+"_r",author:"artist",text:c.reply.text,ts:c.reply.ts}]:[]),...cReps(c).filter(r=>r.author==="artist")], fans=cReps(c).filter(r=>r.author!=="artist");
-    html=head("回覆")+`<main class="pd-body" id="csl">${item(c,true)}
+    const arts=[...(c.reply?[{id:c.id+"_r",cid:c.id,author:"artist",text:c.reply.text,ts:c.reply.ts,likedBy:c.reply.likedBy||[]}]:[]),...cReps(c).filter(r=>r.author==="artist").map(r=>({...r,cid:c.id}))], fans=cReps(c).filter(r=>r.author!=="artist").map(r=>({...r,cid:c.id}));
+    html=head("回覆")+`<main class="pd-body rp" id="csl">${item(c,true)}
       ${arts.length?sec("藝人回覆",arts.length,arts.map(repItem).join(""),"ar"):""}
       ${sec("全部回覆",fans.length,fans.length?fans.map(repItem).join(""):`<p class="pd-none">還沒有回覆</p>`)}</main>`+bar("請輸入回覆",c.author==="artist"?artName(p.member,"feed"):shownName(c));
   } else {
@@ -12863,6 +12874,7 @@ function viewAdmin(tab){
       return `<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">內容</div><button class="icon-btn" data-a="uniAnn" aria-label="發公告">＋</button></div></header><main class="page">${uniContentSeg(2)}
         <div class="section-h">全部粉絲<span class="muted">${list.length} 則</span></div>${list.length?`<section class="card">${list.map(a=>`<div class="uni-an"><p>${esc(a.text)}<small>${ago(a.ts)}</small></p><button class="btn btn-soft btn-sm" data-a="annDel" data-id="${a.id}">撤下</button></div>`).join("")}</section>`:`<p class="me-none">沒有公告</p>`}
         <div class="section-h">團體公告<span class="muted">${gl.length} 則</span></div>${gl.length?`<section class="card">${gl.map(n=>`<div class="uni-an"><p><b>${esc((groupOf(n.group)||{name:""}).name)}</b>${esc(n.title)}<small>${ago(n.ts)}</small></p><button class="btn btn-soft btn-sm" data-a="gnDel" data-v="${n.id}">撤下</button></div>`).join("")}</section>`:`<p class="me-none">沒有團體公告</p>`}
+        ${(()=>{ const PH=S.get(PIN_HIDE,{})||{}, cp=coPinList().filter(x=>!PH[x.id]).sort((a,b)=>b.ts-a.ts); return `<div class="section-h">公司官方公告（置頂中）<span class="muted">${cp.length} 則</span></div>${cp.length?`<section class="card">${cp.map(a=>`<div class="uni-an"><p>${esc(a.text)}<small>${ago(a.ts)}・7 天後自動下架</small></p><button class="btn btn-soft btn-sm" data-a="pinDel" data-id="${esc(a.id)}">撤下</button></div>`).join("")}</section>`:`<p class="me-none">沒有置頂中的公司公告</p>`}`; })()}
       </main>`; }
   }
   if(tab==="revenue") return viewRevenue();
@@ -13336,7 +13348,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "toggleSet": { const s=getSettings(); s[t.dataset.k]=!s[t.dataset.k]; S.set(K.settings,s); t.setAttribute("aria-checked",s[t.dataset.k]); e.stopPropagation(); return; }
     case "closeLayer": if(e.target===t||t.tagName==="BUTTON") layer.innerHTML=""; break;
     case "openPost": if(t.dataset.id){
-      if(t.dataset.c){ ui.feedTab="feed"; go("fan"); openComments(t.dataset.id,{focusC:t.dataset.c}); }
+      if(t.dataset.c){ ui.feedTab="feed"; go("fan"); const c0=S.get(K.comments,[]).find(x=>x.id===t.dataset.c); if(c0&&c0.author!=="artist"){ ui.sheet={postId:t.dataset.id,focusC:t.dataset.c,cid:t.dataset.c}; renderComments(true); } else openComments(t.dataset.id,{focusC:t.dataset.c}); }
       else { ui.feedTab="feed"; ui.focusPost=t.dataset.id; ui.expanded.add(t.dataset.id); go("fan"); } } break;
     case "comments": ui.cDraft=""; openComments(t.dataset.id); break;
     case "ptOrig": { ui.ptOrig=ui.ptOrig||new Set(); const id=t.dataset.id; if(ui.ptOrig.has(id)) ui.ptOrig.delete(id); else ui.ptOrig.add(id); const p=getPosts().find(x=>x.id===id); const el=document.querySelector(`[data-ptx="${id}"]`); if(p&&el){ const cl=el.classList.contains("clamp"); t.remove(); el.outerHTML=postTextHtml(p,false,cl); } break; }
@@ -13655,6 +13667,8 @@ function clickCm(a,t,e,r){ switch(a){
           files.forEach(f=>{ const u=URL.createObjectURL(f), a2=document.createElement("a"); a2.href=u; a2.download=f.name; document.body.appendChild(a2); a2.click(); a2.remove(); setTimeout(()=>URL.revokeObjectURL(u),4000); });
         }catch(err){ if(!(err&&err.name==="AbortError")) toast("沒有存成功，長按照片也可以儲存"); } })(); break; }
     case "pdBack": if(ui.sheet&&ui.sheet.cid){ ui.sheet.cid=null; ui.cDraft=""; renderComments(true); } else { ui.sheet=null; ui.cDraft=""; layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); } break;
+    case "pdRLike": { const L=S.get(K.comments,[]), c=L.find(x=>x.id===t.dataset.c); if(!c) break; const me=myEmail(), rid=t.dataset.r; let o=null; if(rid===c.id+"_r"&&c.reply) o=c.reply; else o=(c.reps||[]).find(r=>r.id===rid); if(!o) break; const A=o.likedBy=o.likedBy||[], i=A.indexOf(me); if(i>=0) A.splice(i,1); else A.push(me); S.set(K.comments,L);
+      t.classList.toggle("on",i<0); const sp=t.querySelector("span"); if(A.length){ if(sp) sp.textContent=fmt(A.length); else t.insertAdjacentHTML("beforeend",`<span>${fmt(A.length)}</span>`); } else if(sp) sp.remove(); break; }
     case "pdOpenRep": if(ui.sheet){ ui.sheet.cid=t.dataset.c; ui.cDraft=""; renderComments(true); } break;
     case "pdFold": { ui.pdFold=ui.pdFold||{}; ui.pdFold[t.dataset.v]=!ui.pdFold[t.dataset.v]; renderComments(); break; }
     case "pdGrp": { const gid=t.dataset.v; ui.sheet=null; layer.innerHTML=""; openGroup(gid); break; }
@@ -15100,13 +15114,17 @@ const gNew=g=>{ if(!g||!g.isNew) return false; const t=+String(g.id).replace(/^g
 /* ===== 藝人個人頁：藝人首頁和粉絲看到的同一個版面（照 Weverse） ===== */
 function artMedia(posts){ const out=[]; posts.forEach(p=>{ (p.media||[]).forEach(x=>out.push({id:p.id,mid:x.kind==="video"?x.thumb||"":x.mid})); if(!p.media&&p.color!=null) out.push({id:p.id,c:p.color}); }); return out; }
 function artCmList(mid){ const ps=new Set(getPosts().filter(p=>p.member===mid).map(p=>p.id));
-  return S.get(K.comments,[]).filter(c=>ps.has(c.postId)&&(c.reply||c.author==="artist")).map(c=>c.author==="artist"?{fan:null,text:c.text,ts:c.ts,postId:c.postId}:{fan:c,text:c.reply.text,ts:c.reply.ts,postId:c.postId}); }
+  const L=[]; S.get(K.comments,[]).forEach(c=>{ const own=ps.has(c.postId);
+    if(own&&c.reply) L.push({fan:c,text:c.reply.text,ts:c.reply.ts,postId:c.postId,cid:c.id,id:c.id+"_r"});
+    (c.reps||[]).forEach(r=>{ if(r.author==="artist"&&(own||r.member===mid)) L.push({fan:c,text:r.text,ts:r.ts,postId:c.postId,cid:c.id,id:r.id}); });
+    if(c.author==="artist"&&c.member===mid&&!own) L.push({fan:null,text:c.text,ts:c.ts,postId:c.postId,cid:c.id,id:c.id}); });   /* 團體：在其他團員貼文底下的留言也算 */
+  return L; }
 const ymdhm=ts=>{ const d=new Date(ts), z=n=>String(n).padStart(2,"0"); return `${z(d.getMonth()+1)}. ${z(d.getDate())}. ${z(d.getHours())}:${z(d.getMinutes())}`; };
 function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"feed");
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);
-  const body=tab==="cm"?(()=>{ const F=S.get(K.fanPosts,[]).filter(p=>p.gid===M.group).sort((a,b)=>b.ts-a.ts); return F.length?F.map(fanCard).join(""):`<div class="ux-empty"><span>💌</span><b>還沒有粉絲貼文</b></div>`; })():false?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
+  const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cmc" data-a="openPost" data-id="${x.postId}" data-c="${x.cid||""}"><span class="ap2-cl"></span>${x.fan?`<span class="ap2-cq"><b>${esc(shownName(x.fan))}${x.fan.author==="artist"?`<span class="ap2-vf">${I.verified}</span>`:""}</b><em>${esc(x.fan.text)}</em></span>`:""}<span class="ap2-ch"><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<div class="ux-empty"><span>💬</span><b>還沒有留言</b></div>`):false?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
     :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own,prof:true})).join(""):`<p class="me-none">還沒有貼文</p>`);   // 個人社群：點貼文任何地方進貼文、頭貼不再重進個人社群
@@ -20147,7 +20165,7 @@ function coNoteCard(x){ const n=x.note;
   return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p><p class="cp-x cp-body">${esc(n.body||"")}</p></article>`; }
 /* LOVE 動態最上面：公司官方公告（置頂，左右滑） */
 /* LOVE 動態置頂：只放最新的那一則（當天發什麼就是什麼）；排程表只在公司頁看 */
-function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), x=coFeed("",false).filter(y=>(y.k==="ann"||y.k==="news"||y.k==="note")&&(y.k==="ann"?live.has(y.ann.id):now-y.ts<7*864e5)).sort((a,b)=>b.ts-a.ts)[0];
+function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), PH=S.get(PIN_HIDE,{})||{}, x=coFeed("",false).filter(y=>!PH[y.id]&&(y.k==="ann"||y.k==="news"||y.k==="note")&&(y.k==="ann"?live.has(y.ann.id):now-y.ts<7*864e5)).sort((a,b)=>b.ts-a.ts)[0];
   return x?`<h2 class="mf-h">公司官方公告</h2><div class="cp-one-w">${coPostCard(x)}</div>`:""; }
 /* 公司頁：歷來公告＋旗下藝人（只列 App 裡的團） */
 function openCoPage(co,tab){ const c=coInfo(co), G=GROUPS.filter(g=>g.co===co&&!getDebut().some(x=>x.gid===g.id&&x.status==="pre")), t=tab||"ann";
