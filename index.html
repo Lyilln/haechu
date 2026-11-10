@@ -6649,7 +6649,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110003057";
+const BUILD="20261110004903";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -17741,16 +17741,21 @@ function preTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.debut]==
     { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song,mv:x.mv,mvt:x.mvt}); { const t2=String((x.pr||{}).t2||"").trim(); if(t2&&!m1.songs.some(s=>s.id===sid+"b")){ m1.songs.push({id:sid+"b",gid:x.gid,title:t2,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{})}); cbrMvPublish({gid:x.gid,title:t2,mv:x.pr.mv2}); } } }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
     const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); { const c2=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), t2=String(((c2||{}).pr||{}).t2||"").trim(); if(t2&&!ms.songs.some(s=>s.id===sid+"b")){ ms.songs.push({id:sid+"b",gid:p.gid,title:t2,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{})}); cbrMvPublish({gid:p.gid,title:t2,mv:c2.pr.mv2}); } } const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
 setInterval(preTick,60e3); setTimeout(preTick,9e3);
+/* 出道 MV：這團之前沒有任何一首歌、也沒有更早的 MV（管理員們是先出道、之後才補傳 MV） */
+function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.ended||[])].filter(x=>x.gid===v.gid&&x.mv!==v.id); if(mine.some(x=>!x.debut||songRel(x)<v.ts)) return false;
+  if((S.get(K.vods,[])||[]).some(o=>o.gid===v.gid&&o.id!==v.id&&vodIsMV(o)&&(o.ts||0)<(v.ts||0))) return false; if(getCbr().some(c=>c.gid===v.gid&&c.status==="ok"&&c.day<(v.ts||0))) return false; return true; }catch(e){ return false; } }
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
-      const title=mvTitleOf(v.title)||"新歌";
-      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id}); ch=true; const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》MV 公開，開始打歌！`,v.gid); });
+      const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v);
+      m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{})}); ch=true; const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
+    /* v494 先建好的歌：如果是出道 MV，補上「出道曲」，公告標題也改過來 */
+    { const V=S.get(K.vods,[])||[]; [...m.songs,...(m.ended||[])].forEach(x=>{ if(!x.mv||x.debut) return; const v=V.find(y=>y.id===x.mv); if(v&&mvIsDebut(v)){ x.debut=1; ch=true; const GN=S.get(K.gNotices,[])||[], n=GN.find(y=>y.mv===v.id); if(n&&/Official MV 公開/.test(n.title)){ n.title=n.title.replace("Official MV 公開","出道 MV 公開"); n.body=n.body.replace(/^(.+?)《/,"$1的出道曲《"); S.set(K.gNotices,GN); } } }); }
     /* 回歸：同一團有新歌，舊歌下檔 */
     const byG={}; m.songs.forEach(x=>{ const r=songRel(x); if(!byG[x.gid]||r>songRel(byG[x.gid])) byG[x.gid]=x; }); const old=m.songs.filter(x=>songRel(x)&&byG[x.gid]!==x&&songRel(byG[x.gid])-songRel(x)>MDAY); if(old.length){ m.songs=m.songs.filter(x=>!old.includes(x)); m.ended=[...(m.ended||[]),...old.map(x=>({...x,endTs:now}))]; ch=true; }
     /* 社群（團的社群，不是個人社群）：MV 公開時自動貼一則 NOTICE，社群的影音也看得到 */
     { const GN=S.get(K.gNotices,[])||[]; let gch=false; (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<7*MDAY).forEach(v=>{ if(GN.some(n=>n.mv===v.id)) return; const g=groupOf(v.gid), tt=mvTitleOf(v.title)||v.title||"新歌";
-        GN.unshift({id:"gn"+v.ts,group:v.gid,mv:v.id,title:`[MV] ${g.name}《${tt}》Official MV 公開`,body:`${g.name}《${tt}》MV 公開了！\n到社群的影音就看得到，打歌也從現在開始，一起幫忙投票吧 💜`,ts:v.ts}); gch=true; }); if(gch){ S.set(K.gNotices,GN); ch=true; } }
+        const db=mvIsDebut(v); GN.unshift({id:"gn"+v.ts,group:v.gid,mv:v.id,title:`[MV] ${g.name}《${tt}》${db?"出道 MV":"Official MV"} 公開`,body:`${g.name}${db?"的出道曲":""}《${tt}》MV 公開了！\n到社群的影音就看得到，打歌也從現在開始，一起幫忙投票吧 💜`,ts:v.ts}); gch=true; }); if(gch){ S.set(K.gNotices,GN); ch=true; } }
     const done=m.songs.filter(x=>songPhase(x)==="end"); if(done.length){ m.songs=m.songs.filter(x=>songPhase(x)!=="end"); m.ended=[...(m.ended||[]),...done.map(x=>({...x,endTs:now}))]; ch=true; }
     if(ch){ S.set(K.mshow,m); try{ render(); }catch(e){} } }catch(e){} }
 setInterval(mvSongTick,60e3); setTimeout(mvSongTick,10e3);
