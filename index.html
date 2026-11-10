@@ -2654,6 +2654,25 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .cm-chips button.on{background:var(--gt);border-color:var(--gt);color:#fff}
 .cm-chips button.on{background:color-mix(in srgb,var(--gt) 72%,#1B1626);border-color:transparent;text-shadow:0 1px 2px rgba(0,0,0,.2)} /* 團的代表色太淺時白字才看得清楚 */
 .cm-chips.sm button{padding:5px 11px;font-size:12px}
+.ofm{padding:0;overflow:hidden}
+.ofm-t{display:block;position:relative;width:100%;aspect-ratio:16/9;border:0;padding:0;background:#1d1824;overflow:hidden;cursor:pointer}.ofm-t>img{width:100%;height:100%;object-fit:cover;display:block}
+.ofm-b{display:block;width:100%;border:0;background:none;text-align:left;font-family:inherit;color:var(--ink);padding:12px 14px 4px;cursor:pointer}
+.ofm-h{display:flex;align-items:center;gap:9px;min-width:0}.ofm-h .av{width:34px;height:34px;flex:none}.ofm-h>span{display:flex;flex-direction:column;min-width:0}
+.ofm-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:3px}.ofm-n svg{width:15px;height:15px;color:#3BA4F5}.ofm-h small{font-size:11.5px;color:var(--ink-3)}
+.ofm-tt{margin:10px 0 2px;font-size:14.5px;line-height:1.4}
+.ofm-bar{display:flex;align-items:center;gap:14px;padding:6px 14px 12px}.ofm-bar button{border:0;background:none;padding:2px;display:flex;align-items:center;gap:5px;color:var(--ink);font-family:inherit;cursor:pointer}.ofm-bar svg{width:21px;height:21px}.ofm-bar b{font-size:13px;font-weight:600}
+.ofm-lk.on{color:#ff3b5c}.ofm-lk.on svg{fill:currentColor}.ofm-bm.on svg{fill:currentColor}
+.ofd{position:fixed;inset:0;z-index:80;background:var(--bg,#fff);color:var(--ink);display:flex;flex-direction:column}
+.ofd-top{display:flex;align-items:center;padding:calc(env(safe-area-inset-top) + 6px) 10px 6px}
+.ofd-body{flex:1;overflow-y:auto;padding-bottom:20px}
+.ofd-v{background:#000}.ofd-v video{width:100%;aspect-ratio:16/9;display:block;background:#000}
+.ofd-i{padding:16px 16px 6px;display:flex;flex-direction:column;gap:8px}.ofd-i h2{margin:0;font-size:19px;line-height:1.35}
+.ofd-tag{align-self:flex-start;font-size:11px;font-weight:600;color:var(--ink-3);background:color-mix(in srgb,var(--ink) 8%,transparent);border-radius:4px;padding:2px 6px}
+.ofd-d{font-size:12px;color:var(--ink-3)}.ofd-x{margin:6px 0 0;font-size:14px;line-height:1.55;white-space:pre-line}
+.ofd-ph{display:flex;flex-direction:column;gap:6px;margin-top:10px}.ofd-ph .cp-img{border:0;padding:0;background:none;display:block;width:100%}.ofd-ph .cp-img img{width:100%;display:block}
+.ofd-rh{margin:22px 16px 10px;font-size:17px}.ofd-rl{display:flex;flex-direction:column;gap:14px;padding:0 16px}
+.ofd-r{border:0;background:none;padding:0;text-align:left;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;gap:6px;cursor:pointer}.ofd-r .alb-t{border-radius:10px}.ofd-r b{font-size:14px;font-weight:600}.ofd-r em{align-self:flex-start;font-style:normal;font-size:10px;font-weight:800;color:#ff3b5c;border:1px solid #ff3b5c;border-radius:4px;padding:0 4px}
+.ofd>.ofm-bar{border-top:1px solid color-mix(in srgb,var(--ink) 10%,transparent);padding-bottom:calc(env(safe-area-inset-bottom) + 10px)}
 .alb-h h3 span{color:var(--ink-3);font-weight:600;margin-left:2px}
 .alb-r{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:6px 16px 8px}.alb-r::-webkit-scrollbar{display:none}
 .alb-c{flex:0 0 46%;border:0;background:none;padding:0;text-align:left;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;gap:3px;min-width:0;cursor:pointer}
@@ -4292,6 +4311,7 @@ html[data-theme] body .ws-sl b,.ws-sl b{color:#111!important}html[data-theme] bo
 .ws-lg{flex:none;width:82px;display:flex;flex-direction:column;align-items:center;gap:8px;padding:0}
 .ws-lg i{width:82px;height:82px;border-radius:30%;display:grid;place-items:center;border:1px solid rgba(0,0,0,.06);overflow:hidden;font-style:normal}
 .ws-lg i span{font-family:'Quicksand',sans-serif;font-weight:800;font-size:13px;letter-spacing:.04em;color:#fff;text-transform:uppercase;line-height:1.1;padding:0 6px;text-align:center;overflow-wrap:anywhere;text-shadow:0 1px 6px rgba(40,20,80,.25)}
+.ws-lg i{position:relative}.ws-lg i .ws-lgp{position:absolute;inset:0;padding:0;background:center/cover no-repeat}
 .ws-lg small{font-size:13px;color:var(--ink);max-width:82px;text-align:center;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .ws-find{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:18px;padding:14px 0;border-radius:999px;border:1.5px solid var(--ink-3);background:none;color:var(--ink);font:inherit;font-size:16px}
 .ws-find svg{width:20px;height:20px}.ws-find b{font-weight:800}
@@ -6820,7 +6840,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110103058";
+const BUILD="20261110104034";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7241,6 +7261,9 @@ const grpTie=mid=>{ const m=MEMBERS[mid], ids=m?groupArtists(m.group):[]; return
 const tiePlans=mid=>{ const g=grpTie(mid); return g?[...PLANS,g]:PLANS; };
 const subs=()=>S.get(K.tieSubs,{});
 const isActive=id=>{const r=subs()[id];return !!r&&Date.now()<=r.expires};
+/* 還沒買（或已經過了續訂寬限）就不能進 TIE 聊天室：直接跳商店的 TIE 券 */
+const tieNeedBuy=mid=>{ const st=passStatus(mid); return !st||st.cls==="off"; };
+function tieGate(mid){ if(!MEMBERS[mid]||!tieNeedBuy(mid)) return false; ui.prodTab="det"; ui.prodPlan=null; ui.pQty=1; openProd("t:"+mid); return true; }
 // seenUntil：示範用「模擬到期」時，已經收到的訊息不會因此消失
 function inPeriod(rec,ts){ return rec.periods.some(p=>ts>=p.start&&ts<=(p.end!=null?p.end:Math.max(rec.expires,rec.seenUntil||0))); }
 const welcomeOf=mid=>S.get(K.tieWelcome,{})[mid]||"歡迎來到我的 TIE 💜 以後我會常常在這裡跟你說悄悄話，有空也要回我喔！";
@@ -9707,6 +9730,7 @@ function render(){
     if(r.sub==="live"&&getLive(r.id)){ const l=getLive(r.id); if(l.endTs&&ui.endFor!==l.id) return paint(viewReplay(r.id),false); if(!l.endTs) startMeetDemo(l.id); meetSig=""; return paint(viewMeetRoom(r.id),false); }
     if(r.sub==="replay"&&getLive(r.id)) return rpPaint(r.id,hashChanged);
     if(r.sub==="chat"&&MEMBERS[r.m]){
+      if(r.role==="fan"&&tieNeedBuy(r.m)){ const m0=r.m; location.replace("#/fan?tab=shop"); setTimeout(()=>tieGate(m0),250); return; }
       if(r.p==="settings") return paint(viewTieSettings(r.m),false);
       if(r.p==="box") return paint(viewTieBox(r.m),false);
       if(r.p==="bgc") return paint(viewTieBgColor(r.m),false);
@@ -10264,7 +10288,7 @@ function openCal(gid){ const g=groupOf(gid), base=new Date(), mo=ui.calMo||0, d0
 function viewAbout(gid){ const g=groupOf(gid), open=ui.abOpen||null;
   const ph=gPhoto(gid), it=gIntro(gid);
   const sm=g.solo?soloMid(gid):"", AB_IC={sns:'<rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.8" cy="7.2" r=".9" fill="currentColor"/>',tie:'<path d="M6 5h12a2.6 2.6 0 0 1 2.6 2.6v7.2A2.6 2.6 0 0 1 18 17.4h-6.2L7.4 20.6v-3.2H6a2.6 2.6 0 0 1-2.6-2.6V7.6A2.6 2.6 0 0 1 6 5z"/><path d="M12 13.6s-2.8-1.6-2.8-3.4a1.5 1.5 0 0 1 2.8-.8 1.5 1.5 0 0 1 2.8.8c0 1.8-2.8 3.4-2.8 3.4z"/>',shop:'<path d="M5.6 8.4h12.8l-1.1 11.2a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 10.6V7.6a3 3 0 0 1 6 0v3"/>'};
-  const abl=[["sns",SNS_NAME],["tie",WHISPER_NAME],["shop","SHOP"]].map(([k,l])=>`<button class="abx-l" data-a="abLink" data-k="${k}" data-g="${gid}" data-m="${sm||""}" aria-label="${l}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${AB_IC[k]}</svg></button>`).join("");
+  const abl=[["sns",SNS_NAME],["tie",WHISPER_NAME],["shop","SHOP"]].filter(([k])=>k!=="sns"||!sm||!snLockOf(sm)).map(([k,l])=>`<button class="abx-l" data-a="abLink" data-k="${k}" data-g="${gid}" data-m="${sm||""}" aria-label="${l}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${AB_IC[k]}</svg></button>`).join("");
   return `<section class="abx-top"><div class="abx-tl"><h2>${esc(g.name)}</h2><div class="abx-ls">${abl}</div></div><span class="abx-ph" style="background:${grad(g.g)}">${ph?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${ph}')"></span>`:esc(ini(g.name))}</span></section>
     ${it?`<p class="abx-intro">${esc(it)}</p>`:""}${g.solo?"":`<div class="abx-sec">成員 ${grpMembers(gid).length}</div>`}
     ${grpMembers(gid).map(m=>{ const M=MEMBERS[m], o=open===m; return `<section class="card ab-m ${o?"o":""}" id="ab-${m}"><button class="ab-mh" data-a="abTog" data-v="${m}" aria-expanded="${o}"><i style="background:${grad(M.g)}">${teaserIn(m)}</i><b>${esc(M.name)}</b><span class="ab-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></span></button>${o?`<button class="ab-pro" data-a="cmMem" data-v="${m}">查看個人簡介</button>`:""}</section>`; }).join("")}`; }
@@ -10338,9 +10362,9 @@ function viewFan(tab){
   if(tab==="home"){
     const fa=followed(), f=scopeF(); let body=""; const q=srchQ("love"); if(ui.feedTab!=="discover"&&ui.feedTab!=="live") ui.feedTab="feed"; if(ui.feedTab==="live") return viewFanLive();
     if(ui.feedTab==="feed"){
-      const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p));
+      const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p)), ofs=q?[]:coPosts().filter(x=>x.src&&fa.includes(x.src.gid)&&groupOf(x.src.gid)&&albThumb(x));
       body=(q?"":myFeedTop())+(q?"":coPinFeed())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+
-        srchLabel("love")+(posts.length?posts.map(p=>postCard(p)).join(""):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
+        srchLabel("love")+(posts.length||ofs.length?ofMix(posts,ofs):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
     } else if(ui.feedTab==="discover"){
       const posts=getPosts().filter(p=>!fa.includes(p.group)&&!p.hidden&&postHit(q,p)&&groupOf(p.group));
       body=(q?"":exploreTop())+`<h2 class="mf-h">你可能也會喜歡</h2>`+srchLabel("love")+(posts.length?posts.map(p=>postCard(p)+`<button class="ex-join" data-a="gJoin" data-v="${p.group}">＋ 加入${esc(groupOf(p.group).name)}</button>`).join(""):q?srchEmpty("動態"):emptyBox(I.star,"你已經加入所有社群了","目前沒有其他社群可以推薦"));
@@ -12554,7 +12578,7 @@ function viewShop(){
     <div class="ws-pg"><span class="ws-track"><i id="spThumb" style="width:${100/ban.length}%"></i></span><span class="ws-cnt"><b id="spCnt">01</b><i></i>${String(ban.length).padStart(2,"0")}</span><button class="ws-plus" data-a="wsPlus" aria-label="看更多">＋</button></div>`:""}
     <section class="ws-pts"><span>我的積分</span><b>${fmt(points())}<i>✦</i></b>${demoOn()?`<button data-a="addPts">示範：補充積分</button>`:""}</section>
     <section class="ws-my"><h2>My Artist</h2>
-      ${f.length?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}"><span>${esc(g.name)}</span></i><small>${esc(g.name)}</small></button>`:""}).join("")}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
+      ${f.length?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}">${gPhoto(gid)?`<span class="ws-lgp" role="img" aria-label="${esc(g.name)}" style="background-image:url('${esc(gPhoto(gid))}')"></span>`:`<span>${esc(g.name)}</span>`}</i><small>${esc(g.name)}</small></button>`:""}).join("")}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
       <button class="ws-find" data-a="shOpen" data-k="shop">${I.search||"🔍"}<b>藝人</b></button></section>
     ${thShopCard()}
     ${f.map(gid=>{const g=groupOf(gid); if(!g) return ""; return `<section class="wsp-sec"><button class="wsp-now" data-a="shopG" data-v="${gid}" style="background:${grad(g.g)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(g.name)} ›</b></button>
@@ -13632,7 +13656,7 @@ function clickAdm(a,t,e,r){ switch(a){
       const mid=session().member||uniMe(); st.msg=txt; st.msgBy=mid; st.msgTs=Date.now(); S.set(K.wtours,all); feedPush({kind:"tour",member:mid,group:tr.gid,text:`${st.city}站・${txt}`,tourId:tr.id,direct:true},"tix:"+st.id); lsRerender(); toast("已送出"); break; }
     case "abLink": { const k=t.dataset.k, gid=t.dataset.g, mm=t.dataset.m; layer.innerHTML="";
       if(k==="sns"){ ui.snsFrom=location.hash; location.hash=mm?"#/fan/sns?p=profile&id="+encodeURIComponent("m:"+mm):"#/fan/sns"; }
-      else if(k==="tie"){ if(mm){ ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; location.hash="#/fan/chat?m="+mm; } else go("fan",null,"whisper"); }
+      else if(k==="tie"){ if(mm&&tieGate(mm)){} else if(mm){ ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; location.hash="#/fan/chat?m="+mm; } else go("fan",null,"whisper"); }
       else { ui.shopG=gid; ui.shopCat="all"; go("fan",null,"shop"); }
       window.scrollTo(0,0); break; }
     case "goArtist": { const mm=MEMBERS[t.dataset.v]; if(!mm) break; layer.innerHTML=""; ui.sheet=null; ui.mpTab="post"; location.hash=grpHash(mm.group,"about",t.dataset.v); window.scrollTo(0,0); break; }
@@ -14021,7 +14045,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "welNick": { const ta=document.getElementById("welTxt"); if(!ta) break; const a0=ta.selectionStart??ta.value.length, b0=ta.selectionEnd??a0; ta.value=ta.value.slice(0,a0)+"@@@"+ta.value.slice(b0); ta.focus(); ta.selectionStart=ta.selectionEnd=a0+3; break; }
     case "tWelcomeSave": { const v=document.getElementById("welTxt").value.trim(); if(!v){ toast("歡迎語不能空白"); break; }
       const w2=S.get(K.tieWelcome,{}); w2[session().member||uniMe()]=v; S.set(K.tieWelcome,w2); layer.innerHTML=""; toast("已儲存歡迎語"); break; }
-    case "openChat": ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; layer.innerHTML="";
+    case "openChat": if(tieGate(t.dataset.m)) break; ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; layer.innerHTML="";
       location.hash="#/fan/chat?m="+t.dataset.m;
       { const m1=t.dataset.m; if(!S.get(K.tieNotice,false)||(isActive(m1)&&!tieAgreed(m1))) setTimeout(()=>openTieAgree(m1,true),250); }
       break;
@@ -19813,11 +19837,38 @@ function albThumb(x){ const s=x.src, pr=s.pr||{}, imgs=x.imgs||[];
 function grpAlbums(gid){ const by={}; ofPromo(gid).forEach(x=>{ (by[x.src.id]=by[x.src.id]||{s:x.src,L:[]}).L.push(x); });
   const G=Object.values(by).sort((a,b)=>b.s.day-a.s.day); if(!G.length) return "";
   setTimeout(()=>document.querySelectorAll(".alb-t img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
-  return G.map(({s,L})=>{ const C=L.sort((a,b)=>b.ts-a.ts).map(x=>{ const t=albThumb(x); return t?`<button class="alb-c" data-a="${t.a}" data-v="${esc(t.v)}"><span class="alb-t">${t.h}</span><b>${esc(albTitle(x))}</b><small>${dotYmd(x.ts)}</small></button>`:""; }).join("");
+  return G.map(({s,L})=>{ const C=L.sort((a,b)=>b.ts-a.ts).map(x=>{ const t=albThumb(x); return t?`<button class="alb-c" data-a="ofOpen" data-v="${esc(x.id)}"><span class="alb-t">${t.h}</span><b>${esc(albTitle(x))}</b><small>${dotYmd(x.ts)}</small></button>`:""; }).join("");
     return C?`<div class="cm-sh alb-h"><h3>${albName(s)} <span>›</span></h3></div><div class="alb-r">${C}</div>`:""; }).join(""); }
 function albOpen(id){ const x=coPosts().find(y=>y.id===id); if(!x) return;
   const b=(x.imgs||[]).length>1&&x.k!=="sched"&&x.k!=="trk"?`<div class="alb-ls">${x.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`:coBodyOf(x);
   setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(albTitle(x))}</b><span class="sh-sp"></span></header><div class="tiei-body alb-lay">${b}</div></div>`,"alb"); }
+/* ---------- 官方媒體貼文（像 Weverse）：首頁動態裡跟藝人貼文混排，點開是媒體頁 ---------- */
+const OFLK="daisuki_oflk", OFBM="daisuki_ofbm";
+const ofLikes=id=>(S.get(OFLK,{})[id]||[]), ofMeK=()=>{ const s=session()||{}; return s.email||s.name||"me"; };
+function ofLike(id){ const L=S.get(OFLK,{}), a=L[id]||[], me=ofMeK(), on=a.includes(me); L[id]=on?a.filter(x=>x!==me):[...a,me]; S.set(OFLK,L);
+  document.querySelectorAll(`[data-a="ofLk"][data-v="${CSS.escape(id)}"]`).forEach(b=>{ b.classList.toggle("on",!on); const n=b.querySelector("b"); if(n) n.textContent=L[id].length||""; }); }
+function ofBmT(id){ const B=S.get(OFBM,[]), on=B.includes(id); S.set(OFBM,on?B.filter(x=>x!==id):[...B,id]); document.querySelectorAll(`[data-a="ofBm"][data-v="${CSS.escape(id)}"]`).forEach(b=>b.classList.toggle("on",!on)); }
+const ofBar=id=>{ const L=ofLikes(id), on=L.includes(ofMeK()), bm=S.get(OFBM,[]).includes(id); return `<div class="ofm-bar"><button class="ofm-lk ${on?"on":""}" data-a="ofLk" data-v="${esc(id)}" aria-label="喜歡">${I.heart||"♡"}<b>${L.length||""}</b></button><span class="sh-sp"></span><button class="ofm-bm ${bm?"on":""}" data-a="ofBm" data-v="${esc(id)}" aria-label="收藏">${si("save","sm")}</button></div>`; };
+const ofWhen=ts=>{ const d=new Date(ts), z=n=>String(n).padStart(2,"0"); return `${d.getMonth()+1}. ${d.getDate()}. ${z(d.getHours())}:${z(d.getMinutes())}`; };
+const ofAcct=gid=>{ const g=groupOf(gid)||{}; return `<b class="ofm-n">${esc(g.name||"")} ${I.verified}</b>`; };
+function ofMediaCard(x){ const t=albThumb(x); if(!t) return ""; const gid=x.src.gid;
+  return `<article class="card ofm" id="post-of-${x.id}"><button class="ofm-t" data-a="ofOpen" data-v="${esc(x.id)}">${t.h}</button>
+    <button class="ofm-b" data-a="ofOpen" data-v="${esc(x.id)}"><span class="ofm-h">${ofAv(gid)}<span>${ofAcct(gid)}<small>${ofWhen(x.ts)}</small></span></span><p class="ofm-tt">${esc(albTitle(x))}</p></button>${ofBar(x.id)}</article>`; }
+function ofMix(posts,ofs){ const L=[...posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)})),...ofs.map(x=>({ts:x.ts,h:()=>ofMediaCard(x)}))].sort((a,b)=>b.ts-a.ts);
+  setTimeout(()=>document.querySelectorAll(".ofm-t img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
+  return L.map(o=>o.h()).join(""); }
+function ofOpen(id){ const all=coPosts(), x=all.find(y=>y.id===id); if(!x) return; const s=x.src, pr=s.pr||{}, gid=s.gid, cap=coCap(s.co,x.k,s,x), imgs=x.imgs||[];
+  let med="";
+  if(x.vid) med=`<div class="ofd-v"><video playsinline controls preload="metadata" data-vmid="${esc(x.vid.mid)}"${x.vid.thumb?` data-pmid="${esc(x.vid.thumb)}"`:""}></video></div>`;
+  else if(x.k==="sched"||x.k==="trk") med=`<div class="ofd-ph">${coBodyOf(x)}</div>`;
+  else if(imgs.length) med=`<div class="ofd-ph">${imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`;
+  const info=`<div class="ofd-i">${albName(s)?`<span class="ofd-tag">${esc(String(albName(s)).replace(/&lt;/g,"<").replace(/&gt;/g,">"))}</span>`:""}<h2>${esc(albTitle(x))}</h2><span class="ofm-h">${ofAv(gid)}<span>${ofAcct(gid)}</span></span><small class="ofd-d">${ofWhen(x.ts)}</small>${cap&&cap.b?`<p class="ofd-x">${capRich(cap.b)}</p>`:""}${relExtra(x)}</div>`;
+  const rel=all.filter(y=>y.src&&y.src.id===s.id&&y.id!==id&&albThumb(y)), now=Date.now();
+  const relH=rel.length?`<h3 class="ofd-rh">相關媒體</h3><div class="ofd-rl">${rel.map(y=>`<button class="ofd-r" data-a="ofOpen" data-v="${esc(y.id)}"><span class="alb-t">${albThumb(y).h}</span><b>${esc(albTitle(y))}</b>${now-y.ts<864e5?`<em>NEW</em>`:""}</button>`).join("")}</div>`:"";
+  setLayer(`<div class="ofd" role="dialog" aria-label="${esc(albTitle(x))}"><header class="ofd-top"><span class="sh-sp"></span><button class="icon-btn" data-a="tCloseLayer" aria-label="關閉">${XI}</button></header>
+    <div class="ofd-body">${x.vid?med+info:info+med}${relH}</div>${ofBar(id)}</div>`,"ofd");
+  setTimeout(()=>{ const L=document.querySelector(".ofd"); if(!L) return; L.querySelectorAll("video[data-vmid]").forEach(async v=>{ const u=await mediaSrc(v.dataset.vmid); if(u) v.src=u; if(v.dataset.pmid){ const pu=await mediaSrc(v.dataset.pmid); if(pu) v.poster=pu; } });
+    L.querySelectorAll(".alb-t img[data-mid]").forEach(async el=>{ const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }); },0); }
 /* 團社群 Feed：只有藝人貼文（官方宣傳在 Media 的專輯分區） */
 function grpArtMix(gid,art,n){ const L=art.map(p=>({ts:p.ts||0,h:()=>postCard(p)})).sort((a,b)=>b.ts-a.ts); setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0); return (n?L.slice(0,n):L).map(o=>o.h()).join(""); }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
@@ -19852,7 +19903,9 @@ async function prImgUp(file){ const b=await shrinkImg(file,1600), prev=URL.creat
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="cpPh"){ e.stopImmediatePropagation(); setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><img src="${esc(t.dataset.v)}" alt=""></div>`,"photo"); return; }
   if(a==="cpVid"){ e.stopImmediatePropagation(); playVideo(t.dataset.v); return; }
-  if(a==="cmAlbP"){ e.stopImmediatePropagation(); albOpen(t.dataset.v); return; }
+  if(a==="cmAlbP"||a==="ofOpen"){ e.stopImmediatePropagation(); ofOpen(t.dataset.v); return; }
+  if(a==="ofLk"){ e.stopImmediatePropagation(); ofLike(t.dataset.v); return; }
+  if(a==="ofBm"){ e.stopImmediatePropagation(); ofBmT(t.dataset.v); return; }
   if(!/^pr[A-Z]/.test(a)) return; e.stopImmediatePropagation(); dbKeep(); const f=ui.dbF; if(!f) return; const pr=f.pr||(f.pr=promoLoad(null));
   if(a==="prCvAdd"){ pr.cv.push({n:"",ph:[],phP:[]}); dbReform(); return; }
   if(a==="prCvDel"){ pr.cv.splice(+t.dataset.i,1); dbReform(); return; }
@@ -19905,17 +19958,17 @@ function coNoteCard(x){ const n=x.note;
   return `<article class="card post cp" id="post-${x.id}">${coHead(x.co,x.ts)}<p class="cp-t">${esc(n.title)}</p><p class="cp-x cp-body">${esc(n.body||"")}</p></article>`; }
 /* LOVE 動態最上面：公司官方公告（置頂，左右滑） */
 /* LOVE 動態置頂：只放最新的那一則（當天發什麼就是什麼）；排程表只在公司頁看 */
-function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), x=coFeed("",false).filter(y=>y.k!=="sched"&&(y.k==="ann"?live.has(y.ann.id):now-y.ts<7*864e5)).sort((a,b)=>b.ts-a.ts)[0];
+function coPinFeed(){ const now=Date.now(), live=new Set(annLive().map(a=>a.id)), x=coFeed("",false).filter(y=>(y.k==="ann"||y.k==="news"||y.k==="note")&&(y.k==="ann"?live.has(y.ann.id):now-y.ts<7*864e5)).sort((a,b)=>b.ts-a.ts)[0];
   return x?`<h2 class="mf-h">公司官方公告</h2><div class="cp-one-w">${coPostCard(x)}</div>`:""; }
 /* 公司頁：歷來公告＋旗下藝人（只列 App 裡的團） */
 function openCoPage(co,tab){ const c=coInfo(co), G=GROUPS.filter(g=>g.co===co&&!getDebut().some(x=>x.gid===g.id&&x.status==="pre")), t=tab||"ann";
   const ann=coFeed(co,true), fan=route().role==="fan", artist=route().role==="artist", open=ui.coOpen||{};
   const ic=(h,svg,l)=>h?`<button class="copg-ib" data-a="coLink" data-v="${esc(h)}" aria-label="${l}">${svg}</button>`:"";
   const snsH=m=>(fan?"#/fan/sns":artist?"#/artist/sns":"")&&`${fan?"#/fan/sns":"#/artist/sns"}?p=profile&id=${encodeURIComponent("m:"+m)}`, wk=id=>wkHash(id);
-  const row=(m,solo,gid)=>`<div class="copg-r"><span class="av sm" style="background:${grad(MEMBERS[m].g||0)}">${mAvIn(m)}</span><b>${esc(stageNm(m))}</b><span class="copg-ics">${solo&&fan?ic("#/fan/grp?id="+gid,CO_IC.cm,"社群"):""}${fan?ic("#/fan/chat?m="+m,CO_IC.tie,"TIE"):""}${(fan||artist)?ic(snsH(m),CO_IC.sns,"SNS"):""}${ic(wk("m:"+m),CO_IC.wk,"SKpedia")}</span></div>`;
+  const row=(m,solo,gid)=>`<div class="copg-r"><span class="av sm" style="background:${grad(MEMBERS[m].g||0)}">${mAvIn(m)}</span><b>${esc(stageNm(m))}</b><span class="copg-ics">${solo&&fan?ic("#/fan/grp?id="+gid,CO_IC.cm,"社群"):""}${fan?ic("#/fan/chat?m="+m,CO_IC.tie,"TIE"):""}${(fan||artist)&&!snLockOf(m)?ic(snsH(m),CO_IC.sns,"SNS"):""}${ic(wk("m:"+m),CO_IC.wk,"SKpedia")}</span></div>`;
   const art=G.map(g=>{ const ms=grpMembers(g.id).filter(m=>MEMBERS[m]&&!MEMBERS[m].official);
     return `<section class="card copg-g ${open[g.id]?"open":""}"><button class="copg-gh" data-a="coGx" data-v="${g.id}" aria-expanded="${open[g.id]?"true":"false"}"><span class="av" style="background:${grad(g.g||0)}">${gPhoto(g.id)?`<img src="${esc(gPhoto(g.id))}" alt="">`:esc(g.name[0])}</span><span class="copg-gt"><b>${esc(g.name)}</b><small>${g.solo?"SOLO":`${ms.length} 位成員`}</small></span><i class="copg-chev">${CO_IC.chev}</i></button>
-      <div class="copg-x"><div class="copg-xi">${g.solo?(ms[0]?`<div class="copg-r ctr"><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${fan?ic("#/fan/chat?m="+ms[0],CO_IC.tie,"TIE"):""}${(fan||artist)?ic(snsH(ms[0]),CO_IC.sns,"SNS"):""}${ic(wk("m:"+ms[0]),CO_IC.wk,"SKpedia")}</span></div>`:""):`<div class="copg-r ctr"><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${ic(wk("g:"+g.id),CO_IC.wk,"SKpedia")}</span></div>${ms.map(m=>row(m,false,g.id)).join("")}`}</div></div></section>`; }).join("");
+      <div class="copg-x"><div class="copg-xi">${g.solo?(ms[0]?`<div class="copg-r ctr"><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${fan?ic("#/fan/chat?m="+ms[0],CO_IC.tie,"TIE"):""}${(fan||artist)&&!snLockOf(ms[0])?ic(snsH(ms[0]),CO_IC.sns,"SNS"):""}${ic(wk("m:"+ms[0]),CO_IC.wk,"SKpedia")}</span></div>`:""):`<div class="copg-r ctr"><span class="copg-ics">${fan?ic("#/fan/grp?id="+g.id,CO_IC.cm,"社群"):""}${ic(wk("g:"+g.id),CO_IC.wk,"SKpedia")}</span></div>${ms.map(m=>row(m,false,g.id)).join("")}`}</div></div></section>`; }).join("");
   setLayer(`<div class="tiei copg"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(c.n)}</b><span class="sh-sp"></span></header>
     <div class="tiei-body"><div class="copg-hd">${coAv(co,"lg")}<b>${esc(c.n)} ${I.verified}</b><small>官方帳號・${G.length} 組藝人</small></div>
       <div class="chips copg-tabs"><button class="chip ${t==="ann"?"on":""}" data-a="coTab" data-v="ann" data-c="${esc(co)}">公告</button><button class="chip ${t==="art"?"on":""}" data-a="coTab" data-v="art" data-c="${esc(co)}">藝人</button></div>
@@ -19924,7 +19977,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="coPage"){ e.stopImmediatePropagation(); openCoPage(t.dataset.v); return; }
   if(a==="coTab"){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tiei-body")||{}).scrollTop||0; openCoPage(t.dataset.c,t.dataset.v); return; }
   if(a==="coGx"){ e.stopImmediatePropagation(); const id=t.dataset.v; ui.coOpen={...(ui.coOpen||{}),[id]:!(ui.coOpen||{})[id]}; const s=t.closest(".copg-g"); if(s){ s.classList.toggle("open",!!ui.coOpen[id]); t.setAttribute("aria-expanded",ui.coOpen[id]?"true":"false"); } return; }
-  if(a==="coLink"){ e.stopImmediatePropagation(); layer.innerHTML=""; location.hash=t.dataset.v; window.scrollTo(0,0); return; }
+  if(a==="coLink"){ e.stopImmediatePropagation(); { const m=/^#\/fan\/chat\?m=([^&]+)$/.exec(t.dataset.v); if(m&&tieGate(decodeURIComponent(m[1]))) return; } layer.innerHTML=""; location.hash=t.dataset.v; window.scrollTo(0,0); return; }
   if(a==="newsOpen"&&t.closest("#layer")) setTimeout(()=>{ layer.innerHTML=""; },0);   /* 公司頁裡按「閱讀全文」：先把公司頁關掉 */
 },true);
 /* 多張照片滑動時，下面的小點跟著動 */
