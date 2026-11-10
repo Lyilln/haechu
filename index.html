@@ -6803,7 +6803,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110083324";
+const BUILD="20261110100218";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -16528,6 +16528,7 @@ function snOfFill(p){ if(p._ofT===OFM.t&&OFM.m) return; const o=p.of, M=snOfMap(
     else if(o.t==="win"){ const so=songOf(o.sid), g=so&&groupOf(so.gid), sh=SHOWS.find(z=>z.id===o.sh); if(!so||!g||!sh) gone=true; else { cap=`🏆 ${g.name}《${so.title}》${sh.name} 1位\n\n謝謝大家的愛與支持，這個一位是大家一起拿下的 💜\n\n${ofTag(g.name)} ${ofTag(so.title)} ${ofTag(sh.name)}`; media=[{type:"html",h:ofCard(`${sh.name} 1位`,g.name,`《${so.title}》`,g.g,gPhoto(g.id)),t:"1位"}]; } }
     else if(o.t==="tour"){ const t=getTours().find(z=>z.id===o.id), g=t&&groupOf(t.gid); if(!t||!g) gone=true; else { const Ls=tourStops(t).filter(st=>stopState(st)!=="off"); cap=`${g.name} WORLD TOUR〈${t.title}〉\n\n${Ls.map(x=>x.city).join(" · ")}\n\n購票請到 FEST →「世巡」\n${ofTag(g.name)} ${ofTag(t.title)}`; media=[{type:"html",h:ofCard("WORLD TOUR",t.title,Ls.map(x=>x.city).join(" · "),g.g,gPhoto(g.id)),t:"WORLD TOUR"}]; } }
   }catch(e){ gone=true; }
+  try{ if(o.t==="cp"||o.t==="ca"||o.t==="cn"){ const x=M[o.t+":"+o.id]; if(x&&x.ts&&x.ts!==p.ts) p.ts=x.ts; } }catch(e){}
   set("media",media); set("cap",cap); set("_gone",gone); set("_ofT",OFM.t); }
 /* 該有哪些官方貼文（每一則都有固定的編號：每支手機算出來都一樣，存到雲端會自動合併、不會重複） */
 function snOfWant(d){ const W=[], now=Date.now(), D=864e5, add=(id,uid,ts,of)=>{ if(uid&&ts&&ts<=now) W.push({id,uid,ts,of}); };
@@ -18914,8 +18915,10 @@ function cbrRow(mid){ const m=MEMBERS[mid]; if(!m) return ""; const w=cbrMine(m.
    ========================================================= */
 const DF_KEY="daisuki_dbfill";
 const getDf=()=>(S.get(DF_KEY,[])||[]).filter(x=>x&&groupOf(x.gid));
+function dfDebutDay(gid){ const db=getDebut().find(x=>x.gid===gid&&x.day&&x.status!=="gone"), t=db?db.day:idTs(gid,/^g/); return t?dayStart(t):0; }   /* 出道日：跟新聞同一個（出道申請排的那天，沒有就用團建立那天），不是 MV 上傳那天 */
+const dfMv=gid=>{ const so=dfDebutSong(gid), v=so&&songMv(so); return v&&v.mid?{mid:v.mid,thumb:v.thumb||""}:null; };
 function dfDebutSong(gid){ const m=getMShow(), L=[...m.songs,...(m.ended||[])].filter(x=>x.gid===gid).sort((a,b)=>songRel(a)-songRel(b)); return L.find(x=>x.debut)||L[0]||null; }
-function dfOpen(gid){ const x=getDf().find(y=>y.gid===gid), so=dfDebutSong(gid), v=so&&songMv(so), day=x?x.day:(so&&songRel(so)?dayStart(songRel(so)):0);
+function dfOpen(gid){ const x=getDf().find(y=>y.gid===gid), so=dfDebutSong(gid), v=so&&songMv(so), day=dfDebutDay(gid)||(so&&songRel(so)?dayStart(songRel(so)):0);
   const fy0=so?JSON.parse(JSON.stringify(fairyClips(so.id)||{})):{};
   ui.dbF={cb:true,fill:true,adm:true,gid,sid:so?so.id:"",base:x?JSON.parse(JSON.stringify(x)):null,title:x?x.title:(so?so.title:""),rtype:x?x.rtype||"":"",date:day?ymdIn(day):"",day,teaser:x?x.teaser||"":"",tx:x?[...(x.teasers||[])]:[],txP:[],mv:v&&v.mid?{mid:v.mid}:null,mvt:x?x.mvt||null:null,pr:{...(x?promoLoad(x.pr):promoLoad(null)),fy:{...fy0,...((x&&x.pr&&x.pr.fy)||{})}},mPrev:"",mtPrev:"",busy:""}; cbrForm(); }
 function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&&dfDebutSong(g.id)&&!getDebut().some(d=>d.gid===g.id&&d.status==="ok"));
@@ -19706,10 +19709,10 @@ const PR_KIND={sc:"SHOWCASE",sched:"SCHEDULE",teaser:"Teaser Image",concept:"Con
 
 /* ---------- 有哪些出道／回歸要發 ---------- */
 function promoSrcs(all){ const L=[], now=Date.now();
-  getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0,solo:x.kind!=="group"}));
-  try{ getDf().forEach(x=>{ const g=groupOf(x.gid); L.push({k:"db",id:x.id,gid:x.gid,name:g.name,title:x.title||"",day:x.day,appr:x.appr,co:coOf(x.gid)||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo,fill:1}); }); }catch(e){}
+  getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,mv:x.mv||null,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0,solo:x.kind!=="group"}));
+  try{ getDf().forEach(x=>{ const g=groupOf(x.gid), day=dfDebutDay(x.gid)||x.day; L.push({k:"db",id:x.id,gid:x.gid,name:g.name,title:x.title||"",day,appr:day-PRE_ANN,mv:dfMv(x.gid),co:coOf(x.gid)||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo,fill:1}); }); }catch(e){}
   const P=getMShow().pre||[];
-  getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo}); });
+  getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,mv:x.mv||null,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo}); });
   return all?L:L.filter(s=>now-s.day<45*864e5); }
 /* 一筆出道／回歸的排程：核准隔天開始，平均排到前一天，最後一格是發行 */
 function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec(pr.time||"")||[0,18,0], at=((+tm[1])*60+(+tm[2]))*60e3, it=[{k:"sched"}];
@@ -19721,7 +19724,7 @@ function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec
   const st=Math.max(s.appr,s.day-PRE_ANN), d0=dayStart(st)+D, dl=dayStart(s.day)-D, nd=Math.max(1,Math.round((dl-d0)/D)+1);
   /* 排程表：核准的當下就發；其他從隔天開始平均排 */
   const R=it.length-1; it.forEach((x,i)=>{ let ts=i===0?st:d0>dl?st+i*60e3:d0+Math.min(nd-1,Math.floor((i-1)*nd/Math.max(1,R)))*D+at; x.ts=Math.min(ts,s.day-60e3); x.id=`cp_${s.id}_${i}`; x.src=s; });
-  it.push({k:"rel",ts:s.day+at,id:`cp_${s.id}_rel`,src:s,imgs:[s.teaser].filter(Boolean)});
+  it.push({k:"rel",ts:s.day+at,id:`cp_${s.id}_rel`,src:s,imgs:[s.teaser].filter(Boolean),...(s.mv&&s.mv.mid?{vid:{mid:s.mv.mid,thumb:s.mv.thumb||""}}:{})});
   { const sc=/^(\d{1,2}):(\d{2})$/.exec(pr.sc||""); if(sc){ const sat=((+sc[1])*60+(+sc[2]))*60e3; it.push({k:"sc",ts:s.day+Math.max(sat,at+60e3),id:`cp_${s.id}_sc`,src:s,imgs:[s.teaser].filter(Boolean)}); } }
   const cnt={}; it.forEach(x=>{ cnt[x.k]=(cnt[x.k]||0)+1; x.no=cnt[x.k]; }); it.forEach((x,i)=>{ x.tot=cnt[x.k]; x.idx=i; x.all=it.length; }); return it; }
 const coPosts=()=>{ const now=Date.now(); return promoSrcs().flatMap(promoPlan).filter(x=>x.ts<=now).sort((a,b)=>b.ts-a.ts); };
