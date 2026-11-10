@@ -4763,6 +4763,8 @@ html[data-theme="dark"] .trk .trk-stage{background:radial-gradient(120% 80% at 5
 .pd-jump{position:absolute;right:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 84px);z-index:5;width:40px;height:40px;border-radius:50%;border:0;background:var(--s1,#fff);color:var(--ink);box-shadow:0 6px 18px -6px rgba(0,0,0,.35);display:grid;place-items:center;padding:0}
 .pd-jump svg{width:20px;height:20px}
 .pd-sh .pd-sav+i{margin-left:6px!important}
+.pd-savs{margin-left:auto;display:flex;align-items:center;padding:3px 5px;border:1px solid var(--line);border-radius:999px}.pd-savs .pd-sav{width:26px;height:26px;margin:0;border:2px solid var(--bg)}.pd-savs .pd-sav+.pd-sav{margin-left:-8px}.pd-sh .pd-savs+i{margin-left:10px!important}
+.pd-sec.k-ac .pd-c>.pd-cb{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:12px 16px 10px}.pd-sec.k-ac .pd-c{border:0}
 .dl-foot .mr-send{display:grid!important;place-items:center;width:40px;height:40px;padding:0!important;margin:0}.dl-foot .mr-send svg{display:block;margin:0}.dl-foot .cm-in{padding:0 6px 0 20px!important}
 /* 直播大卡：高度跟著內容（回覆、藝人的話、翻譯都看得到），太長就在卡片裡捲 */
 .dl .sp-card{height:auto!important;min-height:140px;max-height:min(46vh,360px);overflow-y:auto!important;overscroll-behavior:contain}
@@ -6895,7 +6897,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110124104";
+const BUILD="20261110124932";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10696,20 +10698,20 @@ function renderComments(first=false){
   if(!p){ ui.sheet=null; layer.innerHTML=""; return toast("這則動態已被刪除"); }
   const m=MEMBERS[p.member], g=groupOf(p.group), role=session().role, isArtist=role==="artist"&&session().member===p.member;
   const list=getComments(postId), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
-  const who=c=>c.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:`${esc(shownName(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
-  const av=c=>c.author==="artist"?`<span class="pd-av" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:cmWhoAv(c,p.group,"pd-av",c.g);
+  const who=c=>c.author==="artist"?`${esc(artName(c.member&&MEMBERS[c.member]?c.member:p.member,"feed"))}${I.verified}`:`${esc(shownName(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
+  const av=c=>c.author==="artist"?(()=>{ const am=c.member&&MEMBERS[c.member]?c.member:p.member; return `<span class="pd-av" style="background:${grad(MEMBERS[am].g)}">${mAvIn(am)}</span>`; })():cmWhoAv(c,p.group,"pd-av",c.g);
   const more=c=>c.author==="artist"||isMeC(c)?"":canModerate()?`<button class="pd-more" data-a="amC" data-c="${c.id}" aria-label="管理">${PDI.more}</button>`:role==="fan"?`<button class="pd-more" data-a="pdRep" data-c="${c.id}" aria-label="更多">${PDI.more}</button>`:"";
   const tr=c=>role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="pd-tr">${esc(c.zh)}</p>`:"";
   const nRep=c=>cReps(c).length+(c.reply?1:0);
   const item=(c,top)=>`<div class="pd-c ${c.id===focusC?"flash":""} ${top?"top":""}" id="cm-${c.id}">${av(c)}<div class="pd-cb">
-      <div class="pd-ch"><b>${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}</div>
+      <div class="pd-ch"><b class="${c.author==="artist"?"art":""}">${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}</div>
       ${isMeC(c)?`<p class="pd-ct">${esc(c.text)}</p>`:trT("c:"+c.id,c.text,"pd-ct","p",c.author!=="artist")}
       <div class="pd-ca"><button class="pd-lk ${cLiked(c)?"on":""}" data-a="pdCLike" data-c="${c.id}" aria-label="喜歡">${I.heart}${(c.likedBy||[]).length?`<span>${fmt(c.likedBy.length)}</span>`:""}</button>
         ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:`<span class="pd-rp">${PDI.reply}<span>${fmt(nRep(c))}</span></span>`}</div></div></div>`;
   const rLk=r=>{ const L=r.likedBy||[]; return `<div class="pd-ca"><button class="pd-lk ${L.includes(myEmail())?"on":""}" data-a="pdRLike" data-c="${r.cid||""}" data-r="${r.id}" aria-label="喜歡">${I.heart}${L.length?`<span>${fmt(L.length)}</span>`:""}</button></div>`; };
-  const repItem=r=>`<div class="pd-c pd-r" id="cm-${r.id}">${r.author==="artist"?av({author:"artist"}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
-      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
-  const sec=(t,n,body,k)=>`<section class="pd-sec"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${k==="ac"||k==="ar"?`<span class="pd-sav" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`:""}${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
+  const repItem=r=>`<div class="pd-c pd-r" id="cm-${r.id}">${r.author==="artist"?av({author:"artist",member:r.member}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
+      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
+  const sec=(t,n,body,k,ids)=>`<section class="pd-sec ${k?"k-"+k:""}"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${(k==="ac"||k==="ar")&&g&&!g.solo&&(ids||[]).length?`<span class="pd-savs">${[...new Set(ids)].filter(id=>MEMBERS[id]).slice(0,4).map(id=>`<span class="pd-sav" style="background:${grad(MEMBERS[id].g)}">${mAvIn(id)}</span>`).join("")}</span>`:""}${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";
   const bar=(ph,to)=>canWrite?`<form class="pd-in" id="cform">${to?`<div class="pd-to">正在回覆 ${esc(to)}</div>`:""}<div class="pd-bar">${cid?"":`<button type="button" class="pd-hb ${liked?"on":""}" data-a="like" data-id="${p.id}" aria-label="按讚">${I.heart}<span hidden>${fmt(likeN(p))}</span></button>${role==="fan"?bmBtn("p:"+p.id):""}`}
@@ -10718,7 +10720,7 @@ function renderComments(first=false){
   if(cid){ const c=list.find(x=>x.id===cid); if(!c){ ui.sheet.cid=null; return renderComments(true); }
     const arts=[...(c.reply?[{id:c.id+"_r",cid:c.id,author:"artist",text:c.reply.text,ts:c.reply.ts,likedBy:c.reply.likedBy||[]}]:[]),...cReps(c).filter(r=>r.author==="artist").map(r=>({...r,cid:c.id}))], fans=cReps(c).filter(r=>r.author!=="artist").map(r=>({...r,cid:c.id}));
     html=head("回覆")+`<main class="pd-body rp" id="csl">${item(c,true)}
-      ${arts.length?sec("藝人回覆",arts.length,arts.map(repItem).join(""),"ar"):""}
+      ${arts.length?sec("藝人回覆",arts.length,arts.map(repItem).join(""),"ar",arts.map(r=>r.member||p.member)):""}
       ${sec("全部回覆",fans.length,fans.length?fans.map(repItem).join(""):`<p class="pd-none">還沒有回覆</p>`)}</main>`+bar("請輸入回覆",c.author==="artist"?artName(p.member,"feed"):shownName(c));
   } else {
     const arts=list.filter(c=>c.author==="artist"), fans=list.filter(c=>c.author!=="artist");
@@ -10727,7 +10729,7 @@ function renderComments(first=false){
       <div class="pd-ph">${viewerFan()?`<button class="pd-av lg av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`}<span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
       ${lk?lockedBody(p,lk):`${p.text?(isArtist?`<p class="pd-txt">${esc(p.text)}</p>`:trT("pt:"+p.id,p.text,"pd-txt")):""}${p.media?pdMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}${p.poll?pollCard(p):""}`}
       <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>
-      ${arts.length?sec("藝人留言",arts.length,arts.map(c=>item(c)).join(""),"ac"):""}
+      ${arts.length?sec("藝人留言",arts.length,arts.map(c=>item(c)).join(""),"ac",arts.map(c=>c.member||p.member)):""}
       ${sec("全部留言",fans.length,fans.length?fans.map(c=>item(c)).join(""):`<p class="pd-none">還沒有留言</p>`)}</main>`+bar(isArtist&&replyTo?"請輸入回覆":"請輸入留言");
   }
   const keep=!first&&document.getElementById("csl")?document.getElementById("csl").scrollTop:null;
