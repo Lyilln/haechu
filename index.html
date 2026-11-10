@@ -2669,6 +2669,18 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .ap2-cmc .ap2-cl{position:absolute;left:22px;top:20px;width:20px;height:20px;border-radius:50%;background:var(--s2)}.ap2-cmc .ap2-cl::after{content:"";position:absolute;left:9px;top:26px;width:2px;height:calc(100% + 40px);background:var(--line)}
 .ap2-cmc .ap2-cq{display:flex;flex-direction:column;gap:2px;margin-bottom:8px}.ap2-cmc .ap2-cq b{font-size:15px;display:flex;align-items:center;gap:3px}.ap2-cmc .ap2-cq em{font-style:normal;font-size:15px;color:var(--ink-3);display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
 .ap2-cmc .ap2-ch{display:flex;align-items:center;gap:4px}.ap2-cmc .ap2-ch b{font-size:15px}.ap2-cmc .ap2-ch small{color:var(--ink-3);font-size:13px;margin-left:6px}.ap2-cmc .ap2-vf svg{width:14px;height:14px;color:#3BA4F5;display:block}.ap2-cmc .ap2-ct{font-size:15px;line-height:1.45}
+.fp2{padding:14px 0 6px;margin-bottom:12px;cursor:pointer;overflow:hidden}
+.fp2-h{display:flex;align-items:center;gap:10px;padding:0 16px}.fp2-av{width:38px!important;height:38px!important;border-radius:50%;flex:none;overflow:hidden;display:grid;place-items:center;color:#fff;font-weight:700}
+.fp2-w{display:flex;flex-direction:column;min-width:0;flex:1}.fp2-w b{font-size:14.5px}.fp2-w small{font-size:11.5px;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.fp2-hide{font-style:normal;font-size:10.5px;color:var(--ink-3);background:var(--s2);border-radius:4px;padding:1px 5px}
+.fp2-h .uni-more{margin-left:auto}
+.fp2-t{padding:10px 16px 4px;font-size:15px;line-height:1.5}
+.fp2-im{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none;margin-top:10px}.fp2-im::-webkit-scrollbar{display:none}.fp2-im img{flex:0 0 100%;width:100%;max-height:520px;object-fit:cover;scroll-snap-align:start;display:block}
+.fp2-dots{display:flex;justify-content:center;gap:4px;padding:8px 0 0}.fp2-dots i{width:5px;height:5px;border-radius:50%;background:var(--line)}.fp2-dots i.on{background:var(--ink-3)}
+.fp2-f{display:flex;align-items:center;gap:18px;padding:8px 16px 6px}.fp2-b{border:0;background:none;color:var(--ink);display:flex;align-items:center;gap:5px;font:inherit;font-size:13.5px;padding:2px}.fp2-b svg{width:21px;height:21px}.fp2-b.liked{color:#ff3b5c}.fp2-b.liked svg{fill:currentColor}.fp2-sp{flex:1}
+.fpd-imgs{display:flex;flex-direction:column;gap:4px;margin:10px -16px}.fpd-imgs .cp-img{border:0;padding:0;background:none;display:block}.fpd-imgs img{width:100%;display:block}
+.cw-ims{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}.cw-ims span{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden}.cw-ims img{width:100%;height:100%;object-fit:cover}.cw-ims span button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;padding:0}.cw-ims span button svg{width:10px;height:10px}
+.cw-add{width:72px;height:72px;border-radius:10px;border:1.5px dashed var(--line);display:grid;place-items:center;color:var(--ink-3);font-size:22px;cursor:pointer}.cw-add svg{width:24px;height:24px}
 .ofm-go{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex}.ofm-b{cursor:pointer}
 .ofm-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:3px}.ofm-n svg{width:15px;height:15px;color:#3BA4F5}.ofm-h small{font-size:11.5px;color:var(--ink-3)}
 .ofm-tt{margin:10px 0 2px;font-size:14.5px;line-height:1.4}
@@ -6897,7 +6909,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110131124";
+const BUILD="20261110134733";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7550,11 +7562,11 @@ function deletePost(id){
 }
 const likedSet=()=>new Set(S.get(K.likes,[]));
 function toggleLike(id){
-  const s=likedSet(); const posts=S.get(K.posts,[]); const p=posts.find(x=>x.id===id); if(!p) return;
+  const s=likedSet(); let KK=K.posts, posts=S.get(K.posts,[]), p=posts.find(x=>x.id===id); if(!p){ KK=K.fanPosts; posts=S.get(K.fanPosts,[]); p=posts.find(x=>x.id===id); } if(!p) return;
   const me=myEmail(), by=new Set(p.likedBy||[]);   // 多人版：記住是誰按的，人數才不會被同時按讚吃掉
   if(s.has(id)){s.delete(id);by.delete(me);p.likes=Math.max(0,(p.likes||0)-1)} else {s.add(id);by.add(me);p.likes=(p.likes||0)+1}
   p.likedBy=[...by]; p.likes=p.likedBy.length;
-  S.set(K.likes,[...s]); S.set(K.posts,posts); return {liked:s.has(id),likes:likeN(p)};
+  S.set(K.likes,[...s]); S.set(KK,posts); return {liked:s.has(id),likes:likeN(p)};
 }
 
 /* ===== 時間顯示 ===== */
@@ -10161,7 +10173,7 @@ document.addEventListener("input",e=>{ const t=e.target; if(!t.classList||!t.cla
 document.addEventListener("focusin",e=>{ const t=e.target; if(t.id!=="win") return; const m=route().m; if(m&&isActive(m)&&!tieAgreed(m)){ t.blur(); openTieAgree(m); } });
 document.addEventListener("input",e=>{ if(e.target.id==="cpw") ui.composePw=e.target.value; });
 document.addEventListener("input",e=>{ const t=e.target, id=t.id;
-  if(id==="cwTxt"){ const b=document.getElementById("cwOk"); if(b) b.disabled=!t.value.trim(); }
+  if(id==="cwTxt"){ const b=document.getElementById("cwOk"); if(b) b.disabled=!t.value.trim()&&!(ui.cwImgs||[]).length; }
   else if(id==="meNick"||id==="meIntro"){ const n=document.getElementById(id+"N"); if(n) n.textContent=t.value.length; ui.meDraft={nick:(document.getElementById("meNick")||{}).value,intro:(document.getElementById("meIntro")||{}).value}; }
   else if(id==="cmQ") cmSearchRun(t.dataset.g,t.value); });
 document.addEventListener("input",e=>{ if(e.target.id!=="exQ") return; const q=nz(e.target.value.trim());
@@ -10295,6 +10307,7 @@ function viewCmLetter(gid,to){ const g=groupOf(gid), name=MEMBERS[to]?artName(to
 function viewCmWrite(gid){ const g=groupOf(gid), hide=!!ui.cwHide;
   return `<div class="cw"><header class="cw-h"><button data-a="back">取消</button><span><b>撰寫貼文</b><small>${esc(g.name)}</small></span><button class="cw-ok" id="cwOk" data-a="cwPost" data-v="${gid}" disabled>新增</button></header>
     <textarea id="cwTxt" class="cw-t" placeholder="輸入文字"></textarea>
+    <div class="cw-ims">${(ui.cwImgs||[]).map((u,i)=>`<span><img src="${esc(u)}" alt=""><button data-a="cwImgX" data-v="${i}" aria-label="移除">${XI}</button></span>`).join("")}<label class="cw-add" aria-label="加照片">${PDI.photo||"＋"}<input type="file" accept="image/*" multiple id="cwFile" hidden></label></div>
     <footer class="cw-f"><button class="sw ${hide?"on":""}" role="switch" data-a="cwHide" aria-checked="${hide}"></button><span>Hide from Artists<small>開啟後藝人看不到這則貼文</small></span></footer></div>`; }
 function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"post", bg=PCI[`cmbg|${gid}`];
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
@@ -10349,6 +10362,12 @@ const mineX=x=>!!x&&x.from==="me"&&(!x.by||x.by===myEmail());
 /* 留言是不是「我」寫的：新帳號看示範帳號的留言，要當成別人的 */
 const isMeC=c=>c.author==="me"&&(c.by?c.by===myEmail():(((session()||{}).role!=="fan"||(session()||{}).admin)?true:myEmail()===DEMO_FAN));
 const isMine=p=>p.mine&&(p.by?p.by===myEmail():myEmail()===DEMO_FAN);
+/* 社群 Feed 的粉絲貼文（照 Weverse）：頭貼、名字、時間、文字、照片、愛心／留言數、收藏；點了進貼文頁 */
+function fanCard2(p){ const cms=S.get(K.comments,[]).filter(c=>c.postId===p.id).length+(p.rep||[]).length, lk=likedSet().has(p.id), im=p.imgs||[];
+  return `<article class="card fp2" data-a="fpGo" data-id="${p.id}"><div class="fp2-h">${isMine(p)?cmAvatar(p.gid,"fp2-av"):cmWhoAv(p,p.gid,"fp2-av",p.g||3)}<span class="fp2-w"><b>${esc(shownName(p))}</b><small>${ymdhm(p.ts)}${p.hideArt?`<em class="fp2-hide">Hide from Artists</em>`:""}</small></span>${canModerate()&&!isMine(p)?`<button class="uni-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>
+    ${p.text?`<div class="fp2-t">${trT("f:"+p.id,p.text,"")}</div>`:""}
+    ${im.length?`<div class="fp2-im${im.length>1?" many":""}">${im.map(u=>`<img src="${esc(u)}" alt="" loading="lazy">`).join("")}</div>${im.length>1?`<div class="fp2-dots">${im.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
+    <div class="fp2-f"><button class="fp2-b ${lk?"liked":""}" data-a="like" data-id="${p.id}" aria-label="喜歡">${I.heart}<span>${likeN(p)?fmt(likeN(p)):""}</span></button><button class="fp2-b" data-a="fpGo" data-id="${p.id}" aria-label="留言">${PDI.reply}<span>${cms?fmt(cms):""}</span></button><i class="fp2-sp"></i>${bmBtn("f:"+p.id)}</div></article>`; }
 const fanCard=p=>`<section class="card fp"><div class="fp-h">${isMine(p)?cmAvatar(p.gid,"sm"):(p.by&&cmAvU(p.by,p.gid)?`<i style="background:${grad(p.g||3)}"><img class="cm-avi" src="${esc(cmAvU(p.by,p.gid))}" alt=""></i>`:`<i style="background:${grad(p.g||3)}">${esc((shownName(p)||"粉")[0])}</i>`)}<b>${esc(shownName(p))}</b><small>${ago(p.ts)}</small>${canModerate()&&!isMine(p)?`<button class="uni-more fp-more" data-a="amFp" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>${trT("f:"+p.id,p.text,"")}${fpReps(p)}<div class="fp-f">${p.hideArt?'<span class="fp-hid">藝人看不到</span>':""}${fpCanRep(p)?`<button class="fp-rb" data-a="fpRep" data-id="${p.id}">回覆</button>`:""}${bmBtn("f:"+p.id)}</div></section>`;
 /* 粉絲貼文：這團的藝人可以回覆（大家都看得到，發文的粉絲會收到通知） */
 function fpOpen(id,focus){ const p=S.get(K.fanPosts,[]).find(x=>x.id===id); if(!p){ layer.innerHTML=""; return; }
@@ -10385,10 +10404,10 @@ function viewMemberProfile(gid,mid){ setTimeout(apBarSync,0); return `<div class
 function grpFeed(gid){ const ch=ui.cmFeed||"hl", art=getPosts().filter(p=>p.group===gid&&!p.hidden), fans=S.get(K.fanPosts,[]).filter(p=>p.gid===gid).sort((a,b)=>b.ts-a.ts);
   const chips=`<div class="cm-chips">${[["hl","Highlight"],["fan","Fan"],["artist","Artist"]].map(([k,l])=>`<button class="${ch===k?"on":""}" data-a="cmFeed" data-v="${k}">${l}</button>`).join("")}</div>`;
   if(ch==="artist") return chips+(grpArtMix(gid,art)||`<p class="me-none">還沒有藝人貼文</p>`);
-  if(ch==="fan") return chips+(fans.length?fans.map(fanCard).join(""):`<p class="me-none me-center">還沒有粉絲貼文，點右下角 ＋ 發第一篇吧</p>`);
+  if(ch==="fan") return chips+(fans.length?fans.map(fanCard2).join(""):`<p class="me-none me-center">還沒有粉絲貼文，點右下角 ＋ 發第一篇吧</p>`);
   return chips+`${cmSec("最近藝人貼文")}${grpArtMix(gid,art,2)||`<p class="me-none">還沒有藝人貼文</p>`}
     
-    ${cmSec(`${esc(groupOf(gid).name)} 的評論`,fans.length?"查看更多":"","cmFan")}${fans.slice(0,3).map(fanCard).join("")||`<p class="me-none">還沒有粉絲貼文</p>`}`; }
+    ${cmSec(`${esc(groupOf(gid).name)} 的評論`,fans.length?"查看更多":"","cmFan")}${fans.slice(0,3).map(fanCard2).join("")||`<p class="me-none">還沒有粉絲貼文</p>`}`; }
 /* MEET 卡片：正在直播的排前面（點進直播間），結束的是重播 */
 function meetCards(lv){ return `<div class="cm-lv">${lv.slice(0,12).map(l=>{const m=MEMBERS[l.member], c=GRADS[m.g%GRADS.length], on=!l.endTs;return `<button class="cm-lc" data-a="${on?"openLive":"openReplay"}" data-id="${l.id}" data-lv="${l.id}"><span class="cm-lt cv-fit ${on?"on":""}" style="${lvCoverFit(l.member,l)}"><em>${on?"● LIVE":"REPLAY"}</em>${on?"":`<i>${mmss(l)}</i>`}</span><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}・${on?"直播中":relDay(l.startTs)}</small></button>`}).join("")}</div>`; }
 const meetOf=f=>getLives().filter(l=>MEMBERS[l.member]&&f(l)).sort((a,b)=>(!a.endTs?0:1)-(!b.endTs?0:1)||b.startTs-a.startTs);
@@ -10694,10 +10713,11 @@ function pdMediaHtml(p){ const ms=p.media||[]; if(!ms.length) return ""; if(ms[0
 function renderComments(first=false){
   if(!ui.sheet) return;
   const {postId,focusC,replyTo,cid}=ui.sheet;
-  const p=S.get(K.posts,[]).find(x=>x.id===postId);
-  if(!p){ ui.sheet=null; layer.innerHTML=""; return toast("這則動態已被刪除"); }
+  let p=S.get(K.posts,[]).find(x=>x.id===postId), FP=null;
+  if(!p&&String(postId).startsWith("fp")){ FP=S.get(K.fanPosts,[]).find(x=>x.id===postId); if(FP){ const A=groupArtists(FP.gid); p={id:FP.id,group:FP.gid,member:(FP.rep&&FP.rep[0]&&MEMBERS[FP.rep[0].mid]?FP.rep[0].mid:A[0]),text:FP.text,ts:FP.ts,likes:FP.likes,likedBy:FP.likedBy,fan:FP}; } }
+  if(!p||!MEMBERS[p.member]){ ui.sheet=null; layer.innerHTML=""; return toast("這則動態已被刪除"); }
   const m=MEMBERS[p.member], g=groupOf(p.group), role=session().role, isArtist=role==="artist"&&session().member===p.member;
-  const list=getComments(postId), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
+  const list=[...getComments(postId),...(FP?(FP.rep||[]).map(r=>({id:r.id,postId,author:"artist",member:r.mid,text:r.text,ts:r.ts})):[])].sort((a,b)=>a.ts-b.ts), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
   const who=c=>c.author==="artist"?`${esc(artName(c.member&&MEMBERS[c.member]?c.member:p.member,"feed"))}${I.verified}`:`${esc(shownName(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
   const av=c=>c.author==="artist"?(()=>{ const am=c.member&&MEMBERS[c.member]?c.member:p.member; return `<span class="pd-av" style="background:${grad(MEMBERS[am].g)}">${mAvIn(am)}</span>`; })():cmWhoAv(c,p.group,"pd-av",c.g);
   const more=c=>c.author==="artist"||isMeC(c)?"":canModerate()?`<button class="pd-more" data-a="amC" data-c="${c.id}" aria-label="管理">${PDI.more}</button>`:role==="fan"?`<button class="pd-more" data-a="pdRep" data-c="${c.id}" aria-label="更多">${PDI.more}</button>`:"";
@@ -10730,10 +10750,14 @@ function renderComments(first=false){
     const artCard=r=>r.cid?`<div class="pd-c pd-r pd-ar" id="cm-${r.id}" data-a="pdOpenRep" data-c="${r.cid}">${av({author:"artist",member:r.member})}<div class="pd-cb">
       <div class="pd-ch"><b class="art">${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}</b><small>${ymdhm(r.ts)}</small></div><p class="pd-ct"><span class="pd-at">@${esc(r.to)}</span> ${esc(r.text)}</p>${rLk(r)}</div></div>`:item(r);
     const lk=postLocked(p);
-    html=head("貼文")+`<main class="pd-body" id="csl"><article class="pd-post">
+    html=head("貼文")+`<main class="pd-body" id="csl">${FP?`<article class="pd-post fpd">
+      <div class="pd-ph">${cmWhoAv(FP,FP.gid,"pd-av lg",FP.g||3)}<span class="pd-pw"><b>${esc(shownName(FP))}</b><small>${ymdhm(FP.ts)}${FP.hideArt?`<em class="fp2-hide">Hide from Artists</em>`:""}</small></span>${canModerate()&&!isMine(FP)?`<button class="pd-more" data-a="amFp" data-id="${FP.id}" aria-label="管理">${PDI.more}</button>`:""}</div>
+      ${(FP.imgs||[]).length?`<div class="fpd-imgs">${FP.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`:""}
+      ${FP.text?(isMine(FP)?`<p class="pd-txt">${esc(FP.text)}</p>`:trT("f:"+FP.id,FP.text,"pd-txt")):""}
+      <p class="pd-stat">喜歡 ${fmt(likeN(FP))}・留言 ${fmt(list.length)}</p></article>`:`<article class="pd-post">
       <div class="pd-ph">${viewerFan()?`<button class="pd-av lg av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`}<span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
       ${lk?lockedBody(p,lk):`${p.text?(isArtist?`<p class="pd-txt">${esc(p.text)}</p>`:trT("pt:"+p.id,p.text,"pd-txt")):""}${p.media?pdMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}${p.poll?pollCard(p):""}`}
-      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>
+      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>`}
       ${arts.length?sec("藝人留言",arts.length,arts.map(artCard).join(""),"ac",arts.map(c=>c.member||p.member)):""}
       ${sec("全部留言",fans.length,fans.length?fans.map(c=>item(c)).join(""):`<p class="pd-none">還沒有留言</p>`)}</main>`+bar(isArtist&&replyTo?"請輸入回覆":"請輸入留言");
   }
@@ -13649,7 +13673,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "ltSave": { const r=route(), D=S.get(K.ltDraft,{}); D[ltKey(r.id,r.m)]={text:ui.ltHold||"",tpl:ui.ltTpl||0}; S.set(K.ltDraft,D); layer.innerHTML=""; toast("已臨時儲存"); navBack(); break; }
     case "ltDone": { const tx=((document.getElementById("ltTxt")||{}).value||"").trim(); if(!tx){ toast("先寫點什麼吧"); break; } const gid=t.dataset.g, to=t.dataset.v, L=S.get(K.fanLetters,[]); L.push({id:"lt"+Date.now(),gid,to,text:tx,tpl:ui.ltTpl||0,ts:Date.now()}); S.set(K.fanLetters,L); const D=S.get(K.ltDraft,{}); delete D[ltKey(gid,to)]; S.set(K.ltDraft,D); toast(`粉絲信已送給 ${MEMBERS[to]?artName(to,"feed"):groupOf(gid).name} 💌`); navBack(); break; }
     case "cwHide": t.classList.toggle("on"); ui.cwHide=t.classList.contains("on"); t.setAttribute("aria-checked",ui.cwHide); break;
-    case "cwPost": { const tx=((document.getElementById("cwTxt")||{}).value||"").trim(); if(!tx) break; const gid=t.dataset.v, L=S.get(K.fanPosts,[]); L.push({id:"fp"+Date.now(),gid,text:tx,ts:Date.now(),name:cmProf(gid).nick,g:3,mine:true,by:myEmail(),hideArt:!!ui.cwHide}); S.set(K.fanPosts,L); ui.cmFeed="fan"; toast("已發布 💜"); navBack(); break; }   /* 發完回到原本的社群，不留下「撰寫貼文」那一頁 */
+    case "cwPost": { const tx=((document.getElementById("cwTxt")||{}).value||"").trim(); if(!tx&&!(ui.cwImgs||[]).length) break; const gid=t.dataset.v, L=S.get(K.fanPosts,[]); L.push({id:"fp"+Date.now(),gid,text:tx,ts:Date.now(),name:cmProf(gid).nick,g:3,mine:true,by:myEmail(),hideArt:!!ui.cwHide,...((ui.cwImgs||[]).length?{imgs:ui.cwImgs.slice()}:{})}); S.set(K.fanPosts,L); ui.cwImgs=[]; ui.cmFeed="fan"; toast("已發布 💜"); navBack(); break; }   /* 發完回到原本的社群，不留下「撰寫貼文」那一頁 */
     case "cmMeTab": ui.cmMeTab=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "meHide": t.classList.toggle("on"); t.setAttribute("aria-checked",t.classList.contains("on")); break;
     case "meSave": { const gid=t.dataset.v, P=S.get(K.cmProf,{}), x=cmProf(gid), nk=((document.getElementById("meNick")||{}).value||"").trim(); if(!nk){ toast("暱稱不能空白"); break; } setNick(nk.slice(0,20)); P[gid]={...x,nick:nk.slice(0,20),intro:((document.getElementById("meIntro")||{}).value||""),hide:!!document.querySelector('[data-a="meHide"].on')}; S.set(K.cmProf,P); ui.meDraft=null; toast("已儲存"); navBack(); break; }
@@ -13764,6 +13788,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "pinPrev": ui.pinIdx=(ui.pinIdx||0)-1; refreshPin(); break;
     case "pinNext": ui.pinIdx=(ui.pinIdx||0)+1; refreshPin(); break;
     case "pinDot": ui.pinIdx=Number(t.dataset.v); refreshPin(); break;
+    case "fpGo": { const id=t.dataset.id; if((session()||{}).role==="artist"){ fpOpen(id); break; } ui.cDraft=""; ui.sheet={postId:id}; renderComments(true); break; }
+    case "cwImgX": { (ui.cwImgs||[]).splice(+t.dataset.v,1); const tx=(document.getElementById("cwTxt")||{}).value||""; render(); const ta=document.getElementById("cwTxt"); if(ta){ ta.value=tx; } const b=document.getElementById("cwOk"); if(b) b.disabled=!tx.trim()&&!(ui.cwImgs||[]).length; break; }
     case "fpRep": { const p=S.get(K.fanPosts,[]).find(x=>x.id===t.dataset.id); if(!p) break; fpOpen(p.id,true); break; }
     case "fpClose": layer.innerHTML=""; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "fpRepOk": { const tx=((document.getElementById("fpRepIn")||{}).value||"").trim(); if(!tx) break; const mid=(session()||{}).member, L=S.get(K.fanPosts,[]), p=L.find(x=>x.id===t.dataset.id); if(!p||!mid) break; if(!isAdminAcct()&&banBlock(tx)) break;
@@ -20073,6 +20099,10 @@ setInterval(ntPhClean,20e3); setTimeout(ntPhClean,3e3);
 { let tT=0; const SCR=new WeakMap(); ["touchstart","touchmove","wheel","pointerdown","keydown"].forEach(k=>document.addEventListener(k,()=>{ tT=Date.now(); },{passive:true,capture:true}));
   document.addEventListener("scroll",e=>{ const el=e.target; if(!(el instanceof Element)||!el.matches(".tiei-body,.tst-b,.ofd-body,.sn-cl")) return; const prev=SCR.get(el)||0, cur=el.scrollTop;
     if(cur<4&&prev>200&&Date.now()-tT>900){ el.scrollTop=prev; return; } SCR.set(el,cur); },true); }
+/* 粉絲貼文加照片：縮小後放雲端（不行就先存在資料裡） */
+document.addEventListener("change",async e=>{ const t=e.target; if(!t||t.id!=="cwFile") return; const fs=[...(t.files||[])].slice(0,10-(ui.cwImgs||[]).length); t.value=""; if(!fs.length) return; toast("上傳中…");
+  for(const f of fs){ try{ const b=await shrinkImg(f,1080); if(!b) continue; let u=HB_ON?await hbImgUrl("fp_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+".jpg",b):null; if(!u) u=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); (ui.cwImgs=ui.cwImgs||[]).push(u); }catch(err){} }
+  const tx=(document.getElementById("cwTxt")||{}).value||""; render(); const ta=document.getElementById("cwTxt"); if(ta) ta.value=tx; const bt=document.getElementById("cwOk"); if(bt) bt.disabled=!tx.trim()&&!(ui.cwImgs||[]).length; });
 const MHEAL={};
 async function mediaHeal(){ try{ if(!HB_ON||!HB.tok||sbxOn()||!MEDIA_URL) return; const ids=new Set();
   (S.get(K.vods,[])||[]).forEach(v=>{ if(v&&v.mid) ids.add(v.mid); if(v&&v.thumb) ids.add(v.thumb); });
