@@ -3399,7 +3399,7 @@ html body .snlk-b.on:not(.dk-keep){background:rgba(127,127,127,.2)!important;col
 .sn-phr .sn-stat{display:flex!important;justify-content:space-between!important;gap:8px;flex:none!important;max-width:280px}.sn-phr .sn-stat>*{display:flex!important;flex-direction:column!important;align-items:flex-start!important;text-align:left!important;font-size:14px!important;line-height:1.25;border:0;background:none;color:inherit;padding:0;font-family:inherit}.sn-phr .sn-stat b{font-size:17px!important;font-weight:700}
 .sn-padd .si{width:16px;height:16px;stroke-width:2.6}
 .sn-btns{gap:6px!important}.sn-btns button{height:34px!important;border-radius:9px!important;font-size:14px!important;font-weight:600!important}
-.sn-first b{font-size:24px!important}.sn-first p{font-size:15px!important}.sn-firstb{margin-top:6px;border:0;border-radius:9px;background:#0095F6!important;color:#fff!important;font-weight:600;padding:8px 22px}
+.sn-first b{font-size:24px!important}.sn-first p{font-size:15px!important}html body .sn-grid .sn-empty button{aspect-ratio:auto!important;animation:none!important;position:static}html body .sn-empty .sn-firstb{margin-top:10px;border:0;border-radius:10px;background:rgb(0,149,246)!important;color:#fff!important;font-size:14px;font-weight:600;padding:9px 26px!important;height:auto;min-width:96px;white-space:nowrap;line-height:1.2;display:inline-flex;align-items:center;justify-content:center}
 .sn-edb{display:flex;flex-direction:column;gap:12px;padding:6px 16px 16px}.sn-fb2{display:flex;flex-direction:column;gap:2px;border:1px solid rgba(127,127,127,.4);border-radius:12px;padding:8px 14px 10px}.sn-fb2 small{font-size:12px;opacity:.6}.sn-fb2 input,.sn-fb2 textarea{border:0;background:none;color:inherit;font:inherit;font-size:16px;padding:0;outline:none;resize:none;width:100%}
 .sn-edav span{color:#0095F6!important;font-weight:600}
 .snsr{height:86vh;max-height:86vh!important;display:flex!important;flex-direction:column;padding:8px 0 0!important}.snsr-q{display:flex;align-items:center;gap:10px;height:44px;margin:4px 16px 8px;padding:0 16px;border-radius:22px;background:rgba(127,127,127,.18);flex:none}.snsr-q .si{width:20px;height:20px;opacity:.7}.snsr-q input{flex:1;min-width:0;border:0;background:none;color:inherit;font:inherit;font-size:17px;outline:none}
@@ -6803,7 +6803,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110080322";
+const BUILD="20261110081042";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
