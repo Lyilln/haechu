@@ -6881,7 +6881,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110113603";
+const BUILD="20261110114032";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7494,7 +7494,9 @@ function resolveReport(id,action){
 }
 function setHidden(postId,hidden){ const posts=S.get(K.posts,[]), p=posts.find(x=>x.id===postId); if(p){p.hidden=hidden;S.set(K.posts,posts)} }
 /* 置頂公告：可以同時有好幾則，通知頁上方會輪播 */
-const getAnns=()=>S.get(K.anns,[]).filter(a=>!dbWipedTx(a)).sort((a,b)=>b.ts-a.ts);
+const ANN_GONE="daisuki_ann_gone", PIN_HIDE="daisuki_pin_hide";   /* 撤下的公告／撤下置頂：記編號，別支手機同步回來的舊資料也不會再出現 */
+const annGone=()=>S.get(ANN_GONE,{})||{};
+const getAnns=()=>{ const G=annGone(); return S.get(K.anns,[]).filter(a=>!dbWipedTx(a)&&!G[a.id]).sort((a,b)=>b.ts-a.ts); };
 (function migrateAnn(){ const old=S.get(K.announce,null); if(old&&!S.get(K.anns,[]).some(a=>a.id===old.id)){ S.set(K.anns,[old,...S.get(K.anns,[])]); } S.del(K.announce); })();
 function seedAnn(){
   if(S.get(K.seed10,false)) return; const now=Date.now();
@@ -10528,7 +10530,7 @@ const preAnns=()=>getAnns().map(a=>({a,p:annPre(a)})).filter(x=>x.p&&annOn(x.p))
 function preBanner(){ const L=preAnns(); if(!L.length) return ""; return `<div class="pre-bn">${L.map(({a,p})=>`<button data-a="preAnn" data-id="${a.id}">${a.img?`<span class="pre-bi" style="background-image:url('${esc(a.img)}')"></span>`:""}<b>📢 即將${p.k==="db"?"出道":"回歸"}</b><span>${esc(String(a.text).replace(/^\S+\s*(出道|回歸)預告｜/,""))}</span><em>D-${dLeft(p.day)}</em></button>`).join("")}</div>`; }
 /* 置頂大卡：左右滑換一則（每張一樣高），下面的點點跟著滑；每 5 秒自動換下一則 */
 function pinnedHtml(){
-  const anns=[...annLive(),...coPinList().sort((a,b)=>b.ts-a.ts)]; if(!anns.length) return "";   /* HAECHU 平台公告永遠排最前面，公司官方貼文接在後面 */
+  const PH=S.get(PIN_HIDE,{})||{}, anns=[...annLive(),...coPinList().filter(x=>!PH[x.id]).sort((a,b)=>b.ts-a.ts)]; if(!anns.length) return "";   /* HAECHU 平台公告永遠排最前面，公司官方貼文接在後面 */
   const N=anns.length;
   return `<div id="pinWrap" class="pin-w"><span class="nz-pill">📌 平台重要置頂公告</span>
     <div class="pin-trk" id="pinTrk">${anns.map((a,i)=>`<div class="pin-card"><div class="pin-top"><span><i class="pin-dot"></i>NOTICE 公告（${i+1}/${N}）</span><i class="pin-ping"></i></div>
@@ -12895,6 +12897,8 @@ function viewAdmin(tab){
         ${(()=>{const gl=getGNotices().filter(n=>n.group===(ui.gnG||GROUPS[0].id));return gl.length?gl.map(n=>`<div class="leak-row"><span>${esc(n.title)}<small>${ago(n.ts)}</small></span><button class="btn btn-soft btn-sm" data-a="gnDel" data-v="${n.id}">撤下</button></div>`).join(""):""})()}</section>
       ${list.length?`<div class="section-h">置頂中的公告<span class="muted">${list.length} 則</span></div>${list.map(a=>`<section class="card" style="padding:16px;margin-bottom:10px"><p style="margin:0 0 6px">${esc(a.text)}</p><span class="muted" style="font-size:12px">${ago(a.ts)}</span>
         <div style="margin-top:10px"><button class="del" style="margin:0" data-a="annDel" data-id="${a.id}">撤下公告</button></div></section>`).join("")}`:""}
+      ${(()=>{ const PH=S.get(PIN_HIDE,{})||{}, cp=coPinList().filter(x=>!PH[x.id]).sort((a,b)=>b.ts-a.ts); return cp.length?`<div class="section-h">置頂中的公司公告<span class="muted">${cp.length} 則</span></div>${cp.map(a=>`<section class="card" style="padding:16px;margin-bottom:10px"><p style="margin:0 0 6px">${esc(a.text)}</p><span class="muted" style="font-size:12px">${ago(a.ts)}</span>
+        <div style="margin-top:10px"><button class="del" style="margin:0" data-a="pinDel" data-id="${esc(a.id)}">撤下置頂</button></div></section>`).join("")}`:""; })()}
     </main>`;
   }
   if(tab==="me"){
@@ -13553,7 +13557,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "admDel": ask("確定要永久刪除這則貼文嗎？留言也會一起刪除。",()=>{ deletePost(t.dataset.id); render(); toast("已刪除貼文"); }); break;
     case "admEndLive": ask("確定要強制關閉這場直播嗎？",()=>{ endLive(t.dataset.id); render(); toast("已將直播間切換為休息狀態"); }); break;
     case "announce": { const text=document.getElementById("atext").value.trim(); if(!text){ toast("請輸入公告內容"); break; } publishAnnounce(text); ui.aDraft=""; render(); toast("已發布，粉絲收到通知了"); break; }
-    case "annDel": { const a=getAnns().find(x=>x.id===t.dataset.id); S.set(K.anns,getAnns().filter(x=>x.id!==t.dataset.id)); if(a) S.set(K.notifs,getNotifications().filter(n=>!(n.kind==="system"&&n.text===a.text.slice(0,120)))); render(); toast("已撤下公告"); break; }
+    case "pinDel": { const P={...(S.get(PIN_HIDE,{})||{})}; P[t.dataset.id]=Date.now(); S.set(PIN_HIDE,P); render(); toast("已撤下置頂"); break; }
+    case "annDel": { const a=getAnns().find(x=>x.id===t.dataset.id); { const G={...annGone()}; G[t.dataset.id]=Date.now(); S.set(ANN_GONE,G); } S.set(K.anns,S.get(K.anns,[]).filter(x=>x.id!==t.dataset.id)); if(a) S.set(K.notifs,getNotifications().filter(n=>!(n.kind==="system"&&n.text===a.text.slice(0,120)))); render(); toast("已撤下公告"); break; }
     case "dmNext": ui.dmIdx=(ui.dmIdx||0)+1; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "exCat": ui.exCat=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "exAll": ui.exAll=!ui.exAll; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
@@ -18240,7 +18245,7 @@ function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.end
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
-      const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v);
+      const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v); if(/^\s*出道\s*$/.test(title)&&all.some(x=>x.gid===v.gid&&x.debut)) return;   /* 已經有出道曲：不要再建一首叫「出道」的 */
       m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{}),...(v.au?{au:v.au}:{})}); ch=true; try{ if(v.fy){ fairySetClips("s"+v.ts,v.fy); } }catch(e){} const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
     /* v494 先建好的歌：如果是出道 MV，補上「出道曲」，公告標題也改過來 */
     { const V=S.get(K.vods,[])||[]; [...m.songs,...(m.ended||[])].forEach(x=>{ if(!x.mv||x.debut) return; const v=V.find(y=>y.id===x.mv); if(v&&mvIsDebut(v)){ x.debut=1; ch=true; const GN=S.get(K.gNotices,[])||[], n=GN.find(y=>y.mv===v.id); if(n&&/Official MV 公開/.test(n.title)){ n.title=n.title.replace("Official MV 公開","出道 MV 公開"); n.body=n.body.replace(/^(.+?)《/,"$1的出道曲《"); S.set(K.gNotices,GN); } } }); }
@@ -19996,6 +20001,9 @@ function songPhFix(){ try{ const ms=getMShow(), all=[...(ms.songs||[]),...(ms.en
     ms.songs=(ms.songs||[]).filter(x=>x.id!==b.id); ms.ended=(ms.ended||[]).filter(x=>x.id!==b.id); ch=true; });
   if(ch) S.set(K.mshow,ms); }catch(e){} }
 setInterval(songPhFix,15e3); setTimeout(songPhFix,4e3);
+/* 之前一直重複跳的「《出道》出道 MV 公開」通知：清掉 */
+function ntPhClean(){ try{ const re=/《出道》出道 MV 公開/; [K.notifs,K.feed].forEach(k=>{ const L=S.get(k,[])||[], L2=L.filter(n=>!re.test(String(n&&n.text||""))); if(L2.length!==L.length) S.set(k,L2); }); }catch(e){} }
+setInterval(ntPhClean,20e3); setTimeout(ntPhClean,3e3);
 /* 團社群 Feed：只有藝人貼文（官方宣傳在 Media 的專輯分區） */
 function grpArtMix(gid,art,n){ const L=art.map(p=>({ts:p.ts||0,h:()=>postCard(p)})).sort((a,b)=>b.ts-a.ts); setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0); return (n?L.slice(0,n):L).map(o=>o.h()).join(""); }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
