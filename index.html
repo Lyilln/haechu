@@ -2654,6 +2654,24 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .cm-chips button.on{background:var(--gt);border-color:var(--gt);color:#fff}
 .cm-chips button.on{background:color-mix(in srgb,var(--gt) 72%,#1B1626);border-color:transparent;text-shadow:0 1px 2px rgba(0,0,0,.2)} /* 團的代表色太淺時白字才看得清楚 */
 .cm-chips.sm button{padding:5px 11px;font-size:12px}
+.alb-h h3 span{color:var(--ink-3);font-weight:600;margin-left:2px}
+.alb-r{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:6px 16px 8px}.alb-r::-webkit-scrollbar{display:none}
+.alb-c{flex:0 0 46%;border:0;background:none;padding:0;text-align:left;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;gap:3px;min-width:0;cursor:pointer}
+.alb-t{position:relative;width:100%;aspect-ratio:16/9;border-radius:10px;overflow:hidden;background:#1d1824;display:block;margin-bottom:3px}
+.alb-t>img{width:100%;height:100%;object-fit:cover;display:block}
+.alb-n{position:absolute;right:6px;top:6px;display:flex;align-items:center;gap:2px;font-style:normal;font-size:11px;font-weight:700;color:#fff;background:rgba(0,0,0,.45);border-radius:6px;padding:1px 5px}.alb-n svg{width:13px;height:13px}
+.alb-p{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:32px;height:32px;border-radius:50%;background:rgba(0,0,0,.45);color:#fff;display:grid;place-items:center;font-style:normal;font-size:13px;padding-left:2px}
+.alb-c b{font-size:13.5px;font-weight:600;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.alb-c small{font-size:12px;color:var(--ink-3)}
+.alb-lay .alb-ls{display:flex;flex-direction:column;gap:8px}.alb-lay .cp-img img{width:100%;display:block;border-radius:10px}
+.nl-r{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:6px 16px 4px}.nl-r::-webkit-scrollbar{display:none}
+.nl-c{flex:0 0 100%;border:0;background:none;padding:0;text-align:left;font-family:inherit;color:var(--ink);display:flex;flex-direction:column;gap:10px;min-width:0;cursor:pointer}.nl-r.many .nl-c{flex-basis:86%}
+.nl-t{position:relative;width:100%;aspect-ratio:16/9;border-radius:14px;overflow:hidden;display:block}
+.nl-i{display:flex;align-items:center;gap:10px;min-width:0}
+.nl-av{position:relative;flex:0 0 44px;width:44px;height:44px;border-radius:50%;overflow:visible;box-shadow:0 0 0 2px var(--bg,#fff),0 0 0 4px #ff2d55;margin:4px;display:grid;place-items:center;color:#fff;font-style:normal;font-weight:700}
+.nl-av .av-img{position:absolute;inset:0;border-radius:50%}
+.nl-av em{position:absolute;left:50%;bottom:-6px;transform:translateX(-50%);background:#ff2d55;color:#fff;font-style:normal;font-size:9px;font-weight:800;letter-spacing:.3px;border-radius:5px;padding:1px 4px;z-index:1}
+.nl-tx{display:flex;flex-direction:column;min-width:0}.nl-tx b{font-size:15px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.nl-tx small{font-size:12.5px;color:var(--ink-3)}
 .cm-lv{display:flex;gap:12px;overflow-x:auto;scrollbar-width:none;margin-inline:-16px;padding:4px 16px 6px}
 .vs-add{display:block;width:100%;margin:6px 0 4px;padding:12px;border:1.5px dashed var(--line);border-radius:14px;background:none;color:var(--ink-2);font:inherit;font-weight:700}
 .vs-tools{display:flex;gap:4px;margin-left:auto}.vs-tools button{width:32px;height:32px;border-radius:50%;border:0;background:var(--s2);color:var(--ink);display:grid;place-items:center;font-size:18px;padding:0}.vs-tools svg{width:15px;height:15px}
@@ -6802,7 +6820,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110102435";
+const BUILD="20261110103058";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10123,8 +10141,9 @@ addEventListener("scroll",cmTopSync,{passive:true});
 const cmSec=(t,more,act)=>`<div class="cm-sh"><h3>${t}</h3>${more?`<button data-a="${act}">${more} ›</button>`:""}</div>`;
 const ntChips=(nt,act)=>`<div class="cm-chips sm cm-ntc">${[["c","Community"],["s","Shop"]].map(([k,l])=>`<button class="${nt===k?"on":""}" data-a="${act}" data-v="${k}">${l}</button>`).join("")}</div>`;
 const ntRow=n=>`<button class="cm-nl ${n.pin?"pin":""}" data-a="${n.shop?"snOpen":"gnOpen"}" data-v="${n.id}"><em></em><span>${esc(n.title)}</span>${Date.now()-n.ts<3*864e5?"<i></i>":""}</button>`;
-function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt).slice(0,5), ms=grpMembers(gid), prods=shopProducts(gid).filter(p=>p.kind!=="tie").slice(0,6), up=grpSched(gid)[0];
-  return `${cmSec("公告")}${ntChips(nt,"cmNt")}<section class="card cm-card">${ns.length?ns.map(ntRow).join(""):`<p class="me-none">還沒有${nt==="s"?" Shop ":""}公告</p>`}
+function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt).slice(0,5), ms=grpMembers(gid), prods=shopProducts(gid).filter(p=>p.kind!=="tie").slice(0,6), up=grpSched(gid)[0], lvN=meetOf(l=>MEMBERS[l.member].group===gid&&!l.endTs);
+  const nowH=lvN.length?`${cmSec("Now LIVE")}<div class="nl-r${lvN.length>1?" many":""}">${lvN.map(l=>`<button class="nl-c" data-a="openLive" data-id="${l.id}" data-lv="${l.id}"><span class="nl-t cv-fit" style="${lvCoverFit(l.member,l)}"></span><span class="nl-i"><i class="nl-av" style="background:${grad(MEMBERS[l.member].g)}">${mAvIn(l.member,"live")}<em>LIVE</em></i><span class="nl-tx"><b>${esc(l.title)}</b><small>${esc(artName(l.member,"live"))}</small></span></span></button>`).join("")}</div>`:"";
+  return `${nowH}${cmSec("公告")}${ntChips(nt,"cmNt")}<section class="card cm-card">${ns.length?ns.map(ntRow).join(""):`<p class="me-none">還沒有${nt==="s"?" Shop ":""}公告</p>`}
       <button class="cm-go" data-a="cmNotices">確認 ${esc(g.name)} 的公告 <span>→</span></button></section>
     ${cmSec("Calendar")}<section class="card cm-card">${up?`<div class="cm-up"><small>${evWhen(up.ts)}</small><b>${up.ic} ${esc(up.t)}</b></div>`:""}<button class="cm-go" data-a="cmCal">確認 ${esc(g.name)} 的行程 <span>→</span></button></section>
     ${prods.length?`${cmSec("Merch","查看更多","cmShop")}<div class="cm-merch">${prods.map(prodCard).join("")}</div>`:""}
@@ -10269,7 +10288,8 @@ function grpMedia(gid){ const ch=ui.cmMed||"all", lv=meetOf(l=>MEMBERS[l.member]
     <div class="cm-lv">${vd.filter(v=>vc==="all"||v.type===vc).map(v=>`${vodCard(v.v)}`).join("")}</div>
     ${types.map(t=>`${cmSec(t)}<div class="cm-lv">${vd.filter(v=>v.type===t).map(v=>`${vodCard(v.v)}`).join("")}</div>`).join("")}`;
   const secH=vsecHtml(gid,false); if(!vd.length) vdH="";
-  return chips+(ch==="photo"?phH:ch==="live"?lvH:ch==="vod"?secH+vdH:phH+secH+lvH+vdH); }
+  const alH=grpAlbums(gid);
+  return chips+(ch==="photo"?phH:ch==="live"?lvH:ch==="vod"?alH+secH+vdH:alH+lvH+secH+vdH+phH); }
 function grpShop(gid){ const cat=ui.shopCat||"all", L=shopProducts(gid).filter(p=>cat==="all"||p.cat===cat);
   return `<div class="cm-chips">${[["all","全部"],["album","專輯"],["ms","Membership"],["merch","周邊"],["tie",WHISPER_NAME+" 券"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="cmCat" data-v="${k}">${l}</button>`).join("")}</div><div class="wsp-grid">${L.map(prodCard).join("")}</div>`; }
 
@@ -19780,8 +19800,26 @@ const ofHead=(gid,ts)=>{ const g=groupOf(gid)||{}; return `<div class="post-head
 const ofPromo=gid=>coPosts().filter(x=>x.src&&x.src.gid===gid&&groupOf(gid));
 function ofPromoCard(x){ const s=x.src, cap=coCap(s.co,x.k,s,x), body=coBodyOf(x);
   return `<article class="card post ofc" id="post-of-${x.id}">${body?`<div class="ofc-m">${body}</div>`:""}<div class="ofc-b">${ofHead(s.gid,x.ts)}${capHtml(cap)}${relExtra(x)}</div></article>`; }
-/* 團社群的藝人貼文：藝人貼文＋官方帳號的宣傳照時間排 */
-function grpArtMix(gid,art,n){ const L=[...art.map(p=>({ts:p.ts||0,h:()=>postCard(p)})),...ofPromo(gid).map(x=>({ts:x.ts,h:()=>ofPromoCard(x)}))].sort((a,b)=>b.ts-a.ts); setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0); return (n?L.slice(0,n):L).map(o=>o.h()).join(""); }
+/* ---------- MEET•Media：每張專輯一個分區，橫滑縮圖（像 Weverse LIVE•Media） ---------- */
+const dotYmd=ts=>{ const d=new Date(ts); return `${d.getFullYear()}.${String(d.getMonth()+1).padStart(2,"0")}.${String(d.getDate()).padStart(2,"0")}`; };
+const albName=s=>{ const pr=s.pr||{}, nm=pr.album||s.title||""; return `${s.rtype?esc(s.rtype)+" ":s.k==="db"?"Debut ":""}${nm?`&lt;${esc(nm)}&gt;`:""}`.trim()||esc(s.name||""); };
+const albTitle=x=>{ const s=x.src, q=s.title?`'${s.title}' `:""; return x.k==="concept"&&x.n?`${q}Concept Photo・${x.n}`:x.k==="rel"?`${q}${x.vid?"M/V":"OUT NOW"}`:x.k==="sched"?`${q}${s.k==="db"?"Debut":"Comeback"} Schedule`:`${q}${PR_KIND[x.k]||""}`; };
+function albThumb(x){ const s=x.src, pr=s.pr||{}, imgs=x.imgs||[];
+  if(x.vid) return {a:"cpVid",v:x.vid.mid,h:`${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:s.teaser?`<img src="${esc(s.teaser)}" alt="">`:""}<i class="alb-p">▶</i>`};
+  if(x.k==="sched"||x.k==="trk"){ const u=x.k==="sched"?pr.sched:pr.trkImg; if(u) return {a:"cpPh",v:u,h:`<img src="${esc(u)}" alt="" loading="lazy">`};
+    return {a:"cmAlbP",v:x.id,h:`<div class="snof-sc">${x.k==="sched"?promoSchedCard(s):promoTrkCard(s)}</div>`}; }
+  if(!imgs.length) return null;
+  return imgs.length>1?{a:"cmAlbP",v:x.id,h:`<img src="${esc(imgs[0])}" alt="" loading="lazy"><i class="alb-n">${si("carousel","sm")}${imgs.length}</i>`}:{a:"cpPh",v:imgs[0],h:`<img src="${esc(imgs[0])}" alt="" loading="lazy">`}; }
+function grpAlbums(gid){ const by={}; ofPromo(gid).forEach(x=>{ (by[x.src.id]=by[x.src.id]||{s:x.src,L:[]}).L.push(x); });
+  const G=Object.values(by).sort((a,b)=>b.s.day-a.s.day); if(!G.length) return "";
+  setTimeout(()=>document.querySelectorAll(".alb-t img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
+  return G.map(({s,L})=>{ const C=L.sort((a,b)=>b.ts-a.ts).map(x=>{ const t=albThumb(x); return t?`<button class="alb-c" data-a="${t.a}" data-v="${esc(t.v)}"><span class="alb-t">${t.h}</span><b>${esc(albTitle(x))}</b><small>${dotYmd(x.ts)}</small></button>`:""; }).join("");
+    return C?`<div class="cm-sh alb-h"><h3>${albName(s)} <span>›</span></h3></div><div class="alb-r">${C}</div>`:""; }).join(""); }
+function albOpen(id){ const x=coPosts().find(y=>y.id===id); if(!x) return;
+  const b=(x.imgs||[]).length>1&&x.k!=="sched"&&x.k!=="trk"?`<div class="alb-ls">${x.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`:coBodyOf(x);
+  setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(albTitle(x))}</b><span class="sh-sp"></span></header><div class="tiei-body alb-lay">${b}</div></div>`,"alb"); }
+/* 團社群 Feed：只有藝人貼文（官方宣傳在 Media 的專輯分區） */
+function grpArtMix(gid,art,n){ const L=art.map(p=>({ts:p.ts||0,h:()=>postCard(p)})).sort((a,b)=>b.ts-a.ts); setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0); return (n?L.slice(0,n):L).map(o=>o.h()).join(""); }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
 function feedMix(posts){ const C=coPosts().map(x=>({ts:x.ts,h:()=>coPostCard(x)})), P=posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)}));
   setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
@@ -19814,6 +19852,7 @@ async function prImgUp(file){ const b=await shrinkImg(file,1600), prev=URL.creat
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="cpPh"){ e.stopImmediatePropagation(); setLayer(`<div class="ph-view" data-a="tCloseLayer" role="dialog" aria-label="照片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button><img src="${esc(t.dataset.v)}" alt=""></div>`,"photo"); return; }
   if(a==="cpVid"){ e.stopImmediatePropagation(); playVideo(t.dataset.v); return; }
+  if(a==="cmAlbP"){ e.stopImmediatePropagation(); albOpen(t.dataset.v); return; }
   if(!/^pr[A-Z]/.test(a)) return; e.stopImmediatePropagation(); dbKeep(); const f=ui.dbF; if(!f) return; const pr=f.pr||(f.pr=promoLoad(null));
   if(a==="prCvAdd"){ pr.cv.push({n:"",ph:[],phP:[]}); dbReform(); return; }
   if(a==="prCvDel"){ pr.cv.splice(+t.dataset.i,1); dbReform(); return; }
