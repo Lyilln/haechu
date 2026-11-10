@@ -6154,6 +6154,10 @@ html[data-theme="dark"] .sn-sh.cm{--sn-b:#1C1D21}
 .fy-s:disabled{opacity:1}
 .fy-hh{display:flex;align-items:center;gap:8px}.i-tip{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;border:1.5px solid currentColor;background:none;color:var(--ink-3);font:700 12px/1 Georgia,serif;font-style:italic;padding:0}
 .fy-s.me{outline:2px solid var(--violet);outline-offset:-2px}.fy-s[disabled]{opacity:.55}.fy-info{margin:0;line-height:1.7;font-size:14px;color:var(--ink-2);text-align:left}
+.fy-list{padding:4px 16px}.fy-row{display:flex;align-items:center;gap:12px;padding:12px 0}.fy-row+.fy-row{border-top:1px solid var(--line)}
+.fy-th{position:relative;flex:none;width:48px;height:64px;border-radius:10px;border:1.5px dashed var(--line);background:var(--s2);display:grid;place-items:center;overflow:hidden;padding:0;color:var(--violet);font:inherit}
+.fy-th.on{border:0}.fy-th img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.fy-th i{position:relative;font-style:normal;color:#fff;font-size:12px}.fy-th b{font-size:20px;font-weight:400}.fy-th[disabled]{border-style:solid}
+.fy-lock{font-weight:800;color:var(--ink-3)}.fy-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.fy-tx b{font-size:15px}.fy-tx small{font-size:12.5px;color:var(--ink-3)}
 </style>
 </head>
 <body>
@@ -6679,7 +6683,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110031621";
+const BUILD="20261110031835";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18881,37 +18885,32 @@ function vodViewWatch(vid){ const v=document.getElementById("pvPlayer"); if(!v) 
 
 /* =========================================================
    結尾妖精（ending fairy）
-   ・每首打歌中的歌，每個節目：團體＝一位成員一格（自己放自己的），SOLOIST 一格（她 11/10 改）
-   ・團體每週節目結束後，從有放的成員裡抽一位加分（機率、分數待討論）
-   ・被選到的藝人在「打歌戰況」上傳一張照片或一段影片
-   ・粉絲在節目模塊裡點一首歌：全螢幕播這首歌這個節目的結尾妖精，有音樂就一起放
-   ・資料 daisuki_fairy：{"週|節目|歌":{藝人:{m:網址或影片編號,v:是不是影片,th:縮圖,ts}}}
+   ・真實的結尾妖精：每個舞台結束時，鏡頭特寫「一位」成員
+   ・所以這裡：每首打歌中的歌，每個節目每週只有一位結尾妖精（一個欄位）
+   ・團體：App 看這團有幾位成員，每週每個節目自動抽一位；被抽到的人上傳照片或影片，上傳就加分（機率、分數待討論）
+   ・SOLOIST：不用抽，固定是本人（她說 SOLOIST 不用管）
+   ・粉絲在節目模塊裡點歌：全螢幕播這首歌這個節目這週的結尾妖精
+   ・資料 daisuki_fairy：{"週|節目|歌":{s0:{m,v,th,by,ts}}}
    ========================================================= */
 const FAIRY_KEY="daisuki_fairy";
 const fairyK=(wk,show,sid)=>`${wk}|${show}|${sid}`;
 
 const fairyMon=(t)=>{ const d=new Date(t||Date.now()); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0"); };
-/* 11/10 改：團體＝成員幾位就幾格（一人一格，自己放自己的）；SOLOIST 一格 */
-const fairyMems=sid=>{ const so=songOf(sid); if(!so) return []; const g=groupOf(so.gid)||{}; if(g.solo) return []; return groupArtists(so.gid).slice().sort((a,b)=>(MEMBERS[a].name||"").localeCompare(MEMBERS[b].name||"")||a.localeCompare(b)); };
-const fairyN=(sid,show,mon)=>{ const so=songOf(sid); if(so&&so.demo) return Math.max(1,groupArtists(so.gid).length||4); return Math.max(1,fairyMems(sid).length); };
-/* 每週節目結束後，從有放結尾妖精的成員裡抽一位加分（機率、分數之後再跟她討論；現在先平均抽、+FAIRY_BONUS） */
+/* 這週這個節目的結尾妖精是誰：團體從成員裡抽一位（同一首歌、同一個節目，盡量不跟上週同一位）；SOLOIST 就是本人 */
 const FAIRY_BONUS=500;
-function fairyDrawTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.ptGrants]==null)) return; const m=getMShow(), wk=curWeek(), G=S.get(K.ptGrants,[])||[]; let L=null;
-  [...(m.songs||[])].forEach(so=>{ if(so.demo) return; const mems=fairyMems(so.id); if(mems.length<2) return; const mon=fairyMon(), F=(S.get(FAIRY_KEY,{})||{});
-    SHOWS.forEach(sh=>{ if(!showEnded(sh.id,wk)) return; const id=`fyw_${wk}_${sh.id}_${so.id}`; if(G.some(x=>x.id===id)||(L&&L.some(x=>x.id===id))) return; const o=F[fairyK(mon,sh.id,so.id)]||{};
-      const cand=[...new Set(Object.values(o).filter(x=>x&&x.by&&mems.includes(x.by)).map(x=>x.by))].sort(); if(!cand.length) return;
-      const win=cand[strHash(id)%cand.length]; L=L||[...G]; L.push({id,to:"art:"+win,mid:win,n:FAIRY_BONUS,art:1,why:`${sh.name} 結尾妖精`,by:"auto",ts:Date.now()});
-      Object.keys(ACCOUNTS).filter(e=>(ACCOUNTS[e]||{}).member===win).forEach(e=>feedPush({kind:"core",self:true,text:`🧚 這週 ${sh.name} 的結尾妖精是你！+${fmt(FAIRY_BONUS)} 積分`},"u:"+e)); }); });
-  if(L) S.set(K.ptGrants,L); }catch(e){} }
-setInterval(fairyDrawTick,60e3); setTimeout(fairyDrawTick,12e3);
-const fairySlots=(sid,show,mon)=>{ const F=S.get(FAIRY_KEY,{})||{}, o=F[fairyK(mon||fairyMon(),show,sid)]||{}, n=fairyN(sid,show,mon); return Array.from({length:n},(_,i)=>o["s"+i]||null); };
-function fairyPick(sid,show,wk){ wk=wk||curWeek(); const s=songOf(sid); if(!s) return []; const ms=s.demo?(groupArtists(s.gid).length?groupArtists(s.gid):["d1","d2","d3","d4"]):groupArtists(s.gid);
-  const n=1+strHash(fairyK(wk,show,sid))%8; return ms.slice().sort((a,b)=>strHash(wk+show+sid+a)-strHash(wk+show+sid+b)).slice(0,Math.min(n,ms.length)); }
+function fairyWho(sid,show,wk){ wk=wk||curWeek(); const so=songOf(sid); if(!so) return ""; const ms=groupArtists(so.gid).slice(); if(!ms.length) return so.demo?"d1":""; if(ms.length===1) return ms[0];
+  /* 每首歌每個節目先抽一個順序，之後每週輪下一位：看起來是隨機，但不會連續兩週同一個人，大家輪得到 */
+  const ord=ms.sort((a,b)=>strHash(`${sid}|${show}|${a}`)-strHash(`${sid}|${show}|${b}`)||a.localeCompare(b)), n=Math.round(wkDate(wk).getTime()/(7*864e5)); return ord[((n%ord.length)+ord.length)%ord.length]; }
+const wkShift=(wk,n)=>{ try{ const d=wkDate(wk); d.setDate(d.getDate()+7*n+1); return weekKey(d.getTime()); }catch(e){ return ""; } };
 const fairyUps=(sid,show,wk)=>((S.get(FAIRY_KEY,{})||{})[fairyK(wk||curWeek(),show,sid)])||{};
+const fairyOne=(sid,show,wk)=>fairyUps(sid,show,wk).s0||null;
+const fairySlots=(sid,show,wk)=>[fairyOne(sid,show,wk)];
+const fairyN=()=>1;
+function fairyPick(sid,show,wk){ const w=fairyWho(sid,show,wk); return w?[w]:[]; }
 /* 粉絲：點歌 → 全螢幕播結尾妖精 */
 let FV=null;
 async function fairyView(sid,show,from){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), sh=SHOWS.find(x=>x.id===show)||{}, wk=curWeek(), picks=fairyPick(sid,show,wk), up=fairyUps(sid,show,wk);
-  let L=fairySlots(sid,show).filter(Boolean).map(x=>({mid:x.by,...x}));
+  let L=fairySlots(sid,show,wk).filter(Boolean).map(x=>({mid:x.by,...x}));
   if(s.demo&&!L.length) L=Array.from({length:fairyN(sid,show)},(_,i)=>({mid:(picks[i%Math.max(1,picks.length)]||"d"+i),demo:1}));   /* 示範：用色塊代替 */
   fairyClose(1); const ov=document.createElement("div"); ov.className="fv2 s-"+show; ov.setAttribute("role","dialog"); ov.setAttribute("aria-label","結尾妖精");
   ov.innerHTML=`<div class="fv2-bg" data-a="fvClose"></div><div class="fv2-box"><div class="fv2-card"><div class="fv2-st" id="fvSt"></div>${L.length>1&&!(g&&g.solo)?`<button class="fv2-prev" data-a="fvPrev" aria-label="上一位"></button><button class="fv2-next" data-a="fvNext" aria-label="下一位"></button>`:""}<i class="fv2-prog"><em id="fvProg"></em></i></div>
@@ -18955,26 +18954,28 @@ document.addEventListener("wheel",e=>{ if(FV&&FV.ov) e.preventDefault(); },{pass
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) fairyClose(1); });
 window.addEventListener("pagehide",()=>fairyClose(1)); window.addEventListener("hashchange",()=>fairyClose(1));
 /* 藝人：打歌戰況裡上傳自己的結尾妖精 */
-function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid); if(!s) return ""; const g=groupOf(gid)||{}, solo=!!g.solo, mems=solo?[]:fairyMems(s.id);
+function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid); if(!s||s._done) return ""; const g=groupOf(gid)||{}, solo=!!g.solo, wk=curWeek();
   return `<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>
-    <section class="card fy-a">${SHOWS.map(x=>{ const L=fairySlots(s.id,x.id), k=L.filter(Boolean).length;
-      return `<div class="fy-r2"><div class="fy-h"><b>${x.name}</b><small>${k}／${L.length}</small></div><div class="fy-g">${L.map((u,i)=>{ const owner=solo?mid:mems[i], own=isAdminAcct()||owner===mid, nm=!solo&&owner&&MEMBERS[owner]?stageNm(owner):"";
-        return `<button class="fy-s ${u?"on":""} ${owner===mid?"me":""}" ${own?`data-a="fyUp" data-v="${x.id}" data-i="${i}"`:"disabled"} aria-label="${x.name} ${nm||"第 "+(i+1)+" 格"}">${u?(u.v?(u.th?`<img src="${esc(u.th)}" alt="">`:"")+`<i>▶</i>`:`<img src="${esc(u.m)}" alt="">`):`<b>＋</b>`}${nm?`<em>${esc(nm)}</em>`:""}</button>`; }).join("")}</div></div>`; }).join("")}</section>`; }
+    <section class="card fy-list">${SHOWS.map(x=>{ const who=fairyWho(s.id,x.id,wk), me=who===mid, u=fairyOne(s.id,x.id,wk), can=me||isAdminAcct();
+      return `<div class="fy-row"><button class="fy-th ${u?"on":""}" ${can?`data-a="fyUp" data-v="${x.id}" data-i="0"`:"disabled"} aria-label="${x.name} 結尾妖精">${u?(u.v?(u.th?`<img src="${esc(u.th)}" alt="">`:"")+`<i>▶</i>`:`<img src="${esc(u.m)}" alt="">`):can?`<b>＋</b>`:`<span class="fy-lock">${who&&MEMBERS[who]?esc(stageNm(who)[0]||""):""}</span>`}</button>
+        <div class="fy-tx"><b>${x.name}</b><small>${solo?(u?"已上傳":"還沒上傳"):me?(u?"這週是你・已上傳":"這週是你！"):`這週是 ${who&&MEMBERS[who]?esc(stageNm(who)):"—"}`}</small></div>
+        ${can?`<button class="btn btn-sm ${u?"btn-soft":"btn-main"}" data-a="fyUp" data-v="${x.id}" data-i="0">${u?"換一個":"上傳"}</button>`:""}</div>`; }).join("")}</section>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muFairy"){ e.stopImmediatePropagation(); fairyView(t.dataset.v,t.dataset.s,t.closest(".mu3-r")||t); return; }
   if(a==="fvNext"||a==="fvPrev"){ e.stopImmediatePropagation(); fairyGo(a==="fvNext"?1:-1); return; }
   if(a==="fvClose"){ e.stopImmediatePropagation(); fairyClose(); return; }
-  if(a==="fyInfo"){ e.stopImmediatePropagation(); tieModal("結尾妖精",`<p class="fy-info">打歌期間，每個音樂節目都有結尾妖精的欄位。<br>每位成員各有一格，放上自己的照片或影片。<br><br>粉絲在音樂節目點你們的歌，結尾妖精會跟著歌輪流播放。<br><br>每週節目結束後，會選出這週的結尾妖精，被選中的成員有額外獎勵 🧚</p>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); return; }
-  if(a==="fyUp"){ e.stopImmediatePropagation(); const s0=session()||{}, mid=s0.member, show=t.dataset.v, slot=Math.max(0,Math.min(7,+t.dataset.i||0)); if(!mid||!MEMBERS[mid]) return; const s=grpSong(MEMBERS[mid].group); if(!s) return; if(s.demo){ toast("示範歌曲不能上傳"); return; } { const ms=fairyMems(s.id); if(ms.length&&ms[slot]!==mid&&!isAdminAcct()){ toast("這格是其他成員的"); return; } }
+  if(a==="fyInfo"){ e.stopImmediatePropagation(); tieModal("結尾妖精",`<p class="fy-info">每個音樂節目的舞台最後，鏡頭會特寫一位成員，這就是結尾妖精。<br><br>每週每個節目會有一位成員成為結尾妖精，輪到你的時候，這裡會顯示「這週是你！」，放上你的結尾妖精照片或影片。<br><br>粉絲在音樂節目點你們的歌就看得到 🧚</p>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); return; }
+  if(a==="fyUp"){ e.stopImmediatePropagation(); const s0=session()||{}, mid=s0.member, show=t.dataset.v, slot=Math.max(0,Math.min(7,+t.dataset.i||0)); if(!mid||!MEMBERS[mid]) return; const s=grpSong(MEMBERS[mid].group); if(!s) return; if(s.demo){ toast("示範歌曲不能上傳"); return; } const who=fairyWho(s.id,show); if(who!==mid&&!isAdminAcct()){ toast("這週不是你喔"); return; }
     const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*,video/*";
     inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; const isV=f.type.startsWith("video/")||/\.(mov|mp4|m4v|webm)$/i.test(f.name||""); toast("上傳中…");
       try{ let rec=null;
         if(isV){ const id="fy"+Date.now().toString(36), th=await videoThumb(f); let thumb=""; if(th&&th.blob){ const tb=await shrinkImg(th.blob,800); thumb=(HB_ON&&await hbImgUrl(id+"_t.jpg",tb))||""; }
           await MDB.put(id,f,true); if(!await hbUpload(id,f)){ toast("影片沒有上傳成功，請再試一次"); return; } memBlobs[id]=f; rec={m:id,v:1,th:thumb,ts:Date.now()}; }
         else { const b=await shrinkImg(f,1350), url=(HB_ON&&await hbImgUrl("fy_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); rec={m:url,v:0,ts:Date.now()}; }
-        const F=S.get(FAIRY_KEY,{})||{}, mon=fairyMon(), k=fairyK(mon,show,s.id); { const ms=fairyMems(s.id); rec.by=ms.length&&ms[slot]?ms[slot]:mid; } F[k]={...(F[k]||{}),["s"+slot]:rec};
-        /* 只留最近 3 個月，資料不會越來越大 */ const cut=fairyMon(Date.now()-92*864e5); Object.keys(F).forEach(x=>{ const m0=x.split("|")[0]; if(!/^\d{4}-\d{2}$/.test(m0)||m0<cut) delete F[x]; });
-        S.set(FAIRY_KEY,F); lsRerender(); toast("結尾妖精上傳好了"); }catch(err){ toast("上傳失敗，請再試一次"); } };
+        const F=S.get(FAIRY_KEY,{})||{}, wk=curWeek(), k=fairyK(wk,show,s.id), who=fairyWho(s.id,show,wk)||mid; rec.by=who; F[k]={...(F[k]||{}),s0:rec};
+        /* 被抽到的成員第一次上傳就加分（SOLOIST 不抽，所以不加；分數待討論） */ { const g0=groupOf(s.gid)||{}, gid0="fyw_"+k.replace(/\W/g,"_"); if(!g0.solo&&groupArtists(s.gid).length>1){ const G=S.get(K.ptGrants,[])||[]; if(!G.some(x=>x.id===gid0)){ G.push({id:gid0,to:"art:"+who,mid:who,n:FAIRY_BONUS,art:1,why:`${(SHOWS.find(x=>x.id===show)||{}).name||""} 結尾妖精`,by:"auto",ts:Date.now()}); S.set(K.ptGrants,G); toast(`結尾妖精上傳好了！+${fmt(FAIRY_BONUS)} 積分`); } } }
+        /* 只留最近 12 週 */ { const keep=new Set(); let w=curWeek(); for(let i=0;i<12&&w;i++){ keep.add(w); w=wkShift(w,-1); } Object.keys(F).forEach(x=>{ if(!keep.has(x.split("|")[0])) delete F[x]; }); }
+        S.set(FAIRY_KEY,F); lsRerender(); if(!/積分/.test((document.querySelector('.toast')||{}).textContent||"")) toast("結尾妖精上傳好了"); }catch(err){ toast("上傳失敗，請再試一次"); } };
     pickClick(inp); return; }
 },true);
 
