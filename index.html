@@ -6160,6 +6160,7 @@ html[data-theme="dark"] .sn-sh.cm{--sn-b:#1C1D21}
 .fy-lock{font-weight:800;color:var(--ink-3)}.fy-tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}.fy-tx b{font-size:15px}.fy-tx small{font-size:12.5px;color:var(--ink-3)}
 .fy-res{margin-top:12px;border-top:1px solid var(--line);padding-top:6px}.fy-rr{display:flex;justify-content:space-between;align-items:center;padding:8px 0;font-size:14px}.fy-rr b{font-weight:700}.fy-rr span{color:var(--ink-3);font-size:13px}
 .fy-a .fy-hint{margin:10px 0 0;font-size:12.5px;color:var(--ink-3)}
+.fy-rr b small{font-weight:500;color:var(--ink-3);font-size:12px}.fy-rr.done span{color:var(--ink);font-weight:700}
 </style>
 </head>
 <body>
@@ -6685,7 +6686,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110032425";
+const BUILD="20261110032916";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -17792,8 +17793,8 @@ const cbRelAt=p=>{ const c=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id
 function preTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.debut]==null&&HB.ver[K.mshow]==null)) return; const now=Date.now();
     const L=getDebut(); let ch=false; L.forEach(x=>{ if(x.status==="pre"&&x.day&&x.day>now&&!x.annId&&x.day-now<=PRE_ANN){ dbAnn(x); ch=true; } if(x.status==="pre"&&x.day&&dbRelAt(x)<=now){ if(x.gid) dbReveal(x); else dbDebutNow(L,x); ch=true; } }); if(ch){ S.set(K.debut,L); applyRoster(); render(); }
     { const m0=getMShow(), due=(m0.pre||[]).filter(p=>p.day>now&&!p.annId&&p.day-now<=PRE_ANN); if(due.length){ due.forEach(cbAnn); S.set(K.mshow,m0); } }
-    { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song,mv:x.mv,mvt:x.mvt}); try{ const fy=(x.pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ const mid=k==="me"?((x.mids||{})[x.email]||x.mid):((m=>m&&(x.mids||{})[m.email])((x.mems||[])[+k.slice(1)])); if(mid&&fy[k]&&fy[k].m) M[mid]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String((x.pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } }catch(e){} { const t2=String((x.pr||{}).t2||"").trim(); if(t2&&!m1.songs.some(s=>s.id===sid+"b")){ m1.songs.push({id:sid+"b",gid:x.gid,title:t2,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{})}); cbrMvPublish({gid:x.gid,title:t2,mv:x.pr.mv2}); } } }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
-    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); try{ const c1=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), fy=((c1||{}).pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ if(MEMBERS[k]&&fy[k]&&fy[k].m) M[k]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String(((c1||{}).pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } }catch(e){} { const c2=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), t2=String(((c2||{}).pr||{}).t2||"").trim(); if(t2&&!ms.songs.some(s=>s.id===sid+"b")){ ms.songs.push({id:sid+"b",gid:p.gid,title:t2,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{})}); cbrMvPublish({gid:p.gid,title:t2,mv:c2.pr.mv2}); } } const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
+    { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song,mv:x.mv,mvt:x.mvt}); try{ const fy=(x.pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ const mid=k==="me"?((x.mids||{})[x.email]||x.mid):((m=>m&&(x.mids||{})[m.email])((x.mems||[])[+k.slice(1)])); if(mid&&fy[k]&&fy[k].m) M[mid]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String((x.pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } m1.songs.filter(q=>q.id===sid||q.id===sid+"b").forEach(q=>fairyEnsurePlan(q)); }catch(e){} { const t2=String((x.pr||{}).t2||"").trim(); if(t2&&!m1.songs.some(s=>s.id===sid+"b")){ m1.songs.push({id:sid+"b",gid:x.gid,title:t2,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{})}); cbrMvPublish({gid:x.gid,title:t2,mv:x.pr.mv2}); } } }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
+    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); try{ const c1=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), fy=((c1||{}).pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ if(MEMBERS[k]&&fy[k]&&fy[k].m) M[k]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String(((c1||{}).pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } ms.songs.filter(q=>q.id===sid||q.id===sid+"b").forEach(q=>fairyEnsurePlan(q)); }catch(e){} { const c2=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), t2=String(((c2||{}).pr||{}).t2||"").trim(); if(t2&&!ms.songs.some(s=>s.id===sid+"b")){ ms.songs.push({id:sid+"b",gid:p.gid,title:t2,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{})}); cbrMvPublish({gid:p.gid,title:t2,mv:c2.pr.mv2}); } } const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
 setInterval(preTick,60e3); setTimeout(preTick,9e3);
 /* 出道 MV：這團之前沒有任何一首歌、也沒有更早的 MV（管理員們是先出道、之後才補傳 MV） */
 function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.ended||[])].filter(x=>x.gid===v.gid&&x.mv!==v.id); if(mine.some(x=>!x.debut||songRel(x)<v.ts)) return false;
@@ -18913,28 +18914,33 @@ const fairyMon=(t)=>{ const d=new Date(t||Date.now()); return d.getFullYear()+"-
 const FAIRY_BONUS=500, FAIRY_MAX_SEC=5;
 const fairyClips=sid=>((S.get(FAIRY_KEY,{})||{})["clip|"+sid])||{};
 const fairyMemsOf=sid=>{ const so=songOf(sid); return so?groupArtists(so.gid).slice().sort():[]; };
-const fairyWinK=(sid,show,wk)=>`win|${wk||curWeek()}|${show}|${sid}`;
-/* 這週這個節目的結尾妖精：還沒播出 → ""（誰都不知道）；播出了 → 先看有沒有記下來，沒有就從已經放了片段的成員裡抽 */
-function fairyWho(sid,show,wk,force){ wk=wk||curWeek(); const so=songOf(sid); if(!so) return ""; if(!force&&!showEnded(show,wk)) return "";
-  const F=S.get(FAIRY_KEY,{})||{}, w=F[fairyWinK(sid,show,wk)]; if(w) return w; const C=fairyClips(sid), cand=fairyMemsOf(sid).filter(m=>C[m]); if(!cand.length) return "";
-  return cand[strHash(`${wk}|${show}|${sid}|ef`)%cand.length]; }
+/* 發行當天就把整個打歌期（MSA.END 天）每一個打歌舞台的結尾妖精全部抽好、存在後台；
+   每個節目照真實播出的星期幾、時間才公布（例：星期四回歸 → 先公布當天 M COUNTDOWN，接著星期五 MUSIC BANK、星期日 INKIGAYO、下週二 THE SHOW…） */
+const fairyPlanK=sid=>"plan|"+sid;
+function fairyStages(rel){ const L=[], end=rel+MSA.END*864e5; for(let d=new Date(rel);d.getTime()<end+7*864e5;d.setDate(d.getDate()+1)){ SHOWS.forEach(sh=>{ const [wd,h,mi]=SHOW_END[sh.id]||[sh.day,18,0]; if(d.getDay()!==wd) return; const t=new Date(d); t.setHours(h,mi,0,0); const ts=t.getTime(); if(ts>=rel&&ts<end) L.push({show:sh.id,ts}); }); } return L.sort((a,b)=>a.ts-b.ts); }
+function fairyMakePlan(so){ const mems=fairyMemsOf(so.id); if(!mems.length) return null; const C=fairyClips(so.id), pool=mems.filter(m=>C[m]).length?mems.filter(m=>C[m]):mems, rel=songRel(so)||Date.now();
+  let bag=[]; return fairyStages(rel).map(st=>{ if(!bag.length) bag=pool.slice().sort(()=>Math.random()-.5); return {...st,mid:bag.pop()}; }); }   /* 抽一輪大家都輪到才重抽，不會有人一直沒中 */
+const fairyPlan=sid=>((S.get(FAIRY_KEY,{})||{})[fairyPlanK(sid)])||null;
+function fairyEnsurePlan(so){ if(!so||so.demo) return null; const F=S.get(FAIRY_KEY,{})||{}, k=fairyPlanK(so.id); if(F[k]) return F[k]; if(!isAdminAcct()) return null; const P=fairyMakePlan(so); if(!P) return null; F[k]=P; S.set(FAIRY_KEY,F); return P; }
+/* 這週這個節目的結尾妖精：還沒播出 → ""（誰都不知道）；播出了才看得到 */
+function fairyStage(sid,show,wk){ wk=wk||curWeek(); const P=fairyPlan(sid)||[]; return P.find(x=>x.show===show&&weekKey(x.ts)===wk)||null; }
+function fairyWho(sid,show,wk,force){ const st=fairyStage(sid,show,wk); if(!st) return ""; if(!force&&Date.now()<st.ts) return ""; return st.mid||""; }
 const fairyOne=(sid,show,wk)=>{ const w=fairyWho(sid,show,wk); const c=w&&fairyClips(sid)[w]; return c?{...c,by:w}:null; };
 const fairySlots=(sid,show,wk)=>[fairyOne(sid,show,wk)];
 const fairyN=()=>1;
 const fairyUps=()=>({});
 function fairyPick(sid,show,wk){ const w=fairyWho(sid,show,wk); return w?[w]:[]; }
-/* 管理員：播出時間到了就把這週的結尾妖精記下來（之後有人再補片段也不會換人），團體的被抽中的人加分 */
-function fairyDrawTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.ptGrants]==null)) return; const wk=curWeek(), F=S.get(FAIRY_KEY,{})||{}; let ch=false, G=null;
-  (getMShow().songs||[]).forEach(so=>{ if(so.demo) return; SHOWS.forEach(sh=>{ if(!showEnded(sh.id,wk)) return; const k=fairyWinK(so.id,sh.id,wk); if(F[k]) return; const w=fairyWho(so.id,sh.id,wk); if(!w) return; F[k]=w; ch=true;
-    const g=groupOf(so.gid)||{}; if(g.solo||groupArtists(so.gid).length<2) return; G=G||(S.get(K.ptGrants,[])||[]).slice(); const gid="fyw_"+k.replace(/\W/g,"_"); if(G.some(x=>x.id===gid)) return;
-    G.push({id:gid,to:"art:"+w,mid:w,n:FAIRY_BONUS,art:1,why:`${sh.name} 結尾妖精`,by:"auto",ts:Date.now()});
-    Object.keys(ACCOUNTS).filter(e=>(ACCOUNTS[e]||{}).member===w).forEach(e=>feedPush({kind:"core",self:true,text:`🧚 這週 ${sh.name} 的結尾妖精是你！+${fmt(FAIRY_BONUS)} 積分`},"u:"+e)); }); });
-  if(ch){ /* 只留最近 12 週的揭曉紀錄 */ const keep=new Set(); let w0=wk; for(let i=0;i<12;i++){ keep.add(w0); w0=wkShift(w0,-1); } Object.keys(F).forEach(x=>{ if(x.startsWith("win|")&&!keep.has(x.split("|")[1])) delete F[x]; }); S.set(FAIRY_KEY,F); }
-  if(G) S.set(K.ptGrants,G); }catch(e){} }
+/* 管理員：歌一開始打就把計畫存好；每個舞台播出時間到了，團體被抽到的人加分、通知 */
+function fairyDrawTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.ptGrants]==null)) return; const now=Date.now(); let G=null;
+  (getMShow().songs||[]).forEach(so=>{ if(so.demo) return; const P=fairyEnsurePlan(so); if(!P) return; const g=groupOf(so.gid)||{}; if(g.solo||groupArtists(so.gid).length<2) return;
+    P.filter(st=>st.ts<=now&&st.mid).forEach(st=>{ G=G||(S.get(K.ptGrants,[])||[]).slice(); const gid=`fyw_${so.id}_${st.show}_${st.ts}`; if(G.some(x=>x.id===gid)) return; const sh=SHOWS.find(x=>x.id===st.show)||{};
+      G.push({id:gid,to:"art:"+st.mid,mid:st.mid,n:FAIRY_BONUS,art:1,why:`${sh.name||""} 結尾妖精`,by:"auto",ts:now});
+      Object.keys(ACCOUNTS).filter(e=>(ACCOUNTS[e]||{}).member===st.mid).forEach(e=>feedPush({kind:"core",self:true,text:`🧚 今天 ${sh.name||""} 的結尾妖精是你！+${fmt(FAIRY_BONUS)} 積分`},"u:"+e)); }); });
+  if(G&&G.length!==(S.get(K.ptGrants,[])||[]).length) S.set(K.ptGrants,G); }catch(e){} }
 setInterval(fairyDrawTick,60e3); setTimeout(fairyDrawTick,12e3);
 const wkShift=(wk,n)=>{ try{ const d=wkDate(wk); d.setDate(d.getDate()+7*n+1); return weekKey(d.getTime()); }catch(e){ return ""; } };
 /* 上傳一段結尾妖精片段（影片，約 3 秒，最多 FAIRY_MAX_SEC 秒）→ {m,v:1,th,dur} */
-async function fairyUploadFile(f){ const th=await videoThumb(f); const dur=th&&th.dur||0; if(dur>FAIRY_MAX_SEC+.5){ toast(`結尾妖精片段最多 ${FAIRY_MAX_SEC} 秒（真的節目大約 3 秒）`); return null; }
+async function fairyUploadFile(f){ const th=await videoThumb(f); const dur=th&&th.dur||0; if(dur>FAIRY_MAX_SEC+.5){ toast(`最多 ${FAIRY_MAX_SEC} 秒`); return null; }
   const id="fy"+Date.now().toString(36)+Math.random().toString(36).slice(2,4); let thumb="", pv="";
   if(th&&th.blob){ const tb=await shrinkImg(th.blob,800); pv=URL.createObjectURL(tb); thumb=(HB_ON&&await hbImgUrl(id+"_t.jpg",tb))||""; }
   if(!await hbUpload(id,f)){ toast("影片沒有上傳成功，請再試一次"); return null; } memBlobs[id]=f; return {m:id,v:1,th:thumb,dur,ts:Date.now(),_pv:pv}; }
@@ -18992,7 +18998,8 @@ function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid); if(!s|
   return `<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>
     <section class="card fy-a"><div class="fy-g">${mems.map(m=>fairyThumb(C[m],stageNm(m),m===mid||isAdminAcct()?`data-a="fyUp" data-v="${m}"`:"",m===mid)).join("")}</div>
       <p class="fy-hint">${mems.length>1?`${mems.filter(m=>C[m]).length}／${mems.length} 位放好了`:C[mid]?"已放好":"還沒放"}</p>
-      ${mems.length>1?`<div class="fy-res">${SHOWS.map(x=>{ const w=fairyWho(s.id,x.id,wk); return `<div class="fy-rr"><b>${x.name}</b><span>${w?`${w===mid?"🧚 你！":esc(stageNm(w))}`:showEnded(x.id,wk)?"—":`${showEndTxt(x.id)} 揭曉`}</span></div>`; }).join("")}</div>`:""}</section>`; }
+      ${mems.length>1?(()=>{ const P=fairyPlan(s.id)||fairyStages(songRel(s)||Date.now()), now=Date.now(), past=P.filter(x=>x.ts<=now).slice(-3), next=P.filter(x=>x.ts>now).slice(0,4), nm=x=>(SHOWS.find(y=>y.id===x.show)||{}).name||"", dt=t=>`${mdTxt(t)}（${WDAY[new Date(t).getDay()]}）${hm(t)}`;
+        return `<div class="fy-res">${[...past.map(x=>`<div class="fy-rr done"><b>${nm(x)}<small> ${mdTxt(x.ts)}</small></b><span>${x.mid?(x.mid===mid?"🧚 你！":esc(stageNm(x.mid))):"—"}</span></div>`),...next.map(x=>`<div class="fy-rr"><b>${nm(x)}</b><span>${dt(x.ts)} 揭曉</span></div>`)].join("")||`<p class="fy-hint">打歌開始後，每個節目播出時揭曉</p>`}</div>`; })():""}</section>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muFairy"){ e.stopImmediatePropagation(); fairyView(t.dataset.v,t.dataset.s,t.closest(".mu3-r")||t); return; }
   if(a==="fvNext"||a==="fvPrev"){ e.stopImmediatePropagation(); fairyGo(a==="fvNext"?1:-1); return; }
