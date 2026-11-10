@@ -6913,7 +6913,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110153450";
+const BUILD="20261110164422";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18786,9 +18786,19 @@ function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ S
     <span class="fs-f-lab">App 裡的歌</span><div class="snm-list">${L.length?L.map(x=>{ const g=groupOf(x.gid); return `<button class="snm-song" data-a="snMusSong" data-id="${esc(x.id)}" type="button"><span class="snm-cv">${songCover(x.gid)}</span><span><b>${esc(x.title)}</b><small>${esc(g.name)}</small></span></button>`; }).join(""):`<p class="snm-empty">還沒有歌</p>`}</div>`,
     `<button class="t-mbtn" data-a="snMusX">取消</button>`); }
 async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||!g) return; toast("下載中"); snMusUnlock();
-  try{ let b=await songAudio(x); if(!b) b=await songAuFromMv(x,true); if(!b){ const v=songMv(x); if(v&&v.au) b=await MDB.get(v.au); if(!b&&v&&v.mid) b=await MDB.get(v.mid); }   /* 轉不出音檔：直接讀 MV 本身的聲音 */
-    if(!b){ toast(songMv(x)?"MV 影片還沒傳到雲端，請上傳的人打開 App 一次":"這首歌還沒有 MV 或音訊"); return; } const AC=window.AudioContext||window.webkitAudioContext, c=new AC(); const buf=await decodeAu(c,await b.arrayBuffer()); try{ c.close(); }catch(e){}
-    if(!buf||!buf.duration) throw 0; snMusBuf=buf; ui.snMusT={title:x.title,artist:g.name,gid:x.gid,sid:x.id,src:"app",start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("這首歌的音訊讀不出來"); } }
+  /* 一個一個試：歌的音檔 → MV 轉好的音檔 → MV 影片本身 → 從 MV 取出聲音；壞掉的音檔不會卡住後面 */
+  const AC=window.AudioContext||window.webkitAudioContext, c=new AC(), v=songMv(x); let buf=null, gotAny=false, badAu=false;
+  const ok=b=>b&&b.size>2048&&!/^(text|application\/json)/.test(b.type||"");
+  const tryB=async(b,isV)=>{ if(!ok(b)) return null; gotAny=true; try{ const r=await decodeAu(c,await b.arrayBuffer()); if(r&&r.duration) return r; }catch(e){}
+    if(isV||/^video\//.test(b.type||"")){ try{ const am=await MB.audio(b); if(am&&am.blob.size){ const r=await decodeAu(c,await am.blob.arrayBuffer()); if(r&&r.duration) return r; } }catch(e){} } return null; };
+  try{
+    if(x.au){ buf=await tryB(await MDB.get(x.au)); if(!buf&&gotAny) badAu=true; }
+    if(!buf){ const b=await auGet(x.id).catch(()=>null); buf=await tryB(b); }
+    if(!buf&&v&&v.au) buf=await tryB(await MDB.get(v.au));
+    if(!buf&&v&&v.mid){ const mv=await MDB.get(v.mid); buf=await tryB(mv,true); if(buf&&(badAu||!x.au)){ mvAudioUpload(mv).then(id=>{ if(id) songAuSet(x.id,id); }).catch(()=>{}); } }   /* 音檔壞了或沒有：順便重轉一份給大家用 */
+  }catch(e){} try{ c.close(); }catch(e){}
+  if(!buf){ toast(gotAny?"這首歌的音訊讀不出來":v?"MV 影片還沒傳到雲端，請上傳的人打開 App 一次":"這首歌還沒有 MV 或音訊"); return; }
+  snMusBuf=buf; ui.snMusT={title:x.title,artist:g.name,gid:x.gid,sid:x.id,src:"app",start:0,dur:buf.duration}; snMusSheet(); }
 function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
   tieModal("加入音樂",`${t.src?`<div class="snm-lock">${si("note","sm")}${esc(snMusLabel(t))}</div>`:`<span class="fs-f-lab">歌名</span><input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="輸入文字" value="${esc(t.title)}">`}
     <span class="fs-f-lab">從哪裡開始（${SN_MUS_LEN} 秒）</span><div class="snm-r"><input type="range" id="snMusSt" min="0" max="${max}" step="1" value="${t.start}" ${max?"":"disabled"}><b id="snMusLb">${fmtDur(t.start)}–${fmtDur(Math.min(t.dur,t.start+SN_MUS_LEN))}</b></div>
@@ -19636,7 +19646,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・轉法：讀出 MV 的聲音 → 單聲道 22kHz → MP3 64kbps（轉不了 MP3 就不轉）
    ========================================================= */
 async function mvToAudio(blob){ try{ if(!blob||blob.size>200*1024*1024) return null; const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; const c=new AC(); let buf;
-    try{ buf=await decodeAu(c,await blob.arrayBuffer()); } finally{ try{ c.close(); }catch(e){} } if(!buf) return null;
+    try{ try{ buf=await decodeAu(c,await blob.arrayBuffer()); }catch(e){ buf=null; } if(!(buf&&buf.duration)){ const am=await MB.audio(blob); if(am&&am.blob.size) buf=await decodeAu(c,await am.blob.arrayBuffer()); } } finally{ try{ c.close(); }catch(e){} } if(!buf) return null;   /* iPhone .MOV 直接解不出來：先用 mediabunny 取出聲音 */
     const sr=22050, len=Math.min(buf.duration,360), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(1,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf; s.connect(oc.destination); s.start(0,0,len);
     const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); }); const d=out.getChannelData(0);
     const L=await snLame(); if(!L) return await compactWav(out);   /* MP3 轉檔工具載不到：改存 WAV（大一點，但一定有聲音） */ const enc=new L.Mp3Encoder(1,sr,64), pcm=new Int16Array(d.length); for(let i=0;i<d.length;i++) pcm[i]=Math.max(-32768,Math.min(32767,d[i]*32767));
