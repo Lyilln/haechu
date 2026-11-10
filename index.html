@@ -3217,6 +3217,8 @@ html[data-theme="light"] .cmx-fab{background:#1D1A24!important;color:#fff!import
 .tst-s h4,.tst-n h4,.tst-nt h4{margin:0 0 10px;font-size:13.5px;font-weight:700;color:#fff}.tst-ar{margin:0 0 24px;font-size:13px;color:#E4E4EA}
 .tst-c{background:#30303C;border-radius:10px;padding:17px 20px 15px;margin-bottom:16px;display:flex;flex-direction:column;gap:9px}.tst-c>b{font-size:15px;font-weight:500}
 .tst-p{align-self:flex-end;display:flex;align-items:baseline;gap:6px}.tst-p s{font-size:12.5px;color:#8A8A98}.tst-p b{font-size:17px;font-weight:600}.tst-p small{font-size:12px;color:#8A8A98}
+.tst-pl{display:flex;gap:8px;margin:0 0 18px}.tst-pl button{flex:1;border:1px solid rgba(255,255,255,.14);background:none;color:#C9C9D4;font:inherit;font-size:14px;font-weight:600;border-radius:10px;padding:10px 0}.tst-pl button.on{border-color:#8843FB;background:rgba(136,67,251,.18);color:#fff}
+.tpk-ns .buy-nick{margin-top:6px}
 .tst-more{display:block;width:100%;border:0;border-top:1px solid rgba(255,255,255,.08);background:none;color:#A9A9B6;font:inherit;font-size:14px;padding:18px 0 0;margin-top:6px}
 .tst-n{border-top:8px solid #2E2E3A;padding:20px}.tst-n p{margin:0;font-size:13px;line-height:1.6;color:#A9A9B6}
 .tst-f{position:fixed;left:0;right:0;bottom:0;padding-bottom:env(safe-area-inset-bottom,0px);background:#8843FB}.tst-f button{width:100%;border:0;background:none;color:#fff;font:inherit;font-size:15px;font-weight:500;padding:14px 0}
@@ -6883,7 +6885,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110115448";
+const BUILD="20261110120757";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10920,46 +10922,57 @@ function openTieAgree(member,enter){ const nm="ARTIST";   /* 照 Bubble：同意
   tieModal(`進入 ${nm} 的 TIE`,`・請不要截圖或錄影外流聊天室的內容。<br>・發送損害 ${nm} 名譽或侵犯私生活的訊息，會被限制使用，並可能負法律責任。`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="tAgree" data-m="${member}"${enter?' data-v="enter"':""}>我同意</button>`,"mrow"); }
 /* 選擇 ARTIST：同一團裡換一位收訊息的成員；一段 TIE 券期間只能換 1 次 */
 /* ---------- TIE 券：獨立頁面（像 bubble）→ 購買使用券 → 選擇 ARTIST ---------- */
-const TIE_PEND="daisuki_tie_pend";   /* 買了、還沒選藝人的券：{gid:{n,ts}} */
-const tieUnit=gid=>groupArtists(gid).every(tieFree)?0:PLANS.find(x=>x.id==="d30").pts;
-const tieBundle=(gid,n)=>{ const u=tieUnit(gid), full=u*n; return {full,pts:n<2?full:Math.round(full*(1-Math.min(.2,.04*(n-1)))/100)*100}; };
-const tiePrice=(gid,n)=>{ const b=tieBundle(gid,n); return `${b.pts<b.full?`<s>${fmt(b.full)}</s>`:""}<b>${b.pts?fmt(b.pts):"免費"}</b>${b.pts?`<small>積分/月</small>`:""}`; };
+const TIE_PEND="daisuki_tie_pend";   /* 買了、還沒選藝人的券：{gid:{n,ts,days}} */
+const tiePl=()=>PLANS.find(x=>x.id===ui.tstPlan)||PLANS.find(x=>x.id==="d30");   /* 訂閱長度：7 天／30 天／365 天 */
+const tieUnit=(gid,pl)=>groupArtists(gid).every(tieFree)?0:(pl||tiePl()).pts;
+const tieBundle=(gid,n,pl)=>{ const u=tieUnit(gid,pl), full=u*n; return {full,pts:n<2?full:Math.round(full*(1-Math.min(.2,.04*(n-1)))/100)*100}; };
+const tiePrice=(gid,n)=>{ const b=tieBundle(gid,n), pl=tiePl(); return `${b.pts<b.full?`<s>${fmt(b.full)}</s>`:""}<b>${b.pts?fmt(b.pts):"免費"}</b>${b.pts?`<small>積分/${pl.name.replace(/\s/g,"")}</small>`:""}`; };
+const tiePlChips=()=>`<div class="tst-pl" role="tablist" aria-label="訂閱長度">${PLANS.map(x=>`<button class="${tiePl().id===x.id?"on":""}" data-a="tstPlan" data-v="${x.id}">${x.name}</button>`).join("")}</div>`;
 const tieTk=(gid,n)=>groupArtists(gid).length>1?`${n} Ticket${n>1?"s":""}`:"Ticket";
 const tieHero=gid=>{ const A=groupArtists(gid), g=groupOf(gid); return gPhoto(gid)||(A.length===1&&((typeof mPhoto==="function"&&mPhoto(A[0]))||artProf(A[0]).avatar))||""; };
 const tieTop=(t)=>`<header class="tst-h"><button class="tst-ib" data-a="${t==="buy"?"tstBack":"tCloseLayer"}" aria-label="返回">${TI.back}</button><b>${t==="buy"?"購買使用券":esc(WHISPER_NAME)}</b><button class="tst-ib" data-a="tCloseLayer" aria-label="關閉">${XI}</button></header>`;
+const tiePend=gid=>(S.get(TIE_PEND,{})||{})[gid]||null;
 function tieStore(gid,more){ const g=groupOf(gid); if(!g) return; if(isSelfGid(gid)){ toast(selfBuyMsg()); return; }
   const A=groupArtists(gid), solo=A.length===1;
-  if(((S.get(TIE_PEND,{})[gid])||{}).n){ if(solo){ tpkBuyDone(gid,[A[0]]); return; } layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); return; }
+  if(!solo&&(tiePend(gid)||{}).n){ layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); return; }
   const hero=tieHero(gid), nm=solo?MEMBERS[A[0]].name:g.name, N=solo?1:(more?A.length:1);
   ui.tst={gid,more:!!more};
   setLayer(`<div class="tst">${tieTop("store")}<div class="tst-b">${hero?`<div class="tst-hero" style="background-image:url('${esc(hero)}')"></div>`:`<div class="tst-hero ph" style="background:${grad(g.g)}"><span>${esc(nm)}</span></div>`}
     <section class="tst-s"><h2>${esc(nm)}</h2><p class="tst-d">每天都有讓人心動的訊息！<br>只屬於你和喜歡的藝人之間的悄悄話 - ${esc(WHISPER_NAME)}</p>
       <h4>ARTIST陣容</h4><p class="tst-ar">${A.map(id=>esc(String(MEMBERS[id].name).toUpperCase())).join(", ")}</p>
+      <h4>訂閱長度</h4>${tiePlChips()}
       ${Array.from({length:N},(_,i)=>`<div class="tst-c"><b>${tieTk(gid,i+1)}</b><span class="tst-p">${tiePrice(gid,i+1)}</span></div>`).join("")}
       ${!solo&&!more?`<button class="tst-more" data-a="tstMore">更多</button>`:""}</section>
     <section class="tst-n"><h4>Introduction</h4><p>${esc(WHISPER_NAME)} 是讓粉絲收到藝人私訊的服務。藝人傳來的訊息只有你看得到，你也可以回覆。</p></section></div>
     <footer class="tst-f"><button data-a="tstBuy">購買使用券</button></footer></div>`,"tst"); }
 function tieBuyPage(gid){ const g=groupOf(gid), A=groupArtists(gid), solo=A.length===1, nm=solo?MEMBERS[A[0]].name:g.name, open=ui.tstNote!==false;
-  setLayer(`<div class="tst">${tieTop("buy")}<div class="tst-b"><section class="tst-s tst-bl">${Array.from({length:solo?1:A.length},(_,i)=>`<div class="tst-c buy"><span><b>${esc(nm)}</b><em>${tieTk(gid,i+1)}</em></span><button class="tst-pb" data-a="tstPay" data-v="${i+1}">購買</button><span class="tst-p">${tiePrice(gid,i+1)}</span></div>`).join("")}</section>
+  setLayer(`<div class="tst">${tieTop("buy")}<div class="tst-b"><section class="tst-s tst-bl">${tiePlChips()}${Array.from({length:solo?1:A.length},(_,i)=>`<div class="tst-c buy"><span><b>${esc(nm)}</b><em>${tieTk(gid,i+1)}</em></span><button class="tst-pb" data-a="tstPay" data-v="${i+1}">購買</button><span class="tst-p">${tiePrice(gid,i+1)}</span></div>`).join("")}</section>
     <section class="tst-nt"><button class="tst-nh" data-a="tstNote" aria-expanded="${open}">付款相關注意事項<i class="${open?"up":""}">${TI.back}</i></button>${open?`<h4>服務注意事項</h4><p>・${esc(WHISPER_NAME)} 透過訊息和藝人互動，但不保證藝人傳訊息的時間、頻率或一定會傳；藝人會依自己的狀況不定時傳送。</p><p>・購買後要先選擇想收到訊息的 ARTIST，選好才會開始。使用券使用期間只能更改 1 次藝人，使用券更新後會重新計算。</p><p>・購買使用的是 App 內的積分，不會另外收費。</p>`:""}</section></div></div>`,"tst"); }
-function tiePay(gid,n){ const A=groupArtists(gid), ownL=A.filter(id=>{ const st=passStatus(id); return st&&st.cls!=="off"; }), own=ownL.length;
+function tiePay(gid,n){ const A=groupArtists(gid), pl=tiePl(), ownL=A.filter(id=>{ const st=passStatus(id); return st&&st.cls!=="off"; }), own=ownL.length;
+  if(A.length===1&&(tiePend(gid)||{}).n){ tpkBuyDone(gid,[A[0]]); return; }   /* 之前付過、還沒設定暱稱：不用再付一次 */
   if(own+n>A.length){ if(n!==own){ toast(own===A.length?`續訂請選 ${own} Ticket${own>1?"s":""}`:`你已經訂閱 ${own} 位，續訂請選 ${own} Ticket${own>1?"s":""}，或加買最多 ${A.length-own} 張`); return; }
-    const b=tieBundle(gid,n); if(points()<b.pts){ toast("積分不足，先補充積分吧"); return; }   /* 續訂：已經訂閱的每一位都延長 30 天 */
-    S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（續訂 ${tieTk(gid,n)}・30 天）`});
-    ownL.forEach(id=>buyTie(id,30,0)); layer.innerHTML=""; render(); toast(`已續訂 ${ownL.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME}（30 天）💜`); return; }
+    const b=tieBundle(gid,n); if(points()<b.pts){ toast("積分不足，先補充積分吧"); return; }   /* 續訂：已經訂閱的每一位都延長選的天數 */
+    S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（續訂 ${tieTk(gid,n)}・${pl.name}）`});
+    ownL.forEach(id=>buyTie(id,pl.days,0)); layer.innerHTML=""; render(); toast(`已續訂 ${ownL.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME}（${pl.name}）💜`); return; }
   const b=tieBundle(gid,n); if(points()<b.pts){ toast("積分不足，先補充積分吧"); return; }
-  S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（${tieTk(gid,n)}・30 天）`});
-  const P=S.get(TIE_PEND,{}); P[gid]={n:((P[gid]||{}).n||0)+n,ts:Date.now()}; S.set(TIE_PEND,P);
+  S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（${tieTk(gid,n)}・${pl.name}）`});
+  const P=S.get(TIE_PEND,{}); P[gid]={n:((P[gid]||{}).n||0)+n,ts:Date.now(),days:pl.days}; S.set(TIE_PEND,P);
   if(A.length===1){ tpkBuyDone(gid,[A[0]]); return; }
   layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); }
-/* 選好藝人：開始訂閱；第一次訂閱要先設定暱稱 */
+/* 選好藝人：開始訂閱；第一次訂閱要先設定暱稱（下面滑上來的半版面板） */
+function tieNickSheet(gid,ids){ ui.tpkNickFor={gid,ids}; const m=MEMBERS[ids[0]];
+  setLayer(`<div class="scrim" data-a="tCloseLayer"><div class="sheet tpk-ns" role="dialog" aria-label="你的暱稱"><div class="grab"></div>
+    <div class="buy-h"><div class="av" style="background:${grad(m.g)}">${mAvIn(ids[0],"tie")}</div><div><h3>${ids.length>1?ids.map(id=>esc(MEMBERS[id].name)).join("・"):esc(m.name)}</h3><p>設定藝人在訊息裡叫你的名字</p></div></div>
+    <label class="buy-nick"><span>你的暱稱</span><input id="tpkNick" maxlength="12" placeholder="輸入文字" autocomplete="off"></label>
+    <button class="btn btn-main btn-block" data-a="tpkNickOk">開始 ${esc(WHISPER_NAME)}</button></div></div>`,"buy"); }
 function tpkBuyDone(gid,ids){ const need=ids.some(id=>!(S.get(K.tieSet,{})[id]||{}).nickname);
-  if(need&&!ui.tpkNick){ ui.tpkNickFor={gid,ids}; tieModal("你的暱稱","藝人在訊息裡會用這個名字叫你。",`<input id="tpkNick" class="t-wel-ta tpk-nk" maxlength="12" placeholder="輸入文字"><button class="t-mbtn main" data-a="tpkNickOk">確認</button>`); setTimeout(()=>{ const i=document.getElementById("tpkNick"); if(i) i.focus(); },50); return; }
-  const nick=ui.tpkNick; ui.tpkNick=null; ids.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,30,0); });
+  if(need&&!ui.tpkNick){ tieNickSheet(gid,ids); return; }
+  const days=(tiePend(gid)||{}).days||30, nick=ui.tpkNick; ui.tpkNick=null; ids.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,days,0); });
   const P=S.get(TIE_PEND,{}); delete P[gid]; S.set(TIE_PEND,P); ui.pickSet=null; layer.innerHTML="";
   toast(`已開始訂閱 ${ids.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME} 💜`); location.replace("#/fan/chat?m="+ids[0]); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a, T=ui.tst;
   if(a==="tstMore"&&T){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tst-b")||{}).scrollTop||0; tieStore(T.gid,true); const b=layer.querySelector(".tst-b"); if(b) b.scrollTop=y; return; }
+  if(a==="tstPlan"&&T){ e.stopImmediatePropagation(); ui.tstPlan=t.dataset.v; const y=(layer.querySelector(".tst-b")||{}).scrollTop||0; if(layer.querySelector(".tst-bl")) tieBuyPage(T.gid); else tieStore(T.gid,T.more); const b=layer.querySelector(".tst-b"); if(b) b.scrollTop=y; return; }
   if(a==="tstBuy"&&T){ e.stopImmediatePropagation(); tieBuyPage(T.gid); return; }
   if(a==="tstBack"&&T){ e.stopImmediatePropagation(); tieStore(T.gid,T.more); return; }
   if(a==="tstNote"&&T){ e.stopImmediatePropagation(); ui.tstNote=ui.tstNote===false; tieBuyPage(T.gid); return; }
@@ -13711,7 +13724,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "goAlbums": { const f=followed(); ui.shopG=f[0]||null; ui.shopCat="album"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
     case "albG": ui.albG=t.dataset.v; render(); break;
     case "albDel": ask("要下架這張專輯嗎？已經收到的小卡會保留。",()=>{ S.set(K.albums2,S.get(K.albums2,[]).filter(a=>a.id!==t.dataset.v)); render(); toast("已下架"); },{title:"下架專輯",ok:"下架"}); break;
-    case "tieIntro": if(MEMBERS[t.dataset.m]&&isSelfGid(MEMBERS[t.dataset.m].group)){ toast(selfBuyMsg()); break; } openTieIntro(t.dataset.m); break;
+    case "tieIntro": if(MEMBERS[t.dataset.m]&&isSelfGid(MEMBERS[t.dataset.m].group)){ toast(selfBuyMsg()); break; } if(MEMBERS[t.dataset.m]&&groupArtists(MEMBERS[t.dataset.m].group).length===1){ tieStore(MEMBERS[t.dataset.m].group); break; } openTieIntro(t.dataset.m); break;
     case "tieIntroGo": layer.innerHTML=""; openBuySheet(t.dataset.m); break;
     case "gnOpen": openGNotice(t.dataset.v); break;
     case "gnG": ui.gnG=t.dataset.v; render(); break;
