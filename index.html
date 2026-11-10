@@ -6803,7 +6803,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110081544";
+const BUILD="20261110082014";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8528,7 +8528,7 @@ function dbPage(title,okAct,f,secs){ const old=layer.querySelector(".dbx-b"), y=
     <div class="dbx-b">${f.busy?`<p class="db-busy">${f.busy}</p>`:""}
       <section class="dbx-ck"><div class="dbx-ckh"><b>宣傳完整度</b><em>${ck.length-miss}／${ck.length}</em></div><div class="dbx-ckl">${ck.map(([l,ok])=>`<span class="${ok?"ok":""}">${ok?"✓":"○"} ${l}</span>`).join("")}</div>${miss?`<p>真實的${f.cb?"回歸":"出道"}通常會有這些，越完整，粉絲越有期待感。</p>`:`<p>全部都有了！</p>`}</section>
       ${secs.map(([h,d,body],i)=>`<section class="dbx-s"><h4><i>${i+1}</i>${h}</h4>${d?`<p class="dbx-d">${d}</p>`:""}${body}${h==="宣傳排程"?`<div class="dbx-pv"><b>自動發文時間表</b>${dbPlanPv(f)||`<p class="dbx-d">選好日期就會出現</p>`}</div>`:""}</section>`).join("")}
-      <button class="btn btn-main btn-block dbx-send" data-a="${okAct}" ${f.busy?"disabled":""}>${f.adm?"排定回歸":f.editId?"儲存修改":"送出申請"}</button></div></div>`,"dbx");
+      <button class="btn btn-main btn-block dbx-send" data-a="${okAct}" ${f.busy?"disabled":""}>${f.fill?"儲存":f.adm?"排定回歸":f.editId?"儲存修改":"送出申請"}</button></div></div>`,"dbx");
   const b=layer.querySelector(".dbx-b"); if(b&&y) b.scrollTop=y; }
 
 const dbReform=()=>{ if(!ui.dbF||!layer.querySelector(".dbx")) return; dbKeep(); if(ui.dbF.cb) cbrForm(); else debutForm(); };
@@ -11387,7 +11387,7 @@ function adminMusicHtmlOld(){
     </section>
   <section class="card studio mu-adm"><div class="foc-cfg-h"><h3>打歌中的歌曲</h3><span class="badge">${ms.songs.length} 首</span></div>
     ${ms.songs.map(sg=>`<div class="mu-rr row"><span><b>${esc(songName(sg))}</b><small>一位 ×${songStats(sg.id).wins.length}・${fmt(songStats(sg.id).pts)} 積分</small></span><button class="del" data-a="muSongDel" data-v="${sg.id}">結束打歌</button></div>`).join("")}
-    <button class="btn btn-main btn-block" style="margin-top:12px" data-a="cbrAdmNew">＋ 新增回歸</button>
+    <button class="btn btn-main btn-block" style="margin-top:12px" data-a="cbrAdmNew">＋ 新增回歸</button><button class="btn btn-soft btn-block" style="margin-top:8px" data-a="cbrDfNew">＋ 補出道資料</button>
     ${(ms.pre||[]).length?`<div class="section-h">回歸預告</div>${ms.pre.map(p=>`<div class="mu-rr row"><span><b>${esc((groupOf(p.gid)||{}).name||"")}《${esc(p.title)}》</b><small>${mdTxt(p.day)} 回歸・D-${dLeft(p.day)}</small></span><button class="del" data-a="muPreDel" data-v="${p.id}">取消</button></div>`).join("")}`:""}</section>`;
 }
 function muNotify(text,gid){ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
@@ -18496,7 +18496,7 @@ function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ S
   tieModal("加入音樂",`<button class="snm-up" data-a="snMusUp" type="button"><i>${si("plus")}</i><span><b>上傳音訊或影片</b><small>會顯示成「你的名稱・原始音訊」</small></span></button>
     <span class="fs-f-lab">App 裡的歌</span><div class="snm-list">${L.length?L.map(x=>{ const g=groupOf(x.gid); return `<button class="snm-song" data-a="snMusSong" data-id="${esc(x.id)}" type="button"><span class="snm-cv">${songCover(x.gid)}</span><span><b>${esc(x.title)}</b><small>${esc(g.name)}</small></span></button>`; }).join(""):`<p class="snm-empty">還沒有歌</p>`}</div>`,
     `<button class="t-mbtn" data-a="snMusX">取消</button>`); }
-async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||!g) return; toast("讀取中…"); snMusUnlock();
+async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||!g) return; toast("下載中"); snMusUnlock();
   try{ let b=await songAudio(x); if(!b) b=await songAuFromMv(x,true); if(!b){ toast("這首歌的 MV 還沒有聲音可以用"); return; } const AC=window.AudioContext||window.webkitAudioContext, c=new AC(); const buf=await decodeAu(c,await b.arrayBuffer()); try{ c.close(); }catch(e){}
     if(!buf||!buf.duration) throw 0; snMusBuf=buf; ui.snMusT={title:x.title,artist:g.name,gid:x.gid,sid:x.id,src:"app",start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("這首歌的音訊讀不出來"); } }
 function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
@@ -18907,7 +18907,23 @@ const cbrPre=gid=>(getMShow().pre||[]).filter(p=>p.gid===gid&&p.day>Date.now()).
 /* 藝人 ME 的那一行 */
 function cbrRow(mid){ const m=MEMBERS[mid]; if(!m) return ""; const w=cbrMine(m.group), p=cbrPre(m.group);
   return `<button class="list-btn" data-a="cbrAsk">${I.star}申請回歸<span class="r">${w?"審核中":p?`${mdTxt(p.day)} 回歸`:""}</span></button>`; }
-function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; const gid=f.gid, min=cbrMin(gid); f.tx=f.tx||[]; f.txP=f.txP||[];
+/* =========================================================
+   管理員「補出道資料」：先出道、後補 MV 的團，出道宣傳（預告照、概念照、曲目表、專輯介紹…）後來再補
+   ・當作出道那時候發的：照出道日往前排，不會洗到動態最上面
+   ・存在 daisuki_dbfill；宣傳來源（promoSrcs）把它當成一筆出道
+   ========================================================= */
+const DF_KEY="daisuki_dbfill";
+const getDf=()=>(S.get(DF_KEY,[])||[]).filter(x=>x&&groupOf(x.gid));
+function dfDebutSong(gid){ const m=getMShow(), L=[...m.songs,...(m.ended||[])].filter(x=>x.gid===gid).sort((a,b)=>songRel(a)-songRel(b)); return L.find(x=>x.debut)||L[0]||null; }
+function dfOpen(gid){ const x=getDf().find(y=>y.gid===gid), so=dfDebutSong(gid), v=so&&songMv(so), day=x?x.day:(so&&songRel(so)?dayStart(songRel(so)):0);
+  ui.dbF={cb:true,fill:true,adm:true,gid,title:x?x.title:(so?so.title:""),rtype:x?x.rtype||"":"",date:day?ymdIn(day):"",day,teaser:x?x.teaser||"":"",tx:x?[...(x.teasers||[])]:[],txP:[],mv:v&&v.mid?{mid:v.mid}:null,mvt:x?x.mvt||null:null,pr:x?promoLoad(x.pr):promoLoad(null),mPrev:"",mtPrev:"",busy:""}; cbrForm(); }
+function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&&dfDebutSong(g.id)&&!getDebut().some(d=>d.gid===g.id&&d.status==="ok"));
+  dbPage("補出道資料","cbrDfSave",f,[
+    ["藝人","選要補資料的 SOLOIST／團（要先有出道曲）",G.length?`<div class="chips wrap">${G.map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrDfGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`:`<p class="dbx-d">還沒有已經出道的團</p>`],
+    ["作品","出道專輯和出道曲",dbWorkF(f,"cbTitle","出道曲")],
+    ["宣傳素材",`會當作出道那時候發的：照出道日 ${f.day?mdTxt(f.day):""} 往前排，不會出現在動態最上面`,dbPromoF(f,"")],
+    ["出道當天","",dbDayF(f,"出道")]]); }
+function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfForm(); const gid=f.gid, min=cbrMin(gid); f.tx=f.tx||[]; f.txP=f.txP||[];
   const tp=f.tPrev||f.teaser, t=tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`, vid=(v,pv)=>v?(pv?`<img src="${esc(pv)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
   const tx=[1,2,3].map(i=>{ const u=f.txP[i-1]||f.tx[i-1]; return `<button class="db-slot t sm" data-a="dbTeaser" data-i="${i}" aria-label="Teaser 照片 ${i+1}">${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}</button>`; }).join("");
   const amin=f.adm?dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN):min;
@@ -18934,6 +18950,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     if(!ui.dbF||!ui.dbF.cb||ui.dbF.gid!==gid||ui.dbF.editId) ui.dbF={cb:true,gid,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrEdit"){ const x=getCbr().find(y=>y.id===t.dataset.v); if(!x) return; ui.dbF={cb:true,editId:x.id,gid:x.gid,title:x.title,rtype:x.rtype||"",date:ymdIn(x.day),teaser:x.teaser||"",tx:[...(x.teasers||[])],txP:[],mv:x.mv,mvt:x.mvt,pr:promoLoad(x.pr),mPrev:"",mtPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrRel"){ dbKeep(); const f=ui.dbF; if(!f) return; f.rtype=f.rtype===t.dataset.v?"":t.dataset.v; cbrForm(); return; }
+  if(a==="cbrDfNew"){ if(!isAdminAcct()) return; const g=GROUPS.find(x=>x.id!=="tdm_g"&&dfDebutSong(x.id)&&!getDebut().some(d=>d.gid===x.id&&d.status==="ok")); if(!g){ toast("還沒有已經出道的團"); return; } dfOpen(g.id); return; }
+  if(a==="cbrDfGid"){ if(ui.dbF&&ui.dbF.fill) dfOpen(t.dataset.v); return; }
+  if(a==="cbrDfSave"){ dbKeep(); const f=ui.dbF; if(!f||!f.fill||f.busy) return; const title=String(f.title||"").trim(); if(!title){ toast("請輸入出道曲"); return; } if(!f.day){ toast("找不到出道日"); return; }
+    const L=(S.get(DF_KEY,[])||[]).filter(x=>x&&x.gid!==f.gid); L.push({id:"df_"+f.gid,gid:f.gid,title,rtype:f.rtype||"",day:f.day,appr:f.day-PRE_ANN,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mvt:f.mvt||null,pr:promoClean(f.pr),ts:Date.now()}); S.set(DF_KEY,L);
+    ui.dbF=null; layer.innerHTML=""; try{ OFM.t=0; OFS=0; }catch(e){} toast("已補上出道資料"); render(); return; }
   if(a==="cbrAdmNew"){ if(!isAdminAcct()) return; const g0=GROUPS.find(g=>g.id!=="tdm_g"); if(!g0){ toast("還沒有藝人"); return; } ui.dbF={cb:true,adm:true,gid:g0.id,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrAdmGid"){ dbKeep(); const f=ui.dbF; if(!f||!f.adm) return; f.gid=t.dataset.v; cbrForm(); return; }
   if(a==="cbrSend"&&ui.dbF&&ui.dbF.adm){ dbKeep(); const f=ui.dbF; if(!isAdminAcct()) return; if(f.busy){ toast(f.busy); return; } const ti=(f.title||"").trim(), gid=f.gid, g=groupOf(gid); if(!g){ toast("請選藝人"); return; } if(!ti){ toast("請輸入歌名"); return; }
@@ -19171,7 +19192,7 @@ function adminMusicHtml(){
 /* 管理員：排定回歸（從打歌頁搬過來，放在回歸申請頁下面） */
 function muSchedHtml(){ const ms=getMShow();
   return `<div class="section-h">管理員排定回歸</div><section class="card studio mu-adm">
-    <button class="btn btn-main btn-block" data-a="cbrAdmNew">＋ 新增回歸</button>
+    <button class="btn btn-main btn-block" data-a="cbrAdmNew">＋ 新增回歸</button><button class="btn btn-soft btn-block" style="margin-top:8px" data-a="cbrDfNew">＋ 補出道資料</button>
     ${(ms.pre||[]).length?`<div class="section-h">回歸預告</div>${ms.pre.map(p=>`<div class="mu-rr row"><span><b>${esc((groupOf(p.gid)||{}).name||"")}《${esc(p.title)}》</b><small>${p.rtype?esc(p.rtype)+"・":""}${mdTxt(p.day)} 回歸・D-${dLeft(p.day)}</small></span><button class="del" data-a="muPreDel" data-v="${p.id}">取消</button></div>`).join("")}`:""}</section>`; }
 function muMcSheet(sh,mon){ const mc=(getMShow().mc[mon]||{})[sh]||[], arts=Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official), s=SHOWS.find(x=>x.id===sh);
   tieModal(`${s?s.name:""} MC`,`<div class="chips wrap mu5-mcp">${arts.map(id=>`<button class="chip ${mc.includes(id)?"on":""}" data-a="muMcT" data-s="${sh}" data-v="${id}" data-mon="${mon}">${esc(stageNm(id))}</button>`).join("")||`<p class="me-none">還沒有藝人</p>`}</div>`,`<button class="t-mbtn main" data-a="tCloseLayer">好</button>`); }
@@ -19326,7 +19347,7 @@ async function songAudio(s){ if(!s) return null; if(s.au){ const b=await MDB.get
 /* 歌還沒有音訊：直接從這首歌的 MV 取出聲音（誰先用到就誰轉，轉好存起來大家共用） */
 let auFromBusy={};
 async function songAuFromMv(s,say){ const v=songMv(s); if(!v||!v.mid) return null; if(v.au){ const b=await MDB.get(v.au); if(b){ songAuSet(s.id,v.au); return b; } } if(auFromBusy[s.id]) return null; auFromBusy[s.id]=1;
-  try{ if(say) toast("正在從 MV 取出聲音，第一次會久一點…"); const mv=await MDB.get(v.mid); if(!mv) return null; const a=await mvToAudio(mv); if(!a) return null; const id="mva"+Date.now().toString(36); await MDB.put(id,a,true); if(await hbUpload(id,a)) songAuSet(s.id,id); return a; }catch(e){ return null; } finally{ delete auFromBusy[s.id]; } }
+  try{ if(say) toast("稍等—"); const mv=await MDB.get(v.mid); if(!mv) return null; const a=await mvToAudio(mv); if(!a) return null; const id="mva"+Date.now().toString(36); await MDB.put(id,a,true); if(await hbUpload(id,a)) songAuSet(s.id,id); return a; }catch(e){ return null; } finally{ delete auFromBusy[s.id]; } }
 function songAuSet(sid,id){ try{ const m=getMShow(), x=[...m.songs,...(m.ended||[])].find(y=>y.id===sid); if(x&&x.au!==id){ x.au=id; delete x.auNo; S.set(K.mshow,m); } }catch(e){} }
 /* 管理員：以前的歌補轉（一次一首；失敗的 12 小時後再試，不會永遠卡住） */
 let muAuBusy=false;
@@ -19680,6 +19701,7 @@ const PR_KIND={sc:"SHOWCASE",sched:"SCHEDULE",teaser:"Teaser Image",concept:"Con
 /* ---------- 有哪些出道／回歸要發 ---------- */
 function promoSrcs(all){ const L=[], now=Date.now();
   getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0,solo:x.kind!=="group"}));
+  try{ getDf().forEach(x=>{ const g=groupOf(x.gid); L.push({k:"db",id:x.id,gid:x.gid,name:g.name,title:x.title||"",day:x.day,appr:x.appr,co:coOf(x.gid)||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo,fill:1}); }); }catch(e){}
   const P=getMShow().pre||[];
   getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo}); });
   return all?L:L.filter(s=>now-s.day<45*864e5); }
