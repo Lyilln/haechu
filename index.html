@@ -6913,7 +6913,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110164422";
+const BUILD="20261110165302";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8641,6 +8641,7 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
 /* ---------- 出道／回歸申請：獨立一頁（照真實 K-POP 宣傳會有的東西分區） ---------- */
 function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||"");
   return `<span class="fs-f-lab">專輯名稱 <em>選填</em></span><input id="prX_album" class="a-nick-in" maxlength="40" placeholder="例：The 1st Mini Album『Sequence 01』" value="${X("album")}">
+    <span class="fs-f-lab">專輯封面 <em>選填</em></span><div class="db-up4 one">${prImgSlot(pr.covP||pr.cov,'data-k="cov"',"")}</div><p class="dbx-d">會用在打歌排行、SNS 加入音樂、出道／回歸當天的官方貼文和 MEET 相簿。</p>
     <span class="fs-f-lab">${songLab}</span><input id="${songId}" class="a-nick-in" maxlength="30" placeholder="輸入文字" value="${esc(sv)}">
     <span class="fs-f-lab">第二首主打（雙主打）<em>選填</em></span><input id="prX_t2" class="a-nick-in" maxlength="30" placeholder="例：BOOMBAYAH＋WHISTLE 這種" value="${X("t2")}"><p class="dbx-d">兩首主打會一起打歌、互相比分數；之後回歸才會一起下檔。</p>
     <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"",songId==="cbTitle"?"cbrRel":"dbRel")}${promoTrk(f)}
@@ -11590,7 +11591,9 @@ function showWinRow(wk){ const ws=getMShow().wins[wk]||{}, rk=ranked(wk);
   return SHOWS.map(s=>{ const sg=songOf(ws[s.id]), g=sg&&groupOf(sg.gid);
     return `<div class="mu-show"><span class="mu-sn"><b>${s.name}</b><small>每週${WDAY[s.day]}</small></span>${g?`<span class="mu-win"><i style="background:${grad(g.g)}">${esc(ini(g.name))}</i><span><b>${esc(g.name)}</b><small>《${esc(sg.title)}》</small></span><em>🏆</em></span>`:`<span class="mu-tbd">${rk?"還沒公布":"不排名"}</span>`}</div>`; }).join(""); }
 /* 打歌：像排行榜一樣一首一列，點了再從下面拉出應援選單（買專輯、MV 愛心、投票、My Pick） */
-const songCover=gid=>{ const a=getAlbums().find(x=>x.gid===gid), c=a&&a.vers[0]&&PCI[`vc|${a.id}|${a.vers[0].id}`], g=groupOf(gid); return c?`<img src="${c}" alt="">`:`<i style="background:${grad(g?g.g:0)}">${esc(g?ini(g.name):"")}</i>`; };
+/* 專輯封面（出道／回歸／補出道資料裡上傳的）：有歌名就找那一張，沒有就用最新一張 */
+function albCov(gid,title){ try{ const L=promoSrcs(true).filter(s=>s.gid===gid&&s.pr&&s.pr.cov).sort((a,b)=>b.day-a.day); const t=String(title||"").trim().toLowerCase(), hit=t&&L.find(s=>String(s.title||"").trim().toLowerCase()===t||String((s.pr||{}).t2||"").trim().toLowerCase()===t); return ((t?hit:L[0])||{pr:{}}).pr.cov||""; }catch(e){ return ""; } }
+const songCover=(gid,title)=>{ const own=title&&albCov(gid,title); if(own) return `<img src="${esc(own)}" alt="">`; const a=getAlbums().find(x=>x.gid===gid), c=(a&&a.vers[0]&&PCI[`vc|${a.id}|${a.vers[0].id}`])||albCov(gid), g=groupOf(gid); return c?`<img src="${c}" alt="">`:`<i style="background:${grad(g?g.g:0)}">${esc(g?ini(g.name):"")}</i>`; };
 function viewPromoOld(){
   const ms0=getMShow(), dm=musDemoOn(), ms={...ms0,songs:dm?MUS_DEMO():ms0.songs}, wk=curWeek(), t=dm?"排名週":weekType(wk), sc=getSched(), pick=S.get(K.pick,null), f=followed(), rk=dm||ranked(wk);
   const score=x=>rk?songVotes(x.id):mvLikes(x.gid);
@@ -11601,14 +11604,14 @@ function viewPromoOld(){
       return `<details class="card mu-wins"><summary>${hi("trophy")}<b>${lb}</b><small>${n} / ${SHOWS.length} 個節目已公布</small><i>›</i></summary><div class="mu-shows">${showWinRow(k)}</div></details>`; })()}
     <div class="mu2-h"><h3>${rk?"本週排行":"打歌中的歌"}</h3><small>${rk?"依投票數":"依 MV 愛心數"}</small></div>
     <section class="card mu2-list">${songs.map((s,i)=>{ const g=groupOf(s.gid), st=songStats(s.id), mine=f.includes(s.gid);
-      return `<button class="mu2-row ${pick===s.gid?"pick":""}" data-a="muSheet" data-v="${s.id}"><span class="mu2-n n${i+1}">${i+1}</span><span class="mu2-cv">${songCover(s.gid)}</span>
+      return `<button class="mu2-row ${pick===s.gid?"pick":""}" data-a="muSheet" data-v="${s.id}"><span class="mu2-n n${i+1}">${i+1}</span><span class="mu2-cv">${songCover(s.gid,s.title)}</span>
         <span class="mu2-t"><b>${pick===s.gid?"💜 ":""}${esc(s.title)}</b><small>${esc(g.name)}${st.wins.length?`・一位 ×${st.wins.length}`:""}${mine&&pick!==s.gid?"・追蹤中":""}</small></span>
         <span class="mu2-v"><b>${fmt(score(s))}</b><small>${rk?"票":"♡"}</small></span></button>`; }).join("")||`<p class="me-none">目前沒有打歌中的歌曲</p>`}</section>
   </main>`;
 }
 function openSongSheetOld(sid){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), st=songStats(s.id), wk=curWeek(), pick=S.get(K.pick,null), wkWins=st.wins.filter(x=>x.wk===wk).length;
   setLayer(`<div class="mu2-shw" data-a="tCloseLayer"><div class="mu2-sh" role="dialog" aria-label="應援"><span class="mu2-grab"></span>
-    <div class="mu2-sht"><span class="mu2-cv lg">${songCover(s.gid)}</span><div><b>《${esc(s.title)}》</b><small>${esc(g.name)}</small></div></div>
+    <div class="mu2-sht"><span class="mu2-cv lg">${songCover(s.gid,s.title)}</span><div><b>《${esc(s.title)}》</b><small>${esc(g.name)}</small></div></div>
     <div class="mu-tags">${wkWins?`<em class="w">本週 ${wkWins} 冠</em>`:""}${st.wins.length?`<em>一位 ×${st.wins.length}</em>`:`<em>衝刺第一個一位</em>`}${st.five?`<em class="g">5台冠軍</em>`:""}${st.aks.length?`<em class="g">AK${st.aks.length>1?" ×"+st.aks.length:""}</em>`:""}${st.pak?`<em class="g">PAK</em>`:""}${st.crowns.map(c=>`<em class="c">👑 ${SHOWS.find(x=>x.id===c).name} 三冠王</em>`).join("")}</div>
     <div class="mu2-act"><button data-a="muAlbum" data-v="${s.gid}"><span>💿</span>${owns(s.gid,"album")?"已收藏專輯":"買專輯"}</button>
       <button data-a="mvLike" data-v="${s.gid}" class="${mvLiked(s.gid)?"on":""}"><span>${mvLiked(s.gid)?"♥":"♡"}</span>MV ${fmt(mvLikes(s.gid))}</button>
@@ -18565,7 +18568,7 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const infoRows=person?(isM?[["pos","隊內位置"],...WKS_F.filter(x=>x[0]!=="fan")]:WKS_F).map(([k,l])=>{ if(k==="birth") return row("出生",birth||F.bplace?`${birth?`${wkDot(birth)}${wkAge(birth)!==""?`（${wkAge(birth)}歲）`:""}`:""}${birth&&F.bplace?"\n\n":""}${F.bplace?esc(F.bplace):""}`:""); if(k==="bplace") return ""; if(k==="co") return row(l,esc(F[k]||(isM?(wkPage("g:"+gid).f||{}).co||"":"")))+(isM?row("所屬",`<a class="wk-ln" data-a="wkGo" data-v="g:${gid}">${esc(g.name)}</a>`)+row("出道",debutRow):row("出道",debutRow)); if(k==="fan") return row(l,F.fan?`<span class="wk-pill" style="${wkPillCss(cs)}">${esc(F.fan)}</span>`:""); return row(l,esc(F[k]||"")); }).join("")+row("簽名",(()=>{ const sig=Object.values(S.get("daisuki_cafe",{})||{}).filter(c=>c&&c.mid===key&&c.art&&c.art.sig).map(c=>c.art.sig).pop(); return sig&&typeof cfImg==="function"?`<span class="wk-sig">${cfImg(sig,"sig")}</span>`:""; })())
     :row("出道日",debutRow)+row("出道作品",firstSong?`<span class="wk-chip f">${esc(firstSong.title)}</span>`:"")+WKG_F.map(([k,l])=>row(l,k==="fan"&&F.fan?`<span class="wk-pill" style="${wkPillCss(cs)}">${esc(F.fan)}</span>`:k==="leader"&&F.leader?wkTxt(F.leader,[],id):esc(F[k]||""))).join("");
   const head=isM?`<b>${esc(F.kname||name)}</b><small>${esc(F.kname?name.toUpperCase():"")}</small>`:isSolo?`<b>${esc(name)}</b><small>${esc(F.kname||"")}</small>`:`<div class="wkg-top">${P.logo?`<img class="wkg-logo" src="${esc(P.logo)}" alt=""><i></i>`:""}<span><b>${esc(g.name)}</b><small>${esc(F.kname||"")}</small></span></div>`;
-  const info=`<table class="wk-info2${isSolo||mc?" solo":""}" style="--wc:${col}${sol}"><tr><td colspan="2" class="wk-ih2">${head}</td></tr>${person&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>${isSolo&&wkCapHtml(P,lastSong)?`<tr><td colspan="2" class="wk-cap3" data-src="${esc(photo)}" style="${WKHC[photo]?`--hc:${WKHC[photo][0]};--hct:${WKHC[photo][1]}`:""}">${wkCapHtml(P,lastSong)}</td></tr>`:""}`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
+  const info=`<table class="wk-info2${isSolo||mc?" solo":""}" style="--wc:${col}${sol}"><tr><td colspan="2" class="wk-ih2">${head}</td></tr>${person&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
   const SS=wkSecs(ctx), fold=ui.wkFold||{}, toc=[], body=[], empty=[];
   const txt=k=>{ const v=(T[k]||"").trim(); if(!v) return ""; if(k==="tr"||k==="pre") return `<ul>${v.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),[],id)}</li>`).join("")}</ul>`; return `<p>${wkTxt(v,[],id)}</p>`; };
   const secHtml=(n,k,t,lv)=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||WK_ED.has(k))?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
@@ -18762,7 +18765,7 @@ const snMusArt=m=>{ if(!m) return ""; if(m.src==="orig"){ const u=m.uid&&snUser(
 const snMusLabel=m=>{ const a=snMusArt(m); return a?`${a}・${m.title||"音樂"}`:(m.title||"音樂"); };
 const snMusTag=(m,k,who)=>{ if(!(m&&m.mid)) return ""; if(k) SN_MUSK[k]={m,who}; return `<span class="sn-mus-t"${k?` data-a="snMusInfo" data-k="${esc(k)}" role="button"`:""}>${si("note","sm")}<span>${esc(snMusLabel(m))}</span></span>`; };
 function snMusInfo(k){ const o=SN_MUSK[k]; if(!o) return; const m=o.m, ou=m.src==="orig"&&m.uid?snUser(m.uid):null, art=snMusArt(m);
-  const cov=m.src==="app"&&m.gid?songCover(m.gid):ou?snAv(ou,44):`<i class="snmi-ph">${si("music")}</i>`;
+  const cov=m.src==="app"&&m.gid?songCover(m.gid,m.title):ou?snAv(ou,44):`<i class="snmi-ph">${si("music")}</i>`;
   if(ui.snStory) clearTimeout(ui.snStT);   /* 看限動時打開：先停住，不要自己跳下一則 */
   let w=document.getElementById("snMI"); if(!w){ w=document.createElement("div"); w.id="snMI"; document.body.appendChild(w); }
   w.innerHTML=`<div class="snmi-w" data-a="snMiX"><div class="snmi" data-a="snMiNo" role="dialog" aria-label="音樂"><i class="snmi-gr"></i>
@@ -18783,7 +18786,7 @@ function snMusPick(){ const inp=document.createElement("input"); inp.type="file"
 function snMusSongs(){ const m=getMShow(), seen=new Set(); return [...(m.songs||[]),...(m.ended||[])].reverse().filter(x=>x&&!x.demo&&groupOf(x.gid)&&!seen.has(x.id)&&seen.add(x.id)); }
 function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } } const L=snMusSongs();
   tieModal("加入音樂",`<button class="snm-up" data-a="snMusUp" type="button"><i>${si("plus")}</i><span><b>上傳音訊或影片</b><small>會顯示成「你的名稱・原始音訊」</small></span></button>
-    <span class="fs-f-lab">App 裡的歌</span><div class="snm-list">${L.length?L.map(x=>{ const g=groupOf(x.gid); return `<button class="snm-song" data-a="snMusSong" data-id="${esc(x.id)}" type="button"><span class="snm-cv">${songCover(x.gid)}</span><span><b>${esc(x.title)}</b><small>${esc(g.name)}</small></span></button>`; }).join(""):`<p class="snm-empty">還沒有歌</p>`}</div>`,
+    <span class="fs-f-lab">App 裡的歌</span><div class="snm-list">${L.length?L.map(x=>{ const g=groupOf(x.gid); return `<button class="snm-song" data-a="snMusSong" data-id="${esc(x.id)}" type="button"><span class="snm-cv">${songCover(x.gid,x.title)}</span><span><b>${esc(x.title)}</b><small>${esc(g.name)}</small></span></button>`; }).join(""):`<p class="snm-empty">還沒有歌</p>`}</div>`,
     `<button class="t-mbtn" data-a="snMusX">取消</button>`); }
 async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||!g) return; toast("下載中"); snMusUnlock();
   /* 一個一個試：歌的音檔 → MV 轉好的音檔 → MV 影片本身 → 從 MV 取出聲音；壞掉的音檔不會卡住後面 */
@@ -19388,7 +19391,7 @@ function viewPromo(){
     const when=!rk?"":ended?`<em class="mu3-end">已結束</em>`:`<em class="mu3-end">${showEndTxt(id)} 結束・${muLeft(showEndTs(id,wk)-Date.now())}</em>`;
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
-      return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
+      return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid,s.title)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
       .concat(rk&&R.length?npcRivals(id,wk).map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><span class="mu3-song"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></span><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
       .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
@@ -19401,13 +19404,13 @@ function viewPromo(){
     <div class="mu3-list">${SHOWS.map(mod).join("")}</div>
   </main>`; }
 /* 三個王座（粉絲端、藝人端都看得到） */
-function muThrones(){ const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=L[0], g=s&&groupOf(s.gid); return `<div class="mu3-th ${s?"on":""}"><span class="mu3-thi">${MU_IC[ic]}</span><b>${l}</b>${s?`<span class="mu3-thw"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><i>${esc(g?g.name:"")}</i><small>《${esc(s.title)}》</small></span></span>`:`<small class="mu3-empty">虛位以待</small>`}</div>`; };
+function muThrones(){ const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=L[0], g=s&&groupOf(s.gid); return `<div class="mu3-th ${s?"on":""}"><span class="mu3-thi">${MU_IC[ic]}</span><b>${l}</b>${s?`<span class="mu3-thw"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><i>${esc(g?g.name:"")}</i><small>《${esc(s.title)}》</small></span></span>`:`<small class="mu3-empty">虛位以待</small>`}</div>`; };
   return `<div class="mu3-thr">${thr("five","五台冠軍","five")}${thr("ak","AK","ak")}${thr("pak","PAK","pak")}</div>`; }
-const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${win?"win":""}"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span>${win?`<span class="mu3-cup">${MU_IC.cup}</span>`:""}</span>`; };
+const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${win?"win":""}"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span>${win?`<span class="mu3-cup">${MU_IC.cup}</span>`:""}</span>`; };
 /* 點歌：應援選單（買專輯、這首歌的 MV 愛心、My Pick） */
 function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), st=s.demo?{wins:[],five:0,aks:[],pak:0,crowns:[]}:songStats(s.id), wk=curWeek(), pick=S.get(K.pick,null), wkWins=st.wins.filter(x=>x.wk===wk).length, mv=songMv(s), own=owns(s.gid,"album");
   setLayer(`<div class="mu2-shw" data-a="tCloseLayer"><div class="mu2-sh" role="dialog" aria-label="應援"><span class="mu2-grab"></span>
-    <div class="mu2-sht"><span class="mu2-cv lg">${songCover(s.gid)}</span><div><b>《${esc(s.title)}》</b><small>${esc(g?g.name:"")}${s.rtype?"・"+esc(s.rtype):""}</small></div></div>
+    <div class="mu2-sht"><span class="mu2-cv lg">${songCover(s.gid,s.title)}</span><div><b>《${esc(s.title)}》</b><small>${esc(g?g.name:"")}${s.rtype?"・"+esc(s.rtype):""}</small></div></div>
     <div class="mu-tags">${wkWins?`<em class="w">本週 ${wkWins} 冠</em>`:""}${st.wins.length?`<em>一位 ×${st.wins.length}</em>`:`<em>衝刺第一個一位</em>`}${st.five?`<em class="g">五台冠軍</em>`:""}${st.aks.length?`<em class="g">AK${st.aks.length>1?" ×"+st.aks.length:""}</em>`:""}${st.pak?`<em class="g">PAK</em>`:""}${st.crowns.map(c=>`<em class="c">${SHOWS.find(x=>x.id===c).name} 三冠王</em>`).join("")}</div>
     <div class="mu2-act two"><button data-a="muAlbum" data-v="${s.gid}" class="${own?"done":""}" ${own?"disabled":""}><span>💿</span>${own?"已收藏":"買專輯"}</button>
       ${mv?`<button data-a="mvLikeV" data-v="${mv.id}" data-s="${s.id}" class="${mvLikedV(mv.id)?"on":""}"><span>${mvLikedV(mv.id)?"♥":"♡"}</span>MV ${fmt(mvLikesV(mv.id))}</button>`:`<button class="done" disabled><span>♡</span>還沒有 MV</button>`}</div>
@@ -19582,7 +19585,7 @@ async function fairyView(sid,show,from){ const s=songOf(sid); if(!s) return; con
   if(s.demo&&!L.length) L=Array.from({length:fairyN(sid,show)},(_,i)=>({mid:(picks[i%Math.max(1,picks.length)]||"d"+i),demo:1}));   /* 示範：用色塊代替 */
   fairyClose(1); const ov=document.createElement("div"); ov.className="fv2 s-"+show; ov.setAttribute("role","dialog"); ov.setAttribute("aria-label","結尾妖精");
   ov.innerHTML=`<div class="fv2-bg" data-a="fvClose"></div><div class="fv2-box"><div class="fv2-card"><div class="fv2-st" id="fvSt"></div>${L.length>1&&!(g&&g.solo)?`<button class="fv2-prev" data-a="fvPrev" aria-label="上一位"></button><button class="fv2-next" data-a="fvNext" aria-label="下一位"></button>`:""}<i class="fv2-prog"><em id="fvProg"></em></i></div>
-    <div class="fv2-ti"><span class="mu2-cv sm">${songCover(s.gid)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}・${esc(sh.name||"")} 結尾妖精</small></span><button class="fv2-x" data-a="fvClose" aria-label="關閉">${XI}</button></div></div>`;
+    <div class="fv2-ti"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}・${esc(sh.name||"")} 結尾妖精</small></span><button class="fv2-x" data-a="fvClose" aria-label="關閉">${XI}</button></div></div>`;
   document.body.appendChild(ov); document.documentElement.classList.add("fv-lock"); FV={s,show,L,i:-1,t:0,au:null,ov,from,t0:Date.now(),dur:s.demo?20:30};
   const c=ov.querySelector(".fv2-card"), r=c.getBoundingClientRect(), f=from&&from.isConnected?from.getBoundingClientRect():null;
   if(f&&r.width){ c.style.transform=`translate(${f.left-r.left}px,${f.top-r.top}px) scale(${f.width/r.width},${f.height/r.height})`; c.getBoundingClientRect(); }
@@ -19603,7 +19606,7 @@ function fairyTick(){ if(!FV) return; const a=FV.au, sec=a&&!a.paused&&a.current
 function fairyGo(d){ if(!FV||FV.L.length<2) return; const n=FV.L.length, a=FV.au, sec=a&&!a.paused&&a.currentTime>0?a.currentTime:(Date.now()-FV.t0)/1000; FV.man={i:((FV.i+d)%n+n)%n,at:sec}; FV.i=FV.man.i; fairyShow(); }
 function fairyShow(){ if(!FV) return; const st=document.getElementById("fvSt"); if(!st){ fairyStop(); return; } const it=FV.L[FV.i];
   const nm=it&&MEMBERS[it.mid]?stageNm(it.mid):"";
-  if(!it){ const ok=showEnded(FV.show,curWeek()); st.innerHTML=`<div class="fv-none">${songCover(FV.s.gid)}<b>${ok?"這週沒有結尾妖精":`這週的結尾妖精 ${showEndTxt(FV.show)} 揭曉`}</b></div>`; return; }
+  if(!it){ const ok=showEnded(FV.show,curWeek()); st.innerHTML=`<div class="fv-none">${songCover(FV.s.gid,FV.s.title)}<b>${ok?"這週沒有結尾妖精":`這週的結尾妖精 ${showEndTxt(FV.show)} 揭曉`}</b></div>`; return; }
   const box=document.createElement("div"); box.className="fv2-l";
   if(it.demo) box.innerHTML=`<div class="fv-demo" style="background:${grad(strHash(it.mid)%8)}"><b>${esc(nm||"結尾妖精")}</b><small>示範</small></div>`;
   else if(it.v){ box.innerHTML=`<video playsinline autoplay loop ${FV.au?"muted":""}></video><span class="fv-nm">${esc(nm)}</span>`; const v=box.querySelector("video"); mediaSrc(it.m).then(u=>{ if(u&&v.isConnected){ v.src=u; v.play().catch(()=>{}); } }); }
@@ -20013,6 +20016,9 @@ const PR_KIND={sc:"SHOWCASE",sched:"SCHEDULE",teaser:"Teaser Image",concept:"Con
 function promoSrcs(all){ const L=[], now=Date.now();
   getDebut().filter(x=>(x.status==="pre"||x.status==="ok")&&x.day&&x.appr).forEach(x=>L.push({k:"db",id:x.id,gid:x.gid||"",name:x.name,title:x.song||"",day:x.day,appr:x.appr,mv:x.mv||null,co:coOfGid(x.gid)||x.co||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:x.g||0,solo:x.kind!=="group"}));
   try{ getDf().forEach(x=>{ const g=groupOf(x.gid), day=dfDebutDay(x.gid)||x.day; L.push({k:"db",id:x.id,gid:x.gid,name:g.name,title:x.title||"",day,appr:day-PRE_ANN,mv:dfMv(x.gid),co:coOf(x.gid)||"",teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo,fill:1}); }); }catch(e){}
+  /* 已經出道、但沒有出道申請也沒補資料的（例如直接開好的團）：一樣自動當成一筆出道，公司帳號照樣發；之後補資料會接著用同一個編號 */
+  try{ const have=new Set(L.map(x=>x.gid)); GROUPS.forEach(g=>{ if(!g||g.id==="tdm_g"||have.has(g.id)||g.demo) return; if(getDebut().some(d=>d.gid===g.id&&d.status!=="gone")) return; const so=dfDebutSong(g.id); if(!so||so.demo) return; const day=dfDebutDay(g.id)||(songRel(so)?dayStart(songRel(so)):0); if(!day) return;
+    L.push({k:"db",id:"df_"+g.id,gid:g.id,name:g.name,title:so.title||"",day,appr:day-PRE_ANN,mv:dfMv(g.id),co:coOf(g.id)||"",teaser:"",teasers:[],mvt:null,pr:{},rtype:so.rtype||"",g:g.g||0,solo:!!g.solo,fill:1,auto:1}); }); }catch(e){}
   const P=getMShow().pre||[];
   getCbr().filter(x=>x.status==="ok"&&x.done).forEach(x=>{ const g=groupOf(x.gid); if(!g) return; const p=P.find(y=>y.req===x.id); L.push({k:"cb",id:x.id,gid:x.gid,name:g.name,title:x.title,day:p?p.day:x.day,appr:x.done,mv:x.mv||null,co:coOf(x.gid),teaser:x.teaser,teasers:x.teasers||[],mvt:x.mvt,pr:x.pr||{},rtype:x.rtype||"",g:g.g||0,solo:!!g.solo}); });
   return all?L:L.filter(s=>now-s.day<45*864e5); }
@@ -20026,7 +20032,7 @@ function promoPlan(s){ const D=864e5, pr=s.pr||{}, tm=/^(\d{1,2}):(\d{2})$/.exec
   const st=Math.max(s.appr,s.day-PRE_ANN), d0=dayStart(st)+D, dl=dayStart(s.day)-D, nd=Math.max(1,Math.round((dl-d0)/D)+1);
   /* 排程表：核准的當下就發；其他從隔天開始平均排 */
   const R=it.length-1; it.forEach((x,i)=>{ let ts=i===0?st:d0>dl?st+i*60e3:d0+Math.min(nd-1,Math.floor((i-1)*nd/Math.max(1,R)))*D+at; x.ts=Math.min(ts,s.day-60e3); x.id=`cp_${s.id}_${i}`; x.src=s; });
-  it.push({k:"rel",ts:s.day+at,id:`cp_${s.id}_rel`,src:s,imgs:[s.teaser].filter(Boolean),...(s.mv&&s.mv.mid?{vid:{mid:s.mv.mid,thumb:s.mv.thumb||""}}:{})});
+  it.push({k:"rel",ts:s.day+at,id:`cp_${s.id}_rel`,src:s,imgs:[pr.cov||s.teaser].filter(Boolean),...(s.mv&&s.mv.mid?{vid:{mid:s.mv.mid,thumb:s.mv.thumb||""}}:{})});
   { const sc=/^(\d{1,2}):(\d{2})$/.exec(pr.sc||""); if(sc){ const sat=((+sc[1])*60+(+sc[2]))*60e3; it.push({k:"sc",ts:s.day+Math.max(sat,at+60e3),id:`cp_${s.id}_sc`,src:s,imgs:[s.teaser].filter(Boolean)}); } }
   const cnt={}; it.forEach(x=>{ cnt[x.k]=(cnt[x.k]||0)+1; x.no=cnt[x.k]; }); it.forEach((x,i)=>{ x.tot=cnt[x.k]; x.idx=i; x.all=it.length; }); return it; }
 const coPosts=()=>{ const now=Date.now(); return promoSrcs().flatMap(promoPlan).filter(x=>x.ts<=now).sort((a,b)=>b.ts-a.ts); };
@@ -20207,7 +20213,7 @@ function promoFields(f){ return `<span class="fs-f-lab">每天發布時間</span
 function promoKeep(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const v=id=>{ const e=document.getElementById(id); return e?e.value:null; }; const tm=v("prTime"), tk=v("prTrk"); if(tm!=null) pr.time=tm||"18:00"; if(tk!=null) pr.trk=tk; PR_EX.forEach(k=>{ const x=v("prX_"+k); if(x!=null) pr[k]=x; }); (pr.cv||[]).forEach((c,i)=>{ const n=v("prCv"+i); if(n!=null) c.n=n; }); }
 /* 存進申請：預覽用的 blob 網址不存 */
 const PR_EX=["album","desc","credit","lyr","sc","fan","intro","t2"];
-const promoClean=pr=>pr?{...(pr.fy&&Object.keys(pr.fy).length?{fy:Object.fromEntries(Object.entries(pr.fy).filter(([k,v])=>v&&v.m).map(([k,v])=>{ const r={...v}; delete r._pv; return [k,r]; }))}:{}),...(pr.mv2&&pr.mv2.mid&&String(pr.t2||"").trim()?{mv2:pr.mv2}:{}),...Object.fromEntries(PR_EX.filter(k=>String(pr[k]||"").trim()).map(k=>[k,String(pr[k]).trim()])),time:pr.time||"18:00",sched:pr.sched||"",trk:pr.trk||"",trkImg:pr.trkImg||"",cv:(pr.cv||[]).map(c=>({n:c.n||"",ph:(c.ph||[]).filter(Boolean)})).filter(c=>c.ph.length||c.n),vk:pr.vid?pr.vk:"",vid:pr.vk&&pr.vid?pr.vid:null}:null;
+const promoClean=pr=>pr?{...(pr.fy&&Object.keys(pr.fy).length?{fy:Object.fromEntries(Object.entries(pr.fy).filter(([k,v])=>v&&v.m).map(([k,v])=>{ const r={...v}; delete r._pv; return [k,r]; }))}:{}),...(pr.mv2&&pr.mv2.mid&&String(pr.t2||"").trim()?{mv2:pr.mv2}:{}),...Object.fromEntries(PR_EX.filter(k=>String(pr[k]||"").trim()).map(k=>[k,String(pr[k]).trim()])),time:pr.time||"18:00",sched:pr.sched||"",...(pr.cov?{cov:pr.cov}:{}),trk:pr.trk||"",trkImg:pr.trkImg||"",cv:(pr.cv||[]).map(c=>({n:c.n||"",ph:(c.ph||[]).filter(Boolean)})).filter(c=>c.ph.length||c.n),vk:pr.vid?pr.vk:"",vid:pr.vk&&pr.vid?pr.vid:null}:null;
 const promoLoad=pr=>pr?{...JSON.parse(JSON.stringify(pr)),cv:(pr.cv||[]).map(c=>({n:c.n,ph:[...(c.ph||[])]}))}:{time:"18:00",cv:[],vk:"",trk:""};
 async function prImgUp(file){ const b=await shrinkImg(file,1600), prev=URL.createObjectURL(b);
   const url=(HB_ON&&await hbImgUrl("promo_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); return {url,prev}; }
@@ -20226,7 +20232,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="prImg"){ const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
     inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; f.busy="上傳中…"; dbReform();
       try{ const {url,prev}=await prImgUp(f0), k=t.dataset.k;
-        if(k==="sched"){ pr.sched=url; pr.schedP=prev; } else if(k==="trk"){ pr.trkImg=url; pr.trkP=prev; }
+        if(k==="sched"){ pr.sched=url; pr.schedP=prev; } else if(k==="trk"){ pr.trkImg=url; pr.trkP=prev; } else if(k==="cov"){ pr.cov=url; pr.covP=prev; }
         else { const c=pr.cv[+t.dataset.i]; if(c){ const j=+t.dataset.j; c.ph=c.ph||[]; c.phP=c.phP||[]; c.ph[j]=url; c.phP[j]=prev; } }
         f.busy=""; dbReform(); }catch(err){ f.busy=""; dbReform(); toast("這張圖讀不出來"); } }; pickClick(inp); return; }
   if(a==="prVid"){ const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*";
