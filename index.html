@@ -98,7 +98,7 @@ button{cursor:pointer;border:0;background:none;padding:0}
 .app.no-nav{padding-bottom:40px}
 
 /* header */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
+header.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:40;
   background:linear-gradient(135deg,rgba(255,255,255,.5) 0%,rgba(196,181,253,.24) 100%);backdrop-filter:blur(24px) saturate(180%);-webkit-backdrop-filter:blur(24px) saturate(180%);
   border-bottom:1px solid rgba(255,255,255,.65);box-shadow:inset 0 1px 1px rgba(255,255,255,.7)}
 .top-row{display:flex;align-items:center;gap:10px;padding:12px 16px 8px;min-height:56px}
@@ -1694,7 +1694,7 @@ body.rg-on .concert2 .cc-top,body.rg-on .concert2 .cc-foot,body.rg-on .concert2 
    ========================================================= */
 html[data-theme] body{background:var(--bg);font-weight:500;letter-spacing:.01em}
 html[data-theme] body .bg{display:none}
-html[data-theme] body .top{background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);box-shadow:none}
+html[data-theme] body header.top{background:color-mix(in srgb,var(--bg) 88%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);box-shadow:none}
 html[data-theme] body .logo{background:var(--brand);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
 html[data-theme] body .icon-btn{background:var(--s2);border:0;box-shadow:none;color:var(--ink)}
 html[data-theme] body .dot{border-color:var(--bg);animation:none}
@@ -4237,6 +4237,21 @@ html body .sn-acts button.liked:not(.dk-keep) .si,html body .sn-rr button.liked:
 .sn-ntp{width:44px;height:44px;flex:none;border:0;padding:0;position:relative;overflow:hidden;border-radius:4px;background:var(--l2)}
 .sn-ntp .sn-img,.sn-ntp .sn-pic{position:absolute;inset:0;height:100%}
 .sn-ntr .sn-hu{flex:none}
+.sn-sh.cm{height:70vh;min-height:0;max-height:none}
+.sn-sh.cm .sn-cmh{padding:8px 0 14px}.sn-sh.cm .sn-cmh b{font-size:16px;font-weight:700}
+.sn-sh.cm .sn-cl{flex:1;min-height:0;overflow-y:auto}
+.sn-sh.cm .sn-cu b{font-size:14px;font-weight:700}.sn-sh.cm .sn-cu time{font-size:14px;color:#8E8E93;margin-left:6px}.sn-sh.cm .sn-ct{font-size:15px;line-height:1.35;margin:2px 0 0}
+.sn-sh.cm .sn-ca button{font-size:13px;font-weight:700;color:#8E8E93}
+.sn-sh.cm .sn-cemo{display:flex;justify-content:space-between;padding:12px 16px 6px}.sn-sh.cm .sn-cemo button{font-size:26px;padding:0;border:0;background:none}
+.sn-sh.cm .sn-cf .sn-av,.sn-sh.cm .sn-cf>span:first-child{width:43px!important;height:43px!important}
+.sn-sh.cm .sn-cpill{min-height:44px;border-width:1.5px}
+.sn-shw.sub{position:absolute;inset:0;z-index:2;background:rgba(0,0,0,0)}.sn-shw.sub.open{background:rgba(0,0,0,.35)}
+.sn-sh.srt{max-height:none;padding:0 16px calc(env(safe-area-inset-bottom,0px) + 22px)}.sn-sh.srt .srt-g{display:flex;flex-direction:column;border-radius:12px;overflow:hidden;background:color-mix(in srgb,var(--sn-t,#fff) 7%,transparent)}
+.sn-sh.srt .srt-g button{display:flex;justify-content:space-between;align-items:center;border:0;background:none;color:inherit;font:inherit;font-size:15px;padding:13px 16px;min-height:0;text-align:left}.sn-sh.srt .srt-g button+button{border-top:.5px solid rgba(128,128,128,.3)}.sn-sh.srt .srt-g .si{width:18px;height:18px}
+.sn-r1h{position:fixed;top:0;left:0;right:0;z-index:5;background:transparent!important}
+.sn-reels.one .sn-reel1{height:100%}.sn-reels.one .sn-rbg video{object-fit:contain}
+.sn-r1c{position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);height:42px;border-radius:21px;border:0;background:rgba(255,255,255,.12);color:rgba(255,255,255,.7);font:inherit;font-size:15px;text-align:left;padding:0 16px}
+.sn-reels.one .sn-rr{bottom:calc(env(safe-area-inset-bottom,0px) + 76px)}.sn-reels.one .sn-rb{bottom:calc(env(safe-area-inset-bottom,0px) + 70px)}
 .sn-shw{position:fixed;inset:0;z-index:80;background:rgba(0,0,0,0);transition:background .25s}
 .sn-shw.open{background:rgba(0,0,0,.45)}
 .sn-sh{position:absolute;left:0;right:0;bottom:0;max-height:78vh;display:flex;flex-direction:column;border-radius:16px 16px 0 0;background:var(--sn-b,#fff);color:var(--sn-t,#000);transform:translateY(100%);transition:transform .32s cubic-bezier(.2,.9,.3,1);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -5230,7 +5245,7 @@ html[data-theme="dark"] .scx-f button.on{background:#F5F5F5;color:#000}
 #sbxPill{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom,0px) + 96px);z-index:9000;border:0;border-radius:16px;background:rgba(255,159,10,.95);color:#000;font:inherit;font-size:12px;font-weight:700;padding:5px 6px 5px 12px;display:flex;align-items:center;gap:8px;box-shadow:0 4px 14px rgba(0,0,0,.2)}
 #sbxPill b{background:rgba(0,0,0,.8);color:#fff;border-radius:11px;padding:2px 9px}
 /* iPhone：毛玻璃的標題列、導航列偶爾整塊沒畫出來 → 讓它們各自有固定的圖層 */
-.top,.nav-in{-webkit-backface-visibility:hidden;backface-visibility:hidden}
+header.top,.nav-in{-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .t-ctx3{display:flex;gap:0;padding:0;overflow:hidden}.t-ctx3 button{border:0;background:none;font:inherit;font-size:14px;font-weight:600;padding:10px 16px;color:inherit}.t-ctx3 button+button{border-left:1px solid rgba(127,127,127,.2)}.t-ctx3 .dg{color:#FF3B30}
 .has-arw .t-meta2{justify-content:flex-end}
 .has-arw .t-b[data-lp]{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}
@@ -6866,7 +6881,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110112433";
+const BUILD="20261110113603";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -14363,7 +14378,7 @@ function thApplyCSS(){
 ${H} body{background:${thPat(t,v,dark)}${v.bg}!important}
 ${H} .t-art-n b:not(.a-nick),${H} .t-acc b{color:${v.ink}!important}
 ${H} .bg{display:none}
-${H} .top,${H} .t-lh{background:${rgba(v.bg,.86)}!important;border-bottom-color:${rgba(v.ink,.06)}!important}
+${H} header.top,${H} .t-lh{background:${rgba(v.bg,.86)}!important;border-bottom-color:${rgba(v.ink,.06)}!important}
 ${H} .nav-in{background:${rgba(card,.92)}!important}
 ${H} .nav-btn.on,${H} .nav-btn.on .nav-ico{color:${vink}!important}
 ${H} .t-rh{background:${v.bar}!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
@@ -16416,7 +16431,7 @@ const snTabs=(p)=>{ const me=snMeId(), un=dmThreads().filter(x=>{ const l=x.t[x.
 function viewSns(p,id){ snSeed(); snOfSync(); const d=snDB();
   const body=p==="explore"?snExplore(d):p==="reels"?snReels(d,id):p==="profile"?snProfile(d,id):p==="new"?snNew(d):p==="dm"?snDmList(d):p==="thread"?snThread(d,id):p==="notif"?snNotif(d):p==="post"?snPostPage(d,id):p==="edit"?snEdit(d):p==="tag"?snTagPage(d,id):p==="cf"?snCfPage(d):p==="sug"?snSugPage(d):p==="scout"?snScoutPage(d):p==="fl"?snFlPage(d,id):snHome(d);
   setTimeout(()=>{ const c=document.querySelector(".sn-thread-b"); if(c) c.scrollTop=c.scrollHeight; },0);
-  return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf","sug"].includes(p)?"":snTabs(p)}</div>`; }
+  return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf","sug"].includes(p)||(p==="reels"&&ui.snReelOne&&ui.snReelOne===id)?"":snTabs(p)}</div>`; }
 const snRp=(d,uid)=>d.rp&&d.rp[uid]||[];
 const snN=n=>n?fmtW(n).replace(" 萬","萬"):"";   /* IG 的數字：0 不顯示、1,059、2.5萬 */
 const snRpCount=(d,p)=>Object.values(d.rp||{}).filter(L=>L.some(x=>x.id===p.id)).length;
@@ -16454,12 +16469,15 @@ function snExplore(d){ const q=nz((ui.snQ||"").trim()), me=snMeId();
 function snScore(d,p){ const me=snMeId(), I=(d.intr||{})[me]||{}, U=I.u||{}, T=I.t||{}; let s=(p.ts-Date.now())/36e5/24; s+=(U[p.uid]||0)*3; snTagsOf(p).forEach(t=>{ s+=(T[t]||0)*2; }); if(snFol(d,me).includes(p.uid)) s+=1; s+=Math.min(3,snLikes(d,p)/10); return s; }
 function snReels(d,id){ const me=snMeId(), I=(d.intr||{})[me]||{}, no=new Set(I.no||[]), V=d.posts.filter(p=>snIsVid(p)&&snCanSee(d,p.uid)&&(!no.has(p.id)||p.id===id)).sort((a,b)=>snScore(d,b)-snScore(d,a)), i0=id?V.findIndex(p=>p.id===id):-1, P=i0>0?V.slice(i0).concat(V.slice(0,i0)):V;
   const fr=ui.snRf==="fr", fo=snFol(d,me); if(fr) P.splice(0,P.length,...P.filter(p=>fo.includes(p.uid)));
-  return `<header class="sn-top clear"><nav class="sn-rtab"><button class="${fr?"":"on"}" data-a="snRf" data-v="">Reels</button><button class="${fr?"on":""}" data-a="snRf" data-v="fr">朋友<span class="sn-rfav">${[...new Set(V.filter(p=>fo.includes(p.uid)).map(p=>p.uid))].slice(0,3).map(x=>snAv(snUser(x),18)).join("")}</span></button></nav><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("cam")}</button></header>
-    <main class="sn-reels">${P.length?"":`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b><button data-a="snNewP" data-v="post">上傳影片</button></div>`}${P.map(p=>{ const u=snUser(p.uid); if(!u) return ""; const liked=(d.likes[p.id]||[]).includes(me), fo=snFol(d,me).includes(u.id);
+  const one=!!id&&ui.snReelOne===id;
+  return one?`<header class="sn-top clear sn-r1h"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("plusL")}</button></header>`+snReelsMain(d,P,me,one):`<header class="sn-top clear"><nav class="sn-rtab"><button class="${fr?"":"on"}" data-a="snRf" data-v="">Reels</button><button class="${fr?"on":""}" data-a="snRf" data-v="fr">朋友<span class="sn-rfav">${[...new Set(V.filter(p=>fo.includes(p.uid)).map(p=>p.uid))].slice(0,3).map(x=>snAv(snUser(x),18)).join("")}</span></button></nav><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("cam")}</button></header>`+snReelsMain(d,P,me,false); }
+addEventListener("hashchange",()=>{ try{ const r=route(); if(!(r.sub==="sns"&&r.p==="reels")) ui.snReelOne=null; }catch(e){} });
+function snReelsMain(d,P,me,one){ return `
+    <main class="sn-reels${one?" one":""}">${P.length?"":`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b><button data-a="snNewP" data-v="post">上傳影片</button></div>`}${P.map(p=>{ const u=snUser(p.uid); if(!u) return ""; const liked=(d.likes[p.id]||[]).includes(me), fo=snFol(d,me).includes(u.id);
       return `<section class="sn-reel1"><div class="sn-rbg" data-a="snTap" data-id="${p.id}">${snMedia(p,u,0)}</div><i class="sn-heart">${si("heart")}</i>
         <div class="sn-rr"><button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}">${si("heart")}<small>${snN(snLikes(d,p))}</small></button><button data-a="snCm" data-id="${p.id}">${si("chat")}<small>${snN((d.cms[p.id]||[]).length)}</small></button><button data-a="snShare" data-id="${p.id}">${si("send")}</button><button class="${(d.saved[me]||[]).includes(p.id)?"saved":""}" data-a="snSaveP" data-id="${p.id}">${si("save")}</button><button data-a="snMore" data-id="${p.id}">${si("dots")}</button></div>
         <div class="sn-prog" data-id="${p.id}"><i></i></div><em class="sn-2x">2 倍速 ${si("ff","sm")}</em>
-        <div class="sn-rb"><span class="sn-rbu"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,30)}<b>${esc(u.u)}</b></button>${u.id!==me?`<button data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":"追蹤"}</button>`:""}</span>${p.cap?`<p>${esc(p.cap)}</p>`:""}<small>${si("music","sm")} ${esc(u.u)}・原創音訊</small></div></section>`; }).join("")}</main>`; }
+        <div class="sn-rb"><span class="sn-rbu"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,30)}<b>${esc(u.u)}</b></button>${u.id!==me?`<button data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":"追蹤"}</button>`:""}</span>${p.cap?`<p>${esc(p.cap)}</p>`:""}<small>${si("music","sm")} ${esc(u.u)}・原創音訊</small></div>${one?`<button class="sn-r1c" data-a="snCm" data-id="${p.id}">留言……</button>`:""}</section>`; }).join("")}</main>`; }
 function snHls(d,uid){ return ((d.hl||{})[uid]||[]).filter(h=>h&&h.items&&h.items.length); }
 /* 限時動態／精選的小圖：照片、或分享的貼文的第一張 */
 function snStThumb(d,s,g){ if(s.vid&&s.vid.poster) return `<img class="sn-img" data-mid="${s.vid.poster}" alt="">`; if(s.mid&&!s.vid) return `<img class="sn-img" data-mid="${s.mid}" alt="">`; if(s.post){ const p=d.posts.find(x=>x.id===s.post); if(p&&p.media&&p.media[0]) return `<img class="sn-img" data-mid="${p.media[0].poster||p.media[0].mid}" alt="">`; } return snPic(s.pic||s.id,g,"fill"); }
@@ -16540,8 +16558,12 @@ function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) retu
     <div class="sn-cl">${L.length?top.map(c=>row(c)+L.filter(k=>k.re===c.id).sort((a,b)=>a.ts-b.ts).map(k=>row(k,1)).join("")).join(""):`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
     ${ui.snRe&&ui.snRe.p===id?`<div class="sn-reb"><span>正在回覆 ${esc(ui.snRe.u)}</span><button data-a="snCmReX" data-id="${id}" aria-label="取消">${si("x","sm")}</button></div>`:""}
     <div class="sn-cemo">${["❤️","🙌","🔥","👏","😢","😍","😮","😂"].map(x=>`<button data-a="snCmEmo" data-v="${x}">${x}</button>`).join("")}</div>
-    <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),40)}<div class="sn-cpill"><textarea rows="1" class="ag" id="snCmIn" placeholder="新增留言……" autocomplete="off">${draft!=null?esc(draft):ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit" class="sn-csend" aria-label="發佈"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div></form></div></div>`,"sncm");
+    <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),40)}<div class="sn-cpill"><textarea rows="1" class="ag" id="snCmIn" placeholder="你對此有何看法？" autocomplete="off">${draft!=null?esc(draft):ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit" class="sn-csend" aria-label="發佈"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div></form></div></div>`,"sncm");
   if(reopen){ const w=layer.querySelector(".sn-shw"); if(w){ w.classList.add("open"); const sh=w.querySelector(".sn-sh"); if(sh) sh.style.transition="none"; const c=w.querySelector(".sn-cl"); if(c) c.scrollTop=cly; } } else requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
+/* 留言的「排序方式」：疊在留言面板上面，不把留言面板關掉（跟 IG 一樣） */
+function snCmSortSheet(id){ const w=layer.querySelector(".sn-shw"); if(!w) return; const old=w.querySelector(".sn-shw.sub"); if(old) old.remove(); const top=ui.snCmSort==="top";
+  w.insertAdjacentHTML("beforeend",`<div class="sn-shw sub" data-a="snCmSortX"><div class="sn-sh srt" role="dialog" aria-label="排序方式"><i class="sn-grab"></i><div class="sn-cmh"><b>排序方式</b></div><div class="srt-g"><button data-a="snCmSortSet" data-v="new" data-id="${id}"><span>最新</span>${top?"":si("check","sm")}</button><button data-a="snCmSortSet" data-v="top" data-id="${id}"><span>熱門</span>${top?si("check","sm"):""}</button></div></div></div>`);
+  requestAnimationFrame(()=>{ const s2=w.querySelector(".sn-shw.sub"); if(s2) s2.classList.add("open"); }); }
 /* 限時動態 */
 /* 從首頁那排點：看完會接著看下一個人；從個人檔案點：只看這個人 */
 function snOpenStory(uid,only){ const d=snDB(); const order=only?[uid]:[uid,...[...new Set(snActiveStories(d).map(s=>s.uid))].filter(x=>x!==uid&&snFol(d,snMeId()).includes(x))];
@@ -16668,7 +16690,7 @@ function snOfFill(p){ if(p._ofT===OFM.t&&OFM.m) return; const o=p.of, M=snOfMap(
     if(o.t==="cp"){ const x=M["cp:"+o.id]; if(!x) gone=true; else { const s0=x.src, pr=s0.pr||{}; cap=ofCap(coCap(s0.co,x.k,s0,x));
       if(x.k==="sched") media=pr.sched?[{type:"image",url:pr.sched}]:[{type:"html",h:promoSchedCard(s0),t:"SCHEDULE"}];
       else if(x.k==="trk") media=pr.trkImg?[{type:"image",url:pr.trkImg}]:[{type:"html",h:promoTrkCard(s0),t:"TRACK LIST"}];
-      else if(x.vid&&x.vid.mid) media=[{type:"video",mid:x.vid.mid,poster:x.vid.thumb||""}];
+      else if(x.vid&&x.vid.mid&&x.k!=="rel") media=[{type:"video",mid:x.vid.mid,poster:x.vid.thumb||""}];   /* 完整 MV 不放 SNS：只放 MV Teaser、Highlight Medley 這些預告 */
       else if((x.imgs||[]).length) media=x.imgs.map(u=>({type:"image",url:u}));
       else media=[{type:"html",h:ofCard(x.k==="sc"?"SHOWCASE":PR_KIND[x.k]||"NOTICE",s0.name,s0.title?`《${s0.title}》`:"",s0.g,s0.teaser),t:PR_KIND[x.k]||""}]; } }
     else if(o.t==="ca"){ const x=M["ca:"+o.id]; if(!x) gone=true; else { const a=x.ann, src=annSrc(a), c=src?coCap(x.co,src.k==="db"?"annDb":"annCb",src,{ts:a.ts}):{t:a.text||""}; cap=ofCap(c); media=a.img?[{type:"image",url:a.img}]:[{type:"html",h:ofCard("NOTICE",coInfo(x.co).n,"",6),t:"NOTICE"}]; } }
@@ -16742,14 +16764,15 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       else location.hash=h; }
     window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
-    case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")) setTimeout(()=>{ if(snTapT===now) snSndToggle(); },330); } break; }
+    case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")){ const inR=!!t.closest(".sn-reels"); setTimeout(()=>{ if(snTapT!==now) return; if(inR) snSndToggle(); else { ui.snReelOne=id; ui.snMute=false; location.hash="#/"+route().role+"/sns?p=reels&id="+encodeURIComponent(id); } },330); } } break; }
     case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id);   /* 只改這顆按鈕，不整頁重畫（整頁重畫會跳回最上面） */
       const p=snLikeUI(id);
       if(!p){ const sc=document.querySelector(".sn-scroll,.sn-page,.sn"), y=sc?sc.scrollTop:window.scrollY; render(); if(sc&&document.querySelector(".sn-scroll,.sn-page,.sn")) document.querySelector(".sn-scroll,.sn-page,.sn").scrollTop=y; else window.scrollTo(0,y); }
       if(!had){ snHeartPop(id); snLikeBump(id); } break; }
     case "snCm": snOpenCm(t.dataset.id); break;
-    case "snCmSort": { const id=t.dataset.id; snSheet([[["最新","snCmSortSet",`data-v="new" data-id="${id}"`,{on:ui.snCmSort!=="top"}],["熱門","snCmSortSet",`data-v="top" data-id="${id}"`,{on:ui.snCmSort==="top"}]]],{title:"排序方式"}); break; }
-    case "snCmSortSet": ui.snCmSort=t.dataset.v; snOpenCm(t.dataset.id); break;
+    case "snCmSort": { const id=t.dataset.id; if(layer.querySelector(".sn-sh.cm")){ snCmSortSheet(id); break; } snSheet([[["最新","snCmSortSet",`data-v="new" data-id="${id}"`,{on:ui.snCmSort!=="top"}],["熱門","snCmSortSet",`data-v="top" data-id="${id}"`,{on:ui.snCmSort==="top"}]]],{title:"排序方式"}); break; }
+    case "snCmSortSet": { ui.snCmSort=t.dataset.v; const sub=layer.querySelector(".sn-shw.sub"); if(sub){ sub.classList.remove("open"); setTimeout(()=>{ sub.remove(); snOpenCm(t.dataset.id); },220); } else snOpenCm(t.dataset.id); break; }
+    case "snCmSortX": { const sub=layer.querySelector(".sn-shw.sub"); if(sub&&e.target===sub){ sub.classList.remove("open"); setTimeout(()=>sub.remove(),220); } break; }
     case "snCmDel": { const d=snDB(), L=d.cms[t.dataset.id]||[]; d.cms[t.dataset.id]=L.filter(c=>c.id!==t.dataset.v); snSave(d); snOpenCm(t.dataset.id); toast("已刪除留言"); break; }
     case "snShare": snOpenShare(t.dataset.id); break;
     case "snShareTo": { const me=snMeId(), to=t.dataset.v; dmAppend(me,to,{text:"",post:t.dataset.id,ts:Date.now()}); layer.innerHTML=""; toast("已傳送"); snFakeReply(to); break; }
