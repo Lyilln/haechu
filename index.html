@@ -2681,6 +2681,10 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .fpd-imgs{display:flex;flex-direction:column;gap:4px;margin:10px -16px}.fpd-imgs .cp-img{border:0;padding:0;background:none;display:block}.fpd-imgs img{width:100%;display:block}
 .cw-ims{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 12px}.cw-ims span{position:relative;width:72px;height:72px;border-radius:10px;overflow:hidden}.cw-ims img{width:100%;height:100%;object-fit:cover}.cw-ims span button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;border:0;background:rgba(0,0,0,.55);color:#fff;display:grid;place-items:center;padding:0}.cw-ims span button svg{width:10px;height:10px}
 .cw-add{width:72px;height:72px;border-radius:10px;border:1.5px dashed var(--line);display:grid;place-items:center;color:var(--ink-3);font-size:22px;cursor:pointer}.cw-add svg{width:24px;height:24px}
+.try-row{display:flex;align-items:center}.try-rl{display:flex;flex-direction:column;min-width:0;flex:1;text-align:left}.try-rl small{color:var(--ink-3);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.try-chat{display:flex;flex-direction:column;gap:10px;padding-bottom:90px}.try-m{max-width:80%;display:flex;flex-direction:column;gap:3px}.try-m p{margin:0;padding:10px 14px;border-radius:16px;background:var(--s2);font-size:15px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.try-m small{font-size:11px;color:var(--ink-3)}
+.try-m.idol{align-self:flex-end;align-items:flex-end}.try-m.idol p{background:var(--violet);color:#fff}
+.try-f{position:fixed;left:0;right:0;bottom:0;display:flex;gap:8px;padding:10px 12px calc(env(safe-area-inset-bottom) + 10px);background:var(--bg);border-top:1px solid var(--line)}.try-f input{flex:1;min-width:0;height:42px;border-radius:21px;border:1px solid var(--line);background:var(--s1);color:var(--ink);padding:0 14px;font:inherit;font-size:16px}
 .ofm-go{border:0;background:none;padding:0;margin:0;font:inherit;color:inherit;text-align:left;cursor:pointer;display:flex}.ofm-b{cursor:pointer}
 .ofm-n{font-size:14.5px;font-weight:700;display:flex;align-items:center;gap:3px}.ofm-n svg{width:15px;height:15px;color:#3BA4F5}.ofm-h small{font-size:11.5px;color:var(--ink-3)}
 .ofm-tt{margin:10px 0 2px;font-size:14.5px;line-height:1.4}
@@ -6662,7 +6666,7 @@ function hbErrText(e,signup){ const c=String(e.code||""), m=String(e.message||""
 async function hbLoadProfiles(){ const L=await hbFetch("/rest/v1/profiles?select=id,username,name,role,member"); if(!Array.isArray(L)) return;
   hbFetch("/rest/v1/profiles?select=username,created_at").then(C=>{ if(Array.isArray(C)) C.forEach(c=>{ if(ACCOUNTS[c.username]&&c.created_at) ACCOUNTS[c.username].cts=Date.parse(c.created_at); }); }).catch(()=>{});   /* 建立時間（日曆找帳號用；沒有這欄就算了） */
   Object.keys(ACCOUNTS).forEach(k=>delete ACCOUNTS[k]);
-  L.forEach(p=>{ ACCOUNTS[p.username]={user:p.username,role:p.role==="fan"&&p.member?"artist":p.role,name:p.name||p.username,member:p.member||undefined,id:p.id}; }); acctGate();
+  L.filter(p=>!String(p.username||"").startsWith("try_")).forEach(p=>{ ACCOUNTS[p.username]={user:p.username,role:p.role==="fan"&&p.member?"artist":p.role,name:p.name||p.username,member:p.member||undefined,id:p.id}; }); acctGate();
   try{ localStorage.setItem("daisuki_hb_acc",JSON.stringify(ACCOUNTS)); }catch(e){}
   try{ const me=session()&&ACCOUNTS[session().email]; if(me&&me.role==="admin") await hbLoadReal(); }catch(e){} }
 /* 本名：管理員建帳號時填的真實姓名，只有管理員看得到（正式網站存在後台的 admin_notes，預覽存在這支手機） */
@@ -6909,7 +6913,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110143859";
+const BUILD="20261110151557";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -12900,6 +12904,7 @@ function viewAdmin(tab){
     if(tab==="revenue") return uniHead("積分統計")+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
     if(tab==="people") return viewUniPeople();
+    if(tab==="try") return uniHead("試玩訊息")+viewTryInbox();
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="ptadd") return uniHead("加積分")+viewPtAdd();
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
@@ -15428,7 +15433,7 @@ const UNI_ATABGO={home:"#/admin",content:"#/admin?tab=reports",foc:"#/admin?tab=
 const uniMainHead=title=>`<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">${title}</div><span class="sh-sp"></span></div></header>`;
 const uniContentSeg=i=>`<div class="seg2 mod-seg three" style="--i:${i}"><i class="seg2-ind"></i>${[["檢舉","reports"],["全部貼文","posts"],["公告","announce"]].map(([l,t],k)=>`<button class="${k===i?"on":""}" data-a="uniSeg" data-v="#/admin?tab=${t}">${l}</button>`).join("")}</div>`;
 function viewUniTodo(){ const T=uniTodo(), on=getLives().filter(l=>!l.endTs), cm=S.get(K.comments,[]).filter(c=>c.ts>Date.now()-864e5).length, ev=getEvents().filter(e=>e.ts>=Date.now()).length;
-  const rows=[[debutWait(),"待審核出道申請","#/admin?tab=debut"],[cbrWait(),"待審核回歸申請","#/admin?tab=cbreq"],[T.rep,"待處理檢舉","#/admin?tab=reports"],[T.th,"待審核主題","#/admin/themes"],[tieQuiet().length,"TIE 3 天沒傳訊息","tieQuiet"]].filter(x=>x[0]);
+  const rows=[[tryUnread(),"試玩訪客等你回覆","#/admin?tab=try"],[debutWait(),"待審核出道申請","#/admin?tab=debut"],[cbrWait(),"待審核回歸申請","#/admin?tab=cbreq"],[T.rep,"待處理檢舉","#/admin?tab=reports"],[T.th,"待審核主題","#/admin/themes"],[tieQuiet().length,"TIE 3 天沒傳訊息","tieQuiet"]].filter(x=>x[0]);
   return uniMainHead("待辦")+`<main class="page">
     <div class="section-h">要處理的事<span class="muted">${rows.length?rows.reduce((a,b)=>a+b[0],0)+" 件":""}</span></div>
     ${rows.length?`<section class="card">${rows.map(([n,l,h])=>`<button class="list-btn" ${h==="tieQuiet"?'data-a="tieQuietList"':`data-a="uniGo" data-v="${h}"`}>${l}<span class="r"><em class="t-cnt">${n}</em></span></button>`).join("")}</section>`:`<section class="card uni-empty">都處理完了 ✓</section>`}
@@ -20121,6 +20126,26 @@ setInterval(ntPhClean,20e3); setTimeout(ntPhClean,3e3);
 document.addEventListener("change",async e=>{ const t=e.target; if(!t||t.id!=="cwFile") return; const fs=[...(t.files||[])].slice(0,10-(ui.cwImgs||[]).length); t.value=""; if(!fs.length) return; toast("上傳中…");
   for(const f of fs){ try{ const b=await shrinkImg(f,1080); if(!b) continue; let u=HB_ON?await hbImgUrl("fp_"+Date.now().toString(36)+Math.random().toString(36).slice(2,6)+".jpg",b):null; if(!u) u=await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); (ui.cwImgs=ui.cwImgs||[]).push(u); }catch(err){} }
   const tx=(document.getElementById("cwTxt")||{}).value||""; render(); const ta=document.getElementById("cwTxt"); if(ta) ta.value=tx; const bt=document.getElementById("cwOk"); if(bt) bt.disabled=!tx.trim()&&!(ui.cwImgs||[]).length; });
+/* =========================================================
+   試玩訊息（/try 頁面的訪客傳給示範偶像 LUMI 的 TIE）
+   ・每位訪客一份：daisuki_try_<匿名帳號>＝{nick,msgs:[{id,from:"fan"|"idol",text,ts,by,byName}]}
+   ・四位管理員都看得到，誰有空誰回；回覆會以 LUMI 的身分出現在訪客那邊
+   ========================================================= */
+const TRY_IDOL="LUMI";
+function tryConvs(){ const ks=new Set(); try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){} Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){}
+  return [...ks].map(k=>{ const v=S.get(k,null); if(!v||!Array.isArray(v.msgs)||!v.msgs.length) return null; const L=v.msgs.slice().sort((a,b)=>a.ts-b.ts), last=L[L.length-1]; return {k,nick:v.nick||"訪客",msgs:L,last,wait:last.from==="fan"}; }).filter(Boolean).sort((a,b)=>b.last.ts-a.last.ts); }
+const tryUnread=()=>{ try{ return isAdminAcct()?tryConvs().filter(c=>c.wait).length:0; }catch(e){ return 0; } };
+function viewTryInbox(){ const C=tryConvs();
+  return `<main class="page"><p class="reach" style="margin:4px 2px 12px">訪客在試玩頁（${esc(location.origin+location.pathname.replace(/[^/]*$/,""))}try/）傳給 ${TRY_IDOL} 的訊息。四位管理員都看得到，你的回覆會以 ${TRY_IDOL} 的身分出現。</p>
+    ${C.length?`<section class="card">${C.map(c=>`<button class="list-btn try-row" data-a="tryOpen" data-v="${esc(c.k)}"><span class="try-rl"><b>${esc(c.nick)}</b><small>${c.last.from==="fan"?"":"你們："}${esc(String(c.last.text).slice(0,40))}・${ago(c.last.ts)}</small></span><span class="r">${c.wait?`<em class="t-cnt">待回覆</em>`:"已回覆"}</span></button>`).join("")}</section>`:`<section class="card uni-empty">還沒有訪客傳訊息</section>`}</main>`; }
+function tryChat(k){ const v=S.get(k,null); if(!v) return; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts);
+  setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(v.nick||"訪客")}</b><span class="sh-sp"></span></header>
+    <div class="tiei-body try-chat" id="tryBody">${L.map(m=>`<div class="try-m ${m.from==="fan"?"fan":"idol"}"><p>${esc(m.text)}</p><small>${m.from==="idol"?esc(m.byName||TRY_IDOL)+"・":""}${ymdhm(m.ts)}</small></div>`).join("")}</div>
+    <form class="try-f" data-k="${esc(k)}"><input id="tryIn" maxlength="300" placeholder="以 ${TRY_IDOL} 的身分回覆" autocomplete="off"><button type="submit" class="btn btn-main btn-sm">送出</button></form></div>`,"try");
+  setTimeout(()=>{ const b=document.getElementById("tryBody"); if(b) b.scrollTop=b.scrollHeight; },30); }
+document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k, v=S.get(k,null)||{msgs:[]};
+  const me=myEmail(), nm=(ACCOUNTS[me]||{}).name||(session()||{}).name||"管理員"; S.set(k,{...v,msgs:[...(v.msgs||[]),{id:"i"+Date.now().toString(36),from:"idol",text:tx,ts:Date.now(),by:me,byName:nm}]}); try{ hbSoon(); }catch(x){} tryChat(k); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; if(t.dataset.a==="tryOpen"){ e.stopImmediatePropagation(); tryChat(t.dataset.v); } },true);
 const MHEAL={};
 async function mediaHeal(){ try{ if(!HB_ON||!HB.tok||sbxOn()||!MEDIA_URL) return; const ids=new Set();
   (S.get(K.vods,[])||[]).forEach(v=>{ if(v&&v.mid) ids.add(v.mid); if(v&&v.thumb) ids.add(v.thumb); });
