@@ -6695,7 +6695,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110043040";
+const BUILD="20261110043458";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18201,6 +18201,10 @@ setTimeout(function wkReopen(){ let o=null; try{ o=JSON.parse(localStorage.getIt
 const SN_MUS_LEN=30;
 let snMusA=null, snMusCur="", snMusIO=null;
 const snMusEl=()=>{ if(!snMusA){ snMusA=new Audio(); snMusA.loop=true; snMusA.playsInline=true; } return snMusA; };
+/* iPhone：音樂要先在手指點下去的當下「解鎖」一次，之後滑到哪一則、打開限動才能自動放（不然下載完歌已經不算手指點的，會被擋掉、沒聲音） */
+let snMusOk0=false; function snMusUnlock(){ if(snMusOk0) return; try{ const a=snMusEl(); if(!a.src){ const sr=8000, n=800, b=new ArrayBuffer(44+n*2), v=new DataView(b), w=(o,t)=>{ for(let k=0;k<t.length;k++) v.setUint8(o+k,t.charCodeAt(k)); }; w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVEfmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true); a.src=URL.createObjectURL(new Blob([b],{type:"audio/wav"})); a.dataset.mid=""; } a.muted=true; const p=a.play(); const done=()=>{ try{ a.pause(); }catch(e){} a.muted=false; snMusOk0=true; }; if(p&&p.then) p.then(done,()=>{ a.muted=false; }); else done(); }catch(e){} }
+["touchend","click"].forEach(ev=>document.addEventListener(ev,()=>{ if(!snMusOk0&&route().sub==="sns") snMusUnlock(); },{capture:true,passive:true}));
+if(ui.snMusOn===undefined) ui.snMusOn=true;   /* 跟 Instagram 一樣，有音樂的貼文滑到就放；按右下角喇叭關掉 */
 async function snMusPlay(mid,key){ try{ const u=await mediaSrc(mid); if(!u) return; const a=snMusEl(); snMusCur=key||mid; if(a.dataset.mid!==mid){ a.src=u; a.dataset.mid=mid; } a.currentTime=0; await a.play(); }catch(e){} snMusPaint(); }
 function snMusStop(){ try{ if(snMusA){ snMusA.pause(); } }catch(e){} snMusCur=""; snMusPaint(); }
 function snMusPaint(){ document.querySelectorAll(".sn-mbtn").forEach(b=>b.classList.toggle("on",!!ui.snMusOn&&b.dataset.k===snMusCur)); }
@@ -18214,10 +18218,12 @@ const snMusTag=m=>m&&m.mid?`<span class="sn-mus-t">♪ ${esc(m.title||"音樂")}
 
 /* ===== 發文：選歌、挑片段 ===== */
 let snMusBuf=null;
-function snMusPick(){ const inp=document.createElement("input"); inp.type="file"; inp.accept="audio/*,.mp3,.m4a,.wav,.aac";
-  inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; toast("讀取中…");
-    try{ const AC=window.AudioContext||window.webkitAudioContext, c=new AC(), buf=await decodeAu(c,await f.arrayBuffer()); try{ c.close(); }catch(e){}
-      snMusBuf=buf; ui.snMusT={title:f.name.replace(/\.[^.]+$/,"").slice(0,40),start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("這首歌讀不出來，請換成 MP3 或 M4A"); } };
+function snMusPick(){ const inp=document.createElement("input"); inp.type="file"; inp.accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.mov,.mp4";   /* iPhone 很少有音樂檔：也可以選影片，取出裡面的聲音 */
+  inp.onchange=async()=>{ const f=inp.files&&inp.files[0]; if(!f) return; toast("讀取中…"); snMusUnlock();
+    try{ const AC=window.AudioContext||window.webkitAudioContext, c=new AC(), isV=/^video\//.test(f.type)||/\.(mov|mp4|m4v|webm)$/i.test(f.name||""); let buf;
+      try{ buf=await decodeAu(c,await f.arrayBuffer()); }catch(err){ if(!isV) throw err; const am=await MB.audio(f); if(!am) throw err; buf=await decodeAu(c,await am.blob.arrayBuffer()); } try{ c.close(); }catch(e){}
+      if(!buf||!buf.duration) throw new Error("no audio");
+      snMusBuf=buf; ui.snMusT={title:f.name.replace(/\.[^.]+$/,"").slice(0,40),start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("讀不出聲音，換一個檔案試試"); } };
   pickClick(inp); }
 function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
   tieModal("加入音樂",`<span class="fs-f-lab">歌名</span><input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="輸入文字" value="${esc(t.title)}">
