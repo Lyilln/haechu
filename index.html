@@ -6909,7 +6909,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110134733";
+const BUILD="20261110143859";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8041,10 +8041,22 @@ function openA2H(){
 
 /* ===== TIE BOX：照片、語音（存在這支手機的 IndexedDB） ===== */
 const memBlobs={};
+/* 上傳追蹤：照片／影片放進手機後馬上傳雲端；發文前會等它傳完；傳失敗的記下來，之後自動重傳（不然別人看到的是沒有照片的貼文） */
+const UPQ={}, UPQ_K="daisuki_m_upq";
+const upqGet=()=>{ try{ return JSON.parse(localStorage.getItem(UPQ_K)||"[]"); }catch(e){ return []; } }, upqSet=L=>{ try{ localStorage.setItem(UPQ_K,JSON.stringify([...new Set(L)].slice(-200))); }catch(e){} };
+function upTrack(id,blob){ const o=UPQ[id]={done:false,ok:false}; o.p=Promise.resolve().then(()=>hbUpload(id,blob)).then(ok=>{ o.done=true; o.ok=!!ok; if(ok) upqSet(upqGet().filter(x=>x!==id)); else upqSet([...upqGet(),id]); return o.ok; }).catch(()=>{ o.done=true; upqSet([...upqGet(),id]); return false; }); return o.p; }
+async function upRetry(){ try{ if(!HB_ON||!HB.tok||sbxOn()) return; for(const id of upqGet()){ if(UPQ[id]&&!UPQ[id].done) continue; const b=memBlobs[id]||await (async()=>{ try{ const d=await MDB.open(); return await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>{ const v=q.result; res(v&&v.ab?new Blob([v.ab],{type:v.type||""}):v||null); }; q.onerror=()=>res(null); }); }catch(e){ return null; } })(); if(!b){ upqSet(upqGet().filter(x=>x!==id)); continue; } await upTrack(id,b); } }catch(e){} }
+setInterval(upRetry,30e3); setTimeout(upRetry,8e3);
+async function upWait(ids){ const P=ids.filter(id=>id&&UPQ[id]).map(id=>UPQ[id].p); if(!P.length) return true; const r=await Promise.race([Promise.all(P),new Promise(res=>setTimeout(()=>res(null),90e3))]); return Array.isArray(r)&&r.every(Boolean); }
+/* 發文按下去：照片／影片還在傳，就先等傳完再發 */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="publish"],[data-a="snPost"]'); if(!t||t.dataset.upOk) return;
+  const ids=t.dataset.a==="publish"?(ui.composeMedia||[]).flatMap(m=>[m.mid,m.thumb]):((ui.snDraft||{}).media||[]).flatMap(m=>[m.mid,m.poster]);
+  const pend=ids.filter(id=>id&&UPQ[id]&&!UPQ[id].done); if(!pend.length) return; e.stopImmediatePropagation(); e.preventDefault(); if(t.dataset.upWait) return; t.dataset.upWait="1"; toast("照片／影片上傳中，傳完會自動發布…");
+  upWait(pend).then(ok=>{ delete t.dataset.upWait; if(!ok) toast("有檔案還沒傳完，先發布，傳完後大家就看得到"); const b=t.isConnected?t:document.querySelector(`[data-a="${t.dataset.a}"]`); if(!b) return; b.dataset.upOk="1"; b.click(); delete b.dataset.upOk; }); },true);
 const MDB={
   db:null,
   open(){ if(!this.db) this.db=new Promise((res,rej)=>{ try{ const r=indexedDB.open("daisuki_media",1); r.onupgradeneeded=()=>r.result.createObjectStore("m"); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }catch(e){ rej(e); } }); return this.db; },
-  async put(id,blob,noUp){ memBlobs[id]=blob; if(!noUp) hbUpload(id,blob);  try{ const val={ab:await blob.arrayBuffer(),type:blob.type||""};   // 存成原始資料：iPhone 上直接存檔案，重開後會讀不出來
+  async put(id,blob,noUp){ memBlobs[id]=blob; if(!noUp) upTrack(id,blob);  try{ const val={ab:await blob.arrayBuffer(),type:blob.type||""};   // 存成原始資料：iPhone 上直接存檔案，重開後會讀不出來
       const d=await this.open(); await new Promise((res,rej)=>{ const tx=d.transaction("m","readwrite"); tx.objectStore("m").put(val,id); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }catch(e){} },
   async get(id){ if(memBlobs[id]) return memBlobs[id];
     let b=null; try{ const d=await this.open(); b=await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){}
@@ -11502,7 +11514,9 @@ const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA
 /* 虛擬對手：分數照這週已經過了多少慢慢長上去，節目播出時到最終分數 */
 function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length; if(!n||n>=MSA.MIN) return [];
   const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
-  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], fin=1800+((h>>>(k*4+1))%2800); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
+  /* 虛擬歌手的分數跟著真的歌走（社群人數少，分數不能高到追不上）：預估本週真歌的最高分，虛擬歌手落在它的 55%～125% */
+  const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.25,prog));
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
 const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
 const MSP={win:1000,five:5000,ak:10000,pak:15000}, MC_PTS=[0,500,1000,1500,2000,3000];
@@ -18767,7 +18781,8 @@ function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ S
     <span class="fs-f-lab">App 裡的歌</span><div class="snm-list">${L.length?L.map(x=>{ const g=groupOf(x.gid); return `<button class="snm-song" data-a="snMusSong" data-id="${esc(x.id)}" type="button"><span class="snm-cv">${songCover(x.gid)}</span><span><b>${esc(x.title)}</b><small>${esc(g.name)}</small></span></button>`; }).join(""):`<p class="snm-empty">還沒有歌</p>`}</div>`,
     `<button class="t-mbtn" data-a="snMusX">取消</button>`); }
 async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||!g) return; toast("下載中"); snMusUnlock();
-  try{ let b=await songAudio(x); if(!b) b=await songAuFromMv(x,true); if(!b){ toast("這首歌的 MV 還沒有聲音可以用"); return; } const AC=window.AudioContext||window.webkitAudioContext, c=new AC(); const buf=await decodeAu(c,await b.arrayBuffer()); try{ c.close(); }catch(e){}
+  try{ let b=await songAudio(x); if(!b) b=await songAuFromMv(x,true); if(!b){ const v=songMv(x); if(v&&v.au) b=await MDB.get(v.au); if(!b&&v&&v.mid) b=await MDB.get(v.mid); }   /* 轉不出音檔：直接讀 MV 本身的聲音 */
+    if(!b){ toast(songMv(x)?"MV 影片還沒傳到雲端，請上傳的人打開 App 一次":"這首歌還沒有 MV 或音訊"); return; } const AC=window.AudioContext||window.webkitAudioContext, c=new AC(); const buf=await decodeAu(c,await b.arrayBuffer()); try{ c.close(); }catch(e){}
     if(!buf||!buf.duration) throw 0; snMusBuf=buf; ui.snMusT={title:x.title,artist:g.name,gid:x.gid,sid:x.id,src:"app",start:0,dur:buf.duration}; snMusSheet(); }catch(e){ toast("這首歌的音訊讀不出來"); } }
 function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
   tieModal("加入音樂",`${t.src?`<div class="snm-lock">${si("note","sm")}${esc(snMusLabel(t))}</div>`:`<span class="fs-f-lab">歌名</span><input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="輸入文字" value="${esc(t.title)}">`}
@@ -19287,7 +19302,10 @@ function mvTitleOf(t){ t=String(t||"").trim(); if(!t) return "";
   let x=t.replace(/[\(（\[【][^\)）\]】]*(m\s*\/?\s*v|music\s*video|official|teaser)[^\)）\]】]*[\)）\]】]/ig," ").replace(/\s*(official\s*)?(m\s*\/?\s*v|music\s*video)(\s*teaser\s*\d*)?\s*$/i,"").trim();
   const parts=x.split(/\s+[-–—_]\s+|\s*[｜|]\s*/).filter(y=>y.replace(/[\s\-–—~]/g,"")); if(parts.length>1) x=parts[parts.length-1];
   return x.replace(/^[\s\-–—~·・]+|[\s\-–—~·・]+$/g,"").trim(); }
-function songMv(s){ if(!s) return null; const V=(S.get(K.vods,[])||[]).filter(v=>v.gid===s.gid&&vodIsMV(v)); return V.find(v=>String(v.title||"").includes(s.title))||V.sort((a,b)=>(b.ts||0)-(a.ts||0))[0]||null; }
+function songMv(s){ if(!s) return null; const V=(S.get(K.vods,[])||[]).filter(v=>v.gid===s.gid&&vodIsMV(v)); const hit=V.find(v=>String(v.title||"").includes(s.title))||V.sort((a,b)=>(b.ts||0)-(a.ts||0))[0]; if(hit) return hit;
+  /* MV 沒放在影音分區、只放在出道／回歸申請裡：也算 */
+  try{ const R=[...(getDebut()||[]),...(getCbr()||[])].filter(x=>x&&x.gid===s.gid&&x.mv&&x.mv.mid), t=String(s.title||"").trim(), r=R.find(x=>t&&(String(x.song||x.title||"").trim()===t))||R.sort((a,b)=>(b.day||0)-(a.day||0))[0]; if(r) return {id:"rec_"+r.id,mid:r.mv.mid,thumb:r.mv.thumb||"",au:r.au||r.mv.au||"",gid:s.gid,title:s.title}; }catch(e){}
+  return null; }
 const mvLikesV=vid=>Object.keys(((S.get(MVL2,{})||{})[vid])||{}).length;
 const mvLikedV=vid=>!!(((S.get(MVL2,{})||{})[vid])||{})[myId()];
 function mvLikeToggle(vid){ const L=S.get(MVL2,{})||{}, me=myId(); if(!vid||!me) return false; const o={...(L[vid]||{})}; if(o[me]) delete o[me]; else o[me]=Date.now(); L[vid]=o; S.set(MVL2,L); return !!o[me]; }
@@ -20107,11 +20125,14 @@ const MHEAL={};
 async function mediaHeal(){ try{ if(!HB_ON||!HB.tok||sbxOn()||!MEDIA_URL) return; const ids=new Set();
   (S.get(K.vods,[])||[]).forEach(v=>{ if(v&&v.mid) ids.add(v.mid); if(v&&v.thumb) ids.add(v.thumb); });
   (S.get(K.debut,[])||[]).forEach(x=>{ [x.mv,x.mvt].forEach(m=>{ if(m&&m.mid) ids.add(m.mid); }); });
+  try{ (getCbr()||[]).forEach(x=>{ [x.mv,x.mvt].forEach(m=>{ if(m&&m.mid) ids.add(m.mid); }); }); }catch(e){}
+  (S.get(K.posts,[])||[]).forEach(p=>(p.media||[]).forEach(m=>{ if(m.mid) ids.add(m.mid); if(m.thumb) ids.add(m.thumb); }));   /* 貼文的照片／影片也一起檢查 */
+  try{ (snDB().posts||[]).forEach(p=>(p.media||[]).forEach(m=>{ if(m.mid) ids.add(m.mid); if(m.poster) ids.add(m.poster); })); }catch(e){}
   for(const id of ids){ if(MHEAL[id]) continue; MHEAL[id]=1; if(!(await idbHas(id))&&!memBlobs[id]) continue;
     let st=0; try{ st=(await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id),{method:"HEAD"})).status; }catch(e){ continue; }
     if(st!==404) continue; try{ const r2=await fetch(HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id),{method:"HEAD"}); if(r2.ok) continue; }catch(e){}
     const b=await MDB.get(id); if(b){ const ok=await hbUpload(id,b); if(ok) toast("已補傳影片，其他人現在也看得到了"); } } }catch(e){} }
-setTimeout(mediaHeal,15e3); setInterval(mediaHeal,10*60e3);
+setTimeout(mediaHeal,15e3); setInterval(mediaHeal,3*60e3);
 /* 團社群 Feed：只有藝人貼文（官方宣傳在 Media 的專輯分區） */
 function grpArtMix(gid,art,n){ const L=art.map(p=>({ts:p.ts||0,h:()=>postCard(p)})).sort((a,b)=>b.ts-a.ts); setTimeout(()=>document.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0); return (n?L.slice(0,n):L).map(o=>o.h()).join(""); }
 /* 動態：藝人動態和公司官方貼文照時間排在一起 */
