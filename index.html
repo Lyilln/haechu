@@ -6803,7 +6803,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110082014";
+const BUILD="20261110083113";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -8526,9 +8526,9 @@ function dbPlanPv(f){ const day=ymdTs(f.date); if(!day) return ""; const sv={k:f
 function dbPage(title,okAct,f,secs){ const old=layer.querySelector(".dbx-b"), y=old?old.scrollTop:0, ck=dbCheck(f), miss=ck.filter(x=>!x[1]).length;
   setLayer(`<div class="dbx" role="dialog" aria-label="${esc(title)}"><header class="dbx-h"><button class="dbx-x" data-a="tCloseLayer">取消</button><b>${esc(title)}</b><button class="dbx-ok" data-a="${okAct}" ${f.busy?"disabled":""}>${f.editId||f.adm?"儲存":"送出"}</button></header>
     <div class="dbx-b">${f.busy?`<p class="db-busy">${f.busy}</p>`:""}
-      <section class="dbx-ck"><div class="dbx-ckh"><b>宣傳完整度</b><em>${ck.length-miss}／${ck.length}</em></div><div class="dbx-ckl">${ck.map(([l,ok])=>`<span class="${ok?"ok":""}">${ok?"✓":"○"} ${l}</span>`).join("")}</div>${miss?`<p>真實的${f.cb?"回歸":"出道"}通常會有這些，越完整，粉絲越有期待感。</p>`:`<p>全部都有了！</p>`}</section>
+      <section class="dbx-ck"><div class="dbx-ckh"><b>宣傳完整度</b><em>${ck.length-miss}／${ck.length}</em></div><div class="dbx-ckl">${ck.map(([l,ok])=>`<span class="${ok?"ok":""}">${ok?"✓":"○"} ${l}</span>`).join("")}</div></section>
       ${secs.map(([h,d,body],i)=>`<section class="dbx-s"><h4><i>${i+1}</i>${h}</h4>${d?`<p class="dbx-d">${d}</p>`:""}${body}${h==="宣傳排程"?`<div class="dbx-pv"><b>自動發文時間表</b>${dbPlanPv(f)||`<p class="dbx-d">選好日期就會出現</p>`}</div>`:""}</section>`).join("")}
-      <button class="btn btn-main btn-block dbx-send" data-a="${okAct}" ${f.busy?"disabled":""}>${f.fill?"儲存":f.adm?"排定回歸":f.editId?"儲存修改":"送出申請"}</button></div></div>`,"dbx");
+      ${f.fill?"":`<button class="btn btn-main btn-block dbx-send" data-a="${okAct}" ${f.busy?"disabled":""}>${f.adm?"排定回歸":f.editId?"儲存修改":"送出申請"}</button>`}</div></div>`,"dbx");
   const b=layer.querySelector(".dbx-b"); if(b&&y) b.scrollTop=y; }
 
 const dbReform=()=>{ if(!ui.dbF||!layer.querySelector(".dbx")) return; dbKeep(); if(ui.dbF.cb) cbrForm(); else debutForm(); };
@@ -18916,12 +18916,14 @@ const DF_KEY="daisuki_dbfill";
 const getDf=()=>(S.get(DF_KEY,[])||[]).filter(x=>x&&groupOf(x.gid));
 function dfDebutSong(gid){ const m=getMShow(), L=[...m.songs,...(m.ended||[])].filter(x=>x.gid===gid).sort((a,b)=>songRel(a)-songRel(b)); return L.find(x=>x.debut)||L[0]||null; }
 function dfOpen(gid){ const x=getDf().find(y=>y.gid===gid), so=dfDebutSong(gid), v=so&&songMv(so), day=x?x.day:(so&&songRel(so)?dayStart(songRel(so)):0);
-  ui.dbF={cb:true,fill:true,adm:true,gid,title:x?x.title:(so?so.title:""),rtype:x?x.rtype||"":"",date:day?ymdIn(day):"",day,teaser:x?x.teaser||"":"",tx:x?[...(x.teasers||[])]:[],txP:[],mv:v&&v.mid?{mid:v.mid}:null,mvt:x?x.mvt||null:null,pr:x?promoLoad(x.pr):promoLoad(null),mPrev:"",mtPrev:"",busy:""}; cbrForm(); }
+  const fy0=so?JSON.parse(JSON.stringify(fairyClips(so.id)||{})):{};
+  ui.dbF={cb:true,fill:true,adm:true,gid,sid:so?so.id:"",base:x?JSON.parse(JSON.stringify(x)):null,title:x?x.title:(so?so.title:""),rtype:x?x.rtype||"":"",date:day?ymdIn(day):"",day,teaser:x?x.teaser||"":"",tx:x?[...(x.teasers||[])]:[],txP:[],mv:v&&v.mid?{mid:v.mid}:null,mvt:x?x.mvt||null:null,pr:{...(x?promoLoad(x.pr):promoLoad(null)),fy:{...fy0,...((x&&x.pr&&x.pr.fy)||{})}},mPrev:"",mtPrev:"",busy:""}; cbrForm(); }
 function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&&dfDebutSong(g.id)&&!getDebut().some(d=>d.gid===g.id&&d.status==="ok"));
   dbPage("補出道資料","cbrDfSave",f,[
     ["藝人","選要補資料的 SOLOIST／團（要先有出道曲）",G.length?`<div class="chips wrap">${G.map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrDfGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`:`<p class="dbx-d">還沒有已經出道的團</p>`],
     ["作品","出道專輯和出道曲",dbWorkF(f,"cbTitle","出道曲")],
     ["宣傳素材",`會當作出道那時候發的：照出道日 ${f.day?mdTxt(f.day):""} 往前排，不會出現在動態最上面`,dbPromoF(f,"")],
+    ...((groupOf(gid)||{}).solo?[]:[["結尾妖精","每位成員放一段，打歌時每個節目會揭曉",dbFairyF(f)]]),
     ["出道當天","",dbDayF(f,"出道")]]); }
 function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfForm(); const gid=f.gid, min=cbrMin(gid); f.tx=f.tx||[]; f.txP=f.txP||[];
   const tp=f.tPrev||f.teaser, t=tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`, vid=(v,pv)=>v?(pv?`<img src="${esc(pv)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
@@ -18950,10 +18952,14 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     if(!ui.dbF||!ui.dbF.cb||ui.dbF.gid!==gid||ui.dbF.editId) ui.dbF={cb:true,gid,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrEdit"){ const x=getCbr().find(y=>y.id===t.dataset.v); if(!x) return; ui.dbF={cb:true,editId:x.id,gid:x.gid,title:x.title,rtype:x.rtype||"",date:ymdIn(x.day),teaser:x.teaser||"",tx:[...(x.teasers||[])],txP:[],mv:x.mv,mvt:x.mvt,pr:promoLoad(x.pr),mPrev:"",mtPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrRel"){ dbKeep(); const f=ui.dbF; if(!f) return; f.rtype=f.rtype===t.dataset.v?"":t.dataset.v; cbrForm(); return; }
-  if(a==="cbrDfNew"){ if(!isAdminAcct()) return; const g=GROUPS.find(x=>x.id!=="tdm_g"&&dfDebutSong(x.id)&&!getDebut().some(d=>d.gid===x.id&&d.status==="ok")); if(!g){ toast("還沒有已經出道的團"); return; } dfOpen(g.id); return; }
+  if(a==="cbrDfNew"){ if(!isAdminAcct()) return; const g=GROUPS.find(x=>x.id!=="tdm_g"&&dfDebutSong(x.id)&&!getDebut().some(d=>d.gid===x.id&&d.status==="ok")); if(!g){ toast("還沒有已經出道的團"); return; } const sg=selfGroup(); dfOpen(sg&&dfDebutSong(sg)&&!getDebut().some(d=>d.gid===sg&&d.status==="ok")?sg:g.id); return; }
   if(a==="cbrDfGid"){ if(ui.dbF&&ui.dbF.fill) dfOpen(t.dataset.v); return; }
   if(a==="cbrDfSave"){ dbKeep(); const f=ui.dbF; if(!f||!f.fill||f.busy) return; const title=String(f.title||"").trim(); if(!title){ toast("請輸入出道曲"); return; } if(!f.day){ toast("找不到出道日"); return; }
-    const L=(S.get(DF_KEY,[])||[]).filter(x=>x&&x.gid!==f.gid); L.push({id:"df_"+f.gid,gid:f.gid,title,rtype:f.rtype||"",day:f.day,appr:f.day-PRE_ANN,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mvt:f.mvt||null,pr:promoClean(f.pr),ts:Date.now()}); S.set(DF_KEY,L);
+    const all=S.get(DF_KEY,[])||[], cur=all.find(x=>x&&x.gid===f.gid), mine={id:"df_"+f.gid,gid:f.gid,title,rtype:f.rtype||"",day:f.day,appr:f.day-PRE_ANN,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mvt:f.mvt||null,pr:promoClean(f.pr),ts:Date.now()};
+    /* 同團的人一起補：只蓋掉「我這次改過的地方」，別人剛存的不會被我舊的畫面蓋回去 */
+    let rec=mine; try{ if(cur){ const b=f.base||{}; rec=hbMerge(b,mine,cur); rec.ts=Date.now(); } }catch(e){ rec=mine; }
+    S.set(DF_KEY,[...all.filter(x=>x&&x.gid!==f.gid),rec]);
+    try{ const fy=(rec.pr||{}).fy||{}; if(f.sid&&Object.keys(fy).length){ const F=S.get(FAIRY_KEY,{})||{}, k="clip|"+f.sid; F[k]={...(F[k]||{}),...Object.fromEntries(Object.entries(fy).map(([m,r])=>{ const o={...r}; delete o._pv; return [m,o]; }))}; S.set(FAIRY_KEY,F); } }catch(e){}
     ui.dbF=null; layer.innerHTML=""; try{ OFM.t=0; OFS=0; }catch(e){} toast("已補上出道資料"); render(); return; }
   if(a==="cbrAdmNew"){ if(!isAdminAcct()) return; const g0=GROUPS.find(g=>g.id!=="tdm_g"); if(!g0){ toast("還沒有藝人"); return; } ui.dbF={cb:true,adm:true,gid:g0.id,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrAdmGid"){ dbKeep(); const f=ui.dbF; if(!f||!f.adm) return; f.gid=t.dataset.v; cbrForm(); return; }
