@@ -6885,7 +6885,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110121011";
+const BUILD="20261110121813";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7630,7 +7630,13 @@ const session=()=>SS.get();
    ========================================================= */
 const root=document.getElementById("root"), layer=document.getElementById("layer");
 /* 同一個面板重畫時不要重播開場動畫（避免看起來像關掉又打開） */
+/* 照片、影片檢視：如果已經開著一個頁面（公司頁、媒體頁…），就疊在它上面，關掉只關檢視器 */
+const ovl=(()=>{ const d=document.createElement("div"); d.id="ovl"; d.style.cssText="position:relative;z-index:3"; document.body.appendChild(d); return d; })();
+function ovlClose(){ ovl.querySelectorAll("video").forEach(v=>{ try{ v.pause(); }catch(e){} }); ovl.innerHTML=""; }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t||!ovl.contains(t)||t.dataset.a!=="tCloseLayer") return; if(e.target===t||t.tagName==="BUTTON"){ e.stopImmediatePropagation(); ovlClose(); } else e.stopImmediatePropagation(); },true);
 function setLayer(html,key){
+  if(/^\s*<div class="ph-view"/.test(html)&&layer.firstElementChild&&!layer.firstElementChild.classList.contains("ph-view")){ ovl.innerHTML=html; return; }
+  if(ovl.firstElementChild) ovlClose();
   const same=!!(key&&layer.firstElementChild&&layer.firstElementChild.dataset.lk===key);
   layer.innerHTML=html; const el=layer.firstElementChild;
   if(el&&key){ el.dataset.lk=key; if(same) el.classList.add("static"); }
@@ -8460,7 +8466,7 @@ function vidStream(v,mid,onFail){ const urls=[]; try{ if(HB_ON&&!sbxOn()){ if(ME
   v.addEventListener("loadedmetadata",()=>{ ok=true; clearTimeout(t); v.removeEventListener("error",next); },{once:true}); v.addEventListener("error",next); next(); }
 function vidOpen(v,mid,box){ v.addEventListener("timeupdate",function f(){ if(v.currentTime<1.2) return; v.removeEventListener("timeupdate",f); vThumbFix(mid,v); });
   const play=u=>{ const p=v.play(); if(p&&p.catch) p.catch(e=>{ if(e&&e.name==="NotAllowedError"&&!v.muted){ v.muted=true; v.play().catch(()=>{}); } }); };
-  const dl=()=>{ if(box) box.classList.add("dl"); mediaSrc(mid).then(u=>{ if(box) box.classList.remove("dl"); if(!u){ if(box) box.classList.add("on"); toast("這部影片已經不在這支手機上了"); if(!box||box.classList.contains("pv-box")) layer.innerHTML=""; return; } if(!v.isConnected) return; v.src=u; play(); }); };
+  const dl=()=>{ if(box) box.classList.add("dl"); mediaSrc(mid).then(u=>{ if(box) box.classList.remove("dl"); if(!u){ if(box) box.classList.add("on"); toast("這部影片已經不在這支手機上了"); if(!box||box.classList.contains("pv-box")){ if(box&&ovl.contains(box)) ovlClose(); else layer.innerHTML=""; } return; } if(!v.isConnected) return; v.src=u; play(); }); };
   if(mediaURL[mid]){ v.src=mediaURL[mid]; play(); return; }
   if(memBlobs[mid]){ mediaSrc(mid).then(u=>{ v.src=u; play(); }); return; }
   vidStream(v,mid,dl); }
@@ -19968,7 +19974,7 @@ const relExtra=x=>{ if(x.k!=="rel") return ""; const pr=(x.src||{}).pr||{}; if(!
 function coBodyOf(x){ const s=x.src, pr=s.pr||{}; let body="";
   if(x.k==="sched") body=pr.sched?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.sched)}"><img src="${esc(pr.sched)}" alt=""></button>`:promoSchedCard(s);
   else if(x.k==="trk") body=pr.trkImg?`<button class="cp-img" data-a="cpPh" data-v="${esc(pr.trkImg)}"><img src="${esc(pr.trkImg)}" alt=""></button>`:promoTrkCard(s);
-  else if(x.vid) body=`<button class="cp-vid" data-a="cpVid" data-v="${esc(x.vid.mid)}">${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:""}<i>▶</i></button>`;
+  else if(x.vid){ const pv=s.teaser||(s.teasers||[])[0]||((pr.cv||[]).flatMap(v=>v.ph||[]).filter(Boolean)[0])||""; body=`<button class="cp-vid" data-a="cpVid" data-v="${esc(x.vid.mid)}">${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt=""${pv?` src="${esc(pv)}"`:""}>`:pv?`<img src="${esc(pv)}" alt="">`:""}<i>▶</i></button>`; }
   else if((x.imgs||[]).length) body=x.imgs.length>1?`<div class="cp-sw"><div class="cp-swr">${x.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div><div class="cp-swd">${x.imgs.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div></div>`:`<button class="cp-img cp-one" data-a="cpPh" data-v="${esc(x.imgs[0])}"><img src="${esc(x.imgs[0])}" alt="" loading="lazy"></button>`;   /* 很多張：左右滑 */
   return body; }
 /* ---------- SOLOIST／團的官方帳號：同一套出道／回歸宣傳自動發到團社群（圖在上、帳號和文字在下） ---------- */
@@ -19982,7 +19988,7 @@ const dotYmd=ts=>{ const d=new Date(ts); return `${d.getFullYear()}.${String(d.g
 const albName=s=>{ const pr=s.pr||{}, nm=pr.album||s.title||""; return `${s.rtype?esc(s.rtype)+" ":s.k==="db"?"Debut ":""}${nm?`&lt;${esc(nm)}&gt;`:""}`.trim()||esc(s.name||""); };
 const albTitle=x=>{ const s=x.src, q=s.title?`'${s.title}' `:""; return x.k==="concept"&&x.n?`${q}Concept Photo・${x.n}`:x.k==="rel"?`${q}${x.vid?"M/V":"OUT NOW"}`:x.k==="sched"?`${q}${s.k==="db"?"Debut":"Comeback"} Schedule`:`${q}${PR_KIND[x.k]||""}`; };
 function albThumb(x){ const s=x.src, pr=s.pr||{}, imgs=x.imgs||[];
-  if(x.vid) return {a:"cpVid",v:x.vid.mid,h:`${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt="">`:s.teaser?`<img src="${esc(s.teaser)}" alt="">`:""}<i class="alb-p">▶</i>`};
+  if(x.vid){ const pv=s.teaser||(s.teasers||[])[0]||((pr.cv||[]).flatMap(v=>v.ph||[]).filter(Boolean)[0])||""; return {a:"cpVid",v:x.vid.mid,h:`${x.vid.thumb?`<img data-mid="${esc(x.vid.thumb)}" alt=""${pv?` src="${esc(pv)}"`:""}>`:pv?`<img src="${esc(pv)}" alt="">`:""}<i class="alb-p">▶</i>`}; }
   if(x.k==="sched"||x.k==="trk"){ const u=x.k==="sched"?pr.sched:pr.trkImg; if(u) return {a:"cpPh",v:u,h:`<img src="${esc(u)}" alt="" loading="lazy">`};
     return {a:"cmAlbP",v:x.id,h:`<div class="snof-sc">${x.k==="sched"?promoSchedCard(s):promoTrkCard(s)}</div>`}; }
   if(!imgs.length) return null;
@@ -20035,6 +20041,12 @@ setInterval(songPhFix,15e3); setTimeout(songPhFix,4e3);
 function ntPhClean(){ try{ const re=/《出道》出道 MV 公開/; [K.notifs,K.feed].forEach(k=>{ const L=S.get(k,[])||[], L2=L.filter(n=>!re.test(String(n&&n.text||""))); if(L2.length!==L.length) S.set(k,L2); }); }catch(e){} }
 setInterval(ntPhClean,20e3); setTimeout(ntPhClean,3e3);
 /* 影片只在上傳的人手機裡、雲端沒有（之前沒傳成功）：上傳的人打開 App 時自動補傳，大家才看得到 */
+/* 影片封面：畫面上任何還沒載入的 data-mid 縮圖都自動載入（不靠每一頁自己記得叫） */
+{ const hyd=root=>{ try{ root.querySelectorAll(".cp-vid img[data-mid]:not([data-hyd]),.alb-t img[data-mid]:not([data-hyd]),.ofm-t img[data-mid]:not([data-hyd]),.ofd-r img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid)||await (async()=>{ const b=await MDB.get(el.dataset.mid); return b?URL.createObjectURL(b):null; })(); if(u) el.src=u; }); }catch(e){} };
+  let qd=0; new MutationObserver(()=>{ if(qd) return; qd=1; requestAnimationFrame(()=>{ qd=0; hyd(document); }); }).observe(document.body,{childList:true,subtree:true}); }
+{ let tT=0; const SCR=new WeakMap(); ["touchstart","touchmove","wheel","pointerdown","keydown"].forEach(k=>document.addEventListener(k,()=>{ tT=Date.now(); },{passive:true,capture:true}));
+  document.addEventListener("scroll",e=>{ const el=e.target; if(!(el instanceof Element)||!el.matches(".tiei-body,.tst-b,.ofd-body,.sn-cl")) return; const prev=SCR.get(el)||0, cur=el.scrollTop;
+    if(cur<4&&prev>200&&Date.now()-tT>900){ el.scrollTop=prev; return; } SCR.set(el,cur); },true); }
 const MHEAL={};
 async function mediaHeal(){ try{ if(!HB_ON||!HB.tok||sbxOn()||!MEDIA_URL) return; const ids=new Set();
   (S.get(K.vods,[])||[]).forEach(v=>{ if(v&&v.mid) ids.add(v.mid); if(v&&v.thumb) ids.add(v.thumb); });
