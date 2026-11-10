@@ -6126,6 +6126,23 @@ html body .foc-conc .lsp-songs button.on{background:var(--violet);color:#fff}
 .vs-pv em{position:absolute;right:10px;bottom:10px;padding:2px 7px;border-radius:6px;background:rgba(0,0,0,.7);color:#fff;font-style:normal;font-size:12px;font-weight:700}
 .vs-re{display:block;margin:0 0 14px auto;background:none;border:0;font:inherit;font-size:13px;font-weight:700;color:var(--violet)}
 @keyframes snBump{0%{transform:scale(1)}30%{transform:scale(1.35)}55%{transform:scale(.9)}100%{transform:scale(1)}}.si.bump{animation:snBump .45s cubic-bezier(.3,1.5,.5,1)}
+/* SNS 留言：照 Instagram */
+html[data-theme="dark"] .sn-sh.cm{--sn-b:#1C1D21}
+.sn-sh.cm{max-height:82vh;min-height:62vh;border-radius:20px 20px 0 0}.sn-sh.cm .sn-grab{width:36px;background:rgba(128,128,128,.55);margin:10px auto 4px}
+.sn-cmh{display:flex;justify-content:center;align-items:center;padding:6px 0 10px}.sn-cmh b{font-size:16px;font-weight:700}
+.sn-sort{align-self:flex-start;display:flex;align-items:center;gap:6px;margin:4px 16px 2px;padding:4px 0;border:0;background:none;color:inherit;font:inherit;font-size:14px;font-weight:700;opacity:.85}.sn-sort .si{width:14px;height:14px;transform:rotate(-90deg)}
+.sn-sh.cm .sn-cl{padding:12px 16px;gap:20px}
+.sn-sh.cm .sn-cr{gap:12px;align-items:flex-start}.sn-sh.cm .sn-cr.sub{margin-left:50px}
+.sn-cb{flex:1;min-width:0}.sn-cu{display:flex;align-items:baseline;gap:6px;margin:0!important;font-size:13px!important}.sn-cu b{font-weight:700}.sn-cu time{color:#8E8E8E;font-size:12.5px}
+.sn-ct{margin:3px 0 0!important;font-size:14.5px!important;line-height:1.4}
+.sn-ca{display:flex;gap:18px;margin-top:6px}.sn-ca button{border:0;background:none;padding:0;color:#8E8E8E;font:inherit;font-size:12.5px;font-weight:700}
+.sn-sh.cm .sn-clk{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 0 0 6px;min-width:28px}.sn-sh.cm .sn-clk .si{width:18px;height:18px}.sn-sh.cm .sn-clk small{font-size:11px;color:#8E8E8E}
+.sn-sh.cm .sn-cemo{border-top:.5px solid rgba(128,128,128,.25);padding:12px 12px 4px}.sn-sh.cm .sn-cemo button{font-size:28px}
+.sn-sh.cm .sn-cf{border-top:0;padding:10px 14px calc(env(safe-area-inset-bottom,0px) + 10px);align-items:center}
+.sn-cpill{flex:1;min-width:0;display:flex;align-items:flex-end;gap:6px;border:1px solid rgba(128,128,128,.35);border-radius:24px;padding:4px 5px 4px 16px}
+.sn-sh.cm .sn-cf textarea.ag{border:0;border-radius:0;padding:9px 0;min-height:38px;background:transparent}
+.sn-csend{flex:none;display:grid;place-items:center;width:34px;height:34px;margin-bottom:2px;border-radius:50%;background:#0095F6!important;color:#fff!important;padding:0!important}
+.sn-cpill:has(textarea:placeholder-shown) .sn-csend{display:none}
 </style>
 </head>
 <body>
@@ -6651,7 +6668,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110014610";
+const BUILD="20261110020619";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -12699,7 +12716,7 @@ document.addEventListener("submit",e=>{
       { const n=document.getElementById("lin"), l2=getLive(id); if(n&&l2&&document.querySelector(".dl.host")){ n.value=""; n.dispatchEvent(new Event("input",{bubbles:true})); const sb=document.getElementById("lsend"); if(sb) sb.classList.remove("on"); const rb=document.querySelector(".host-rep2"); if(rb) rb.remove(); updateHost(l2); n.focus(); } else { render(); const n2=document.getElementById("lin"); if(n2) n2.focus(); } } if(!gst){ if(aiReady()) aiOnLive(id,"artist"); else scheduleFake(id); } }
     else { if(meBlocked()){ ui.lDraft=text; return; } if(!slowOk(text)){ ui.lDraft=text; return; } liveSay(id,"me",text); demoReplyToMe(id,text); aiOnLive(id,"me"); const i=document.getElementById("lin"); i.value=""; document.getElementById("lsend").classList.remove("on"); updateMeetRoom(); i.focus(); }
     return; }
-  if(e.target.id==="snCmForm"){ e.preventDefault(); const id=e.target.dataset.id, inp=document.getElementById("snCmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; const d=snDB(); const re=ui.snRe&&ui.snRe.p===id?ui.snRe.c:undefined; ui.snRe=null; (d.cms[id]=d.cms[id]||[]).push({id:"sc"+Date.now(),uid:snMeId(),text,ts:Date.now(),...(re?{re}:{})}); snSave(d); snOpenCm(id); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
+  if(e.target.id==="snCmForm"){ e.preventDefault(); const id=e.target.dataset.id, inp=document.getElementById("snCmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; const d=snDB(); const re=ui.snRe&&ui.snRe.p===id?ui.snRe.c:undefined; ui.snRe=null; (d.cms[id]=d.cms[id]||[]).push({id:"sc"+Date.now(),uid:snMeId(),text,ts:Date.now(),...(re?{re}:{})}); snSave(d); if(inp) inp.value=""; snOpenCm(id); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(e.target.id==="snDmForm"){ e.preventDefault(); const to=e.target.dataset.id, inp=document.getElementById("snDmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; dmAppend(snMeId(),to,{text,ts:Date.now()}); render(); const n=document.getElementById("snDmIn"); if(n) n.focus(); snFakeReply(to); return; }
   if(e.target.id==="wform"){ e.preventDefault();
     const text=(ui.wDraft||"").trim(); if(!text) return;
@@ -16187,15 +16204,20 @@ function snNotif(d){ const me=snMeId(), L=snNotifList(d); (d.ntSeen=d.ntSeen||{}
     <main class="sn-nt">${(()=>{ const R=((d.req||{})[me]||[]).map(snUser).filter(Boolean); return R.length?`<h3 class="sn-nth">追蹤要求</h3>${R.map(u=>`<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> 想要追蹤你。</p><button class="sn-fb pri" data-a="snReqOk" data-v="${u.id}">確認</button><button class="sn-fb" data-a="snReqNo" data-v="${u.id}">刪除</button></div>`).join("")}`:""; })()}${grp.length?grp.map(([t,g])=>`<h3 class="sn-nth">${t}</h3>${g.map(row).join("")}`).join(""):`<p class="sn-none">還沒有通知</p>`}</main>`; }
 
 /* 留言 */
-function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) return; const me=snMeId(), L=d.cms[id]||[];
-  setLayer(`<div class="sn-shw" data-a="tCloseLayer"><div class="sn-sh" role="dialog" aria-label="留言"><i class="sn-grab"></i><b class="sn-sht">留言</b>
-    <div class="sn-cl">${L.length?(()=>{ const ids=new Set(L.map(c=>c.id)), row=(c,sub)=>{ const u=snUser(c.uid); if(!u) return ""; const lk=c.lk||[];
-        return `<div class="sn-cr ${sub?"sub":""}">${snAv(u,sub?26:34)}<div><p><b>${esc(u.u)}</b> ${c.uid===me?snRich(c.text):trT("s:"+c.id,c.text,"","span")}</p><small>${snsAgo(c.ts)}${lk.length?` ・ ${fmt(lk.length)} 個讚`:""} ・ <button data-a="snCmRe" data-id="${id}" data-v="${c.re&&ids.has(c.re)?c.re:c.id}" data-u="${esc(u.u)}">回覆</button>${c.uid===me||isAdminAcct()||p.uid===me?` ・ <button data-a="snCmDel" data-id="${id}" data-v="${c.id}">刪除</button>`:""}</small></div><button class="sn-clk ${lk.includes(me)?"on":""}" data-a="snCmLk" data-id="${id}" data-v="${c.id}" aria-label="讚">${si("heart","sm")}</button></div>`; };
-        return L.filter(c=>!c.re||!ids.has(c.re)).map(c=>row(c)+L.filter(k=>k.re===c.id).map(k=>row(k,1)).join("")).join(""); })():`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
+function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) return; const me=snMeId(), L=d.cms[id]||[], srt=ui.snCmSort==="top"?"top":"new", old=layer.querySelector("#snCmIn"), draft=old&&layer.querySelector(".sn-sh.cm")?old.value:null, cl0=layer.querySelector(".sn-sh.cm .sn-cl"), cly=cl0?cl0.scrollTop:0, reopen=!!cl0;
+  const ids=new Set(L.map(c=>c.id)), lkN=c=>(c.lk||[]).length;
+  const row=(c,sub)=>{ const u=snUser(c.uid); if(!u) return ""; const lk=c.lk||[], mine=c.uid===me;
+    return `<div class="sn-cr ${sub?"sub":""}">${snAv(u,sub?28:38)}<div class="sn-cb"><p class="sn-cu"><b>${esc(u.u)}</b><time>${snsAgo(c.ts)}</time></p><p class="sn-ct">${mine?snRich(c.text):trT("s:"+c.id,c.text,"","span")}</p>
+      <div class="sn-ca"><button data-a="snCmRe" data-id="${id}" data-v="${c.re&&ids.has(c.re)?c.re:c.id}" data-u="${esc(u.u)}">回覆</button>${mine||isAdminAcct()||p.uid===me?`<button data-a="snCmDel" data-id="${id}" data-v="${c.id}">${mine?"刪除":"隱藏"}</button>`:""}</div></div>
+      <button class="sn-clk ${lk.includes(me)?"on":""}" data-a="snCmLk" data-id="${id}" data-v="${c.id}" aria-label="讚">${si("heart")}${lk.length?`<small>${fmt(lk.length)}</small>`:""}</button></div>`; };
+  const top=L.filter(c=>!c.re||!ids.has(c.re)).sort((a,b)=>srt==="top"?(lkN(b)-lkN(a))||(b.ts-a.ts):(b.ts-a.ts));
+  setLayer(`<div class="sn-shw" data-a="tCloseLayer"><div class="sn-sh cm" role="dialog" aria-label="留言"><i class="sn-grab"></i><div class="sn-cmh"><b>留言</b></div>
+    ${L.length?`<button class="sn-sort" data-a="snCmSort" data-id="${id}">${srt==="top"?"熱門":"最新"} ${si("chev","sm")}</button>`:""}
+    <div class="sn-cl">${L.length?top.map(c=>row(c)+L.filter(k=>k.re===c.id).sort((a,b)=>a.ts-b.ts).map(k=>row(k,1)).join("")).join(""):`<p class="sn-none">還沒有留言<br><small>開始對話吧。</small></p>`}</div>
     ${ui.snRe&&ui.snRe.p===id?`<div class="sn-reb"><span>正在回覆 ${esc(ui.snRe.u)}</span><button data-a="snCmReX" data-id="${id}" aria-label="取消">×</button></div>`:""}
     <div class="sn-cemo">${["❤️","🙌","🔥","👏","😢","😍","😮","😂"].map(x=>`<button data-a="snCmEmo" data-v="${x}">${x}</button>`).join("")}</div>
-    <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),32)}<textarea rows="1" class="ag" id="snCmIn" placeholder="新增留言…" autocomplete="off">${ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit">發佈</button></form></div></div>`,"sncm");
-  requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
+    <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),40)}<div class="sn-cpill"><textarea rows="1" class="ag" id="snCmIn" placeholder="新增留言……" autocomplete="off">${draft!=null?esc(draft):ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit" class="sn-csend" aria-label="發佈"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div></form></div></div>`,"sncm");
+  if(reopen){ const w=layer.querySelector(".sn-shw"); if(w){ w.classList.add("open"); const sh=w.querySelector(".sn-sh"); if(sh) sh.style.transition="none"; const c=w.querySelector(".sn-cl"); if(c) c.scrollTop=cly; } } else requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 /* 限時動態 */
 /* 從首頁那排點：看完會接著看下一個人；從個人檔案點：只看這個人 */
 function snOpenStory(uid,only){ const d=snDB(); const order=only?[uid]:[uid,...[...new Set(snActiveStories(d).map(s=>s.uid))].filter(x=>x!==uid&&snFol(d,snMeId()).includes(x))];
@@ -16309,6 +16331,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(!p){ const sc=document.querySelector(".sn-scroll,.sn-page,.sn"), y=sc?sc.scrollTop:window.scrollY; render(); if(sc&&document.querySelector(".sn-scroll,.sn-page,.sn")) document.querySelector(".sn-scroll,.sn-page,.sn").scrollTop=y; else window.scrollTo(0,y); }
       if(!had){ snHeartPop(id); document.querySelectorAll(`[data-a="snLike"][data-id="${CSS.escape(id)}"] .si`).forEach(el=>{ el.classList.remove("bump"); void el.getBoundingClientRect(); el.classList.add("bump"); }); } break; }
     case "snCm": snOpenCm(t.dataset.id); break;
+    case "snCmSort": { const id=t.dataset.id; iosSheet([[`最新${ui.snCmSort!=="top"?" ✓":""}`,"snCmSortSet",`data-v="new" data-id="${id}"`],[`熱門${ui.snCmSort==="top"?" ✓":""}`,"snCmSortSet",`data-v="top" data-id="${id}"`]]); break; }
+    case "snCmSortSet": ui.snCmSort=t.dataset.v; snOpenCm(t.dataset.id); break;
     case "snCmDel": { const d=snDB(), L=d.cms[t.dataset.id]||[]; d.cms[t.dataset.id]=L.filter(c=>c.id!==t.dataset.v); snSave(d); snOpenCm(t.dataset.id); toast("已刪除留言"); break; }
     case "snShare": snOpenShare(t.dataset.id); break;
     case "snShareTo": { const me=snMeId(), to=t.dataset.v; dmAppend(me,to,{text:"",post:t.dataset.id,ts:Date.now()}); layer.innerHTML=""; toast("已傳送"); snFakeReply(to); break; }
@@ -16351,7 +16375,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       snSave(d); try{ snMentNotify(dr.mode==="story"?(dr.ment||[]).map(x=>x.u):(dr.tags||[]),dr.mode==="story"?"在限時動態中提到你":"在貼文中標註了你"); }catch(e){} ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
     case "snStory": if(t.dataset.v) snOpenStory(t.dataset.v,t.dataset.o==="1"); break;
     case "snSnd": snSndToggle(); break;
-    case "snCmRe": ui.snRe={p:t.dataset.id,c:t.dataset.v,u:t.dataset.u}; snOpenCm(t.dataset.id); setTimeout(()=>{ const i=document.getElementById("snCmIn"); if(i){ i.focus(); const n=i.value.length; try{ i.setSelectionRange(n,n); }catch(e){} } },60); break;
+    case "snCmRe": { ui.snRe={p:t.dataset.id,c:t.dataset.v,u:t.dataset.u}; const i0=document.getElementById("snCmIn"); if(i0) i0.value="@"+t.dataset.u+" "; } snOpenCm(t.dataset.id); setTimeout(()=>{ const i=document.getElementById("snCmIn"); if(i){ i.focus(); const n=i.value.length; try{ i.setSelectionRange(n,n); }catch(e){} } },60); break;
     case "snCmReX": ui.snRe=null; snOpenCm(t.dataset.id); break;
     case "snCmLk": { const d=snDB(), me=snMeId(), c=(d.cms[t.dataset.id]||[]).find(x=>x.id===t.dataset.v); if(!c) break; const L=c.lk=c.lk||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else L.push(me); snSave(d); t.classList.toggle("on",i<0); const sm=t.previousElementSibling&&t.previousElementSibling.querySelector("small"); snOpenCm(t.dataset.id); break; }
     case "snEditCap": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; layer.innerHTML=""; tieModal("編輯說明",`<textarea id="snCapEd" class="a-nick-in sn-caped" rows="4" placeholder="輸入文字">${esc(p.cap||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snEditCapOk" data-id="${p.id}">完成</button>`,"row"); break; }
