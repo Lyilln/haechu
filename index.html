@@ -6885,7 +6885,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110120757";
+const BUILD="20261110121011";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10071,7 +10071,7 @@ function myFeedTop(){
   const dms=feedDMs(), f=followed(), ns=getGNotices().filter(n=>f.includes(n.group)&&!n.mv).slice(0,6); let h="";   /* MV 公開的自動公告不放這裡：下面「公司官方公告」已經有 MV */
   if(dms.length){ const d=dms[(ui.dmIdx||0)%dms.length], m=MEMBERS[d.id], g=groupOf(m.group);
     h+=`<h2 class="mf-h">有新 ${WHISPER_NAME} 喔！</h2><section class="card mf-dm">
-      <div class="mf-dm-top"><span class="av mf-av" style="background:${grad(m.g)}">${mAvIn(d.id,"tie")}</span><div class="mf-dm-i"><b>${esc(artName(d.id,"tie"))} ${I.verified}</b><small>${gTag(g)}${ago(d.ts)}</small>
+      <div class="mf-dm-top"><span class="av mf-av" style="background:${grad(m.g)}">${mAvIn(d.id,"tie")}</span><div class="mf-dm-i"><b>${esc(m.name)} ${I.verified}</b><small>${g&&!g.solo?esc(g.name)+" · ":""}${ago(d.ts)}</small>
       <button class="mf-lock" data-a="tieIntro" data-m="${d.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>立即查看是什麼內容吧！</button></div></div>
       ${dms.length>1?`<button class="mf-more" data-a="dmNext">查看其他 ${WHISPER_NAME} <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>`:""}</section>`; }
   if(ns.length) h+=`<h2 class="mf-h">最新公告</h2><div class="hl mf-ann">${ns.map((n,i)=>{const g=groupOf(n.group);return `<button class="hl-i ${i?"":"on"} card mf-an" data-a="gnOpen" data-v="${n.id}"><span class="mf-an-ic" style="background:${grad(g.g)};color:#fff">${esc(ini(g.name))}</span><span class="mf-an-b"><b>${esc(g.name)}</b><small>${esc(n.title)}</small></span><em>${ago(n.ts)}</em></button>`}).join("")}</div>`;
