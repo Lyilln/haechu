@@ -5018,6 +5018,18 @@ html body .snmi-red:not(.x-x){color:rgb(237,73,86)!important}.snmi-red b{font-we
 .snm-lock{padding:12px;border-radius:12px;background:var(--s2);font-weight:600;margin-bottom:10px}
 .snm-empty{opacity:.6;font-size:13px;padding:8px 0}
 .snm-r{display:flex;align-items:center;gap:10px}.snm-r input{flex:1}.snm-r b{flex:none;font-size:13px;font-variant-numeric:tabular-nums}
+.smp-hd{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;background:var(--s2)}
+.smp-cv{flex:none;width:48px;height:48px;border-radius:10px;overflow:hidden;display:grid;place-items:center;background:var(--s1)}.smp-cv img,.smp-cv i{width:100%;height:100%;object-fit:cover;display:grid;place-items:center;font-style:normal;color:#fff;font-weight:800}.smp-ci{background:linear-gradient(135deg,#B794FF,#FF6FA8)}.smp-ci .si{width:22px;height:22px}
+.smp-ht{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.smp-ht b{font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.smp-ht small{font-size:12.5px;color:var(--ink-3)}.smp-ht input{height:36px;padding:0 10px;font-size:15px}
+.smp-pl{flex:none;width:44px;height:44px;border-radius:50%;border:0;background:var(--violet,#8843FB);color:#fff;display:grid;place-items:center;box-shadow:0 6px 18px color-mix(in srgb,var(--violet,#8843FB) 40%,transparent)}.smp-pl .si{width:18px;height:18px;fill:currentColor}.smp-pl.on{background:var(--ink,#fff);color:var(--bg,#000)}
+.smp-time{display:flex;align-items:baseline;justify-content:center;gap:6px;margin:18px 0 10px;font-variant-numeric:tabular-nums}.smp-time b{font-size:26px;font-weight:800;letter-spacing:.02em}.smp-time span{font-size:14px;color:var(--ink-3);font-weight:600}
+.smp{position:relative;height:76px;border-radius:16px;overflow:hidden;background:var(--s2);touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}.smp.drag{cursor:grabbing}
+.smp-strip{position:absolute;left:0;top:14px;bottom:14px;display:flex;align-items:center;will-change:transform}.smp:not(.drag) .smp-strip{transition:transform .18s ease-out}
+.smp-strip i{flex:none;width:3px;margin-right:2px;border-radius:2px;background:var(--ink,#fff);opacity:.9}
+.smp-sh{position:absolute;top:0;bottom:0;width:19%;z-index:1;pointer-events:none}.smp-sh.l{left:0;background:linear-gradient(90deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))}.smp-sh.r{right:0;background:linear-gradient(270deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))}
+.smp-win{position:absolute;left:50%;top:6px;bottom:6px;transform:translateX(-50%);z-index:2;border-radius:12px;border:2.5px solid var(--violet,#8843FB);box-shadow:0 0 0 999px color-mix(in srgb,var(--s2) 55%,transparent),0 0 18px color-mix(in srgb,var(--violet,#8843FB) 45%,transparent);pointer-events:none;overflow:hidden}
+.smp-win em{position:absolute;left:0;top:0;bottom:0;width:0;background:color-mix(in srgb,var(--violet,#8843FB) 30%,transparent)}
+.smp-tip{margin:10px 0 2px;text-align:center;font-size:12.5px;color:var(--ink-3)}
 .snm-pv{margin-top:10px;border:0;border-radius:999px;padding:8px 16px;background:color-mix(in srgb,var(--violet,#8843FB) 14%,transparent);color:var(--violet,#8843FB);font:inherit;font-weight:700}
 /* 置頂公告右上角的閃爍圓點：iPhone 放大縮小（transform）會被上下裁掉 → 改成往外擴散的光圈，圓點本身不動 */
 .pin-ping{flex:none;animation:pinPing 1.4s ease-out infinite!important;transform:none!important}
@@ -6059,6 +6071,29 @@ html.coach-lock,html.coach-lock body{overflow:hidden;overscroll-behavior:none}
 .fv2-l{position:absolute;inset:0;opacity:0;transition:opacity .5s ease}.fv2-l.on{opacity:1}
 .fv2-l img,.fv2-l video{width:100%;height:100%;object-fit:cover;display:block}
 .fv2-l .fv-demo{width:100%;height:100%;border-radius:0}
+.fya{position:absolute;inset:0;overflow:hidden;background:radial-gradient(120% 90% at 50% 110%,color-mix(in srgb,var(--c1) 55%,#000) 0%,#07050d 62%);color:#fff;isolation:isolate}
+.fya-ph{position:absolute;inset:-4%;background:center 22%/cover no-repeat;animation:fyaKb 14s ease-in-out infinite alternate;filter:saturate(1.08) contrast(1.04)}
+@keyframes fyaKb{from{transform:scale(1.02) translate3d(0,0,0)}to{transform:scale(1.16) translate3d(0,-2.5%,0)}}
+.fya.ph::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,color-mix(in srgb,var(--c1) 38%,transparent) 0%,transparent 42%,transparent 60%,color-mix(in srgb,var(--c2) 40%,transparent) 100%);mix-blend-mode:screen;z-index:1;pointer-events:none}
+.fya-mono{position:absolute;left:50%;top:38%;transform:translate(-50%,-50%);font:800 clamp(64px,22vw,140px)/1 "Quicksand",system-ui,sans-serif;background:linear-gradient(160deg,#fff 10%,var(--c1) 55%,var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 28px color-mix(in srgb,var(--c2) 70%,transparent));animation:fyaPulse 3.2s ease-in-out infinite}
+@keyframes fyaPulse{50%{transform:translate(-50%,-50%) scale(1.05);filter:drop-shadow(0 0 44px color-mix(in srgb,var(--c1) 80%,transparent))}}
+.fya-beam{position:absolute;top:-30%;width:38%;height:150%;z-index:1;pointer-events:none;background:linear-gradient(180deg,color-mix(in srgb,var(--c1) 55%,transparent),transparent 75%);filter:blur(10px);opacity:.55;mix-blend-mode:screen;transform-origin:50% 0;animation:fyaBeam 6s ease-in-out infinite alternate}
+.fya-beam.b1{left:-6%;transform:rotate(-24deg)}.fya-beam.b2{left:31%;background:linear-gradient(180deg,rgba(255,255,255,.4),transparent 70%);opacity:.32;animation-duration:7.5s}.fya-beam.b3{right:-6%;transform:rotate(24deg);background:linear-gradient(180deg,color-mix(in srgb,var(--c2) 55%,transparent),transparent 75%);animation-delay:-3s}
+@keyframes fyaBeam{0%{rotate:-7deg}100%{rotate:7deg}}
+.fya-sp{position:absolute;inset:0;z-index:2;pointer-events:none}.fya-sp i{position:absolute;width:5px;height:5px;border-radius:50%;background:#fff;box-shadow:0 0 8px #fff,0 0 16px var(--c1);opacity:0;transform:scale(var(--z));animation:fyaTw 3s ease-in-out infinite}
+@keyframes fyaTw{0%,100%{opacity:0}50%{opacity:.95}}
+.fya-vg{position:absolute;inset:0;z-index:2;background:linear-gradient(0deg,rgba(0,0,0,.78) 0%,rgba(0,0,0,.2) 38%,transparent 55%),radial-gradient(130% 100% at 50% 40%,transparent 55%,rgba(0,0,0,.55))}
+.fya-logo{position:absolute;right:14px;top:12px;z-index:3;font:800 12px/1 "Quicksand",system-ui,sans-serif;letter-spacing:.14em;padding:6px 10px;border-radius:8px;background:rgba(0,0,0,.32);border:1px solid rgba(255,255,255,.22);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+.fya-live{position:absolute;left:14px;top:12px;z-index:3;display:flex;align-items:center;gap:6px;font:800 11px/1 "Quicksand",system-ui,sans-serif;letter-spacing:.16em;padding:6px 10px;border-radius:999px;background:linear-gradient(90deg,var(--c1),var(--c2))}.fya-live i{width:6px;height:6px;border-radius:50%;background:#fff;animation:fyaTw 1.4s ease-in-out infinite}
+.fya-tag{position:absolute;left:16px;right:16px;bottom:16px;z-index:3;display:flex;flex-direction:column;gap:3px;animation:fyaIn .7s .15s cubic-bezier(.2,.9,.2,1) both}
+.fya-tag em{font-style:normal;font:800 10.5px/1.2 "Quicksand",system-ui,sans-serif;letter-spacing:.18em;color:rgba(255,255,255,.75);text-transform:uppercase}
+.fya-tag b{font-size:clamp(22px,6.4vw,30px);line-height:1.15;font-weight:800;letter-spacing:.01em;text-shadow:0 2px 18px rgba(0,0,0,.5)}
+.fya-tag small{font-size:13px;color:rgba(255,255,255,.82)}
+.fya.wait .fya-tag{left:0;right:0;bottom:auto;top:58%;align-items:center;text-align:center}.fya.wait .fya-tag b{font-size:clamp(17px,4.8vw,22px)}.fya.wait .fya-mono{top:34%;font-size:clamp(70px,22vw,120px)}
+@keyframes fyaIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){.fya-ph,.fya-beam,.fya-sp i,.fya-mono,.fya-live i{animation:none}.fya-sp i{opacity:.6}}
+.mu3-r.npc button.mu3-song{border:0;background:none;padding:0;font:inherit;color:inherit;text-align:left}
+.fy-fix{padding:14px!important}.fy-fix-r{display:flex;gap:14px;align-items:center}.fy-fix .fy-s{flex:none;width:76px}.fy-fix-t{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.fy-fix-t b{font-size:15px}.fy-fix-t small{font-size:12.5px;color:var(--ink-3);line-height:1.5}
 .fv2-prog{position:absolute;left:0;right:0;bottom:0;height:3px;background:rgba(255,255,255,.18);z-index:2}.fv2-prog em{display:block;height:100%;width:0;background:#fff;transition:width .2s linear}
 
 /* 公司官方帳號 */
@@ -6913,7 +6948,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261110165302";
+const BUILD="20261110170423";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -18802,15 +18837,39 @@ async function snMusSong(sid){ const x=songOf(sid), g=x&&groupOf(x.gid); if(!x||
   }catch(e){} try{ c.close(); }catch(e){}
   if(!buf){ toast(gotAny?"這首歌的音訊讀不出來":v?"MV 影片還沒傳到雲端，請上傳的人打開 App 一次":"這首歌還沒有 MV 或音訊"); return; }
   snMusBuf=buf; ui.snMusT={title:x.title,artist:g.name,gid:x.gid,sid:x.id,src:"app",start:0,dur:buf.duration}; snMusSheet(); }
-function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */ const max=Math.max(0,Math.floor(t.dur-SN_MUS_LEN));
-  tieModal("加入音樂",`${t.src?`<div class="snm-lock">${si("note","sm")}${esc(snMusLabel(t))}</div>`:`<span class="fs-f-lab">歌名</span><input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="輸入文字" value="${esc(t.title)}">`}
-    <span class="fs-f-lab">從哪裡開始（${SN_MUS_LEN} 秒）</span><div class="snm-r"><input type="range" id="snMusSt" min="0" max="${max}" step="1" value="${t.start}" ${max?"":"disabled"}><b id="snMusLb">${fmtDur(t.start)}–${fmtDur(Math.min(t.dur,t.start+SN_MUS_LEN))}</b></div>
-    <button class="snm-pv" data-a="snMusPv" type="button">${si("play","sm")}試聽</button>`,`<button class="t-mbtn main" data-a="snMusOk">完成</button><button class="t-mbtn" data-a="snMusX">取消</button>`); }
-let snMusPvSrc=null, snMusPvCtx=null;
-function snMusPvStop(){ try{ if(snMusPvSrc) snMusPvSrc.stop(); }catch(e){} snMusPvSrc=null; const b=document.querySelector(".snm-pv"); if(b) b.innerHTML=si("play","sm")+"試聽"; }
+/* 挑片段：像 IG 一樣，中間一個固定的 30 秒框，用手指左右拖整條聲波（手機好用，不用對準小小的滑桿） */
+const SMP={bw:5,win:0,pps:0,peaks:null,drag:null};
+function snMusPeaks(buf,n){ const d=buf.getChannelData(0), step=Math.max(1,Math.floor(d.length/n)), out=[]; let mx=0;
+  for(let i=0;i<n;i++){ let m=0; const a=i*step, e=Math.min(d.length,a+step), st=Math.max(1,Math.floor(step/60)); for(let j=a;j<e;j+=st){ const v=Math.abs(d[j]); if(v>m) m=v; } out.push(m); if(m>mx) mx=m; }
+  return out.map(v=>Math.max(.12,Math.pow(v/(mx||1),.8))); }
+function snMusSheet(){ const t=ui.snMusT; if(!t) return; { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } }   /* 在限動編輯裡加音樂：先把編輯畫面收起來，選完再放回去 */
+  const cov=t.src==="app"&&t.gid?songCover(t.gid,t.title):`<i class="smp-ci">${si("music")}</i>`;
+  tieModal("加入音樂",`<div class="smp-hd"><span class="smp-cv">${cov}</span><span class="smp-ht">${t.src?`<b>${esc(t.title||"音樂")}</b><small>${esc(snMusArt(t)||"")}</small>`:`<input id="snMusTi" class="a-nick-in" maxlength="40" placeholder="歌名" value="${esc(t.title)}"><small>原始音訊</small>`}</span>
+      <button class="smp-pl" data-a="snMusPv" type="button" aria-label="試聽">${si("play")}</button></div>
+    <div class="smp-time"><b id="snMusLb">${fmtDur(t.start)}</b><span id="snMusLb2">– ${fmtDur(Math.min(t.dur,t.start+SN_MUS_LEN))}</span></div>
+    <div class="smp" id="smp"><div class="smp-strip" id="smpS"></div><i class="smp-sh l"></i><i class="smp-sh r"></i><div class="smp-win" id="smpW"><em id="smpPg"></em></div></div>
+    <p class="smp-tip">${t.dur>SN_MUS_LEN+1?"左右拖曳聲波，選要用的 30 秒":"這首不到 30 秒，會用整首"}</p>`,`<button class="t-mbtn main" data-a="snMusOk">完成</button><button class="t-mbtn" data-a="snMusX">取消</button>`);
+  requestAnimationFrame(snMusLay); }
+function snMusLay(){ const box=document.getElementById("smp"), strip=document.getElementById("smpS"), t=ui.snMusT; if(!box||!strip||!t||!snMusBuf) return;
+  const CW=box.clientWidth, W=Math.round(Math.min(CW*.62,240)), bw=SMP.bw; SMP.win=W; SMP.pps=W/SN_MUS_LEN; const n=Math.max(8,Math.ceil(t.dur*SMP.pps/bw));
+  if(!SMP.peaks||SMP.peaks.n!==n||SMP.peaks.buf!==snMusBuf){ SMP.peaks={n,buf:snMusBuf,v:snMusPeaks(snMusBuf,n)}; }
+  strip.innerHTML=SMP.peaks.v.map(v=>`<i style="height:${Math.round(v*100)}%"></i>`).join(""); strip.style.width=n*bw+"px";
+  const w=document.getElementById("smpW"); w.style.width=Math.min(W,n*bw)+"px"; snMusPos(); }
+function snMusMax(){ const t=ui.snMusT; return Math.max(0,t.dur-SN_MUS_LEN); }
+function snMusPos(){ const t=ui.snMusT, box=document.getElementById("smp"), strip=document.getElementById("smpS"); if(!t||!box||!strip) return;
+  const left=(box.clientWidth-Math.min(SMP.win,parseFloat(strip.style.width)||SMP.win))/2; strip.style.transform=`translate3d(${left-t.start*SMP.pps}px,0,0)`;
+  const a=document.getElementById("snMusLb"), b=document.getElementById("snMusLb2"); if(a) a.textContent=fmtDur(t.start); if(b) b.textContent="– "+fmtDur(Math.min(t.dur,t.start+SN_MUS_LEN)); }
+document.addEventListener("pointerdown",e=>{ const box=e.target.closest&&e.target.closest("#smp"); if(!box||!ui.snMusT) return; e.preventDefault(); try{ box.setPointerCapture(e.pointerId); }catch(x){} SMP.drag={x:e.clientX,s:ui.snMusT.start,id:e.pointerId,moved:0}; box.classList.add("drag"); if(snMusPvSrc) snMusPvStop(); });
+document.addEventListener("pointermove",e=>{ const d=SMP.drag; if(!d||e.pointerId!==d.id||!ui.snMusT) return; const dx=e.clientX-d.x; if(Math.abs(dx)>3) d.moved=1; ui.snMusT.start=Math.max(0,Math.min(snMusMax(),d.s-dx/SMP.pps)); snMusPos(); });
+const snMusUp=e=>{ const d=SMP.drag; if(!d||e.pointerId!==d.id) return; SMP.drag=null; const box=document.getElementById("smp"); if(box) box.classList.remove("drag"); if(!ui.snMusT) return; ui.snMusT.start=Math.round(ui.snMusT.start); snMusPos(); if(d.moved) snMusPv(); };   /* 放開就從新的位置試聽 */
+document.addEventListener("pointerup",snMusUp); document.addEventListener("pointercancel",snMusUp);
+window.addEventListener("resize",()=>{ if(document.getElementById("smp")) snMusLay(); });
+let snMusPvSrc=null, snMusPvCtx=null, snMusPvT=0;
+function snMusPvStop(){ try{ if(snMusPvSrc) snMusPvSrc.stop(); }catch(e){} snMusPvSrc=null; cancelAnimationFrame(snMusPvT); const b=document.querySelector(".smp-pl"); if(b){ b.innerHTML=si("play"); b.classList.remove("on"); } const pg=document.getElementById("smpPg"); if(pg) pg.style.width="0"; }
 function snMusPv(){ if(snMusPvSrc){ snMusPvStop(); return; } try{ const AC=window.AudioContext||window.webkitAudioContext; snMusPvCtx=snMusPvCtx||new AC(); snMusPvCtx.resume&&snMusPvCtx.resume();
-  const s=snMusPvCtx.createBufferSource(); s.buffer=snMusBuf; s.connect(snMusPvCtx.destination); s.start(0,ui.snMusT.start,SN_MUS_LEN); s.onended=()=>{ if(snMusPvSrc===s) snMusPvStop(); }; snMusPvSrc=s; const b=document.querySelector(".snm-pv"); if(b) b.innerHTML=si("stop","sm")+"停止"; }catch(e){} }
-document.addEventListener("input",e=>{ if(e.target.id!=="snMusSt"||!ui.snMusT) return; const t=ui.snMusT; t.start=+e.target.value; const l=document.getElementById("snMusLb"); if(l) l.textContent=`${fmtDur(t.start)}–${fmtDur(Math.min(t.dur,t.start+SN_MUS_LEN))}`; if(snMusPvSrc){ snMusPvStop(); snMusPv(); } });
+  const s=snMusPvCtx.createBufferSource(), len=Math.min(SN_MUS_LEN,ui.snMusT.dur-ui.snMusT.start); s.buffer=snMusBuf; s.connect(snMusPvCtx.destination); s.start(0,ui.snMusT.start,len); s.onended=()=>{ if(snMusPvSrc===s) snMusPvStop(); }; snMusPvSrc=s;
+  const b=document.querySelector(".smp-pl"); if(b){ b.innerHTML=si("stop"); b.classList.add("on"); }
+  const t0=snMusPvCtx.currentTime, tick=()=>{ if(snMusPvSrc!==s) return; const pg=document.getElementById("smpPg"); if(pg) pg.style.width=Math.min(100,(snMusPvCtx.currentTime-t0)/len*100)+"%"; snMusPvT=requestAnimationFrame(tick); }; tick(); }catch(e){} }
 /* 剪出 30 秒、轉成單聲道 22kHz；能轉 MP3 就轉（小很多） */
 async function snMusCut(buf,start){ const sr=22050, len=Math.min(SN_MUS_LEN,buf.duration-start), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(1,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf;
   const g=oc.createGain(); s.connect(g); g.connect(oc.destination); g.gain.setValueAtTime(0,0); g.gain.linearRampToValueAtTime(1,.4); g.gain.setValueAtTime(1,Math.max(.5,len-1)); g.gain.linearRampToValueAtTime(0,len);   /* 頭尾淡入淡出 */
@@ -19228,7 +19287,7 @@ function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&
     ["藝人","選要補資料的 SOLOIST／團（要先有出道曲）",G.length?`<div class="chips wrap">${G.map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrDfGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`:`<p class="dbx-d">還沒有已經出道的團</p>`],
     ["作品","出道專輯和出道曲",dbWorkF(f,"cbTitle","出道曲")],
     ["宣傳素材",`會當作出道那時候發的：照出道日 ${f.day?mdTxt(f.day):""} 往前排，不會出現在動態最上面`,dbPromoF(f,"")],
-    ...((groupOf(gid)||{}).solo?[]:[["結尾妖精","每位成員放一段，打歌時每個節目會揭曉",dbFairyF(f)]]),
+    ["結尾妖精",(groupOf(gid)||{}).solo?"放一段本人的結尾妖精，每個打歌節目都會播":"每位成員放一段，打歌時每個節目會揭曉",dbFairyF(f)],
     ["出道當天","",dbDayF(f,"出道")]]); }
 function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfForm(); const gid=f.gid, min=cbrMin(gid); f.tx=f.tx||[]; f.txP=f.txP||[];
   const tp=f.tPrev||f.teaser, t=tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`, vid=(v,pv)=>v?(pv?`<img src="${esc(pv)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
@@ -19392,7 +19451,7 @@ function viewPromo(){
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
       return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid,s.title)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
-      .concat(rk&&R.length?npcRivals(id,wk).map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><span class="mu3-song"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></span><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
+      .concat(rk&&R.length?npcRivals(id,wk).map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
       .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
@@ -19578,21 +19637,39 @@ async function fairyUploadFile(f){ const th=await videoThumb(f); const dur=th&&t
   if(!await hbUpload(id,f)){ toast("影片沒有上傳成功，請再試一次"); return null; } memBlobs[id]=f; return {m:id,v:1,th:thumb,dur,ts:Date.now(),_pv:pv}; }
 function fairySetClips(sid,M){ const F=S.get(FAIRY_KEY,{})||{}, k="clip|"+sid, o={...(F[k]||{})}; Object.keys(M).forEach(m=>{ const r={...M[m]}; delete r._pv; if(!o[m]) o[m]=r; }); F[k]=o; S.set(FAIRY_KEY,F); }
 function fairyPickFile(cb){ const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*"; inp.onchange=()=>{ const f=inp.files&&inp.files[0]; if(f) cb(f); }; pickClick(inp); }
+/* 自動結尾妖精畫面：舞台燈光＋藝人照片慢慢推近＋閃光＋節目字卡（沒有片段、還沒揭曉、虛擬歌手都用這個） */
+const FY_C={ts:["#FF8A00","#FF3D6E"],sc:["#FF4FA3","#7B5CFF"],mcd:["#00C2FF","#7A3CFF"],mb:["#FFC83D","#FF4141"],ink:["#3DDC97","#2E7BFF"]};
+function fyStage(F,it){ const sh=SHOWS.find(x=>x.id===F.show)||{}, c=FY_C[F.show]||["#B794FF","#FF6FA8"], s=F.s, g=F.g||{};
+  const mid=it&&it.mid&&MEMBERS[it.mid]?it.mid:"", gid=(it&&it.gid)||s.gid||"";
+  const ph=it?(mid?(mPhoto(mid)||(artProf(mid)||{}).avatar||""):"")||(gid?gPhoto(gid):"")||(gid?albCov(gid,s.title):""):"";
+  const name=it?(mid?stageNm(mid):(it.name||g.name||"")):"";
+  const sp=Array.from({length:14},(_,i)=>{ const h=strHash(F.show+i+name); return `<i style="left:${h%100}%;top:${(h>>>7)%100}%;animation-delay:${((h>>>3)%30)/10}s;--z:${.5+((h>>>11)%10)/10}"></i>`; }).join("");
+  const wait=!it, when=wait&&F.wait?`${mdTxt(F.wait)}（${WDAY[new Date(F.wait).getDay()]}）${hm(F.wait)}`:"";
+  return `<div class="fya ${ph?"ph":"no"} ${wait?"wait":""}" style="--c1:${c[0]};--c2:${c[1]}">
+    ${ph?`<span class="fya-ph" style="background-image:url('${esc(ph)}')"></span>`:`<span class="fya-mono">${esc(wait?"?":(name||"?").slice(0,1).toUpperCase())}</span>`}
+    <i class="fya-beam b1"></i><i class="fya-beam b2"></i><i class="fya-beam b3"></i><span class="fya-sp">${sp}</span><span class="fya-vg"></span>
+    <span class="fya-logo">${esc(sh.name||"")}</span>${wait?"":`<span class="fya-live"><i></i>ENDING FAIRY</span>`}
+    <div class="fya-tag">${wait?`<em>這週的結尾妖精</em><b>${when?esc(when)+" 揭曉":"播出後揭曉"}</b><small>節目播出時才知道是誰 🧚</small>`:`<em>${esc(sh.name||"")} · ENDING FAIRY</em><b>${esc(name)}</b><small>《${esc(s.title||"")}》</small>`}</div></div>`; }
 /* 粉絲：點歌 → 全螢幕播結尾妖精 */
 let FV=null;
-async function fairyView(sid,show,from){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), sh=SHOWS.find(x=>x.id===show)||{}, wk=curWeek(), picks=fairyPick(sid,show,wk), up=fairyUps(sid,show,wk);
-  let L=fairySlots(sid,show,wk).filter(Boolean).map(x=>({mid:x.by,...x}));
-  if(s.demo&&!L.length) L=Array.from({length:fairyN(sid,show)},(_,i)=>({mid:(picks[i%Math.max(1,picks.length)]||"d"+i),demo:1}));   /* 示範：用色塊代替 */
+async function fairyView(sid,show,from,npc){ const s=npc?{id:"npc",title:npc.title,gid:"",npc:1}:songOf(sid); if(!s) return; const g=npc?{name:npc.name,g:strHash(npc.name)%8}:groupOf(s.gid), sh=SHOWS.find(x=>x.id===show)||{}, wk=curWeek();
+  /* 誰是結尾妖精：有片段播片段；沒放片段（結尾妖精上線前出道的、虛擬歌手）就用自動做的舞台畫面，不會空空的 */
+  let L=[], wait=0;
+  if(npc){ if(!showEnded(show,wk)) wait=showEndTs(show,wk); else L=[{auto:1,name:npc.name}]; }
+  else { const st=fairyStage(sid,show,wk), aired=st?Date.now()>=st.ts:showEnded(show,wk), C=fairyClips(sid);
+    if(!aired&&!s.demo) wait=st?st.ts:showEndTs(show,wk);
+    else { let mids=st?stMids(st):[]; if(!mids.length&&(g&&g.solo||s.demo)) mids=groupArtists(s.gid).slice(0,1); if(!mids.length) mids=fairyWhoL(sid,show,wk,true);
+      L=mids.length?mids.map(m=>C[m]?{mid:m,...C[m]}:{mid:m,auto:1}):[{auto:1,gid:s.gid}]; } }
   fairyClose(1); const ov=document.createElement("div"); ov.className="fv2 s-"+show; ov.setAttribute("role","dialog"); ov.setAttribute("aria-label","結尾妖精");
   ov.innerHTML=`<div class="fv2-bg" data-a="fvClose"></div><div class="fv2-box"><div class="fv2-card"><div class="fv2-st" id="fvSt"></div>${L.length>1&&!(g&&g.solo)?`<button class="fv2-prev" data-a="fvPrev" aria-label="上一位"></button><button class="fv2-next" data-a="fvNext" aria-label="下一位"></button>`:""}<i class="fv2-prog"><em id="fvProg"></em></i></div>
-    <div class="fv2-ti"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}・${esc(sh.name||"")} 結尾妖精</small></span><button class="fv2-x" data-a="fvClose" aria-label="關閉">${XI}</button></div></div>`;
-  document.body.appendChild(ov); document.documentElement.classList.add("fv-lock"); FV={s,show,L,i:-1,t:0,au:null,ov,from,t0:Date.now(),dur:s.demo?20:30};
+    <div class="fv2-ti"><span class="mu2-cv sm${npc?" npc":""}">${npc?esc(String(npc.name||"?")[0]):songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}・${esc(sh.name||"")} 結尾妖精</small></span><button class="fv2-x" data-a="fvClose" aria-label="關閉">${XI}</button></div></div>`;
+  document.body.appendChild(ov); document.documentElement.classList.add("fv-lock"); FV={s,g,show,L,wait,i:-1,t:0,au:null,ov,from,t0:Date.now(),dur:s.demo||npc?20:30};
   const c=ov.querySelector(".fv2-card"), r=c.getBoundingClientRect(), f=from&&from.isConnected?from.getBoundingClientRect():null;
   if(f&&r.width){ c.style.transform=`translate(${f.left-r.left}px,${f.top-r.top}px) scale(${f.width/r.width},${f.height/r.height})`; c.getBoundingClientRect(); }
   requestAnimationFrame(()=>{ ov.classList.add("on"); c.style.transform=""; });
   fairyTick(); FV.t=setInterval(fairyTick,200);
   /* 歌放多久，結尾妖精就播多久：歌的長度平分給每一位妖精 */
-  try{ const b=await songAudio(s); if(b&&FV&&FV.s===s){ const a=new Audio(URL.createObjectURL(b)); a.playsInline=true; FV.au=a;
+  try{ const b=npc?null:await songAudio(s); if(b&&FV&&FV.s===s){ const a=new Audio(URL.createObjectURL(b)); a.playsInline=true; FV.au=a;
       a.addEventListener("loadedmetadata",()=>{ if(FV&&FV.au===a&&isFinite(a.duration)&&a.duration>3){ FV.dur=a.duration; } });
       a.addEventListener("ended",()=>{ if(FV&&FV.au===a) fairyClose(); });
       a.play().then(()=>{ if(FV&&FV.au===a) FV.t0=Date.now()-a.currentTime*1000; }).catch(()=>{}); fairyMute(); } }catch(e){} }
@@ -19606,9 +19683,9 @@ function fairyTick(){ if(!FV) return; const a=FV.au, sec=a&&!a.paused&&a.current
 function fairyGo(d){ if(!FV||FV.L.length<2) return; const n=FV.L.length, a=FV.au, sec=a&&!a.paused&&a.currentTime>0?a.currentTime:(Date.now()-FV.t0)/1000; FV.man={i:((FV.i+d)%n+n)%n,at:sec}; FV.i=FV.man.i; fairyShow(); }
 function fairyShow(){ if(!FV) return; const st=document.getElementById("fvSt"); if(!st){ fairyStop(); return; } const it=FV.L[FV.i];
   const nm=it&&MEMBERS[it.mid]?stageNm(it.mid):"";
-  if(!it){ const ok=showEnded(FV.show,curWeek()); st.innerHTML=`<div class="fv-none">${songCover(FV.s.gid,FV.s.title)}<b>${ok?"這週沒有結尾妖精":`這週的結尾妖精 ${showEndTxt(FV.show)} 揭曉`}</b></div>`; return; }
+  if(!it){ st.innerHTML=fyStage(FV,null); return; }
   const box=document.createElement("div"); box.className="fv2-l";
-  if(it.demo) box.innerHTML=`<div class="fv-demo" style="background:${grad(strHash(it.mid)%8)}"><b>${esc(nm||"結尾妖精")}</b><small>示範</small></div>`;
+  if(it.auto||it.demo) box.innerHTML=fyStage(FV,it);
   else if(it.v){ box.innerHTML=`<video playsinline autoplay loop ${FV.au?"muted":""}></video><span class="fv-nm">${esc(nm)}</span>`; const v=box.querySelector("video"); mediaSrc(it.m).then(u=>{ if(u&&v.isConnected){ v.src=u; v.play().catch(()=>{}); } }); }
   else box.innerHTML=`<img src="${esc(it.m)}" alt=""><span class="fv-nm">${esc(nm)}</span>`;
   st.appendChild(box); requestAnimationFrame(()=>box.classList.add("on"));   /* 淡入，舊的淡出後拿掉 */
@@ -19627,14 +19704,20 @@ window.addEventListener("pagehide",()=>fairyClose(1)); window.addEventListener("
 /* 藝人：打歌戰況裡上傳自己的結尾妖精 */
 const fairyThumb=(c,lab,act,mine)=>`<button class="fy-s ${c?"on":""} ${mine?"me":""}" ${act?act:"disabled"} aria-label="${esc(lab)} 的結尾妖精">${c?`${c._pv||c.th?`<img src="${esc(c._pv||c.th)}" alt="">`:""}<i>▶</i>`:`<b>＋</b>`}<em>${esc(lab)}</em></button>`;
 /* 打歌戰況：只看結尾妖精揭曉結果（片段在出道／回歸申請頁放；SOLOIST 不顯示） */
-function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid); if(!s||s._done||s.demo) return ""; const g=groupOf(gid)||{}; if(g.solo||groupArtists(gid).length<2) return "";
-  const P=fairyPlan(s.id); if(!P) return ""; const now=Date.now(), past=P.filter(x=>x.ts<=now).slice(-3), next=P.filter(x=>x.ts>now).slice(0,4), nm=x=>(SHOWS.find(y=>y.id===x.show)||{}).name||"", dt=t=>`${mdTxt(t)}（${WDAY[new Date(t).getDay()]}）${hm(t)}`;
+function fairyArtHtml(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid); if(!s||s._done||s.demo) return ""; const g=groupOf(gid)||{};
+  /* 補救：結尾妖精上線前就出道的歌，自己補放一段（SOLOIST 也可以；沒放的話打歌時會用自動舞台畫面） */
+  const mine=fairyClips(s.id)[mid], solo=g.solo||groupArtists(gid).length<2;
+  const up=`<section class="card fy-fix"><div class="fy-fix-r">${fairyThumb(mine,mine?"換一段":"放片段",`data-a="fyUp" data-v="${esc(mid)}"`,true)}<div class="fy-fix-t"><b>${mine?"你的結尾妖精放好了":"補放你的結尾妖精"}</b><small>《${esc(s.title)}》・影片最多 ${FAIRY_MAX_SEC} 秒・只能放人設的片段</small><small>${mine?"點左邊可以換一段。":"這首歌在結尾妖精上線前就發行了，現在放好，下一場打歌就會播出；沒放的話會用自動的舞台畫面。"}</small></div></div></section>`;
+  if(solo) return `<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>${up}`;
+  const upG=mine?"":up;
+  const P=fairyPlan(s.id); if(!P) return upG?`<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>${upG}`:""; const now=Date.now(), past=P.filter(x=>x.ts<=now).slice(-3), next=P.filter(x=>x.ts>now).slice(0,4), nm=x=>(SHOWS.find(y=>y.id===x.show)||{}).name||"", dt=t=>`${mdTxt(t)}（${WDAY[new Date(t).getDay()]}）${hm(t)}`;
   const who=x=>{ const L=stMids(x); return L.length?(L.includes(mid)?"🧚 你！"+(L.length>1?`＋${L.filter(m=>m!==mid).map(m=>esc(stageNm(m))).join("、")}`:""):L.map(m=>esc(stageNm(m))).join("、")):"—"; };
   const nx=next[0];
-  return `<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>
+  return `<div class="section-h fy-hh">結尾妖精<button class="i-tip" data-a="fyInfo" aria-label="結尾妖精說明">i</button></div>${upG}
     <section class="card fy-a"><details class="fy-dt"><summary><span>${nx?`下一場：${nm(nx)}・${dt(nx.ts)} 揭曉`:"這次打歌的結尾妖精都揭曉了"}</span>${past.length?`<i>看結果</i>`:""}</summary>${past.length?`<div class="fy-res">${past.map(x=>`<div class="fy-rr done"><b>${nm(x)}<small> ${mdTxt(x.ts)}</small></b><span>${who(x)}</span></div>`).join("")}</div>`:""}</details></section>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muFairy"){ e.stopImmediatePropagation(); fairyView(t.dataset.v,t.dataset.s,t.closest(".mu3-r")||t); return; }
+  if(a==="muFairyNpc"){ e.stopImmediatePropagation(); fairyView("",t.dataset.s,t.closest(".mu3-r")||t,{name:t.dataset.n,title:t.dataset.t}); return; }
   if(a==="fvNext"||a==="fvPrev"){ e.stopImmediatePropagation(); fairyGo(a==="fvNext"?1:-1); return; }
   if(a==="fvClose"){ e.stopImmediatePropagation(); fairyClose(); return; }
   if(a==="fyInfo"){ e.stopImmediatePropagation(); tieModal("結尾妖精",`<p class="fy-info">音樂節目的舞台最後，鏡頭會特寫成員大約 3 秒，這就是結尾妖精，有時候是一位，有時候是兩三位一起。<br><br>結尾妖精片段在申請出道／回歸時放好（影片，最多 ${FAIRY_MAX_SEC} 秒）。<br>⚠️ 只能放<b>人設（皮相）</b>的結尾妖精片段，不能放自己或其他人。<br><br>每個節目播出時才會揭曉，被選中的成員會有獎勵 🧚</p>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); return; }
