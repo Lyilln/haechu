@@ -109,9 +109,9 @@ let NAVP=null;
 /* 解鎖：在 TIE 傳一則訊息給 LUMI，就解鎖下一個玩法（SNS → FEST → LIGHT → JOIN） */
 /* 試玩的 TIE 只能傳 3 則（不管 LUMI 有沒有回）：第 1 則解鎖 SNS、第 2 則 FEST、第 3 則 LIGHT＋JOIN */
 const TRY_MAX=3, fanN=()=>CH.msgs.filter(m=>m.from==="fan").length, tryLeft=()=>Math.max(0,TRY_MAX-fanN());
-/* 解鎖順序（一關接一關）：TIE 傳一則 → SNS；SNS 按一個讚 → FEST；FEST 投一票 → LIGHT＋JOIN */
-const UNL_REQ={sns:()=>`在 TIE 傳一則訊息給 ${IDOL.name}`,show:()=>"在 SNS 幫一則貼文按讚",ls:()=>"在 FEST 投一票",end:()=>"在 FEST 投一票"};
-const unlSet=()=>{ const s=new Set(["tie"]); if(fanN()>=1) s.add("sns"); if(s.has("sns")&&ST.done.sns) s.add("show"); if(s.has("show")&&ST.done.show){ s.add("ls"); s.add("end"); } return s; };
+/* 解鎖順序（一關接一關）：TIE 傳一則 → SNS；SNS 按一個讚 → FEST；FEST 投一票 → LIGHT；應援棒晃一下 → JOIN */
+const UNL_REQ={sns:()=>`在 TIE 傳一則訊息給 ${IDOL.name}`,show:()=>"在 SNS 幫一則貼文按讚",ls:()=>"在 FEST 投一票",end:()=>"在 LIGHT 晃一下應援棒"};
+const unlSet=()=>{ const s=new Set(["tie"]); if(fanN()>=1) s.add("sns"); if(s.has("sns")&&ST.done.sns) s.add("show"); if(s.has("show")&&ST.done.show) s.add("ls"); if(s.has("ls")&&ST.done.ls) s.add("end"); return s; };
 const isUnl=k=>!TABS.some(x=>x[0]===k)||unlSet().has(k);
 let UNL_NEW=null;
 /* 做完一件事後呼叫：有新解鎖的分頁就跳提示、導覽列那顆彈一下 */
@@ -171,7 +171,7 @@ function showRows(){ const base=[{t:"Starlight",a:"LUMI",sc:2380,me:1},{t:"Glass
 function showHtml(){ const R=showRows(), lead=R[0], open=ST.showOpen||"ts";
   const cv=x=>`<span class="mu2-cv npc" style="background:${x.me?"linear-gradient(135deg,#B794FF,#FF8FC2)":""}">${esc(x.a[0])}</span>`;
   const rows=R.map((x,i)=>`<div class="mu3-r ${x.me?"":"npc"}"><span class="mu3-n">${i+1}</span><span class="mu3-song">${cv(x)}<span class="mu3-t"><b>${esc(x.t)}</b><small>${esc(x.a)}</small></span></span><span class="mu3-sc">${fmtN(x.sc)}</span>${x.me?(ST.voted?`<span class="mu3-stamp pop">已投</span>`:`<button class="mu3-vote" data-vote="1">${MU_IC.tk}<span>投票</span></button>`):""}</div>`).join("");
-  return head("FEST")+`<main class="page mu3">${hint(`每個節目每天可以投 1 票，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 ${IDOL.name} 是第 2 名，幫她一把！`)}${!isUnl("ls")?`<p class="tz-unl">🔒 投一票，就解鎖 LIGHT 和 JOIN</p>`:""}
+  return head("FEST")+`<main class="page mu3">${hint(`每個節目每天可以投 1 票，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 ${IDOL.name} 是第 2 名，幫她一把！`)}${!isUnl("ls")?`<p class="tz-unl">🔒 投一票，就解鎖 LIGHT</p>`:""}
     <section class="mu2-wk mu3-wk t-r"><span class="mu2-chip">排名週</span><span class="mu2-wt"><b>每個節目每天可以投 1 票</b></span></section>
     <div class="mu2-h"><h3>音樂節目</h3></div>
     <div class="mu3-list">${MU_SHN.map(([id,n1,n2],k)=>{ const on=open===id, me=k===0;
@@ -183,11 +183,11 @@ function showHtml(){ const R=showRows(), lead=R[0], open=ST.showOpen||"ts";
 const COLS=["#C7AEFF","#FF8FC2","#7FE0FF","#FFE08A","#9CF5B5"];
 let LSD=null; const lsDesign=()=>LSD||(LSD=LS3D.analyze(LS3D.sample("round","#B794FF","#FF8FC2","L")));
 function lsHtml(){ return head("LIGHT")+`<main class="page">${hint("<b>左右拖動</b>揮舞、<b>上下拖動</b>前後搖擺，揮得越用力越亮。演唱會時，全場的應援棒會跟著音樂一起亮！")}
-  <section class="card tz-ls"><div class="ls-box tz-lsb" id="lsBox"></div>
+  ${!isUnl("end")?`<p class="tz-unl" id="lsLock">🔒 晃一下應援棒，就解鎖 JOIN</p>`:""}<section class="card tz-ls"><div class="ls-box tz-lsb" id="lsBox"></div>
   <div class="tz-cols">${COLS.map(c=>`<button class="${c===ST.col?"on":""}" data-col="${c}" style="background:${c}" aria-label="換顏色"></button>`).join("")}</div>
   <p id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下 💜`:"拖動應援棒揮揮看"}</p></section></main>`; }
 let lsAcc=0;
-function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; } }}); }catch(e){ el.innerHTML=""; } }
+function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ if(!ST.done.ls&&v>1){ const u0=unlSet(); done("ls"); unlCheck(u0); const nv=document.querySelector("nav.nav"); if(nv) nv.outerHTML=navBar(ST.tab); const k=document.getElementById("lsLock"); if(k) k.remove(); }   /* 晃一下就解鎖 JOIN（不重畫整頁，應援棒不會斷） */ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; } }}); }catch(e){ el.innerHTML=""; } }
 
 /* ---------- 結尾 ---------- */
 function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>真正的 HAECHU 裡，偶像都是社群裡的真人，每天都在發生新的事。</p>
@@ -200,7 +200,7 @@ function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是
 function done(k){ if(ST.done[k]) return; ST.done[k]=1; LS.set("done",ST.done); }
 function render(){
   if(ST.tab==="intro"){ root.innerHTML=`<div class="app no-nav"><div class="tz-in"><span class="tz-av">L</span><h1>來當一次粉絲吧！</h1><p>這是 HAECHU 的試玩，不用帳號。<br>示範偶像 <b>${IDOL.name}</b> 會陪你玩一遍。</p>
-    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["🔓",`一關接一關解鎖：傳 TIE → SNS 按讚 → FEST 投票（TIE 最多 3 則）`],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮 3D 應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
+    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["🔓",`一關接一關解鎖：傳 TIE → SNS 按讚 → FEST 投票 → 晃應援棒（TIE 最多 3 則）`],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮 3D 應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
     <button class="btn btn-main btn-block" data-go="tie">開始</button></div></div>`; return; }
   if(ST.tab==="tie"&&ST.room){ root.innerHTML=`<div class="app no-nav">${roomHtml()}</div>`; requestAnimationFrame(scrollMsgs); const i=document.getElementById("tieIn"); if(i&&ST.draft) i.value=ST.draft; return; }
   if(!isUnl(ST.tab)) ST.tab="tie";
