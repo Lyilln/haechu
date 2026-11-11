@@ -70,8 +70,8 @@ document.addEventListener("submit",e=>{
     const s=session(), r=route(), id=s.role==="artist"?(myLive(s.member)||{}).id:r.id; if(!id) return;
     if(s.role==="artist"){ const l=getLive(id), gst=l&&l.member!==s.member; if(l){ if(gst) l.typingG=0; else l.typingTs=0; saveLive(l); } liveSay(id,"artist",text,{reply:hostRep(),mid:gst?s.member:null}); ui.hostReply=null;
       /* 不整頁重畫：輸入框留著、鍵盤不收，上面的卡片跟留言就地更新 */
-      { const n=document.getElementById("lin"), l2=getLive(id); if(n&&l2&&document.querySelector(".dl.host")){ n.value=""; n.dispatchEvent(new Event("input",{bubbles:true})); const sb=document.getElementById("lsend"); if(sb) sb.classList.remove("on"); const rb=document.querySelector(".host-rep2"); if(rb) rb.remove(); updateHost(l2); n.focus(); } else { render(); const n2=document.getElementById("lin"); if(n2) n2.focus(); } } if(!gst){ if(aiReady()) aiOnLive(id,"artist"); else scheduleFake(id); } }
-    else { if(meBlocked()){ ui.lDraft=text; return; } if(!slowOk(text)){ ui.lDraft=text; return; } liveSay(id,"me",text); demoReplyToMe(id,text); aiOnLive(id,"me"); const i=document.getElementById("lin"); i.value=""; document.getElementById("lsend").classList.remove("on"); updateMeetRoom(); i.focus(); }
+      { const n=document.getElementById("lin"), l2=getLive(id); if(n&&l2&&document.querySelector(".dl.host")){ n.value=""; n.dispatchEvent(new Event("input",{bubbles:true})); const sb=document.getElementById("lsend"); if(sb) sb.classList.remove("on"); const rb=document.querySelector(".host-rep2"); if(rb) rb.remove(); updateHost(l2); n.focus(); } else { render(); const n2=document.getElementById("lin"); if(n2) n2.focus(); } } if(!gst){ scheduleFake(id); } }
+    else { if(meBlocked()){ ui.lDraft=text; return; } if(!slowOk(text)){ ui.lDraft=text; return; } liveSay(id,"me",text); demoReplyToMe(id,text); const i=document.getElementById("lin"); i.value=""; document.getElementById("lsend").classList.remove("on"); updateMeetRoom(); i.focus(); }
     return; }
   if(e.target.id==="snCmForm"){ e.preventDefault(); const id=e.target.dataset.id, inp=document.getElementById("snCmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; const d=snDB(); const re=ui.snRe&&ui.snRe.p===id?ui.snRe.c:undefined; ui.snRe=null; (d.cms[id]=d.cms[id]||[]).push({id:"sc"+Date.now(),uid:snMeId(),text,ts:Date.now(),...(re?{re}:{})}); snSave(d); if(inp) inp.value=""; snOpenCm(id); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(e.target.id==="snDmForm"){ e.preventDefault(); const to=e.target.dataset.id, inp=document.getElementById("snDmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; dmAppend(snMeId(),to,{text,ts:Date.now()}); render(); const n=document.getElementById("snDmIn"); if(n) n.focus(); snFakeReply(to); return; }
@@ -93,13 +93,13 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="cform"){ e.preventDefault();
     const text=(ui.cDraft||"").trim(); if(!text||!ui.sheet) return; ui.cDraft="";
     if(ui.sheet.cid){ const L=S.get(K.comments,[]), c=L.find(x=>x.id===ui.sheet.cid); if(!c) return; const p0=getPosts().find(x=>x.id===c.postId), art=session().role==="artist"&&p0&&session().member===p0.member;
-      if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); if(c.aiFan) aiOnCommentReply(c); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
+      if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
         c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
       if(meBlocked()||banBlock(text)){ ui.cDraft=text; return; }
       c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:myCmNick(postGid(c.postId)),g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆 💜"); return; }
     if(session().role==="artist"&&!ui.sheet.replyTo){ const c=addArtistComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; }
     if(session().role==="artist"){
-      const {c,reached}=replyComment(ui.sheet.replyTo,text); if(c&&c.aiFan) aiOnCommentReply(c); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);
+      const {c,reached}=replyComment(ui.sheet.replyTo,text); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);
       toast(reached?"已回覆，粉絲收到通知了":"已回覆");
     } else { if(meBlocked()){ ui.cDraft=text; return; } if(banBlock(text)){ ui.cDraft=text; return; } { const c=addComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; } renderComments(); toast("已留言 💜"); }
     return; }

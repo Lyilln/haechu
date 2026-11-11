@@ -6476,6 +6476,15 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .try-by{font-style:normal;font-size:10.5px;color:#8B5CF6;font-weight:700}
 
 
+/* 管理員活動頁：可收合的三組（11/11） */
+.foc .foc-fold{display:flex;align-items:center;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer;padding-top:12px;padding-bottom:12px;border-bottom:1px solid var(--line,rgba(127,127,127,.18))}
+.foc .foc-fold.open{border-bottom-color:transparent}
+.foc-fold-r{margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:var(--ink-3);font-size:13px;font-weight:500}
+.foc-fold-r svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s}
+.foc-fold.open .foc-fold-r svg{transform:rotate(180deg)}
+.foc .foc-fold+.tiles{animation:focFoldIn .25s ease}
+@keyframes focFoldIn{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}
+
 /* HAECHU｜SNS 私訊聊天室 */
 /* ===== SNS 私訊聊天室：照 Instagram ===== */
 .sn-dmtop{gap:6px!important}.sn-dmtop .sn-hu{min-width:0;gap:10px}.sn-dmtop .sn-pu b{display:flex;align-items:center;gap:3px;font-size:15px}.sn-dmtop .sn-pu small{font-size:12px;color:var(--s)}

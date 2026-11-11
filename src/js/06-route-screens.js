@@ -68,7 +68,7 @@ function setLayer(html,key){
 
 /* =========================================================
    待辦（使用者交代）：最後再一起做「DeepL 翻譯接上」——帶使用者在 Cloudflare 架 deepl-worker.js（key 放 Secret DEEPL_KEY，
-     不能寫進 App），把 Worker 網址填到 管理員 ME → AI 粉絲 → 翻譯服務，按「測試翻譯」確認；搬到自己的網站後設 ALLOWED_ORIGIN。
+     不能寫進 App），把 Worker 網址填到 管理員 → 營運 → 翻譯服務，按「測試翻譯」確認；搬到自己的網站後設 ALLOWED_ORIGIN。
    ========================================================= */
 
 /* ===== 登入狀態：每次重新打開 App 都會先看到登入頁 ===== */
@@ -96,7 +96,7 @@ const askClose=()=>{ const b=document.getElementById("askLayer"); if(b) b.innerH
 const MOON='<svg viewBox="0 0 24 24"><path d="M15 3.4A8.8 8.8 0 1 0 20.6 15.6 6.4 6.4 0 0 1 15 3.4z" fill="#F43F5E" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="18.6" cy="6.6" r="1.4" fill="#F9A8D4"/></svg>';
 
 /* ===== 換頁動畫：進到下一層往左滑入、返回往右滑入、切分頁淡入 ===== */
-function routeDepth(r,s){ if(!s) return 0; if(s.uni&&r.role==="admin"){ if(r.sub==="thedit") return 2; if(r.sub==="themes") return 1; return ["home","reports","posts","announce","foc","shopadm","people"].includes(r.tab||"home")?0:1; } if(r.sub==="chat") return r.p?2:1; if(["notifications","live","replay","core","select","look","themes","thmine","write"].includes(r.sub)) return 1; if(r.sub==="tint") return r.id?2:1; if(r.sub==="thedit") return 2; if(r.sub==="grp") return r.m?3:r.p==="about"?2:1; if(s.role==="artist"&&r.tab==="whisper") return 1; return 0; }
+function routeDepth(r,s){ if(!s) return 0; if(s.uni&&r.role==="admin"){ if(r.sub==="thedit") return 2; if(r.sub==="themes") return 1; return ["home","reports","posts","announce","foc","shopadm","people","artist","ops"].includes(r.tab||"home")?0:1; } if(r.sub==="chat") return r.p?2:1; if(["notifications","live","replay","core","select","look","themes","thmine","write"].includes(r.sub)) return 1; if(r.sub==="tint") return r.id?2:1; if(r.sub==="thedit") return 2; if(r.sub==="grp") return r.m?3:r.p==="about"?2:1; if(s.role==="artist"&&r.tab==="whisper") return 1; return 0; }
 function pageAnim(){
   const r=route(), s=session(), key=location.hash+"|"+(s?s.role:""), d=routeDepth(r,s);
   if(key===ui.pgKey) return null;

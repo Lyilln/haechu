@@ -244,7 +244,7 @@ const ANAV={
 ANAV.foc=`<svg viewBox="0 0 24 24" ${NS}><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/><path d="M12 12.4l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z"/></svg>`;
 const adminNav=a=>navBar([["home","HOME",ANAV.home],["foc","FOC",ANAV.foc],["reports","REPORT",ANAV.report],["posts","POST",ANAV.post],["announce","NEWS",ANAV.news],["me","ME",ANAV.me]],a,{reports:openReports().length});
 
-const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人與團",REVENUE:"積分統計","AI FANS":"AI 粉絲",ME:"管理"};
+const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人與團",REVENUE:"積分統計",ME:"管理"};
 function adminHead(title,sk=null,ph=""){ if(isUni()){ if(title==="FOC") return uniMainHead("活動"); if(["REPORT","POST"].includes(title)&&!(sk&&srchOn(sk))) return uniMainHead("內容"); if(sk&&srchOn(sk)) return `<header class="top uni-top sh-head"><div class="top-row">${srchBar(ph)}</div></header>`; return uniHead(UNI_T[title]||title,sk?srchBtn(sk):""); }
   return `<header class="top sh-head"><div class="top-row">${sk&&srchOn(sk)?srchBar(ph):`<div class="logo">${APP_NAME}<small>管理員</small></div><div class="spacer"></div>${sk?srchBtn(sk):""}<span class="art-sub">${title}</span>`}</div></header>`; }
 function reportCard(r){
@@ -310,11 +310,17 @@ function segSwitch(btn,apply,dir){ const seg=btn.closest(".seg2"); if(!seg||btn.
   const pane=document.querySelector(".seg2-pane"); if(pane){ pane.classList.remove("in-l","in-r"); pane.classList.add(dir>0?"out-l":"out-r"); }
   setTimeout(()=>{ apply(); ui.segAnim=dir>0?"in-r":"in-l"; lsRerender(); ui.segAnim=""; },180); }
 function lsRerender(){ const y=window.scrollY; render(); window.scrollTo(0,y); }
+/* 管理員活動頁：三組可以收起來（記在這台手機；收起來時有待處理的會顯示紅點） */
+const FOC_FOLD_K="hc_focfold";
+function focFoldGet(){ try{ return JSON.parse(localStorage.getItem(FOC_FOLD_K)||"null")||{wk:1}; }catch(e){ return {wk:1}; } }
+function focFold(key,ic,title,tiles){ const open=!!focFoldGet()[key], n=(tiles.match(/class="tile /g)||[]).length, hot=/class="tile on"/.test(tiles);
+  return `<button class="section-h foc-fold ${open?"open":""}" data-a="focFold" data-v="${key}" aria-expanded="${open}">${hi(ic)}${title}<span class="foc-fold-r">${hot&&!open?`<i class="seg-dot"></i>`:""}${open?"收起":n+" 項"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<div class="tiles">${tiles}</div>`:""}`; }
 function viewAdmin(tab){
   if(isUni()){
-    if(tab==="revenue") return uniHead("積分統計")+viewPointsAdmin();
+    if(tab==="revenue") return uniHead("積分",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=ptadd" aria-label="加積分">＋</button>`)+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
-    if(tab==="people") return viewUniPeople();
+    if(tab==="people"||tab==="artist") return viewUniArtist();
+    if(tab==="ops"||tab==="shopadm") return viewUniOps();
     if(tab==="try"){ tryFetch(true); return uniHead("試玩訊息")+viewTryInbox(); }
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="ptadd") return uniHead("加積分")+viewPtAdd();
@@ -326,11 +332,9 @@ function viewAdmin(tab){
       const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}${hrHtml(GROUPS[gi])}</main>`;
       const fd=S.get(K.fandom,{});
       return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span>${esc(g.name)}<span class="r">${g.co?esc(g.co)+"・":""}${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
-    if(tab==="shopadm") return uniMainHead("商店")+viewShopAdmin();
     if(tab==="cloud") return uniHead("雲端用量")+viewCloud();
     if(tab==="albums") return uniHead("專輯與店家")+`<main class="page">${GROUPS.length?adminAlbumHtml():NOG_HTML()}</main>`;
-    if(tab==="translate"){ const h=viewAiFans(), a=h.indexOf('<section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務'), b=h.indexOf('</section>',a); return uniHead("翻譯服務")+`<main class="page">${a>0?h.slice(a,b+10):""}</main>`; }
-    if(tab==="aifans"){ const h=viewAiFans(), a=h.indexOf('<section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務'), b=h.indexOf('</section>',a); return a>0?h.slice(0,a)+h.slice(b+10):h; }
+    if(tab==="translate") return uniHead("翻譯服務")+viewTranslate();
     if(tab==="announce"){ const list=getAnns(), gl=getGNotices();
       return `<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">內容</div><button class="icon-btn" data-a="uniAnn" aria-label="發公告">＋</button></div></header><main class="page">${uniContentSeg(2)}
         <div class="section-h">全部粉絲<span class="muted">${list.length} 則</span></div>${list.length?`<section class="card">${list.map(a=>`<div class="uni-an"><p>${esc(a.text)}<small>${ago(a.ts)}</small></p><button class="btn btn-soft btn-sm" data-a="annDel" data-id="${a.id}">撤下</button></div>`).join("")}</section>`:`<p class="me-none">沒有公告</p>`}
@@ -341,7 +345,6 @@ function viewAdmin(tab){
   if(tab==="revenue") return viewRevenue();
   if(tab==="roster") return viewRoster();
   if(tab==="debut") return adminHead("出道申請")+`<button class="rev-back" data-a="tab" data-v="me" style="margin:12px 16px 0">‹ 回到 ME</button>`+debutAdmHtml();
-  if(tab==="aifans") return viewAiFans();
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
     const seg=ui.focSeg||"", lsOn=!!liveConcert();
@@ -349,9 +352,9 @@ function viewAdmin(tab){
     if(!seg){ const pend=getTours().filter(x=>x.status==="pending").length;
       const tl=(v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="focSeg" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
       return adminHead("FOC")+`<main class="page foc">
-        ${secH("clock","每週")}<div class="tiles">${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}</div>
-        ${secH("star","檔期")}<div class="tiles">${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}</div>
-        ${secH("trophy","大型活動")}<div class="tiles">${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}</div>
+        ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
+        ${focFold("pd","star","檔期",`${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}`)}
+        ${focFold("big","trophy","大型活動",`${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}`)}
         </main>`; }
     const SEGN={sched:"賽程",music:"打歌",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
     const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
@@ -418,7 +421,6 @@ function viewAdmin(tab){
         <button class="list-btn" data-a="tab" data-v="roster">${AIC.group}藝人與團管理<span class="r">${GROUPS.length} 團</span></button>
         <button class="list-btn" data-a="thAdmin">${AIC.theme}主題管理<span class="r">${(()=>{const n=getThemes().filter(t=>t.status==="pending").length;return n?n+" 件待審核":TH_STORE})()}</span></button>
         <button class="list-btn" data-a="demoToggle">${AIC.toggle}示範按鈕<span class="r">${demoOn()?"顯示中":"已隱藏"}</span></button>
-        <button class="list-btn" data-a="tab" data-v="aifans">${AIC.ai}AI 粉絲<span class="r">${aiReady()?"運作中":aiCfg().on?"待連線":"已暫停"}</span></button>
         <button class="list-btn" data-a="tab" data-v="revenue">${AIC.money}營收與分潤<span class="r">看收成</span></button>
       </section>
       <div class="section-h">示範工具</div>

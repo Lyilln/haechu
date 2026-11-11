@@ -1,4 +1,4 @@
-/* HAECHU｜打歌、AI 粉絲、簽售、開播音樂 */
+/* HAECHU｜打歌、翻譯、簽售、開播音樂 */
 /* =========================================================
    音樂節目（打歌）：照群組規則
    ・五個節目：THE SHOW（二）、Show Champion（三）、M COUNTDOWN（四）、MUSIC BANK（五）、INKIGAYO（日）
@@ -111,131 +111,10 @@ function setWinner(show,sid,wk0,manual){
   if(after.crowns.length>before.crowns.length) muNotify(`👑 ${songName(s)} 成為 ${sh.name} 三冠王`,s.gid);
 }
 
-/* =========================================================
-   AI 粉絲：社群人不夠的時候，由 AI 扮演一群有個性的粉絲
-   ・每位 AI 粉絲有固定的名字、個性、口吻、追的團，還會記得跟藝人的互動
-   ・藝人發動態、傳 TIE、開直播、在直播說話、回覆留言時，AI 粉絲會「讀內容」再回應
-   ・粉絲在直播間說話時，其他 AI 粉絲也可能接話
-   ・只在有人做了動作時才請 AI 寫（不會自己一直跑），回應會照時間陸續出現
-   ・需要在 claude.ai 打開才有；管理員可以在後台開關、調整活躍度、改人設
-   ========================================================= */
-const AIF_BASE=[
-  {id:"f1",name:"星光應援團 🌟",g:4,who:"大學生，應援站站長。熱血、很會整理行程，講話常帶驚嘆號，會提醒大家打榜投票"},
-  {id:"f2",name:"小月亮粉 🌙",g:2,who:"高二生，愛撒嬌，常用疊字和顏文字（๑•̀ㅂ•́)و，偶爾錯字"},
-  {id:"f3",name:"晚安露露",g:6,who:"上班族姊姊粉，溫柔，像家人一樣叮嚀藝人吃飯、睡覺、保暖"},
-  {id:"f4",name:"晴天娃娃",g:5,who:"住台中的新粉，什麼都好奇，很愛問問題"},
-  {id:"f5",name:"棉被裡的粉絲",g:1,who:"準考生，常熬夜偷看，很會自嘲，講話有點厭世但很可愛"},
-  {id:"f6",name:"奶茶少冰",g:7,who:"手搖店打工，愛分享自己的日常，推歌狂，常說『這首我要循環一整天』"},
-  {id:"f7",name:"今天也要吃飽飽",g:3,who:"美食控，什麼話題都能扯到吃的"},
-  {id:"f8",name:"舞台控小白",g:0,who:"熱舞社，專看舞台細節，會講走位、表情管理、穿搭"},
-  {id:"f9",name:"螢光棒充電中",g:2,who:"演唱會常客的老粉，愛講以前的回憶，有點感性"},
-  {id:"f10",name:"貓咪與我",g:5,who:"話很少，常只回幾個字或一串表情符號"},
-  {id:"f11",name:"凌晨三點的雲",g:1,who:"文青，偶爾寫出有點詩意的句子，安靜溫和"},
-  {id:"f12",name:"剛入坑的小豆芽",g:4,who:"剛入坑的國中生，很興奮，常說『我是不是太晚認識你們了』"}];
-const aiCfg=()=>({on:true,level:1,...S.get(K.aiCfg,{})});
-const aiFans=()=>S.get(K.aiFans,null)||AIF_BASE.map(f=>({...f,follows:GROUPS.filter(g=>strHash(f.id+g.id)%3!==0).map(g=>g.id)}));
-const aiFan=id=>aiFans().find(f=>f.id===id);
-let SAMPLE=null, aiOff=false, aiBusy={};
+/* 翻譯用的 Claude 連線（AI 粉絲 11/11 整段刪掉，只留翻譯會用到的這幾行） */
+let SAMPLE=null, aiOff=false;
 (async()=>{ try{ if(window.claude&&claude.use){ SAMPLE=await claude.use("sample"); if(SAMPLE) render(); } }catch(e){} })();
-const aiReady=()=>false;   // AI 粉絲已關閉（不使用）
-function aiPick(gid,n){ const l=aiFans().filter(f=>(f.follows||[]).includes(gid)); for(let i=l.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [l[i],l[j]]=[l[j],l[i]]; } return l.slice(0,Math.max(1,Math.round(n*aiCfg().level))); }
-const memKey=(fid,mid)=>fid+":"+mid;
-function aiRemember(fid,mid,line){ const m=S.get(K.aiMem,{}), k=memKey(fid,mid); m[k]=[...(m[k]||[]),line.slice(0,80)].slice(-6); S.set(K.aiMem,m); }
-function aiFanLines(fans,mid){ const mem=S.get(K.aiMem,{});
-  return fans.map(f=>{ const r=mem[memKey(f.id,mid)]||[]; return `${f.id}｜${f.name}｜${f.who}${r.length?`｜跟這位藝人的近期互動：${r.join(" / ")}`:""}`; }).join("\n"); }
-function aiPrompt(fans,mid,scene,shape){
-  const m=MEMBERS[mid], g=groupOf(m.group);
-  return `你要替一個韓流偶像社群 App 裡的幾位粉絲寫出他們真實的回應。這是一群朋友玩的角色扮演社群，藝人由群組成員扮演，粉絲是 App 裡的其他使用者。
-
-寫法規則：
-- 用台灣的繁體中文，像真人用手機打字：口語、長短不一，有人只打幾個字或表情，有人多說一點；不要每句都完整工整。
-- 每位粉絲照自己的個性和口吻說話；彼此不要用同樣的句型或開頭，不要每個人都在誇。
-- 針對內容具體回應（提到的細節、照片裡看得到的東西、藝人問的問題），不要空泛的「好棒」。
-- 可以猜、可以問，但不要把藝人沒說過的事講成事實。
-- 友善健康：不寫戀愛或性暗示、不騷擾、不攻擊或比較別的藝人、不罵人、不提到自己是 AI、不寫真實個資或連結。
-- 藝人：${m.name}（${g?g.name:""}）。
-
-這次出場的粉絲（id｜名字｜個性）：
-${aiFanLines(fans,mid)}
-
-情境：
-${scene}
-
-另外每則都附上自然的韓文翻譯（ko），給藝人看的。
-
-只回 JSON，不要其他文字：${shape}`;
-}
-async function aiAsk(prompt,images){
-  if(!aiReady()) return null;
-  try{ return await SAMPLE.json(prompt,{modelTier:"quick",cache:false,...(images&&images.length?{images}:{})}); }
-  catch(e){ const c=e&&e.code;
-    if(c==="images_unavailable"||c==="image_rejected") return aiAsk(prompt,null);
-    if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)) aiOff=true;
-    return null; }
-}
 const aiClean=t=>String(t||"").replace(/\s+/g," ").trim().slice(0,200);
-function aiQueue(items){ const q=S.get(K.aiQ,[]); S.set(K.aiQ,[...q,...items].sort((a,b)=>a.due-b.due).slice(-200)); }
-function aiMsgs(res){ const l=res&&(Array.isArray(res)?res:res.msgs); return Array.isArray(l)?l.filter(x=>x&&aiFan(String(x.fan))&&aiClean(x.text)):[]; }
-/* 1. 藝人發動態 → 留言 */
-async function aiOnPost(post){
-  if(!aiReady()) return; const fans=aiPick(post.group,4); let imgs=null;
-  const ph=(post.media||[]).filter(x=>x.kind==="photo").slice(0,2); if(ph.length){ try{ imgs=(await Promise.all(ph.map(x=>MDB.get(x.mid)))).filter(Boolean); }catch(e){} }
-  const vid=(post.media||[]).some(x=>x.kind==="video");
-  const res=await aiAsk(aiPrompt(fans,post.member,`藝人剛發了一則動態（分類：${post.tag||"日常"}）：「${post.text||"（沒有文字）"}」${imgs&&imgs.length?"\n附上的照片就是這次給你看的圖。":""}${vid?"\n這則附了一段影片（你看不到內容，別假裝看過細節）。":""}
-請讓其中 3～5 位粉絲各留 1 則留言（大多 5～50 字）。sec 是發文後幾秒留言，從 6 到 150 之間、依序遞增。`,`{"msgs":[{"fan":"f1","text":"留言內容","ko":"這句的韓文翻譯","sec":8}]}`),imgs);
-  const now=Date.now();
-  aiQueue(aiMsgs(res).slice(0,6).map((x,i)=>({kind:"comment",due:now+Math.max(4,+x.sec||8*(i+1))*1000,postId:post.id,fan:String(x.fan),text:aiClean(x.text),ko:aiClean(x.ko),mid:post.member})));
-}
-/* 2. 藝人回覆 AI 粉絲的留言 → 那位粉絲的反應 */
-async function aiOnCommentReply(c){
-  if(!aiReady()||!c.aiFan) return; const p=S.get(K.posts,[]).find(x=>x.id===c.postId); if(!p) return; const f=aiFan(c.aiFan); if(!f) return;
-  aiRemember(f.id,p.member,`藝人回了我：「${c.reply.text}」`);
-  const res=await aiAsk(aiPrompt([f],p.member,`藝人在動態「${(p.text||"").slice(0,80)}」底下，回覆了 ${f.name} 的留言「${c.text}」，回覆內容是：「${c.reply.text}」。
-${f.name} 看到被回覆了，請寫 ${f.name} 再留的 1 則新留言（很開心、可以接著聊）。sec 在 10～40 之間。`,`{"msgs":[{"fan":"${f.id}","text":"留言內容","ko":"這句的韓文翻譯","sec":15}]}`));
-  const now=Date.now(); aiQueue(aiMsgs(res).slice(0,1).map(x=>({kind:"comment",due:now+Math.max(6,+x.sec||15)*1000,postId:p.id,fan:f.id,text:aiClean(x.text),ko:aiClean(x.ko),mid:p.member})));
-}
-/* 3. 藝人傳 TIE → 訂閱的粉絲回訊息 */
-async function aiOnTie(mid,text,img){
-  if(!aiReady()) return; const fans=aiPick(MEMBERS[mid].group,4);
-  const recent=getWhispers().filter(w=>w.member===mid).slice(-9,-1).map(w=>w.from==="artist"?`藝人：${w.text}`:`粉絲：${w.text}`).join("\n");
-  const res=await aiAsk(aiPrompt(fans,mid,`這是 TIE（像 Bubble 的私訊）：藝人傳一則訊息，每位訂閱的粉絲都收到，粉絲回的訊息只有藝人看得到。訊息裡的 @@@ 會在每位粉絲手機上變成他自己的暱稱（所以每個人都覺得是在叫自己）。
-最近的對話：
-${recent||"（沒有）"}
-藝人剛傳：「${text}」${img?"（附上的照片就是這次給你看的圖）":""}
-請讓 2～4 位粉絲回訊息，每人 1～2 則（大多 5～40 字），像在私訊偶像。sec 從 5 到 240 之間、依序遞增。`,`{"msgs":[{"fan":"f1","text":"訊息內容","ko":"這句的韓文翻譯","sec":12}]}`),img?[img]:null);
-  const now=Date.now(), per={};
-  aiQueue(aiMsgs(res).filter(x=>(per[x.fan]=(per[x.fan]||0)+1)<=2).slice(0,8).map((x,i)=>({kind:"tie",due:now+Math.max(4,+x.sec||10*(i+1))*1000,mid,fan:String(x.fan),text:aiClean(x.text),ko:aiClean(x.ko)})));
-}
-/* 4. 直播：開播、藝人說話、粉絲（你）說話、進直播間 */
-async function aiOnLive(id,why){
-  if(!aiReady()) return; const l=getLive(id); if(!l||l.endTs) return;
-  if(aiBusy[id]){ aiBusy[id]="again:"+why; return; } aiBusy[id]=true;
-  try{
-    const fans=aiPick(l.group,5), last=l.msgs.slice(-14).map(x=>x.from==="artist"?`【${MEMBERS[l.member].name}】${x.reply?`（回覆 ${x.reply.name}「${x.reply.text}」）`:""}${x.text}`:`${x.from==="me"?ME.name:x.name}：${x.text}`).join("\n");
-    const what=why==="start"?"藝人剛開播，大家陸續進來打招呼。":why==="enter"?"有一位新的粉絲剛進直播間，聊天室照常進行。":why==="me"?`粉絲「${ME.name}」剛在聊天室說話，其他人可以接話或自己聊。`:"藝人剛說了最後一句話，大家正在反應。";
-    const res=await aiAsk(aiPrompt(fans,l.member,`這是文字直播（只有文字），主題：「${l.title}」。${what}
-聊天室最近的內容（由舊到新）：
-${last||"（剛開始）"}
-請寫接下來聊天室裡 5～8 則粉絲的訊息（大多 2～25 字，像直播聊天室一樣短、快、熱鬧，可以互相接話、刷表情、問藝人問題）。如果藝人回覆了某位粉絲，那位粉絲要有反應。sec 從 1 到 35 之間、依序遞增。`,`{"msgs":[{"fan":"f1","text":"訊息","ko":"這句的韓文翻譯","sec":2}]}`));
-    const now=Date.now(); aiQueue(aiMsgs(res).slice(0,9).map((x,i)=>({kind:"live",due:now+Math.max(1,+x.sec||3*(i+1))*1000,live:id,fan:String(x.fan),text:aiClean(x.text).slice(0,60),ko:aiClean(x.ko).slice(0,80)})));
-  } finally { const again=aiBusy[id]; aiBusy[id]=false; if(typeof again==="string") setTimeout(()=>aiOnLive(id,again.slice(6)),2500); }
-}
-/* AI 粉絲的訊息照時間出現 */
-function aiFlush(){
-  const q=S.get(K.aiQ,[]); if(!q.length) return; const now=Date.now(), due=q.filter(x=>x.due<=now); if(!due.length) return;
-  S.set(K.aiQ,q.filter(x=>x.due>now)); let touched=null;
-  due.forEach(x=>{ const f=aiFan(x.fan); if(!f) return;
-    if(x.kind==="comment"){ const posts=S.get(K.posts,[]), p=posts.find(y=>y.id===x.postId); if(!p) return;
-      S.set(K.comments,[...S.get(K.comments,[]),{id:"ca"+x.due+x.fan,postId:p.id,author:"other",aiFan:f.id,name:f.name,g:f.g,text:x.text,tr:x.ko||"",ts:x.due,reply:null}]);
-      p.comments++; p.likes+=2+(Math.random()*9|0); S.set(K.posts,posts); aiRemember(f.id,p.member,`我留言：「${x.text}」`); touched=touched||"comment"; }
-    if(x.kind==="tie"){ S.set(K.whispers,[...S.get(K.whispers,[]),{id:"wa"+x.due+x.fan,member:x.mid,from:"other",aiFan:f.id,name:f.name,g:f.g,text:x.text,tr:x.ko||"",ts:x.due}]); aiRemember(f.id,x.mid,`我在 TIE 說：「${x.text}」`); touched=touched||"tie"; }
-    if(x.kind==="live"){ const l=getLive(x.live); if(!l||l.endTs) return; l.msgs.push({from:"other",aiFan:f.id,name:f.name,g:f.g,text:x.text,tr:x.ko||"",ts:x.due}); l.hearts+=3+(Math.random()*15|0); saveLive(l); }
-  });
-  if(!touched) return; const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
-  if(touched==="comment"&&ui.sheet&&ui.sheet.postId&&typeof renderComments==="function"){ if(!typing) renderComments(true); return; }
-  if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); }
-}
-setInterval(aiFlush,1200);
 /* 藝人端：粉絲的留言、TIE 不是中文的，打開時一次翻成中文（存在 zh；中文的不翻） */
 const isZhText=t=>{ const x=String(t||"").replace(/@@@/g,""); if(/[\u3040-\u30ff\uAC00-\uD7A3]/.test(x)) return false; const han=(x.match(/\p{Script=Han}/gu)||[]).length, oth=(x.match(/\p{L}/gu)||[]).length-han; return han>0?han>=oth:oth===0; };
 const trAsked=new Set();
@@ -334,32 +213,13 @@ async function tieTranslateX(wid,lang){
   const src=w.ko||w.text, t=lang==="zh"&&hasHangul(src)?await koToZh(src):(await translateMany([src],lang).then(o=>o&&aiClean(o[0])).catch(()=>null)); if(!t){ toast("翻譯失敗，等一下再試試"); return false; }
   const all=S.get(K.tieTrX,{}); all[wid+":"+lang]=t; S.set(K.tieTrX,all); return true;
 }
-/* 管理員：AI 粉絲設定 */
-function viewAiFans(){
-  const cfg=aiCfg(), fans=aiFans(), st=aiOff?"這個瀏覽器沒有允許使用 Claude，AI 粉絲先休息":SAMPLE?(cfg.on?"運作中":"已暫停"):"要在 claude.ai 打開這個 App 才能用（等一下會自動偵測）";
-  const ed=ui.aiEdit;
-  return adminHead("AI FANS")+`<main class="page aif">
-    <button class="rev-back" data-a="tab" data-v="me">‹ 回到 ME</button>
-    <section class="card studio"><div class="foc-cfg-h"><h3>AI 粉絲</h3><span class="badge">${esc(st)}</span></div>
-      
-      <div class="ls-btns"><button class="btn ${cfg.on?"btn-soft":"btn-main"}" data-a="aiToggle">${cfg.on?"暫停 AI 粉絲":"開啟 AI 粉絲"}</button></div>
-      <label class="foc-lab">活躍度（每次出來回應的人數）</label>
-      <div class="chips">${[[.6,"少"],[1,"一般"],[1.6,"熱鬧"]].map(([v,l])=>`<button class="chip ${cfg.level===v?"on":""}" data-a="aiLevel" data-v="${v}">${l}</button>`).join("")}</div></section>
+/* 管理員：翻譯服務（以前夾在 AI 粉絲那頁裡） */
+function viewTranslate(){ return `<main class="page">
     <section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務</h3><span class="badge">目前：${trEngine()}</span></div>
       
       ${HB_ON?`<div class="ls-btns"><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div>`:`<span class="fld-lab">DeepL 中繼站網址</span><label class="field"><input id="trUrl" type="url" inputmode="url" autocomplete="off" placeholder="輸入文字" value="${esc(trCfg().url)}"></label>
       <div class="ls-btns"><button class="btn btn-main" data-a="trSave">儲存</button><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div>`}</section>
-    <div class="section-h">粉絲名單<span class="muted">${fans.length} 位</span></div>
-    ${fans.map(f=>ed===f.id?`<section class="card studio aif-ed">
-      <label class="foc-lab">名字</label><label class="field"><input id="aifName" maxlength="16" value="${esc(f.name)}"></label>
-      <label class="foc-lab">個性和口吻</label><textarea id="aifWho" class="aif-ta">${esc(f.who)}</textarea>
-      <label class="foc-lab">追的團</label><div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${(f.follows||[]).includes(g.id)?"on":""}" data-a="aifFollow" data-f="${f.id}" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
-      <div class="ls-btns"><button class="btn btn-main" data-a="aifSave" data-f="${f.id}">儲存</button><button class="btn btn-soft" data-a="aifDel" data-f="${f.id}">刪除</button></div></section>`
-      :`<button class="card aif-c" data-a="aifEdit" data-f="${f.id}"><span class="av sm" style="background:${grad(f.g)}">${esc([...f.name][0])}</span><span class="aif-b"><b>${esc(f.name)}</b><small>${esc(f.who)}</small><em>${(f.follows||[]).map(id=>groupOf(id)?esc(groupOf(id).name):"").filter(Boolean).join("・")||"還沒追任何團"}</em></span><i>›</i></button>`).join("")}
-    <button class="btn btn-soft btn-block" data-a="aifAdd">＋ 新增 AI 粉絲</button>
-  </main>`;
-}
-function saveAiFans(fn){ const l=aiFans().map(f=>({...f})); fn(l); S.set(K.aiFans,l); }
+  </main>`; }
 
 /* =========================================================
    簽售（藝人端 FOC「簽售現場」＋ 粉絲端 CORE「90s MEET & GREET」，照韓國視訊簽售）

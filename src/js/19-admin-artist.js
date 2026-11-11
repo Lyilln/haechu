@@ -99,10 +99,6 @@ async function acCall(body){ body={...body}; if(body.username) body.username=nor
 function viewNoArtist(){ return `<main class="page"><div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人身分</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster">到藝人與團</button></div></main>`; }
 /* 示範工具 */
 
-function viewShopAdmin(){ const n=getThemes().filter(t=>t.status==="pending").length; return `<main class="page"><section class="card">
-    <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
-    <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${n?`<em class="t-cnt">${n}</em>`:""}</span></button></section>
-    <div class="section-h">積分</div><section class="card"><button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${AIC.chart}積分統計</button></section></main>`; }
 
 /* 管理員清單的圖示：每一項長得不一樣，一眼分得出來 */
 const AIC=(()=>{ const sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -110,6 +106,7 @@ const AIC=(()=>{ const sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="curre
     group:sv('<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.9-3 3-4.5 5.5-4.5s4.6 1.5 5.5 4.5M14.5 14.8c2.6-.3 4.8 1 5.8 4.2"/>'), plus:sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>'),
     chart:sv('<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'), globe:sv('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/>'),
     shield:sv('<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2.2 2.2L15.5 10"/>'), scout:sv('<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>'),
+    chat:sv('<path d="M5.5 5h13a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H10l-4 3.2V16.5h-.5A1.5 1.5 0 0 1 4 15V6.5A1.5 1.5 0 0 1 5.5 5z"/>'),
     cloud:sv('<path d="M7 18.5h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.4 1.6A3.3 3.3 0 0 0 7 18.5z"/>'), wrench:sv('<path d="M14.5 5.5a4.5 4.5 0 0 0 5 6l-8.8 8.8a2.1 2.1 0 0 1-3-3l8.8-8.8a4.5 4.5 0 0 0-2-3z"/>'),
     palette:sv('<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 1.8-.9 1.5-1.9-.4-1.3.4-2.4 1.8-2.4h1.6a3.6 3.6 0 0 0 3.6-3.6c0-5-3.8-9.1-8.5-9.1z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.6" r="1"/><circle cx="16" cy="10" r="1"/>'),
     replay:sv('<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.3h4.3"/>'), theme:sv('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 9h16M9 9v11"/>'), toggle:sv('<rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="16" cy="12" r="3"/>'),
@@ -350,7 +347,7 @@ function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="artist"&&!r.sub&&r.tab==="foc"&&r.p&&!r.id) return "artist:foc:"+r.p;
   if(r.role==="artist"&&!r.sub&&r.tab==="live"&&document.querySelector(".mr.dl.host")) return "artist:room";
   if(r.sub) return "";
-  if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
+  if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","artist","ops","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
   return r.role+":"+(r.tab||"home"); }
 const tourDone=k=>{ const s=session()||{}; return !!(S.get(K.tours,{})[(s.email||"")+"|"+k]); };
 function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getElementById("coach")||!welcomeDone()) return;
@@ -360,7 +357,7 @@ function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getEleme
   ui.coach={kind:"tour",key:k,steps,i:0}; coachShow(); }
 
 /* ===== 新手教學：每一端一次教完（不用每個分頁各跳一次） ===== */
-const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",sns:"SNS",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店"};
+const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",sns:"SNS",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店",artist:"藝人",ops:"營運"};
 function fullTourStart(){ const ro=route().role, navs=[...document.querySelectorAll(".nav .nav-btn")].map(b=>b.dataset.v).filter(Boolean); if(!navs.length){ const c=document.getElementById("coach"); if(c) c.remove(); ui.coach=null; return; }
   const seq=[];
   ui.feedTab="feed"; tourDemoOn(ro);
@@ -428,7 +425,7 @@ I.camera=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-widt
    管理員＝三端：最上面「粉絲｜藝人｜管理」三段切換（方案 B）
    ・粉絲：跟一般粉絲一模一樣（紫）
    ・藝人：就是原本的藝人端，用自己的藝人身分（粉紅）
-   ・管理：深色，五個分頁：待辦、內容、活動、商店、人員
+   ・管理：深色，五個分頁：總覽、藝人、內容、活動、營運（11/11 重排：每個功能只放一個地方）
    ========================================================= */
 const UNI_SEC={fan:"#/fan",artist:"#/artist",admin:"#/admin"};
 function uniSwitch(){ const r=route().role, i=["fan","artist","admin"].indexOf(r), T=uniTodo(), n=T.rep+T.th;
@@ -439,10 +436,11 @@ const UNI_AIC={
   foc:UNI_SV(`<rect x="3.8" y="5.4" width="16.4" height="14.6" rx="3"/><path d="M3.8 9.8h16.4M8.4 3.6v3.6M15.6 3.6v3.6"/><path d="m12 12.4.9 1.9 2 .2-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.2z"/>`,`<path fill-rule="evenodd" d="M6.8 5.4h10.4a3 3 0 0 1 3 3v8.6a3 3 0 0 1-3 3H6.8a3 3 0 0 1-3-3V8.4a3 3 0 0 1 3-3zM3.8 9.8h16.4"/><path d="M8.4 3.6v3.6M15.6 3.6v3.6" fill="none"/>`),
   shop:UNI_IC.shop,
   people:UNI_SV(`<circle cx="9" cy="8.6" r="3.2"/><path d="M3.4 19.4c.6-3.4 2.8-5 5.6-5s5 1.6 5.6 5"/><circle cx="16.6" cy="9.4" r="2.5"/><path d="M15.8 14.6c2.4 0 4.2 1.4 4.8 4.4"/>`,`<circle cx="9" cy="8.6" r="3.2"/><path d="M3.4 19.4c.6-3.4 2.8-5 5.6-5s5 1.6 5.6 5z"/><circle cx="16.6" cy="9.4" r="2.5"/><path d="M15.8 14.6c2.4 0 4.2 1.4 4.8 4.4h-4.2z"/>`)};
-const UNI_ATAB=t=>({banned:"people",reports:"content",posts:"content",announce:"content",content:"content",foc:"foc",shopadm:"shop",albums:"shop",people:"people",roster:"people",revenue:"people",aifans:"people",translate:"people",demo:"people"})[t]||(t?"people":"home");
-function uniAdminNav(){ const r=route(), a=r.sub==="themes"||r.sub==="thedit"?"shop":UNI_ATAB(r.tab), T=uniTodo();
-  return navBar([["home","待辦",UNI_AIC.home],["content","內容",UNI_AIC.content],["foc","活動",UNI_AIC.foc],["shop","商店",UNI_AIC.shop],["people","人員",UNI_AIC.people]],a,{home:T.rep+T.th,content:T.rep}); }
-const UNI_ATABGO={home:"#/admin",content:"#/admin?tab=reports",foc:"#/admin?tab=foc",shop:"#/admin?tab=shopadm",people:"#/admin?tab=people"};
+UNI_AIC.ops=UNI_SV(`<rect x="3.6" y="7.2" width="16.8" height="12.6" rx="2.6"/><path d="M9 7.2V5.6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 5.6v1.6M3.6 12.4h16.8M12 11.2v2.4"/>`,`<path d="M6.2 7.2h11.6a2.6 2.6 0 0 1 2.6 2.6v7.4a2.6 2.6 0 0 1-2.6 2.6H6.2a2.6 2.6 0 0 1-2.6-2.6V9.8a2.6 2.6 0 0 1 2.6-2.6z"/><path d="M9 7.2V5.6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 5.6v1.6" fill="none"/>`);
+const UNI_ATAB=t=>({reports:"content",posts:"content",announce:"content",content:"content",foc:"foc",people:"artist",artist:"artist",roster:"artist",debut:"artist",cbreq:"artist",ops:"ops",shopadm:"ops",albums:"ops",revenue:"ops",ptadd:"ops",accounts:"ops",banned:"ops",translate:"ops",cloud:"ops",try:"ops",demo:"ops"})[t]||(t?"ops":"home");
+function uniAdminNav(){ const r=route(), a=r.sub==="themes"||r.sub==="thedit"?"ops":r.sub==="sns"?"artist":UNI_ATAB(r.tab), T=uniTodo();
+  return navBar([["home","總覽",UNI_AIC.home],["artist","藝人",UNI_AIC.people],["content","內容",UNI_AIC.content],["foc","活動",UNI_AIC.foc],["ops","營運",UNI_AIC.ops]],a,{home:T.rep+T.th,content:T.rep,artist:debutWait()+cbrWait()}); }
+const UNI_ATABGO={home:"#/admin",artist:"#/admin?tab=artist",content:"#/admin?tab=reports",foc:"#/admin?tab=foc",ops:"#/admin?tab=ops"};
 const uniMainHead=title=>`<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">${title}</div><span class="sh-sp"></span></div></header>`;
 /* 管理員：全部貼文（每則的樣子）；「全部」時依藝人折疊，點開才看，太長的只先顯示 10 則 */
 const APITEM=p=>{const m=MEMBERS[p.member]||{name:"已刪除的藝人",g:0};return `<div class="n-item ${p.hidden?"is-hidden":""}">
@@ -453,29 +451,37 @@ const APITEM=p=>{const m=MEMBERS[p.member]||{name:"已刪除的藝人",g:0};retu
 const uniContentSeg=i=>`<div class="seg2 mod-seg three" style="--i:${i}"><i class="seg2-ind"></i>${[["檢舉","reports"],["全部貼文","posts"],["公告","announce"]].map(([l,t],k)=>`<button class="${k===i?"on":""}" data-a="uniSeg" data-v="#/admin?tab=${t}">${l}</button>`).join("")}</div>`;
 function viewUniTodo(){ const T=uniTodo(), on=getLives().filter(l=>!l.endTs), cm=S.get(K.comments,[]).filter(c=>c.ts>Date.now()-864e5).length, ev=getEvents().filter(e=>e.ts>=Date.now()).length;
   const rows=[[tryUnread(),"試玩訪客等你回覆","#/admin?tab=try"],[debutWait(),"待審核出道申請","#/admin?tab=debut"],[cbrWait(),"待審核回歸申請","#/admin?tab=cbreq"],[T.rep,"待處理檢舉","#/admin?tab=reports"],[T.th,"待審核主題","#/admin/themes"],[tieQuiet().length,"TIE 3 天沒傳訊息","tieQuiet"]].filter(x=>x[0]);
-  return uniMainHead("待辦")+`<main class="page">
+  return uniMainHead("總覽")+`<main class="page">
     <div class="section-h">要處理的事<span class="muted">${rows.length?rows.reduce((a,b)=>a+b[0],0)+" 件":""}</span></div>
     ${rows.length?`<section class="card">${rows.map(([n,l,h])=>`<button class="list-btn" ${h==="tieQuiet"?'data-a="tieQuietList"':`data-a="uniGo" data-v="${h}"`}>${l}<span class="r"><em class="t-cnt">${n}</em></span></button>`).join("")}</section>`:`<section class="card uni-empty">都處理完了 ✓</section>`}
     <div class="section-h">今天</div>
     <div class="uni-stats"><button class="card" data-a="uniLives"><b>${on.length}</b><span>直播中</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=posts"><b>${fmt(cm)}</b><span>24 小時新留言</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=foc"><b>${ev}</b><span>即將舉辦的活動</span></button></div>
-    <div class="section-h">快速入口</div>
-    <div class="uni-quick"><button class="card uni-ann" data-a="uniAnn">${UI_S.mega}<span>發官方公告</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}<span>加積分</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}<span>建立帳號</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=roster&p=new">${AIC.group}<span>新增藝人</span></button></div>
+  </main>`; }
+/* 藝人：從發掘到出道、回歸 */
+function viewUniArtist(){
+  return `<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">藝人</div><button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增藝人">＋</button></div></header><main class="page">
+    <section class="card">
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${AIC.group}藝人與團<span class="r">${GROUPS.length} 團</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=debut">${AIC.debut}出道申請<span class="r">${debutWait()?`<i class="seg-dot"></i>${debutWait()} 件待審核`:"沒有新申請"}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cbreq">${AIC.debut}回歸申請<span class="r">${cbrWait()?`<i class="seg-dot"></i>${cbrWait()} 件待審核`:"沒有新申請"}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin/sns?p=scout">${AIC.scout}星探<span class="r">${scGet().list.length} 人</span></button></section>
+  </main>`; }
+/* 營運：帳號、積分、商店，加上系統設定 */
+function viewUniOps(){ const th=getThemes().filter(t=>t.status==="pending").length, tu=tryUnread();
+  return uniMainHead("營運")+`<main class="page">
+    <div class="section-h">粉絲與商店</div>
+    <section class="card">
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${AIC.chart}積分<span class="r">加積分・統計</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${th?`<em class="t-cnt">${th}</em>`:""}</span></button></section>
     <div class="section-h">系統</div>
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=translate">${AIC.globe}翻譯服務<span class="r">${trEngine()}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=banned">${AIC.shield}禁用字詞<span class="r">${bannedList().length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cloud">${AIC.cloud}雲端用量<span class="r">${HB.kvSz?fmtB(HB.kvSz):""}</span></button>
-      <button class="list-btn" data-a="maintToggle">${AIC.wrench}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button></section>
-  </main>`; }
-function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").length;
-  return uniMainHead("人員")+`<main class="page">
-    <section class="card">
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=debut">${AIC.debut}出道申請<span class="r">${debutWait()?`<i class="seg-dot"></i>${debutWait()} 件待審核`:"沒有新申請"}</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cbreq">${AIC.debut}回歸申請<span class="r">${cbrWait()?`<i class="seg-dot"></i>${cbrWait()} 件待審核`:"沒有新申請"}</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${AIC.group}藝人與團<span class="r">${GROUPS.length} 團</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}加積分</button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin/sns?p=scout">${AIC.scout}星探<span class="r">${scGet().list.length} 人</span></button></section>
+      <button class="list-btn" data-a="maintToggle">${AIC.wrench}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=try">${AIC.chat}試玩訊息<span class="r">${tu?`<em class="t-cnt">${tu}</em>`:""}</span></button></section>
     <section class="card uni-out"><button class="list-btn danger" data-a="logout">${I.out}登出</button></section>
   </main>`; }
 

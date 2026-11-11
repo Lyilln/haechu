@@ -39,7 +39,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "ptOrig": { ui.ptOrig=ui.ptOrig||new Set(); const id=t.dataset.id; if(ui.ptOrig.has(id)) ui.ptOrig.delete(id); else ui.ptOrig.add(id); const p=getPosts().find(x=>x.id===id); const el=document.querySelector(`[data-ptx="${id}"]`); if(p&&el){ const cl=el.classList.contains("clamp"); t.remove(); el.outerHTML=postTextHtml(p,false,cl); } break; }
     case "replyTo": ui.cDraft=""; ui.sheet.replyTo=t.dataset.c; renderComments(true); break;
     
-    case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); aiOnLive(l.id,"enter"); } navTo((l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id); } else toast("這場直播已不存在"); break; }
+    case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); } navTo((l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id); } else toast("這場直播已不存在"); break; }
     case "openReplay": case "openReplayArt": ui.rpArt=a==="openReplayArt"; layer.innerHTML=""; navTo("#/"+session().role+"/replay?id="+t.dataset.id); window.scrollTo(0,0); break;
     case "tkDown": { const b=document.getElementById("cmTick"); if(b) b.scrollTo({top:b.scrollHeight,behavior:"smooth"}); t.hidden=true; ui.tkUnseen=0; break; }
     case "rpMode": { const to=t.dataset.v==="art"; if(to===!!ui.rpArt) break; segSwitch(t,()=>{ ui.rpArt=to; },to?1:-1); break; }
@@ -253,7 +253,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "openEvent": ui.feedTab=t.dataset.ek==="spot"?"spot":"party"; ui.focusEv=t.dataset.ev; go("fan"); break;
     case "reserve": { const on=toggleReserve(t.dataset.id); render(); toast(on?"已預約，活動前會提醒你 💜":"已取消預約"); break; }
     case "heart": if(ui.heartPtr){ ui.heartPtr=false; break; } sendHeart(t.dataset.id); break;
-    case "startLive": { const title=(document.getElementById("ltitle")||{value:""}).value.trim(); ui.hostReply=null; const {l:nl,reached}=startLive(session().member,title); if(aiReady()) aiOnLive(nl.id,"start"); ui.lTitle=""; ui.lDraft=""; render(); window.scrollTo(0,0);
+    case "startLive": { const title=(document.getElementById("ltitle")||{value:""}).value.trim(); ui.hostReply=null; const {l:nl,reached}=startLive(session().member,title); ui.lTitle=""; ui.lDraft=""; render(); window.scrollTo(0,0);
       toast(reached?"開播了！粉絲收到通知了":"開播了！"); break; }
     case "delEvent": ask("確定要刪除這個活動嗎？",()=>{ deleteEvent(t.dataset.id); render(); toast("已刪除"); }); break;
     case "shOpen": ui.srch={key:t.dataset.k,q:""}; render(); { const i=document.getElementById("shq"); if(i) i.focus(); } break;
@@ -591,14 +591,6 @@ function clickAdm(a,t,e,r){ switch(a){
       layer.innerHTML=""; acCall({action:"reset",username:k,password:pw}).then(r=>{ if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]){ ACCOUNTS[k].pw=pw; if(ACCOUNTS[k].role!=="admin") saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[k]={...(x.accounts[k]||ACCOUNTS[k]),pw}; }); } toast(`${acctUser(k)} 的新密碼設好了`); }); break; }
     case "trSave": { const v=(document.getElementById("trUrl").value||"").trim(); if(v&&!/^https:\/\//.test(v)){ toast("網址要用 https:// 開頭"); break; } S.set(K.trCfg,{url:v}); lsRerender(); toast(v?"已改用 DeepL 翻譯":"已改回 Claude 翻譯"); break; }
     case "trTest": { toast("翻譯中…"); translateMany(["今天的舞台好棒！@@@ 辛苦了 💜"],"ko").then(o=>{ toast(o&&o[0]?`${trEngine()}：${o[0]}`:(HB_ON?"DeepL 還沒接好（後台的 deepl 和 DEEPL_KEY）":useDeepL()?"連不到 DeepL 中繼站（在 claude.ai 裡會被擋，搬到自己的網站後才會通）":"翻譯服務還沒連上")); }); break; }
-    case "aiToggle": { const c=aiCfg(); c.on=!c.on; S.set(K.aiCfg,c); lsRerender(); toast(c.on?"AI 粉絲開啟了":"AI 粉絲暫停了"); break; }
-    case "aiLevel": { const c=aiCfg(); c.level=+t.dataset.v; S.set(K.aiCfg,c); lsRerender(); break; }
-    case "aifEdit": ui.aiEdit=t.dataset.f; lsRerender(); break;
-    case "aifFollow": saveAiFans(l=>{ const f=l.find(x=>x.id===t.dataset.f); if(!f) return; const fl=f.follows||[]; f.follows=fl.includes(t.dataset.v)?fl.filter(x=>x!==t.dataset.v):[...fl,t.dataset.v]; }); t.classList.toggle("on"); break;
-    case "aifSave": { const nm=document.getElementById("aifName").value.trim(), who=document.getElementById("aifWho").value.trim(); if(!nm||!who){ toast("名字和個性都要填"); break; }
-      saveAiFans(l=>{ const f=l.find(x=>x.id===t.dataset.f); if(f){ f.name=nm; f.who=who; } }); ui.aiEdit=null; lsRerender(); toast("已儲存"); break; }
-    case "aifDel": { const f=aiFan(t.dataset.f); if(!f) break; ask(`要刪除 AI 粉絲「${f.name}」嗎？`,()=>{ saveAiFans(l=>{ const i=l.findIndex(x=>x.id===f.id); if(i>=0) l.splice(i,1); }); ui.aiEdit=null; lsRerender(); },{ok:"刪除"}); break; }
-    case "aifAdd": { const id="f"+Date.now(); saveAiFans(l=>l.push({id,name:"新的粉絲",g:Math.random()*8|0,who:"寫下這位粉絲的年紀、個性、說話習慣",follows:GROUPS.map(g=>g.id)})); ui.aiEdit=id; lsRerender(); break; }
     case "muWk": { const n=+t.dataset.v, k=shiftWeek(ui.muWk||curWeek(),n); if(k>curWeek()) break; ui.muWk=k; lsRerender(); break; }
     case "muWin": { if(t.disabled) break; const sid=t.dataset.v||null, sh=t.dataset.s; setWinner(sh,sid,null,true); lsRerender(); if(sid) toast(`已公布 ${SHOWS.find(x=>x.id===sh).name} 一位，粉絲會收到通知`); break; }
     case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); lsRerender(); break; }
@@ -692,6 +684,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "uniAnnBack": uniAnnOpen(); break;
     case "uniAnnOk": { const d=ui.annDraft; if(d.to==="all") publishAnnounce(d.body.trim()); else S.set(K.gNotices,[{id:"gn"+Date.now(),group:d.to,title:d.title.trim(),body:d.body.trim(),ts:Date.now()},...S.get(K.gNotices,[])]);
       ui.annDraft=null; layer.innerHTML=""; render(); toast("已用HAECHU官方發布"); break; }
+    case "focFold": { const o=focFoldGet(); o[t.dataset.v]=o[t.dataset.v]?0:1; try{ localStorage.setItem(FOC_FOLD_K,JSON.stringify(o)); }catch(e){} hap(8); lsRerender(); break; }
     case "uniLives": { const L=getLives().filter(l=>!l.endTs&&l.member!==uniMe()); if(!L.length){ toast("現在沒有人在直播"); break; } iosSheet(L.map(l=>[`強制結束・${esc(artName(l.member,"feed"))}「${esc(l.title)}」`,"admEndLive",`data-id="${l.id}"`])); break; }
     case "ptP": ui.ptP=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "ptShare": iosAlert("藝人分得比例","藝人收到的積分裡，有幾 % 歸藝人（其餘是扣除的部分）",`<button data-a="tCloseLayer">取消</button><button data-a="ptShareOk">儲存</button>`,`<label class="pt-in"><input id="ptShareIn" type="number" inputmode="numeric" min="0" max="100" value="${revShare()}"><span>%</span></label>`); break;
@@ -985,7 +978,7 @@ function clickTie(a,t,e,r){ switch(a){
       (async()=>{ const up={}; await Promise.all(Q.filter(q=>q.kind).map(async q=>{ try{ const b=await MDB.get(q.mid); up[q.mid]=!!b&&await hbUpload(q.mid,b); }catch(_){} }));   /* 照片、語音先一起上傳完，訊息再照順序一次送出 */
         tieQSet(mid,[]); ui.tqBusy=null;
         for(const q of Q){ try{ if(q.kind){ if(!up[q.mid]) continue; sendWhisperMedia(mid,q.kind,q.mid,q.kind==="photo"?{w:q.w,h:q.h}:{dur:q.dur}); } else sendWhisper(mid,q.text,q.rid); }catch(_){} await new Promise(r=>setTimeout(r,8)); }
-        try{ aiOnTie(mid,Q.map(q=>q.kind==="photo"?"（傳了一張照片）":q.kind==="voice"?"（傳了一段語音，大約 "+Math.round(q.dur||0)+" 秒，你聽不到內容）":q.text).join("\n")); }catch(_){} ui.scrollChat=true; render(); tieToast("已傳送"); })(); break; }
+        ui.scrollChat=true; render(); tieToast("已傳送"); })(); break; }
     case "tkNew": { const ms=tkTargets(); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:tkNm()||""}}; render(); window.scrollTo(0,0); break; }
     case "tkMid": tkKeep(); ui.tkD.mid=t.dataset.v; render(); break;
     case "tkPal": tkKeep(); ui.tkD.deco.pal=+t.dataset.v; render(); break;
@@ -1033,7 +1026,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "publish": {
       const text=ui.composeText.trim(); if(!text&&!(ui.composeMedia||[]).length&&!ui.composePoll) break;
       if(ui.composeVis==="pw"&&!String(ui.composePw||"").trim()){ toast("私密貼文要設定密碼"); break; }
-      const {post:np,reached}=createPost(session().member,text,ui.composeColor,ui.composeTag,ui.composeMedia,ui.composeVis,String(ui.composePw||"").trim(),ui.composePoll); ui.composePoll=null; aiOnPost(np); ui.composeTag="日常"; ui.composeMedia=[]; ui.composeVis="all"; ui.composePw="";
+      const {post:np,reached}=createPost(session().member,text,ui.composeColor,ui.composeTag,ui.composeMedia,ui.composeVis,String(ui.composePw||"").trim(),ui.composePoll); ui.composePoll=null; ui.composeTag="日常"; ui.composeMedia=[]; ui.composeVis="all"; ui.composePw="";
       ui.composeText=""; ui.composeColor=null; if(route().sub==="write") navBack(); else render();
       toast(reached?"已發布，粉絲收到通知了":"已發布"); break; }
     case "del": ask("確定要刪除這則動態嗎？",()=>{ deletePost(t.dataset.id); render(); toast("已刪除"); }); break;

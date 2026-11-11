@@ -1730,7 +1730,7 @@ function setLayer(html,key){
 
 /* =========================================================
    待辦（使用者交代）：最後再一起做「DeepL 翻譯接上」——帶使用者在 Cloudflare 架 deepl-worker.js（key 放 Secret DEEPL_KEY，
-     不能寫進 App），把 Worker 網址填到 管理員 ME → AI 粉絲 → 翻譯服務，按「測試翻譯」確認；搬到自己的網站後設 ALLOWED_ORIGIN。
+     不能寫進 App），把 Worker 網址填到 管理員 → 營運 → 翻譯服務，按「測試翻譯」確認；搬到自己的網站後設 ALLOWED_ORIGIN。
    ========================================================= */
 
 /* ===== 登入狀態：每次重新打開 App 都會先看到登入頁 ===== */
@@ -1758,7 +1758,7 @@ const askClose=()=>{ const b=document.getElementById("askLayer"); if(b) b.innerH
 const MOON='<svg viewBox="0 0 24 24"><path d="M15 3.4A8.8 8.8 0 1 0 20.6 15.6 6.4 6.4 0 0 1 15 3.4z" fill="#F43F5E" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="18.6" cy="6.6" r="1.4" fill="#F9A8D4"/></svg>';
 
 /* ===== 換頁動畫：進到下一層往左滑入、返回往右滑入、切分頁淡入 ===== */
-function routeDepth(r,s){ if(!s) return 0; if(s.uni&&r.role==="admin"){ if(r.sub==="thedit") return 2; if(r.sub==="themes") return 1; return ["home","reports","posts","announce","foc","shopadm","people"].includes(r.tab||"home")?0:1; } if(r.sub==="chat") return r.p?2:1; if(["notifications","live","replay","core","select","look","themes","thmine","write"].includes(r.sub)) return 1; if(r.sub==="tint") return r.id?2:1; if(r.sub==="thedit") return 2; if(r.sub==="grp") return r.m?3:r.p==="about"?2:1; if(s.role==="artist"&&r.tab==="whisper") return 1; return 0; }
+function routeDepth(r,s){ if(!s) return 0; if(s.uni&&r.role==="admin"){ if(r.sub==="thedit") return 2; if(r.sub==="themes") return 1; return ["home","reports","posts","announce","foc","shopadm","people","artist","ops"].includes(r.tab||"home")?0:1; } if(r.sub==="chat") return r.p?2:1; if(["notifications","live","replay","core","select","look","themes","thmine","write"].includes(r.sub)) return 1; if(r.sub==="tint") return r.id?2:1; if(r.sub==="thedit") return 2; if(r.sub==="grp") return r.m?3:r.p==="about"?2:1; if(s.role==="artist"&&r.tab==="whisper") return 1; return 0; }
 function pageAnim(){
   const r=route(), s=session(), key=location.hash+"|"+(s?s.role:""), d=routeDepth(r,s);
   if(key===ui.pgKey) return null;
@@ -5228,7 +5228,7 @@ function heartRain(){
 function dtDefault(){const t=new Date(Date.now()+864e5);t.setHours(20,0,0,0);return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}T20:00`}
 
 
-/* HAECHU｜打歌、AI 粉絲、簽售、開播音樂 */
+/* HAECHU｜打歌、翻譯、簽售、開播音樂 */
 /* =========================================================
    音樂節目（打歌）：照群組規則
    ・五個節目：THE SHOW（二）、Show Champion（三）、M COUNTDOWN（四）、MUSIC BANK（五）、INKIGAYO（日）
@@ -5341,131 +5341,10 @@ function setWinner(show,sid,wk0,manual){
   if(after.crowns.length>before.crowns.length) muNotify(`👑 ${songName(s)} 成為 ${sh.name} 三冠王`,s.gid);
 }
 
-/* =========================================================
-   AI 粉絲：社群人不夠的時候，由 AI 扮演一群有個性的粉絲
-   ・每位 AI 粉絲有固定的名字、個性、口吻、追的團，還會記得跟藝人的互動
-   ・藝人發動態、傳 TIE、開直播、在直播說話、回覆留言時，AI 粉絲會「讀內容」再回應
-   ・粉絲在直播間說話時，其他 AI 粉絲也可能接話
-   ・只在有人做了動作時才請 AI 寫（不會自己一直跑），回應會照時間陸續出現
-   ・需要在 claude.ai 打開才有；管理員可以在後台開關、調整活躍度、改人設
-   ========================================================= */
-const AIF_BASE=[
-  {id:"f1",name:"星光應援團 🌟",g:4,who:"大學生，應援站站長。熱血、很會整理行程，講話常帶驚嘆號，會提醒大家打榜投票"},
-  {id:"f2",name:"小月亮粉 🌙",g:2,who:"高二生，愛撒嬌，常用疊字和顏文字（๑•̀ㅂ•́)و，偶爾錯字"},
-  {id:"f3",name:"晚安露露",g:6,who:"上班族姊姊粉，溫柔，像家人一樣叮嚀藝人吃飯、睡覺、保暖"},
-  {id:"f4",name:"晴天娃娃",g:5,who:"住台中的新粉，什麼都好奇，很愛問問題"},
-  {id:"f5",name:"棉被裡的粉絲",g:1,who:"準考生，常熬夜偷看，很會自嘲，講話有點厭世但很可愛"},
-  {id:"f6",name:"奶茶少冰",g:7,who:"手搖店打工，愛分享自己的日常，推歌狂，常說『這首我要循環一整天』"},
-  {id:"f7",name:"今天也要吃飽飽",g:3,who:"美食控，什麼話題都能扯到吃的"},
-  {id:"f8",name:"舞台控小白",g:0,who:"熱舞社，專看舞台細節，會講走位、表情管理、穿搭"},
-  {id:"f9",name:"螢光棒充電中",g:2,who:"演唱會常客的老粉，愛講以前的回憶，有點感性"},
-  {id:"f10",name:"貓咪與我",g:5,who:"話很少，常只回幾個字或一串表情符號"},
-  {id:"f11",name:"凌晨三點的雲",g:1,who:"文青，偶爾寫出有點詩意的句子，安靜溫和"},
-  {id:"f12",name:"剛入坑的小豆芽",g:4,who:"剛入坑的國中生，很興奮，常說『我是不是太晚認識你們了』"}];
-const aiCfg=()=>({on:true,level:1,...S.get(K.aiCfg,{})});
-const aiFans=()=>S.get(K.aiFans,null)||AIF_BASE.map(f=>({...f,follows:GROUPS.filter(g=>strHash(f.id+g.id)%3!==0).map(g=>g.id)}));
-const aiFan=id=>aiFans().find(f=>f.id===id);
-let SAMPLE=null, aiOff=false, aiBusy={};
+/* 翻譯用的 Claude 連線（AI 粉絲 11/11 整段刪掉，只留翻譯會用到的這幾行） */
+let SAMPLE=null, aiOff=false;
 (async()=>{ try{ if(window.claude&&claude.use){ SAMPLE=await claude.use("sample"); if(SAMPLE) render(); } }catch(e){} })();
-const aiReady=()=>false;   // AI 粉絲已關閉（不使用）
-function aiPick(gid,n){ const l=aiFans().filter(f=>(f.follows||[]).includes(gid)); for(let i=l.length-1;i>0;i--){ const j=Math.random()*(i+1)|0; [l[i],l[j]]=[l[j],l[i]]; } return l.slice(0,Math.max(1,Math.round(n*aiCfg().level))); }
-const memKey=(fid,mid)=>fid+":"+mid;
-function aiRemember(fid,mid,line){ const m=S.get(K.aiMem,{}), k=memKey(fid,mid); m[k]=[...(m[k]||[]),line.slice(0,80)].slice(-6); S.set(K.aiMem,m); }
-function aiFanLines(fans,mid){ const mem=S.get(K.aiMem,{});
-  return fans.map(f=>{ const r=mem[memKey(f.id,mid)]||[]; return `${f.id}｜${f.name}｜${f.who}${r.length?`｜跟這位藝人的近期互動：${r.join(" / ")}`:""}`; }).join("\n"); }
-function aiPrompt(fans,mid,scene,shape){
-  const m=MEMBERS[mid], g=groupOf(m.group);
-  return `你要替一個韓流偶像社群 App 裡的幾位粉絲寫出他們真實的回應。這是一群朋友玩的角色扮演社群，藝人由群組成員扮演，粉絲是 App 裡的其他使用者。
-
-寫法規則：
-- 用台灣的繁體中文，像真人用手機打字：口語、長短不一，有人只打幾個字或表情，有人多說一點；不要每句都完整工整。
-- 每位粉絲照自己的個性和口吻說話；彼此不要用同樣的句型或開頭，不要每個人都在誇。
-- 針對內容具體回應（提到的細節、照片裡看得到的東西、藝人問的問題），不要空泛的「好棒」。
-- 可以猜、可以問，但不要把藝人沒說過的事講成事實。
-- 友善健康：不寫戀愛或性暗示、不騷擾、不攻擊或比較別的藝人、不罵人、不提到自己是 AI、不寫真實個資或連結。
-- 藝人：${m.name}（${g?g.name:""}）。
-
-這次出場的粉絲（id｜名字｜個性）：
-${aiFanLines(fans,mid)}
-
-情境：
-${scene}
-
-另外每則都附上自然的韓文翻譯（ko），給藝人看的。
-
-只回 JSON，不要其他文字：${shape}`;
-}
-async function aiAsk(prompt,images){
-  if(!aiReady()) return null;
-  try{ return await SAMPLE.json(prompt,{modelTier:"quick",cache:false,...(images&&images.length?{images}:{})}); }
-  catch(e){ const c=e&&e.code;
-    if(c==="images_unavailable"||c==="image_rejected") return aiAsk(prompt,null);
-    if(["not_granted","sampling_disabled","not_declared","capability_disabled","capability_removed"].includes(c)) aiOff=true;
-    return null; }
-}
 const aiClean=t=>String(t||"").replace(/\s+/g," ").trim().slice(0,200);
-function aiQueue(items){ const q=S.get(K.aiQ,[]); S.set(K.aiQ,[...q,...items].sort((a,b)=>a.due-b.due).slice(-200)); }
-function aiMsgs(res){ const l=res&&(Array.isArray(res)?res:res.msgs); return Array.isArray(l)?l.filter(x=>x&&aiFan(String(x.fan))&&aiClean(x.text)):[]; }
-/* 1. 藝人發動態 → 留言 */
-async function aiOnPost(post){
-  if(!aiReady()) return; const fans=aiPick(post.group,4); let imgs=null;
-  const ph=(post.media||[]).filter(x=>x.kind==="photo").slice(0,2); if(ph.length){ try{ imgs=(await Promise.all(ph.map(x=>MDB.get(x.mid)))).filter(Boolean); }catch(e){} }
-  const vid=(post.media||[]).some(x=>x.kind==="video");
-  const res=await aiAsk(aiPrompt(fans,post.member,`藝人剛發了一則動態（分類：${post.tag||"日常"}）：「${post.text||"（沒有文字）"}」${imgs&&imgs.length?"\n附上的照片就是這次給你看的圖。":""}${vid?"\n這則附了一段影片（你看不到內容，別假裝看過細節）。":""}
-請讓其中 3～5 位粉絲各留 1 則留言（大多 5～50 字）。sec 是發文後幾秒留言，從 6 到 150 之間、依序遞增。`,`{"msgs":[{"fan":"f1","text":"留言內容","ko":"這句的韓文翻譯","sec":8}]}`),imgs);
-  const now=Date.now();
-  aiQueue(aiMsgs(res).slice(0,6).map((x,i)=>({kind:"comment",due:now+Math.max(4,+x.sec||8*(i+1))*1000,postId:post.id,fan:String(x.fan),text:aiClean(x.text),ko:aiClean(x.ko),mid:post.member})));
-}
-/* 2. 藝人回覆 AI 粉絲的留言 → 那位粉絲的反應 */
-async function aiOnCommentReply(c){
-  if(!aiReady()||!c.aiFan) return; const p=S.get(K.posts,[]).find(x=>x.id===c.postId); if(!p) return; const f=aiFan(c.aiFan); if(!f) return;
-  aiRemember(f.id,p.member,`藝人回了我：「${c.reply.text}」`);
-  const res=await aiAsk(aiPrompt([f],p.member,`藝人在動態「${(p.text||"").slice(0,80)}」底下，回覆了 ${f.name} 的留言「${c.text}」，回覆內容是：「${c.reply.text}」。
-${f.name} 看到被回覆了，請寫 ${f.name} 再留的 1 則新留言（很開心、可以接著聊）。sec 在 10～40 之間。`,`{"msgs":[{"fan":"${f.id}","text":"留言內容","ko":"這句的韓文翻譯","sec":15}]}`));
-  const now=Date.now(); aiQueue(aiMsgs(res).slice(0,1).map(x=>({kind:"comment",due:now+Math.max(6,+x.sec||15)*1000,postId:p.id,fan:f.id,text:aiClean(x.text),ko:aiClean(x.ko),mid:p.member})));
-}
-/* 3. 藝人傳 TIE → 訂閱的粉絲回訊息 */
-async function aiOnTie(mid,text,img){
-  if(!aiReady()) return; const fans=aiPick(MEMBERS[mid].group,4);
-  const recent=getWhispers().filter(w=>w.member===mid).slice(-9,-1).map(w=>w.from==="artist"?`藝人：${w.text}`:`粉絲：${w.text}`).join("\n");
-  const res=await aiAsk(aiPrompt(fans,mid,`這是 TIE（像 Bubble 的私訊）：藝人傳一則訊息，每位訂閱的粉絲都收到，粉絲回的訊息只有藝人看得到。訊息裡的 @@@ 會在每位粉絲手機上變成他自己的暱稱（所以每個人都覺得是在叫自己）。
-最近的對話：
-${recent||"（沒有）"}
-藝人剛傳：「${text}」${img?"（附上的照片就是這次給你看的圖）":""}
-請讓 2～4 位粉絲回訊息，每人 1～2 則（大多 5～40 字），像在私訊偶像。sec 從 5 到 240 之間、依序遞增。`,`{"msgs":[{"fan":"f1","text":"訊息內容","ko":"這句的韓文翻譯","sec":12}]}`),img?[img]:null);
-  const now=Date.now(), per={};
-  aiQueue(aiMsgs(res).filter(x=>(per[x.fan]=(per[x.fan]||0)+1)<=2).slice(0,8).map((x,i)=>({kind:"tie",due:now+Math.max(4,+x.sec||10*(i+1))*1000,mid,fan:String(x.fan),text:aiClean(x.text),ko:aiClean(x.ko)})));
-}
-/* 4. 直播：開播、藝人說話、粉絲（你）說話、進直播間 */
-async function aiOnLive(id,why){
-  if(!aiReady()) return; const l=getLive(id); if(!l||l.endTs) return;
-  if(aiBusy[id]){ aiBusy[id]="again:"+why; return; } aiBusy[id]=true;
-  try{
-    const fans=aiPick(l.group,5), last=l.msgs.slice(-14).map(x=>x.from==="artist"?`【${MEMBERS[l.member].name}】${x.reply?`（回覆 ${x.reply.name}「${x.reply.text}」）`:""}${x.text}`:`${x.from==="me"?ME.name:x.name}：${x.text}`).join("\n");
-    const what=why==="start"?"藝人剛開播，大家陸續進來打招呼。":why==="enter"?"有一位新的粉絲剛進直播間，聊天室照常進行。":why==="me"?`粉絲「${ME.name}」剛在聊天室說話，其他人可以接話或自己聊。`:"藝人剛說了最後一句話，大家正在反應。";
-    const res=await aiAsk(aiPrompt(fans,l.member,`這是文字直播（只有文字），主題：「${l.title}」。${what}
-聊天室最近的內容（由舊到新）：
-${last||"（剛開始）"}
-請寫接下來聊天室裡 5～8 則粉絲的訊息（大多 2～25 字，像直播聊天室一樣短、快、熱鬧，可以互相接話、刷表情、問藝人問題）。如果藝人回覆了某位粉絲，那位粉絲要有反應。sec 從 1 到 35 之間、依序遞增。`,`{"msgs":[{"fan":"f1","text":"訊息","ko":"這句的韓文翻譯","sec":2}]}`));
-    const now=Date.now(); aiQueue(aiMsgs(res).slice(0,9).map((x,i)=>({kind:"live",due:now+Math.max(1,+x.sec||3*(i+1))*1000,live:id,fan:String(x.fan),text:aiClean(x.text).slice(0,60),ko:aiClean(x.ko).slice(0,80)})));
-  } finally { const again=aiBusy[id]; aiBusy[id]=false; if(typeof again==="string") setTimeout(()=>aiOnLive(id,again.slice(6)),2500); }
-}
-/* AI 粉絲的訊息照時間出現 */
-function aiFlush(){
-  const q=S.get(K.aiQ,[]); if(!q.length) return; const now=Date.now(), due=q.filter(x=>x.due<=now); if(!due.length) return;
-  S.set(K.aiQ,q.filter(x=>x.due>now)); let touched=null;
-  due.forEach(x=>{ const f=aiFan(x.fan); if(!f) return;
-    if(x.kind==="comment"){ const posts=S.get(K.posts,[]), p=posts.find(y=>y.id===x.postId); if(!p) return;
-      S.set(K.comments,[...S.get(K.comments,[]),{id:"ca"+x.due+x.fan,postId:p.id,author:"other",aiFan:f.id,name:f.name,g:f.g,text:x.text,tr:x.ko||"",ts:x.due,reply:null}]);
-      p.comments++; p.likes+=2+(Math.random()*9|0); S.set(K.posts,posts); aiRemember(f.id,p.member,`我留言：「${x.text}」`); touched=touched||"comment"; }
-    if(x.kind==="tie"){ S.set(K.whispers,[...S.get(K.whispers,[]),{id:"wa"+x.due+x.fan,member:x.mid,from:"other",aiFan:f.id,name:f.name,g:f.g,text:x.text,tr:x.ko||"",ts:x.due}]); aiRemember(f.id,x.mid,`我在 TIE 說：「${x.text}」`); touched=touched||"tie"; }
-    if(x.kind==="live"){ const l=getLive(x.live); if(!l||l.endTs) return; l.msgs.push({from:"other",aiFan:f.id,name:f.name,g:f.g,text:x.text,tr:x.ko||"",ts:x.due}); l.hearts+=3+(Math.random()*15|0); saveLive(l); }
-  });
-  if(!touched) return; const typing=document.activeElement&&/INPUT|TEXTAREA/.test(document.activeElement.tagName);
-  if(touched==="comment"&&ui.sheet&&ui.sheet.postId&&typeof renderComments==="function"){ if(!typing) renderComments(true); return; }
-  if(!typing&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); }
-}
-setInterval(aiFlush,1200);
 /* 藝人端：粉絲的留言、TIE 不是中文的，打開時一次翻成中文（存在 zh；中文的不翻） */
 const isZhText=t=>{ const x=String(t||"").replace(/@@@/g,""); if(/[\u3040-\u30ff\uAC00-\uD7A3]/.test(x)) return false; const han=(x.match(/\p{Script=Han}/gu)||[]).length, oth=(x.match(/\p{L}/gu)||[]).length-han; return han>0?han>=oth:oth===0; };
 const trAsked=new Set();
@@ -5564,32 +5443,13 @@ async function tieTranslateX(wid,lang){
   const src=w.ko||w.text, t=lang==="zh"&&hasHangul(src)?await koToZh(src):(await translateMany([src],lang).then(o=>o&&aiClean(o[0])).catch(()=>null)); if(!t){ toast("翻譯失敗，等一下再試試"); return false; }
   const all=S.get(K.tieTrX,{}); all[wid+":"+lang]=t; S.set(K.tieTrX,all); return true;
 }
-/* 管理員：AI 粉絲設定 */
-function viewAiFans(){
-  const cfg=aiCfg(), fans=aiFans(), st=aiOff?"這個瀏覽器沒有允許使用 Claude，AI 粉絲先休息":SAMPLE?(cfg.on?"運作中":"已暫停"):"要在 claude.ai 打開這個 App 才能用（等一下會自動偵測）";
-  const ed=ui.aiEdit;
-  return adminHead("AI FANS")+`<main class="page aif">
-    <button class="rev-back" data-a="tab" data-v="me">‹ 回到 ME</button>
-    <section class="card studio"><div class="foc-cfg-h"><h3>AI 粉絲</h3><span class="badge">${esc(st)}</span></div>
-      
-      <div class="ls-btns"><button class="btn ${cfg.on?"btn-soft":"btn-main"}" data-a="aiToggle">${cfg.on?"暫停 AI 粉絲":"開啟 AI 粉絲"}</button></div>
-      <label class="foc-lab">活躍度（每次出來回應的人數）</label>
-      <div class="chips">${[[.6,"少"],[1,"一般"],[1.6,"熱鬧"]].map(([v,l])=>`<button class="chip ${cfg.level===v?"on":""}" data-a="aiLevel" data-v="${v}">${l}</button>`).join("")}</div></section>
+/* 管理員：翻譯服務（以前夾在 AI 粉絲那頁裡） */
+function viewTranslate(){ return `<main class="page">
     <section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務</h3><span class="badge">目前：${trEngine()}</span></div>
       
       ${HB_ON?`<div class="ls-btns"><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div>`:`<span class="fld-lab">DeepL 中繼站網址</span><label class="field"><input id="trUrl" type="url" inputmode="url" autocomplete="off" placeholder="輸入文字" value="${esc(trCfg().url)}"></label>
       <div class="ls-btns"><button class="btn btn-main" data-a="trSave">儲存</button><button class="btn btn-soft" data-a="trTest">測試翻譯</button></div>`}</section>
-    <div class="section-h">粉絲名單<span class="muted">${fans.length} 位</span></div>
-    ${fans.map(f=>ed===f.id?`<section class="card studio aif-ed">
-      <label class="foc-lab">名字</label><label class="field"><input id="aifName" maxlength="16" value="${esc(f.name)}"></label>
-      <label class="foc-lab">個性和口吻</label><textarea id="aifWho" class="aif-ta">${esc(f.who)}</textarea>
-      <label class="foc-lab">追的團</label><div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${(f.follows||[]).includes(g.id)?"on":""}" data-a="aifFollow" data-f="${f.id}" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
-      <div class="ls-btns"><button class="btn btn-main" data-a="aifSave" data-f="${f.id}">儲存</button><button class="btn btn-soft" data-a="aifDel" data-f="${f.id}">刪除</button></div></section>`
-      :`<button class="card aif-c" data-a="aifEdit" data-f="${f.id}"><span class="av sm" style="background:${grad(f.g)}">${esc([...f.name][0])}</span><span class="aif-b"><b>${esc(f.name)}</b><small>${esc(f.who)}</small><em>${(f.follows||[]).map(id=>groupOf(id)?esc(groupOf(id).name):"").filter(Boolean).join("・")||"還沒追任何團"}</em></span><i>›</i></button>`).join("")}
-    <button class="btn btn-soft btn-block" data-a="aifAdd">＋ 新增 AI 粉絲</button>
-  </main>`;
-}
-function saveAiFans(fn){ const l=aiFans().map(f=>({...f})); fn(l); S.set(K.aiFans,l); }
+  </main>`; }
 
 /* =========================================================
    簽售（藝人端 FOC「簽售現場」＋ 粉絲端 CORE「90s MEET & GREET」，照韓國視訊簽售）
@@ -6503,7 +6363,7 @@ const ANAV={
 ANAV.foc=`<svg viewBox="0 0 24 24" ${NS}><rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 9.5h16M8.5 3v4M15.5 3v4"/><path d="M12 12.4l1 2 2.2.3-1.6 1.5.4 2.2-2-1-2 1 .4-2.2-1.6-1.5 2.2-.3z"/></svg>`;
 const adminNav=a=>navBar([["home","HOME",ANAV.home],["foc","FOC",ANAV.foc],["reports","REPORT",ANAV.report],["posts","POST",ANAV.post],["announce","NEWS",ANAV.news],["me","ME",ANAV.me]],a,{reports:openReports().length});
 
-const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人與團",REVENUE:"積分統計","AI FANS":"AI 粉絲",ME:"管理"};
+const UNI_T={REPORT:"檢舉",POST:"全部貼文",NEWS:"公告",ARTISTS:"藝人與團",REVENUE:"積分統計",ME:"管理"};
 function adminHead(title,sk=null,ph=""){ if(isUni()){ if(title==="FOC") return uniMainHead("活動"); if(["REPORT","POST"].includes(title)&&!(sk&&srchOn(sk))) return uniMainHead("內容"); if(sk&&srchOn(sk)) return `<header class="top uni-top sh-head"><div class="top-row">${srchBar(ph)}</div></header>`; return uniHead(UNI_T[title]||title,sk?srchBtn(sk):""); }
   return `<header class="top sh-head"><div class="top-row">${sk&&srchOn(sk)?srchBar(ph):`<div class="logo">${APP_NAME}<small>管理員</small></div><div class="spacer"></div>${sk?srchBtn(sk):""}<span class="art-sub">${title}</span>`}</div></header>`; }
 function reportCard(r){
@@ -6569,11 +6429,17 @@ function segSwitch(btn,apply,dir){ const seg=btn.closest(".seg2"); if(!seg||btn.
   const pane=document.querySelector(".seg2-pane"); if(pane){ pane.classList.remove("in-l","in-r"); pane.classList.add(dir>0?"out-l":"out-r"); }
   setTimeout(()=>{ apply(); ui.segAnim=dir>0?"in-r":"in-l"; lsRerender(); ui.segAnim=""; },180); }
 function lsRerender(){ const y=window.scrollY; render(); window.scrollTo(0,y); }
+/* 管理員活動頁：三組可以收起來（記在這台手機；收起來時有待處理的會顯示紅點） */
+const FOC_FOLD_K="hc_focfold";
+function focFoldGet(){ try{ return JSON.parse(localStorage.getItem(FOC_FOLD_K)||"null")||{wk:1}; }catch(e){ return {wk:1}; } }
+function focFold(key,ic,title,tiles){ const open=!!focFoldGet()[key], n=(tiles.match(/class="tile /g)||[]).length, hot=/class="tile on"/.test(tiles);
+  return `<button class="section-h foc-fold ${open?"open":""}" data-a="focFold" data-v="${key}" aria-expanded="${open}">${hi(ic)}${title}<span class="foc-fold-r">${hot&&!open?`<i class="seg-dot"></i>`:""}${open?"收起":n+" 項"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<div class="tiles">${tiles}</div>`:""}`; }
 function viewAdmin(tab){
   if(isUni()){
-    if(tab==="revenue") return uniHead("積分統計")+viewPointsAdmin();
+    if(tab==="revenue") return uniHead("積分",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=ptadd" aria-label="加積分">＋</button>`)+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
-    if(tab==="people") return viewUniPeople();
+    if(tab==="people"||tab==="artist") return viewUniArtist();
+    if(tab==="ops"||tab==="shopadm") return viewUniOps();
     if(tab==="try"){ tryFetch(true); return uniHead("試玩訊息")+viewTryInbox(); }
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
     if(tab==="ptadd") return uniHead("加積分")+viewPtAdd();
@@ -6585,11 +6451,9 @@ function viewAdmin(tab){
       const gi=GROUPS.findIndex(g=>g.id===r0.id); if(gi>=0&&cards[gi]) return uniHead(esc(GROUPS[gi].name))+`<main class="page roster">${cards[gi]}${hrHtml(GROUPS[gi])}</main>`;
       const fd=S.get(K.fandom,{});
       return uniHead("藝人與團",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增">＋</button>`)+`<main class="page">${GROUPS.length?"":NOG_HTML()}<section class="card"${GROUPS.length?"":" hidden"}>${GROUPS.map(g=>{ const n=Object.values(MEMBERS).filter(m=>m.group===g.id&&!m.official).length; return `<button class="list-btn rs-row" data-a="uniGo" data-v="#/admin?tab=roster&id=${g.id}"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span>${esc(g.name)}<span class="r">${g.co?esc(g.co)+"・":""}${g.solo?"SOLOIST":n+" 位"}${fd[g.id]?"・"+esc(fd[g.id]):""}</span></button>`; }).join("")}</section></main>`; }
-    if(tab==="shopadm") return uniMainHead("商店")+viewShopAdmin();
     if(tab==="cloud") return uniHead("雲端用量")+viewCloud();
     if(tab==="albums") return uniHead("專輯與店家")+`<main class="page">${GROUPS.length?adminAlbumHtml():NOG_HTML()}</main>`;
-    if(tab==="translate"){ const h=viewAiFans(), a=h.indexOf('<section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務'), b=h.indexOf('</section>',a); return uniHead("翻譯服務")+`<main class="page">${a>0?h.slice(a,b+10):""}</main>`; }
-    if(tab==="aifans"){ const h=viewAiFans(), a=h.indexOf('<section class="card studio"><div class="foc-cfg-h"><h3>翻譯服務'), b=h.indexOf('</section>',a); return a>0?h.slice(0,a)+h.slice(b+10):h; }
+    if(tab==="translate") return uniHead("翻譯服務")+viewTranslate();
     if(tab==="announce"){ const list=getAnns(), gl=getGNotices();
       return `<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">內容</div><button class="icon-btn" data-a="uniAnn" aria-label="發公告">＋</button></div></header><main class="page">${uniContentSeg(2)}
         <div class="section-h">全部粉絲<span class="muted">${list.length} 則</span></div>${list.length?`<section class="card">${list.map(a=>`<div class="uni-an"><p>${esc(a.text)}<small>${ago(a.ts)}</small></p><button class="btn btn-soft btn-sm" data-a="annDel" data-id="${a.id}">撤下</button></div>`).join("")}</section>`:`<p class="me-none">沒有公告</p>`}
@@ -6600,7 +6464,6 @@ function viewAdmin(tab){
   if(tab==="revenue") return viewRevenue();
   if(tab==="roster") return viewRoster();
   if(tab==="debut") return adminHead("出道申請")+`<button class="rev-back" data-a="tab" data-v="me" style="margin:12px 16px 0">‹ 回到 ME</button>`+debutAdmHtml();
-  if(tab==="aifans") return viewAiFans();
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
     const seg=ui.focSeg||"", lsOn=!!liveConcert();
@@ -6608,9 +6471,9 @@ function viewAdmin(tab){
     if(!seg){ const pend=getTours().filter(x=>x.status==="pending").length;
       const tl=(v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="focSeg" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
       return adminHead("FOC")+`<main class="page foc">
-        ${secH("clock","每週")}<div class="tiles">${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}</div>
-        ${secH("star","檔期")}<div class="tiles">${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}</div>
-        ${secH("trophy","大型活動")}<div class="tiles">${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}</div>
+        ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
+        ${focFold("pd","star","檔期",`${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}`)}
+        ${focFold("big","trophy","大型活動",`${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}`)}
         </main>`; }
     const SEGN={sched:"賽程",music:"打歌",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
     const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
@@ -6677,7 +6540,6 @@ function viewAdmin(tab){
         <button class="list-btn" data-a="tab" data-v="roster">${AIC.group}藝人與團管理<span class="r">${GROUPS.length} 團</span></button>
         <button class="list-btn" data-a="thAdmin">${AIC.theme}主題管理<span class="r">${(()=>{const n=getThemes().filter(t=>t.status==="pending").length;return n?n+" 件待審核":TH_STORE})()}</span></button>
         <button class="list-btn" data-a="demoToggle">${AIC.toggle}示範按鈕<span class="r">${demoOn()?"顯示中":"已隱藏"}</span></button>
-        <button class="list-btn" data-a="tab" data-v="aifans">${AIC.ai}AI 粉絲<span class="r">${aiReady()?"運作中":aiCfg().on?"待連線":"已暫停"}</span></button>
         <button class="list-btn" data-a="tab" data-v="revenue">${AIC.money}營收與分潤<span class="r">看收成</span></button>
       </section>
       <div class="section-h">示範工具</div>
@@ -6799,8 +6661,8 @@ document.addEventListener("submit",e=>{
     const s=session(), r=route(), id=s.role==="artist"?(myLive(s.member)||{}).id:r.id; if(!id) return;
     if(s.role==="artist"){ const l=getLive(id), gst=l&&l.member!==s.member; if(l){ if(gst) l.typingG=0; else l.typingTs=0; saveLive(l); } liveSay(id,"artist",text,{reply:hostRep(),mid:gst?s.member:null}); ui.hostReply=null;
       /* 不整頁重畫：輸入框留著、鍵盤不收，上面的卡片跟留言就地更新 */
-      { const n=document.getElementById("lin"), l2=getLive(id); if(n&&l2&&document.querySelector(".dl.host")){ n.value=""; n.dispatchEvent(new Event("input",{bubbles:true})); const sb=document.getElementById("lsend"); if(sb) sb.classList.remove("on"); const rb=document.querySelector(".host-rep2"); if(rb) rb.remove(); updateHost(l2); n.focus(); } else { render(); const n2=document.getElementById("lin"); if(n2) n2.focus(); } } if(!gst){ if(aiReady()) aiOnLive(id,"artist"); else scheduleFake(id); } }
-    else { if(meBlocked()){ ui.lDraft=text; return; } if(!slowOk(text)){ ui.lDraft=text; return; } liveSay(id,"me",text); demoReplyToMe(id,text); aiOnLive(id,"me"); const i=document.getElementById("lin"); i.value=""; document.getElementById("lsend").classList.remove("on"); updateMeetRoom(); i.focus(); }
+      { const n=document.getElementById("lin"), l2=getLive(id); if(n&&l2&&document.querySelector(".dl.host")){ n.value=""; n.dispatchEvent(new Event("input",{bubbles:true})); const sb=document.getElementById("lsend"); if(sb) sb.classList.remove("on"); const rb=document.querySelector(".host-rep2"); if(rb) rb.remove(); updateHost(l2); n.focus(); } else { render(); const n2=document.getElementById("lin"); if(n2) n2.focus(); } } if(!gst){ scheduleFake(id); } }
+    else { if(meBlocked()){ ui.lDraft=text; return; } if(!slowOk(text)){ ui.lDraft=text; return; } liveSay(id,"me",text); demoReplyToMe(id,text); const i=document.getElementById("lin"); i.value=""; document.getElementById("lsend").classList.remove("on"); updateMeetRoom(); i.focus(); }
     return; }
   if(e.target.id==="snCmForm"){ e.preventDefault(); const id=e.target.dataset.id, inp=document.getElementById("snCmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; const d=snDB(); const re=ui.snRe&&ui.snRe.p===id?ui.snRe.c:undefined; ui.snRe=null; (d.cms[id]=d.cms[id]||[]).push({id:"sc"+Date.now(),uid:snMeId(),text,ts:Date.now(),...(re?{re}:{})}); snSave(d); if(inp) inp.value=""; snOpenCm(id); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(e.target.id==="snDmForm"){ e.preventDefault(); const to=e.target.dataset.id, inp=document.getElementById("snDmIn"), text=(inp&&inp.value||"").trim(); if(!text) return; if(!isAdminAcct()&&session().role==="fan"&&banBlock(text)) return; dmAppend(snMeId(),to,{text,ts:Date.now()}); render(); const n=document.getElementById("snDmIn"); if(n) n.focus(); snFakeReply(to); return; }
@@ -6822,13 +6684,13 @@ document.addEventListener("submit",e=>{
   if(e.target.id==="cform"){ e.preventDefault();
     const text=(ui.cDraft||"").trim(); if(!text||!ui.sheet) return; ui.cDraft="";
     if(ui.sheet.cid){ const L=S.get(K.comments,[]), c=L.find(x=>x.id===ui.sheet.cid); if(!c) return; const p0=getPosts().find(x=>x.id===c.postId), art=session().role==="artist"&&p0&&session().member===p0.member;
-      if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); if(c.aiFan) aiOnCommentReply(c); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
+      if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
         c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
       if(meBlocked()||banBlock(text)){ ui.cDraft=text; return; }
       c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:myCmNick(postGid(c.postId)),g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆 💜"); return; }
     if(session().role==="artist"&&!ui.sheet.replyTo){ const c=addArtistComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; }
     if(session().role==="artist"){
-      const {c,reached}=replyComment(ui.sheet.replyTo,text); if(c&&c.aiFan) aiOnCommentReply(c); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);
+      const {c,reached}=replyComment(ui.sheet.replyTo,text); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);
       toast(reached?"已回覆，粉絲收到通知了":"已回覆");
     } else { if(meBlocked()){ ui.cDraft=text; return; } if(banBlock(text)){ ui.cDraft=text; return; } { const c=addComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; } renderComments(); toast("已留言 💜"); }
     return; }
@@ -7090,7 +6952,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "ptOrig": { ui.ptOrig=ui.ptOrig||new Set(); const id=t.dataset.id; if(ui.ptOrig.has(id)) ui.ptOrig.delete(id); else ui.ptOrig.add(id); const p=getPosts().find(x=>x.id===id); const el=document.querySelector(`[data-ptx="${id}"]`); if(p&&el){ const cl=el.classList.contains("clamp"); t.remove(); el.outerHTML=postTextHtml(p,false,cl); } break; }
     case "replyTo": ui.cDraft=""; ui.sheet.replyTo=t.dataset.c; renderComments(true); break;
     
-    case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); aiOnLive(l.id,"enter"); } navTo((l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id); } else toast("這場直播已不存在"); break; }
+    case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); } navTo((l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id); } else toast("這場直播已不存在"); break; }
     case "openReplay": case "openReplayArt": ui.rpArt=a==="openReplayArt"; layer.innerHTML=""; navTo("#/"+session().role+"/replay?id="+t.dataset.id); window.scrollTo(0,0); break;
     case "tkDown": { const b=document.getElementById("cmTick"); if(b) b.scrollTo({top:b.scrollHeight,behavior:"smooth"}); t.hidden=true; ui.tkUnseen=0; break; }
     case "rpMode": { const to=t.dataset.v==="art"; if(to===!!ui.rpArt) break; segSwitch(t,()=>{ ui.rpArt=to; },to?1:-1); break; }
@@ -7304,7 +7166,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "openEvent": ui.feedTab=t.dataset.ek==="spot"?"spot":"party"; ui.focusEv=t.dataset.ev; go("fan"); break;
     case "reserve": { const on=toggleReserve(t.dataset.id); render(); toast(on?"已預約，活動前會提醒你 💜":"已取消預約"); break; }
     case "heart": if(ui.heartPtr){ ui.heartPtr=false; break; } sendHeart(t.dataset.id); break;
-    case "startLive": { const title=(document.getElementById("ltitle")||{value:""}).value.trim(); ui.hostReply=null; const {l:nl,reached}=startLive(session().member,title); if(aiReady()) aiOnLive(nl.id,"start"); ui.lTitle=""; ui.lDraft=""; render(); window.scrollTo(0,0);
+    case "startLive": { const title=(document.getElementById("ltitle")||{value:""}).value.trim(); ui.hostReply=null; const {l:nl,reached}=startLive(session().member,title); ui.lTitle=""; ui.lDraft=""; render(); window.scrollTo(0,0);
       toast(reached?"開播了！粉絲收到通知了":"開播了！"); break; }
     case "delEvent": ask("確定要刪除這個活動嗎？",()=>{ deleteEvent(t.dataset.id); render(); toast("已刪除"); }); break;
     case "shOpen": ui.srch={key:t.dataset.k,q:""}; render(); { const i=document.getElementById("shq"); if(i) i.focus(); } break;
@@ -7642,14 +7504,6 @@ function clickAdm(a,t,e,r){ switch(a){
       layer.innerHTML=""; acCall({action:"reset",username:k,password:pw}).then(r=>{ if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]){ ACCOUNTS[k].pw=pw; if(ACCOUNTS[k].role!=="admin") saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[k]={...(x.accounts[k]||ACCOUNTS[k]),pw}; }); } toast(`${acctUser(k)} 的新密碼設好了`); }); break; }
     case "trSave": { const v=(document.getElementById("trUrl").value||"").trim(); if(v&&!/^https:\/\//.test(v)){ toast("網址要用 https:// 開頭"); break; } S.set(K.trCfg,{url:v}); lsRerender(); toast(v?"已改用 DeepL 翻譯":"已改回 Claude 翻譯"); break; }
     case "trTest": { toast("翻譯中…"); translateMany(["今天的舞台好棒！@@@ 辛苦了 💜"],"ko").then(o=>{ toast(o&&o[0]?`${trEngine()}：${o[0]}`:(HB_ON?"DeepL 還沒接好（後台的 deepl 和 DEEPL_KEY）":useDeepL()?"連不到 DeepL 中繼站（在 claude.ai 裡會被擋，搬到自己的網站後才會通）":"翻譯服務還沒連上")); }); break; }
-    case "aiToggle": { const c=aiCfg(); c.on=!c.on; S.set(K.aiCfg,c); lsRerender(); toast(c.on?"AI 粉絲開啟了":"AI 粉絲暫停了"); break; }
-    case "aiLevel": { const c=aiCfg(); c.level=+t.dataset.v; S.set(K.aiCfg,c); lsRerender(); break; }
-    case "aifEdit": ui.aiEdit=t.dataset.f; lsRerender(); break;
-    case "aifFollow": saveAiFans(l=>{ const f=l.find(x=>x.id===t.dataset.f); if(!f) return; const fl=f.follows||[]; f.follows=fl.includes(t.dataset.v)?fl.filter(x=>x!==t.dataset.v):[...fl,t.dataset.v]; }); t.classList.toggle("on"); break;
-    case "aifSave": { const nm=document.getElementById("aifName").value.trim(), who=document.getElementById("aifWho").value.trim(); if(!nm||!who){ toast("名字和個性都要填"); break; }
-      saveAiFans(l=>{ const f=l.find(x=>x.id===t.dataset.f); if(f){ f.name=nm; f.who=who; } }); ui.aiEdit=null; lsRerender(); toast("已儲存"); break; }
-    case "aifDel": { const f=aiFan(t.dataset.f); if(!f) break; ask(`要刪除 AI 粉絲「${f.name}」嗎？`,()=>{ saveAiFans(l=>{ const i=l.findIndex(x=>x.id===f.id); if(i>=0) l.splice(i,1); }); ui.aiEdit=null; lsRerender(); },{ok:"刪除"}); break; }
-    case "aifAdd": { const id="f"+Date.now(); saveAiFans(l=>l.push({id,name:"新的粉絲",g:Math.random()*8|0,who:"寫下這位粉絲的年紀、個性、說話習慣",follows:GROUPS.map(g=>g.id)})); ui.aiEdit=id; lsRerender(); break; }
     case "muWk": { const n=+t.dataset.v, k=shiftWeek(ui.muWk||curWeek(),n); if(k>curWeek()) break; ui.muWk=k; lsRerender(); break; }
     case "muWin": { if(t.disabled) break; const sid=t.dataset.v||null, sh=t.dataset.s; setWinner(sh,sid,null,true); lsRerender(); if(sid) toast(`已公布 ${SHOWS.find(x=>x.id===sh).name} 一位，粉絲會收到通知`); break; }
     case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); lsRerender(); break; }
@@ -7743,6 +7597,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "uniAnnBack": uniAnnOpen(); break;
     case "uniAnnOk": { const d=ui.annDraft; if(d.to==="all") publishAnnounce(d.body.trim()); else S.set(K.gNotices,[{id:"gn"+Date.now(),group:d.to,title:d.title.trim(),body:d.body.trim(),ts:Date.now()},...S.get(K.gNotices,[])]);
       ui.annDraft=null; layer.innerHTML=""; render(); toast("已用HAECHU官方發布"); break; }
+    case "focFold": { const o=focFoldGet(); o[t.dataset.v]=o[t.dataset.v]?0:1; try{ localStorage.setItem(FOC_FOLD_K,JSON.stringify(o)); }catch(e){} hap(8); lsRerender(); break; }
     case "uniLives": { const L=getLives().filter(l=>!l.endTs&&l.member!==uniMe()); if(!L.length){ toast("現在沒有人在直播"); break; } iosSheet(L.map(l=>[`強制結束・${esc(artName(l.member,"feed"))}「${esc(l.title)}」`,"admEndLive",`data-id="${l.id}"`])); break; }
     case "ptP": ui.ptP=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "ptShare": iosAlert("藝人分得比例","藝人收到的積分裡，有幾 % 歸藝人（其餘是扣除的部分）",`<button data-a="tCloseLayer">取消</button><button data-a="ptShareOk">儲存</button>`,`<label class="pt-in"><input id="ptShareIn" type="number" inputmode="numeric" min="0" max="100" value="${revShare()}"><span>%</span></label>`); break;
@@ -8036,7 +7891,7 @@ function clickTie(a,t,e,r){ switch(a){
       (async()=>{ const up={}; await Promise.all(Q.filter(q=>q.kind).map(async q=>{ try{ const b=await MDB.get(q.mid); up[q.mid]=!!b&&await hbUpload(q.mid,b); }catch(_){} }));   /* 照片、語音先一起上傳完，訊息再照順序一次送出 */
         tieQSet(mid,[]); ui.tqBusy=null;
         for(const q of Q){ try{ if(q.kind){ if(!up[q.mid]) continue; sendWhisperMedia(mid,q.kind,q.mid,q.kind==="photo"?{w:q.w,h:q.h}:{dur:q.dur}); } else sendWhisper(mid,q.text,q.rid); }catch(_){} await new Promise(r=>setTimeout(r,8)); }
-        try{ aiOnTie(mid,Q.map(q=>q.kind==="photo"?"（傳了一張照片）":q.kind==="voice"?"（傳了一段語音，大約 "+Math.round(q.dur||0)+" 秒，你聽不到內容）":q.text).join("\n")); }catch(_){} ui.scrollChat=true; render(); tieToast("已傳送"); })(); break; }
+        ui.scrollChat=true; render(); tieToast("已傳送"); })(); break; }
     case "tkNew": { const ms=tkTargets(); ui.tkD={mid:ms[0]||null,shares:1,deco:{...TRUCK_DECO0(),from:tkNm()||""}}; render(); window.scrollTo(0,0); break; }
     case "tkMid": tkKeep(); ui.tkD.mid=t.dataset.v; render(); break;
     case "tkPal": tkKeep(); ui.tkD.deco.pal=+t.dataset.v; render(); break;
@@ -8084,7 +7939,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "publish": {
       const text=ui.composeText.trim(); if(!text&&!(ui.composeMedia||[]).length&&!ui.composePoll) break;
       if(ui.composeVis==="pw"&&!String(ui.composePw||"").trim()){ toast("私密貼文要設定密碼"); break; }
-      const {post:np,reached}=createPost(session().member,text,ui.composeColor,ui.composeTag,ui.composeMedia,ui.composeVis,String(ui.composePw||"").trim(),ui.composePoll); ui.composePoll=null; aiOnPost(np); ui.composeTag="日常"; ui.composeMedia=[]; ui.composeVis="all"; ui.composePw="";
+      const {post:np,reached}=createPost(session().member,text,ui.composeColor,ui.composeTag,ui.composeMedia,ui.composeVis,String(ui.composePw||"").trim(),ui.composePoll); ui.composePoll=null; ui.composeTag="日常"; ui.composeMedia=[]; ui.composeVis="all"; ui.composePw="";
       ui.composeText=""; ui.composeColor=null; if(route().sub==="write") navBack(); else render();
       toast(reached?"已發布，粉絲收到通知了":"已發布"); break; }
     case "del": ask("確定要刪除這則動態嗎？",()=>{ deletePost(t.dataset.id); render(); toast("已刪除"); }); break;
@@ -8778,10 +8633,6 @@ async function acCall(body){ body={...body}; if(body.username) body.username=nor
 function viewNoArtist(){ return `<main class="page"><div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人身分</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster">到藝人與團</button></div></main>`; }
 /* 示範工具 */
 
-function viewShopAdmin(){ const n=getThemes().filter(t=>t.status==="pending").length; return `<main class="page"><section class="card">
-    <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
-    <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${n?`<em class="t-cnt">${n}</em>`:""}</span></button></section>
-    <div class="section-h">積分</div><section class="card"><button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${AIC.chart}積分統計</button></section></main>`; }
 
 /* 管理員清單的圖示：每一項長得不一樣，一眼分得出來 */
 const AIC=(()=>{ const sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
@@ -8789,6 +8640,7 @@ const AIC=(()=>{ const sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="curre
     group:sv('<circle cx="9" cy="8.5" r="3"/><circle cx="16.5" cy="9.5" r="2.4"/><path d="M3.5 19c.9-3 3-4.5 5.5-4.5s4.6 1.5 5.5 4.5M14.5 14.8c2.6-.3 4.8 1 5.8 4.2"/>'), plus:sv('<circle cx="12" cy="12" r="8.5"/><path d="M12 8v8M8 12h8"/>'),
     chart:sv('<path d="M4 20V10M10 20V4M16 20v-7M21 20H3"/>'), globe:sv('<circle cx="12" cy="12" r="8.5"/><path d="M3.5 12h17M12 3.5c2.6 2.6 2.6 14.4 0 17M12 3.5c-2.6 2.6-2.6 14.4 0 17"/>'),
     shield:sv('<path d="M12 3l7.5 3v5.5c0 4.6-3.2 8.2-7.5 9.5-4.3-1.3-7.5-4.9-7.5-9.5V6z"/><path d="M9 12l2.2 2.2L15.5 10"/>'), scout:sv('<circle cx="10.5" cy="10.5" r="6"/><path d="M15 15l5 5"/>'),
+    chat:sv('<path d="M5.5 5h13a1.5 1.5 0 0 1 1.5 1.5v8.5a1.5 1.5 0 0 1-1.5 1.5H10l-4 3.2V16.5h-.5A1.5 1.5 0 0 1 4 15V6.5A1.5 1.5 0 0 1 5.5 5z"/>'),
     cloud:sv('<path d="M7 18.5h10a4 4 0 0 0 .6-8 6 6 0 0 0-11.4 1.6A3.3 3.3 0 0 0 7 18.5z"/>'), wrench:sv('<path d="M14.5 5.5a4.5 4.5 0 0 0 5 6l-8.8 8.8a2.1 2.1 0 0 1-3-3l8.8-8.8a4.5 4.5 0 0 0-2-3z"/>'),
     palette:sv('<path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.3 0 1.8-.9 1.5-1.9-.4-1.3.4-2.4 1.8-2.4h1.6a3.6 3.6 0 0 0 3.6-3.6c0-5-3.8-9.1-8.5-9.1z"/><circle cx="8" cy="11" r="1"/><circle cx="12" cy="7.6" r="1"/><circle cx="16" cy="10" r="1"/>'),
     replay:sv('<path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4.3h4.3"/>'), theme:sv('<rect x="4" y="4" width="16" height="16" rx="3"/><path d="M4 9h16M9 9v11"/>'), toggle:sv('<rect x="3" y="7" width="18" height="10" rx="5"/><circle cx="16" cy="12" r="3"/>'),
@@ -9029,7 +8881,7 @@ function tourKey(){ const s=session(), r=route(); if(!s) return "";
   if(r.role==="artist"&&!r.sub&&r.tab==="foc"&&r.p&&!r.id) return "artist:foc:"+r.p;
   if(r.role==="artist"&&!r.sub&&r.tab==="live"&&document.querySelector(".mr.dl.host")) return "artist:room";
   if(r.sub) return "";
-  if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
+  if(r.role==="admin"){ const t=r.tab||"home"; if(t==="roster"&&r.p==="new") return "admin:rosternew"; if(t==="roster"&&r.id) return ""; return "admin:"+(["reports","posts","announce","foc","shopadm","people","artist","ops","accounts","roster","ptadd","banned"].includes(t)?t:t==="home"?"home":"x"); }
   return r.role+":"+(r.tab||"home"); }
 const tourDone=k=>{ const s=session()||{}; return !!(S.get(K.tours,{})[(s.email||"")+"|"+k]); };
 function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getElementById("coach")||!welcomeDone()) return;
@@ -9039,7 +8891,7 @@ function tourCheck(){ if(ui.noTour||ui.coach||layer.innerHTML||document.getEleme
   ui.coach={kind:"tour",key:k,steps,i:0}; coachShow(); }
 
 /* ===== 新手教學：每一端一次教完（不用每個分頁各跳一次） ===== */
-const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",sns:"SNS",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店"};
+const TOUR_LBL={home:"LOVE",live:"直播",whisper:"TIE",core:"FEST",shop:"SHOP",sns:"SNS",me:"ME",foc:"FOC",content:"內容",people:"人員",chat:"TIE 聊天室",grp:"社群",write:"撰寫貼文",reports:"內容",posts:"內容",announce:"內容",shopadm:"商店",artist:"藝人",ops:"營運"};
 function fullTourStart(){ const ro=route().role, navs=[...document.querySelectorAll(".nav .nav-btn")].map(b=>b.dataset.v).filter(Boolean); if(!navs.length){ const c=document.getElementById("coach"); if(c) c.remove(); ui.coach=null; return; }
   const seq=[];
   ui.feedTab="feed"; tourDemoOn(ro);
@@ -9107,7 +8959,7 @@ I.camera=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-widt
    管理員＝三端：最上面「粉絲｜藝人｜管理」三段切換（方案 B）
    ・粉絲：跟一般粉絲一模一樣（紫）
    ・藝人：就是原本的藝人端，用自己的藝人身分（粉紅）
-   ・管理：深色，五個分頁：待辦、內容、活動、商店、人員
+   ・管理：深色，五個分頁：總覽、藝人、內容、活動、營運（11/11 重排：每個功能只放一個地方）
    ========================================================= */
 const UNI_SEC={fan:"#/fan",artist:"#/artist",admin:"#/admin"};
 function uniSwitch(){ const r=route().role, i=["fan","artist","admin"].indexOf(r), T=uniTodo(), n=T.rep+T.th;
@@ -9118,10 +8970,11 @@ const UNI_AIC={
   foc:UNI_SV(`<rect x="3.8" y="5.4" width="16.4" height="14.6" rx="3"/><path d="M3.8 9.8h16.4M8.4 3.6v3.6M15.6 3.6v3.6"/><path d="m12 12.4.9 1.9 2 .2-1.5 1.4.4 2-1.8-1-1.8 1 .4-2-1.5-1.4 2-.2z"/>`,`<path fill-rule="evenodd" d="M6.8 5.4h10.4a3 3 0 0 1 3 3v8.6a3 3 0 0 1-3 3H6.8a3 3 0 0 1-3-3V8.4a3 3 0 0 1 3-3zM3.8 9.8h16.4"/><path d="M8.4 3.6v3.6M15.6 3.6v3.6" fill="none"/>`),
   shop:UNI_IC.shop,
   people:UNI_SV(`<circle cx="9" cy="8.6" r="3.2"/><path d="M3.4 19.4c.6-3.4 2.8-5 5.6-5s5 1.6 5.6 5"/><circle cx="16.6" cy="9.4" r="2.5"/><path d="M15.8 14.6c2.4 0 4.2 1.4 4.8 4.4"/>`,`<circle cx="9" cy="8.6" r="3.2"/><path d="M3.4 19.4c.6-3.4 2.8-5 5.6-5s5 1.6 5.6 5z"/><circle cx="16.6" cy="9.4" r="2.5"/><path d="M15.8 14.6c2.4 0 4.2 1.4 4.8 4.4h-4.2z"/>`)};
-const UNI_ATAB=t=>({banned:"people",reports:"content",posts:"content",announce:"content",content:"content",foc:"foc",shopadm:"shop",albums:"shop",people:"people",roster:"people",revenue:"people",aifans:"people",translate:"people",demo:"people"})[t]||(t?"people":"home");
-function uniAdminNav(){ const r=route(), a=r.sub==="themes"||r.sub==="thedit"?"shop":UNI_ATAB(r.tab), T=uniTodo();
-  return navBar([["home","待辦",UNI_AIC.home],["content","內容",UNI_AIC.content],["foc","活動",UNI_AIC.foc],["shop","商店",UNI_AIC.shop],["people","人員",UNI_AIC.people]],a,{home:T.rep+T.th,content:T.rep}); }
-const UNI_ATABGO={home:"#/admin",content:"#/admin?tab=reports",foc:"#/admin?tab=foc",shop:"#/admin?tab=shopadm",people:"#/admin?tab=people"};
+UNI_AIC.ops=UNI_SV(`<rect x="3.6" y="7.2" width="16.8" height="12.6" rx="2.6"/><path d="M9 7.2V5.6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 5.6v1.6M3.6 12.4h16.8M12 11.2v2.4"/>`,`<path d="M6.2 7.2h11.6a2.6 2.6 0 0 1 2.6 2.6v7.4a2.6 2.6 0 0 1-2.6 2.6H6.2a2.6 2.6 0 0 1-2.6-2.6V9.8a2.6 2.6 0 0 1 2.6-2.6z"/><path d="M9 7.2V5.6a1.6 1.6 0 0 1 1.6-1.6h2.8A1.6 1.6 0 0 1 15 5.6v1.6" fill="none"/>`);
+const UNI_ATAB=t=>({reports:"content",posts:"content",announce:"content",content:"content",foc:"foc",people:"artist",artist:"artist",roster:"artist",debut:"artist",cbreq:"artist",ops:"ops",shopadm:"ops",albums:"ops",revenue:"ops",ptadd:"ops",accounts:"ops",banned:"ops",translate:"ops",cloud:"ops",try:"ops",demo:"ops"})[t]||(t?"ops":"home");
+function uniAdminNav(){ const r=route(), a=r.sub==="themes"||r.sub==="thedit"?"ops":r.sub==="sns"?"artist":UNI_ATAB(r.tab), T=uniTodo();
+  return navBar([["home","總覽",UNI_AIC.home],["artist","藝人",UNI_AIC.people],["content","內容",UNI_AIC.content],["foc","活動",UNI_AIC.foc],["ops","營運",UNI_AIC.ops]],a,{home:T.rep+T.th,content:T.rep,artist:debutWait()+cbrWait()}); }
+const UNI_ATABGO={home:"#/admin",artist:"#/admin?tab=artist",content:"#/admin?tab=reports",foc:"#/admin?tab=foc",ops:"#/admin?tab=ops"};
 const uniMainHead=title=>`<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">${title}</div><span class="sh-sp"></span></div></header>`;
 /* 管理員：全部貼文（每則的樣子）；「全部」時依藝人折疊，點開才看，太長的只先顯示 10 則 */
 const APITEM=p=>{const m=MEMBERS[p.member]||{name:"已刪除的藝人",g:0};return `<div class="n-item ${p.hidden?"is-hidden":""}">
@@ -9132,29 +8985,37 @@ const APITEM=p=>{const m=MEMBERS[p.member]||{name:"已刪除的藝人",g:0};retu
 const uniContentSeg=i=>`<div class="seg2 mod-seg three" style="--i:${i}"><i class="seg2-ind"></i>${[["檢舉","reports"],["全部貼文","posts"],["公告","announce"]].map(([l,t],k)=>`<button class="${k===i?"on":""}" data-a="uniSeg" data-v="#/admin?tab=${t}">${l}</button>`).join("")}</div>`;
 function viewUniTodo(){ const T=uniTodo(), on=getLives().filter(l=>!l.endTs), cm=S.get(K.comments,[]).filter(c=>c.ts>Date.now()-864e5).length, ev=getEvents().filter(e=>e.ts>=Date.now()).length;
   const rows=[[tryUnread(),"試玩訪客等你回覆","#/admin?tab=try"],[debutWait(),"待審核出道申請","#/admin?tab=debut"],[cbrWait(),"待審核回歸申請","#/admin?tab=cbreq"],[T.rep,"待處理檢舉","#/admin?tab=reports"],[T.th,"待審核主題","#/admin/themes"],[tieQuiet().length,"TIE 3 天沒傳訊息","tieQuiet"]].filter(x=>x[0]);
-  return uniMainHead("待辦")+`<main class="page">
+  return uniMainHead("總覽")+`<main class="page">
     <div class="section-h">要處理的事<span class="muted">${rows.length?rows.reduce((a,b)=>a+b[0],0)+" 件":""}</span></div>
     ${rows.length?`<section class="card">${rows.map(([n,l,h])=>`<button class="list-btn" ${h==="tieQuiet"?'data-a="tieQuietList"':`data-a="uniGo" data-v="${h}"`}>${l}<span class="r"><em class="t-cnt">${n}</em></span></button>`).join("")}</section>`:`<section class="card uni-empty">都處理完了 ✓</section>`}
     <div class="section-h">今天</div>
     <div class="uni-stats"><button class="card" data-a="uniLives"><b>${on.length}</b><span>直播中</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=posts"><b>${fmt(cm)}</b><span>24 小時新留言</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=foc"><b>${ev}</b><span>即將舉辦的活動</span></button></div>
-    <div class="section-h">快速入口</div>
-    <div class="uni-quick"><button class="card uni-ann" data-a="uniAnn">${UI_S.mega}<span>發官方公告</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}<span>加積分</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}<span>建立帳號</span></button><button class="card" data-a="uniGo" data-v="#/admin?tab=roster&p=new">${AIC.group}<span>新增藝人</span></button></div>
+  </main>`; }
+/* 藝人：從發掘到出道、回歸 */
+function viewUniArtist(){
+  return `<header class="top uni-top"><div class="top-row"><span class="sh-sp"></span><div class="top-title">藝人</div><button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=roster&p=new" aria-label="新增藝人">＋</button></div></header><main class="page">
+    <section class="card">
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${AIC.group}藝人與團<span class="r">${GROUPS.length} 團</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=debut">${AIC.debut}出道申請<span class="r">${debutWait()?`<i class="seg-dot"></i>${debutWait()} 件待審核`:"沒有新申請"}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cbreq">${AIC.debut}回歸申請<span class="r">${cbrWait()?`<i class="seg-dot"></i>${cbrWait()} 件待審核`:"沒有新申請"}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin/sns?p=scout">${AIC.scout}星探<span class="r">${scGet().list.length} 人</span></button></section>
+  </main>`; }
+/* 營運：帳號、積分、商店，加上系統設定 */
+function viewUniOps(){ const th=getThemes().filter(t=>t.status==="pending").length, tu=tryUnread();
+  return uniMainHead("營運")+`<main class="page">
+    <div class="section-h">粉絲與商店</div>
+    <section class="card">
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${AIC.chart}積分<span class="r">加積分・統計</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${th?`<em class="t-cnt">${th}</em>`:""}</span></button></section>
     <div class="section-h">系統</div>
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=translate">${AIC.globe}翻譯服務<span class="r">${trEngine()}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=banned">${AIC.shield}禁用字詞<span class="r">${bannedList().length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cloud">${AIC.cloud}雲端用量<span class="r">${HB.kvSz?fmtB(HB.kvSz):""}</span></button>
-      <button class="list-btn" data-a="maintToggle">${AIC.wrench}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button></section>
-  </main>`; }
-function viewUniPeople(){ const th=getThemes().filter(t=>t.status==="pending").length;
-  return uniMainHead("人員")+`<main class="page">
-    <section class="card">
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=debut">${AIC.debut}出道申請<span class="r">${debutWait()?`<i class="seg-dot"></i>${debutWait()} 件待審核`:"沒有新申請"}</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cbreq">${AIC.debut}回歸申請<span class="r">${cbrWait()?`<i class="seg-dot"></i>${cbrWait()} 件待審核`:"沒有新申請"}</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=roster">${AIC.group}藝人與團<span class="r">${GROUPS.length} 團</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}加積分</button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin/sns?p=scout">${AIC.scout}星探<span class="r">${scGet().list.length} 人</span></button></section>
+      <button class="list-btn" data-a="maintToggle">${AIC.wrench}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=try">${AIC.chat}試玩訊息<span class="r">${tu?`<em class="t-cnt">${tu}</em>`:""}</span></button></section>
     <section class="card uni-out"><button class="list-btn danger" data-a="logout">${I.out}登出</button></section>
   </main>`; }
 
@@ -13610,7 +13471,7 @@ const COACH={
 const COACH_INTRO_UNI=["你是管理員","你同時也是藝人和粉絲。最上面的「粉絲｜藝人｜管理」隨時可以切換，不用換帳號。接下來三個畫面會分別帶你看一次。"];
 const COACH_UNI=[['.uni-sw [data-v="fan"]',"粉絲","跟一般粉絲看到的一模一樣：動態、直播、TIE、打歌投票、小卡、SHOP。你的粉絲積分跟藝人積分是同一份，哪邊花掉另一邊就跟著少。"],
   ['.uni-sw [data-v="artist"]',"藝人","你自己的藝人身分：發動態、開直播、傳 TIE、申請回歸、打歌戰況。藝人和粉絲除了積分，其他東西都是分開的。"],
-  ['.uni-sw [data-v="admin"]',"管理","公司的事：待辦、內容、活動、商店、人員。旁邊的數字是還沒處理的待辦。"]];
+  ['.uni-sw [data-v="admin"]',"管理","公司的事：總覽、藝人、內容、活動、營運。旁邊的數字是還沒處理的事。"]];
 
 const TOURS={
   /* ================= 粉絲 ================= */
