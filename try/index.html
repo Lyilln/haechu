@@ -1,126 +1,67 @@
-<!doctype html>
-<html lang="zh-Hant">
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>HAECHU 試玩</title>
-<meta name="description" content="不用帳號，5 分鐘玩一遍 HAECHU：收偶像的 TIE、滑 SNS、幫她打歌、揮應援棒。">
-<meta property="og:title" content="HAECHU 試玩｜5 分鐘當一次粉絲">
-<meta property="og:description" content="不用帳號，收偶像的 TIE、滑 SNS、幫她打歌拿一位、揮應援棒。玩完加入 SUN KISS！">
-<meta property="og:image" content="../icon-512.png">
-<meta name="theme-color" content="#0F0D14">
-<link rel="icon" href="../favicon-32.png">
+<meta name="description" content="不用帳號，先來玩一次 HAECHU：收到偶像的 TIE、滑 SNS、幫她打歌、揮應援棒。">
+<meta name="theme-color" content="#FAF9FC">
+<link rel="icon" type="image/png" href="../favicon-32.png">
 <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<script>(function(){function z(){var w=Math.min(window.innerWidth||390,screen.width||9999);var v=Math.max(.8,Math.min(.92,w/440));v=Math.round(v*1000)/1000;if(/\/sns(\?|$)/.test(location.hash))v=1;if(parseFloat(document.documentElement.style.zoom)!==v){document.documentElement.style.zoom=v;document.documentElement.style.setProperty("--zm",v);}}z();addEventListener("resize",z);addEventListener("hashchange",z);addEventListener("orientationchange",function(){setTimeout(z,300)});})();</script>
+<script>try{var d=matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.setAttribute("data-theme",d?"dark":"light");document.documentElement.style.colorScheme=d?"dark":"light";matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(e){document.documentElement.setAttribute("data-theme",e.matches?"dark":"light");document.documentElement.style.colorScheme=e.matches?"dark":"light";});}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
-<style>
-:root{--bg:#0F0D14;--s1:#1A1722;--s2:#24202E;--line:rgba(255,255,255,.09);--ink:#F4F1FA;--ink2:#B9B3C6;--ink3:#8A8497;--v:#8843FB;--v2:#B794FF;--pink:#FF6FA8}
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Quicksand",-apple-system,"PingFang TC","Noto Sans TC",system-ui,sans-serif;-webkit-font-smoothing:antialiased}
-button{font:inherit;color:inherit;cursor:pointer}
-.app{max-width:480px;margin:0 auto;min-height:100dvh;display:flex;flex-direction:column}
-.top{position:sticky;top:0;z-index:10;background:rgba(15,13,20,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);padding:calc(env(safe-area-inset-top) + 10px) 16px 0;border-bottom:1px solid var(--line)}
-.top-r{display:flex;align-items:center;justify-content:space-between}
-.wm{font-family:"Cherry Bomb One","Quicksand",sans-serif;font-size:24px;color:#E7DCFF;letter-spacing:.04em;text-shadow:0 0 18px rgba(196,162,255,.45)}
-.pill{font-size:12px;font-weight:700;color:var(--v2);border:1px solid rgba(183,148,255,.4);border-radius:999px;padding:3px 10px}
-.tabs{display:flex;gap:4px;margin-top:10px;overflow-x:auto;scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}
-.tabs button{flex:1 0 auto;border:0;background:none;padding:10px 8px 12px;font-size:14px;font-weight:700;color:var(--ink3);border-bottom:2px solid transparent;white-space:nowrap}
-.tabs button.on{color:var(--ink);border-color:var(--v)}
-.tabs button i{font-style:normal;display:inline-block;width:18px;height:18px;line-height:18px;border-radius:50%;background:var(--s2);font-size:11px;margin-right:5px;text-align:center}
-.tabs button.done i{background:var(--v);color:#fff}
-main{flex:1;display:flex;flex-direction:column}
-.pane{display:none;flex:1;flex-direction:column}.pane.on{display:flex}
-.hint{margin:14px 16px 0;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(136,67,251,.18),rgba(255,111,168,.12));border:1px solid rgba(183,148,255,.25);font-size:13.5px;line-height:1.6;color:#E9E2F7}
-.hint b{color:#fff}
-.next{margin:18px 16px calc(env(safe-area-inset-bottom) + 18px);height:50px;border:0;border-radius:14px;background:var(--v);color:#fff;font-size:16px;font-weight:700}
-.next.ghost{background:var(--s2);color:var(--ink)}
-.av{width:38px;height:38px;border-radius:50%;flex:none;display:grid;place-items:center;font-weight:700;color:#fff;background:linear-gradient(135deg,#B794FF,#FF6FA8)}
-.vf{display:inline-block;width:15px;height:15px;vertical-align:-2px;margin-left:3px}
-/* 開頭 */
-.intro{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px 24px calc(env(safe-area-inset-bottom) + 24px)}
-.intro .big{width:120px;height:120px;font-size:46px;margin-bottom:18px;box-shadow:0 0 50px rgba(183,148,255,.5)}
-.intro h1{margin:0 0 8px;font-size:24px}.intro p{margin:0 0 6px;color:var(--ink2);line-height:1.7;font-size:15px}
-.intro ol{list-style:none;padding:0;margin:22px 0 26px;display:grid;gap:10px;text-align:left;width:100%;max-width:330px}
-.intro li{display:flex;align-items:center;gap:12px;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:14.5px}
-.intro li em{font-style:normal;font-size:20px}
-.intro .next{width:100%;max-width:330px;margin:0}
-/* TIE */
-.pane.pn-tie{height:calc(100dvh - var(--hh,110px));flex:none}
-.chat{flex:1;min-height:0;display:flex;flex-direction:column;background:#F8E6FA}
-.chat-h{position:relative;display:flex;align-items:center;justify-content:center;flex-direction:column;padding:14px 16px 16px;background:#2B2A33;border-radius:0 0 20px 20px;color:#fff}
-.chat-h .nx{position:absolute;right:14px;top:50%;transform:translateY(-50%);border:0;background:rgba(255,255,255,.12);color:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:700}
-.chat-h b{font-size:17px}.chat-h small{font-size:12px;color:#C9C3D6;margin-top:3px}
-.msgs{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:22px 18px 26px;display:flex;flex-direction:column;gap:18px;background-image:radial-gradient(#fff 2px,transparent 2px);background-size:26px 26px}
-.day{align-self:center;font-size:12px;color:#fff;background:rgba(0,0,0,.25);border-radius:999px;padding:3px 12px}
-.m{display:flex;gap:10px;align-items:flex-end;max-width:80%}
-.m.me+.m.me,.m.idol+.m.idol{margin-top:-10px}
-.m.idol+.m.idol .av{visibility:hidden}.m.idol+.m.idol .who{display:none}
-.m .av{width:34px;height:34px;font-size:13px;border:2px solid var(--v);align-self:flex-start}
-.m .b{background:#fff;color:#111;border-radius:18px;padding:11px 15px;font-size:15px;line-height:1.55;white-space:pre-wrap;word-break:break-word}
-.m .who{font-size:12px;color:#5b5466;margin:0 0 6px 2px;display:flex;align-items:center;gap:6px}.m .who em{font-style:normal;font-size:10px;font-weight:800;color:#fff;background:var(--v);border-radius:6px;padding:1px 6px}
-.m time{font-size:11px;color:#8a7f98;flex:none}
-.m.me{align-self:flex-end;flex-direction:row-reverse}.m.me .b{background:var(--v);color:#fff}
-.m .col{display:flex;flex-direction:column;min-width:0}
-.m.me .col{align-items:flex-end}
-.m .st{font-size:11.5px;color:#C2185B;margin:5px 4px 0}.m .st.p{color:#8a7f98}
-.sys{align-self:center;font-size:12px;color:#6f6680;text-align:center;line-height:1.7;max-width:86%;margin-top:4px;background:rgba(255,255,255,.7);border-radius:12px;padding:8px 14px}
-.bar{display:flex;gap:10px;align-items:center;padding:12px 14px calc(env(safe-area-inset-bottom) + 12px);background:#2B2A33}
-.bar input{flex:1;min-width:0;height:42px;border-radius:21px;border:0;background:#3A3845;color:#fff;padding:0 16px;font:inherit;font-size:16px;outline:none}
-.bar button{width:42px;height:42px;border-radius:50%;border:0;background:var(--v);color:#fff;display:grid;place-items:center}
-.bar button svg{width:20px;height:20px}
-.sheet-w{position:fixed;inset:0;z-index:50;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
-.sheet{width:100%;max-width:480px;background:var(--s1);border-radius:20px 20px 0 0;padding:10px 18px calc(env(safe-area-inset-bottom) + 18px)}
-.grab{width:36px;height:4px;border-radius:2px;background:rgba(255,255,255,.25);margin:0 auto 14px}
-.sheet h3{margin:0 0 4px;font-size:17px}.sheet p{margin:0 0 14px;color:var(--ink3);font-size:13px}
-.sheet input{width:100%;height:46px;border-radius:12px;border:1px solid var(--line);background:var(--s2);color:#fff;padding:0 14px;font:inherit;font-size:16px;outline:none;margin-bottom:12px}
-.sheet .next{margin:0;width:100%}
-/* SNS */
-.sns{flex:1}
-.post{border-bottom:1px solid var(--line);padding-bottom:10px}
-.ph{display:flex;align-items:center;gap:10px;padding:12px 14px}.ph b{font-size:14px}.ph small{color:var(--ink3);font-size:12px;display:block}
-.pic{position:relative;aspect-ratio:4/5;display:grid;place-items:center;overflow:hidden;user-select:none;-webkit-user-select:none}
-.pic span{font-family:"Cherry Bomb One",sans-serif;font-size:42px;color:rgba(255,255,255,.92);text-shadow:0 4px 24px rgba(0,0,0,.25);text-align:center;line-height:1.2;padding:0 20px}
-.pic .heart{position:absolute;width:96px;height:96px;opacity:0;transform:scale(.4);transition:transform .25s,opacity .25s;pointer-events:none}
-.pic .heart.go{opacity:1;transform:scale(1)}
-.acts{display:flex;align-items:center;gap:16px;padding:10px 14px 4px}.acts button{border:0;background:none;padding:0;display:grid}.acts svg{width:26px;height:26px}.acts .liked svg{fill:#FF3B5C;stroke:#FF3B5C}
-.cap{padding:2px 14px;font-size:14px;line-height:1.5}.cap b{margin-right:6px}
-.lk{padding:2px 14px;font-size:13.5px;font-weight:700}
+<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Huninn&family=Jua&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<style id="trycss">
+/* 試玩頁：樣式直接用 HAECHU 本體的（載入時從 ../index.html 拿），這裡只補試玩自己的東西 */
+html:not(.ready) body{opacity:0}html.ready body{opacity:1;transition:opacity .2s}
+.tz-pill{font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;background:var(--violet-soft,#F1E8FF);color:var(--violet,#8843FB)}
+html[data-theme="dark"] .tz-pill{background:rgba(167,139,250,.18);color:#C4B5FD}
+.tz-hint{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px 14px;border-radius:16px;background:var(--violet-soft,#F1E8FF);color:var(--ink,#1D1A24);font-size:13px;line-height:1.6}
+.tz-hint b{color:var(--violet,#8843FB)}html[data-theme="dark"] .tz-hint{background:rgba(167,139,250,.12)}html[data-theme="dark"] .tz-hint b{color:#C4B5FD}
+.tz-next{margin:18px 0 8px}
+/* 開場 */
+.tz-in{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:calc(env(safe-area-inset-top,0px) + 28px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);max-width:480px;margin:0 auto}
+.tz-in .tz-av{width:104px;height:104px;font-size:42px;margin:0 auto}
+.tz-in h1{margin:0;text-align:center;font-size:26px;font-weight:800}.tz-in>p{margin:0;text-align:center;font-size:14.5px;line-height:1.7;color:var(--ink-2,#5F5A6B)}
+.tz-in .card{padding:6px 16px!important}.tz-st{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line,#ECE8F2);font-size:14.5px}.tz-st:last-child{border-bottom:0}.tz-st em{font-style:normal;width:34px;height:34px;flex:none;border-radius:12px;display:grid;place-items:center;background:var(--violet-soft,#F1E8FF);font-size:17px}
+html[data-theme="dark"] .tz-st em{background:rgba(167,139,250,.14)}
+.tz-av{border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;background:linear-gradient(135deg,#B794FF,#FF8FC2)}
+/* TIE 列表裡 LUMI 的頭貼 */
+.t-av.tz-l{display:grid;place-items:center;color:#fff;font-weight:800;font-size:20px;background:linear-gradient(135deg,#B794FF,#FF8FC2)}
+.t-art .t-av.tz-l{font-size:15px}
+.tz-st2{font-size:11.5px;margin:4px 4px 0;color:#C2185B}.tz-st2.p{color:var(--ink-3,#837D90)}
+.t-me .t-col{display:flex;flex-direction:column;align-items:flex-end;max-width:70%}.t-me .t-col .t-b.me{max-width:100%}
+.tz-sys{margin:6px auto 18px;max-width:86%;text-align:center;font-size:12px;line-height:1.7;color:var(--ink-3,#837D90);background:rgba(255,255,255,.7);border-radius:12px;padding:8px 14px}
+html[data-theme="dark"] .tz-sys{background:rgba(255,255,255,.06)}
+.tz-room .t-msgs{min-height:calc(100dvh - 120px)}
+.tz-room .t-inp input{flex:1;min-width:0;border:0;outline:0;background:transparent;font:inherit;font-size:15px;padding:0 14px;color:inherit}
+/* SNS 的貼文圖（漸層＋字） */
+.tz-pic{position:relative;width:100%;aspect-ratio:4/5;display:grid;place-items:center;color:#fff;font:700 34px/1.15 "Playfair Display",serif;text-align:center;text-shadow:0 2px 14px rgba(0,0,0,.18);white-space:pre-line}
+.sn-av.tz-av2 .dflt{background:linear-gradient(135deg,#B794FF,#FF8FC2)!important}
+.sn-heart.go{animation:tryHeart .65s ease}@keyframes tryHeart{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
 /* 打歌 */
-.show{margin:14px 16px 0;border-radius:22px;padding:18px 16px;background:linear-gradient(135deg,#FFB21E,#FF7A1A);color:#2a1a05;position:relative;overflow:hidden}
-.show h2{margin:0;font-style:italic;font-size:26px;color:#fff;letter-spacing:.02em}.show small{color:rgba(255,255,255,.85);font-weight:700}
-.rk{display:flex;flex-direction:column;gap:10px;margin-top:14px}
-.row{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.14);border-radius:16px;padding:12px 14px;color:#fff;transition:transform .4s}
-.row .n{width:26px;height:26px;border-radius:8px;background:rgba(255,255,255,.25);display:grid;place-items:center;font-weight:800;font-size:13px}
-.row.top .n{background:#fff;color:#FF7A1A}
-.row .t{flex:1;min-width:0}.row .t b{display:block;font-size:16px}.row .t small{opacity:.85}
-.row .sc{font-weight:800;font-variant-numeric:tabular-nums}
-.vote{border:2px solid #fff;background:none;color:#fff;border-radius:50%;width:54px;height:54px;font-weight:800;font-size:13px}
-.vote.done{background:#fff;color:#FF7A1A}
-.win{margin:16px;text-align:center;font-size:15px;line-height:1.7;color:var(--ink2);display:none}.win.on{display:block}.win b{color:#fff;font-size:20px;display:block;margin-bottom:4px}
+.tz-win{display:none;margin:14px 0 0;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,#FFF4D6,#FFE1EE);color:#5B3A00;font-size:13.5px;line-height:1.6}.tz-win b{display:block;font-size:16px;margin-bottom:2px}.tz-win.on{display:block;animation:tryPop .5s cubic-bezier(.2,.9,.3,1.3)}
+html[data-theme="dark"] .tz-win{background:linear-gradient(135deg,rgba(255,200,80,.18),rgba(255,111,168,.16));color:#FFE7B0}
+@keyframes tryPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 /* 應援棒 */
-.ls{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px}
-.stick{width:110px;height:300px;position:relative;display:flex;flex-direction:column;align-items:center;transform-origin:50% 90%}
-.stick .ball{width:110px;height:110px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--c,#C7AEFF) 45%,rgba(0,0,0,.2));box-shadow:0 0 60px var(--c,#C7AEFF),0 0 120px var(--c,#C7AEFF);transition:background .3s,box-shadow .3s}
-.stick .grip{width:26px;flex:1;margin-top:-6px;border-radius:0 0 14px 14px;background:linear-gradient(90deg,#d8d2e4,#fff,#cfc8dc)}
-.stick.wave{animation:wave .5s ease-in-out}
-@keyframes wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-18deg)}75%{transform:rotate(18deg)}}
-.cols{display:flex;gap:10px}.cols button{width:34px;height:34px;border-radius:50%;border:2px solid transparent}.cols button.on{border-color:#fff}
-.cnt{font-size:14px;color:var(--ink2)}
+.tz-ls{display:flex;flex-direction:column;align-items:center;gap:18px;padding:26px 16px 20px!important;background:radial-gradient(120% 90% at 50% 0%,#2A1F4A 0%,#120E1F 70%)!important;color:#fff;overflow:hidden}
+.tz-stick{position:relative;width:120px;height:250px;border:0;background:none;padding:0;transform-origin:50% 92%;-webkit-tap-highlight-color:transparent}
+.tz-stick .ball{position:absolute;left:50%;top:0;width:104px;height:104px;margin-left:-52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--c) 45%,color-mix(in srgb,var(--c) 60%,#000));box-shadow:0 0 30px var(--c),0 0 80px color-mix(in srgb,var(--c) 60%,transparent)}
+.tz-stick .grip{position:absolute;left:50%;top:96px;width:22px;height:150px;margin-left:-11px;border-radius:11px;background:linear-gradient(90deg,#d9d6e3,#fff 40%,#bdb8cc)}
+.tz-stick.wave{animation:tryWave .55s ease}@keyframes tryWave{25%{transform:rotate(-16deg)}60%{transform:rotate(12deg)}100%{transform:none}}
+.tz-cols{display:flex;gap:12px}.tz-cols button{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}.tz-cols button.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.25)}
+.tz-ls p{margin:0;font-size:13px;color:rgba(255,255,255,.8)}
+html[data-theme="dark"] .tz-room .t-inp{background:#2A2733!important;border-color:rgba(255,255,255,.08)!important}html[data-theme="dark"] .tz-room .t-inp input{color:#F1EEF7}
 /* 結尾 */
-.end{flex:1;padding:26px 20px calc(env(safe-area-inset-bottom) + 24px);display:flex;flex-direction:column;gap:14px}
-.end h1{margin:0;font-size:24px;text-align:center}.end>p{margin:0;text-align:center;color:var(--ink2);line-height:1.7}
-.card{background:var(--s1);border:1px solid var(--line);border-radius:18px;padding:16px}
-.card h3{margin:0 0 8px;font-size:16px}.card p,.card li{color:var(--ink2);font-size:14px;line-height:1.7;margin:0}
-.card ol{margin:6px 0 0;padding-left:20px}
-.cta{display:block;text-align:center;text-decoration:none;height:52px;line-height:52px;border-radius:14px;background:#06C755;color:#fff;font-weight:800;font-size:16px}
-.cta.v{background:var(--v)}
-.toast{position:fixed;left:50%;top:calc(env(safe-area-inset-top) + 14px);transform:translateX(-50%);background:rgba(30,26,40,.95);color:#fff;border:1px solid var(--line);padding:10px 16px;border-radius:999px;font-size:14px;z-index:99;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap}
-.toast.on{opacity:1}
+.tz-end h2{margin:4px 0 6px;font-size:24px}.tz-end>p{margin:0 0 16px;color:var(--ink-2,#5F5A6B);line-height:1.7;font-size:14.5px}
+.tz-end .card{padding:16px 18px!important;margin-bottom:12px}.tz-end .card h3{margin:0 0 6px;font-size:16px}.tz-end .card p,.tz-end .card li{font-size:13.5px;line-height:1.7;color:var(--ink-2,#5F5A6B)}.tz-end .card ol{margin:6px 0 0;padding-left:20px}
+.tz-end .btn{text-decoration:none;display:flex;align-items:center;justify-content:center}
+.tz-end .btn+.btn{margin-top:10px}
 </style>
 </head>
 <body>
-<div class="app" id="app"></div>
-<div class="toast" id="toast"></div>
+<div id="root"></div><div id="layer"></div>
 <script>
 /* =========================================================
    HAECHU 試玩（獨立頁，不用登入）
@@ -128,15 +69,28 @@ main{flex:1;display:flex;flex-direction:column}
      （訪客不用帳號；代號是這支手機隨機產生的）
    ・SNS、打歌、應援棒：只在這支手機上玩，不存任何東西
    ========================================================= */
-const IDOL={name:"LUMI",full:"LUMI 루미",tag:"HAECHU 示範偶像"};
+const SI={"heart": "<path d=\"M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7.2a4.3 4.3 0 0 1 7.5 2.6C19.5 15.4 12 20 12 20z\"/>", "chat": "<path d=\"M20.5 11.5a8.5 8.5 0 0 1-12.4 7.5L3.5 20.5 5 16a8.5 8.5 0 1 1 15.5-4.5z\"/>", "send": "<path d=\"M21 3 10 14M21 3l-7 18-4-7-7-4z\"/>", "save": "<path d=\"M6 3h12v18l-6-5-6 5z\"/>", "dots": "<circle cx=\"5\" cy=\"12\" r=\"1.3\"/><circle cx=\"12\" cy=\"12\" r=\"1.3\"/><circle cx=\"19\" cy=\"12\" r=\"1.3\"/>", "plusL": "<path d=\"M12 2.5v19M2.5 12h19\"/>", "heartL": "<path d=\"M12 20.6s-8.6-5.1-8.6-11.4A4.9 4.9 0 0 1 12 6.4a4.9 4.9 0 0 1 8.6 2.8c0 6.3-8.6 11.4-8.6 11.4z\"/>", "chev": "<path d=\"m6 9 6 6 6-6\"/>", "back": "<path d=\"m15 5-7 7 7 7\"/>", "cam": "<path d=\"M4 8h3.5L9 5.5h6L16.5 8H20v11H4z\"/><circle cx=\"12\" cy=\"13.3\" r=\"3.3\"/>", "repost": "<path d=\"M17 2.5 20.5 6 17 9.5\"/><path d=\"M3.5 11V9.5A3.5 3.5 0 0 1 7 6h13.5M7 21.5 3.5 18 7 14.5\"/><path d=\"M20.5 13v1.5A3.5 3.5 0 0 1 17 18H3.5\"/>"};
+const TI={"back": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m15 18-6-6 6-6\"/></svg>", "send": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.4\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M21 3 10 14M21 3l-7 18-4-7-7-4z\"/></svg>", "search": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\"><circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"m20 20-3.5-3.5\"/></svg>", "trash": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.5\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4 7h16M10 11v6M14 11v6M5 7l1 12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-12M9 7V4h6v3\"/></svg>", "smile": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.3\" stroke-linecap=\"round\"><circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5h.01M15 9.5h.01\"/></svg>"};
+const MU_IC={"chev": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2.2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"m6 9 6 6 6-6\"/></svg>", "tk": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.9\" stroke-linejoin=\"round\"><path d=\"M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z\"/><path d=\"M14 6v12\" stroke-dasharray=\"2 2\"/></svg>", "crown": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linejoin=\"round\"><path d=\"M4 18h16l-1.5-9-4 3.5L12 6l-2.5 6.5-4-3.5z\"/></svg>", "five": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M12 3l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.3 6.8 19l1-5.8L3.6 9.1l5.8-.8z\"/></svg>", "ak": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M3 18h18l-1.5-10-4.5 4-3-7-3 7-4.5-4z\"/></svg>", "pak": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.8\" stroke-linejoin=\"round\"><path d=\"M6 3h12l3 6-9 12L3 9z\"/><path d=\"M3 9h18M9 3l3 18 3-18\"/></svg>"};
+const NAV={"tie": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 10.8C10.2 7.6 6.4 5.9 4.8 7.3s-.4 5.6 2.4 5.8c2 .1 3.6-.9 4.8-2.3z\"/><path d=\"M12 10.8c1.8-3.2 5.6-4.9 7.2-3.5s.4 5.6-2.4 5.8c-2 .1-3.6-.9-4.8-2.3z\"/><circle cx=\"12\" cy=\"11.2\" r=\"1.4\"/><path d=\"M11.1 12.5 8.6 18.6M12.9 12.5l2.5 6.1\"/></svg>", "love": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 20s-6.8-4.2-6.8-9.2A3.8 3.8 0 0 1 12 8.6a3.8 3.8 0 0 1 6.8 2.2c0 5-6.8 9.2-6.8 9.2z\"/><circle cx=\"12\" cy=\"4.4\" r=\"1.5\"/><path d=\"M12 5.9v2.7\"/><path d=\"M8.4 11.4a2.1 2.1 0 0 1 1.5-1.7\"/></svg>", "core": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M9.4 17.4V6.6l9-2.2v10.4\"/><path d=\"M9.4 9.6l9-2.2\"/><ellipse cx=\"7.2\" cy=\"17.6\" rx=\"2.3\" ry=\"1.9\"/><ellipse cx=\"16.2\" cy=\"15\" rx=\"2.3\" ry=\"1.9\"/><path d=\"M4.6 4.2c.15 1 .55 1.4 1.5 1.5-.95.15-1.35.55-1.5 1.5-.15-.95-.55-1.35-1.5-1.5.95-.1 1.35-.5 1.5-1.5z\"/></svg>", "meet": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M4.6 6.8h14.8a1.1 1.1 0 0 1 1.1 1.1v2.6a1.6 1.6 0 0 0 0 3.1v2.6a1.1 1.1 0 0 1-1.1 1.1H4.6a1.1 1.1 0 0 1-1.1-1.1v-2.6a1.6 1.6 0 0 0 0-3.1V7.9a1.1 1.1 0 0 1 1.1-1.1z\"/><path d=\"M15.4 8.6v.9M15.4 11.6v.9M15.4 14.6v.9\"/><path d=\"M9.6 14.4s-2.4-1.4-2.4-2.9a1.2 1.2 0 0 1 2.4-.4 1.2 1.2 0 0 1 2.4.4c0 1.5-2.4 2.9-2.4 2.9z\"/></svg>", "me": "<svg viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M5 17.4 4 8.2l4.4 3.4L12 5.6l3.6 6 4.4-3.4-1 9.2z\"/><path d=\"M5.2 20.2h13.6\"/><circle cx=\"12\" cy=\"3.4\" r=\".6\" fill=\"currentColor\"/></svg>"};
+const SN_VER="<i class=\"sn-v\"><svg viewBox=\"0 0 40 40\" aria-label=\"\u5df2\u9a57\u8b49\"><path fill=\"#0095F6\" d=\"M20.00 1.50 L20.48 1.53 L20.96 1.64 L21.43 1.80 L21.89 2.03 L22.33 2.30 L22.75 2.61 L23.16 2.95 L23.55 3.30 L23.92 3.65 L24.29 4.00 L24.64 4.33 L25.00 4.63 L25.35 4.89 L25.71 5.11 L26.09 5.29 L26.49 5.43 L26.90 5.53 L27.34 5.60 L27.80 5.64 L28.28 5.66 L28.78 5.67 L29.30 5.68 L29.82 5.71 L30.35 5.75 L30.87 5.83 L31.37 5.95 L31.85 6.12 L32.30 6.33 L32.72 6.60 L33.08 6.92 L33.40 7.28 L33.67 7.70 L33.88 8.15 L34.05 8.63 L34.17 9.13 L34.25 9.65 L34.29 10.18 L34.32 10.70 L34.33 11.22 L34.34 11.72 L34.36 12.20 L34.40 12.66 L34.47 13.10 L34.57 13.51 L34.71 13.91 L34.89 14.29 L35.11 14.65 L35.37 15.00 L35.67 15.36 L36.00 15.71 L36.35 16.08 L36.70 16.45 L37.05 16.84 L37.39 17.25 L37.70 17.67 L37.97 18.11 L38.20 18.57 L38.36 19.04 L38.47 19.52 L38.50 20.00 L38.47 20.48 L38.36 20.96 L38.20 21.43 L37.97 21.89 L37.70 22.33 L37.39 22.75 L37.05 23.16 L36.70 23.55 L36.35 23.92 L36.00 24.29 L35.67 24.64 L35.37 25.00 L35.11 25.35 L34.89 25.71 L34.71 26.09 L34.57 26.49 L34.47 26.90 L34.40 27.34 L34.36 27.80 L34.34 28.28 L34.33 28.78 L34.32 29.30 L34.29 29.82 L34.25 30.35 L34.17 30.87 L34.05 31.37 L33.88 31.85 L33.67 32.30 L33.40 32.72 L33.08 33.08 L32.72 33.40 L32.30 33.67 L31.85 33.88 L31.37 34.05 L30.87 34.17 L30.35 34.25 L29.82 34.29 L29.30 34.32 L28.78 34.33 L28.28 34.34 L27.80 34.36 L27.34 34.40 L26.90 34.47 L26.49 34.57 L26.09 34.71 L25.71 34.89 L25.35 35.11 L25.00 35.37 L24.64 35.67 L24.29 36.00 L23.92 36.35 L23.55 36.70 L23.16 37.05 L22.75 37.39 L22.33 37.70 L21.89 37.97 L21.43 38.20 L20.96 38.36 L20.48 38.47 L20.00 38.50 L19.52 38.47 L19.04 38.36 L18.57 38.20 L18.11 37.97 L17.67 37.70 L17.25 37.39 L16.84 37.05 L16.45 36.70 L16.08 36.35 L15.71 36.00 L15.36 35.67 L15.00 35.37 L14.65 35.11 L14.29 34.89 L13.91 34.71 L13.51 34.57 L13.10 34.47 L12.66 34.40 L12.20 34.36 L11.72 34.34 L11.22 34.33 L10.70 34.32 L10.18 34.29 L9.65 34.25 L9.13 34.17 L8.63 34.05 L8.15 33.88 L7.70 33.67 L7.28 33.40 L6.92 33.08 L6.60 32.72 L6.33 32.30 L6.12 31.85 L5.95 31.37 L5.83 30.87 L5.75 30.35 L5.71 29.82 L5.68 29.30 L5.67 28.78 L5.66 28.28 L5.64 27.80 L5.60 27.34 L5.53 26.90 L5.43 26.49 L5.29 26.09 L5.11 25.71 L4.89 25.35 L4.63 25.00 L4.33 24.64 L4.00 24.29 L3.65 23.92 L3.30 23.55 L2.95 23.16 L2.61 22.75 L2.30 22.33 L2.03 21.89 L1.80 21.43 L1.64 20.96 L1.53 20.48 L1.50 20.00 L1.53 19.52 L1.64 19.04 L1.80 18.57 L2.03 18.11 L2.30 17.67 L2.61 17.25 L2.95 16.84 L3.30 16.45 L3.65 16.08 L4.00 15.71 L4.33 15.36 L4.63 15.00 L4.89 14.65 L5.11 14.29 L5.29 13.91 L5.43 13.51 L5.53 13.10 L5.60 12.66 L5.64 12.20 L5.66 11.72 L5.67 11.22 L5.68 10.70 L5.71 10.18 L5.75 9.65 L5.83 9.13 L5.95 8.63 L6.12 8.15 L6.33 7.70 L6.60 7.28 L6.92 6.92 L7.28 6.60 L7.70 6.33 L8.15 6.12 L8.63 5.95 L9.13 5.83 L9.65 5.75 L10.18 5.71 L10.70 5.68 L11.22 5.67 L11.72 5.66 L12.20 5.64 L12.66 5.60 L13.10 5.53 L13.51 5.43 L13.91 5.29 L14.29 5.11 L14.65 4.89 L15.00 4.63 L15.36 4.33 L15.71 4.00 L16.08 3.65 L16.45 3.30 L16.84 2.95 L17.25 2.61 L17.67 2.30 L18.11 2.03 L18.57 1.80 L19.04 1.64 L19.52 1.53 L20.00 1.50Z\"/><path d=\"M12.5 20.5l5 5 10-10.5\" fill=\"none\" stroke=\"#fff\" stroke-width=\"3.6\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></i>";
+const SN_DFAV="<svg class=\"sn-dfav\" viewBox=\"0 0 40 40\" aria-hidden=\"true\"><circle cx=\"20\" cy=\"15.6\" r=\"7.4\"/><path d=\"M4.8 38.5c1.6-8.6 7.7-13.2 15.2-13.2s13.6 4.6 15.2 13.2z\"/></svg>";
+
+const si=(k,cls="")=>`<svg class="si ${cls}" viewBox="0 0 24 24" aria-hidden="true">${SI[k]||""}</svg>`;
+const IDOL={name:"LUMI",user:"lumi.official",tag:"HAECHU 示範偶像"};
 const JOIN="https://line.me/ti/g2/7iT3j2hGOM4GHpnkZeunPHVJbPUODoTZg5zA_Q";
-const VF='<svg class="vf" viewBox="0 0 24 24" fill="#3BA4F5"><path d="M12 2 14.6 4.3 18 4l.7 3.3L21.7 9 20.3 12l1.4 3-3 1.7L18 20l-3.4-.3L12 22l-2.6-2.3L6 20l-.7-3.3L2.3 15 3.7 12 2.3 9l3-1.7L6 4l3.4.3z"/><path d="m8 12 3 3 5-6" stroke="#fff" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-const HEART='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><path d="M12 20.2s-7.6-4.7-7.6-10.4A4.4 4.4 0 0 1 12 7.1a4.4 4.4 0 0 1 7.6 2.7c0 5.7-7.6 10.4-7.6 10.4z"/></svg>';
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
 const LS={get(k,d){ try{ const v=localStorage.getItem("try_"+k); return v==null?d:JSON.parse(v); }catch(e){ return d; } },set(k,v){ try{ localStorage.setItem("try_"+k,JSON.stringify(v)); }catch(e){} }};
-function toast(t){ const el=document.getElementById("toast"); el.textContent=t; el.classList.add("on"); clearTimeout(toast.t); toast.t=setTimeout(()=>el.classList.remove("on"),2200); }
 const hm=ts=>{ const d=new Date(ts); return String(d.getHours()).padStart(2,"0")+":"+String(d.getMinutes()).padStart(2,"0"); };
-const ST={tab:"intro",done:LS.get("done",{}),liked:{},voted:false,col:"#C7AEFF",waves:0};
+const root=document.getElementById("root"), layer=document.getElementById("layer");
+function toast(t){ document.querySelectorAll(".toast").forEach(x=>x.remove()); const el=document.createElement("div"); el.className="toast"; el.setAttribute("role","status"); if(layer.innerHTML){ el.style.bottom="auto"; el.style.top="calc(env(safe-area-inset-top,0px) + 14px)"; }
+  el.innerHTML=`<i class="toast-ic" aria-hidden="true"></i><span>${esc(t)}</span>`; document.body.appendChild(el); setTimeout(()=>{ el.style.transition="opacity .3s"; el.style.opacity="0"; setTimeout(()=>el.remove(),320); },2400); }
+const ST={tab:LS.get("tab","intro"),room:false,done:LS.get("done",{}),liked:{},voted:false,col:"#C7AEFF",waves:0};
+
+/* ---------- 樣式：直接用 HAECHU 本體的，試玩長得跟 App 一模一樣 ---------- */
+(async()=>{ try{ const r=await fetch("../index.html",{cache:"no-cache"}); const t=await r.text(); const css=[...t.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join("\n");
+  const st=document.createElement("style"); st.id="appcss"; st.textContent=css; document.head.insertBefore(st,document.getElementById("trycss")); }catch(e){} document.documentElement.classList.add("ready"); })();
+setTimeout(()=>document.documentElement.classList.add("ready"),3500);
 
 /* ---------- 後台（只有 TIE 用）：訊息放在 HAECHU 的媒體伺服器，訪客不用帳號 ---------- */
 const TRY_API="https://haechu-media.vinriu715.workers.dev/try/";
@@ -147,85 +101,116 @@ const pull=()=>tapi("GET");
 const push=local=>tapi("PUT",{nick:local.nick,msgs:local.msgs.filter(m=>m.from==="fan").slice(-20)});
 function mergeMsgs(a,b){ const M=new Map(); [...(a||[]),...(b||[])].forEach(m=>{ if(m&&m.id) M.set(m.id,{...(M.get(m.id)||{}),...m}); }); return [...M.values()].sort((x,y)=>x.ts-y.ts); }
 
-/* ---------- TIE ---------- */
+/* ---------- 共用：底下導覽列（跟 App 一樣的玻璃膠囊） ---------- */
+const STICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.2" r="4.4"/><path d="M12 11.6V21"/><path d="M10.2 15.6h3.6"/><path d="M5 3.6l1.2 1.2M19 3.6l-1.2 1.2"/></svg>';
+const TABS=[["tie","TIE",NAV.tie],["sns","SNS",NAV.love],["show","FEST",NAV.core],["ls","LIGHT",STICK],["end","JOIN",NAV.me]];
+let NAVP=null;
+function navBar(active){ const i=Math.max(0,TABS.findIndex(x=>x[0]===active)), f=NAVP; NAVP=i; const go=f!=null&&f!==i;
+  return `<nav class="nav" aria-label="試玩選單"><div class="nav-in" style="--n:${TABS.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${TABS.map(([k,l,ic])=>`<button class="nav-btn ${active===k?"on":""}" data-go="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${ic}${k==="tie"&&CH.unread?`<span class="nbadge">${CH.unread}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`; }
+const head=(title,right="")=>`<header class="top sh-head"><div class="top-row"><div class="logo">HAECHU<small>試玩</small></div><div class="spacer"></div>${right}<span class="art-sub">${title}</span></div></header>`;
+const hint=h=>`<p class="tz-hint"><span>💡</span><span>${h}</span></p>`;
+
+/* ---------- TIE（照 App 的 TIE：聊天室列表 → 聊天室） ---------- */
 const WELCOME="嗨～我是 LUMI ✨\n這裡是只屬於我們的 TIE 💜\n跟我說說話吧！我看到就會回你～";
 let CH=LS.get("chat",{nick:"",msgs:[]}), POLL=0;
-function chatHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.now()},...CH.msgs];
-  return `<div class="chat"><div class="chat-h"><b>${IDOL.name} ${VF}</b><small>${IDOL.tag}</small><button class="nx" data-go="sns">下一關 →</button></div>
-    <div class="msgs" id="msgs"><span class="day">今天</span>${L.map(m=>m.from==="fan"?`<div class="m me"><div class="col"><div class="b">${esc(m.text)}</div>${m.pend?`<small class="st p">傳送中…</small>`:m.fail?`<small class="st">還沒送出，會自動再傳</small>`:""}</div><time>${hm(m.ts)}</time></div>`
-      :`<div class="m idol"><span class="av">L</span><div class="col"><span class="who"><em>ARTIST</em>${IDOL.name}</span><div class="b">${esc(m.text)}</div></div><time>${hm(m.ts)}</time></div>`).join("")}
-      ${CH.msgs.length?`<p class="sys">${IDOL.name} 是真人回覆的，可能要等一下下～你可以先去玩下一關，回來再看 💜</p>`:""}</div>
-    <form class="bar" id="tieF"><input id="tieIn" maxlength="200" placeholder="${CH.nick?"傳訊息給 "+IDOL.name:"先取一個暱稱再開始聊天"}" autocomplete="off"><button type="submit" aria-label="送出"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 12 20 4l-4 16-4-7z"/><path d="m12 13 8-9"/></svg></button></form></div>
-`; }
-function scrollMsgs(){ const m=document.getElementById("msgs"); if(m) m.scrollTop=m.scrollHeight; }
-function nickSheet(){ document.body.insertAdjacentHTML("beforeend",`<div class="sheet-w" id="nickW"><div class="sheet"><div class="grab"></div><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你</p><input id="nickIn" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="next" id="nickOk">開始 TIE</button></div></div>`); setTimeout(()=>document.getElementById("nickIn").focus(),50); }
+const lumiAv=(cls="")=>`<div class="t-av tz-l ${cls}">L</div>`;
+const tHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tryHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tryHG)"/></svg><i></i></span>`;
+function tieListHtml(){ const L=CH.msgs, last=L[L.length-1];
+  return `<div class="t-glow" aria-hidden="true"></div><header class="t-lh sh-head"><div class="t-lh-side"></div><h1>TIE</h1><div class="t-lh-side r"><span class="tz-pill">試玩</span></div></header>
+    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的喔！`)}<span class="t-sec">最近的聊天室</span>
+      <button class="t-room" data-go="room">${lumiAv("lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${IDOL.name}</b></span><span class="t-room-t">${last?hm(last.ts):""}</span></div>
+        <p>${last?(last.from==="fan"?"你：":"")+esc(last.text):"嗨～我是 LUMI ✨"}</p></div>${CH.unread?`<span class="t-cnt">${CH.unread}</span>`:""}</button></main>`; }
+function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.now()},...CH.msgs]; let lastDay="";
+  const day=ts=>{ const d=new Date(ts), t=new Date(); return d.toDateString()===t.toDateString()?"今天":`${d.getMonth()+1}月${d.getDate()}日`; };
+  const body=L.map((m,i)=>{ const d=day(m.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
+    if(m.from==="fan") return sep+`<div class="t-me"><div class="t-meta"><span>${hm(m.ts)}</span></div><div class="t-col"><div class="t-b me">${esc(m.text)}</div>${m.pend?`<small class="tz-st2 p">傳送中…</small>`:m.fail?`<small class="tz-st2">還沒送出，會自動再傳</small>`:""}</div></div>`;
+    return sep+`<div class="t-art">${lumiAv("ring")}<div class="t-art-c"><div class="t-art-n"><span class="t-badge" style="background:#8843FB">ARTIST</span><b>${IDOL.name}</b></div><div class="t-bw"><div class="t-b">${esc(m.text)}</div><span class="t-side"><span class="t-tm">${hm(m.ts)}</span></span></div></div></div>`; }).join("");
+  return `<div class="tz-room"><div class="t-bgl t-default"></div><header class="t-rh sh-head"><div class="t-rh-row"><button class="t-ib" data-go="tie" aria-label="返回">${TI.back}</button><h3>${IDOL.name}</h3><div class="t-rh-r"></div></div>
+      <div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tHeart()}<span>+1</span></div></header>
+    <main class="t-msgs" id="msgs">${body}${CH.msgs.length?`<p class="tz-sys">${IDOL.name} 是真人回覆的，可能要等一下下～可以先去玩別的，回來再看 💜</p>`:""}<div id="chat-end"></div></main>
+    <form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?"":"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form></div>`; }
+function scrollMsgs(){ const e=document.getElementById("chat-end"); if(e) e.scrollIntoView({block:"end"}); }
+function nickSheet(){ layer.innerHTML=`<div class="t-modal-w" data-close="1"><div class="t-modal" role="dialog" aria-label="你的暱稱"><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你。</p><div class="t-mb"><input id="nickIn" class="t-wel-ta tpk-nk" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="t-mbtn main" id="nickOk">確認</button></div></div></div>`; setTimeout(()=>{ const i=document.getElementById("nickIn"); if(i) i.focus(); },60); }
 async function sendMsg(text){ const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m); if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
   try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; return o; })}); const ok=new Set((v.msgs||[]).map(x=>x.id)); CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; if(ok.has(o.id)) delete o.fail; else if(o.from==="fan"&&o.id===m.id) o.fail=1; return o; }); LS.set("chat",CH); render(); startPoll(); }
   catch(e){ m.pend=0; m.fail=1; LS.set("chat",CH); render(); toast("沒傳出去，等一下會自動重傳"); startPoll(); } }
 async function resend(){ if(!CH.msgs.some(x=>x.fail)) return; try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; delete o.fail; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>{ const o={...x}; delete o.fail; return o; }),v.msgs); LS.set("chat",CH); render(); }catch(e){} }
-async function poll(){ if(document.hidden) return; await resend(); if(!CH.msgs.length) return; try{ const v=await pull(); if(!v) return; const before=CH.msgs.length; CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; return o; }); if(CH.msgs.length!==before){ LS.set("chat",CH); if(CH.msgs.slice(before).some(x=>x.from==="idol")) toast(`💜 ${IDOL.name} 回你了！`); if(ST.tab==="tie") render(); } }catch(e){} }
+async function poll(){ if(document.hidden) return; await resend(); if(!CH.msgs.length) return; try{ const v=await pull(); if(!v) return; const before=CH.msgs.length; CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; return o; });
+  if(CH.msgs.length!==before){ const n=CH.msgs.slice(before).filter(x=>x.from==="idol").length; if(n){ if(!(ST.tab==="tie"&&ST.room)) CH.unread=(CH.unread||0)+n; toast(`💜 ${IDOL.name} 回你了！`); } LS.set("chat",CH); render(); } }catch(e){} }
 function startPoll(){ if(POLL) return; POLL=setInterval(poll,8000); }
 
-/* ---------- SNS ---------- */
-const POSTS=[{id:"p1",g:"linear-gradient(160deg,#B794FF,#FF8FC2)",t:"Good\nmorning ☀️",cap:"今天練習室的陽光好好～大家早安！",lk:1284},{id:"p2",g:"linear-gradient(160deg,#4FD1C5,#5B7CFA)",t:"STAGE\nDAY",cap:"打歌第一週！你們的應援我都聽到了 🥹💜 #LUMI #Starlight",lk:3051},{id:"p3",g:"linear-gradient(160deg,#FFB36B,#FF6FA8)",t:"Snack\ntime 🍓",cap:"偷偷吃草莓蛋糕，不要跟經紀人說 🤫",lk:2210}];
-function snsHtml(){ return `<p class="hint">💡 <b>點兩下照片</b>就能按愛心，跟 IG 一樣。在 HAECHU，偶像也會看到你的留言喔！</p><div class="sns">${POSTS.map(p=>{ const on=!!ST.liked[p.id]; return `<article class="post"><div class="ph"><span class="av">L</span><span><b>lumi.official${VF}</b><small>HAECHU</small></span></div>
-    <div class="pic" data-dbl="${p.id}" style="background:${p.g}"><span>${esc(p.t).replace(/\n/g,"<br>")}</span><svg class="heart" viewBox="0 0 24 24" fill="#fff"><path d="M12 20.2s-7.6-4.7-7.6-10.4A4.4 4.4 0 0 1 12 7.1a4.4 4.4 0 0 1 7.6 2.7c0 5.7-7.6 10.4-7.6 10.4z"/></svg></div>
-    <div class="acts"><button class="${on?"liked":""}" data-like="${p.id}" aria-label="喜歡">${HEART}</button></div><p class="lk">${(p.lk+(on?1:0)).toLocaleString()} 個讚</p><p class="cap"><b>lumi.official</b>${esc(p.cap)}</p></article>`; }).join("")}</div>
-    <button class="next ghost" data-go="show">下一關：幫她打歌 →</button>`; }
+/* ---------- SNS（照 App 的 SNS／IG 貼文） ---------- */
+const POSTS=[{id:"p1",g:"linear-gradient(160deg,#B794FF,#FF8FC2)",t:"Good\nmorning ☀️",cap:"今天練習室的陽光好好～大家早安！",lk:1284,cm:86,ago:"2 小時"},{id:"p2",g:"linear-gradient(160deg,#4FD1C5,#5B7CFA)",t:"STAGE\nDAY",cap:"打歌第一週！你們的應援我都聽到了 🥹💜 #LUMI #Starlight",lk:3051,cm:214,ago:"1 天"},{id:"p3",g:"linear-gradient(160deg,#FFB36B,#FF6FA8)",t:"Snack\ntime 🍓",cap:"偷偷吃草莓蛋糕，不要跟經紀人說 🤫",lk:2210,cm:157,ago:"3 天"}];
+const snAv=sz=>`<span class="sn-av ring tz-av2" style="--s:${sz}px"><i class="dflt">${SN_DFAV}</i></span>`;
+const fmtN=n=>n.toLocaleString();
+function snsHtml(){ return `<div class="sn"><header class="sn-top"><span class="sn-sp"></span><b class="sn-logo">SNS</b><span class="sn-sp"></span></header>
+    <main class="sn-feed">${hint("<b>點兩下照片</b>就能按愛心，跟 IG 一樣。在 HAECHU，偶像也會看到你的留言喔！")}${POSTS.map(p=>{ const on=!!ST.liked[p.id];
+      return `<article class="sn-post"><header><span class="sn-hu">${snAv(32)}<span class="sn-pu"><b>${IDOL.user}${SN_VER}</b><small>HAECHU</small></span></span><span class="sn-sp"></span><button class="sn-ib" aria-label="更多">${si("dots")}</button></header>
+        <div class="sn-media"><div class="sn-car" data-dbl="${p.id}"><div class="sn-sl"><div class="tz-pic" style="background:${p.g}">${esc(p.t)}</div></div></div><i class="sn-heart" id="hh-${p.id}">${si("heart")}</i></div>
+        <div class="sn-acts"><button class="${on?"liked":""}" data-like="${p.id}" aria-label="讚">${si("heart")}<b>${fmtN(p.lk+(on?1:0))}</b></button><button aria-label="留言">${si("chat")}<b>${fmtN(p.cm)}</b></button><button aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button aria-label="收藏">${si("save")}</button></div>
+        <div class="sn-meta"><p><b>${IDOL.user}</b> ${esc(p.cap)}</p><small>${p.ago}前</small></div></article>`; }).join("")}
+      <div class="page"><button class="btn btn-main btn-block tz-next" data-go="show">下一關：幫她打歌 →</button></div></main></div>`; }
 function like(id,fromDbl){ if(fromDbl&&ST.liked[id]) return; ST.liked[id]=!ST.liked[id]; render(); if(ST.liked[id]) done("sns"); }
 
-/* ---------- 打歌 ---------- */
+/* ---------- 打歌（照 App 的音樂節目卡） ---------- */
+const MU_SHN=[["ts","THE","SHOW"],["sc","SHOW","CHAMPION"],["mcd","M","COUNTDOWN"],["mb","MUSIC","BANK"],["ink","INKI","GAYO"]];
 function showRows(){ const base=[{t:"Starlight",a:"LUMI",sc:2380,me:1},{t:"Glass Garden",a:"AURAVEIL",sc:2512},{t:"Last Train",a:"ROSÉVA",sc:2104}]; if(ST.voted) base[0].sc+=420; return base.sort((a,b)=>b.sc-a.sc); }
-function showHtml(){ const R=showRows(), lead=R[0];
-  return `<p class="hint">💡 每天可以投票一次，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 LUMI 是第 2 名，幫她一把！</p>
-    <section class="show"><small>THE SHOW・本週</small><h2>THE SHOW</h2><small>目前第一名：${esc(lead.a)}</small>
-    <div class="rk">${R.map((x,i)=>`<div class="row ${i===0?"top":""}"><span class="n">${i+1}</span><span class="t"><b>${esc(x.t)}</b><small>${esc(x.a)}</small></span><span class="sc">${x.sc.toLocaleString()}</span>${x.me?`<button class="vote ${ST.voted?"done":""}" data-vote="1">${ST.voted?"已投":"投票"}</button>`:""}</div>`).join("")}</div></section>
-    <div class="win ${ST.voted?"on":""}"><b>🏆 LUMI 拿下一位！</b>在 HAECHU，打歌一位、AK、三冠王都是粉絲一起投出來的。</div>
-    <button class="next ghost" data-go="ls">下一關：揮應援棒 →</button>`; }
+function showHtml(){ const R=showRows(), lead=R[0], open=ST.showOpen||"ts";
+  const cv=x=>`<span class="mu2-cv npc" style="background:${x.me?"linear-gradient(135deg,#B794FF,#FF8FC2)":""}">${esc(x.a[0])}</span>`;
+  const rows=R.map((x,i)=>`<div class="mu3-r ${x.me?"":"npc"}"><span class="mu3-n">${i+1}</span><span class="mu3-song">${cv(x)}<span class="mu3-t"><b>${esc(x.t)}</b><small>${esc(x.a)}</small></span></span><span class="mu3-sc">${fmtN(x.sc)}</span>${x.me?(ST.voted?`<span class="mu3-stamp pop">已投</span>`:`<button class="mu3-vote" data-vote="1">${MU_IC.tk}<span>投票</span></button>`):""}</div>`).join("");
+  return head("FEST")+`<main class="page mu3">${hint(`每個節目每天可以投 1 票，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 ${IDOL.name} 是第 2 名，幫她一把！`)}
+    <section class="mu2-wk mu3-wk t-r"><span class="mu2-chip">排名週</span><span class="mu2-wt"><b>每個節目每天可以投 1 票</b></span></section>
+    <div class="mu2-h"><h3>音樂節目</h3></div>
+    <div class="mu3-list">${MU_SHN.map(([id,n1,n2],k)=>{ const on=open===id, me=k===0;
+      return `<section class="mu3-sh s-${id} ${on?"open":""}"><button class="mu3-hd" data-show="${id}" aria-expanded="${on}"><span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${me?`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(lead.a)}</span>`:`<span class="mu3-st muted">試玩只開放 THE SHOW</span>`}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
+        <div class="mu3-bd">${me?(ST.voted?`<p class="mu3-vt">今天投給了《Starlight》</p>`:"")+rows:`<p class="me-none">試玩只開放 THE SHOW 投票</p>`}</div></section>`; }).join("")}</div>
+    <div class="tz-win ${ST.voted?"on":""}"><b>🏆 ${IDOL.name} 拿下一位！</b>在 HAECHU，打歌一位、AK、三冠王都是粉絲一起投出來的。</div>
+    <button class="btn btn-main btn-block tz-next" data-go="ls">下一關：揮應援棒 →</button></main>`; }
 
 /* ---------- 應援棒 ---------- */
 const COLS=["#C7AEFF","#FF8FC2","#7FE0FF","#FFE08A","#9CF5B5"];
-function lsHtml(){ return `<p class="hint">💡 點<b>應援棒</b>就會揮動，下面可以換顏色。演唱會時，全場的應援棒會跟著音樂一起亮！</p>
-  <div class="ls"><div class="stick" id="stick" style="--c:${ST.col}"><span class="ball"></span><span class="grip"></span></div>
-  <div class="cols">${COLS.map(c=>`<button class="${c===ST.col?"on":""}" data-col="${c}" style="background:${c}" aria-label="換顏色"></button>`).join("")}</div>
-  <p class="cnt" id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下 💜`:"點應援棒揮揮看"}</p></div>
-  <button class="next" data-go="end">看看還能做什麼 →</button>`; }
+function lsHtml(){ return head("LIGHT")+`<main class="page">${hint("點<b>應援棒</b>就會揮動，下面可以換顏色。演唱會時，全場的應援棒會跟著音樂一起亮！")}
+  <section class="card tz-ls"><button class="tz-stick" id="stick" style="--c:${ST.col}" aria-label="揮應援棒"><span class="ball"></span><span class="grip"></span></button>
+  <div class="tz-cols">${COLS.map(c=>`<button class="${c===ST.col?"on":""}" data-col="${c}" style="background:${c}" aria-label="換顏色"></button>`).join("")}</div>
+  <p id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下 💜`:"點應援棒揮揮看"}</p></section>
+  <button class="btn btn-main btn-block tz-next" data-go="end">看看還能做什麼 →</button></main>`; }
 
 /* ---------- 結尾 ---------- */
-function endHtml(){ return `<div class="end"><h1>這只是一小部分 💜</h1><p>真正的 HAECHU 裡，偶像都是社群裡的真人，<br>每天都在發生新的事。</p>
-  <div class="card"><h3>💌 當粉絲</h3><p>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</p></div>
-  <div class="card"><h3>🎤 當偶像</h3><p>從練習生開始：</p><ol><li>在社群累積積分（打卡、宣群、發文、創作…）</li><li>到 T5 就可以開始準備出道（Teaser、MV…）</li><li>積分滿 8,000（R1）正式出道，有自己的 TIE、SNS、打歌</li></ol></div>
-  <a class="cta" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
-  <a class="cta v" href="../" >我已經有帳號，回到 HAECHU</a></div>`; }
+function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>真正的 HAECHU 裡，偶像都是社群裡的真人，每天都在發生新的事。</p>
+  <section class="card"><h3>💌 當粉絲</h3><p>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</p></section>
+  <section class="card"><h3>🎤 當偶像</h3><p>從練習生開始：</p><ol><li>在社群累積積分（打卡、宣群、發文、創作…）</li><li>到 T5 就可以開始準備出道（Teaser、MV…）</li><li>積分滿 8,000（R1）正式出道，有自己的 TIE、SNS、打歌</li></ol></section>
+  <a class="btn btn-main btn-block" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
+  <a class="btn btn-soft btn-block" href="../">我已經有帳號，回到 HAECHU</a></main>`; }
 
 /* ---------- 畫面 ---------- */
-const TABS=[["tie","TIE"],["sns","SNS"],["show","打歌"],["ls","應援棒"],["end","加入"]];
 function done(k){ if(ST.done[k]) return; ST.done[k]=1; LS.set("done",ST.done); }
-function render(){ const a=document.getElementById("app");
-  if(ST.tab==="intro"){ a.innerHTML=`<div class="intro"><span class="av big">L</span><h1>來當一次粉絲吧！</h1><p>這是 HAECHU 的試玩，不用帳號。<br>示範偶像 <b>${IDOL.name}</b> 會陪你玩一遍。</p>
-    <ol><li><em>💌</em>收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）</li><li><em>📸</em>滑她的 SNS，點兩下按愛心</li><li><em>🏆</em>幫她打歌，衝上一位</li><li><em>🪄</em>揮應援棒</li></ol>
-    <button class="next" data-go="tie">開始 →</button></div>`; return; }
-  const body={tie:chatHtml,sns:snsHtml,show:showHtml,ls:lsHtml,end:endHtml}[ST.tab]();
-  a.innerHTML=`<header class="top"><div class="top-r"><span class="wm">HAECHU</span><span class="pill">試玩</span></div>
-    <nav class="tabs">${TABS.map(([k,l],i)=>`<button class="${ST.tab===k?"on":""} ${ST.done[k]?"done":""}" data-go="${k}"><i>${ST.done[k]?"✓":i+1}</i>${l}</button>`).join("")}</nav></header><main><section class="pane on pn-${ST.tab}">${body}</section></main>`;
-  const hd=a.querySelector(".top"); if(hd) document.documentElement.style.setProperty("--hh",hd.offsetHeight+"px");
-  if(ST.tab==="tie") requestAnimationFrame(scrollMsgs); }
-function go(k){ ST.tab=k; if(k==="end") done("end"); render(); window.scrollTo(0,0); if(k==="tie"&&!CH.nick) setTimeout(nickSheet,300); }
+function render(){
+  if(ST.tab==="intro"){ root.innerHTML=`<div class="app no-nav"><div class="tz-in"><span class="tz-av">L</span><h1>來當一次粉絲吧！</h1><p>這是 HAECHU 的試玩，不用帳號。<br>示範偶像 <b>${IDOL.name}</b> 會陪你玩一遍。</p>
+    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
+    <button class="btn btn-main btn-block" data-go="tie">開始</button></div></div>`; return; }
+  if(ST.tab==="tie"&&ST.room){ root.innerHTML=`<div class="app no-nav">${roomHtml()}</div>`; requestAnimationFrame(scrollMsgs); const i=document.getElementById("tieIn"); if(i&&ST.draft) i.value=ST.draft; return; }
+  const body={tie:tieListHtml,sns:snsHtml,show:showHtml,ls:lsHtml,end:endHtml}[ST.tab]();
+  root.innerHTML=`<div class="app">${body}</div>${navBar(ST.tab)}`; }
+function go(k){ if(k==="room"){ ST.room=true; CH.unread=0; LS.set("chat",CH); render(); if(!CH.nick) setTimeout(nickSheet,280); return; }
+  if(k==="tie"&&ST.room){ ST.room=false; render(); return; }
+  ST.tab=k; ST.room=false; LS.set("tab",k); if(k==="end") done("end"); render(); window.scrollTo(0,0); }
 
-document.addEventListener("click",e=>{ const t=e.target.closest("[data-go],[data-like],[data-vote],[data-col],#stick,#nickOk,.sheet-w"); if(!t) return;
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-go],[data-like],[data-vote],[data-col],[data-show],#stick,#nickOk,[data-close]"); if(!t) return;
   if(t.dataset.go) return go(t.dataset.go);
   if(t.dataset.like) return like(t.dataset.like);
+  if(t.dataset.show){ ST.showOpen=ST.showOpen===t.dataset.show?"_":t.dataset.show; render(); return; }
   if(t.dataset.vote){ if(ST.voted) return; ST.voted=true; done("show"); render(); toast("🏆 謝謝你的一票！"); return; }
   if(t.dataset.col){ ST.col=t.dataset.col; render(); return; }
   if(t.id==="stick"){ t.classList.remove("wave"); void t.offsetWidth; t.classList.add("wave"); ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; if(navigator.vibrate) navigator.vibrate(20); return; }
-  if(t.id==="nickOk"){ const v=(document.getElementById("nickIn").value||"").trim(); if(!v){ toast("先取一個暱稱"); return; } CH.nick=v; LS.set("chat",CH); document.getElementById("nickW").remove(); render(); return; }
-  if(t.classList.contains("sheet-w")&&e.target===t){ t.remove(); return; } });
+  if(t.id==="nickOk"){ const v=(document.getElementById("nickIn").value||"").trim(); if(!v){ toast("先取一個暱稱"); return; } CH.nick=v; LS.set("chat",CH); layer.innerHTML=""; render(); setTimeout(()=>{ const i=document.getElementById("tieIn"); if(i) i.focus(); },50); return; }
+  if(t.dataset.close&&e.target===t){ layer.innerHTML=""; return; } });
 let lastTap={id:null,t:0};
 document.addEventListener("pointerup",e=>{ const p=e.target.closest("[data-dbl]"); if(!p) return; const id=p.dataset.dbl, now=Date.now();
-  if(lastTap.id===id&&now-lastTap.t<320){ lastTap={id:null,t:0}; const h=p.querySelector(".heart"); h.classList.add("go"); setTimeout(()=>h.classList.remove("go"),650); setTimeout(()=>like(id,true),250); } else lastTap={id,t:now}; });
-document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; i.value=""; done("tie"); sendMsg(v); });
+  if(lastTap.id===id&&now-lastTap.t<320){ lastTap={id:null,t:0}; const h=document.getElementById("hh-"+id); if(h){ h.classList.remove("go"); void h.offsetWidth; h.classList.add("go"); } setTimeout(()=>like(id,true),300); } else lastTap={id,t:now}; });
+document.addEventListener("input",e=>{ if(e.target.id!=="tieIn") return; ST.draft=e.target.value; const b=document.getElementById("tieSend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); });
+document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; i.value=""; ST.draft=""; done("tie"); sendMsg(v); });
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) poll(); });
-if(CH.msgs.length) { startPoll(); poll(); }
+if(CH.msgs.length){ startPoll(); poll(); }
 render();
 </script>
 </body>

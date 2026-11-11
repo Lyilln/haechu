@@ -6469,6 +6469,15 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .prg-s button{flex:none;border:0;background:none;color:var(--violet,#8843FB);font:inherit;font-weight:700;padding:4px 0}
 .prg-sp{flex:none!important;width:14px;height:14px;border-radius:50%;border:2px solid currentColor;border-right-color:transparent;animation:prgSp .8s linear infinite}@keyframes prgSp{to{transform:rotate(360deg)}}
 #prgR.wait,#prgF.wait{opacity:.4;pointer-events:none}
+
+.try-tie{overflow-y:auto;overscroll-behavior:contain;background:transparent!important}.try-tie>.t-bgl{position:fixed}
+.try-tie .t-rh{position:sticky;top:0}.try-tie .t-msgs{padding-bottom:110px}
+.try-tie .t-inp textarea{flex:1;min-width:0;border:0;outline:0;background:transparent;resize:none;font:inherit;font-size:15px;line-height:1.35;padding:8px 14px;color:inherit;max-height:110px}
+.try-tie .t-inp{height:auto;min-height:36px}
+.try-av{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;color:#fff;font-weight:800;font-size:16px}
+.try-cont{margin-top:-10px}.try-cont .try-av{visibility:hidden}
+.try-tag{font-size:10px;font-weight:800;padding:2px 6px;border-radius:999px;background:#F3EEFF;color:#7C3AED}html[data-theme="dark"] .try-tag{background:rgba(167,139,250,.18);color:#C4B5FD}
+.try-by{font-style:normal;font-size:10.5px;color:#8B5CF6;font-weight:700}
 </style>
 </head>
 <body>
@@ -6994,7 +7003,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261111004838";
+const BUILD="20261111013431";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10256,7 +10265,11 @@ setInterval(()=>{ document.querySelectorAll(".hl").forEach(h=>{ const it=[...h.q
 /* 只有藝人「今天真的傳過 TIE」才出現；不推薦你自己 */
 function feedDMs(){ const f=followed(), W=getWhispers(), now=Date.now();
   return Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&f.includes(MEMBERS[id].group)&&!isActive(id)&&!isSelfGid(MEMBERS[id].group)).map(id=>{ const l=W.filter(w=>w.member===id&&w.from==="artist"&&!w.welcome&&!w.to).pop(); return l&&now-l.ts<864e5?{id,ts:l.ts}:null; }).filter(Boolean).sort((a,b)=>b.ts-a.ts); }
-const getGNotices=()=>S.get(K.gNotices,[]).filter(n=>groupOf(n.group)).sort((a,b)=>b.ts-a.ts);
+/* 撤下的團體公告：記編號＋MV 編號（同步到每支手機），自動公告不會再補回來，別支手機的舊資料也蓋不回來 */
+const GN_GONE="daisuki_gn_gone";
+const gnGone=()=>S.get(GN_GONE,{})||{};
+const gnIsGone=n=>{ const G=gnGone(); return !!(n&&(G[n.id]||(n.mv&&G["mv:"+n.mv]))); };
+const getGNotices=()=>S.get(K.gNotices,[]).filter(n=>groupOf(n.group)&&!gnIsGone(n)).sort((a,b)=>b.ts-a.ts);
 function myFeedTop(){
   const dms=feedDMs(), f=followed(), ns=getGNotices().filter(n=>f.includes(n.group)&&!n.mv).slice(0,6); let h="";   /* MV 公開的自動公告不放這裡：下面「公司官方公告」已經有 MV */
   if(dms.length){ const d=dms[(ui.dmIdx||0)%dms.length], m=MEMBERS[d.id], g=groupOf(m.group);
@@ -13874,7 +13887,7 @@ function clickCm(a,t,e,r){ switch(a){
       S.set(K.gNotices,[{id:"gn"+Date.now(),group:gid,title:ti.trim(),body:bo.trim(),ts:Date.now()},...S.get(K.gNotices,[])]);
       const off=Object.keys(MEMBERS).find(id=>MEMBERS[id].official&&MEMBERS[id].group===gid); if(off) feedPush({kind:"post",member:off,group:gid,text:"📢 "+ti.trim()},"g:"+gid);
       render(); toast("團體公告已發布"); break; }
-    case "gnDel": S.set(K.gNotices,S.get(K.gNotices,[]).filter(x=>x.id!==t.dataset.v)); render(); toast("已撤下"); break;
+    case "gnDel": { const L=S.get(K.gNotices,[])||[], n=L.find(x=>x.id===t.dataset.v), G={...gnGone()}; G[t.dataset.v]=Date.now(); if(n&&n.mv) G["mv:"+n.mv]=Date.now(); S.set(GN_GONE,G); S.set(K.gNotices,L.filter(x=>x.id!==t.dataset.v)); render(); toast("已撤下"); break; }
     
     
     
@@ -18429,7 +18442,7 @@ function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow
     /* 回歸：同一團有新歌，舊歌下檔 */
     const byG={}; m.songs.forEach(x=>{ const r=songRel(x); if(!byG[x.gid]||r>songRel(byG[x.gid])) byG[x.gid]=x; }); const old=m.songs.filter(x=>songRel(x)&&byG[x.gid]!==x&&songRel(byG[x.gid])-songRel(x)>MDAY); if(old.length){ m.songs=m.songs.filter(x=>!old.includes(x)); m.ended=[...(m.ended||[]),...old.map(x=>({...x,endTs:now}))]; ch=true; }
     /* 社群（團的社群，不是個人社群）：MV 公開時自動貼一則 NOTICE，社群的影音也看得到 */
-    { const GN=S.get(K.gNotices,[])||[]; let gch=false; (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<7*MDAY).forEach(v=>{ if(GN.some(n=>n.mv===v.id)) return; const g=groupOf(v.gid), tt=mvTitleOf(v.title)||v.title||"新歌";
+    { const GN=S.get(K.gNotices,[])||[]; let gch=false; (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<7*MDAY).forEach(v=>{ if(GN.some(n=>n.mv===v.id)||gnGone()["mv:"+v.id]) return; const g=groupOf(v.gid), tt=mvTitleOf(v.title)||v.title||"新歌";
         const db=mvIsDebut(v); GN.unshift({id:"gn"+v.ts,group:v.gid,mv:v.id,title:`[MV] ${g.name}《${tt}》${db?"出道 MV":"Official MV"} 公開`,body:`${g.name}${db?"的出道曲":""}《${tt}》MV 公開了！\n到社群的影音就看得到，打歌也從現在開始，一起幫忙投票吧 💜`,ts:v.ts}); gch=true; }); if(gch){ S.set(K.gNotices,GN); ch=true; } }
     const done=m.songs.filter(x=>songPhase(x)==="end"); if(done.length){ m.songs=m.songs.filter(x=>songPhase(x)!=="end"); m.ended=[...(m.ended||[]),...done.map(x=>({...x,endTs:now}))]; ch=true; }
     if(ch){ S.set(K.mshow,m); try{ render(); }catch(e){} } }catch(e){} }
@@ -20271,12 +20284,23 @@ const tryUnread=()=>{ try{ return isAdminAcct()?tryConvs().filter(c=>c.wait).len
 function viewTryInbox(){ const C=tryConvs();
   return `<main class="page"><p class="reach" style="margin:4px 2px 12px">訪客在試玩頁（${esc(location.origin+location.pathname.replace(/[^/]*$/,""))}try/）傳給 ${TRY_IDOL} 的訊息。四位管理員都看得到，你的回覆會以 ${TRY_IDOL} 的身分出現。</p>
     ${C.length?`<section class="card">${C.map(c=>`<button class="list-btn try-row" data-a="tryOpen" data-v="${esc(c.k)}"><span class="try-rl"><b>${esc(c.nick)}</b><small>${c.last.from==="fan"?"":"你們："}${esc(String(c.last.text).slice(0,40))}・${ago(c.last.ts)}</small></span><span class="r">${c.wait?`<em class="t-cnt">待回覆</em>`:"已回覆"}</span></button>`).join("")}</section>`:`<section class="card uni-empty">還沒有訪客傳訊息</section>`}</main>`; }
-function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts);
-  setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(v.nick||"訪客")}</b><span class="sh-sp"></span></header>
-    <div class="tiei-body try-chat" id="tryBody">${L.map(m=>`<div class="try-m ${m.from==="fan"?"fan":"idol"}"><p>${esc(m.text)}</p><small>${m.from==="idol"?esc(m.byName||TRY_IDOL)+"・":""}${ymdhm(m.ts)}</small></div>`).join("")}</div>
-    <form class="try-f" data-k="${esc(k)}"><input id="tryIn" maxlength="300" placeholder="以 ${TRY_IDOL} 的身分回覆" autocomplete="off"><button type="submit" class="btn btn-main btn-sm">送出</button></form></div>`,"try");
-  setTimeout(()=>{ const b=document.getElementById("tryBody"); if(b) b.scrollTop=b.scrollHeight; },30); }
-document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k;
+/* 管理員看試玩對話：跟 TIE 聊天室長得一樣（管理員以 LUMI 的身分＝紫色泡泡在右邊，訪客在左邊） */
+function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts), nick=v.nick||"訪客";
+  let lastDay="", body=L.map((m,i)=>{ const d=dayLabel(m.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
+    if(m.from==="idol") return sep+`<div class="t-me"><div class="t-meta"><span>${m.byName?`<em class="try-by">${esc(m.byName)}</em>`:""}${timeHM(m.ts)}</span></div><div class="t-b me">${esc(m.text)}</div></div>`;
+    const prev=L[i-1], cont=prev&&prev.from==="fan"&&!sep;
+    return sep+`<div class="t-art ${cont?"try-cont":""}"><div class="t-av try-av" style="background:${grad(strHash(nick)%8)}">${esc(String(nick)[0]||"訪")}</div>
+      <div class="t-art-c">${cont?"":`<div class="t-art-n"><b>${esc(nick)}</b><span class="try-tag">試玩</span></div>`}<div class="t-bw"><div class="t-b">${esc(m.text)}</div><span class="t-side"><span class="t-tm">${timeHM(m.ts)}</span></span></div></div></div>`; }).join("");
+  const wait=L.length&&L[L.length-1].from==="fan";
+  setLayer(`<div class="tiei try-tie"><div class="t-bgl t-default"></div>
+    <header class="t-rh"><div class="t-rh-row"><button class="t-ib" data-a="tCloseLayer" aria-label="返回">${TI.back}</button><h3>${esc(nick)}</h3><div class="t-rh-r"></div></div>
+      <div class="t-sub art">${wait?"等你回覆中・":""}以 ${TRY_IDOL} 的身分回覆</div></header>
+    <main class="t-msgs" id="tryBody">${body||`<p class="t-none">還沒有訊息</p>`}<div id="tryEnd"></div></main>
+    <form class="t-foot try-f" data-k="${esc(k)}"><div class="t-inp"><textarea rows="1" id="tryIn" maxlength="300" autocomplete="off" placeholder="以 ${TRY_IDOL} 的身分回覆" aria-label="輸入訊息"></textarea></div><button class="t-send" id="trySend" type="submit" aria-label="送出">${TI.send}</button></form></div>`,"try");
+  setTimeout(()=>{ const b=layer.querySelector(".try-tie"); if(b) b.scrollTop=b.scrollHeight; },30); }
+document.addEventListener("input",e=>{ if(e.target.id!=="tryIn") return; const b=document.getElementById("trySend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); e.target.style.height="auto"; e.target.style.height=Math.min(110,e.target.scrollHeight)+"px"; });
+document.addEventListener("keydown",e=>{ if(e.target.id==="tryIn"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); const f=e.target.closest("form"); if(f) f.requestSubmit(); } });
+document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("textarea,input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k;
   if(k.startsWith("w:")){ const id=k.slice(2); i.value=""; i.disabled=true;
     fetch(MEDIA_URL+"/try/"+id+"?a=reply",{method:"POST",headers:{Authorization:"Bearer "+HB.tok,"Content-Type":"application/json"},body:JSON.stringify({text:tx})}).then(r=>r.ok?r.json():Promise.reject(r.status)).then(v=>{ TRYW=(TRYW||[]).filter(x=>x.id!==id).concat([{id,...v}]); hbSoon(); tryChat(k); }).catch(er=>{ i.disabled=false; i.value=tx; toast(er===404||er===405?"媒體伺服器還沒更新，請先重新部署 haechu-media":"沒有送出，請再試一次"); }); return; }
   const v=S.get(k,null)||{msgs:[]};
