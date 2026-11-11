@@ -6523,6 +6523,10 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 
 .sn-rbu .sn-rfb{border:1px solid rgba(255,255,255,.85)!important;background:none!important;color:#fff!important;border-radius:9px!important;padding:5px 12px!important;font:inherit!important;font-size:14px!important;font-weight:700!important;line-height:1.2}
 .sn-rbu .sn-hu .sn-v{margin-left:3px}
+
+.pd.kb{transition:none!important;animation:none!important;box-shadow:0 0 0 100vmax var(--bg)}   /* 鍵盤滑上來時，頁面外圍也用同色鋪滿，不會透出後面的藝人頁 */
+.ios-w.stk{position:fixed;inset:0;z-index:95}
+.pd-c.lp-on{background:color-mix(in srgb,var(--violet,#8843FB) 10%,transparent);transition:background .2s}
 </style>
 </head>
 <body>
@@ -7048,7 +7052,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261111015953";
+const BUILD="20261111021008";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -10063,9 +10067,19 @@ if(window.visualViewport){ visualViewport.addEventListener("resize",lvFit); visu
 function pdFit(){ const L=[...document.querySelectorAll(".pd")], pd=L[L.length-1], vv=window.visualViewport; if(!pd||!vv) return; const kb=window.innerHeight-vv.height>80&&document.activeElement&&!!document.activeElement.closest(".pd-in");
   if(kb){ /* 打字時：整頁貼齊鍵盤上方。App 有整體縮放（zoom），直接用 visualViewport 的數字會算錯 → 先量「1px 實際畫出來多大」再換算 */
     pd.style.bottom="auto"; pd.style.top="0px"; pd.style.height="1000px"; const r=pd.getBoundingClientRect(), k=r.height/1000||1, t0=r.top/k;
-    pd.style.top=(vv.offsetTop/k-t0)+"px"; pd.style.height=(vv.height/k)+"px"; pd.classList.add("kb"); }
+    const nt=(vv.offsetTop/k-t0), nh=(vv.height/k); pd.style.top=nt+"px"; pd.style.height=nh+"px"; pd.classList.add("kb"); }
   else if(pd.classList.contains("kb")){ pd.style.top=""; pd.style.bottom=""; pd.style.height=""; pd.classList.remove("kb"); } }
-if(window.visualViewport){ visualViewport.addEventListener("resize",pdFit); visualViewport.addEventListener("scroll",pdFit); }
+/* 長按留言就能回覆（跟點留言下面的回覆圖示一樣） */
+(function(){ let tm=0, el=null, x0=0, y0=0;
+  const cancel=()=>{ clearTimeout(tm); tm=0; if(el) el.classList.remove("lp-on"); el=null; };
+  document.addEventListener("touchstart",e=>{ const c=e.target.closest&&e.target.closest(".pd .pd-c:not(.pd-r):not(.top)"); if(!c||e.touches.length!==1||e.target.closest("button,a,textarea,input")) return; const b=c.querySelector('[data-a="pdOpenRep"]'); if(!b) return;
+    el=c; x0=e.touches[0].clientX; y0=e.touches[0].clientY; tm=setTimeout(()=>{ if(!el) return; el.classList.add("lp-on"); if(navigator.vibrate) navigator.vibrate(12); const bb=b; setTimeout(()=>{ cancel(); bb.click(); },120); },450); },{passive:true});
+  document.addEventListener("touchmove",e=>{ if(!el) return; const t=e.touches[0]; if(Math.abs(t.clientX-x0)>8||Math.abs(t.clientY-y0)>8) cancel(); },{passive:true});
+  document.addEventListener("touchend",cancel,{passive:true}); document.addEventListener("touchcancel",cancel,{passive:true});
+  document.addEventListener("contextmenu",e=>{ const c=e.target.closest&&e.target.closest(".pd .pd-c:not(.pd-r):not(.top)"); if(!c) return; const b=c.querySelector('[data-a="pdOpenRep"]'); if(!b) return; e.preventDefault(); b.click(); });
+})();
+let pdRaf=0; const pdFitSoon=()=>{ if(pdRaf) return; pdRaf=requestAnimationFrame(()=>{ pdRaf=0; pdFit(); }); };   /* 鍵盤滑上來時事件會一直來：一格畫面只算一次，內容不會跳 */
+if(window.visualViewport){ visualViewport.addEventListener("resize",pdFitSoon); visualViewport.addEventListener("scroll",pdFitSoon); }
 document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) [0,120,350].forEach(t=>setTimeout(pdFit,t)); });
 document.addEventListener("focusout",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) setTimeout(pdFit,80); });
 document.addEventListener("touchmove",e=>{ const mr=e.target.closest&&e.target.closest(".mr.dl"); if(!mr||!e.cancelable) return; const sc=e.target.closest("#cmTick,.cm-tick"); if(sc&&sc.scrollHeight>sc.clientHeight+2) return; e.preventDefault(); },{passive:false});
@@ -11164,7 +11178,10 @@ document.addEventListener("load",e=>{ const el=e.target; if(el&&el.tagName==="IM
 function snSheet(groups,{title=""}={}){ const G=groups.filter(g=>g&&g.length);
   setLayer(`<div class="snsh-w" data-a="tCloseLayer"><div class="snsh" data-a="snMiNo" role="dialog"><i class="snsh-gr"></i>${title?`<b class="snsh-t">${esc(title)}</b>`:""}${G.map(g=>`<div class="snsh-g">${g.map(([label,act,attrs,o])=>{ o=o||{}; return `<button class="snsh-r ${o.red?"red":""}" data-a="${act}" ${attrs||""}>${o.ic?si(o.ic):""}<span>${label}</span>${o.on?`<em>${si("check")}</em>`:""}</button>`; }).join("")}</div>`).join("")}</div></div>`,"ios");
   requestAnimationFrame(()=>{ const w=layer.querySelector(".snsh-w"); if(w) w.classList.add("open"); }); }
-function iosSheet(items,{cancel="取消"}={}){ setLayer(`<div class="ios-w" data-a="tCloseLayer"><div class="ios-sh" role="dialog"><div class="ios-g">${items.map(([label,act,attrs])=>`<button data-a="${act}" ${attrs||""}>${label}</button>`).join("")}</div><button class="ios-c" data-a="tCloseLayer">${cancel}</button></div></div>`,"ios"); }
+function iosSheet(items,{cancel="取消",stack=false}={}){
+  /* stack：疊在目前的頁面上面（例如貼文頁裡的管理選單），取消只關選單，貼文頁還在 */
+  if(stack&&layer.firstElementChild&&!layer.firstElementChild.matches(".ios-w,.t-modal-w")){ layer.querySelectorAll(".ios-w.stk").forEach(x=>x.remove()); layer.insertAdjacentHTML("beforeend",`<div class="ios-w stk" data-a="iosStkX"><div class="ios-sh" role="dialog"><div class="ios-g">${items.map(([label,act,attrs])=>`<button data-a="${act}" ${attrs||""}>${label}</button>`).join("")}</div><button class="ios-c" data-a="iosStkX">${cancel}</button></div></div>`); return; }
+  setLayer(`<div class="ios-w" data-a="tCloseLayer"><div class="ios-sh" role="dialog"><div class="ios-g">${items.map(([label,act,attrs])=>`<button data-a="${act}" ${attrs||""}>${label}</button>`).join("")}</div><button class="ios-c" data-a="tCloseLayer">${cancel}</button></div></div>`,"ios"); }
 function iosAlert(title,body,btns,extra=""){ setLayer(`<div class="ios-w al"><div class="ios-al" role="alertdialog">${title?`<h3>${title}</h3>`:""}${body?`<p>${body}</p>`:""}${extra}<div class="ios-ab">${btns}</div></div></div>`,"iosal"); }
 /* 紀念日全螢幕：剛訂閱（第 1 天）出現蛋糕「1」，之後的紀念日出現藝人＋粉絲頭像和 D+天數 */
 const CELE_DAYS=[10,...MILESTONES];
@@ -14457,6 +14474,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "apMore": { const y=scrollY; ui.apMore={...(ui.apMore||{}),[t.dataset.v]:!(ui.apMore||{})[t.dataset.v]}; render(); scrollTo(0,y); break; }
     case "snRpTg": { const d=snDB(), me=snMeId(), id=t.dataset.id; d.rp=d.rp||{}; const L=d.rp[me]||[], on=L.some(x=>x.id===id); d.rp[me]=on?L.filter(x=>x.id!==id):[{id,ts:Date.now()},...L]; snSave(d); toast(on?"已取消轉發":"已轉發到你的個人檔案"); { const y=scrollY; render(); scrollTo(0,y); } break; }
     case "snSugTg": ui.snSugOpen=ui.snSugOpen===t.dataset.v?null:t.dataset.v; { const y=scrollY; render(); scrollTo(0,y); } break;
+    case "iosStkX": { if(e.target===t||t.tagName==="BUTTON"){ const w=t.closest(".ios-w.stk"); if(w) w.remove(); ui.amItem=null; } break; }
     case "snDmNew": { const i=document.getElementById("snDmQ"); if(i){ i.focus(); } break; }
     case "snCallX": toast("SNS 的通話和語音訊息還沒開放"); break;
     case "snDmStk": { const i=document.getElementById("snDmIn"); if(i){ i.value+=["💜","🥹","✨","😆","🫶"][Math.floor(Math.random()*5)]; i.dispatchEvent(new Event("input",{bubbles:true})); i.focus(); } break; }
@@ -15428,8 +15446,8 @@ function fgStart(){ const box=document.getElementById("fgBox"); if(!box) return;
 /* ===== 管理員：不管在哪一端，看到不當內容都能馬上處理 ===== */
 /* 在藝人端：不顯示粉絲是誰（FROM FAN），只寫「這位粉絲」 */
 function admQuick(item){ ui.amItem=item; const r0=route(), artSide=(r0&&r0.role==="artist")||(session()||{}).role==="artist"; const nm=artSide?"這位粉絲":shownName({name:item.name,by:item.by});
-  iosSheet([["刪除這則","amDo",'data-v="del"'],[`禁言 ${esc(nm)} 24 小時`,"amDo",'data-v="24"'],[`禁言 ${esc(nm)} 7 天`,"amDo",'data-v="168"'],[`停權 ${esc(nm)}`,"amDo",'data-v="ban"']],{cancel:"取消"}); }
-function amApply(v){ const it=ui.amItem; if(!it) return; layer.innerHTML="";
+  iosSheet([["刪除這則","amDo",'data-v="del"'],[`禁言 ${esc(nm)} 24 小時`,"amDo",'data-v="24"'],[`禁言 ${esc(nm)} 7 天`,"amDo",'data-v="168"'],[`停權 ${esc(nm)}`,"amDo",'data-v="ban"']],{cancel:"取消",stack:true}); }
+function amApply(v){ const it=ui.amItem; if(!it) return; const stk=layer.querySelector(".ios-w.stk"); if(stk) stk.remove(); else layer.innerHTML="";
   if(v==="del"){ const r={kind:it.kind,commentId:it.commentId,ref:it.ref||{},who:it.who}; if(it.kind==="fanpost") S.set(K.fanPosts,S.get(K.fanPosts,[]).filter(x=>x.id!==it.id)); else removeReported(r);
     const L=S.get(K.reports,[]); L.push({id:"rp"+Date.now(),key:"adm:"+Date.now(),kind:it.kind==="fanpost"?"comment":it.kind,commentId:it.commentId,postId:it.postId,ref:{...(it.ref||{}),by:it.by},text:it.text,name:it.name,who:it.who,reason:"管理員直接處理",by:"admin",count:1,ts:Date.now(),status:"removed",doneTs:Date.now()}); S.set(K.reports,L);
     toast("已刪除"); }
