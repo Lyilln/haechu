@@ -193,7 +193,7 @@ function showCopyMenu(el,x,y){
   /* 藝人端：長按粉絲的訊息 → 回覆／複製／檢舉（取代原本的「⋯」） */
   if((session()||{}).role==="artist"){ ui.copyText=w.ko||w.text; const L=Math.min(Math.max(x,90),window.innerWidth-90)/ZM(), T=Math.max(y-64,10)/ZM();
     layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx t-ctx3" style="left:${L}px;top:${T}px"><button data-a="tCopy">複製</button><button class="dg" data-a="tieRep" data-id="${w.id}">檢舉</button></div></div>`;
-    layer.querySelectorAll(".t-ctx3 button").forEach(b=>b.addEventListener("click",()=>{ layer.innerHTML=""; })); try{ navigator.vibrate&&navigator.vibrate(10); }catch(e){} return; }
+    layer.querySelectorAll(".t-ctx3 button").forEach(b=>b.addEventListener("click",()=>{ layer.innerHTML=""; })); try{ hap(10); }catch(e){} return; }
   const st=route().m?tieSet(route().m):null, text=w.ko||w.text;
   ui.copyText=text;
   layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx" style="left:${Math.min(Math.max(x,60),window.innerWidth-60)/ZM()}px;top:${Math.max(y-56,10)/ZM()}px"><button data-a="tCopy">複製</button></div></div>`;

@@ -555,7 +555,7 @@ function clickAdm(a,t,e,r){ switch(a){
       const L=S.get(K.vods,[]), gid=ui.vodG||GROUPS[0].id, cat=ui.vodNewCat||"MV"; L.push({id:uid("v"),gid,cat,title:ti,album:document.getElementById("vdAlbum").value,ts:Date.now(),views:0,dur:cat==="SHOW"?1200:cat==="BEHIND"?480:200,link:li}); S.set(K.vods,L); toast("已新增影片，記得上傳縮圖"); { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "vodDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); render(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
 
-    case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
+    case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ hap([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
     case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
@@ -950,7 +950,11 @@ function clickTie(a,t,e,r){ switch(a){
       S.set(K.ptGrants,L.slice(-2000)); toast(set?`已把 ${d.to.length} 個帳號的積分設定為 ${fmt(n)}`:`已${amt>=0?"加":"扣"} ${fmt(n)} 積分給 ${d.to.length} 個帳號`); ui.ptD={to:[],n:"",why:"",q:"",sign:1}; lsRerender(); break; }
     case "apFold": { const y=scrollY; ui.apOpen={...(ui.apOpen||{}),[t.dataset.v]:!(ui.apOpen||{})[t.dataset.v]}; render(); scrollTo(0,y); break; }
     case "apMore": { const y=scrollY; ui.apMore={...(ui.apMore||{}),[t.dataset.v]:!(ui.apMore||{})[t.dataset.v]}; render(); scrollTo(0,y); break; }
-    case "snRpTg": { const d=snDB(), me=snMeId(), id=t.dataset.id; d.rp=d.rp||{}; const L=d.rp[me]||[], on=L.some(x=>x.id===id); d.rp[me]=on?L.filter(x=>x.id!==id):[{id,ts:Date.now()},...L]; snSave(d); toast(on?"已取消轉發":"已轉發到你的個人檔案"); { const y=scrollY; render(); scrollTo(0,y); } break; }
+    case "snRpTg": { const d=snDB(), me=snMeId(), id=t.dataset.id; d.rp=d.rp||{}; const L=d.rp[me]||[], on=L.some(x=>x.id===id); d.rp[me]=on?L.filter(x=>x.id!==id):[{id,ts:Date.now()},...L]; snSave(d); toast(on?"已取消轉發":"已轉發到你的個人檔案"); hap(on?6:10);
+      /* 只改這顆按鈕和數字（不整頁重畫，畫面不會跳） */
+      const P=d.posts.find(x=>x.id===id), btns=document.querySelectorAll(`[data-a="snRpTg"][data-id="${CSS.escape(id)}"]`);
+      if(btns.length&&P){ const n=snRpN(d,P); btns.forEach(b=>{ b.classList.toggle("rpd",!on); b.classList.toggle("on",!on); let c=b.querySelector("b"); if(n){ if(!c){ c=document.createElement("b"); b.appendChild(c); } c.textContent=snN(n); } else if(c&&b.closest(".sn-acts")) c.remove(); AN.bounce(b); }); }
+      else { const sc=document.querySelector(".sn"), y=sc?sc.scrollTop:scrollY; render(); const s2=document.querySelector(".sn"); if(s2) s2.scrollTop=y; else scrollTo(0,y); } break; }
     case "snSugTg": ui.snSugOpen=ui.snSugOpen===t.dataset.v?null:t.dataset.v; { const y=scrollY; render(); scrollTo(0,y); } break;
     case "iosStkX": { if(e.target===t||t.tagName==="BUTTON"){ const w=t.closest(".ios-w.stk"); if(w) w.remove(); ui.amItem=null; } break; }
     case "snDmNew": { const i=document.getElementById("snDmQ"); if(i){ i.focus(); } break; }

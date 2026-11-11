@@ -262,7 +262,7 @@ const tieRq=(r,me,noTr)=>`<div class="t-rp ${me?"me":""}"><small>${(session()||{
   document.addEventListener("touchstart",e=>{ const t=e.target.closest&&e.target.closest("[data-sw]"); el=t||null; if(!el) return; sx=e.touches[0].clientX; sy=e.touches[0].clientY; dx=0; lock=0; el.style.transition="none"; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!el) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy; if(!lock&&(Math.abs(x)>8||Math.abs(y)>8)) lock=Math.abs(x)>Math.abs(y)?1:2; if(lock!==1) return; dx=Math.max(-84,Math.min(0,x)); el.style.transform=`translateX(${dx}px)`; el.classList.toggle("sw-on",dx<-56); },{passive:true});
   const end=()=>{ if(!el) return; const id=el.dataset.sw, hit=dx<-56; el.style.transition="transform .28s cubic-bezier(.2,.8,.2,1)"; el.style.transform=""; el.classList.remove("sw-on"); el=null; dx=0;
-    if(hit){ if(navigator.vibrate) navigator.vibrate(8); ui.tReply=id; render(); const i=document.getElementById("win"); if(i) i.focus(); } };
+    if(hit){ hap(8); ui.tReply=id; render(); const i=document.getElementById("win"); if(i) i.focus(); } };
   document.addEventListener("touchend",end); document.addEventListener("touchcancel",end); })();
 
 /* ===== 忘記密碼：文字在卡片正中間（毛玻璃），吉祥物和 emoji 在後面當背景掉下來，可以拖著玩 ===== */

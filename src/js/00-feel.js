@@ -52,6 +52,8 @@ var AN={
   toastOut(el){ if(!AN.ok()){ el.classList.add("out"); setTimeout(()=>el.remove(),260); return; }
     try{ anime.animate(el,{y:{to:8,duration:220,ease:"inQuad"},scale:{to:.94,duration:220,ease:"inQuad"},opacity:{to:0,duration:200,ease:"inQuad"},onComplete:()=>el.remove()}); }catch(e){ el.remove(); } },
   /* 按讚：愛心彈一下＋噴小愛心 */
+  /* 小圖示彈一下（收藏、轉發、追蹤…）：先縮再用彈簧彈回來 */
+  bounce(t){ if(!t) return; const sv=t.matches&&t.matches("svg")?t:t.querySelector("svg")||t; if(!AN.ok()){ return; } try{ sv.style.animation="none"; anime.animate(sv,{scale:[{to:.78,duration:90,ease:"outQuad"},{to:1,ease:AN.sp(.5,520)}],onComplete:()=>AN.clean(sv,["transform"])}); }catch(e){} },
   heart(t){ if(!AN.ok()||!t) return; const sv=t.querySelector("svg"); if(!sv) return;
     sv.style.animation="none"; anime.animate(sv,{scale:[{to:1.45,duration:130,ease:"outQuad"},{to:1,ease:AN.sp(.62,520)}],onComplete:()=>AN.clean(sv,["transform"])});
     const z=(typeof ZM==="function"?ZM():1)||1, r=sv.getBoundingClientRect(), w=document.createElement("div");
@@ -64,6 +66,11 @@ var AN={
     setTimeout(()=>w.remove(),1200);
   },
 };
+/* 觸感回饋（輕震）：Android 用震動；iPhone 的網頁不能直接震，借系統「開關」切換時的觸感（iOS 18 以上，手指點下去的當下才有） */
+const hap=(()=>{ let lb=null; return (ms=10)=>{ try{ if(navigator.vibrate&&!/iP(hone|ad|od)/.test(navigator.userAgent)){ navigator.vibrate(ms); return; }
+  if(!lb){ const i=document.createElement("input"); i.type="checkbox"; i.setAttribute("switch",""); i.id="hcHap"; i.tabIndex=-1; i.setAttribute("aria-hidden","true"); i.style.cssText="position:fixed;left:-200px;top:0;opacity:0;pointer-events:none";
+    lb=document.createElement("label"); lb.htmlFor="hcHap"; lb.setAttribute("aria-hidden","true"); lb.style.cssText="position:fixed;left:-200px;top:0;opacity:0;pointer-events:none"; document.body.append(i,lb); }
+  lb.click(); }catch(e){} }; })();
 /* 按壓回饋：按下縮一點，放開彈回來（用 CSS 的 scale，不會蓋掉元素原本的 transform） */
 (function(){
   const PR="button,.btn,a[href],[data-a]", NO="input,textarea,select,label,[contenteditable],.no-press,.mr,.t-msgs,.ab-w,.gc-rit,.concert,.crp,canvas,.sn-reel1,.pm-car,.gal2,.ios-w,.scrim,.t-modal-w,.t-sheet-w,.mu2-shw,.fg-w,.t-drawer-w>.t-drawer,.nav-lens";

@@ -52,6 +52,8 @@ var AN={
   toastOut(el){ if(!AN.ok()){ el.classList.add("out"); setTimeout(()=>el.remove(),260); return; }
     try{ anime.animate(el,{y:{to:8,duration:220,ease:"inQuad"},scale:{to:.94,duration:220,ease:"inQuad"},opacity:{to:0,duration:200,ease:"inQuad"},onComplete:()=>el.remove()}); }catch(e){ el.remove(); } },
   /* 按讚：愛心彈一下＋噴小愛心 */
+  /* 小圖示彈一下（收藏、轉發、追蹤…）：先縮再用彈簧彈回來 */
+  bounce(t){ if(!t) return; const sv=t.matches&&t.matches("svg")?t:t.querySelector("svg")||t; if(!AN.ok()){ return; } try{ sv.style.animation="none"; anime.animate(sv,{scale:[{to:.78,duration:90,ease:"outQuad"},{to:1,ease:AN.sp(.5,520)}],onComplete:()=>AN.clean(sv,["transform"])}); }catch(e){} },
   heart(t){ if(!AN.ok()||!t) return; const sv=t.querySelector("svg"); if(!sv) return;
     sv.style.animation="none"; anime.animate(sv,{scale:[{to:1.45,duration:130,ease:"outQuad"},{to:1,ease:AN.sp(.62,520)}],onComplete:()=>AN.clean(sv,["transform"])});
     const z=(typeof ZM==="function"?ZM():1)||1, r=sv.getBoundingClientRect(), w=document.createElement("div");
@@ -64,6 +66,11 @@ var AN={
     setTimeout(()=>w.remove(),1200);
   },
 };
+/* 觸感回饋（輕震）：Android 用震動；iPhone 的網頁不能直接震，借系統「開關」切換時的觸感（iOS 18 以上，手指點下去的當下才有） */
+const hap=(()=>{ let lb=null; return (ms=10)=>{ try{ if(navigator.vibrate&&!/iP(hone|ad|od)/.test(navigator.userAgent)){ navigator.vibrate(ms); return; }
+  if(!lb){ const i=document.createElement("input"); i.type="checkbox"; i.setAttribute("switch",""); i.id="hcHap"; i.tabIndex=-1; i.setAttribute("aria-hidden","true"); i.style.cssText="position:fixed;left:-200px;top:0;opacity:0;pointer-events:none";
+    lb=document.createElement("label"); lb.htmlFor="hcHap"; lb.setAttribute("aria-hidden","true"); lb.style.cssText="position:fixed;left:-200px;top:0;opacity:0;pointer-events:none"; document.body.append(i,lb); }
+  lb.click(); }catch(e){} }; })();
 /* 按壓回饋：按下縮一點，放開彈回來（用 CSS 的 scale，不會蓋掉元素原本的 transform） */
 (function(){
   const PR="button,.btn,a[href],[data-a]", NO="input,textarea,select,label,[contenteditable],.no-press,.mr,.t-msgs,.ab-w,.gc-rit,.concert,.crp,canvas,.sn-reel1,.pm-car,.gal2,.ios-w,.scrim,.t-modal-w,.t-sheet-w,.mu2-shw,.fg-w,.t-drawer-w>.t-drawer,.nav-lens";
@@ -3570,7 +3577,7 @@ function pdFit(){ const L=[...document.querySelectorAll(".pd")], pd=L[L.length-1
 (function(){ let tm=0, el=null, x0=0, y0=0; const isArt=()=>{ try{ return (session()||{}).role==="artist"; }catch(e){ return false; } };
   const cancel=()=>{ clearTimeout(tm); tm=0; if(el) el.classList.remove("lp-on"); el=null; };
   document.addEventListener("touchstart",e=>{ const c=e.target.closest&&e.target.closest(".pd .pd-c:not(.pd-r):not(.top)"); if(!c||!isArt()||e.touches.length!==1||e.target.closest("button,a,textarea,input")) return; const b=c.querySelector('[data-a="pdOpenRep"]'); if(!b) return;
-    el=c; x0=e.touches[0].clientX; y0=e.touches[0].clientY; tm=setTimeout(()=>{ if(!el) return; el.classList.add("lp-on"); if(navigator.vibrate) navigator.vibrate(12); const bb=b; setTimeout(()=>{ cancel(); bb.click(); },120); },450); },{passive:true});
+    el=c; x0=e.touches[0].clientX; y0=e.touches[0].clientY; tm=setTimeout(()=>{ if(!el) return; el.classList.add("lp-on"); hap(12); const bb=b; setTimeout(()=>{ cancel(); bb.click(); },120); },450); },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!el) return; const t=e.touches[0]; if(Math.abs(t.clientX-x0)>8||Math.abs(t.clientY-y0)>8) cancel(); },{passive:true});
   document.addEventListener("touchend",cancel,{passive:true}); document.addEventListener("touchcancel",cancel,{passive:true});
   document.addEventListener("contextmenu",e=>{ const c=e.target.closest&&e.target.closest(".pd .pd-c:not(.pd-r):not(.top)"); if(!c||!isArt()) return; const b=c.querySelector('[data-a="pdOpenRep"]'); if(!b) return; e.preventDefault(); b.click(); });
@@ -6902,7 +6909,7 @@ function showCopyMenu(el,x,y){
   /* 藝人端：長按粉絲的訊息 → 回覆／複製／檢舉（取代原本的「⋯」） */
   if((session()||{}).role==="artist"){ ui.copyText=w.ko||w.text; const L=Math.min(Math.max(x,90),window.innerWidth-90)/ZM(), T=Math.max(y-64,10)/ZM();
     layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx t-ctx3" style="left:${L}px;top:${T}px"><button data-a="tCopy">複製</button><button class="dg" data-a="tieRep" data-id="${w.id}">檢舉</button></div></div>`;
-    layer.querySelectorAll(".t-ctx3 button").forEach(b=>b.addEventListener("click",()=>{ layer.innerHTML=""; })); try{ navigator.vibrate&&navigator.vibrate(10); }catch(e){} return; }
+    layer.querySelectorAll(".t-ctx3 button").forEach(b=>b.addEventListener("click",()=>{ layer.innerHTML=""; })); try{ hap(10); }catch(e){} return; }
   const st=route().m?tieSet(route().m):null, text=w.ko||w.text;
   ui.copyText=text;
   layer.innerHTML=`<div class="t-ctx-w" data-a="tCloseLayer"><div class="t-ctx" style="left:${Math.min(Math.max(x,60),window.innerWidth-60)/ZM()}px;top:${Math.max(y-56,10)/ZM()}px"><button data-a="tCopy">複製</button></div></div>`;
@@ -7586,7 +7593,7 @@ function clickAdm(a,t,e,r){ switch(a){
       const L=S.get(K.vods,[]), gid=ui.vodG||GROUPS[0].id, cat=ui.vodNewCat||"MV"; L.push({id:uid("v"),gid,cat,title:ti,album:document.getElementById("vdAlbum").value,ts:Date.now(),views:0,dur:cat==="SHOW"?1200:cat==="BEHIND"?480:200,link:li}); S.set(K.vods,L); toast("已新增影片，記得上傳縮圖"); { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "vodDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); render(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
 
-    case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ navigator.vibrate&&navigator.vibrate([35,15,35]); }catch(err){}
+    case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ hap([35,15,35]); }catch(err){}
       const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
     case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
@@ -7981,7 +7988,11 @@ function clickTie(a,t,e,r){ switch(a){
       S.set(K.ptGrants,L.slice(-2000)); toast(set?`已把 ${d.to.length} 個帳號的積分設定為 ${fmt(n)}`:`已${amt>=0?"加":"扣"} ${fmt(n)} 積分給 ${d.to.length} 個帳號`); ui.ptD={to:[],n:"",why:"",q:"",sign:1}; lsRerender(); break; }
     case "apFold": { const y=scrollY; ui.apOpen={...(ui.apOpen||{}),[t.dataset.v]:!(ui.apOpen||{})[t.dataset.v]}; render(); scrollTo(0,y); break; }
     case "apMore": { const y=scrollY; ui.apMore={...(ui.apMore||{}),[t.dataset.v]:!(ui.apMore||{})[t.dataset.v]}; render(); scrollTo(0,y); break; }
-    case "snRpTg": { const d=snDB(), me=snMeId(), id=t.dataset.id; d.rp=d.rp||{}; const L=d.rp[me]||[], on=L.some(x=>x.id===id); d.rp[me]=on?L.filter(x=>x.id!==id):[{id,ts:Date.now()},...L]; snSave(d); toast(on?"已取消轉發":"已轉發到你的個人檔案"); { const y=scrollY; render(); scrollTo(0,y); } break; }
+    case "snRpTg": { const d=snDB(), me=snMeId(), id=t.dataset.id; d.rp=d.rp||{}; const L=d.rp[me]||[], on=L.some(x=>x.id===id); d.rp[me]=on?L.filter(x=>x.id!==id):[{id,ts:Date.now()},...L]; snSave(d); toast(on?"已取消轉發":"已轉發到你的個人檔案"); hap(on?6:10);
+      /* 只改這顆按鈕和數字（不整頁重畫，畫面不會跳） */
+      const P=d.posts.find(x=>x.id===id), btns=document.querySelectorAll(`[data-a="snRpTg"][data-id="${CSS.escape(id)}"]`);
+      if(btns.length&&P){ const n=snRpN(d,P); btns.forEach(b=>{ b.classList.toggle("rpd",!on); b.classList.toggle("on",!on); let c=b.querySelector("b"); if(n){ if(!c){ c=document.createElement("b"); b.appendChild(c); } c.textContent=snN(n); } else if(c&&b.closest(".sn-acts")) c.remove(); AN.bounce(b); }); }
+      else { const sc=document.querySelector(".sn"), y=sc?sc.scrollTop:scrollY; render(); const s2=document.querySelector(".sn"); if(s2) s2.scrollTop=y; else scrollTo(0,y); } break; }
     case "snSugTg": ui.snSugOpen=ui.snSugOpen===t.dataset.v?null:t.dataset.v; { const y=scrollY; render(); scrollTo(0,y); } break;
     case "iosStkX": { if(e.target===t||t.tagName==="BUTTON"){ const w=t.closest(".ios-w.stk"); if(w) w.remove(); ui.amItem=null; } break; }
     case "snDmNew": { const i=document.getElementById("snDmQ"); if(i){ i.focus(); } break; }
@@ -8917,7 +8928,7 @@ const tieRq=(r,me,noTr)=>`<div class="t-rp ${me?"me":""}"><small>${(session()||{
   document.addEventListener("touchstart",e=>{ const t=e.target.closest&&e.target.closest("[data-sw]"); el=t||null; if(!el) return; sx=e.touches[0].clientX; sy=e.touches[0].clientY; dx=0; lock=0; el.style.transition="none"; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!el) return; const x=e.touches[0].clientX-sx, y=e.touches[0].clientY-sy; if(!lock&&(Math.abs(x)>8||Math.abs(y)>8)) lock=Math.abs(x)>Math.abs(y)?1:2; if(lock!==1) return; dx=Math.max(-84,Math.min(0,x)); el.style.transform=`translateX(${dx}px)`; el.classList.toggle("sw-on",dx<-56); },{passive:true});
   const end=()=>{ if(!el) return; const id=el.dataset.sw, hit=dx<-56; el.style.transition="transform .28s cubic-bezier(.2,.8,.2,1)"; el.style.transform=""; el.classList.remove("sw-on"); el=null; dx=0;
-    if(hit){ if(navigator.vibrate) navigator.vibrate(8); ui.tReply=id; render(); const i=document.getElementById("win"); if(i) i.focus(); } };
+    if(hit){ hap(8); ui.tReply=id; render(); const i=document.getElementById("win"); if(i) i.focus(); } };
   document.addEventListener("touchend",end); document.addEventListener("touchcancel",end); })();
 
 /* ===== 忘記密碼：文字在卡片正中間（毛玻璃），吉祥物和 emoji 在後面當背景掉下來，可以拖著玩 ===== */
@@ -10248,10 +10259,11 @@ function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me
     <main class="sn-feed">${(()=>{ const sg=snSuggest(d), row=sg.length?`<section class="sn-sug"><div class="sn-sugh"><b>為你推薦</b><button data-a="snsGo" data-v="sug">查看全部</button></div><div class="sn-sugl">${sg.map(id=>snSugCard(d,id)).join("")}</div></section>`:"";
       if(!items.length) return `<div class="sn-empty sn-welc"><span>${si("cam")}</span><b>歡迎來到 ${SNS_NAME}</b><p>追蹤帳號後，他們分享的相片和影片會出現在這裡。</p></div>`+row; const h=items.map(x=>snPostCard(d,x.p,x.by)); h.splice(Math.min(2,h.length),0,row); return h.join(""); })()}</main>`; }
 
-/* 貼文頁（照 IG：從個人檔案點進來）：標題「貼文」＋帳號，點的那則在最上面，往下滑是他更早的貼文 */
+/* 貼文頁（照 IG：從個人檔案點進來）：標題「貼文」＋帳號，列出他全部的貼文，畫面停在點的那則；往上滑是比較新的、往下是比較舊的 */
 function snPostPage(d,id){ let p=d.posts.find(x=>x.id===id); if(p&&!snCanSee(d,p.uid)) p=null; const u=p&&snUser(p.uid);
-  const L=p?d.posts.filter(x=>x.uid===p.uid&&!x._gone&&(x.ts||0)<=(p.ts||0)&&x.id!==p.id).sort((a,b)=>(b.ts||0)-(a.ts||0)):[];
-  return `<header class="sn-top sn-pvh"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><div class="sn-pvt"><b>貼文</b>${u?`<small>${esc(u.u)}</small>`:""}</div><span class="sn-ib" aria-hidden="true"></span></header><main class="sn-feed sn-pvf">${p?snPostCard(d,p)+L.map(x=>snPostCard(d,x)).join(""):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
+  const L=p?d.posts.filter(x=>x.uid===p.uid&&!x._gone&&snCanSee(d,x.uid)).sort((a,b)=>(b.ts||0)-(a.ts||0)):[];   /* 他全部的貼文（新到舊），畫面停在點的那則 */
+  if(p&&!L.some(x=>x.id===p.id)) L.unshift(p);
+  return `<header class="sn-top sn-pvh"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><div class="sn-pvt"><b>貼文</b>${u?`<small>${esc(u.u)}</small>`:""}</div><span class="sn-ib" aria-hidden="true"></span></header><main class="sn-feed sn-pvf">${p?L.map(x=>snPostCard(d,x)).join(""):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
 function snExplore(d){ const q=nz((ui.snQ||"").trim()), me=snMeId();
   if(/^[#＃]/.test(q)){ const k=q.slice(1), cnt={}; d.posts.forEach(p=>{ if(snPriv(d,p.uid)&&!snCanSee(d,p.uid)) return; snTagsOf(p).forEach(t=>{ if(t.includes(k)) cnt[t]=(cnt[t]||0)+1; }); });
     const T=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,30);
@@ -10424,7 +10436,9 @@ let SN_FINGER=0; ["touchstart","touchmove","wheel"].forEach(ev=>document.addEven
 /* SNS 換頁：新頁從最上面開始；按返回回到原本滑到的位置（跟 IG 一樣） */
 { const SNPOS={}; let navAt=0; const sc=()=>document.querySelector(".sn")||document.scrollingElement, isSn=h=>/\/sns(\?|$)/.test(h||"");
   document.addEventListener("scroll",e=>{ if(Date.now()-navAt<400||!isSn(location.hash)) return; const t=e.target; if(t===document||(t.classList&&t.classList.contains("sn"))) SNPOS[location.hash]=(t===document?document.scrollingElement:t).scrollTop; },{passive:true,capture:true});
-  addEventListener("hashchange",()=>{ if(!isSn(location.hash)) return; navAt=Date.now(); const t0=navAt, y=SNPOS[location.hash]||0, go=()=>{ if(SN_FINGER>t0) return; const el=sc(); if(el&&Math.abs(el.scrollTop-y)>2) el.scrollTop=y; }; go(); requestAnimationFrame(go); setTimeout(go,60); setTimeout(go,200); setTimeout(go,380); }); }
+  /* 貼文頁第一次進來：停在點的那一則（上面還有他比較新的貼文，往上滑就看得到，跟 IG 一樣） */
+  const postY=()=>{ const m=/[?&]p=post&id=([^&]+)/.exec(location.hash), el=sc(); if(!m||!el) return 0; const a=document.getElementById("snp-"+decodeURIComponent(m[1])), hd=document.querySelector(".sn-pvh"); if(!a) return 0; return Math.max(0,Math.round(el.scrollTop+a.getBoundingClientRect().top-(hd?hd.getBoundingClientRect().bottom:0))); };
+  addEventListener("hashchange",()=>{ if(!isSn(location.hash)) return; navAt=Date.now(); const t0=navAt, saved=SNPOS[location.hash], go=()=>{ if(SN_FINGER>t0) return; const el=sc(), y=saved!=null?saved:postY(); if(el&&Math.abs(el.scrollTop-y)>2) el.scrollTop=y; }; go(); requestAnimationFrame(go); setTimeout(go,60); setTimeout(go,200); setTimeout(go,380); }); }
 function snHeartPop(id){ ui.snPop={id,ts:Date.now()}; const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 /* 按讚後只改畫面上需要改的地方（愛心、數字、誰說讚那行），不重畫整頁（重畫會閃、會跳） */
 function snLikeUI(id){ const d=snDB(), me=snMeId(), p=(d.posts||[]).find(x=>x.id===id); if(!p) return false; const on=(d.likes[id]||[]).includes(me), n=snN(snLikes(d,p));
@@ -10432,7 +10446,7 @@ function snLikeUI(id){ const d=snDB(), me=snMeId(), p=(d.posts||[]).find(x=>x.id
   const post=document.getElementById("snp-"+id); if(post){ const m=post.querySelector(".sn-meta"), old=m&&m.querySelector(".sn-lb"), h=snLikedBy(d,p); if(m){ if(old) old.outerHTML=h; else if(h) m.insertAdjacentHTML("afterbegin",h); } } return true; }
 function snLikeBump(id){ document.querySelectorAll(`[data-a="snLike"][data-id="${CSS.escape(id)}"] .si`).forEach(el=>{ el.classList.remove("bump"); void el.getBoundingClientRect(); el.classList.add("bump"); }); }
 /* 連點兩下：貼文的照片、文字、空白處都可以（按鈕、連結除外），跟 IG 一樣 */
-function snDblLike(id){ const d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id,true); if(!snLikeUI(id)){ const y=window.scrollY; render(); window.scrollTo(0,y); } snHeartPop(id); if(!had) snLikeBump(id); }
+function snDblLike(id){ const d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id,true); if(!snLikeUI(id)){ const y=window.scrollY; render(); window.scrollTo(0,y); } snHeartPop(id); hap(12); if(!had){ document.querySelectorAll(`[data-a="snLike"][data-id="${CSS.escape(id)}"]`).forEach(b=>{ if(AN.ok()) AN.heart(b); else snLikeBump(id); }); } }
 document.addEventListener("click",e=>{ const post=e.target.closest&&e.target.closest(".sn-post"); if(!post) return; const a=e.target.closest("[data-a],a,button,input,textarea,video"); if(a&&post.contains(a)) return;
   const id=post.id.replace(/^snp-/,""), now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; } });
 function snToggleLike(id,force){ const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
@@ -10587,7 +10601,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id);   /* 只改這顆按鈕，不整頁重畫（整頁重畫會跳回最上面） */
       const p=snLikeUI(id);
       if(!p){ const sc=document.querySelector(".sn-scroll,.sn-page,.sn"), y=sc?sc.scrollTop:window.scrollY; render(); if(sc&&document.querySelector(".sn-scroll,.sn-page,.sn")) document.querySelector(".sn-scroll,.sn-page,.sn").scrollTop=y; else window.scrollTo(0,y); }
-      if(!had){ snHeartPop(id); snLikeBump(id); } break; }
+      hap(had?6:12); if(!had){ document.querySelectorAll(`[data-a="snLike"][data-id="${CSS.escape(id)}"]`).forEach(b=>{ if(AN.ok()) AN.heart(b); }); if(!AN.ok()) snLikeBump(id); } else document.querySelectorAll(`[data-a="snLike"][data-id="${CSS.escape(id)}"]`).forEach(b=>AN.bounce(b)); break; }   /* 照 IG：按小愛心只有小愛心彈＋輕震，大愛心是點兩下才有 */
     case "snCm": snOpenCm(t.dataset.id); break;
     case "snCmSort": { const id=t.dataset.id; if(layer.querySelector(".sn-sh.cm")){ snCmSortSheet(id); break; } snSheet([[["最新","snCmSortSet",`data-v="new" data-id="${id}"`,{on:ui.snCmSort!=="top"}],["熱門","snCmSortSet",`data-v="top" data-id="${id}"`,{on:ui.snCmSort==="top"}]]],{title:"排序方式"}); break; }
     case "snCmSortSet": { ui.snCmSort=t.dataset.v; const sub=layer.querySelector(".sn-shw.sub"); if(sub){ sub.classList.remove("open"); setTimeout(()=>{ sub.remove(); snOpenCm(t.dataset.id); },220); } else snOpenCm(t.dataset.id); break; }
@@ -10595,7 +10609,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snCmDel": { const d=snDB(), L=d.cms[t.dataset.id]||[]; d.cms[t.dataset.id]=L.filter(c=>c.id!==t.dataset.v); snSave(d); snOpenCm(t.dataset.id); toast("已刪除留言"); break; }
     case "snShare": snOpenShare(t.dataset.id); break;
     case "snShareTo": { const me=snMeId(), to=t.dataset.v; dmAppend(me,to,{text:"",post:t.dataset.id,ts:Date.now()}); layer.innerHTML=""; toast("已傳送"); snFakeReply(to); break; }
-    case "snSaveP": { const d=snDB(), me=snMeId(), L=d.saved[me]=d.saved[me]||[], pid=t.dataset.id, i=L.indexOf(pid); if(i>=0){ L.splice(i,1); ((d.col||{})[me]||[]).forEach(c=>{ c.items=c.items.filter(x=>x!==pid); }); } else L.unshift(pid); snSave(d); t.classList.toggle("saved",i<0); document.querySelectorAll(`[data-a="snSaveP"][data-id="${CSS.escape(pid)}"]:not([data-sheet])`).forEach(b=>b.classList.toggle("saved",i<0)); if(t.dataset.sheet) layer.innerHTML="";
+    case "snSaveP": { const d=snDB(), me=snMeId(), L=d.saved[me]=d.saved[me]||[], pid=t.dataset.id, i=L.indexOf(pid); if(i>=0){ L.splice(i,1); ((d.col||{})[me]||[]).forEach(c=>{ c.items=c.items.filter(x=>x!==pid); }); } else L.unshift(pid); snSave(d); t.classList.toggle("saved",i<0); hap(8); AN.bounce(t); document.querySelectorAll(`[data-a="snSaveP"][data-id="${CSS.escape(pid)}"]:not([data-sheet])`).forEach(b=>b.classList.toggle("saved",i<0)); if(t.dataset.sheet) layer.innerHTML="";
       if(i>=0){ toast("已從收藏移除"); const y=window.scrollY; render(); window.scrollTo(0,y); } else snColSheet(pid); break; }
     case "snMore": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; const me=snMeId(), fo=snFol(d,me).includes(p.uid), mine=p.uid===me, sv=(d.saved[me]||[]).includes(p.id), go=route().p!=="post"?[["前往這則貼文","snsGo",`data-v="post" data-id="${p.id}"`,{ic:"link"}]]:[];
       snSheet(mine?[[["編輯","snEditCap",`data-id="${p.id}"`,{ic:"pen"}],...go],[["刪除","snDelP",`data-id="${p.id}"`,{ic:"trash",red:1}]]]
@@ -10618,7 +10632,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snColNewOk": { const v=((document.getElementById("snColIn")||{}).value||"").trim(); if(!v){ toast("取個名字吧"); break; } if(!isAdminAcct()&&banBlock(v)) break; const d=snDB(), me=snMeId(), C=(d.col=d.col||{})[me]=d.col[me]||[], pid=t.dataset.id; C.unshift({id:"c"+Date.now().toString(36),name:v,items:pid?[pid]:[]}); if(pid){ const S2=d.saved[me]=d.saved[me]||[]; if(!S2.includes(pid)) S2.unshift(pid); } snSave(d); layer.innerHTML=""; if(pid) snColSheet(pid); else render(); toast(pid?`已儲存到「${v}」`:"已新增收藏集"); break; }
     case "snColF": ui.snColF=ui.snColF===t.dataset.v?null:t.dataset.v; render(); break;
     case "snDelP": { const id=t.dataset.id; ask("要刪除這則貼文嗎？",()=>{ const d=snDB(); snPDel(d,x=>x.id===id); delete d.likes[id]; delete d.cms[id]; Object.values(d.saved).forEach(L=>{ const i=L.indexOf(id); if(i>=0) L.splice(i,1); }); snSave(d); layer.innerHTML=""; if(route().p==="post") navBack(); else render(); toast("已刪除"); }); break; }
-    case "snFollow": { const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, i=L.indexOf(v); d.req=d.req||{};
+    case "snFollow": { hap(8); const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, i=L.indexOf(v); d.req=d.req||{};
       if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
       if(i>=0) L.splice(i,1); else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); } (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "snShareMe": { const u=snUser(snMeId()); try{ navigator.clipboard.writeText("@"+u.u).then(()=>toast("已複製你的用戶名稱"),()=>toast("@"+u.u)); }catch(e){ toast("@"+u.u); } break; }
@@ -10876,11 +10890,11 @@ new MutationObserver(()=>{ document.querySelectorAll(".sn-dots.win:not([data-ok]
   const end=()=>{ if(!st) return; clearTimeout(st.tm); if(st.on){ st.el.classList.remove("scrub"); } st=null; };
   document.addEventListener("touchstart",e=>{ const el=e.target.closest&&e.target.closest(".sn-dots"); if(!el||e.touches.length!==1) return; const c=carOf(el); if(!c) return;
     const t=e.touches[0]; st={el,c,x0:t.clientX,y0:t.clientY,on:false,i0:0};
-    st.tm=setTimeout(()=>{ if(!st) return; st.on=true; st.i0=Math.round(c.scrollLeft/Math.max(1,c.clientWidth)); st.cur=st.i0; el.classList.add("scrub"); if(navigator.vibrate) navigator.vibrate(8); },280); },{passive:true});
+    st.tm=setTimeout(()=>{ if(!st) return; st.on=true; st.i0=Math.round(c.scrollLeft/Math.max(1,c.clientWidth)); st.cur=st.i0; el.classList.add("scrub"); hap(8); },280); },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!st) return; const t=e.touches[0], dx=t.clientX-st.x0, dy=t.clientY-st.y0;
     if(!st.on){ if(Math.abs(dx)>8||Math.abs(dy)>8) end(); return; }
     e.preventDefault(); const z=(typeof ZM==="function"?ZM():1)||1, n=st.c.children.length, i=Math.max(0,Math.min(n-1,st.i0+Math.round(dx/z/14)));
-    if(i!==st.cur){ st.cur=i; st.c.style.scrollSnapType="none"; st.c.scrollLeft=i*st.c.clientWidth; st.c.style.scrollSnapType=""; if(navigator.vibrate) navigator.vibrate(4); } },{passive:false});
+    if(i!==st.cur){ st.cur=i; st.c.style.scrollSnapType="none"; st.c.scrollLeft=i*st.c.clientWidth; st.c.style.scrollSnapType=""; hap(4); } },{passive:false});
   document.addEventListener("touchend",end,{passive:true}); document.addEventListener("touchcancel",end,{passive:true});
   document.addEventListener("contextmenu",e=>{ if(e.target.closest&&e.target.closest(".sn-dots")) e.preventDefault(); });
 })();
