@@ -2,11 +2,12 @@
 // ・app.js / app.css 後面有 ?v=指紋：內容一改指紋就變，所以存起來的永遠不會是舊的 → 直接用手機裡的
 // ・index.html（很小）：每次先問網路拿最新的；網路太慢或沒網路才用手機裡存的
 // ・圖示、啟動圖、vendor 外掛、字型：先用手機裡的，背後順便更新
-// ・資料（Supabase、媒體伺服器、version.txt）完全不經過這裡
-const CACHE = "hc-app-v1";
+// ・照片（頭貼、背景、貼文照片）：同一張圖的網址永遠是同一張，看過一次就存在手機裡，之後打開直接出現，不用再下載（最多存 500 張）
+// ・資料（Supabase、version.txt）、影片、語音完全不經過這裡
+const CACHE = "hc-app-v1", MCACHE = "hc-media-v1", MHOST = "haechu-media.vinriu715.workers.dev";
 self.addEventListener("install", () => self.skipWaiting());
 self.addEventListener("activate", (e) => e.waitUntil((async () => {
-  for (const k of await caches.keys()) if (k !== CACHE) await caches.delete(k);
+  for (const k of await caches.keys()) if (k !== CACHE && k !== MCACHE) await caches.delete(k);
   await self.clients.claim();
 })()));
 
@@ -41,6 +42,21 @@ async function swr(req) {   // 先用手機裡的，背後更新
   const net = fetch(req).then((r) => { if (r && (r.ok || r.type === "opaque")) c.put(req, r.clone()); return r; }).catch(() => hit || Response.error());
   return hit || net;
 }
+async function mediaFirst(req, ev) {
+  const c = await caches.open(MCACHE);
+  const hit = await c.match(req.url);
+  if (hit) return hit;
+  let r;
+  try { r = await fetch(req.url, { mode: "cors", credentials: "omit" }); } catch (x) { return fetch(req); }   // 用 cors 拿：才看得到有沒有成功，壞掉的圖不會被存起來
+  try {
+    const ct = (r.headers.get("content-type") || ""), len = +(r.headers.get("content-length") || 0);
+    if (r.ok && r.status === 200 && !/^(video|audio)\//.test(ct) && len < 8e6) {
+      const put = c.put(req.url, r.clone()).then(async () => { if (Math.random() < 0.1) { const ks = await c.keys(); for (const k of ks.slice(0, Math.max(0, ks.length - 500))) await c.delete(k); } });
+      try { ev.waitUntil(put); } catch (x) {}
+    }
+  } catch (x) {}
+  return r;
+}
 self.addEventListener("fetch", (e) => {
   const req = e.request; if (req.method !== "GET") return;
   const u = new URL(req.url), same = u.origin === self.location.origin;
@@ -50,6 +66,7 @@ self.addEventListener("fetch", (e) => {
   }
   if (same && u.searchParams.has("v") && /\/(app\.(js|css))$/.test(u.pathname)) { e.respondWith(versioned(req)); return; }
   if (same && (/\/vendor\//.test(u.pathname) || /\.(png|webp|jpg|svg|webmanifest)$/.test(u.pathname)) && !/\/_t\//.test(u.pathname)) { e.respondWith(swr(req)); return; }
+  if (u.hostname === MHOST && u.pathname.startsWith("/media/") && !req.headers.has("range") && req.destination === "image") { e.respondWith(mediaFirst(req, e)); return; }
   if (u.hostname === "fonts.googleapis.com" || u.hostname === "fonts.gstatic.com") { e.respondWith(swr(req)); return; }
 });
 

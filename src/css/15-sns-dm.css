@@ -57,3 +57,27 @@
 .sn-dpill{position:absolute;left:50%;top:50%;width:96px;height:22px;margin:-11px 0 0 -48px;border-radius:999px;background:rgba(120,120,128,.24);opacity:0;transform:scale(.7);transition:opacity .18s,transform .25s cubic-bezier(.2,.9,.3,1.3);pointer-events:none}
 .sn.dark .sn-dpill,html[data-theme="dark"] .sn-dpill{background:rgba(255,255,255,.14)}
 .sn-dots.scrub .sn-dpill{opacity:1;transform:none}
+
+/* ===== SNS 貼文：照 IG 實測（11/11 影片，1180×2556 → ÷3 換成點） ===== */
+.sn-pvh{justify-content:space-between}
+.sn-pvh .sn-ib{width:44px;height:44px;flex:none}
+.sn-pvt{position:absolute;left:50%;transform:translateX(-50%);bottom:14px;display:flex;flex-direction:column;align-items:center;line-height:1.15;pointer-events:none}
+.sn-pvt b{font-size:16px;font-weight:700}.sn-pvt small{font-size:11.5px;font-weight:500;opacity:.92;margin-top:2px}
+.sn-pvh{height:calc(env(safe-area-inset-top,0px) + 52px)!important;background:color-mix(in srgb,var(--b,#000) 78%,transparent)!important;-webkit-backdrop-filter:blur(18px) saturate(1.4);backdrop-filter:blur(18px) saturate(1.4)}
+.sn-post>header{min-height:57px;padding:0 6px 0 7px;gap:8px}
+.sn-pu b{font-size:13.5px;font-weight:600;line-height:1.25}.sn-pu small{font-size:11.5px;line-height:1.3;margin-top:1px}
+.sn-pm .si{width:24px;height:24px;stroke-width:2.1;stroke-linecap:round}
+.sn-media .sn-cnt{top:14px!important;right:14px!important}
+.sn-acts{gap:16px;padding:6px 15px 0 13px}
+.sn-acts button{gap:6px}.sn-acts .si{width:24px;height:24px;stroke-width:1.9}.sn-acts button b{font-size:13.5px;font-weight:600}
+.sn-meta{gap:0;font-size:14px;padding:0 15px 0 13px}
+.sn-meta p{line-height:1.5}.sn-meta small{font-size:12px;margin-top:0}
+.sn-lb{gap:5px;margin:-1px 0 1px!important;font-size:13.5px}.sn-lb b{font-weight:600}
+.sn-lbav>*{margin-left:-5px}
+/* 轉發過的朋友：照片左下角 */
+.sn-rpav{position:absolute;left:8px;bottom:15px;display:flex;gap:20px;z-index:2}
+.sn-rpa{position:relative;width:43px;height:43px;padding:0;border:0;background:none;border-radius:50%}
+.sn-rpa .sn-av{width:43px!important;height:43px!important;box-shadow:0 0 0 2px rgba(255,255,255,.95)}
+.sn-rpa>i{position:absolute;right:-5px;bottom:-4px;width:19px;height:19px;border-radius:50%;background:#7C3AED;display:grid;place-items:center;box-shadow:0 0 0 2px rgba(255,255,255,.95)}
+.sn-rpa>i .si{width:12px;height:12px;stroke:#fff;stroke-width:2.6}
+.sn-feed .sn-post{margin-bottom:6px}

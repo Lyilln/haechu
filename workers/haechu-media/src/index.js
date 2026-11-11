@@ -107,7 +107,7 @@ export default {
         let ping = null;
         const res = await update(k, v => {
           const have = new Set((v.msgs || []).map(m => m.id)), add = inc.filter(m => !have.has(m.id));
-          if ((v.msgs || []).filter(m => m.from === "fan").length + add.length > 200) return null;
+          if ((v.msgs || []).filter(m => m.from === "fan").length + add.length > 3) return null;   // 試玩只能傳 3 則
           if (!add.length && (v.nick || "") === (nick || v.nick || "")) return null;
           // 有新訊息就通知管理員；同一位訪客 2 分鐘內只通知一次（連發好幾則不會一直響）
           let pingTs = v.pingTs || 0; ping = null;

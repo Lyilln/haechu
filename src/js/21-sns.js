@@ -84,8 +84,13 @@ const snLikes=(d,p)=>(d.likes[p.id]||[]).length;
 /* 跟 IG 一樣：帳號下面不放本名；沒追蹤的人才出現「為你推薦」＋追蹤 */
 const snSugg=(d,uid)=>{ const me=snMeId(); return uid!==me&&!String(uid).startsWith("o:")&&!snFol(d,me).includes(uid); };
 /* 「誰誰誰和其他人都說讚」＋最多 3 個頭貼（優先顯示你追蹤的人） */
+/* 轉發過這則的人（照 IG：照片左下角圓頭貼＋紫色轉發小章，最多兩個，追蹤中的優先） */
+const snRpWho=(d,p)=>Object.keys(d.rp||{}).filter(uid=>uid!==p.uid&&(d.rp[uid]||[]).some(x=>x.id===p.id)&&snUser(uid));
+const snRpN=(d,p)=>snRpWho(d,p).length;
+function snRpAvs(d,p){ const fol=snFol(d,snMeId()), L=snRpWho(d,p).sort((a,b)=>(fol.includes(b)?1:0)-(fol.includes(a)?1:0)).slice(0,2); if(!L.length) return "";
+  return `<div class="sn-rpav">${L.map(uid=>`<button class="sn-rpa" data-a="snsGo" data-v="profile" data-id="${uid}" aria-label="${esc(snUser(uid).u)} 已轉發">${snAv(snUser(uid),43)}<i>${si("repost")}</i></button>`).join("")}</div>`; }
 function snLikedBy(d,p){ const L=(d.likes[p.id]||[]).filter(x=>snUser(x)); if(!L.length) return ""; const fol=snFol(d,snMeId()), S2=[...L.filter(x=>fol.includes(x)),...L.filter(x=>!fol.includes(x))].slice(0,3), u0=snUser(S2[0]);
-  return `<p class="sn-lb" data-a="snLikers" data-id="${p.id}" role="button"><span class="sn-lbav">${S2.map(x=>snAv(snUser(x),18)).join("")}</span><span><b>${esc(u0.u)}</b>${L.length>1?` 和<b>其他 ${fmt(L.length-1)} 人</b>都說讚`:" 說讚"}</span></p>`; }
+  return `<p class="sn-lb" data-a="snLikers" data-id="${p.id}" role="button"><span class="sn-lbav">${S2.map(x=>snAv(snUser(x),20)).join("")}</span><span><b>${esc(u0.u)}</b>${L.length>1?`和其他人都說讚`:" 說讚"}</span></p>`; }
 /* 說明文字：#標籤、@帳號 可以點 */
 function snRich(t){ return esc(t||"").replace(/(^|[\s>])([#＃][^\s#＃@.,，。!！?？]{1,30})|(^|[\s>])@([a-z0-9._]{2,30})/gi,(m,p1,tag,p2,h)=>tag?`${p1}<button class="sn-lnk" data-a="snTagGo" data-v="${esc(tag.slice(1).toLowerCase())}">${tag}</button>`:`${p2}<button class="sn-lnk" data-a="snAtGo" data-v="${h.toLowerCase()}">@${h}</button>`); }
 const snTagsOf=p=>((p.cap||"").match(/[#＃][^\s#＃@.,，。!！?？]{1,30}/g)||[]).map(x=>x.slice(1).toLowerCase());
@@ -125,15 +130,15 @@ const snTabs=(p)=>{ const me=snMeId(), un=dmThreads().filter(x=>{ const l=x.t[x.
 function viewSns(p,id){ snSeed(); snOfSync(); const d=snDB();
   const body=p==="explore"?snExplore(d):p==="reels"?snReels(d,id):p==="profile"?snProfile(d,id):p==="new"?snNew(d):p==="dm"?snDmList(d):p==="thread"?snThread(d,id):p==="notif"?snNotif(d):p==="post"?snPostPage(d,id):p==="edit"?snEdit(d):p==="tag"?snTagPage(d,id):p==="cf"?snCfPage(d):p==="sug"?snSugPage(d):p==="scout"?snScoutPage(d):p==="fl"?snFlPage(d,id):snHome(d);
   setTimeout(()=>{ const c=document.querySelector(".sn-thread-b"); if(c) c.scrollTop=c.scrollHeight; },0);
-  return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf","sug"].includes(p)||(p==="reels"&&ui.snReelOne&&ui.snReelOne===id)?"":snTabs(p)}</div>`; }
+  return `<div class="sn ${p==="reels"?"dark":""}">${body}${["new","thread","notif","edit","scout","cf","sug","post"].includes(p)||(p==="reels"&&ui.snReelOne&&ui.snReelOne===id)?"":snTabs(p)}</div>`; }
 const snRp=(d,uid)=>d.rp&&d.rp[uid]||[];
 const snN=n=>n?fmtW(n).replace(" 萬","萬"):"";   /* IG 的數字：0 不顯示、1,059、2.5萬 */
 
 function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
-  return `<article class="sn-post" id="snp-${p.id}" ${p.mus&&p.mus.mid?`data-mus="${esc(p.mus.mid)}" data-pid="${p.id}"`:""}>${bu?`<div class="sn-rpby">${si("repost","sm")}<b>${esc(bu.id===me?"你":bu.u)}</b> 已轉發</div>`:""}<header><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,32,snHasStory(d,u.id),snStorySeen(d,u.id))}<span class="sn-pu"><b>${esc(u.u)}${u.ver?`${SN_VER}`:""}</b>${p.mus&&p.mus.mid?`<small>${snMusTag(p.mus,"p:"+p.id,p.uid)}</small>`:snSugg(d,u.id)?`<small>為你推薦</small>`:""}</span></button>${snSugg(d,u.id)?`<button class="sn-fb" data-a="snFollow" data-v="${u.id}">追蹤</button>`:""}<button class="sn-ib" data-a="snMore" data-id="${p.id}" aria-label="更多">${si("dots")}</button></header>
-    <div class="sn-media"><div class="sn-car" data-a="snTap" data-id="${p.id}"${snArStyle(p)}>${Array.from({length:n},(_,i)=>`<div class="sn-sl">${snMedia(p,u,i)}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}<i class="sn-heart">${si("heart")}</i>${p.mus&&p.mus.mid?`<button class="sn-mbtn" data-a="snMusTg" data-k="p:${p.id}" data-v="${esc(p.mus.mid)}" aria-label="聲音"><i class="off">${si("mute","sm")}</i><i class="onn">${si("sound","sm")}</i></button>`:""}</div>
+  return `<article class="sn-post" id="snp-${p.id}" ${p.mus&&p.mus.mid?`data-mus="${esc(p.mus.mid)}" data-pid="${p.id}"`:""}>${bu?`<div class="sn-rpby">${si("repost","sm")}<b>${esc(bu.id===me?"你":bu.u)}</b> 已轉發</div>`:""}<header><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,38,snHasStory(d,u.id),snStorySeen(d,u.id))}<span class="sn-pu"><b>${esc(u.u)}${u.ver?`${SN_VER}`:""}</b>${p.mus&&p.mus.mid?`<small>${snMusTag(p.mus,"p:"+p.id,p.uid)}</small>`:p.loc?`<small>${esc(p.loc)}</small>`:snSugg(d,u.id)?`<small>為你推薦</small>`:""}</span></button>${snSugg(d,u.id)?`<button class="sn-fb" data-a="snFollow" data-v="${u.id}">追蹤</button>`:""}<button class="sn-ib sn-pm" data-a="snMore" data-id="${p.id}" aria-label="更多">${si("menu2")}</button></header>
+    <div class="sn-media"><div class="sn-car" data-a="snTap" data-id="${p.id}"${snArStyle(p)}>${Array.from({length:n},(_,i)=>`<div class="sn-sl">${snMedia(p,u,i)}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}<i class="sn-heart">${si("heart")}</i>${snRpAvs(d,p)}${p.mus&&p.mus.mid?`<button class="sn-mbtn" data-a="snMusTg" data-k="p:${p.id}" data-v="${esc(p.mus.mid)}" aria-label="聲音"><i class="off">${si("mute","sm")}</i><i class="onn">${si("sound","sm")}</i></button>`:""}</div>
     ${n>1?snDotsHtml(n):""}
-    <div class="sn-acts"><button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}" aria-label="讚">${si("heart")}<b>${snN(snLikes(d,p))}</b></button><button data-a="snCm" data-id="${p.id}" aria-label="留言">${si("chat")}${cms.length?`<b>${snN(cms.length)}</b>`:""}</button><button data-a="snShare" data-id="${p.id}" aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button class="${saved?"saved":""}" data-a="snSaveP" data-id="${p.id}" aria-label="收藏">${si("save")}</button></div>
+    <div class="sn-acts"><button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}" aria-label="讚">${si("heart")}<b>${snN(snLikes(d,p))}</b></button><button data-a="snCm" data-id="${p.id}" aria-label="留言">${si("chat")}${cms.length?`<b>${snN(cms.length)}</b>`:""}</button><button class="${rpd?"rpd":""}" data-a="snRpTg" data-id="${p.id}" aria-label="轉發">${si("repost")}${snRpN(d,p)?`<b>${snN(snRpN(d,p))}</b>`:""}</button><button data-a="snShare" data-id="${p.id}" aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button class="${saved?"saved":""}" data-a="snSaveP" data-id="${p.id}" aria-label="收藏">${si("save")}</button></div>
     <div class="sn-meta">${snLikedBy(d,p)}${p.cap?`<p><b>${esc(u.u)}</b> ${snRich(p.cap)}</p>`:""}${(p.tags||[]).length?`<p class="sn-tagd">${si("tag","sm")} ${p.tags.map(snUser).filter(Boolean).map(x=>`<button class="sn-lnk" data-a="snsGo" data-v="profile" data-id="${x.id}">${esc(x.u)}</button>`).join("、")}</p>`:""}${cms.length?`<button class="sn-more" data-a="snCm" data-id="${p.id}">查看全部 ${fmt(cms.length)} 則留言</button>`:""}<small>${snsAgo(p.ts)}</small></div></article>`; }
 
 function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me), mode=ui.snFeed||"all";
@@ -148,7 +153,10 @@ function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me
     <main class="sn-feed">${(()=>{ const sg=snSuggest(d), row=sg.length?`<section class="sn-sug"><div class="sn-sugh"><b>為你推薦</b><button data-a="snsGo" data-v="sug">查看全部</button></div><div class="sn-sugl">${sg.map(id=>snSugCard(d,id)).join("")}</div></section>`:"";
       if(!items.length) return `<div class="sn-empty sn-welc"><span>${si("cam")}</span><b>歡迎來到 ${SNS_NAME}</b><p>追蹤帳號後，他們分享的相片和影片會出現在這裡。</p></div>`+row; const h=items.map(x=>snPostCard(d,x.p,x.by)); h.splice(Math.min(2,h.length),0,row); return h.join(""); })()}</main>`; }
 
-function snPostPage(d,id){ let p=d.posts.find(x=>x.id===id); if(p&&!snCanSee(d,p.uid)) p=null; return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>貼文</b><span class="sn-sp"></span></header><main class="sn-feed">${p?snPostCard(d,p):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
+/* 貼文頁（照 IG：從個人檔案點進來）：標題「貼文」＋帳號，點的那則在最上面，往下滑是他更早的貼文 */
+function snPostPage(d,id){ let p=d.posts.find(x=>x.id===id); if(p&&!snCanSee(d,p.uid)) p=null; const u=p&&snUser(p.uid);
+  const L=p?d.posts.filter(x=>x.uid===p.uid&&!x._gone&&(x.ts||0)<=(p.ts||0)&&x.id!==p.id).sort((a,b)=>(b.ts||0)-(a.ts||0)):[];
+  return `<header class="sn-top sn-pvh"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><div class="sn-pvt"><b>貼文</b>${u?`<small>${esc(u.u)}</small>`:""}</div><span class="sn-ib" aria-hidden="true"></span></header><main class="sn-feed sn-pvf">${p?snPostCard(d,p)+L.map(x=>snPostCard(d,x)).join(""):`<div class="sn-empty"><b>這則貼文已刪除</b></div>`}</main>`; }
 function snExplore(d){ const q=nz((ui.snQ||"").trim()), me=snMeId();
   if(/^[#＃]/.test(q)){ const k=q.slice(1), cnt={}; d.posts.forEach(p=>{ if(snPriv(d,p.uid)&&!snCanSee(d,p.uid)) return; snTagsOf(p).forEach(t=>{ if(t.includes(k)) cnt[t]=(cnt[t]||0)+1; }); });
     const T=Object.entries(cnt).sort((a,b)=>b[1]-a[1]).slice(0,30);
@@ -781,3 +789,5 @@ new MutationObserver(()=>{ document.querySelectorAll(".sn-dots.win:not([data-ok]
   document.addEventListener("touchend",end,{passive:true}); document.addEventListener("touchcancel",end,{passive:true});
   document.addEventListener("contextmenu",e=>{ if(e.target.closest&&e.target.closest(".sn-dots")) e.preventDefault(); });
 })();
+
+Object.assign(SI,{menu2:'<path d="M2.5 8h19M2.5 15.5h13"/>'});   /* IG 貼文右上的兩條線 */

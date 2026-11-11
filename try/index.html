@@ -21,6 +21,7 @@ html[data-theme="dark"] .tz-pill{background:rgba(167,139,250,.18);color:#C4B5FD}
 .tz-hint b{color:var(--violet,#8843FB)}html[data-theme="dark"] .tz-hint{background:rgba(167,139,250,.12)}html[data-theme="dark"] .tz-hint b{color:#C4B5FD}
 .nav-btn.lk{opacity:.38}.nav-btn.lk .nav-ico{position:relative}.nav-btn.lk .nav-ico::after{content:"";position:absolute;right:-5px;bottom:-3px;width:11px;height:11px;border-radius:50%;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z'/%3E%3C/svg%3E") center/contain no-repeat}
 .nav-btn.unl .nav-ico{animation:tzUnl 1.1s cubic-bezier(.2,.9,.3,1.3) 2}@keyframes tzUnl{0%,100%{transform:none}35%{transform:scale(1.35) rotate(-8deg)}65%{transform:scale(.95) rotate(4deg)}}
+.tz-done{display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px))!important;text-align:center}.tz-done p{margin:0;font-size:13px;opacity:.85}.tz-done .btn{width:100%;max-width:320px}
 .tz-unl{margin:2px auto 14px;width:max-content;max-width:86%;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#F1E8FF,#FFE6F2);color:#7C3AED}html[data-theme="dark"] .tz-unl{background:rgba(167,139,250,.16);color:#D8C7FF}
 /* 開場 */
 .tz-in{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:calc(env(safe-area-inset-top,0px) + 28px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);max-width:480px;margin:0 auto}
@@ -106,7 +107,9 @@ const STICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const TABS=[["tie","TIE",NAV.tie],["sns","SNS",NAV.love],["show","FEST",NAV.core],["ls","LIGHT",STICK],["end","JOIN",NAV.me]];
 let NAVP=null;
 /* 解鎖：在 TIE 傳一則訊息給 LUMI，就解鎖下一個玩法（SNS → FEST → LIGHT → JOIN） */
-const unlN=()=>Math.min(TABS.length-1,CH.msgs.filter(m=>m.from==="fan").length);
+/* 試玩的 TIE 只能傳 3 則（不管 LUMI 有沒有回）：第 1 則解鎖 SNS、第 2 則 FEST、第 3 則 LIGHT＋JOIN */
+const TRY_MAX=3, fanN=()=>CH.msgs.filter(m=>m.from==="fan").length, tryLeft=()=>Math.max(0,TRY_MAX-fanN());
+const unlN=()=>{ const n=fanN(); return Math.min(TABS.length-1,n>=TRY_MAX?TABS.length-1:n); };
 const isUnl=k=>TABS.findIndex(x=>x[0]===k)<=unlN();
 let UNL_NEW=null;
 function navBar(active){ const i=Math.max(0,TABS.findIndex(x=>x[0]===active)), f=NAVP; NAVP=i; const go=f!=null&&f!==i;
@@ -121,7 +124,7 @@ const lumiAv=(cls="")=>`<div class="t-av tz-l ${cls}">L</div>`;
 const tHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tryHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tryHG)"/></svg><i></i></span>`;
 function tieListHtml(){ const L=CH.msgs, last=L[L.length-1];
   return `<div class="t-glow" aria-hidden="true"></div><header class="t-lh sh-head"><div class="t-lh-side"></div><h1>TIE</h1><div class="t-lh-side r"><span class="tz-pill">試玩</span></div></header>
-    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的喔！`)}${unlN()<TABS.length-1?`<p class="tz-unl">🔒 傳一則 TIE 給 ${IDOL.name}，就解鎖下一個玩法（還有 ${TABS.length-1-unlN()} 個）</p>`:""}<span class="t-sec">最近的聊天室</span>
+    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的喔！`)}${unlN()<TABS.length-1?`<p class="tz-unl">🔒 傳 TIE 給 ${IDOL.name}（共 3 則），每傳一則就解鎖新玩法</p>`:""}<span class="t-sec">最近的聊天室</span>
       <button class="t-room" data-go="room">${lumiAv("lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${IDOL.name}</b></span><span class="t-room-t">${last?hm(last.ts):""}</span></div>
         <p>${last?(last.from==="fan"?"你：":"")+esc(last.text):"嗨～我是 LUMI ✨"}</p></div>${CH.unread?`<span class="t-cnt">${CH.unread}</span>`:""}</button></main>`; }
 function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.now()},...CH.msgs]; let lastDay="";
@@ -132,11 +135,11 @@ function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.n
   return `<div class="tz-room"><div class="t-bgl t-default"></div><header class="t-rh sh-head"><div class="t-rh-row"><button class="t-ib" data-go="tie" aria-label="返回">${TI.back}</button><h3>${IDOL.name}</h3><div class="t-rh-r"></div></div>
       <div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tHeart()}<span>+1</span></div></header>
     <main class="t-msgs" id="msgs">${body}${CH.msgs.length?`<p class="tz-sys">${IDOL.name} 是真人回覆的，可能要等一下下～可以先去玩別的，回來再看 💜</p>`:""}<div id="chat-end"></div></main>
-    <form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?"":"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form></div>`; }
+    ${tryLeft()?`<form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?`還可以傳 ${tryLeft()} 則`:"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form>`:`<div class="t-foot tz-done"><p>試玩只能傳 ${TRY_MAX} 則～加入 HAECHU 就能一直跟 ${IDOL.name} 聊天 💜</p><button class="btn btn-main" data-go="end">加入 HAECHU</button></div>`}</div>`; }
 function scrollMsgs(){ const e=document.getElementById("chat-end"); if(e) e.scrollIntoView({block:"end"}); }
 function nickSheet(){ layer.innerHTML=`<div class="t-modal-w" data-close="1"><div class="t-modal" role="dialog" aria-label="你的暱稱"><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你。</p><div class="t-mb"><input id="nickIn" class="t-wel-ta tpk-nk" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="t-mbtn main" id="nickOk">確認</button></div></div></div>`; setTimeout(()=>{ const i=document.getElementById("nickIn"); if(i) i.focus(); },60); }
 async function sendMsg(text){ const n0=unlN(); const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m);
-  if(unlN()>n0){ const t=TABS[unlN()]; UNL_NEW=t[0]; setTimeout(()=>{ if(UNL_NEW===t[0]){ UNL_NEW=null; } },4000); toast(`🔓 解鎖了 ${t[1]}！回到下面的選單看看`); if(navigator.vibrate) navigator.vibrate([12,40,12]); } if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
+  if(unlN()>n0){ const t=TABS[unlN()], t2=unlN()-n0>1?TABS[n0+1]:null; UNL_NEW=t[0]; setTimeout(()=>{ if(UNL_NEW===t[0]){ UNL_NEW=null; } },4000); toast(`🔓 解鎖了 ${t2?t2[1]+" 和 ":""}${t[1]}！回到下面的選單看看`); if(navigator.vibrate) navigator.vibrate([12,40,12]); } if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
   try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; return o; })}); const ok=new Set((v.msgs||[]).map(x=>x.id)); CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; if(ok.has(o.id)) delete o.fail; else if(o.from==="fan"&&o.id===m.id) o.fail=1; return o; }); LS.set("chat",CH); render(); startPoll(); }
   catch(e){ m.pend=0; m.fail=1; LS.set("chat",CH); render(); toast("沒傳出去，等一下會自動重傳"); startPoll(); } }
 async function resend(){ if(!CH.msgs.some(x=>x.fail)) return; try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; delete o.fail; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>{ const o={...x}; delete o.fail; return o; }),v.msgs); LS.set("chat",CH); render(); }catch(e){} }
@@ -193,7 +196,7 @@ function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是
 function done(k){ if(ST.done[k]) return; ST.done[k]=1; LS.set("done",ST.done); }
 function render(){
   if(ST.tab==="intro"){ root.innerHTML=`<div class="app no-nav"><div class="tz-in"><span class="tz-av">L</span><h1>來當一次粉絲吧！</h1><p>這是 HAECHU 的試玩，不用帳號。<br>示範偶像 <b>${IDOL.name}</b> 會陪你玩一遍。</p>
-    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["🔓","每傳一則 TIE，就解鎖一個新玩法"],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮 3D 應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
+    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["🔓",`TIE 可以傳 3 則，每傳一則就解鎖新玩法`],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮 3D 應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
     <button class="btn btn-main btn-block" data-go="tie">開始</button></div></div>`; return; }
   if(ST.tab==="tie"&&ST.room){ root.innerHTML=`<div class="app no-nav">${roomHtml()}</div>`; requestAnimationFrame(scrollMsgs); const i=document.getElementById("tieIn"); if(i&&ST.draft) i.value=ST.draft; return; }
   if(!isUnl(ST.tab)) ST.tab="tie";
@@ -223,7 +226,7 @@ let lastTap={id:null,t:0};
 document.addEventListener("pointerup",e=>{ const p=e.target.closest("[data-dbl]"); if(!p) return; const id=p.dataset.dbl, now=Date.now();
   if(lastTap.id===id&&now-lastTap.t<320){ lastTap={id:null,t:0}; const h=document.getElementById("hh-"+id); if(h){ h.classList.remove("pop"); void h.offsetWidth; h.classList.add("pop"); } setTimeout(()=>like(id,true),300); } else lastTap={id,t:now}; });
 document.addEventListener("input",e=>{ if(e.target.id!=="tieIn") return; ST.draft=e.target.value; const b=document.getElementById("tieSend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); });
-document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; if(PROF_RE.test(v.replace(/\s+/g,""))){ toast("訊息裡有不好的字詞，換句話說說看吧"); return; } i.value=""; ST.draft=""; done("tie"); sendMsg(v); });
+document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; if(PROF_RE.test(v.replace(/\s+/g,""))){ toast("訊息裡有不好的字詞，換句話說說看吧"); return; } if(!tryLeft()){ render(); return; } i.value=""; ST.draft=""; done("tie"); sendMsg(v); });
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) poll(); });
 if(CH.msgs.length){ startPoll(); poll(); }
 render();
