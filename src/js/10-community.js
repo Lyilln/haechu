@@ -353,18 +353,6 @@ function navBar(items,active,badges={}){
   return `<nav class="nav" aria-label="主選單"><div class="nav-in" style="--n:${items.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${items.map(([k,l,ic])=>`
     <button class="nav-btn ${active===k?"on":""}" data-a="tab" data-v="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${thIcon(k)||ic}${badges[k]==="dot"?`<span class="ndot" aria-label="直播中"></span>`:badges[k]==="moon"?`<span class="nmoon" aria-label="有未讀">${MOON}</span>`:badges[k]?`<span class="nbadge">${badges[k]>99?"99+":badges[k]}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`;
 }
-/* 液態玻璃：按住導覽列左右拖，鏡片跟著手指走，放開就切過去 */
-(function(){ let st=null, swallow=false;
-  const slot=(nav,x)=>{ const r=nav.getBoundingClientRect(), z=ZM(), n=+getComputedStyle(nav).getPropertyValue("--n")||5, w=(r.width/z-12)/n; const px=Math.min(Math.max(x/z-r.left/z-6-w/2,0),w*(n-1)); return {px,i:Math.round(px/w),w}; };
-  document.addEventListener("pointerdown",e=>{ const nav=e.target.closest(".nav-in"); if(!nav) return; st={nav,x:e.clientX,moved:false,lens:nav.querySelector(".nav-lens")}; nav.classList.add("press"); },{passive:true});
-  document.addEventListener("pointermove",e=>{ if(!st) return; if(!st.moved&&Math.abs(e.clientX-st.x)<8) return; if(!st.moved){ st.moved=true; st.nav.classList.add("drag"); st.btns=[...st.nav.querySelectorAll(".nav-btn")]; }
-    st.cx=e.clientX; if(st.raf) return; st.raf=requestAnimationFrame(()=>{ if(!st) return; st.raf=0; const {px,i}=slot(st.nav,st.cx); st.lens.style.transform=`translate3d(${px}px,0,0) scale(1.14,1.1)`; if(st.hi!==i){ st.hi=i; st.btns.forEach((b,k)=>b.classList.toggle("hov",k===i)); } }); },{passive:true});
-  const end=e=>{ if(!st) return; const s0=st; st=null; if(s0.raf) cancelAnimationFrame(s0.raf); s0.nav.classList.remove("press","drag"); s0.nav.querySelectorAll(".hov").forEach(b=>b.classList.remove("hov"));
-    if(!s0.moved) return; const {i}=slot(s0.nav,e.clientX), b=s0.nav.querySelectorAll(".nav-btn")[i]; s0.lens.style.transform=""; s0.lens.style.setProperty("--i",i); s0.lens.style.setProperty("--f",i); swallow=true; setTimeout(()=>swallow=false,350);
-    if(b&&!b.classList.contains("on")) setTimeout(()=>{ swallow=false; b.click(); },160); };
-  document.addEventListener("pointerup",end); document.addEventListener("pointercancel",end);
-  document.addEventListener("click",e=>{ if(swallow&&e.target.closest(".nav-in")){ e.stopPropagation(); e.preventDefault(); } },true);
-})();
 /* 導覽列圖標：細線「小飾品」系列（墜飾愛心、票根、蝴蝶結、鑽石、皇冠） */
 const NS='fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';
 const NAV={

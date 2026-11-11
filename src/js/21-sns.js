@@ -719,7 +719,6 @@ async function kvImgFix(k){ if(typeof HB_ON==="undefined"||!HB_ON||!HB.tok||kviB
 /* 打開 App 後：自己的聊天室背景都搬；管理員順便把大家共用的也搬 */
 function kvImgAll(){ try{ kvImgFix(K.tieSet); if(isAdminAcct()) [K.trucks,K.tieArtBg,K.sticks,K.themes].forEach((k,i)=>setTimeout(()=>kvImgFix(k),i*1500)); else if((session()||{}).role==="artist") kvImgFix(K.tieArtBg); }catch(e){} }
 setTimeout(function kviGo(){ if(typeof HB_ON!=="undefined"&&HB_ON&&HB.tok&&session()) kvImgAll(); else setTimeout(kviGo,6000); },9000);
-function newImg(){ const i=new Image(); i.crossOrigin="anonymous"; return i; }
 
 /* ===== 雲端用量（管理員） ===== */
 const CLOUD_LIM={kv:500*1024*1024,eg:5*1024*1024*1024,r2:10*1024*1024*1024};

@@ -457,19 +457,17 @@ const tryUnread=()=>{ try{ return isAdminAcct()?tryConvs().filter(c=>c.wait).len
 function viewTryInbox(){ const C=tryConvs();
   return `<main class="page"><p class="reach" style="margin:4px 2px 12px">訪客在試玩頁（${esc(location.origin+location.pathname.replace(/[^/]*$/,""))}try/）傳給 ${TRY_IDOL} 的訊息。四位管理員都看得到，你的回覆會以 ${TRY_IDOL} 的身分出現。</p>
     ${C.length?`<section class="card">${C.map(c=>`<button class="list-btn try-row" data-a="tryOpen" data-v="${esc(c.k)}"><span class="try-rl"><b>${esc(c.nick)}</b><small>${c.last.from==="fan"?"":"你們："}${esc(String(c.last.text).slice(0,40))}・${ago(c.last.ts)}</small></span><span class="r">${c.wait?`<em class="t-cnt">待回覆</em>`:"已回覆"}</span></button>`).join("")}</section>`:`<section class="card uni-empty">還沒有訪客傳訊息</section>`}</main>`; }
-/* 管理員看試玩對話：跟 TIE 聊天室長得一樣（管理員以 LUMI 的身分＝紫色泡泡在右邊，訪客在左邊） */
+/* 管理員看試玩對話：跟 App 裡藝人端的 TIE 聊天室一模一樣（不含側邊抽屜）：訪客＝FROM FAN 在左邊，管理員以 LUMI 的身分＝紫色泡泡在右邊 */
 function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts), nick=v.nick||"訪客";
-  let lastDay="", body=L.map((m,i)=>{ const d=dayLabel(m.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
-    if(m.from==="idol") return sep+`<div class="t-me"><div class="t-meta"><span>${m.byName?`<em class="try-by">${esc(m.byName)}</em>`:""}${timeHM(m.ts)}</span></div><div class="t-b me">${esc(m.text)}</div></div>`;
-    const prev=L[i-1], cont=prev&&prev.from==="fan"&&!sep;
-    return sep+`<div class="t-art ${cont?"try-cont":""}"><div class="t-av try-av" style="background:${grad(strHash(nick)%8)}">${esc(String(nick)[0]||"訪")}</div>
-      <div class="t-art-c">${cont?"":`<div class="t-art-n"><b>${esc(nick)}</b><span class="try-tag">試玩</span></div>`}<div class="t-bw"><div class="t-b">${esc(m.text)}</div><span class="t-side"><span class="t-tm">${timeHM(m.ts)}</span></span></div></div></div>`; }).join("");
+  let lastDay=""; const body=L.map(m=>{ const d=dayLabel(m.ts); let sep=""; if(d!==lastDay){ sep=`<div class="t-day"><span>${d}</span></div>`; lastDay=d; }
+    if(m.from==="idol") return sep+`<div class="t-me"><div class="t-meta">${m.byName?`<em class="try-by">${esc(m.byName)}</em>`:""}<span>${timeHM(m.ts)}</span></div><div class="t-mecol"><div class="t-b me">${esc(m.text)}</div></div></div>`;
+    return sep+`<div class="t-art"><span class="fan-av">${mascot("try:"+(v.id||k))}</span>
+      <div class="t-art-c"><div class="t-art-n"><span class="from-fan">FROM FAN</span><b class="a-nick">${esc(nick)}</b><span class="try-tag">試玩</span></div>
+      <div class="t-bw"><div class="t-b">${esc(m.text)}</div><span class="t-meta2"><span class="t-time">${timeHM(m.ts)}</span></span></div></div></div>`; }).join("");
   const wait=L.length&&L[L.length-1].from==="fan";
-  setLayer(`<div class="tiei try-tie"><div class="t-bgl t-default"></div>
-    <header class="t-rh"><div class="t-rh-row"><button class="t-ib" data-a="tCloseLayer" aria-label="返回">${TI.back}</button><h3>${esc(nick)}</h3><div class="t-rh-r"></div></div>
-      <div class="t-sub art">${wait?"等你回覆中・":""}以 ${TRY_IDOL} 的身分回覆</div></header>
-    <main class="t-msgs" id="tryBody">${body||`<p class="t-none">還沒有訊息</p>`}<div id="tryEnd"></div></main>
-    <form class="t-foot try-f" data-k="${esc(k)}"><div class="t-inp"><textarea rows="1" id="tryIn" maxlength="300" autocomplete="off" placeholder="以 ${TRY_IDOL} 的身分回覆" aria-label="輸入訊息"></textarea></div><button class="t-send" id="trySend" type="submit" aria-label="送出">${TI.send}</button></form></div>`,"try");
+  setLayer(`<div class="tiei try-tie">${thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`}<header class="t-rh t-rh-art"><div class="t-rh-row"><button class="t-ib" data-a="tCloseLayer" aria-label="返回">${TI.back}</button><h3>${esc(TRY_IDOL)}</h3><div class="t-rh-r"></div></div></header>
+    <main class="t-msgs" id="tryBody">${body||`<p class="t-none">還沒有訊息</p>`}<p class="t-wait">${wait?`${esc(nick)} 正在等你的訊息`:`以 ${esc(TRY_IDOL)} 的身分回覆 ${esc(nick)}`}</p><div id="tryEnd"></div></main>
+    <form class="t-foot try-f" data-k="${esc(k)}"><div class="t-inp"><textarea rows="1" class="ag" id="tryIn" maxlength="300" autocomplete="off" placeholder="以 ${esc(TRY_IDOL)} 的身分回覆 ${esc(nick)}" aria-label="輸入訊息"></textarea></div><button class="t-send" id="trySend" type="submit" aria-label="送出">${TI.send}</button></form></div>`,"try");
   setTimeout(()=>{ const b=layer.querySelector(".try-tie"); if(b) b.scrollTop=b.scrollHeight; },30); }
 document.addEventListener("input",e=>{ if(e.target.id!=="tryIn") return; const b=document.getElementById("trySend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); e.target.style.height="auto"; e.target.style.height=Math.min(110,e.target.scrollHeight)+"px"; });
 document.addEventListener("keydown",e=>{ if(e.target.id==="tryIn"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); const f=e.target.closest("form"); if(f) f.requestSubmit(); } });

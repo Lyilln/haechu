@@ -217,7 +217,6 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
 /* 不再每分鐘重畫整頁（會閃、浪費）：離開 App 超過一分鐘再回來時，才重畫一次讓「X 分鐘前」更新 */
 { let hid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ hid=Date.now(); return; } if(hid&&Date.now()-hid>60e3&&!document.querySelector("textarea:focus,input:focus")&&!layer.innerHTML){ const y=window.scrollY; render(); window.scrollTo(0,y); } }); }
 
-const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
 
 (function addKo(){ const list=S.get(K.whispers,[]); let ch=false; list.forEach(w=>{ if(KO[w.id]&&!w.ko){ w.ko=KO[w.id]; ch=true; } }); if(ch) S.set(K.whispers,list); })();
 

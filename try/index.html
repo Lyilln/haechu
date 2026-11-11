@@ -19,7 +19,9 @@ html:not(.ready) body{opacity:0}html.ready body{opacity:1;transition:opacity .2s
 html[data-theme="dark"] .tz-pill{background:rgba(167,139,250,.18);color:#C4B5FD}
 .tz-hint{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px 14px;border-radius:16px;background:var(--violet-soft,#F1E8FF);color:var(--ink,#1D1A24);font-size:13px;line-height:1.6}
 .tz-hint b{color:var(--violet,#8843FB)}html[data-theme="dark"] .tz-hint{background:rgba(167,139,250,.12)}html[data-theme="dark"] .tz-hint b{color:#C4B5FD}
-.tz-next{margin:18px 0 8px}
+.nav-btn.lk{opacity:.38}.nav-btn.lk .nav-ico{position:relative}.nav-btn.lk .nav-ico::after{content:"";position:absolute;right:-5px;bottom:-3px;width:11px;height:11px;border-radius:50%;background:currentColor;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z'/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M7 10V7a5 5 0 0 1 10 0v3h1a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zm2 0h6V7a3 3 0 0 0-6 0z'/%3E%3C/svg%3E") center/contain no-repeat}
+.nav-btn.unl .nav-ico{animation:tzUnl 1.1s cubic-bezier(.2,.9,.3,1.3) 2}@keyframes tzUnl{0%,100%{transform:none}35%{transform:scale(1.35) rotate(-8deg)}65%{transform:scale(.95) rotate(4deg)}}
+.tz-unl{margin:2px auto 14px;width:max-content;max-width:86%;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px;background:linear-gradient(135deg,#F1E8FF,#FFE6F2);color:#7C3AED}html[data-theme="dark"] .tz-unl{background:rgba(167,139,250,.16);color:#D8C7FF}
 /* 開場 */
 .tz-in{min-height:100dvh;display:flex;flex-direction:column;justify-content:center;gap:16px;padding:calc(env(safe-area-inset-top,0px) + 28px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);max-width:480px;margin:0 auto}
 .tz-in .tz-av{width:104px;height:104px;font-size:42px;margin:0 auto}
@@ -46,10 +48,7 @@ html[data-theme="dark"] .tz-win{background:linear-gradient(135deg,rgba(255,200,8
 @keyframes tryPop{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:none}}
 /* 應援棒 */
 .tz-ls{display:flex;flex-direction:column;align-items:center;gap:18px;padding:26px 16px 20px!important;background:radial-gradient(120% 90% at 50% 0%,#2A1F4A 0%,#120E1F 70%)!important;color:#fff;overflow:hidden}
-.tz-stick{position:relative;width:120px;height:250px;border:0;background:none;padding:0;transform-origin:50% 92%;-webkit-tap-highlight-color:transparent}
-.tz-stick .ball{position:absolute;left:50%;top:0;width:104px;height:104px;margin-left:-52px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff,var(--c) 45%,color-mix(in srgb,var(--c) 60%,#000));box-shadow:0 0 30px var(--c),0 0 80px color-mix(in srgb,var(--c) 60%,transparent)}
-.tz-stick .grip{position:absolute;left:50%;top:96px;width:22px;height:150px;margin-left:-11px;border-radius:11px;background:linear-gradient(90deg,#d9d6e3,#fff 40%,#bdb8cc)}
-.tz-stick.wave{animation:tryWave .55s ease}@keyframes tryWave{25%{transform:rotate(-16deg)}60%{transform:rotate(12deg)}100%{transform:none}}
+.tz-lsb{height:340px;width:100%}
 .tz-cols{display:flex;gap:12px}.tz-cols button{width:34px;height:34px;border-radius:50%;border:2px solid rgba(255,255,255,.25)}.tz-cols button.on{border-color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.25)}
 .tz-ls p{margin:0;font-size:13px;color:rgba(255,255,255,.8)}
 html[data-theme="dark"] .tz-room .t-inp{background:#2A2733!important;border-color:rgba(255,255,255,.08)!important}html[data-theme="dark"] .tz-room .t-inp input{color:#F1EEF7}
@@ -62,6 +61,8 @@ html[data-theme="dark"] .tz-room .t-inp{background:#2A2733!important;border-colo
 </head>
 <body>
 <div id="root"></div><div id="layer"></div>
+<script src="../vendor/anime-4.5.0.min.js" async onload="window.__anReady&&__anReady()"></script>
+<script src="../feel.js?v=5e44c2e56e"></script><!-- App 的手感（彈簧、按壓、導覽列拖曳、3D 應援棒）：跟 App 同一份 -->
 <script>
 /* =========================================================
    HAECHU 試玩（獨立頁，不用登入）
@@ -105,8 +106,12 @@ function mergeMsgs(a,b){ const M=new Map(); [...(a||[]),...(b||[])].forEach(m=>{
 const STICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7.2" r="4.4"/><path d="M12 11.6V21"/><path d="M10.2 15.6h3.6"/><path d="M5 3.6l1.2 1.2M19 3.6l-1.2 1.2"/></svg>';
 const TABS=[["tie","TIE",NAV.tie],["sns","SNS",NAV.love],["show","FEST",NAV.core],["ls","LIGHT",STICK],["end","JOIN",NAV.me]];
 let NAVP=null;
+/* 解鎖：在 TIE 傳一則訊息給 LUMI，就解鎖下一個玩法（SNS → FEST → LIGHT → JOIN） */
+const unlN=()=>Math.min(TABS.length-1,CH.msgs.filter(m=>m.from==="fan").length);
+const isUnl=k=>TABS.findIndex(x=>x[0]===k)<=unlN();
+let UNL_NEW=null;
 function navBar(active){ const i=Math.max(0,TABS.findIndex(x=>x[0]===active)), f=NAVP; NAVP=i; const go=f!=null&&f!==i;
-  return `<nav class="nav" aria-label="試玩選單"><div class="nav-in" style="--n:${TABS.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${TABS.map(([k,l,ic])=>`<button class="nav-btn ${active===k?"on":""}" data-go="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${ic}${k==="tie"&&CH.unread?`<span class="nbadge">${CH.unread}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`; }
+  return `<nav class="nav" aria-label="試玩選單"><div class="nav-in" style="--n:${TABS.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${TABS.map(([k,l,ic])=>`<button class="nav-btn ${active===k?"on":""} ${isUnl(k)?"":"lk"} ${UNL_NEW===k?"unl":""}" data-go="${k}" ${isUnl(k)?"":'aria-disabled="true"'} ${active===k?'aria-current="page"':""}><span class="nav-ico">${ic}${k==="tie"&&CH.unread?`<span class="nbadge">${CH.unread}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`; }
 const head=(title,right="")=>`<header class="top sh-head"><div class="top-row"><div class="logo">HAECHU<small>試玩</small></div><div class="spacer"></div>${right}<span class="art-sub">${title}</span></div></header>`;
 const hint=h=>`<p class="tz-hint"><span>💡</span><span>${h}</span></p>`;
 
@@ -117,7 +122,7 @@ const lumiAv=(cls="")=>`<div class="t-av tz-l ${cls}">L</div>`;
 const tHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tryHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tryHG)"/></svg><i></i></span>`;
 function tieListHtml(){ const L=CH.msgs, last=L[L.length-1];
   return `<div class="t-glow" aria-hidden="true"></div><header class="t-lh sh-head"><div class="t-lh-side"></div><h1>TIE</h1><div class="t-lh-side r"><span class="tz-pill">試玩</span></div></header>
-    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的喔！`)}<span class="t-sec">最近的聊天室</span>
+    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的喔！`)}${unlN()<TABS.length-1?`<p class="tz-unl">🔒 傳一則 TIE 給 ${IDOL.name}，就解鎖下一個玩法（還有 ${TABS.length-1-unlN()} 個）</p>`:""}<span class="t-sec">最近的聊天室</span>
       <button class="t-room" data-go="room">${lumiAv("lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${IDOL.name}</b></span><span class="t-room-t">${last?hm(last.ts):""}</span></div>
         <p>${last?(last.from==="fan"?"你：":"")+esc(last.text):"嗨～我是 LUMI ✨"}</p></div>${CH.unread?`<span class="t-cnt">${CH.unread}</span>`:""}</button></main>`; }
 function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.now()},...CH.msgs]; let lastDay="";
@@ -131,7 +136,8 @@ function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.n
     <form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?"":"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form></div>`; }
 function scrollMsgs(){ const e=document.getElementById("chat-end"); if(e) e.scrollIntoView({block:"end"}); }
 function nickSheet(){ layer.innerHTML=`<div class="t-modal-w" data-close="1"><div class="t-modal" role="dialog" aria-label="你的暱稱"><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你。</p><div class="t-mb"><input id="nickIn" class="t-wel-ta tpk-nk" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="t-mbtn main" id="nickOk">確認</button></div></div></div>`; setTimeout(()=>{ const i=document.getElementById("nickIn"); if(i) i.focus(); },60); }
-async function sendMsg(text){ const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m); if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
+async function sendMsg(text){ const n0=unlN(); const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m);
+  if(unlN()>n0){ const t=TABS[unlN()]; UNL_NEW=t[0]; setTimeout(()=>{ if(UNL_NEW===t[0]){ UNL_NEW=null; } },4000); toast(`🔓 解鎖了 ${t[1]}！回到下面的選單看看`); if(navigator.vibrate) navigator.vibrate([12,40,12]); } if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
   try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; return o; })}); const ok=new Set((v.msgs||[]).map(x=>x.id)); CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; if(ok.has(o.id)) delete o.fail; else if(o.from==="fan"&&o.id===m.id) o.fail=1; return o; }); LS.set("chat",CH); render(); startPoll(); }
   catch(e){ m.pend=0; m.fail=1; LS.set("chat",CH); render(); toast("沒傳出去，等一下會自動重傳"); startPoll(); } }
 async function resend(){ if(!CH.msgs.some(x=>x.fail)) return; try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; delete o.fail; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>{ const o={...x}; delete o.fail; return o; }),v.msgs); LS.set("chat",CH); render(); }catch(e){} }
@@ -148,8 +154,7 @@ function snsHtml(){ return `<div class="sn"><header class="sn-top"><span class="
       return `<article class="sn-post"><header><span class="sn-hu">${snAv(32)}<span class="sn-pu"><b>${IDOL.user}${SN_VER}</b><small>HAECHU</small></span></span><span class="sn-sp"></span><button class="sn-ib" aria-label="更多">${si("dots")}</button></header>
         <div class="sn-media"><div class="sn-car" data-dbl="${p.id}"><div class="sn-sl"><div class="tz-pic" style="background:${p.g}">${esc(p.t)}</div></div></div><i class="sn-heart" id="hh-${p.id}">${si("heart")}</i></div>
         <div class="sn-acts"><button class="${on?"liked":""}" data-like="${p.id}" aria-label="讚">${si("heart")}<b>${fmtN(p.lk+(on?1:0))}</b></button><button aria-label="留言">${si("chat")}<b>${fmtN(p.cm)}</b></button><button aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button aria-label="收藏">${si("save")}</button></div>
-        <div class="sn-meta"><p><b>${IDOL.user}</b> ${esc(p.cap)}</p><small>${p.ago}前</small></div></article>`; }).join("")}
-      <div class="page"><button class="btn btn-main btn-block tz-next" data-go="show">下一關：幫她打歌 →</button></div></main></div>`; }
+        <div class="sn-meta"><p><b>${IDOL.user}</b> ${esc(p.cap)}</p><small>${p.ago}前</small></div></article>`; }).join("")}</main></div>`; }
 function like(id,fromDbl){ if(fromDbl&&ST.liked[id]) return; ST.liked[id]=!ST.liked[id]; render(); if(ST.liked[id]) done("sns"); }
 
 /* ---------- 打歌（照 App 的音樂節目卡） ---------- */
@@ -164,16 +169,17 @@ function showHtml(){ const R=showRows(), lead=R[0], open=ST.showOpen||"ts";
     <div class="mu3-list">${MU_SHN.map(([id,n1,n2],k)=>{ const on=open===id, me=k===0;
       return `<section class="mu3-sh s-${id} ${on?"open":""}"><button class="mu3-hd" data-show="${id}" aria-expanded="${on}"><span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${me?`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(lead.a)}</span>`:`<span class="mu3-st muted">試玩只開放 THE SHOW</span>`}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
         <div class="mu3-bd">${me?(ST.voted?`<p class="mu3-vt">今天投給了《Starlight》</p>`:"")+rows:`<p class="me-none">試玩只開放 THE SHOW 投票</p>`}</div></section>`; }).join("")}</div>
-    <div class="tz-win ${ST.voted?"on":""}"><b>🏆 ${IDOL.name} 拿下一位！</b>在 HAECHU，打歌一位、AK、三冠王都是粉絲一起投出來的。</div>
-    <button class="btn btn-main btn-block tz-next" data-go="ls">下一關：揮應援棒 →</button></main>`; }
+    <div class="tz-win ${ST.voted?"on":""}"><b>🏆 ${IDOL.name} 拿下一位！</b>在 HAECHU，打歌一位、AK、三冠王都是粉絲一起投出來的。</div></main>`; }
 
-/* ---------- 應援棒 ---------- */
+/* ---------- 應援棒：用 App 的 3D 應援棒（同一份程式、同一套彈簧手感） ---------- */
 const COLS=["#C7AEFF","#FF8FC2","#7FE0FF","#FFE08A","#9CF5B5"];
-function lsHtml(){ return head("LIGHT")+`<main class="page">${hint("點<b>應援棒</b>就會揮動，下面可以換顏色。演唱會時，全場的應援棒會跟著音樂一起亮！")}
-  <section class="card tz-ls"><button class="tz-stick" id="stick" style="--c:${ST.col}" aria-label="揮應援棒"><span class="ball"></span><span class="grip"></span></button>
+let LSD=null; const lsDesign=()=>LSD||(LSD=LS3D.analyze(LS3D.sample("round","#B794FF","#FF8FC2","L")));
+function lsHtml(){ return head("LIGHT")+`<main class="page">${hint("<b>左右拖動</b>揮舞、<b>上下拖動</b>前後搖擺，揮得越用力越亮。演唱會時，全場的應援棒會跟著音樂一起亮！")}
+  <section class="card tz-ls"><div class="ls-box tz-lsb" id="lsBox"></div>
   <div class="tz-cols">${COLS.map(c=>`<button class="${c===ST.col?"on":""}" data-col="${c}" style="background:${c}" aria-label="換顏色"></button>`).join("")}</div>
-  <p id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下 💜`:"點應援棒揮揮看"}</p></section>
-  <button class="btn btn-main btn-block tz-next" data-go="end">看看還能做什麼 →</button></main>`; }
+  <p id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下 💜`:"拖動應援棒揮揮看"}</p></section></main>`; }
+let lsAcc=0;
+function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; } }}); }catch(e){ el.innerHTML=""; } }
 
 /* ---------- 結尾 ---------- */
 function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>真正的 HAECHU 裡，偶像都是社群裡的真人，每天都在發生新的事。</p>
@@ -186,22 +192,29 @@ function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是
 function done(k){ if(ST.done[k]) return; ST.done[k]=1; LS.set("done",ST.done); }
 function render(){
   if(ST.tab==="intro"){ root.innerHTML=`<div class="app no-nav"><div class="tz-in"><span class="tz-av">L</span><h1>來當一次粉絲吧！</h1><p>這是 HAECHU 的試玩，不用帳號。<br>示範偶像 <b>${IDOL.name}</b> 會陪你玩一遍。</p>
-    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
+    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["🔓","每傳一則 TIE，就解鎖一個新玩法"],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮 3D 應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
     <button class="btn btn-main btn-block" data-go="tie">開始</button></div></div>`; return; }
   if(ST.tab==="tie"&&ST.room){ root.innerHTML=`<div class="app no-nav">${roomHtml()}</div>`; requestAnimationFrame(scrollMsgs); const i=document.getElementById("tieIn"); if(i&&ST.draft) i.value=ST.draft; return; }
+  if(!isUnl(ST.tab)) ST.tab="tie";
+  const chg=PREV_TAB!==ST.tab; PREV_TAB=ST.tab;
   const body={tie:tieListHtml,sns:snsHtml,show:showHtml,ls:lsHtml,end:endHtml}[ST.tab]();
-  root.innerHTML=`<div class="app">${body}</div>${navBar(ST.tab)}`; }
+  root.innerHTML=`<div class="app">${body}</div>${navBar(ST.tab)}`;
+  /* 跟 App 一樣：鏡片彈簧滑過去、換分頁時內容浮上來 */
+  if(window.AN&&AN.ok()){ root.querySelectorAll(".nav-lens.go").forEach(L=>AN.lens(L,parseFloat(L.style.getPropertyValue("--f")),parseFloat(L.style.getPropertyValue("--i")))); if(chg) AN.page(root.querySelector(".app"),"fade"); }
+  if(ST.tab==="ls") lsMount(); }
+let PREV_TAB=null;
 function go(k){ if(k==="room"){ ST.room=true; CH.unread=0; LS.set("chat",CH); render(); if(!CH.nick) setTimeout(nickSheet,280); return; }
   if(k==="tie"&&ST.room){ ST.room=false; render(); return; }
+  if(TABS.some(x=>x[0]===k)&&!isUnl(k)){ toast(`🔒 在 TIE 傳訊息給 ${IDOL.name}，就能解鎖 ${TABS.find(x=>x[0]===k)[1]}`); return; }
+  if(UNL_NEW===k) UNL_NEW=null;
   ST.tab=k; ST.room=false; LS.set("tab",k); if(k==="end") done("end"); render(); window.scrollTo(0,0); }
 
-document.addEventListener("click",e=>{ const t=e.target.closest("[data-go],[data-like],[data-vote],[data-col],[data-show],#stick,#nickOk,[data-close]"); if(!t) return;
+document.addEventListener("click",e=>{ const t=e.target.closest("[data-go],[data-like],[data-vote],[data-col],[data-show],#nickOk,[data-close]"); if(!t) return;
   if(t.dataset.go) return go(t.dataset.go);
   if(t.dataset.like) return like(t.dataset.like);
   if(t.dataset.show){ ST.showOpen=ST.showOpen===t.dataset.show?"_":t.dataset.show; render(); return; }
   if(t.dataset.vote){ if(ST.voted) return; ST.voted=true; done("show"); render(); toast("🏆 謝謝你的一票！"); return; }
-  if(t.dataset.col){ ST.col=t.dataset.col; render(); return; }
-  if(t.id==="stick"){ t.classList.remove("wave"); void t.offsetWidth; t.classList.add("wave"); ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; if(navigator.vibrate) navigator.vibrate(20); return; }
+  if(t.dataset.col){ ST.col=t.dataset.col; document.querySelectorAll("[data-col]").forEach(b=>b.classList.toggle("on",b===t)); const el=document.getElementById("lsBox"); if(el&&el._ls) el._ls.set("glow",ST.col); return; }
   if(t.id==="nickOk"){ const v=(document.getElementById("nickIn").value||"").trim(); if(!v){ toast("先取一個暱稱"); return; } CH.nick=v; LS.set("chat",CH); layer.innerHTML=""; render(); setTimeout(()=>{ const i=document.getElementById("tieIn"); if(i) i.focus(); },50); return; }
   if(t.dataset.close&&e.target===t){ layer.innerHTML=""; return; } });
 let lastTap={id:null,t:0};
