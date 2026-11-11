@@ -1,7 +1,7 @@
 /*
   HAECHU 照片／語音／影片 — Cloudflare Worker + R2
   ・上傳（PUT）：只有登入 HAECHU 的人可以（用 Supabase 確認身分）
-  ・刪除（DELETE）：換新頭貼／背景／出道照時刪掉舊的；藝人只能刪自己的，管理員都可以
+  ・刪除（DELETE）：換新頭貼／背景／出道照時刪掉舊的；藝人只能刪自己的，管理員都可以；歌的舊音檔（mva…）只有管理員能刪
   ・下載（GET）：App 用，下載過的手機會自己存起來
   ・需要在 Worker 設定：
       R2 bucket 綁定：名稱 MEDIA → 選你的 bucket
@@ -205,8 +205,8 @@ export default {
     }
     if (req.method === "DELETE") {
       if (allowed && origin !== allowed) return reply({ error: "origin" }, 403);
-      const pm = key.match(/^prof_(.+?)_/), isG = key.startsWith("gph_");
-      if (!pm && !isG) return reply({ error: "forbidden" }, 403);
+      const pm = key.match(/^prof_(.+?)_/), isG = key.startsWith("gph_"), isA = /^mva[0-9a-z]+$/.test(key);   // mva：歌的舊音檔（換成好音質後刪掉），只有管理員能刪
+      if (!pm && !isG && !isA) return reply({ error: "forbidden" }, 403);
       const tok = (req.headers.get("Authorization") || "").replace(/^Bearer\s+/i, "");
       if (!tok) return reply({ error: "login" }, 401);
       const who = await fetch(env.SUPABASE_URL + "/auth/v1/user", {
@@ -218,7 +218,7 @@ export default {
         headers: { apikey: env.SUPABASE_KEY, Authorization: "Bearer " + tok },
       });
       const me = pr.ok ? (await pr.json())[0] : null;
-      const ok = me && (me.role === "admin" || (pm && me.member === pm[1]));
+      const ok = me && (me.role === "admin" || (!isA && pm && me.member === pm[1]));
       if (!ok) return reply({ error: "forbidden" }, 403);
       await env.MEDIA.delete(key);
       return reply({ ok: true });

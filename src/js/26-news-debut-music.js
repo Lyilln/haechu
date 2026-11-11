@@ -593,11 +593,16 @@ async function songAudio(s){ if(!s) return null; if(s.au){ const b=await MDB.get
 /* 歌還沒有音訊：直接從這首歌的 MV 取出聲音（誰先用到就誰轉，轉好存起來大家共用） */
 
 
-function songAuSet(sid,id){ try{ const m=getMShow(), x=[...m.songs,...(m.ended||[])].find(y=>y.id===sid); if(x&&x.au!==id){ x.au=id; x.auV=2; delete x.auNo; S.set(K.mshow,m); } }catch(e){} }
+/* 歌換成新音檔後：申請紀錄裡的舊代號也換掉，舊檔從 R2 刪掉（只有管理員刪得掉；其他歌還在用就不刪） */
+function songAuDrop(old,id){ try{ if(!old||old===id||!/^mva[0-9a-z]+$/.test(old)) return;
+    [[CBR_KEY,S.get(CBR_KEY,[])||[]],[K.debut,S.get(K.debut,[])||[]]].forEach(([k,L])=>{ let ch=false; (L||[]).forEach(x=>{ if(x&&x.au===old){ x.au=id; ch=true; } if(x&&x.mv&&x.mv.au===old){ x.mv.au=id; ch=true; } }); if(ch) S.set(k,L); });
+    const m=getMShow(); if([...m.songs,...(m.ended||[]),...(m.pre||[])].some(y=>y&&y.au===old)) return;
+    if(!isAdminAcct()||!HB_ON||!HB.tok||!MEDIA_URL) return; fetch(MEDIA_URL+"/media/"+encodeURIComponent(old),{method:"DELETE",headers:{Authorization:"Bearer "+HB.tok}}).catch(()=>{}); }catch(e){} }
+function songAuSet(sid,id){ try{ const m=getMShow(), x=[...m.songs,...(m.ended||[])].find(y=>y.id===sid); if(x&&x.au!==id){ const old=x.au; x.au=id; x.auV=2; delete x.auNo; S.set(K.mshow,m); songAuDrop(old,id); } }catch(e){} }
 /* 管理員：以前的歌補轉（一次一首；失敗的 12 小時後再試，不會永遠卡住） */
 let muAuBusy=false;
 async function muAudioJob(){ if(muAuBusy||!isAdminAcct()||(HB_ON&&HB.ver[K.mshow]==null)) return; const ms=getMShow(), now0=Date.now(), s=ms.songs.find(x=>(!x.au||x.auV!==2)&&(!x.auNo||(x.auNo>1e12&&now0-x.auNo>12*36e5))&&songMv(x)&&songMv(x).mid); if(!s) return; muAuBusy=true;
-  try{ const v=songMv(s), b=await MDB.get(v.mid), id=b?await mvAudioUpload(b):""; const m2=getMShow(), x=m2.songs.find(y=>y.id===s.id); if(x){ if(id){ x.au=id; x.auV=2; delete x.auNo; } else x.auNo=Date.now(); S.set(K.mshow,m2); } }catch(e){} muAuBusy=false; }
+  try{ const v=songMv(s), b=await MDB.get(v.mid), id=b?await mvAudioUpload(b):""; const m2=getMShow(), x=m2.songs.find(y=>y.id===s.id); if(x){ const old=x.au; if(id){ x.au=id; x.auV=2; delete x.auNo; } else x.auNo=Date.now(); S.set(K.mshow,m2); if(id) songAuDrop(old,id); } }catch(e){} muAuBusy=false; }
 setInterval(muAudioJob,5*60e3); setTimeout(muAudioJob,40e3);
 
 /* =========================================================
