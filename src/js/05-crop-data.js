@@ -356,7 +356,7 @@ const cmTotalOf=L=>L.reduce((n,c)=>n+1+(c.reply?1:0)+((c.reps||[]).length),0);
 const commentCount=postId=>cmTotalOf(S.get(K.comments,[]).filter(c=>c.postId===postId));
 const getComments=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).sort((a,b)=>a.ts-b.ts);
 function addComment(postId,text){
-  const c={id:"c"+Date.now(),postId,author:"me",by:myEmail(),name:ME.name,g:ME.g,text,ts:Date.now(),reply:null};
+  const c={id:"c"+Date.now(),postId,author:"me",by:myEmail(),name:myCmNick(postGid(postId)),g:ME.g,text,ts:Date.now(),reply:null};
   S.set(K.comments,[...S.get(K.comments,[]),c]);
   const posts=S.get(K.posts,[]), p=posts.find(x=>x.id===postId); if(p){p.comments++;S.set(K.posts,posts)}
   return c;

@@ -96,7 +96,7 @@ document.addEventListener("submit",e=>{
       if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); if(c.aiFan) aiOnCommentReply(c); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
         c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
       if(meBlocked()||banBlock(text)){ ui.cDraft=text; return; }
-      c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:ME.name,g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆 💜"); return; }
+      c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:myCmNick(postGid(c.postId)),g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆 💜"); return; }
     if(session().role==="artist"&&!ui.sheet.replyTo){ const c=addArtistComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; }
     if(session().role==="artist"){
       const {c,reached}=replyComment(ui.sheet.replyTo,text); if(c&&c.aiFan) aiOnCommentReply(c); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);

@@ -142,7 +142,8 @@ function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView())
 const adminView=()=>{ try{ return route().role==="admin"&&!!session()&&session().role==="admin"; }catch(e){ return false; } };
 function origName(by,fallback){ const e=String(by||"").toLowerCase(); const a=e&&ACCOUNTS[e]; return realName(e)||(a&&a.name)||fallback||"粉絲"; }
 const liveNick=by=>{ try{ return by?((S.get(K.nicks,{})||{})[String(by).toLowerCase()]||""):""; }catch(e){ return ""; } };
-const shownName=o=>adminView()&&o&&o.by?origName(o.by,o.name):(o&&o.by&&liveNick(o.by))||(o&&o.name)||"粉絲";
+/* 名字：在社群裡（有 gid）用他在那個社群的暱稱；其他地方用 ME 的暱稱；管理端一律看本名 */
+const shownName=(o,gid)=>{ if(adminView()&&o&&o.by) return origName(o.by,o.name); const g=gid||(o&&(o.gid||(o.postId&&postGid(o.postId)))); return (o&&o.by&&((g&&cmNkU(o.by,g))||liveNick(o.by)))||(o&&o.name)||"粉絲"; };
 function setArtProf(mid,patch){ const all=S.get(K.artProf,{}); all[mid]={...(all[mid]||{}),...patch}; Object.keys(all[mid]).forEach(k=>{ if(!all[mid][k]) delete all[mid][k]; }); try{ S.set(K.artProf,all); return true; }catch(e){ toast("圖片太大，存不下來"); return false; } }
 /* 頭貼照片裁成正方形（取中間），圓形頭貼才不會變形 */
 async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=await new Promise((res,rej)=>{ const i=new Image(); i.onload=()=>res(i); i.onerror=rej; i.src=u; });

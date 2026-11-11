@@ -40,7 +40,19 @@ async function cmAvSync(gid,blob){ try{ const me=myEmail(); if(!me||!blob) retur
   const A={...(S.get(CMAVU,{})||{})}; A[me]={...(A[me]||{}),[gid]:url}; S.set(CMAVU,A); render(); }catch(e){} }
 /* 之前換過、只存在這支手機的社群頭貼：補傳一次，大家才看得到 */
 setTimeout(async()=>{ try{ const me=myEmail(); if(!me) return; for(const k of (S.get(K.pcImgs,[])||[]).filter(k=>k.startsWith("cmav|"))){ const gid=k.slice(5); if(cmAvU(me,gid)||!PCI[k]) continue; const b=await (await fetch(PCI[k])).blob(); await cmAvSync(gid,b); } }catch(e){} },9000);
-function cmProf(gid){ const P=S.get(K.cmProf,{}); let x=P[gid]; if(!x){ x={nick:ME.name,intro:"",hide:false,joined:Date.now()}; P[gid]=x; S.set(K.cmProf,P); } return {...x,nick:ME.name}; }
+/* 社群個人檔案（照 Weverse）：每個社群各自一份暱稱、頭貼、簡介，跟 ME 的暱稱、其他社群都不互通
+   ・第一次進這個社群：先用當下 ME 的暱稱當預設，之後各改各的
+   ・暱稱另外放一份大家看得到的（CMNKU），別人在這個社群看到的就是這個名字 */
+const CMNKU="daisuki_cmnick_u";
+const cmNkU=(by,gid)=>{ try{ return gid&&by?(((S.get(CMNKU,{})||{})[String(by).toLowerCase()]||{})[gid]||""):""; }catch(e){ return ""; } };
+function cmNkPub(gid,nick){ try{ const me=String(myEmail()||"").toLowerCase(); if(!me||!gid) return; const A={...(S.get(CMNKU,{})||{})}; if((A[me]||{})[gid]===nick) return; A[me]={...(A[me]||{}),[gid]:nick}; S.set(CMNKU,A); }catch(e){} }
+function cmProf(gid){ const P=S.get(K.cmProf,{}); let x=P[gid];
+  if(!x){ x={nick:ME.name,intro:"",hide:false,joined:Date.now(),own:1}; P[gid]=x; S.set(K.cmProf,P); cmNkPub(gid,x.nick); }
+  else if(!x.own){ x={...x,nick:ME.name,own:1}; P[gid]=x; S.set(K.cmProf,P); cmNkPub(gid,x.nick); }   /* 舊資料：以前社群暱稱跟著 ME 走，先接上現在的名字，之後才分開 */
+  return {...x}; }
+const myCmNick=gid=>gid?cmProf(gid).nick||ME.name:ME.name;
+/* 這則貼文／留言屬於哪個社群 */
+function postGid(pid){ if(!pid) return ""; const p=getPosts().find(x=>x.id===pid); if(p) return p.group||""; const f=S.get(K.fanPosts,[]).find(x=>x.id===pid); return f?f.gid||"":""; }
 const bmSet=()=>new Set(S.get(K.bm,[]));
 const bmBtn=key=>`<button class="act bm ${bmSet().has(key)?"on":""}" data-a="bmTog" data-v="${key}" aria-label="書籤">${I3.bm}</button>`;
 /* Shop 公告：從專輯預購、店家抽獎自動產生 */
@@ -524,8 +536,9 @@ function renderComments(first=false){
   if(!p&&String(postId).startsWith("fp")){ FP=S.get(K.fanPosts,[]).find(x=>x.id===postId); if(FP){ const A=groupArtists(FP.gid); p={id:FP.id,group:FP.gid,member:(FP.rep&&FP.rep[0]&&MEMBERS[FP.rep[0].mid]?FP.rep[0].mid:A[0]),text:FP.text,ts:FP.ts,likes:FP.likes,likedBy:FP.likedBy,fan:FP}; } }
   if(!p||!MEMBERS[p.member]){ ui.sheet=null; layer.innerHTML=""; return toast("這則動態已被刪除"); }
   const m=MEMBERS[p.member], g=groupOf(p.group), role=session().role, isArtist=role==="artist"&&session().member===p.member;
+  const SNm=o=>shownName(o,p.group);   /* 社群裡顯示「這個社群」的暱稱（每個社群各自一個） */
   const list=[...getComments(postId),...(FP?(FP.rep||[]).map(r=>({id:r.id,postId,author:"artist",member:r.mid,text:r.text,ts:r.ts})):[])].sort((a,b)=>a.ts-b.ts), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
-  const who=c=>c.author==="artist"?`${esc(artName(c.member&&MEMBERS[c.member]?c.member:p.member,"feed"))}${I.verified}`:`${esc(shownName(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
+  const who=c=>c.author==="artist"?`${esc(artName(c.member&&MEMBERS[c.member]?c.member:p.member,"feed"))}${I.verified}`:`${esc(SNm(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
   const av=c=>c.author==="artist"?(()=>{ const am=c.member&&MEMBERS[c.member]?c.member:p.member; return `<span class="pd-av" style="background:${grad(MEMBERS[am].g)}">${mAvIn(am)}</span>`; })():cmWhoAv(c,p.group,"pd-av",c.g);
   const more=c=>c.author==="artist"||isMeC(c)?"":canModerate()?`<button class="pd-more" data-a="amC" data-c="${c.id}" aria-label="管理">${PDI.more}</button>`:role==="fan"?`<button class="pd-more" data-a="pdRep" data-c="${c.id}" aria-label="更多">${PDI.more}</button>`:"";
   const tr=c=>role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="pd-tr">${esc(c.zh)}</p>`:"";
@@ -537,7 +550,7 @@ function renderComments(first=false){
         ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:`<span class="pd-rp">${PDI.reply}<span>${fmt(nRep(c))}</span></span>`}</div></div></div>`;
   const rLk=r=>{ const L=r.likedBy||[]; return `<div class="pd-ca"><button class="pd-lk ${L.includes(myEmail())?"on":""}" data-a="pdRLike" data-c="${r.cid||""}" data-r="${r.id}" aria-label="喜歡">${I.heart}${L.length?`<span>${fmt(L.length)}</span>`:""}</button></div>`; };
   const repItem=r=>`<div class="pd-c pd-r" id="cm-${r.id}">${r.author==="artist"?av({author:"artist",member:r.member}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
-      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}`:esc(shownName(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
+      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}`:esc(SNm(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
   const sec=(t,n,body,k,ids)=>`<section class="pd-sec ${k?"k-"+k:""}"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${(k==="ac"||k==="ar")&&g&&!g.solo&&(ids||[]).length?`<span class="pd-savs">${[...new Set(ids)].filter(id=>MEMBERS[id]).slice(0,4).map(id=>`<span class="pd-sav" style="background:${grad(MEMBERS[id].g)}">${mAvIn(id)}</span>`).join("")}</span>`:""}${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";
@@ -548,17 +561,17 @@ function renderComments(first=false){
     const arts=[...(c.reply?[{id:c.id+"_r",cid:c.id,author:"artist",text:c.reply.text,ts:c.reply.ts,likedBy:c.reply.likedBy||[]}]:[]),...cReps(c).filter(r=>r.author==="artist").map(r=>({...r,cid:c.id}))], fans=cReps(c).filter(r=>r.author!=="artist").map(r=>({...r,cid:c.id}));
     html=head("回覆")+`<main class="pd-body rp" id="csl">${item(c,true)}
       ${arts.length?sec("藝人回覆",arts.length,arts.map(repItem).join(""),"ar",arts.map(r=>r.member||p.member)):""}
-      ${sec("全部回覆",fans.length,fans.length?fans.map(repItem).join(""):`<p class="pd-none">還沒有回覆</p>`)}</main>`+bar("請輸入回覆",c.author==="artist"?artName(p.member,"feed"):shownName(c));
+      ${sec("全部回覆",fans.length,fans.length?fans.map(repItem).join(""):`<p class="pd-none">還沒有回覆</p>`)}</main>`+bar("請輸入回覆",c.author==="artist"?artName(p.member,"feed"):SNm(c));
   } else {
     const fans=list.filter(c=>c.author!=="artist");
     /* 藝人留言：藝人自己的留言＋藝人回覆粉絲的留言（前面帶 @粉絲名，點了進那則的回覆頁），照 Weverse */
-    const aRep=fans.flatMap(c=>[...(c.reply?[{id:c.id+"_r",cid:c.id,author:"artist",member:p.member,text:c.reply.text,ts:c.reply.ts,likedBy:c.reply.likedBy||[],to:shownName(c)}]:[]),...cReps(c).filter(r=>r.author==="artist").map(r=>({...r,cid:c.id,to:shownName(c)}))]);
+    const aRep=fans.flatMap(c=>[...(c.reply?[{id:c.id+"_r",cid:c.id,author:"artist",member:p.member,text:c.reply.text,ts:c.reply.ts,likedBy:c.reply.likedBy||[],to:SNm(c)}]:[]),...cReps(c).filter(r=>r.author==="artist").map(r=>({...r,cid:c.id,to:SNm(c)}))]);
     const arts=[...list.filter(c=>c.author==="artist"),...aRep].sort((a,b)=>a.ts-b.ts);
     const artCard=r=>r.cid?`<div class="pd-c pd-r pd-ar" id="cm-${r.id}" data-a="pdOpenRep" data-c="${r.cid}">${av({author:"artist",member:r.member})}<div class="pd-cb">
       <div class="pd-ch"><b class="art">${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}</b><small>${ymdhm(r.ts)}</small></div><p class="pd-ct"><span class="pd-at">@${esc(r.to)}</span> ${esc(r.text)}</p>${rLk(r)}</div></div>`:item(r);
     const lk=postLocked(p);
     html=head("貼文")+`<main class="pd-body" id="csl">${FP?`<article class="pd-post fpd">
-      <div class="pd-ph">${cmWhoAv(FP,FP.gid,"pd-av lg",FP.g||3)}<span class="pd-pw"><b>${esc(shownName(FP))}</b><small>${ymdhm(FP.ts)}${FP.hideArt?`<em class="fp2-hide">Hide from Artists</em>`:""}</small></span>${canModerate()&&!isMine(FP)?`<button class="pd-more" data-a="amFp" data-id="${FP.id}" aria-label="管理">${PDI.more}</button>`:""}</div>
+      <div class="pd-ph">${cmWhoAv(FP,FP.gid,"pd-av lg",FP.g||3)}<span class="pd-pw"><b>${esc(SNm(FP))}</b><small>${ymdhm(FP.ts)}${FP.hideArt?`<em class="fp2-hide">Hide from Artists</em>`:""}</small></span>${canModerate()&&!isMine(FP)?`<button class="pd-more" data-a="amFp" data-id="${FP.id}" aria-label="管理">${PDI.more}</button>`:""}</div>
       ${(FP.imgs||[]).length?`<div class="fpd-imgs">${FP.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`:""}
       ${FP.text?(isMine(FP)?`<p class="pd-txt">${esc(FP.text)}</p>`:trT("f:"+FP.id,FP.text,"pd-txt")):""}
       <p class="pd-stat">喜歡 ${fmt(likeN(FP))}・留言 ${fmt(cmTotalOf(list))}</p></article>`:`<article class="pd-post">
