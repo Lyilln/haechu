@@ -19,10 +19,5 @@ shell = shell.replace("{{CSS}}", "app.css?v=" + h(css)).replace("{{JS}}", "app.j
 shell = shell.replace("<head>", f'<head>\n<script>window.HC_BUILD="{build}";</script>', 1)
 open(os.path.join(R, "index.html"), "w", encoding="utf-8").write(shell)
 open(os.path.join(R, "version.txt"), "w").write(build + "\n")
-# 試玩頁共用 App 的手感：src/js/00-feel.js 另外輸出一份 feel.js，試玩頁的引用自動換成最新指紋
-feel = open(os.path.join(R, "src/js/00-feel.js"), encoding="utf-8").read()
-open(os.path.join(R, "feel.js"), "w", encoding="utf-8").write(feel)
-tp = os.path.join(R, "try/index.html"); t = open(tp, encoding="utf-8").read()
-t2 = re.sub(r'\.\./feel\.js(\?v=[0-9a-f]*)?"', '../feel.js?v=' + h(feel) + '"', t)
-if t2 != t: open(tp, "w", encoding="utf-8").write(t2)
+# 試玩頁（try/）的樣式和手感是固定複製版，不跟 App 聯動，這裡不碰
 print(f"built {build}: {len(cf)} css → app.css ({len(css)//1024}KB), {len(jf)} js → app.js ({len(js)//1024}KB)")

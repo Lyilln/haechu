@@ -250,7 +250,9 @@ function nameBlock(t){ if(usedName(t)){ toast("這個名稱以前有人用過，
 /* 粉絲帳號轉成藝人帳號後，舊的帳號名、名稱記在後台，誰都不能再用（避免冒充） */
 const nameKey=t=>String(t||"").normalize("NFKC").toLowerCase().replace(/[\s._\-·・]/g,"");
 const usedName=t=>{ const k=nameKey(t); return !!k&&(S.get(K.usedNames,[])||[]).some(x=>nameKey(x.v)===k); };
-function banBlock(t){ if(hasSlur(t)){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(!hasBanned(t)) return false; toast("訊息裡有禁用的字詞，沒辦法送出"); return true; }
+/* 髒話（中文、英文、韓文）：管理員的禁用字詞清單以外，這些一律擋（「幹嘛、幹部、能幹」不算） */
+const PROF_RE=/(?<![能才精主骨樹軀實苦公])幹(?![嘛麻啥什活部掉得的過練事勁線細])|操[你妳他她]|靠[北杯腰夭]|[雞機]掰|雞巴|婊子|賤[人貨]|去死|死全家|白[痴癡]|智障|他媽|[你妳]媽的|三小|屁眼|王八蛋|f+u+c+k|sh[i1!]t|b[i1!]tch|asshole|cunt|씨발|시발|ㅅㅂ|ㅆㅂ|병신|ㅂㅅ|개새끼|좆|존나|ㅈㄴ/i;
+function banBlock(t){ if(PROF_RE.test(String(t||"").replace(/\s+/g,""))){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(hasSlur(t)){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(!hasBanned(t)) return false; toast("訊息裡有禁用的字詞，沒辦法送出"); return true; }
 function viewBanned(){ return `<main class="page"><section class="card studio"><span class="fld-lab">禁用字詞（一行一個）</span><label class="field th-ta"><textarea id="banTa" rows="12" placeholder="輸入文字">${esc(bannedList().join("\n"))}</textarea></label><button class="btn btn-main btn-block" data-a="banSave">儲存</button></section></main>`; }
 
 /* TIE：藝人回覆粉絲（粉絲端看不到是哪位粉絲寫的） */

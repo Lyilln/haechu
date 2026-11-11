@@ -1,5 +1,5 @@
 /* HAECHU｜手感（App 和試玩頁共用）：動畫彈簧、按壓回饋、液態玻璃導覽列拖曳、3D 應援棒
-   ・這個檔案也會單獨輸出成 feel.js 給試玩頁（try/）用，兩邊的手感永遠一樣
+   ・試玩頁（try/）用的是當時複製過去的固定版本，這裡改了不會影響試玩
    ・只放不靠 App 資料的東西 */
 function newImg(){ const i=new Image(); i.crossOrigin="anonymous"; return i; }
 const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;
@@ -3654,7 +3654,6 @@ function viewAuth(){
       <button class="btn btn-main btn-block" type="submit" ${ui.authBusy?"disabled":""}>${ui.authBusy?"登入中…":"登入"}</button>
       <button class="auth-sw" type="button" data-a="forgotPw">忘記密碼？</button>
     </form>`}
-    <button class="try-in" type="button" data-a="tryGo" data-v="menu"><span>✦</span>先玩玩看</button>
 
   </main>`;
 }
@@ -6795,7 +6794,10 @@ document.addEventListener("submit",e=>{
     else { const m2=route().m; if(meBlocked()) return; if(banBlock(text)) return; if(fanQuota(m2).left<=0){ quotaBar(); return; }
       const lastMine=[...fanRoom(m2)].reverse().find(w=>w.from==="me");
       if(lastMine&&lastMine.text.trim()===text){ toast("不要重複傳一樣的訊息喔"); return; }
-      if(/^(.)\1{5,}$/u.test(text.replace(/\s/g,""))||/^[\p{P}\p{S}\s]+$/u.test(text)&&!/\p{Extended_Pictographic}/u.test(text)){ toast("這則訊息好像沒有內容，換句話說說看吧"); return; } ui.wDraft=""; ui.scrollChat=true; fanReply(m2,text); ui.tieEmoji=false; render(); if(fanQuota(m2).left===0) quotaBar(); else { const i=document.getElementById("win"); if(i) i.focus(); } }
+      if(/^(.)\1{5,}$/u.test(text.replace(/\s/g,""))||/^[\p{P}\p{S}\s]+$/u.test(text)&&!/\p{Extended_Pictographic}/u.test(text)){ toast("這則訊息好像沒有內容，換句話說說看吧"); return; } const hadEmo=!!ui.tieEmoji; ui.wDraft=""; ui.scrollChat=true; fanReply(m2,text); ui.tieEmoji=false;
+      /* 粉絲送出：還有次數就只換訊息區（跟藝人端一樣），輸入框、鍵盤、背景都不重畫 → 不會閃 */
+      if(!hadEmo&&fanQuota(m2).left>0&&tieRoomPatch(()=>viewTieRoom(m2))) return;
+      render(); if(fanQuota(m2).left===0) quotaBar(); else { const i=document.getElementById("win"); if(i) i.focus(); } }
     return; }
   if(e.target.id==="cform"){ e.preventDefault();
     const text=(ui.cDraft||"").trim(); if(!text||!ui.sheet) return; ui.cDraft="";
@@ -7006,6 +7008,13 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
     if(close){ x.dr.style.transform="translateX(100%)"; x.w.style.background="rgba(0,0,0,0)"; ui.tieDrw=null; setTimeout(()=>{ if(layer.contains(x.w)) layer.innerHTML=""; },280); }
     else { x.dr.style.transform=""; x.w.style.background=""; setTimeout(()=>{ x.dr.style.transition=""; x.w.style.transition=""; },300); } },{passive:true});
 })();
+/* 粉絲 TIE 送出：只換訊息區和標題（標題的愛心數會變） */
+function tieRoomPatch(fn){ try{ const cur=document.querySelector(".app > main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
+  const tmp=document.createElement("div"); tmp.innerHTML=fn(); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
+  cur.innerHTML=nw.innerHTML; try{ hydrateMedia(cur); }catch(e){}
+  const oh=document.querySelector(".app > .t-rh"), nh=tmp.querySelector(".t-rh"); if(oh&&nh&&oh.innerHTML!==nh.innerHTML) oh.innerHTML=nh.innerHTML;
+  inp.value=""; inp.dispatchEvent(new Event("input",{bubbles:true}));
+  requestAnimationFrame(()=>{ if(tie2Patched(cur)) return; if(cur.classList.contains("kbbox")) cur.scrollTop=cur.scrollHeight; else { try{ tieFootPad(); }catch(e){} window.scrollTo(0,document.documentElement.scrollHeight); } }); return true; }catch(e){ return false; } }
 /* 藝人 TIE：加進待發訊息時，只更新訊息區（不重畫整頁，輸入框、鍵盤、高度都不動） */
 function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
   const tmp=document.createElement("div"); tmp.innerHTML=viewTieArtist(mid); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
@@ -8896,7 +8905,9 @@ function nameBlock(t){ if(usedName(t)){ toast("這個名稱以前有人用過，
 /* 粉絲帳號轉成藝人帳號後，舊的帳號名、名稱記在後台，誰都不能再用（避免冒充） */
 const nameKey=t=>String(t||"").normalize("NFKC").toLowerCase().replace(/[\s._\-·・]/g,"");
 const usedName=t=>{ const k=nameKey(t); return !!k&&(S.get(K.usedNames,[])||[]).some(x=>nameKey(x.v)===k); };
-function banBlock(t){ if(hasSlur(t)){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(!hasBanned(t)) return false; toast("訊息裡有禁用的字詞，沒辦法送出"); return true; }
+/* 髒話（中文、英文、韓文）：管理員的禁用字詞清單以外，這些一律擋（「幹嘛、幹部、能幹」不算） */
+const PROF_RE=/(?<![能才精主骨樹軀實苦公])幹(?![嘛麻啥什活部掉得的過練事勁線細])|操[你妳他她]|靠[北杯腰夭]|[雞機]掰|雞巴|婊子|賤[人貨]|去死|死全家|白[痴癡]|智障|他媽|[你妳]媽的|三小|屁眼|王八蛋|f+u+c+k|sh[i1!]t|b[i1!]tch|asshole|cunt|씨발|시발|ㅅㅂ|ㅆㅂ|병신|ㅂㅅ|개새끼|좆|존나|ㅈㄴ/i;
+function banBlock(t){ if(PROF_RE.test(String(t||"").replace(/\s+/g,""))){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(hasSlur(t)){ toast("訊息裡有禁用的字詞，沒辦法送出"); return true; } if(!hasBanned(t)) return false; toast("訊息裡有禁用的字詞，沒辦法送出"); return true; }
 function viewBanned(){ return `<main class="page"><section class="card studio"><span class="fld-lab">禁用字詞（一行一個）</span><label class="field th-ta"><textarea id="banTa" rows="12" placeholder="輸入文字">${esc(bannedList().join("\n"))}</textarea></label><button class="btn btn-main btn-block" data-a="banSave">儲存</button></section></main>`; }
 
 /* TIE：藝人回覆粉絲（粉絲端看不到是哪位粉絲寫的） */
@@ -12654,12 +12665,21 @@ function tie2Wrap(ms){ if(!ms) return; const k=[...ms.children]; if(k.length===1
 function tie2Sync(){ if(!tieFxOn()) return; const vv=window.visualViewport, z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, de=document.documentElement;
   const h=vv?vv.height:innerHeight, t=vv?vv.offsetTop:0; de.style.setProperty("--vvh",(h/z)+"px"); de.style.setProperty("--vvt",(t/z)+"px");
   de.classList.toggle("kb",!!vv&&vv.height<(screen.height||innerHeight)*0.75); }
-let t2raf=0; const t2q=()=>{ if(!t2raf) t2raf=requestAnimationFrame(()=>{ t2raf=0; tie2Sync(); }); };
+let t2raf=0; const t2q=()=>{ if(!t2raf) t2raf=requestAnimationFrame(()=>{ t2raf=0; tie2Sync(); tie2Anchor(); }); };
 if(window.visualViewport){ visualViewport.addEventListener("resize",t2q); visualViewport.addEventListener("scroll",t2q); }
 addEventListener("resize",t2q);
-addEventListener("scroll",()=>{ if(!tieFxOn()) return; if(scrollY) scrollTo(0,0); t2q(); },{passive:true});   /* iPhone 會把整頁往上推：推回來，框自己跟著可視區 */
-/* 記住看到哪裡（離最新一則多遠），畫面重畫後還原 */
-document.addEventListener("scroll",e=>{ const el=e.target; if(!tieFxOn()||!el||!el.matches||!el.matches("main.t-msgs")) return; T2.fe=Math.max(0,-el.scrollTop); T2.key=location.hash; },true);
+addEventListener("scroll",()=>{ if(!tieFxOn()) return; if(scrollY) scrollTo(0,0); tie2Sync(); t2q(); },{passive:true});   /* iPhone 會把整頁往上推：推回來，框馬上跟著可視區（不等下一格，才不會閃出上面一條黑） */
+/* 記住看到哪裡（離最新一則多遠），畫面重畫後還原
+   ・只有「手指在滑」的時候才記；鍵盤打開、框變矮時 iPhone 自己捲的不算 → 本來停在最新一則，鍵盤打開後還是停在最新一則（11/11 卡在舊訊息的問題） */
+T2.ut=0;
+["touchstart","touchmove","wheel"].forEach(ev=>document.addEventListener(ev,e=>{ if(e.target&&e.target.closest&&e.target.closest("main.t-msgs")) T2.ut=Date.now(); },{passive:true,capture:true}));
+function tie2Anchor(){ const ms=document.querySelector(".app > main.t-msgs"); if(!tieFxOn()||!ms) return; if(T2.fe<60){ ms.scrollTop=0; T2.fe=0; } }
+document.addEventListener("scroll",e=>{ const el=e.target; if(!tieFxOn()||!el||!el.matches||!el.matches("main.t-msgs")) return;
+  if(Date.now()-T2.ut<1500){ T2.ut=Date.now(); T2.fe=Math.max(0,-el.scrollTop); T2.key=location.hash; }   /* 手指滑（含放手後的慣性） */
+  else if(T2.fe<60&&el.scrollTop!==0) requestAnimationFrame(tie2Anchor); },true);
+/* 點輸入框、收鍵盤：鍵盤動畫期間多對幾次，最新一則一直貼在輸入列上面 */
+document.addEventListener("focusin",e=>{ if(!tieFxOn()||!e.target.closest||!e.target.closest(".t-foot")) return; [0,60,180,350,600].forEach(t=>setTimeout(()=>{ tie2Sync(); tie2Anchor(); },t)); });
+document.addEventListener("focusout",e=>{ if(!tieFxOn()||!e.target.closest||!e.target.closest(".t-foot")) return; [60,250,500].forEach(t=>setTimeout(()=>{ if(scrollY) scrollTo(0,0); tie2Sync(); tie2Anchor(); },t)); });
 /* 每次畫完：是 TIE 聊天室就套固定外殼 */
 function tie2After(pgChg,toEnd){ const ms=document.querySelector(".app > main.t-msgs"), on=TIE2()&&!!ms&&!!document.getElementById("wform"), de=document.documentElement;
   if(!on){ if(de.classList.contains("stko")&&!document.getElementById("stkDock")){ de.classList.remove("stko"); de.style.removeProperty("--stkh"); } if(de.classList.contains("tie2l")){ de.classList.remove("tie2l","kb"); de.style.removeProperty("--vvh"); de.style.removeProperty("--vvt"); } return false; }

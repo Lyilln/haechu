@@ -12,9 +12,9 @@
 <script>try{var d=matchMedia("(prefers-color-scheme: dark)").matches;document.documentElement.setAttribute("data-theme",d?"dark":"light");document.documentElement.style.colorScheme=d?"dark":"light";matchMedia("(prefers-color-scheme: dark)").addEventListener("change",function(e){document.documentElement.setAttribute("data-theme",e.matches?"dark":"light");document.documentElement.style.colorScheme=e.matches?"dark":"light";});}catch(e){}</script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Huninn&family=Jua&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="app.css" id="appcss"><!-- App 樣式的固定複製版（不跟 App 聯動） -->
 <style id="trycss">
-/* 試玩頁：樣式直接用 HAECHU 本體的（載入時從 ../app.css 拿），這裡只補試玩自己的東西 */
-html:not(.ready) body{opacity:0}html.ready body{opacity:1;transition:opacity .2s}
+/* 試玩頁：樣式是 App 的固定複製版（try/app.css），這裡只補試玩自己的東西 */
 .tz-pill{font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 10px;border-radius:999px;background:var(--violet-soft,#F1E8FF);color:var(--violet,#8843FB)}
 html[data-theme="dark"] .tz-pill{background:rgba(167,139,250,.18);color:#C4B5FD}
 .tz-hint{display:flex;gap:10px;align-items:flex-start;margin:4px 0 16px;padding:12px 14px;border-radius:16px;background:var(--violet-soft,#F1E8FF);color:var(--ink,#1D1A24);font-size:13px;line-height:1.6}
@@ -41,7 +41,6 @@ html[data-theme="dark"] .tz-sys{background:rgba(255,255,255,.06)}
 /* SNS 的貼文圖（漸層＋字） */
 .tz-pic{position:relative;width:100%;aspect-ratio:4/5;display:grid;place-items:center;color:#fff;font:700 34px/1.15 "Playfair Display",serif;text-align:center;text-shadow:0 2px 14px rgba(0,0,0,.18);white-space:pre-line}
 .sn-av.tz-av2 .dflt{background:linear-gradient(135deg,#B794FF,#FF8FC2)!important}
-.sn-heart.go{animation:tryHeart .65s ease}@keyframes tryHeart{0%{opacity:0;transform:translate(-50%,-50%) scale(.3)}30%{opacity:1;transform:translate(-50%,-50%) scale(1.15)}70%{opacity:1;transform:translate(-50%,-50%) scale(1)}100%{opacity:0;transform:translate(-50%,-50%) scale(1)}}
 /* 打歌 */
 .tz-win{display:none;margin:14px 0 0;padding:14px 16px;border-radius:18px;background:linear-gradient(135deg,#FFF4D6,#FFE1EE);color:#5B3A00;font-size:13.5px;line-height:1.6}.tz-win b{display:block;font-size:16px;margin-bottom:2px}.tz-win.on{display:block;animation:tryPop .5s cubic-bezier(.2,.9,.3,1.3)}
 html[data-theme="dark"] .tz-win{background:linear-gradient(135deg,rgba(255,200,80,.18),rgba(255,111,168,.16));color:#FFE7B0}
@@ -62,7 +61,7 @@ html[data-theme="dark"] .tz-room .t-inp{background:#2A2733!important;border-colo
 <body>
 <div id="root"></div><div id="layer"></div>
 <script src="../vendor/anime-4.5.0.min.js" async onload="window.__anReady&&__anReady()"></script>
-<script src="../feel.js?v=5e44c2e56e"></script><!-- App 的手感（彈簧、按壓、導覽列拖曳、3D 應援棒）：跟 App 同一份 -->
+<script src="feel.js"></script><!-- App 手感的固定複製版（不跟 App 聯動） -->
 <script>
 /* =========================================================
    HAECHU 試玩（獨立頁，不用登入）
@@ -78,6 +77,8 @@ const SN_VER="<i class=\"sn-v\"><svg viewBox=\"0 0 40 40\" aria-label=\"\u5df2\u
 const SN_DFAV="<svg class=\"sn-dfav\" viewBox=\"0 0 40 40\" aria-hidden=\"true\"><circle cx=\"20\" cy=\"15.6\" r=\"7.4\"/><path d=\"M4.8 38.5c1.6-8.6 7.7-13.2 15.2-13.2s13.6 4.6 15.2 13.2z\"/></svg>";
 
 const si=(k,cls="")=>`<svg class="si ${cls}" viewBox="0 0 24 24" aria-hidden="true">${SI[k]||""}</svg>`;
+/* 髒話一律擋（跟 App 同一套；媒體伺服器那邊也會再擋一次） */
+const PROF_RE=/(?<![能才精主骨樹軀實苦公])幹(?![嘛麻啥什活部掉得的過練事勁線細])|操[你妳他她]|靠[北杯腰夭]|[雞機]掰|雞巴|婊子|賤[人貨]|去死|死全家|白[痴癡]|智障|他媽|[你妳]媽的|三小|屁眼|王八蛋|f+u+c+k|sh[i1!]t|b[i1!]tch|asshole|cunt|씨발|시발|ㅅㅂ|ㅆㅂ|병신|ㅂㅅ|개새끼|좆|존나|ㅈㄴ/i;
 const IDOL={name:"LUMI",user:"lumi.official",tag:"HAECHU 示範偶像"};
 const JOIN="https://line.me/ti/g2/7iT3j2hGOM4GHpnkZeunPHVJbPUODoTZg5zA_Q";
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
@@ -88,10 +89,8 @@ function toast(t){ document.querySelectorAll(".toast").forEach(x=>x.remove()); c
   el.innerHTML=`<i class="toast-ic" aria-hidden="true"></i><span>${esc(t)}</span>`; document.body.appendChild(el); setTimeout(()=>{ el.style.transition="opacity .3s"; el.style.opacity="0"; setTimeout(()=>el.remove(),320); },2400); }
 const ST={tab:LS.get("tab","intro"),room:false,done:LS.get("done",{}),liked:{},voted:false,col:"#C7AEFF",waves:0};
 
-/* ---------- 樣式：直接用 HAECHU 本體的，試玩長得跟 App 一模一樣 ---------- */
-(async()=>{ try{ const r=await fetch("../index.html",{cache:"no-cache"}); const t=await r.text(); const m0=t.match(/href="(app\.css\?v=[^"]+)"/), app=m0?await (await fetch("../"+m0[1])).text():""; const css=app+"\n"+[...t.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join("\n");   /* App 的樣式拆成 app.css 了 */
-  const st=document.createElement("style"); st.id="appcss"; st.textContent=css; document.head.insertBefore(st,document.getElementById("trycss")); }catch(e){} document.documentElement.classList.add("ready"); })();
-setTimeout(()=>document.documentElement.classList.add("ready"),3500);
+document.documentElement.classList.add("ready");
+
 
 /* ---------- 後台（只有 TIE 用）：訊息放在 HAECHU 的媒體伺服器，訪客不用帳號 ---------- */
 const TRY_API="https://haechu-media.vinriu715.workers.dev/try/";
@@ -155,7 +154,9 @@ function snsHtml(){ return `<div class="sn"><header class="sn-top"><span class="
         <div class="sn-media"><div class="sn-car" data-dbl="${p.id}"><div class="sn-sl"><div class="tz-pic" style="background:${p.g}">${esc(p.t)}</div></div></div><i class="sn-heart" id="hh-${p.id}">${si("heart")}</i></div>
         <div class="sn-acts"><button class="${on?"liked":""}" data-like="${p.id}" aria-label="讚">${si("heart")}<b>${fmtN(p.lk+(on?1:0))}</b></button><button aria-label="留言">${si("chat")}<b>${fmtN(p.cm)}</b></button><button aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button aria-label="收藏">${si("save")}</button></div>
         <div class="sn-meta"><p><b>${IDOL.user}</b> ${esc(p.cap)}</p><small>${p.ago}前</small></div></article>`; }).join("")}</main></div>`; }
-function like(id,fromDbl){ if(fromDbl&&ST.liked[id]) return; ST.liked[id]=!ST.liked[id]; render(); if(ST.liked[id]) done("sns"); }
+function like(id,fromDbl){ if(fromDbl&&ST.liked[id]) return; ST.liked[id]=!ST.liked[id]; if(ST.liked[id]) done("sns");
+  /* 只換那顆愛心和數字，不重畫整頁（才不會跳回最上面） */
+  const b=document.querySelector(`[data-like="${id}"]`), P=POSTS.find(x=>x.id===id); if(b&&P){ b.classList.toggle("liked",!!ST.liked[id]); const n=b.querySelector("b"); if(n) n.textContent=fmtN(P.lk+(ST.liked[id]?1:0)); if(ST.liked[id]&&window.AN) try{ AN.heart(b); }catch(e){} } else render(); }
 
 /* ---------- 打歌（照 App 的音樂節目卡） ---------- */
 const MU_SHN=[["ts","THE","SHOW"],["sc","SHOW","CHAMPION"],["mcd","M","COUNTDOWN"],["mb","MUSIC","BANK"],["ink","INKI","GAYO"]];
@@ -196,12 +197,13 @@ function render(){
     <button class="btn btn-main btn-block" data-go="tie">開始</button></div></div>`; return; }
   if(ST.tab==="tie"&&ST.room){ root.innerHTML=`<div class="app no-nav">${roomHtml()}</div>`; requestAnimationFrame(scrollMsgs); const i=document.getElementById("tieIn"); if(i&&ST.draft) i.value=ST.draft; return; }
   if(!isUnl(ST.tab)) ST.tab="tie";
-  const chg=PREV_TAB!==ST.tab; PREV_TAB=ST.tab;
+  const chg=PREV_TAB!==ST.tab; PREV_TAB=ST.tab; const sc0=document.querySelector(".sn"), y0=chg?0:window.scrollY, sy0=!chg&&sc0?sc0.scrollTop:0;
   const body={tie:tieListHtml,sns:snsHtml,show:showHtml,ls:lsHtml,end:endHtml}[ST.tab]();
   root.innerHTML=`<div class="app">${body}</div>${navBar(ST.tab)}`;
   /* 跟 App 一樣：鏡片彈簧滑過去、換分頁時內容浮上來 */
   if(window.AN&&AN.ok()){ root.querySelectorAll(".nav-lens.go").forEach(L=>AN.lens(L,parseFloat(L.style.getPropertyValue("--f")),parseFloat(L.style.getPropertyValue("--i")))); if(chg) AN.page(root.querySelector(".app"),"fade"); }
-  if(ST.tab==="ls") lsMount(); }
+  if(ST.tab==="ls") lsMount();
+  if(!chg){ if(y0) window.scrollTo(0,y0); const sc=document.querySelector(".sn"); if(sc&&sy0) sc.scrollTop=sy0; } }
 let PREV_TAB=null;
 function go(k){ if(k==="room"){ ST.room=true; CH.unread=0; LS.set("chat",CH); render(); if(!CH.nick) setTimeout(nickSheet,280); return; }
   if(k==="tie"&&ST.room){ ST.room=false; render(); return; }
@@ -215,13 +217,13 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-go],[data
   if(t.dataset.show){ ST.showOpen=ST.showOpen===t.dataset.show?"_":t.dataset.show; render(); return; }
   if(t.dataset.vote){ if(ST.voted) return; ST.voted=true; done("show"); render(); toast("🏆 謝謝你的一票！"); return; }
   if(t.dataset.col){ ST.col=t.dataset.col; document.querySelectorAll("[data-col]").forEach(b=>b.classList.toggle("on",b===t)); const el=document.getElementById("lsBox"); if(el&&el._ls) el._ls.set("glow",ST.col); return; }
-  if(t.id==="nickOk"){ const v=(document.getElementById("nickIn").value||"").trim(); if(!v){ toast("先取一個暱稱"); return; } CH.nick=v; LS.set("chat",CH); layer.innerHTML=""; render(); setTimeout(()=>{ const i=document.getElementById("tieIn"); if(i) i.focus(); },50); return; }
+  if(t.id==="nickOk"){ const v=(document.getElementById("nickIn").value||"").trim(); if(!v){ toast("先取一個暱稱"); return; } if(PROF_RE.test(v.replace(/\s+/g,""))){ toast("暱稱裡有不好的字詞"); return; } CH.nick=v; LS.set("chat",CH); layer.innerHTML=""; render(); setTimeout(()=>{ const i=document.getElementById("tieIn"); if(i) i.focus(); },50); return; }
   if(t.dataset.close&&e.target===t){ layer.innerHTML=""; return; } });
 let lastTap={id:null,t:0};
 document.addEventListener("pointerup",e=>{ const p=e.target.closest("[data-dbl]"); if(!p) return; const id=p.dataset.dbl, now=Date.now();
-  if(lastTap.id===id&&now-lastTap.t<320){ lastTap={id:null,t:0}; const h=document.getElementById("hh-"+id); if(h){ h.classList.remove("go"); void h.offsetWidth; h.classList.add("go"); } setTimeout(()=>like(id,true),300); } else lastTap={id,t:now}; });
+  if(lastTap.id===id&&now-lastTap.t<320){ lastTap={id:null,t:0}; const h=document.getElementById("hh-"+id); if(h){ h.classList.remove("pop"); void h.offsetWidth; h.classList.add("pop"); } setTimeout(()=>like(id,true),300); } else lastTap={id,t:now}; });
 document.addEventListener("input",e=>{ if(e.target.id!=="tieIn") return; ST.draft=e.target.value; const b=document.getElementById("tieSend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); });
-document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; i.value=""; ST.draft=""; done("tie"); sendMsg(v); });
+document.addEventListener("submit",e=>{ if(e.target.id!=="tieF") return; e.preventDefault(); if(!CH.nick){ nickSheet(); return; } const i=document.getElementById("tieIn"), v=(i.value||"").trim(); if(!v) return; if(PROF_RE.test(v.replace(/\s+/g,""))){ toast("訊息裡有不好的字詞，換句話說說看吧"); return; } i.value=""; ST.draft=""; done("tie"); sendMsg(v); });
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden) poll(); });
 if(CH.msgs.length){ startPoll(); poll(); }
 render();

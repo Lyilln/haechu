@@ -85,7 +85,10 @@ document.addEventListener("submit",e=>{
     else { const m2=route().m; if(meBlocked()) return; if(banBlock(text)) return; if(fanQuota(m2).left<=0){ quotaBar(); return; }
       const lastMine=[...fanRoom(m2)].reverse().find(w=>w.from==="me");
       if(lastMine&&lastMine.text.trim()===text){ toast("不要重複傳一樣的訊息喔"); return; }
-      if(/^(.)\1{5,}$/u.test(text.replace(/\s/g,""))||/^[\p{P}\p{S}\s]+$/u.test(text)&&!/\p{Extended_Pictographic}/u.test(text)){ toast("這則訊息好像沒有內容，換句話說說看吧"); return; } ui.wDraft=""; ui.scrollChat=true; fanReply(m2,text); ui.tieEmoji=false; render(); if(fanQuota(m2).left===0) quotaBar(); else { const i=document.getElementById("win"); if(i) i.focus(); } }
+      if(/^(.)\1{5,}$/u.test(text.replace(/\s/g,""))||/^[\p{P}\p{S}\s]+$/u.test(text)&&!/\p{Extended_Pictographic}/u.test(text)){ toast("這則訊息好像沒有內容，換句話說說看吧"); return; } const hadEmo=!!ui.tieEmoji; ui.wDraft=""; ui.scrollChat=true; fanReply(m2,text); ui.tieEmoji=false;
+      /* 粉絲送出：還有次數就只換訊息區（跟藝人端一樣），輸入框、鍵盤、背景都不重畫 → 不會閃 */
+      if(!hadEmo&&fanQuota(m2).left>0&&tieRoomPatch(()=>viewTieRoom(m2))) return;
+      render(); if(fanQuota(m2).left===0) quotaBar(); else { const i=document.getElementById("win"); if(i) i.focus(); } }
     return; }
   if(e.target.id==="cform"){ e.preventDefault();
     const text=(ui.cDraft||"").trim(); if(!text||!ui.sheet) return; ui.cDraft="";
@@ -296,6 +299,13 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
     if(close){ x.dr.style.transform="translateX(100%)"; x.w.style.background="rgba(0,0,0,0)"; ui.tieDrw=null; setTimeout(()=>{ if(layer.contains(x.w)) layer.innerHTML=""; },280); }
     else { x.dr.style.transform=""; x.w.style.background=""; setTimeout(()=>{ x.dr.style.transition=""; x.w.style.transition=""; },300); } },{passive:true});
 })();
+/* 粉絲 TIE 送出：只換訊息區和標題（標題的愛心數會變） */
+function tieRoomPatch(fn){ try{ const cur=document.querySelector(".app > main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
+  const tmp=document.createElement("div"); tmp.innerHTML=fn(); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
+  cur.innerHTML=nw.innerHTML; try{ hydrateMedia(cur); }catch(e){}
+  const oh=document.querySelector(".app > .t-rh"), nh=tmp.querySelector(".t-rh"); if(oh&&nh&&oh.innerHTML!==nh.innerHTML) oh.innerHTML=nh.innerHTML;
+  inp.value=""; inp.dispatchEvent(new Event("input",{bubbles:true}));
+  requestAnimationFrame(()=>{ if(tie2Patched(cur)) return; if(cur.classList.contains("kbbox")) cur.scrollTop=cur.scrollHeight; else { try{ tieFootPad(); }catch(e){} window.scrollTo(0,document.documentElement.scrollHeight); } }); return true; }catch(e){ return false; } }
 /* 藝人 TIE：加進待發訊息時，只更新訊息區（不重畫整頁，輸入框、鍵盤、高度都不動） */
 function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
   const tmp=document.createElement("div"); tmp.innerHTML=viewTieArtist(mid); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;

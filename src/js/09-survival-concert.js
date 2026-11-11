@@ -798,7 +798,6 @@ function viewAuth(){
       <button class="btn btn-main btn-block" type="submit" ${ui.authBusy?"disabled":""}>${ui.authBusy?"登入中…":"登入"}</button>
       <button class="auth-sw" type="button" data-a="forgotPw">忘記密碼？</button>
     </form>`}
-    <button class="try-in" type="button" data-a="tryGo" data-v="menu"><span>✦</span>先玩玩看</button>
 
   </main>`;
 }

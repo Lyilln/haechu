@@ -1,5 +1,5 @@
 /* HAECHU｜手感（App 和試玩頁共用）：動畫彈簧、按壓回饋、液態玻璃導覽列拖曳、3D 應援棒
-   ・這個檔案也會單獨輸出成 feel.js 給試玩頁（try/）用，兩邊的手感永遠一樣
+   ・試玩頁（try/）用的是當時複製過去的固定版本，這裡改了不會影響試玩
    ・只放不靠 App 資料的東西 */
 function newImg(){ const i=new Image(); i.crossOrigin="anonymous"; return i; }
 const ZM=()=>parseFloat(document.documentElement.style.zoom)||1;

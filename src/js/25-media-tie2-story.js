@@ -227,12 +227,21 @@ function tie2Wrap(ms){ if(!ms) return; const k=[...ms.children]; if(k.length===1
 function tie2Sync(){ if(!tieFxOn()) return; const vv=window.visualViewport, z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, de=document.documentElement;
   const h=vv?vv.height:innerHeight, t=vv?vv.offsetTop:0; de.style.setProperty("--vvh",(h/z)+"px"); de.style.setProperty("--vvt",(t/z)+"px");
   de.classList.toggle("kb",!!vv&&vv.height<(screen.height||innerHeight)*0.75); }
-let t2raf=0; const t2q=()=>{ if(!t2raf) t2raf=requestAnimationFrame(()=>{ t2raf=0; tie2Sync(); }); };
+let t2raf=0; const t2q=()=>{ if(!t2raf) t2raf=requestAnimationFrame(()=>{ t2raf=0; tie2Sync(); tie2Anchor(); }); };
 if(window.visualViewport){ visualViewport.addEventListener("resize",t2q); visualViewport.addEventListener("scroll",t2q); }
 addEventListener("resize",t2q);
-addEventListener("scroll",()=>{ if(!tieFxOn()) return; if(scrollY) scrollTo(0,0); t2q(); },{passive:true});   /* iPhone 會把整頁往上推：推回來，框自己跟著可視區 */
-/* 記住看到哪裡（離最新一則多遠），畫面重畫後還原 */
-document.addEventListener("scroll",e=>{ const el=e.target; if(!tieFxOn()||!el||!el.matches||!el.matches("main.t-msgs")) return; T2.fe=Math.max(0,-el.scrollTop); T2.key=location.hash; },true);
+addEventListener("scroll",()=>{ if(!tieFxOn()) return; if(scrollY) scrollTo(0,0); tie2Sync(); t2q(); },{passive:true});   /* iPhone 會把整頁往上推：推回來，框馬上跟著可視區（不等下一格，才不會閃出上面一條黑） */
+/* 記住看到哪裡（離最新一則多遠），畫面重畫後還原
+   ・只有「手指在滑」的時候才記；鍵盤打開、框變矮時 iPhone 自己捲的不算 → 本來停在最新一則，鍵盤打開後還是停在最新一則（11/11 卡在舊訊息的問題） */
+T2.ut=0;
+["touchstart","touchmove","wheel"].forEach(ev=>document.addEventListener(ev,e=>{ if(e.target&&e.target.closest&&e.target.closest("main.t-msgs")) T2.ut=Date.now(); },{passive:true,capture:true}));
+function tie2Anchor(){ const ms=document.querySelector(".app > main.t-msgs"); if(!tieFxOn()||!ms) return; if(T2.fe<60){ ms.scrollTop=0; T2.fe=0; } }
+document.addEventListener("scroll",e=>{ const el=e.target; if(!tieFxOn()||!el||!el.matches||!el.matches("main.t-msgs")) return;
+  if(Date.now()-T2.ut<1500){ T2.ut=Date.now(); T2.fe=Math.max(0,-el.scrollTop); T2.key=location.hash; }   /* 手指滑（含放手後的慣性） */
+  else if(T2.fe<60&&el.scrollTop!==0) requestAnimationFrame(tie2Anchor); },true);
+/* 點輸入框、收鍵盤：鍵盤動畫期間多對幾次，最新一則一直貼在輸入列上面 */
+document.addEventListener("focusin",e=>{ if(!tieFxOn()||!e.target.closest||!e.target.closest(".t-foot")) return; [0,60,180,350,600].forEach(t=>setTimeout(()=>{ tie2Sync(); tie2Anchor(); },t)); });
+document.addEventListener("focusout",e=>{ if(!tieFxOn()||!e.target.closest||!e.target.closest(".t-foot")) return; [60,250,500].forEach(t=>setTimeout(()=>{ if(scrollY) scrollTo(0,0); tie2Sync(); tie2Anchor(); },t)); });
 /* 每次畫完：是 TIE 聊天室就套固定外殼 */
 function tie2After(pgChg,toEnd){ const ms=document.querySelector(".app > main.t-msgs"), on=TIE2()&&!!ms&&!!document.getElementById("wform"), de=document.documentElement;
   if(!on){ if(de.classList.contains("stko")&&!document.getElementById("stkDock")){ de.classList.remove("stko"); de.style.removeProperty("--stkh"); } if(de.classList.contains("tie2l")){ de.classList.remove("tie2l","kb"); de.style.removeProperty("--vvh"); de.style.removeProperty("--vvt"); } return false; }

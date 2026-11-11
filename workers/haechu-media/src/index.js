@@ -100,8 +100,10 @@ export default {
         if (allowed && origin !== allowed) return reply({ error: "origin" }, 403);
         let b; try { b = await req.json(); } catch (e) { return reply({ error: "json" }, 400); }
         const nick = clean(b && b.nick).slice(0, 12);
+        const PROF = /(?<![能才精主骨樹軀實苦公])幹(?![嘛麻啥什活部掉得的過練事勁線細])|操[你妳他她]|靠[北杯腰夭]|[雞機]掰|雞巴|婊子|賤[人貨]|去死|死全家|白[痴癡]|智障|他媽|[你妳]媽的|三小|屁眼|王八蛋|f+u+c+k|sh[i1!]t|b[i1!]tch|asshole|cunt|씨발|시발|ㅅㅂ|ㅆㅂ|병신|ㅂㅅ|개새끼|좆|존나|ㅈㄴ/i;   // 髒話：試玩頁擋過了，這裡再擋一次（直接打 API 也送不進來）
+        if (PROF.test(nick.replace(/\s+/g, ""))) return reply({ error: "profane" }, 400);
         const inc = (Array.isArray(b && b.msgs) ? b.msgs : []).filter(m => m && m.from === "fan" && typeof m.id === "string" && /^[a-z0-9]{4,24}$/.test(m.id)).slice(-20)
-          .map(m => ({ id: m.id, from: "fan", text: clean(m.text).slice(0, 300), ts: Math.min(Number(m.ts) || Date.now(), Date.now()) })).filter(m => m.text);
+          .map(m => ({ id: m.id, from: "fan", text: clean(m.text).slice(0, 300), ts: Math.min(Number(m.ts) || Date.now(), Date.now()) })).filter(m => m.text && !PROF.test(m.text.replace(/\s+/g, "")));
         let ping = null;
         const res = await update(k, v => {
           const have = new Set((v.msgs || []).map(m => m.id)), add = inc.filter(m => !have.has(m.id));
