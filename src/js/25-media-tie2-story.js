@@ -324,15 +324,39 @@ function steStageEvents(){ const st=steEl(); if(!st) return; const P=new Map(); 
 function steTextOpen(i){ const it=i!=null?STE.items[i]:null; STE.edit=i!=null?i:null; if(it){ STE.col=it.col; STE.font=it.font; STE.bg=it.bg; STE.al=it.al; STE.fx=it.fx||""; }
   const p=document.getElementById("stePanel"); if(!p) return; p.className="ste-panel txtp on";
   p.innerHTML=`<div class="ste-ptop"><button class="ste-chip" data-a="snEdFont">${STE_FONT[STE.font][0]}</button><button class="ste-chip ${STE.bg?"on":""}" data-a="snEdBgT" aria-label="文字底色"><b>A</b></button><button class="ste-chip ${STE.fx?"on":""}" data-a="snEdFx">${STE_FX.find(f=>f[0]===(STE.fx||""))[1]}</button><button class="ste-chip" data-a="snEdAlign" aria-label="對齊">${STE.al==="center"?"置中":STE.al==="left"?"靠左":"靠右"}</button><span class="sn-sp"></span><button class="ste-done" data-a="snEdTextOk">完成</button></div>
-    <textarea id="steTxt" class="ste-ta al-${STE.al}" rows="3" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea>
+    <div class="ste-mid"><textarea id="steTxt" class="ste-ta al-${STE.al}" rows="1" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea></div>
     <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.col?"on":""}" data-a="snEdCol" data-v="${c}" style="background:${c}" aria-label="顏色"></button>`).join("")}</div>`;
-  setTimeout(()=>{ const t=document.getElementById("steTxt"); if(t){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } },60); }
+  steTapKeep(p); const t0=document.getElementById("steTxt"); if(t0){ t0.addEventListener("input",()=>steTaGrow(t0)); steTaGrow(t0); }
+  steKbFit(); setTimeout(()=>{ const t=document.getElementById("steTxt"); if(t){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } },60); }
+/* 字框跟著字長高（不再整片撐滿 → 字在畫面中間，不會頂在最上面） */
+function steTaGrow(t){ t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,innerHeight*.45)+"px"; }
+/* 打字面板＝鍵盤上方看得到的那一塊（App 有 zoom，先量 1px 畫出來多大再換算；跟留言頁同一招） */
+function steKbFit(){ const p=document.getElementById("stePanel"), vv=window.visualViewport; if(!p||!vv||!p.classList.contains("txtp")) { if(p){ p.style.top=""; p.style.height=""; p.style.bottom=""; } return; }
+  p.style.bottom="auto"; p.style.top="0px"; p.style.height="1000px"; const r=p.getBoundingClientRect(), k=r.height/1000||1, t0=r.top/k;
+  p.style.top=(vv.offsetTop/k-t0)+"px"; p.style.height=(vv.height/k)+"px"; }
+if(window.visualViewport){ let q=0; const f=()=>{ if(q) return; q=requestAnimationFrame(()=>{ q=0; steKbFit(); }); }; visualViewport.addEventListener("resize",f); visualViewport.addEventListener("scroll",f); }
+/* iPhone：手指點顏色／按鈕時，字框不能失去焦點（失焦 → 鍵盤收起、畫面跳，點的那一下就落空，顏色換不了）。
+   自己判斷「是點、不是在滑顏色列」→ 擋掉系統的失焦，直接觸發那顆按鈕 */
+function steTapKeep(p){ if(p._tk) return; p._tk=1; let b=null, x0=0, y0=0;
+  p.addEventListener("touchstart",e=>{ b=e.target.closest&&e.target.closest("button"); if(b&&!p.contains(b)) b=null; const t=e.touches[0]; x0=t.clientX; y0=t.clientY; },{passive:true});
+  p.addEventListener("touchmove",e=>{ const t=e.touches[0]; if(b&&(Math.abs(t.clientX-x0)>8||Math.abs(t.clientY-y0)>8)) b=null; },{passive:true});
+  p.addEventListener("touchend",e=>{ if(!b||!p.classList.contains("txtp")) { b=null; return; } const x=b; b=null; e.preventDefault(); x.click(); });
+  p.addEventListener("mousedown",e=>{ if(p.classList.contains("txtp")&&e.target.closest("button")) e.preventDefault(); }); }
 function steTextOk(){ const t=document.getElementById("steTxt"), v=((t||{}).value||"").replace(/\s+$/,""), p=document.getElementById("stePanel");
   if(v&&!isAdminAcct()&&banBlock(v)) return;
   if(STE.edit!=null){ const it=STE.items[STE.edit]; if(v) Object.assign(it,{txt:v,col:STE.col,font:STE.font,bg:STE.bg,al:STE.al,fx:STE.fx||""}); else STE.items.splice(STE.edit,1); }
   else if(v) STE.items.push({t:"txt",txt:v,col:STE.col,font:STE.font,bg:STE.bg,al:STE.al,fx:STE.fx||"",x:.5,y:.42,s:1,r:0});
-  STE.edit=null; if(p){ p.className="ste-panel"; p.innerHTML=""; } if(t) t.blur(); steRender(); }
-function steTextRefresh(){ const t=document.getElementById("steTxt"); if(!t) return; const v=t.value, i=STE.edit; steTextOpen(i); const t2=document.getElementById("steTxt"); if(t2) t2.value=v; }
+  STE.edit=null; if(p){ p.className="ste-panel"; p.innerHTML=""; } steKbFit(); if(t) t.blur(); steRender(); }
+/* 換顏色／字型／底色／效果／對齊：原地改，不重畫面板（重畫會讓 iPhone 鍵盤收起又彈出） */
+function steTextRefresh(){ const t=document.getElementById("steTxt"), p=document.getElementById("stePanel"); if(!t||!p) return;
+  t.style.font=STE_FONT[STE.font][1]; t.style.color=STE.bg?"#fff":STE.col; t.className="ste-ta al-"+STE.al; steTaGrow(t);
+  const c=q=>p.querySelector(`[data-a="${q}"]`), fx=STE_FX.find(f=>f[0]===(STE.fx||""));
+  if(c("snEdFont")) c("snEdFont").textContent=STE_FONT[STE.font][0];
+  if(c("snEdBgT")) c("snEdBgT").classList.toggle("on",!!STE.bg);
+  if(c("snEdFx")){ c("snEdFx").textContent=fx?fx[1]:"無效果"; c("snEdFx").classList.toggle("on",!!STE.fx); }
+  if(c("snEdAlign")) c("snEdAlign").textContent=STE.al==="center"?"置中":STE.al==="left"?"靠左":"靠右";
+  p.querySelectorAll('[data-a="snEdCol"]').forEach(b=>b.classList.toggle("on",b.dataset.v===STE.col));
+  if(document.activeElement!==t) t.focus(); }
 /* ---- 貼圖 ---- */
 function steStkOpen(){ const p=document.getElementById("stePanel"); if(!p) return; const tab=STK_SP.includes(ui.stkTab)?ui.stkTab:"cat"; p.className="ste-panel stkp on";
   p.innerHTML=`<i class="stk-grab"></i><div class="stk-tabs">${STK_SP.map(sp=>`<button class="${sp===tab?"on":""}" data-a="snEdStkTab" data-v="${sp}"><img src="${stkUrl(sp,"hi")}" alt=""></button>`).join("")}<span class="sn-sp"></span><button class="ste-done" data-a="snEdPanelX">完成</button></div>
