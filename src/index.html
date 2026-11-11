@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-Hant" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+<title>HAECHU</title>
+<meta name="copyright" content="© 2026 HAECHU. All rights reserved.">
+<!-- © 2026 HAECHU. All rights reserved. 本程式的設計、介面與內容受著作權保護，未經授權禁止複製、修改、轉作他用或散布。 -->
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="favicon-32.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HAECHU">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<!-- 啟動畫面（iPhone 從主畫面打開時，一點開就顯示；各尺寸各一張） -->
+<link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1290x2796.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1179x2556.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 402px) and (device-height: 874px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1206x2622.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 440px) and (device-height: 956px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1320x2868.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1284x2778.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1170x2532.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1125x2436.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1242x2688.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash-v2-828x1792.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash-v2-750x1334.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="splash-v2-1242x2208.png">
+<link rel="apple-touch-startup-image" media="screen and (device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="splash-v2-640x1136.png">
+<script>(function(){function z(){var w=Math.min(window.innerWidth||390,screen.width||9999);var v=Math.max(.8,Math.min(.92,w/440));v=Math.round(v*1000)/1000;if(/\/sns(\?|$)/.test(location.hash))v=1;if(parseFloat(document.documentElement.style.zoom)!==v){document.documentElement.style.zoom=v;document.documentElement.style.setProperty("--zm",v);}}z();addEventListener("resize",z);addEventListener("hashchange",z);addEventListener("orientationchange",function(){setTimeout(z,300)});})();</script>
+<script>try{var m=JSON.parse(localStorage.getItem("daisuki_theme")||'"system"');var d=m==="dark"||(m==="system"&&matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.setAttribute("data-theme",d?"dark":"light");document.documentElement.style.colorScheme=d?"dark":"light";}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cherry+Bomb+One&family=Playfair+Display:ital,wght@0,600;0,700;1,600;1,700&family=Huninn&family=Jua&family=Quicksand:wght@500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="{{CSS}}" data-app>
+</head>
+<body>
+<!-- 開場畫面：App 完全關掉後重新打開才出現（跟上面的啟動圖長得一樣，接起來看不出縫） -->
+<div id="hcSplash" aria-hidden="true"><i class="hs-glow"></i><i class="hs-shine"></i></div>
+<style>/* 開場畫面：直接用 iPhone 啟動圖那張（字的位置、顏色一模一樣，接起來不會跳），上面加一點點光在動 */
+#hcSplash{position:fixed;inset:0;z-index:2147483000;overflow:hidden;zoom:normal;background:url("splash-v2-1179x2556.png") center/cover no-repeat,linear-gradient(160deg,#D6C4FF,#A780FF);transition:opacity .4s ease}
+#hcSplash .hs-glow{position:absolute;left:-20%;right:-20%;bottom:-10%;height:30%;border-radius:50%;background:radial-gradient(closest-side,rgba(246,240,255,.75),rgba(246,240,255,0));mix-blend-mode:screen;animation:hsGlow 2.4s ease-in-out infinite alternate}
+#hcSplash .hs-shine{position:absolute;inset:0;background:linear-gradient(105deg,transparent 35%,rgba(255,255,255,.28) 50%,transparent 65%);background-size:250% 100%;mix-blend-mode:screen;animation:hsShine 2.2s ease-in-out .2s infinite}
+@keyframes hsGlow{from{opacity:.35;transform:translateX(-5%)}to{opacity:.85;transform:translateX(5%)}}
+@keyframes hsShine{from{background-position:120% 0}to{background-position:-20% 0}}
+@media (prefers-reduced-motion:reduce){#hcSplash i{animation:none}}</style>
+<script>(function(){ var el=document.getElementById("hcSplash"); try{ if(sessionStorage.getItem("hc_spl")){ el.remove(); return; } sessionStorage.setItem("hc_spl","1"); }catch(e){}
+  var t0=Date.now(); function off(){ if(!el.isConnected) return; setTimeout(function(){ el.style.opacity="0"; setTimeout(function(){ el.remove(); },420); },Math.max(0,1100-(Date.now()-t0))); }
+  document.addEventListener("DOMContentLoaded",function(){ requestAnimationFrame(off); }); setTimeout(off,4000); })();</script>
+<div class="bg" aria-hidden="true"><div class="orb o1"></div><div class="orb o2"></div><div class="orb o3"></div><div class="orb o4"></div><div class="bub" style="left:6%;top:12%;width:46px;height:46px;animation-delay:0s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7) 0%,rgba(165,180,252,.25) 55%)"></div><div class="bub" style="left:82%;top:8%;width:60px;height:60px;animation-delay:1.2s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7) 0%,rgba(249,168,212,.22) 55%)"></div><div class="bub" style="left:12%;top:58%;width:36px;height:36px;animation-delay:2s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7) 0%,rgba(196,181,253,.28) 55%)"></div><div class="bub" style="left:88%;top:52%;width:42px;height:42px;animation-delay:.6s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7) 0%,rgba(165,180,252,.2) 55%)"></div><div class="bub" style="left:70%;top:82%;width:54px;height:54px;animation-delay:1.6s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7) 0%,rgba(249,168,212,.18) 55%)"></div><div class="bub" style="left:25%;top:88%;width:30px;height:30px;animation-delay:2.4s;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.7) 0%,rgba(196,181,253,.25) 55%)"></div><span class="spark" style="left:18%;top:22%;animation-delay:0s">✨</span><span class="spark" style="left:76%;top:30%;animation-delay:1s">✨</span><span class="spark" style="left:55%;top:6%;animation-delay:2s">✨</span><span class="spark" style="left:90%;top:70%;animation-delay:.4s">✨</span><span class="spark" style="left:8%;top:72%;animation-delay:1.8s">✨</span></div>
+<div id="root"></div>
+<div id="layer"></div>
+<script src="vendor/anime-4.5.0.min.js" async onload="window.__anReady&&__anReady()"></script>
+<script src="{{JS}}"></script>
+</body>
+</html>

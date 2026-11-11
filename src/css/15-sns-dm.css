@@ -1,0 +1,49 @@
+/* HAECHU｜SNS 私訊聊天室 */
+/* ===== SNS 私訊聊天室：照 Instagram ===== */
+.sn-dmtop{gap:6px!important}.sn-dmtop .sn-hu{min-width:0;gap:10px}.sn-dmtop .sn-pu b{display:flex;align-items:center;gap:3px;font-size:15px}.sn-dmtop .sn-pu small{font-size:12px;color:var(--s)}
+.sn-chv{display:inline-grid;transform:rotate(-90deg);opacity:.7}.sn-chv.dn{transform:none;margin-left:4px;opacity:1}.sn-un{display:flex;align-items:center}.sn-chv .si{width:13px;height:13px}
+.sn-gb{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;border:0;color:var(--t);background:color-mix(in srgb,var(--t) 8%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}.sn-gb .si{width:22px;height:22px}
+.sn-thread-b{gap:2px!important;padding:6px 12px calc(env(safe-area-inset-bottom,0px) + 86px)!important}
+.sn-dmhead{display:flex;flex-direction:column;align-items:center;gap:4px;padding:22px 0 26px;text-align:center}.sn-dmhead b{display:flex;align-items:center;gap:3px;font-size:17px;margin-top:8px}.sn-dmhead small{font-size:13px;color:var(--s)}
+.sn-dmhead button{margin-top:10px;border:0;border-radius:9px;padding:7px 14px;font:inherit;font-size:13.5px;font-weight:600;color:var(--t);background:color-mix(in srgb,var(--t) 10%,transparent)}
+.sn-dts{align-self:center;margin:16px 0 8px;font-size:11.5px;font-weight:600;color:var(--s)}
+.sn-brow{display:flex;align-items:flex-end;gap:8px;max-width:100%}.sn-brow.me{justify-content:flex-end}.sn-brow.last{margin-bottom:8px}
+.sn-bav{flex:none;width:28px;height:28px}
+.sn-brow .sn-bub{align-self:auto!important;max-width:72%;padding:9px 14px!important;border-radius:22px!important;font-size:15.5px!important;line-height:1.35!important}
+.sn-brow:not(.me) .sn-bub:not(.pic){background:#EFEFEF!important;color:#000}html[data-theme="dark"] .sn-brow:not(.me) .sn-bub:not(.pic),.sn.dark .sn-brow:not(.me) .sn-bub:not(.pic){background:#262626!important;color:#F5F5F5}
+.sn-brow.me .sn-bub:not(.pic){background:linear-gradient(160deg,#A43DF7 0%,#7A47FA 55%,#5B54FF 100%)!important;color:#fff}
+.sn-dmf.ig{display:block!important;padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 10px)!important;background:var(--b)}
+.sn-dmp{display:flex;align-items:flex-end;gap:6px;min-height:44px;padding:5px 6px 5px 5px;border-radius:24px;background:#EFEFEF}html[data-theme="dark"] .sn-dmp{background:#262626}
+.sn-dmp .sn-dmpic{width:34px;height:34px;flex:none;background:#0095F6;align-self:flex-end}.sn-dmp .sn-dmpic .si{width:18px;height:18px}
+.sn-dmp textarea{flex:1;min-width:0;border:0;outline:0;background:transparent;resize:none;font:inherit;font-size:15.5px;line-height:22px;padding:6px 4px;color:var(--t);max-height:120px}
+.sn-dmp textarea::placeholder{color:var(--s)}
+.sn-dmic{display:flex;align-items:center;gap:2px;flex:none;align-self:center}.sn-dmic button,.sn-dmic label{width:32px;height:32px;display:grid;place-items:center;border:0;background:none;color:var(--t);padding:0}.sn-dmic .si{width:23px;height:23px}.sn-dmic input{display:none}
+.sn-dmsend{display:none;flex:none;width:34px;height:34px;border-radius:50%;border:0;background:linear-gradient(160deg,#A43DF7,#5B54FF);color:#fff;place-items:center;align-self:flex-end}.sn-dmsend .si{width:18px;height:18px;stroke-width:2.4}
+.sn-dmp:has(textarea:not(:placeholder-shown)) .sn-dmic{display:none}.sn-dmp:has(textarea:not(:placeholder-shown)) .sn-dmsend{display:grid}
+
+/* SNS 個人檔案（照 Instagram）：分頁的線短短的在圖示下面；分類灰字；共同追蹤 */
+.sn-pt{border-top:0!important}.sn-pt button{position:relative;border-bottom:0!important;height:46px!important}.sn-pt button .si{width:25px;height:25px}
+.sn-pt button.on::after{content:"";position:absolute;left:50%;bottom:0;width:48%;height:1.5px;transform:translateX(-50%);background:var(--t);border-radius:1px}
+.sn-pt{box-shadow:inset 0 -.5px 0 var(--l)}
+.sn-cat{margin:0 0 1px!important;color:var(--s)!important;font-size:13.5px}
+.sn-mut{font-size:13px!important;gap:10px!important;margin-top:10px!important}.sn-mut .sn-lbav>*{margin-left:-8px}.sn-mut .sn-lbav>*:first-child{margin-left:0}
+.sn-bi.on{background:var(--t)!important;color:var(--b)!important}
+
+/* Reels（照 Instagram）：右邊愛心、留言、轉發、分享、收藏都有數字；帳號名字不要框 */
+.sn-rbu .sn-hu{border:0!important;padding:0!important;border-radius:0!important;gap:10px!important;font-size:14px!important}.sn-rbu .sn-hu b{font-weight:700}
+.sn-rr{gap:16px!important}.sn-rr small{font-size:12.5px!important;font-weight:600;min-height:0}.sn-rr small:empty{display:none}
+.sn-rr button.rpd .si{stroke:#2ED158}
+
+.sn-top.sn-dmtop{min-height:56px;height:auto!important;padding-top:6px!important;padding-bottom:6px!important;align-items:center}
+.sn-dmtop .sn-pu{min-width:0;display:flex;flex-direction:column;gap:1px;line-height:1.2}.sn-dmtop .sn-pu b,.sn-dmtop .sn-pu small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sn-dmp textarea.ag,.sn-dmp textarea{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;height:auto;min-height:34px}
+.sn-dmf.ig .sn-dmp button.sn-dmsend{width:34px!important;height:34px!important;padding:0!important;border-radius:50%!important;background:linear-gradient(160deg,#A43DF7,#5B54FF)!important;color:#fff!important;font-size:0}
+.sn-dmf.ig .sn-dmp button.sn-dmsend .si{width:18px;height:18px;stroke:#fff}
+.sn-dmf.ig .sn-dmic button{color:var(--t)!important;background:none!important;padding:0!important;font-size:0}
+
+.sn-rbu .sn-rfb{border:1px solid rgba(255,255,255,.85)!important;background:none!important;color:#fff!important;border-radius:9px!important;padding:5px 12px!important;font:inherit!important;font-size:14px!important;font-weight:700!important;line-height:1.2}
+.sn-rbu .sn-hu .sn-v{margin-left:3px}
+
+.pd.kb{transition:none!important;animation:none!important;box-shadow:0 0 0 100vmax var(--bg)}   /* 鍵盤滑上來時，頁面外圍也用同色鋪滿，不會透出後面的藝人頁 */
+.ios-w.stk{position:fixed;inset:0;z-index:95}
+.pd-c.lp-on{background:color-mix(in srgb,var(--violet,#8843FB) 10%,transparent);transition:background .2s}
