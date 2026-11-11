@@ -2585,6 +2585,21 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .st-r{display:flex;gap:8px;align-items:center}
 .st-in{flex:1;min-width:0;border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:inherit;font-size:14px;background:var(--s1);color:var(--ink)}
 
+/* 管理員：店家清單（11/11 改版：顏色頭像、名字直接改、看得到用在幾張專輯） */
+.sto-list{padding:4px 0;overflow:hidden}
+.sto-card{display:flex;align-items:center;gap:12px;padding:12px 14px 12px 16px;border-bottom:1px solid var(--line,rgba(127,127,127,.15))}
+.sto-av{flex:none;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;font-weight:800;font-size:18px;color:#fff;background:linear-gradient(140deg,var(--c),color-mix(in srgb,var(--c) 55%,#1a1424));box-shadow:0 4px 14px color-mix(in srgb,var(--c) 35%,transparent)}
+.sto-b{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sto-b .st-in.sto-in{height:auto;width:100%;border:0;background:transparent;color:var(--ink);font:inherit;font-size:16px;font-weight:700;padding:2px 0;border-radius:6px;outline:none}
+.sto-b .st-in.sto-in:focus{background:rgba(127,127,127,.12);padding:2px 6px;margin:0 -6px}
+.sto-b small{color:var(--ink-3);font-size:12.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sto-del{flex:none;width:36px;height:36px;border-radius:50%;border:0;background:transparent;color:var(--ink-3);display:grid;place-items:center}
+.sto-del svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.sto-del:active{background:rgba(255,59,48,.14);color:#FF453A}
+.sto-add{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;border:0;background:transparent;color:var(--accent,#A78BFA);font:inherit;font-size:15px;font-weight:700;text-align:left}
+.sto-add span{width:42px;height:42px;border-radius:13px;border:1.5px dashed currentColor;display:grid;place-items:center;font-size:20px;font-weight:500;opacity:.85}
+.sto-note{margin:8px 6px 4px;color:var(--ink-3);font-size:12.5px}
+
 /* HAECHU｜團體社群頁、藝人個人頁 */
 /* ===== 團體社群頁（每團有自己的代表色 --gt） ===== */
 .gcm,.tiei{--wk:#fff}

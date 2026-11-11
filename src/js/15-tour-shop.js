@@ -317,13 +317,12 @@ function focFold(key,ic,title,tiles){ const open=!!focFoldGet()[key], n=(tiles.m
   return `<button class="section-h foc-fold ${open?"open":""}" data-a="focFold" data-v="${key}" aria-expanded="${open}">${hi(ic)}${title}<span class="foc-fold-r">${hot&&!open?`<i class="seg-dot"></i>`:""}${open?"收起":n+" 項"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<div class="tiles">${tiles}</div>`:""}`; }
 function viewAdmin(tab){
   if(isUni()){
-    if(tab==="revenue") return uniHead("積分",`<button class="icon-btn" data-a="uniGo" data-v="#/admin?tab=ptadd" aria-label="加積分">＋</button>`)+viewPointsAdmin();
     if(tab==="home"||!tab) return viewUniTodo();
     if(tab==="people"||tab==="artist") return viewUniArtist();
     if(tab==="ops"||tab==="shopadm") return viewUniOps();
     if(tab==="try"){ tryFetch(true); return uniHead("試玩訊息")+viewTryInbox(); }
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
-    if(tab==="ptadd") return uniHead("加積分")+viewPtAdd();
+    if(tab==="ptadd"||tab==="revenue") return uniHead("加積分")+viewPtAdd()+`<main class="page pt-share-w"><button class="uni-row" data-a="ptShare"><span>藝人分得比例</span><small>${revShare()}%</small>${UI_S.chev}</button></main>`;
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
     if(tab==="debut") return uniHead("出道申請")+debutAdmHtml();
     if(tab==="cbreq") return uniHead("回歸申請")+cbrAdmHtml();
@@ -342,9 +341,6 @@ function viewAdmin(tab){
         ${(()=>{ const PH=S.get(PIN_HIDE,{})||{}, cp=coPinList().filter(x=>!PH[x.id]).sort((a,b)=>b.ts-a.ts); return `<div class="section-h">公司官方公告（置頂中）<span class="muted">${cp.length} 則</span></div>${cp.length?`<section class="card">${cp.map(a=>`<div class="uni-an"><p>${esc(a.text)}<small>${ago(a.ts)}・7 天後自動下架</small></p><button class="btn btn-soft btn-sm" data-a="pinDel" data-id="${esc(a.id)}">撤下</button></div>`).join("")}</section>`:`<p class="me-none">沒有置頂中的公司公告</p>`}`; })()}
       </main>`; }
   }
-  if(tab==="revenue") return viewRevenue();
-  if(tab==="roster") return viewRoster();
-  if(tab==="debut") return adminHead("出道申請")+`<button class="rev-back" data-a="tab" data-v="me" style="margin:12px 16px 0">‹ 回到 ME</button>`+debutAdmHtml();
   if(tab==="foc"){
     const sc=getSched(), st=ui.focStage!=null?ui.focStage:sc.stage;
     const seg=ui.focSeg||"", lsOn=!!liveConcert();
@@ -393,63 +389,7 @@ function viewAdmin(tab){
         :`<section class="card n-card apl">${posts.slice(0,calMore("admpost")).map(p=>APITEM(p)).join("")}${calMoreBtn("admpost",posts.length)}</section>`):q?srchEmpty("貼文"):emptyBox(I.edit,"沒有貼文",gf!=="all"?"這個團體還沒有貼文":"還沒有貼文")}
     </main>`;
   }
-  if(tab==="announce"){
-    const list=getAnns();
-    return adminHead("NEWS")+`<main class="page">
-      <section class="card studio"><h3>發布公告</h3>
-        <span class="fld-lab">公告內容</span><label class="field" style="height:auto;padding:12px 16px"><textarea id="atext" rows="4" placeholder="輸入文字" style="flex:1;border:0;outline:0;background:transparent;resize:none">${esc(ui.aDraft||"")}</textarea></label>
-        <button class="btn btn-main btn-block" data-a="announce">發布給所有粉絲</button>
-        <p class="reach">粉絲會收到通知；公告會置頂在粉絲通知頁上方輪播，最新一則也會出現在首頁最上方。</p></section>
-      <section class="card studio"><h3>團體公告</h3><p class="reach" style="margin:0 2px 10px">會出現在追蹤這個團的粉絲「動態」頁的「最新公告」。</p>
-        <div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${(ui.gnG||GROUPS[0].id)===g.id?"on":""}" data-a="gnG" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
-        <span class="fld-lab">標題</span><label class="field"><input id="gnTitle" placeholder="輸入文字"></label>
-        <span class="fld-lab">公告內容</span><label class="field" style="height:auto;padding:12px 16px"><textarea id="gnBody" rows="5" placeholder="輸入文字" style="flex:1;border:0;outline:0;background:transparent;resize:none"></textarea></label>
-        <button class="btn btn-main btn-block" data-a="gnPost">發布團體公告</button>
-        ${(()=>{const gl=getGNotices().filter(n=>n.group===(ui.gnG||GROUPS[0].id));return gl.length?gl.map(n=>`<div class="leak-row"><span>${esc(n.title)}<small>${ago(n.ts)}</small></span><button class="btn btn-soft btn-sm" data-a="gnDel" data-v="${n.id}">撤下</button></div>`).join(""):""})()}</section>
-      ${list.length?`<div class="section-h">置頂中的公告<span class="muted">${list.length} 則</span></div>${list.map(a=>`<section class="card" style="padding:16px;margin-bottom:10px"><p style="margin:0 0 6px">${esc(a.text)}</p><span class="muted" style="font-size:12px">${ago(a.ts)}</span>
-        <div style="margin-top:10px"><button class="del" style="margin:0" data-a="annDel" data-id="${a.id}">撤下公告</button></div></section>`).join("")}`:""}
-      ${(()=>{ const PH=S.get(PIN_HIDE,{})||{}, cp=coPinList().filter(x=>!PH[x.id]).sort((a,b)=>b.ts-a.ts); return cp.length?`<div class="section-h">置頂中的公司公告<span class="muted">${cp.length} 則</span></div>${cp.map(a=>`<section class="card" style="padding:16px;margin-bottom:10px"><p style="margin:0 0 6px">${esc(a.text)}</p><span class="muted" style="font-size:12px">${ago(a.ts)}</span>
-        <div style="margin-top:10px"><button class="del" style="margin:0" data-a="pinDel" data-id="${esc(a.id)}">撤下置頂</button></div></section>`).join("")}`:""; })()}
-    </main>`;
-  }
-  if(tab==="me"){
-    return adminHead("ME")+`<main class="page">
-      <section class="card me-card"><div class="av lg" style="margin:0 auto;background:linear-gradient(135deg,#4C1D95,#8843FB)">管</div><h2>管理員</h2><span class="muted" style="font-size:13px">admin</span></section>
-      <div class="section-h">管理</div>
-      <section class="card">
-        <button class="list-btn" data-a="tab" data-v="debut">${AIC.debut}出道申請<span class="r">${debutWait()?debutWait()+" 件待審核":"沒有新申請"}</span></button>
-        <button class="list-btn" data-a="tab" data-v="roster">${AIC.group}藝人與團管理<span class="r">${GROUPS.length} 團</span></button>
-        <button class="list-btn" data-a="thAdmin">${AIC.theme}主題管理<span class="r">${(()=>{const n=getThemes().filter(t=>t.status==="pending").length;return n?n+" 件待審核":TH_STORE})()}</span></button>
-        <button class="list-btn" data-a="demoToggle">${AIC.toggle}示範按鈕<span class="r">${demoOn()?"顯示中":"已隱藏"}</span></button>
-        <button class="list-btn" data-a="tab" data-v="revenue">${AIC.money}營收與分潤<span class="r">看收成</span></button>
-      </section>
-      <div class="section-h">示範工具</div>
-      <section class="card">
-        <button class="list-btn" data-a="toFan">${I.swap}切換到粉絲端<span class="r">看結果</span></button>
-        <button class="list-btn" data-a="toArtist">${I.swap}切換到藝人端（露娜）</button>
-        <button class="list-btn" data-a="reset">${AIC.replay}重設示範資料</button>
-        <button class="list-btn" data-a="openSns">${AIC.sns}${SNS_NAME}<span class="r"></span></button>
-        <button class="list-btn" data-a="theme">${AIC.palette}外觀<span class="r">${themeLabel()}</span></button>
-        <button class="list-btn" data-a="coachAgain">${AIC.replay}重看教學</button>
-        <button class="list-btn" data-a="a2h">${I.home}加到主畫面<span class="r">iPhone</span></button>
-        <button class="list-btn danger" data-a="logout">${I.out}登出</button>
-      </section></main>`;
-  }
-  // 總覽
-  const posts=getPosts(), comments=S.get(K.comments,[]), on=getLives().filter(l=>!l.endTs), open=openReports();
-  const up=getEvents().filter(e=>e.ts>=Date.now());
-  const stat=(n,l,tab)=>`<button class="stat" ${tab?`data-a="tab" data-v="${tab}"`:""}><b>${fmt(n)}</b><span>${l}</span></button>`;
-  return adminHead("HOME")+`<main class="page">
-    <div class="stat-grid">${stat(open.length,"待處理檢舉","reports")}${stat(on.length,"直播中")}${stat(posts.length,"貼文","posts")}${stat(comments.length,"留言")}${stat(up.length,"即將舉辦的活動")}${stat(getWhispers().filter(w=>w.from==="artist").length,WHISPER_NAME+" 訊息")}</div>
-    ${(()=>{const wk=revenueOf(Date.now()-7*864e5);return `<button class="card rev-card" data-a="tab" data-v="revenue"><span><b>營收</b><small>近 7 天・${fmt(wk.sales.length)} 筆購買</small></span><em>${fmt(wk.total)} 積分</em><i>›</i></button>`})()}
-    <div class="section-h">直播監控<span class="muted">${on.length?on.length+" 場進行中":"目前沒有"}</span></div>
-    ${on.length?on.map(l=>{const m=MEMBERS[l.member];return `<section class="adm-live"><div class="al-top"><span><i></i>直播狀態：ON AIR（即時連動中）</span><button class="btn btn-sm btn-danger" data-a="admEndLive" data-id="${l.id}">強制關閉直播</button></div>
-      <h3>${esc(l.title)}</h3><p>藝人：${esc(m.name)}</p><div class="al-stat"><span>👥 ${fmt(liveViewers(l))} 在線觀看</span><span>💬 ${l.msgs.length} 則彈幕</span></div>
-      <form class="al-form" data-id="${l.id}"><span class="fld-lab al-lab">新直播主題</span><input class="al-in" placeholder="輸入文字" value="${esc(l.title)}"><button class="btn btn-sm btn-main" type="submit">更新主題</button></form>
-      <div class="al-log">${l.msgs.slice(-8).map(x=>`<div><b>${esc(x.from==="artist"?m.name+" ⭐":x.name||"粉絲")}</b>${esc(x.text)}<span>${timeHM(x.ts)}</span></div>`).join("")||'<p>目前尚無即時彈幕</p>'}</div></section>`}).join("")
-      :`<section class="card" style="padding:16px;font-size:14px;color:var(--ink-2)">藝人開播後會出現在這裡。</section>`}
-    ${open.length?`<div class="section-h">最新檢舉</div>${reportCard(open[0])}`:""}
-  </main>`;
+  return viewUniTodo();   // 11/11：舊版管理選單（ME、營收、示範工具…）刪掉了，管理員都走新版
 }
 
 /* datetime-local 用的本地時間字串（YYYY-MM-DDTHH:MM） */

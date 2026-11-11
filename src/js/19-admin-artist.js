@@ -55,14 +55,6 @@ const PT_T={tour:"世巡門票",tie:WHISPER_NAME+" 券",membership:"Membership",
 function ptSince(){ const p=ui.ptP||"30"; return p==="all"?0:Date.now()-(+p)*864e5; }
 function ptPeriodChips(){ const p=ui.ptP||"30"; return `<div class="seg2 pt-seg" style="--i:${["7","30","all"].indexOf(p)}"><i class="seg2-ind"></i>${[["7","7 天"],["30","30 天"],["all","全部"]].map(([k,l])=>`<button class="${p===k?"on":""}" data-a="ptP" data-v="${k}">${l}</button>`).join("")}</div>`; }
 function pointsOf(mid,since){ const R=revenueOf(since), got=Math.round(R.byMember[mid]||0), sh=revShare(), fine=artFines(mid,since); return {got,cut:got-Math.round(got*sh/100),fine,net:Math.max(0,Math.round(got*sh/100)+fine)}; }
-function viewPointsAdmin(){ const since=ptSince(), sh=revShare();
-  const groups=GROUPS.map(g=>({g,ms:groupArtists(g.id)})).filter(x=>x.ms.length);
-  const tot=groups.reduce((a,{ms})=>{ ms.forEach(id=>{ const p=pointsOf(id,since); a.got+=p.got; a.cut+=p.cut; a.net+=p.net; }); return a; },{got:0,cut:0,net:0});
-  return `<main class="page pt">${ptPeriodChips()}
-    <section class="card pt-sum"><div><span>藝人收到</span><b>${fmt(tot.got)}</b></div><div><span>扣除</span><b class="neg">−${fmt(tot.cut)}</b></div><div><span>實得</span><b class="pos">${fmt(tot.net)}</b></div></section>
-    <button class="uni-row" data-a="ptShare"><span>藝人分得比例</span><small>${sh}%</small>${UI_S.chev}</button>
-    ${groups.map(({g,ms})=>`<div class="section-h"><span class="rev-dot" style="background:${grad(g.g)}"></span>${esc(g.name)}</div><section class="card pt-list">${ms.map(id=>{ const p=pointsOf(id,since); return `<button class="pt-r" data-a="uniGo" data-v="#/artist?tab=points&id=${id}">${uniAv(id,"sm")}<b>${esc(artName(id,"feed"))}</b><span><small>收到 ${fmt(p.got)}・扣除 ${fmt(p.cut)}</small><em>${fmt(p.net)}</em></span></button>`; }).join("")}</section>`).join("")}
-  </main>`; }
 function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEMBERS[mid], sh=revShare(), ids=new Set([m.group]);
   const L=S.get(K.sales,[]).filter(x=>x.ts>=since&&((x.type==="tie"&&x.mid===mid)||(x.type!=="tie"&&x.gid&&ids.has(x.gid)))).slice(0,40);
   const share=x=>x.type==="tie"?x.pts:x.pts/Math.max(1,groupArtists(x.gid).length);
@@ -472,7 +464,7 @@ function viewUniOps(){ const th=getThemes().filter(t=>t.status==="pending").leng
     <div class="section-h">粉絲與商店</div>
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
-      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=revenue">${AIC.chart}積分<span class="r">加積分・統計</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}加積分</button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${th?`<em class="t-cnt">${th}</em>`:""}</span></button></section>
     <div class="section-h">系統</div>

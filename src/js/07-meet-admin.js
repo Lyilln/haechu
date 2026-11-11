@@ -186,23 +186,6 @@ function revenueOf(sinceTs=0){
   return {sales,byType,byMember,byGroup,total};
 }
 
-function viewRevenue(){
-  const wk=revenueOf(Date.now()-7*864e5), all=revenueOf(0), sh=revShare();
-  const T={tie:WHISPER_NAME+" 券",membership:"Membership",merch:"周邊",gacha:"抽卡"};
-  const groups=GROUPS.map(g=>({g,total:all.byGroup[g.id]||0,ms:groupArtists(g.id)})).sort((a,b)=>b.total-a.total);
-  return adminHead("REVENUE")+`<main class="page rev">
-    <button class="rev-back" data-a="tab" data-v="home">‹ 回到總覽</button>
-    <section class="card rev-sum"><div><span>近 7 天</span><b>${fmt(wk.total)}<i> 積分</i></b></div><div><span>累積</span><b>${fmt(all.total)}<i> 積分</i></b></div></section>
-    <div class="rev-types">${Object.keys(T).map(k=>`<div class="card"><span>${T[k]}</span><b>${fmt(all.byType[k]||0)}</b><small>近 7 天 ${fmt(wk.byType[k]||0)}</small></div>`).join("")}</div>
-    <section class="card rev-share"><div><b>藝人分潤比例</b><small>收成的幾成分給藝人，其餘歸平台</small></div><label><input id="revShare" type="number" min="0" max="100" value="${sh}">%</label><button class="btn btn-sm btn-main" data-a="revSave">儲存</button></section>
-    <p class="rev-rule">算法：${WHISPER_NAME} 券算給那位成員；Membership 和周邊算給整個團，再平均分給團裡的成員（官方帳號不分）。藝人應得＝分到的金額 × ${sh}%。</p>
-    <div class="section-h">各團與成員<span class="muted">累積・積分</span></div>
-    ${groups.map(({g,total,ms})=>`<section class="card rev-g"><div class="rev-gh"><span class="rev-dot" style="background:${grad(g.g)}"></span><b>${esc(g.name)}</b><em>${fmt(total)}</em></div>
-      ${ms.map(id=>{const v=Math.round(all.byMember[id]||0);return `<div class="rev-m"><span>${esc(artName(id,"feed"))}</span><small>分到 ${fmt(v)}</small><b>應得 ${fmt(Math.round(v*sh/100))}</b></div>`}).join("")}</section>`).join("")}
-    <div class="section-h">最近的購買<span class="muted">${all.sales.length} 筆</span></div>
-    <section class="card rev-list">${all.sales.slice(0,30).map(x=>`<div class="rev-row"><span class="rev-t t-${x.type}">${T[x.type]}</span><p>${esc(saleLbl(x))}</p><b>${fmt(x.pts)}</b><small>${ago(x.ts)}</small></div>`).join("")||`<p class="muted" style="padding:14px">還沒有購買紀錄</p>`}</section>
-  </main>`;
-}
 
 /* =========================================================
    檢舉、禁言、封鎖（留言、直播留言、TIE 訊息都能檢舉）

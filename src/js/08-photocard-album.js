@@ -459,10 +459,19 @@ function cbLog(){ const log=S.get(K.gachaLog,[]).filter(x=>x.vid&&albumOf(x.aid)
     return `<div class="gl-r"><div class="gl-h"><b>${esc(g?g.name:"")}《${esc(a.title)}》${esc(v?v.name:"")}${x.sid&&storeOf(x.sid)?`・${esc(storeOf(x.sid).name)}`:""}</b><small>${ymd(x.ts)} ${pad(d.getHours())}:${pad(d.getMinutes())}</small></div>
       <div class="gl-cs">${[...x.cards,...(x.extra||[])].map(c=>parseIt(c)?`<button class="gl-c ${parseIt(c).p.sp?"t3":"t1"}" data-a="cardView" data-v="${c}">${esc(itemName(c))}</button>`:"").join("")}</div></div>`; }).join("")}</section><p class="cb-lnote">保留最近 50 次</p>`; }
 /* ===== 管理員：專輯編輯器 ===== */
-function adminAlbumHtml(){ const gid=ui.albG||GROUPS[0].id, L=getAlbums().filter(a=>a.gid===gid);
-  return `<section class="card studio"><div class="foc-cfg-h"><h3>專輯與小卡</h3><span class="badge">${getAlbums().length} 張</span></div>
-    
-    <div class="st-mg"><span class="ae-lab">店家（每家店的預購特典、Lucky Draw 在專輯裡各自設定）</span>${getStores().map(st=>`<div class="st-r"><input class="st-in" data-v="${st.id}" value="${esc(st.name)}" aria-label="店家名稱"><button class="btn btn-soft btn-sm" data-a="stDel" data-v="${st.id}">刪除</button></div>`).join("")}<button class="btn btn-soft btn-sm" data-a="stAdd">＋ 新增店家</button></div>
+/* 店家一行：顏色頭像＋名字（直接改）＋這家店在幾張專輯有特典／Lucky Draw */
+const ST_COL=["#A78BFA","#F472B6","#60A5FA","#34D399","#FBBF24","#FB7185","#22D3EE","#C084FC"];
+function storeRowHtml(st){ const A=getAlbums(), ex=A.flatMap(a=>(a.ex||[]).filter(e=>e.store===st.id)), na=A.filter(a=>(a.ex||[]).some(e=>e.store===st.id)).length,
+    pob=ex.filter(e=>e.rule==="pob").length, ld=ex.filter(e=>e.rule==="ld").length, c=ST_COL[strHash(st.id)%ST_COL.length];
+  return `<div class="sto-card"><span class="sto-av" style="--c:${c}">${esc([...(st.name||"店")][0].toUpperCase())}</span>
+    <span class="sto-b"><input class="st-in sto-in" data-v="${st.id}" value="${esc(st.name)}" maxlength="20" aria-label="店家名稱"><small>${na?`${na} 張專輯${pob?`・預購特典 ${pob}`:""}${ld?`・Lucky Draw ${ld}`:""}`:"還沒有專輯設定這家店"}</small></span>
+    <button class="sto-del" data-a="stDel" data-v="${st.id}" aria-label="刪除店家"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 11v6M14 11v6M6.5 7l.8 11.2A2 2 0 0 0 9.3 20h5.4a2 2 0 0 0 2-1.8L17.5 7M9.5 7V5.5A1.5 1.5 0 0 1 11 4h2a1.5 1.5 0 0 1 1.5 1.5V7"/></svg></button></div>`; }
+function adminAlbumHtml(){ const gid=ui.albG||GROUPS[0].id, L=getAlbums().filter(a=>a.gid===gid), ST=getStores();
+  return `<div class="section-h">店家<span class="muted">${ST.length} 家</span></div>
+    <section class="card sto-list">${ST.map(storeRowHtml).join("")}<button class="sto-add" data-a="stAdd"><span>＋</span>新增店家</button></section>
+    <p class="sto-note">每家店的預購特典、Lucky Draw 在專輯裡各自設定。點名字就能改名。</p>
+    <div class="section-h">專輯<span class="muted">${getAlbums().length} 張</span></div>
+    <section class="card studio">
     <div class="chips wrap">${GROUPS.map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="albG" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
     ${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><span style="display:flex;gap:6px"><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button><button class="btn btn-soft btn-sm" data-a="albDel" data-v="${a.id}">下架</button></span></div>`).join("")}
     <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>`; }
