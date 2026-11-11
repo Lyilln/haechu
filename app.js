@@ -3587,6 +3587,26 @@ function tieFootPad(){ if(tieFxOn()) return; const ms=document.querySelector(".t
   const below=(document.documentElement.getBoundingClientRect().bottom-ms.getBoundingClientRect().bottom)/z, tail=last?(end.getBoundingClientRect().top-last.getBoundingClientRect().bottom)/z:0;
   ms.style.paddingBottom=Math.max(0,f.getBoundingClientRect().height/z+12-below-tail)+"px"; }
 addEventListener("resize",()=>tieFootPad());
+/* 同步進來的資料只改了一點點時：不要整頁換掉，只改有變的那幾個字／屬性（整頁換掉 → 圖片重新出現、畫面閃一下） */
+const MORPH_MEDIA=new Set(["IMG","VIDEO","AUDIO","CANVAS","IFRAME"]);
+function morphKey(n){ return n.nodeType===1?(n.id||n.getAttribute("data-id")||n.getAttribute("data-mid")||""):""; }
+function morphAttrs(a,b){ for(const at of b.attributes) if(a.getAttribute(at.name)!==at.value) a.setAttribute(at.name,at.value);
+  for(const at of [...a.attributes]) if(!b.hasAttribute(at.name)&&at.name!=="data-hyd") a.removeAttribute(at.name); }
+function morphNode(a,b){
+  if(a.nodeType!==b.nodeType||a.nodeName!==b.nodeName){ a.replaceWith(b); return; }
+  if(a.nodeType!==1){ if(a.nodeValue!==b.nodeValue) a.nodeValue=b.nodeValue; return; }
+  if(a.isEqualNode(b)) return;
+  if(MORPH_MEDIA.has(a.nodeName)){ /* 圖片、影片：原本的屬性都還在（只是多了載好的 src）就整個留著，不重載 */
+    const same=[...b.attributes].every(at=>a.getAttribute(at.name)===at.value||(at.name==="src"&&a.dataset.hyd)); if(!same) a.replaceWith(b); return; }
+  if(a.nodeName==="svg"){ if(a.outerHTML!==b.outerHTML) a.replaceWith(b); return; }
+  morphAttrs(a,b); morphKids(a,b); }
+function morphKids(a,b){ const ok=[...a.childNodes], nk=[...b.childNodes], byKey=new Map(); ok.forEach(n=>{ const k=morphKey(n); if(k&&!byKey.has(k)) byKey.set(k,n); });
+  const used=new Set(); let free=ok.filter(n=>!morphKey(n)); let ref=a.firstChild;
+  nk.forEach(n=>{ const k=morphKey(n); let o=k?byKey.get(k):null; if(o&&used.has(o)) o=null;
+    if(!o&&!k){ while(free.length&&used.has(free[0])) free.shift(); const c=free[0]; if(c&&c.nodeType===n.nodeType&&c.nodeName===n.nodeName){ o=c; free.shift(); } }
+    if(o){ used.add(o); if(o!==ref) a.insertBefore(o,ref); else ref=ref.nextSibling; morphNode(o,n); }
+    else a.insertBefore(n,ref); });
+  ok.forEach(n=>{ if(!used.has(n)&&n.parentNode===a) n.remove(); }); }
 function paint(html,hasNav,navHtml=""){
   const pgChg=ui._ph!==location.hash, prevY=window.scrollY, prevBottom=window.innerHeight+window.scrollY>=document.documentElement.scrollHeight-40;
   if(hasNav&&isUni()&&!navHtml.includes("sn-nav2")){ const ro=route().role; if(ro==="fan") navHtml=uniNav(uniActive()); else if(ro==="admin") navHtml=uniAdminNav(); html=uniSwitch()+html; }
@@ -3605,10 +3625,12 @@ function paint(html,hasNav,navHtml=""){
   const sig=n=>n?n.className+(n.querySelector(".nav-lens")?"L":"")+[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v+"|"+b.querySelector(".nav-ico").innerHTML.length).join(","):"";
   if(hasNav&&oldNav&&newNav&&sig(oldNav)===sig(newNav)){
     const app=root.querySelector(":scope > .app"); const box=document.createElement("div"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`;
-    if(app) app.replaceWith(box.firstElementChild); else root.prepend(box.firstElementChild);
+    if(app&&ui._syncPaint&&!pgChg){ try{ morphNode(app,box.firstElementChild); }catch(e){ const a2=root.querySelector(":scope > .app"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`; if(a2) a2.replaceWith(box.firstElementChild); } }
+    else if(app) app.replaceWith(box.firstElementChild); else root.prepend(box.firstElementChild);
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ const f0=parseFloat(L.style.getPropertyValue("--i")); L.classList.remove("go"); L.style.setProperty("--i",i); L.style.setProperty("--f",i); if(!AN.lens(L,f0,i)) L.style.transform=""; }
-  } else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
+  } else if(!hasNav&&!oldNav&&ui._syncPaint&&!pgChg&&root.querySelector(":scope > .app")&&root.children.length===1){ const box=document.createElement("div"); box.innerHTML=`<div class="app no-nav${pc}">${html}</div>`; try{ morphNode(root.querySelector(":scope > .app"),box.firstElementChild); }catch(e){ root.innerHTML=box.innerHTML; } }
+  else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
   /* 保險：這頁應該有導覽列卻不見了，補回去 */
   if(hasNav&&navHtml&&!root.querySelector(":scope > .nav")) root.insertAdjacentHTML("beforeend",navHtml);
   /* SNS 下面的分頁列：保留原本那條，鏡片直接滑過去，不要整條重畫（才順） */
