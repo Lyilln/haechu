@@ -6520,6 +6520,9 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .sn-dmf.ig .sn-dmp button.sn-dmsend{width:34px!important;height:34px!important;padding:0!important;border-radius:50%!important;background:linear-gradient(160deg,#A43DF7,#5B54FF)!important;color:#fff!important;font-size:0}
 .sn-dmf.ig .sn-dmp button.sn-dmsend .si{width:18px;height:18px;stroke:#fff}
 .sn-dmf.ig .sn-dmic button{color:var(--t)!important;background:none!important;padding:0!important;font-size:0}
+
+.sn-rbu .sn-rfb{border:1px solid rgba(255,255,255,.85)!important;background:none!important;color:#fff!important;border-radius:9px!important;padding:5px 12px!important;font:inherit!important;font-size:14px!important;font-weight:700!important;line-height:1.2}
+.sn-rbu .sn-hu .sn-v{margin-left:3px}
 </style>
 </head>
 <body>
@@ -7045,7 +7048,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261111014804";
+const BUILD="20261111015953";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -16721,13 +16724,26 @@ function snReels(d,id){ const me=snMeId(), I=(d.intr||{})[me]||{}, no=new Set(I.
   const one=!!id&&ui.snReelOne===id;
   return one?`<header class="sn-top clear sn-r1h"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("plusL")}</button></header>`+snReelsMain(d,P,me,one):`<header class="sn-top clear"><nav class="sn-rtab"><button class="${fr?"":"on"}" data-a="snRf" data-v="">Reels</button><button class="${fr?"on":""}" data-a="snRf" data-v="fr">朋友<span class="sn-rfav">${[...new Set(V.filter(p=>fo.includes(p.uid)).map(p=>p.uid))].slice(0,3).map(x=>snAv(snUser(x),18)).join("")}</span></button></nav><span class="sn-sp"></span><button class="sn-ib" data-a="snsGo" data-v="new" aria-label="新增">${si("cam")}</button></header>`+snReelsMain(d,P,me,false); }
 addEventListener("hashchange",()=>{ try{ const r=route(); if(!(r.sub==="sns"&&r.p==="reels")) ui.snReelOne=null; }catch(e){} });
+/* Reels 帳號旁的按鈕（照 IG）：沒追蹤＝「追蹤」框；在這支影片按了追蹤＝「追蹤中」框；滑走再回來＝不顯示 */
+const SN_RFJ={};
+const snRfBtn=(uid,pid,fo,me)=>uid===me?"":!fo?`<button class="sn-rfb" data-a="snRfFo" data-v="${uid}" data-p="${pid}">追蹤</button>`:SN_RFJ[pid]?`<button class="sn-rfb on" data-a="snRfFo" data-v="${uid}" data-p="${pid}">追蹤中</button>`:"";
+function snRfSync(){ document.querySelectorAll(".sn-reel1").forEach(sec=>{ const b=sec.querySelector(".sn-rfb"), hu=sec.querySelector(".sn-rbu .sn-hu"); if(!hu) return; const uid=hu.dataset.id, pid=(sec.querySelector(".sn-rr [data-id]")||{}).dataset?.id||"";
+  const d=snDB(), me=snMeId(), fo=snFol(d,me).includes(uid), h=snRfBtn(uid,pid,fo,me); if(b) b.remove(); if(h) hu.insertAdjacentHTML("afterend",h); }); }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="snRfFo"]'); if(!t) return; e.stopImmediatePropagation(); e.preventDefault();
+  const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, pid=t.dataset.p, i=L.indexOf(v); d.req=d.req||{};
+  if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); t.textContent=j>=0?"追蹤":"已要求"; return; }
+  if(i>=0){ L.splice(i,1); delete SN_RFJ[pid]; } else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); SN_RFJ[pid]=1; }
+  (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); snRfSync(); },true);   /* 不整頁重畫：Reels 不會跳回第一支 */
+/* 滑到別支影片：剛剛按的「追蹤中」收起來，回來就跟 IG 一樣只剩頭貼和名字 */
+document.addEventListener("scroll",e=>{ const r=e.target; if(!(r&&r.classList&&r.classList.contains("sn-reels"))) return; const h=r.clientHeight||1, k=Math.round(r.scrollTop/h); if(r._rk===k) return; r._rk=k;
+  const secs=[...r.querySelectorAll(".sn-reel1")], cur=secs[k]; let ch=false; secs.forEach(sec=>{ if(sec===cur) return; const pid=(sec.querySelector(".sn-rr [data-id]")||{}).dataset?.id; if(pid&&SN_RFJ[pid]){ delete SN_RFJ[pid]; ch=true; } }); if(ch) snRfSync(); },true);
 function snReelsMain(d,P,me,one){ return `
     <main class="sn-reels${one?" one":""}">${P.length?"":`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b><button data-a="snNewP" data-v="post">上傳影片</button></div>`}${P.map(p=>{ const u=snUser(p.uid); if(!u) return ""; const liked=(d.likes[p.id]||[]).includes(me), fo=snFol(d,me).includes(u.id);
       return `<section class="sn-reel1"><div class="sn-rbg" data-a="snTap" data-id="${p.id}">${snMedia(p,u,0)}</div><i class="sn-heart">${si("heart")}</i>
         <div class="sn-rr">${(()=>{ const rpN=Object.values(d.rp||{}).filter(L=>(L||[]).some(x=>x.id===p.id)).length, rpd=snRp(d,me).some(x=>x.id===p.id), svN=Object.values(d.saved||{}).filter(L=>(L||[]).includes(p.id)).length, sv=(d.saved[me]||[]).includes(p.id);
           return `<button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}">${si("heart")}<small>${snN(snLikes(d,p))}</small></button><button data-a="snCm" data-id="${p.id}">${si("chat")}<small>${snN((d.cms[p.id]||[]).length)}</small></button><button class="${rpd?"rpd":""}" data-a="snRpTg" data-id="${p.id}" aria-label="轉發">${si("repost")}<small>${snN(rpN)}</small></button><button data-a="snShare" data-id="${p.id}">${si("send")}</button><button class="${sv?"saved":""}" data-a="snSaveP" data-id="${p.id}">${si("save")}<small>${snN(svN)}</small></button><button data-a="snMore" data-id="${p.id}" aria-label="更多">${si("more2")}</button>`; })()}</div>
         <div class="sn-prog" data-id="${p.id}"><i></i></div><em class="sn-2x">2 倍速 ${si("ff","sm")}</em>
-        <div class="sn-rb"><span class="sn-rbu"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,30)}<b>${esc(u.u)}</b></button>${u.id!==me?`<button data-a="snFollow" data-v="${u.id}">${fo?"追蹤中":"追蹤"}</button>`:""}</span>${p.cap?`<p>${esc(p.cap)}</p>`:""}<small>${si("music","sm")} ${esc(u.u)}・原創音訊</small></div>${one?`<button class="sn-r1c" data-a="snCm" data-id="${p.id}">留言……</button>`:""}</section>`; }).join("")}</main>`; }
+        <div class="sn-rb"><span class="sn-rbu"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,34,snHasStory(d,u.id),snStorySeen(d,u.id))}<b>${esc(u.u)}${u.ver?SN_VER:""}</b></button>${snRfBtn(u.id,p.id,fo,me)}</span>${p.cap?`<p>${esc(p.cap)}</p>`:""}<small>${si("music","sm")} ${esc(u.u)}・原創音訊</small></div>${one?`<button class="sn-r1c" data-a="snCm" data-id="${p.id}">留言……</button>`:""}</section>`; }).join("")}</main>`; }
 function snHls(d,uid){ return ((d.hl||{})[uid]||[]).filter(h=>h&&h.items&&h.items.length); }
 /* 限時動態／精選的小圖：照片、或分享的貼文的第一張 */
 function snStThumb(d,s,g){ if(s.vid&&s.vid.poster) return `<img class="sn-img" data-mid="${s.vid.poster}" alt="">`; if(s.mid&&!s.vid) return `<img class="sn-img" data-mid="${s.mid}" alt="">`; if(s.post){ const p=d.posts.find(x=>x.id===s.post); if(p&&p.media&&p.media[0]) return `<img class="sn-img" data-mid="${p.media[0].poster||p.media[0].mid}" alt="">`; } return snPic(s.pic||s.id,g,"fill"); }
