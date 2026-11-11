@@ -6994,7 +6994,7 @@ async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
-const BUILD="20261111004059";
+const BUILD="20261111004838";
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
   if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
@@ -7293,6 +7293,8 @@ function ptAct(email,r,d){ const t0=new Date(d+"T00:00:00").getTime(), t1=t0+864
   try{
     if(/tie/.test(k)&&/訊息/.test(k)){ const seen=new Set(), L=[]; [...tieAllGet(),...(S.get(K.whispers,[])||[])].forEach(w=>{ if(w&&!seen.has(w.id)){ seen.add(w.id); L.push(w); } });
       return r.role==="artist"?(mid?L.filter(w=>w.from==="artist"&&w.member===mid&&inD(w.ts)).length:0):L.filter(w=>w.from==="me"&&w.by===email&&inD(w.ts)).length; }
+    if(/被翻牌/.test(k)){ const seen=new Set(), L=[]; [...tieAllGet(),...(S.get(K.whispers,[])||[])].forEach(w=>{ if(w&&!seen.has(w.id)){ seen.add(w.id); L.push(w); } });
+      const mine=new Set(L.filter(w=>w.from==="me"&&w.by===email).map(w=>w.text)); return L.some(w=>w.from==="artist"&&w.reply&&inD(w.ts)&&mine.has(w.reply.text))?1:0; }
     if(/直播留言/.test(k)) return getLives().reduce((n,l)=>n+(l.msgs||[]).filter(m=>m.from==="me"&&m.by===email&&inD(m.ts)).length,0);
     if(/開直播/.test(k)){ if(!mid) return 0; return Math.floor(getLives().filter(l=>l.member===mid).reduce((n,l)=>{ const a=Math.max(l.startTs||l.ts||0,t0), b=Math.min(l.endTs||Date.now(),t1); return n+Math.max(0,b-a); },0)/60000); }
     if(/love發文/.test(k)) return mid?getPosts().filter(p=>p.member===mid&&inD(p.ts)).length:0;
@@ -7303,7 +7305,7 @@ function ptAct(email,r,d){ const t0=new Date(d+"T00:00:00").getTime(), t1=t0+864
 const ptRegGot=(email,ds,name)=>{ const D=new Set(Array.isArray(ds)?ds:[ds]); return (S.get(K.ptGrants,[])||[]).filter(g=>g.reg&&g.to===email&&g.reg.k===name&&(g.reg.ds||[g.reg.d]).some(x=>D.has(x))).reduce((n,g)=>n+(g.n||0),0); };
 const ymdK=t=>{ const x=new Date(t); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`; };
 /* 常見的寫法 → 積分表上的名字（名字本身找得到時，以積分表為準） */
-const PT_ALIAS=[[/sns發文/,["發文","發限動","限動","發ig","ig發文","貼文","sns"]],[/給予回饋/,["回饋","回報bug","bug"]],[/帶領新人/,["帶新人","新人"]],[/活躍氣氛/,["活躍","炒氣氛"]],[/宣群/,["宣傳"]],[/打卡/,["簽到"]],[/粉絲信/,["寫信"]]];
+const PT_ALIAS=[[/sns發文/,["發文","發限動","限動","發ig","ig發文","貼文","sns"]],[/給予回饋/,["回饋","回報bug","bug"]],[/帶領新人/,["帶新人","新人"]],[/活躍氣氛/,["活躍","炒氣氛"]],[/宣群/,["宣傳"]],[/打卡/,["簽到"]],[/粉絲信/,["寫信"]],[/被翻牌/,["被翻牌","翻牌","被翻"]]];
 /* 日期：1103、11/3、11.03、11月3日；區間 1103-1104、11/3~11/5、11/3-5 */
 function ptDateLine(seg,yr,curMo){ const t=seg.normalize("NFKC").trim(); if(/[+]\s*\d/.test(t)) return null; if(!/^[\s\d\/.\-~到至月日年()（）]+$/.test(t)||!/\d/.test(t)) return null;
   const parts=t.split(/\s*(?:[-~]|到|至)\s*/).filter(Boolean); if(!parts.length||parts.length>2) return null; let mo=curMo; const out=[];
@@ -7313,7 +7315,7 @@ function ptDateLine(seg,yr,curMo){ const t=seg.normalize("NFKC").trim(); if(/[+]
   let [a,b]=[out[0],out[1]||out[0]]; if(b<a) [a,b]=[b,a]; const ds=[]; for(let t0=new Date(a+"T00:00:00").getTime(), t1=new Date(b+"T00:00:00").getTime(), x=t0; x<=t1&&ds.length<31; x+=864e5) ds.push(ymdK(x)); return ds; }
 const ptDs=ds=>ds.length>1?`${ds[0].slice(5).replace("-","/")}–${ds[ds.length-1].slice(5).replace("-","/")}`:ds[0].slice(5).replace("-","/");
 function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=(ACCOUNTS[email]||{}).member?"artist":"fan", out=[], used={}, notes=[]; let ds=[day0], total=null;
-  R.forEach(r=>{ r.alias=[]; PT_ALIAS.forEach(([re,al])=>{ if(re.test(r.key)) r.alias=al.map(ptNz); }); });
+  R.forEach(r=>{ r.alias=[]; PT_ALIAS.forEach(([re,al])=>{ if(re.test(r.key)) r.alias=al.map(ptNz); }); const bare=r.key.replace(/^[a-z]+/,""); if(bare!==r.key&&bare.length>=3&&!r.alias.includes(bare)) r.alias.push(bare); });   /* 「TIE 被翻牌」寫成「被翻牌」也對得到 */
   const now=new Date(), yr=now.getFullYear();
   const lines=String(text||"").replace(/\r/g,"").split("\n").flatMap(l=>l.replace(/([+＋]\s*[\d,，]+)\s*(?=[^\d\s,，分])/g,"$1\n").split("\n")).map(x=>x.trim()).filter(Boolean);
   lines.forEach(seg=>{
