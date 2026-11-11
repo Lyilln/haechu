@@ -373,7 +373,7 @@ function fullTourStart(){ const ro=route().role, navs=[...document.querySelector
 /* 教學時打開抽屜、留言、直播分頁 */
 const TOUR_OPEN={ ftLive:()=>{ ui.feedTab="live"; render(); },
   cm:()=>{ ui.feedTab="feed"; render(); window.scrollTo(0,0); const b=document.querySelector('.post [data-a="comments"]'); if(b) b.click(); },
-  grpfab:()=>openCmFab(route().id), muOpen:()=>{ const f=(SHOWS[0]||{}).id; if(f) ui.muOpen={[f]:true}; location.hash="#/fan/core?p=promo"; window.scrollTo(0,0); }, drawer:()=>openTieDrawer(route().m), fab:()=>openArtFab(), artdrawer:()=>openTieArtDrawer(session().member) };
+  grpfab:()=>openCmFab(route().id), muOpen:()=>{ const f=(SHOWS[0]||{}).id; if(f) ui.muOpen={[f]:true}; navTo("#/fan/core?p=promo"); window.scrollTo(0,0); }, drawer:()=>openTieDrawer(route().m), fab:()=>openArtFab(), artdrawer:()=>openTieArtDrawer(session().member) };
 function tourCloseOpen(){ ui.sheet=null; layer.innerHTML=""; if(ui.feedTab==="live"){ ui.feedTab="feed"; } }
 /* 教學用的示範內容：讓空的頁面也有東西可以看，教完就收掉 */
 const TDM_G={id:"tdm_g",name:"示範團",g:0}, TDM_M={name:"示範藝人",group:"tdm_g",g:2};
@@ -407,10 +407,10 @@ function tourDemoOff(){ ui.tourDemo=null; try{ const T=x=>String(x&&x.id||"").st
   }catch(e){} tdmDrop(); }
 function fullNext(){ const c=ui.coach; if(!c||c.kind!=="full") return;
   if(c.opened){ c.opened=false; tourCloseOpen(); }
-  if(c.si>=c.seq.length){ fullMarkDone(c.role); tourDemoOff(); ui.coach=null; if(c.home&&location.hash!==c.home) location.hash=c.home; setTimeout(()=>{ window.scrollTo(0,0); ui.coach={kind:"done"}; coachDone(); },350); return; }
+  if(c.si>=c.seq.length){ fullMarkDone(c.role); tourDemoOff(); ui.coach=null; if(c.home&&location.hash!==c.home) navTo(c.home); setTimeout(()=>{ window.scrollTo(0,0); ui.coach={kind:"done"}; coachDone(); },350); return; }
   const it=c.seq[c.si++], my=c.tick=(c.tick||0)+1; c.wait=true; coachMount(`<div class="coach-dim soft"></div>`);
   if(it.nav){ const ro=c.role, v=it.nav, h=ro==="admin"&&isUni()?(UNI_ATABGO[v]||"#/admin"):ro==="fan"&&isUni()?(UNI_ROUTE[v]||"#/fan"):(v==="home"?"#/"+ro+(ro==="artist"?"?tab=home":""):"#/"+ro+"?tab="+v); navRoot(h); c.label=TOUR_LBL[v]||v; }
-  else if(it.hash){ location.hash=it.hash; c.label=TOUR_LBL[it.lbl]||it.lbl||""; }
+  else if(it.hash){ navTo(it.hash); c.label=TOUR_LBL[it.lbl]||it.lbl||""; }
   else if(it.open){ try{ TOUR_OPEN[it.open](); }catch(e){} c.opened=it.open!=="ftLive"||true; c.label=TOUR_LBL[it.lbl]||it.lbl||c.label||""; }
   setTimeout(()=>{ if(ui.coach!==c) return; if(!it.open) window.scrollTo(0,0); const k=it.key||tourKey(); const steps=(TOURS[k]||[]).filter(([sel])=>{ const el=document.querySelector(sel); return el&&el.getBoundingClientRect().height>0; });
     if(c.tick!==my) return; c.wait=false; if(!steps.length) return fullNext(); c.steps=steps; c.i=0; c.key=k; c._scI=-1; coachShow(); },650); }

@@ -477,10 +477,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(tabLike&&cur.sub==="sns"){ /* 跟 App 的導覽列一樣：分頁之間直接換、不疊歷史；按目前這頁就捲回最上面 */
         const curTab=(cur.p||"home")===(t.dataset.v)&&!cur.id; if(curTab){ window.scrollTo({top:0,behavior:"smooth"}); document.querySelectorAll(".sn-reels,.sn-feed").forEach(x=>x.scrollTo&&x.scrollTo({top:0,behavior:"smooth"})); break; }
         navReplace(t.dataset.v==="home"?"#/"+session().role+"/sns":h); window.scrollTo(0,0); }
-      else location.hash=h; }
+      else navTo(h); }
     window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
-    case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")){ const inR=!!t.closest(".sn-reels"); setTimeout(()=>{ if(snTapT!==now) return; if(inR) snSndToggle(); else { ui.snReelOne=id; ui.snMute=false; location.hash="#/"+route().role+"/sns?p=reels&id="+encodeURIComponent(id); } },330); } } break; }
+    case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")){ const inR=!!t.closest(".sn-reels"); setTimeout(()=>{ if(snTapT!==now) return; if(inR) snSndToggle(); else { ui.snReelOne=id; ui.snMute=false; navTo("#/"+route().role+"/sns?p=reels&id="+encodeURIComponent(id)); } },330); } } break; }
     case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id);   /* 只改這顆按鈕，不整頁重畫（整頁重畫會跳回最上面） */
       const p=snLikeUI(id);
       if(!p){ const sc=document.querySelector(".sn-scroll,.sn-page,.sn"), y=sc?sc.scrollTop:window.scrollY; render(); if(sc&&document.querySelector(".sn-scroll,.sn-page,.sn")) document.querySelector(".sn-scroll,.sn-page,.sn").scrollTop=y; else window.scrollTo(0,y); }
@@ -539,9 +539,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snCmLk": { const d=snDB(), me=snMeId(), c=(d.cms[t.dataset.id]||[]).find(x=>x.id===t.dataset.v); if(!c) break; const L=c.lk=c.lk||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else L.push(me); snSave(d); t.classList.toggle("on",i<0); const sm=t.previousElementSibling&&t.previousElementSibling.querySelector("small"); snOpenCm(t.dataset.id); break; }
     case "snEditCap": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; layer.innerHTML=""; tieModal("編輯說明",`<textarea id="snCapEd" class="a-nick-in sn-caped" rows="4" placeholder="輸入文字">${esc(p.cap||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snEditCapOk" data-id="${p.id}">完成</button>`,"row"); break; }
     case "snEditCapOk": { const v=((document.getElementById("snCapEd")||{}).value||"").trim(); if(v&&!isAdminAcct()&&banBlock(v)) break; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; p.cap=v; p.ed=Date.now(); snSave(d); layer.innerHTML=""; render(); toast("已更新"); break; }
-    case "snTagGo": layer.innerHTML=""; location.hash="#/"+session().role+"/sns?p=tag&id="+encodeURIComponent(t.dataset.v); break;
-    case "snAtGo": { const u=snAllUsers().find(x=>(x.u||"").toLowerCase()===t.dataset.v); if(!u){ toast("找不到這個帳號"); break; } layer.innerHTML=""; location.hash="#/"+session().role+"/sns?p=profile&id="+encodeURIComponent(u.id); break; }
-    case "snFl": ui.snFlK=t.dataset.k; ui.snFlQ=""; location.hash="#/"+session().role+"/sns?p=fl&id="+encodeURIComponent(t.dataset.v); break;
+    case "snTagGo": layer.innerHTML=""; navTo("#/"+session().role+"/sns?p=tag&id="+encodeURIComponent(t.dataset.v)); break;
+    case "snAtGo": { const u=snAllUsers().find(x=>(x.u||"").toLowerCase()===t.dataset.v); if(!u){ toast("找不到這個帳號"); break; } layer.innerHTML=""; navTo("#/"+session().role+"/sns?p=profile&id="+encodeURIComponent(u.id)); break; }
+    case "snFl": ui.snFlK=t.dataset.k; ui.snFlQ=""; navTo("#/"+session().role+"/sns?p=fl&id="+encodeURIComponent(t.dataset.v)); break;
     case "snFlK": ui.snFlK=t.dataset.v; render(); break;
     case "snFlRm": { const v=t.dataset.v; ask("要移除這位粉絲嗎？對方不會收到通知。",()=>{ const d=snDB(), me=snMeId(), F=snFol(d,v), i=F.indexOf(me); if(i>=0) F.splice(i,1); snSave(d); render(); },{ok:"移除"}); break; }
     case "snRecX": try{ localStorage.removeItem(snRecKey()); }catch(e){} render(); break;
@@ -551,7 +551,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snTagT": { const dr=ui.snDraft; if(!dr) break; const L=dr.tags=dr.tags||[], i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=20) toast("最多標註 20 人"); else L.push(t.dataset.v); t.classList.toggle("on",i<0); break; }
     case "snTagDone": layer.innerHTML=""; render(); break;
     case "snLikers": snLikers(t.dataset.id); break;
-    case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; location.hash="#/"+session().role+"/sns?p=new&id=sub"; break;
+    case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; navTo("#/"+session().role+"/sns?p=new&id=sub"); break;
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }
     case "snLkX": { layer.innerHTML=""; if(ui.snLkDirty){ ui.snLkDirty=0; render(); } break; }
     case "snLkFol": { const d=snDB(), me=snMeId(), v=t.dataset.v, L=snFol(d,me), i=L.indexOf(v); d.req=d.req||{};
@@ -566,7 +566,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snReqOk": case "snReqNo": { const d=snDB(), me=snMeId(), v=t.dataset.v; d.req=d.req||{}; d.req[me]=(d.req[me]||[]).filter(x=>x!==v); if(a==="snReqOk"){ const F=snFol(d,v); if(!F.includes(me)) F.push(me); } snSave(d); render(); break; }
     case "snPrivT": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; pr.priv=!pr.priv; if(!pr.priv&&d.req&&d.req[me]&&d.req[me].length){ d.req[me].forEach(x=>{ const F=snFol(d,x); if(!F.includes(me)) F.push(me); }); d.req[me]=[]; } snSave(d); render(); toast(pr.priv?"已改成私人帳號":"已改成公開帳號"); break; }
     case "snToStory": { const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; d.stories.push({id:"st"+Date.now(),uid:me,post:p.id,ts:Date.now()}); snSave(d); layer.innerHTML=""; render(); toast("已加到你的限時動態"); break; }
-    case "snStoryPost": { clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); location.hash="#/"+session().role+"/sns?p="+(p&&snIsVid(p)?"reels":"post")+"&id="+encodeURIComponent(t.dataset.id); break; }
+    case "snStoryPost": { clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); navTo("#/"+session().role+"/sns?p="+(p&&snIsVid(p)?"reels":"post")+"&id="+encodeURIComponent(t.dataset.id)); break; }
     case "snHlPick": t.classList.toggle("on"); break;
     case "snHlDel": { const id=t.dataset.v; ask("要刪除這個精選嗎？",()=>{ const d=snDB(), me=snMeId(); d.hl=d.hl||{}; d.hl[me]=(d.hl[me]||[]).filter(h=>h.id!==id); snSave(d); clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; render(); toast("已刪除精選"); }); break; }
     case "snHl": { const d=snDB(), h=snHls(d,t.dataset.v).find(x=>x.id===t.dataset.id); if(!h||!h.items.length) break; ui.snStory={order:[t.dataset.v],ui:0,si:0,list:h.items,title:h.title,hid:h.id}; snShowStory(); break; }
@@ -574,7 +574,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       tieModal("新增精選",`<input id="snHlIn" class="a-nick-in" maxlength="15" placeholder="輸入文字"><span class="sn-hlpk">${S2.slice().reverse().map((s,i)=>`<button class="${i===0?"on":""}" data-a="snHlPick" data-id="${s.id}">${snStThumb(d,s,snUser(me).g)}<i></i></button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snHlOk">新增</button>`,"row sn-hlm"); hydrateMedia(layer); setTimeout(()=>{ const i=document.getElementById("snHlIn"); if(i) i.focus(); },200); break; }
     case "snHlOk": { const v=((document.getElementById("snHlIn")||{}).value||"").trim()||"精選"; if(banBlock(v)) break; const d=snDB(), me=snMeId(); d.hl=d.hl||{}; const pk=[...document.querySelectorAll(".sn-hlpk .on")].map(b=>b.dataset.id); if(!pk.length){ toast("至少選一則"); break; } (d.hl[me]=d.hl[me]||[]).push({id:"hl"+Date.now(),title:v,items:d.stories.filter(x=>x.uid===me&&pk.includes(x.id)).sort((a,b)=>a.ts-b.ts)}); snSave(d); layer.innerHTML=""; render(); toast("已新增精選"); break; }
     case "snCreate": snSheet([[["貼文","snNewP",'data-v="post"',{ic:"grid"}],["限時動態","snNewP",'data-v="story"',{ic:"plus"}]]],{title:"建立"}); break;
-    case "snNewP": layer.innerHTML=""; ui.snDraft={media:[],cap:"",mode:t.dataset.v}; location.hash="#/"+route().role+"/sns?p=new"+(t.dataset.v==="story"?"&id=story":""); break;
+    case "snNewP": layer.innerHTML=""; ui.snDraft={media:[],cap:"",mode:t.dataset.v}; navTo("#/"+route().role+"/sns?p=new"+(t.dataset.v==="story"?"&id=story":"")); break;
     case "snFeedSw": snSheet([[["為你推薦","snFeedSet",'data-v="all"',{ic:"home",on:(ui.snFeed||"all")==="all"}],["追蹤中","snFeedSet",'data-v="following"',{ic:"user",on:ui.snFeed==="following"}]]]); break;
     case "snFeedSet": ui.snFeed=t.dataset.v; layer.innerHTML=""; render(); window.scrollTo(0,0); break;
     case "snMenu": snSheet([[["已儲存","snSavedTab","",{ic:"save"}],["摯友","snsGo",'data-v="cf"',{ic:"star"}]],[["分享個人檔案","snShareMe","",{ic:"send"}]]]); break;

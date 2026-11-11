@@ -110,7 +110,7 @@ function viewArtWrite(v){ const s=session(), mid=s.member, vis=ART_W[v]?v:"all",
     <footer class="aw-tb">${ms.length<4&&!ms.some(x=>x.kind==="video")?`<label class="aw-ic" aria-label="加入照片或影片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m4 17 5-5 4 4 2.5-2.5L20 18"/></svg><input type="file" id="postMedia" accept="image/*,video/*" multiple></label>`:""}<button class="aw-ic" data-a="pollNew" aria-label="票選活動">${PL_IC}</button></footer></div>`; }
 function openLetterTo(gid){ const g=groupOf(gid);
   /* SOLOIST：團就是本人，不用選收件人，直接寫給他 */
-  if(g&&g.solo){ const m=grpMembers(gid).find(x=>MEMBERS[x]&&!MEMBERS[x].official); ui.ltTpl=null; location.hash=grpHash(gid,"letter",m||gid); window.scrollTo(0,0); return; }
+  if(g&&g.solo){ const m=grpMembers(gid).find(x=>MEMBERS[x]&&!MEMBERS[x].official); ui.ltTpl=null; navTo(grpHash(gid,"letter",m||gid)); window.scrollTo(0,0); return; }
   setLayer(`<div class="lt-w" role="dialog" aria-label="收件人"><header class="lt-h"><span></span><b>收件人</b><button data-a="tCloseLayer" aria-label="關閉">${I3.x}</button></header><p class="lt-sub">可選擇團體或藝人並傳送粉絲信。</p>
     <h4>寫給團體</h4><button class="lt-r" data-a="cmLetter" data-v="${gid}"><span class="lt-av g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b></button>
     <h4>寫給成員</h4>${grpMembers(gid).map(m=>`<button class="lt-r" data-a="cmLetter" data-v="${m}"><span class="lt-av" style="background:${grad(MEMBERS[m].g)}">${mAvIn(m)}</span><b>${esc(artName(m,"feed"))}</b></button>`).join("")}</div>`,"ltto"); }
@@ -403,17 +403,19 @@ function refreshPin(){ const t=document.getElementById("pinTrk"); if(!t) return;
 let pinTouchT=0; document.addEventListener("touchstart",e=>{ if(e.target.closest&&e.target.closest("#pinTrk")) pinTouchT=Date.now(); },{passive:true});
 document.addEventListener("scroll",e=>{ const t=e.target; if(!t||t.id!=="pinTrk") return; const i=pinIdxNow(t); t.parentNode.querySelectorAll(".pin-dots i").forEach((d,j)=>d.classList.toggle("on",i===j)); },true);
 setInterval(()=>{ if(document.hidden||Date.now()-pinTouchT<8000) return; if(route().sub==="notifications"||document.querySelector(".artn-pin")) refreshPin(); },5000);
+/* 點一則通知要去哪裡（通知頁、手機推播點進來都用這個，去的地方一樣） */
+function nfAttrs(n){ const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
+  return `data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?esc(n.group||""):""}" data-ek="${esc(n.evKind||"")}" data-ev="${esc(n.eventId||"")}" data-lv="${esc(n.liveId||"")}" data-m="${esc(n.member||"")}" data-id="${esc(n.postId||n.newsId||n.tourId||"")}" data-c="${esc(n.commentId||"")}"`; }
 function viewNotifs(){
   const f=followed();
   const all=getNotifications().filter(n=>n.kind!=="system"&&(n.direct||f.includes(n.group)));
   const list=ui.notifFilter==="all"?all:all.filter(n=>n.group===ui.notifFilter);
   const groups=f.map(groupOf).filter(Boolean);
   const card=n=>{const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"];
-    const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
     const m=MEMBERS[n.member], g=groupOf(n.group||(m&&m.group)), p0=n.postId&&getPosts().find(x=>x.id===n.postId), th=p0&&!postLocked(p0)&&(p0.media||[])[0];   /* 私密／Membership 沒解鎖：通知不露照片 */
     const vf=`<span class="nz-vf">${I.verified}</span>`, nm=m?esc(artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed")):"";
     let tx=esc(notifMsg(n)); if(nm) tx=tx.split(nm).join(nm+vf);
-    return `<button class="nz-card nz2 ${n.self?"self":""}" data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?(n.group||""):""}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||n.newsId||n.tourId||""}" data-c="${n.commentId||""}">
+    return `<button class="nz-card nz2 ${n.self?"self":""}" ${nfAttrs(n)}>
       <span class="nz-av" style="background:${m?grad(m.g):"var(--s3)"}">${m?mAvIn(n.member):`<b>H</b>`}</span>
       <span class="nz-tx"><p>${tx}</p><small>${esc(g?g.name:APP_NAME)} · ${ymdhm(n.ts)}</small></span>
       ${th?`<span class="nz-th"><img data-mid="${esc(th.kind==="video"?th.thumb||"":th.mid)}" alt=""></span>`:""}</button>`};
@@ -559,10 +561,10 @@ function renderComments(first=false){
       <div class="pd-ph">${cmWhoAv(FP,FP.gid,"pd-av lg",FP.g||3)}<span class="pd-pw"><b>${esc(shownName(FP))}</b><small>${ymdhm(FP.ts)}${FP.hideArt?`<em class="fp2-hide">Hide from Artists</em>`:""}</small></span>${canModerate()&&!isMine(FP)?`<button class="pd-more" data-a="amFp" data-id="${FP.id}" aria-label="管理">${PDI.more}</button>`:""}</div>
       ${(FP.imgs||[]).length?`<div class="fpd-imgs">${FP.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`:""}
       ${FP.text?(isMine(FP)?`<p class="pd-txt">${esc(FP.text)}</p>`:trT("f:"+FP.id,FP.text,"pd-txt")):""}
-      <p class="pd-stat">喜歡 ${fmt(likeN(FP))}・留言 ${fmt(list.length)}</p></article>`:`<article class="pd-post">
+      <p class="pd-stat">喜歡 ${fmt(likeN(FP))}・留言 ${fmt(cmTotalOf(list))}</p></article>`:`<article class="pd-post">
       <div class="pd-ph">${viewerFan()?`<button class="pd-av lg av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`}<span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
       ${lk?lockedBody(p,lk):`${p.text?(isArtist?`<p class="pd-txt">${esc(p.text)}</p>`:trT("pt:"+p.id,p.text,"pd-txt")):""}${p.media?pdMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}${p.poll?pollCard(p):""}`}
-      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>`}
+      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(cmTotalOf(list))}</p></article>`}
       ${arts.length?sec("藝人留言",arts.length,arts.map(artCard).join(""),"ac",arts.map(c=>c.member||p.member)):""}
       ${sec("全部留言",fans.length,fans.length?fans.map(c=>item(c)).join(""):`<p class="pd-none">還沒有留言</p>`)}</main>`+bar(isArtist&&replyTo?"請輸入回覆":"請輸入留言");
   }

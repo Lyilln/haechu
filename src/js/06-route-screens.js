@@ -14,7 +14,7 @@ function route(){
   const qs=new URLSearchParams(q||"");
   return {role:parts[0]||"auth",sub:parts[1]||null,tab,m:qs.get("m"),id:qs.get("id"),p:qs.get("p")};
 }
-function go(role,sub,tab){ const h="#/"+role+(sub?"/"+sub:"")+(tab?"?tab="+tab:""); if(sub) { if(location.hash===h) render(); else location.hash=h; } else navRoot(h); }
+function go(role,sub,tab){ const h="#/"+role+(sub?"/"+sub:"")+(tab?"?tab="+tab:""); if(sub) { if(location.hash===h) render(); else navTo(h); } else navRoot(h); }
 /* ===== 返回的規則（三端一樣）=====
    ・底下導覽列的分頁、登入後的首頁：都是「最上層」，切換時不留紀錄
    ・從最上層點進去的頁面一層一層記下來；返回（按返回鍵、往右滑）回到「上一個頁面」
@@ -29,14 +29,20 @@ function navSave(){ try{ sessionStorage.setItem("hc_nav",JSON.stringify(NAV_STK)
 function navSet(){ NAV_STK.length=NAV_BASE+NAV_D+1; NAV_STK[NAV_BASE+NAV_D]=location.hash; if(NAV_STK.length>40){ const cut=NAV_STK.length-40; NAV_STK=NAV_STK.slice(cut); NAV_BASE=Math.max(0,NAV_BASE-cut); } navSave(); }
 function navStamp(){ const st=history.state; if(st&&st.hc===NAV_BOOT&&typeof st.d==="number") NAV_D=st.d; else { NAV_D++; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},""); }catch(e){} } navSet(); }
 function navReplace(h){ ui.navUi=performance.now(); if(location.hash!==h){ try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h); }catch(e){} } navSet(); render(); }
-function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } NAV_BASE=0; navReplace(h); }
+/* 換頁不經過瀏覽器的上一頁／下一頁（11/11）：iPhone 的瀏覽器和主畫面 App 都有自己的左右滑（右滑上一頁、左滑下一頁），
+   會跟 App 自己的返回手勢打架、左滑還會跑到別頁。所以頁面紀錄全部由 App 自己記（NAV_STK），瀏覽器的紀錄永遠只有一筆 → 系統的左右滑沒地方去。
+   ・navTo(h)：進到下一頁（取代原本的 location.hash=h）
+   ・navFire(h)：換到那頁，並照常發出 hashchange（各頁的收尾都靠它） */
+function navFire(h){ ui.navUi=performance.now(); h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h){ navSet(); render(); return; } const o=location.href; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h||location.pathname+location.search); }catch(e){ location.hash=h; return; } window.dispatchEvent(new HashChangeEvent("hashchange",{oldURL:o,newURL:location.href})); }
+function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h) return; NAV_BASE++; navFire(h); }
+function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
 function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
-  if(NAV_BASE>0){ NAV_BASE--; navReplace(NAV_STK[NAV_BASE]); return; }   // 重新載入過：照記下來的上一頁回去
+  if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去
   const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.uni?"fan":s.role); if(location.hash!==home) navRoot(home); }
 /* 回到指定的那一頁（例如離開 SNS 回到進來前的頁面）：在記錄裡就一路退回去，不在就當作最上層打開 */
 function navBackTo(h){ ui.navUi=performance.now(); const cur=NAV_BASE+NAV_D; let k=-1; if(h) for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]===h){ k=i; break; } }
   if(k<0){ if(h) navRoot(h); else navBack(); return; }
-  const steps=cur-k; if(steps<=NAV_D){ history.go(-steps); return; } if(NAV_D>0){ NAV_PEND=h; ui.navPendBase=k; history.go(-NAV_D); return; } NAV_BASE=k; navReplace(h); }
+  const steps=cur-k; if(steps<=NAV_D){ history.go(-steps); return; } if(NAV_D>0){ NAV_PEND=h; ui.navPendBase=k; history.go(-NAV_D); return; } NAV_BASE=k; navFire(h); }
 /* 重新載入後：如果停在原本記下來的那一頁，就把前面點進來的路徑接回來 */
 function navRestore(){ const a=NAV_SAVED; if(a&&a[a.length-1]===location.hash&&a.length>1){ NAV_STK=a.slice(); NAV_BASE=a.length-1; NAV_D=0; navSave(); } }
 try{ history.replaceState({d:0,hc:NAV_BOOT},""); }catch(e){}

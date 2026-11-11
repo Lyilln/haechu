@@ -1583,7 +1583,9 @@ function publishAnnounce(text){
 }
 
 /* ===== 留言 ===== */
-const commentCount=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).length;
+/* 留言數＝留言＋每則留言底下的回覆（藝人回覆粉絲也算一則，跟 Weverse 一樣） */
+const cmTotalOf=L=>L.reduce((n,c)=>n+1+(c.reply?1:0)+((c.reps||[]).length),0);
+const commentCount=postId=>cmTotalOf(S.get(K.comments,[]).filter(c=>c.postId===postId));
 const getComments=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).sort((a,b)=>a.ts-b.ts);
 function addComment(postId,text){
   const c={id:"c"+Date.now(),postId,author:"me",by:myEmail(),name:ME.name,g:ME.g,text,ts:Date.now(),reply:null};
@@ -1667,7 +1669,7 @@ function route(){
   const qs=new URLSearchParams(q||"");
   return {role:parts[0]||"auth",sub:parts[1]||null,tab,m:qs.get("m"),id:qs.get("id"),p:qs.get("p")};
 }
-function go(role,sub,tab){ const h="#/"+role+(sub?"/"+sub:"")+(tab?"?tab="+tab:""); if(sub) { if(location.hash===h) render(); else location.hash=h; } else navRoot(h); }
+function go(role,sub,tab){ const h="#/"+role+(sub?"/"+sub:"")+(tab?"?tab="+tab:""); if(sub) { if(location.hash===h) render(); else navTo(h); } else navRoot(h); }
 /* ===== 返回的規則（三端一樣）=====
    ・底下導覽列的分頁、登入後的首頁：都是「最上層」，切換時不留紀錄
    ・從最上層點進去的頁面一層一層記下來；返回（按返回鍵、往右滑）回到「上一個頁面」
@@ -1682,14 +1684,20 @@ function navSave(){ try{ sessionStorage.setItem("hc_nav",JSON.stringify(NAV_STK)
 function navSet(){ NAV_STK.length=NAV_BASE+NAV_D+1; NAV_STK[NAV_BASE+NAV_D]=location.hash; if(NAV_STK.length>40){ const cut=NAV_STK.length-40; NAV_STK=NAV_STK.slice(cut); NAV_BASE=Math.max(0,NAV_BASE-cut); } navSave(); }
 function navStamp(){ const st=history.state; if(st&&st.hc===NAV_BOOT&&typeof st.d==="number") NAV_D=st.d; else { NAV_D++; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},""); }catch(e){} } navSet(); }
 function navReplace(h){ ui.navUi=performance.now(); if(location.hash!==h){ try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h); }catch(e){} } navSet(); render(); }
-function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } NAV_BASE=0; navReplace(h); }
+/* 換頁不經過瀏覽器的上一頁／下一頁（11/11）：iPhone 的瀏覽器和主畫面 App 都有自己的左右滑（右滑上一頁、左滑下一頁），
+   會跟 App 自己的返回手勢打架、左滑還會跑到別頁。所以頁面紀錄全部由 App 自己記（NAV_STK），瀏覽器的紀錄永遠只有一筆 → 系統的左右滑沒地方去。
+   ・navTo(h)：進到下一頁（取代原本的 location.hash=h）
+   ・navFire(h)：換到那頁，並照常發出 hashchange（各頁的收尾都靠它） */
+function navFire(h){ ui.navUi=performance.now(); h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h){ navSet(); render(); return; } const o=location.href; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h||location.pathname+location.search); }catch(e){ location.hash=h; return; } window.dispatchEvent(new HashChangeEvent("hashchange",{oldURL:o,newURL:location.href})); }
+function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h) return; NAV_BASE++; navFire(h); }
+function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
 function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
-  if(NAV_BASE>0){ NAV_BASE--; navReplace(NAV_STK[NAV_BASE]); return; }   // 重新載入過：照記下來的上一頁回去
+  if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去
   const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.uni?"fan":s.role); if(location.hash!==home) navRoot(home); }
 /* 回到指定的那一頁（例如離開 SNS 回到進來前的頁面）：在記錄裡就一路退回去，不在就當作最上層打開 */
 function navBackTo(h){ ui.navUi=performance.now(); const cur=NAV_BASE+NAV_D; let k=-1; if(h) for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]===h){ k=i; break; } }
   if(k<0){ if(h) navRoot(h); else navBack(); return; }
-  const steps=cur-k; if(steps<=NAV_D){ history.go(-steps); return; } if(NAV_D>0){ NAV_PEND=h; ui.navPendBase=k; history.go(-NAV_D); return; } NAV_BASE=k; navReplace(h); }
+  const steps=cur-k; if(steps<=NAV_D){ history.go(-steps); return; } if(NAV_D>0){ NAV_PEND=h; ui.navPendBase=k; history.go(-NAV_D); return; } NAV_BASE=k; navFire(h); }
 /* 重新載入後：如果停在原本記下來的那一頁，就把前面點進來的路徑接回來 */
 function navRestore(){ const a=NAV_SAVED; if(a&&a[a.length-1]===location.hash&&a.length>1){ NAV_STK=a.slice(); NAV_BASE=a.length-1; NAV_D=0; navSave(); } }
 try{ history.replaceState({d:0,hc:NAV_BOOT},""); }catch(e){}
@@ -3905,7 +3913,7 @@ document.addEventListener("input",e=>{ if(e.target.id!=="exQ") return; const q=n
   document.querySelectorAll(".ex-g").forEach(r=>r.hidden=!!q&&!r.dataset.q.includes(q)); });
 document.addEventListener("scroll",e=>{ const b=e.target; if(!b||b.id!=="exBan") return; const i=Math.round(b.scrollLeft/b.clientWidth); document.querySelectorAll(".ex-dots i").forEach((d,k)=>d.classList.toggle("on",k===i)); },true);
 document.addEventListener("scroll",e=>{ const b=e.target; if(!b||b.id!=="spBan") return; const n=b.children.length, k=Math.round(b.scrollLeft/Math.max(1,b.clientWidth)), c=document.getElementById("spCnt"), th=document.getElementById("spThumb"); if(c) c.textContent=String(k+1).padStart(2,"0"); if(th) th.style.transform=`translateX(${k*100}%)`; },true);
-function openGroup(gid){ if(groupOf(gid)){ layer.innerHTML=""; ui.cmFeed=ui.cmMed=ui.cmVc=ui.mpTab=ui.abOpen=null; ui.shopCat="all"; location.hash=grpHash(gid); window.scrollTo(0,0); return; } }
+function openGroup(gid){ if(groupOf(gid)){ layer.innerHTML=""; ui.cmFeed=ui.cmMed=ui.cmVc=ui.mpTab=ui.abOpen=null; ui.shopCat="all"; navTo(grpHash(gid)); window.scrollTo(0,0); return; } }
 
 
 /* HAECHU｜團體社群頁、留言、貼文頁 */
@@ -4020,7 +4028,7 @@ function viewArtWrite(v){ const s=session(), mid=s.member, vis=ART_W[v]?v:"all",
     <footer class="aw-tb">${ms.length<4&&!ms.some(x=>x.kind==="video")?`<label class="aw-ic" aria-label="加入照片或影片"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"><rect x="3.5" y="3.5" width="17" height="17" rx="3"/><circle cx="9" cy="9" r="1.6"/><path d="m4 17 5-5 4 4 2.5-2.5L20 18"/></svg><input type="file" id="postMedia" accept="image/*,video/*" multiple></label>`:""}<button class="aw-ic" data-a="pollNew" aria-label="票選活動">${PL_IC}</button></footer></div>`; }
 function openLetterTo(gid){ const g=groupOf(gid);
   /* SOLOIST：團就是本人，不用選收件人，直接寫給他 */
-  if(g&&g.solo){ const m=grpMembers(gid).find(x=>MEMBERS[x]&&!MEMBERS[x].official); ui.ltTpl=null; location.hash=grpHash(gid,"letter",m||gid); window.scrollTo(0,0); return; }
+  if(g&&g.solo){ const m=grpMembers(gid).find(x=>MEMBERS[x]&&!MEMBERS[x].official); ui.ltTpl=null; navTo(grpHash(gid,"letter",m||gid)); window.scrollTo(0,0); return; }
   setLayer(`<div class="lt-w" role="dialog" aria-label="收件人"><header class="lt-h"><span></span><b>收件人</b><button data-a="tCloseLayer" aria-label="關閉">${I3.x}</button></header><p class="lt-sub">可選擇團體或藝人並傳送粉絲信。</p>
     <h4>寫給團體</h4><button class="lt-r" data-a="cmLetter" data-v="${gid}"><span class="lt-av g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b></button>
     <h4>寫給成員</h4>${grpMembers(gid).map(m=>`<button class="lt-r" data-a="cmLetter" data-v="${m}"><span class="lt-av" style="background:${grad(MEMBERS[m].g)}">${mAvIn(m)}</span><b>${esc(artName(m,"feed"))}</b></button>`).join("")}</div>`,"ltto"); }
@@ -4313,17 +4321,19 @@ function refreshPin(){ const t=document.getElementById("pinTrk"); if(!t) return;
 let pinTouchT=0; document.addEventListener("touchstart",e=>{ if(e.target.closest&&e.target.closest("#pinTrk")) pinTouchT=Date.now(); },{passive:true});
 document.addEventListener("scroll",e=>{ const t=e.target; if(!t||t.id!=="pinTrk") return; const i=pinIdxNow(t); t.parentNode.querySelectorAll(".pin-dots i").forEach((d,j)=>d.classList.toggle("on",i===j)); },true);
 setInterval(()=>{ if(document.hidden||Date.now()-pinTouchT<8000) return; if(route().sub==="notifications"||document.querySelector(".artn-pin")) refreshPin(); },5000);
+/* 點一則通知要去哪裡（通知頁、手機推播點進來都用這個，去的地方一樣） */
+function nfAttrs(n){ const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
+  return `data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?esc(n.group||""):""}" data-ek="${esc(n.evKind||"")}" data-ev="${esc(n.eventId||"")}" data-lv="${esc(n.liveId||"")}" data-m="${esc(n.member||"")}" data-id="${esc(n.postId||n.newsId||n.tourId||"")}" data-c="${esc(n.commentId||"")}"`; }
 function viewNotifs(){
   const f=followed();
   const all=getNotifications().filter(n=>n.kind!=="system"&&(n.direct||f.includes(n.group)));
   const list=ui.notifFilter==="all"?all:all.filter(n=>n.group===ui.notifFilter);
   const groups=f.map(groupOf).filter(Boolean);
   const card=n=>{const [lab,col]=NK[n.kind]||["NEWS","#D1D5DB"];
-    const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
     const m=MEMBERS[n.member], g=groupOf(n.group||(m&&m.group)), p0=n.postId&&getPosts().find(x=>x.id===n.postId), th=p0&&!postLocked(p0)&&(p0.media||[])[0];   /* 私密／Membership 沒解鎖：通知不露照片 */
     const vf=`<span class="nz-vf">${I.verified}</span>`, nm=m?esc(artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed")):"";
     let tx=esc(notifMsg(n)); if(nm) tx=tx.split(nm).join(nm+vf);
-    return `<button class="nz-card nz2 ${n.self?"self":""}" data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?(n.group||""):""}" data-ek="${n.evKind||""}" data-ev="${n.eventId||""}" data-lv="${n.liveId||""}" data-m="${n.member||""}" data-id="${n.postId||n.newsId||n.tourId||""}" data-c="${n.commentId||""}">
+    return `<button class="nz-card nz2 ${n.self?"self":""}" ${nfAttrs(n)}>
       <span class="nz-av" style="background:${m?grad(m.g):"var(--s3)"}">${m?mAvIn(n.member):`<b>H</b>`}</span>
       <span class="nz-tx"><p>${tx}</p><small>${esc(g?g.name:APP_NAME)} · ${ymdhm(n.ts)}</small></span>
       ${th?`<span class="nz-th"><img data-mid="${esc(th.kind==="video"?th.thumb||"":th.mid)}" alt=""></span>`:""}</button>`};
@@ -4469,10 +4479,10 @@ function renderComments(first=false){
       <div class="pd-ph">${cmWhoAv(FP,FP.gid,"pd-av lg",FP.g||3)}<span class="pd-pw"><b>${esc(shownName(FP))}</b><small>${ymdhm(FP.ts)}${FP.hideArt?`<em class="fp2-hide">Hide from Artists</em>`:""}</small></span>${canModerate()&&!isMine(FP)?`<button class="pd-more" data-a="amFp" data-id="${FP.id}" aria-label="管理">${PDI.more}</button>`:""}</div>
       ${(FP.imgs||[]).length?`<div class="fpd-imgs">${FP.imgs.map(u=>`<button class="cp-img" data-a="cpPh" data-v="${esc(u)}"><img src="${esc(u)}" alt="" loading="lazy"></button>`).join("")}</div>`:""}
       ${FP.text?(isMine(FP)?`<p class="pd-txt">${esc(FP.text)}</p>`:trT("f:"+FP.id,FP.text,"pd-txt")):""}
-      <p class="pd-stat">喜歡 ${fmt(likeN(FP))}・留言 ${fmt(list.length)}</p></article>`:`<article class="pd-post">
+      <p class="pd-stat">喜歡 ${fmt(likeN(FP))}・留言 ${fmt(cmTotalOf(list))}</p></article>`:`<article class="pd-post">
       <div class="pd-ph">${viewerFan()?`<button class="pd-av lg av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<span class="pd-av lg" style="background:${grad(m.g)}">${mAvIn(p.member)}</span>`}<span class="pd-pw"><b>${esc(artName(p.member,"feed"))}${I.verified}</b><small>${ymdhm(p.ts)}</small></span>${isAdminAcct()&&!isArtist?`<button class="pd-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">${PDI.more}</button>`:""}</div>
       ${lk?lockedBody(p,lk):`${p.text?(isArtist?`<p class="pd-txt">${esc(p.text)}</p>`:trT("pt:"+p.id,p.text,"pd-txt")):""}${p.media?pdMediaHtml(p):p.color!=null?`<div class="pic" style="background:${grad(p.color)}">${I.heart}</div>`:""}${p.poll?pollCard(p):""}`}
-      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(list.length)}</p></article>`}
+      <p class="pd-stat">喜歡 ${fmt(likeN(p))}・留言 ${fmt(cmTotalOf(list))}</p></article>`}
       ${arts.length?sec("藝人留言",arts.length,arts.map(artCard).join(""),"ac",arts.map(c=>c.member||p.member)):""}
       ${sec("全部留言",fans.length,fans.length?fans.map(c=>item(c)).join(""):`<p class="pd-none">還沒有留言</p>`)}</main>`+bar(isArtist&&replyTo?"請輸入回覆":"請輸入留言");
   }
@@ -4702,7 +4712,7 @@ const tieTop=(t)=>`<header class="tst-h"><button class="tst-ib" data-a="${t==="b
 const tiePend=gid=>(S.get(TIE_PEND,{})||{})[gid]||null;
 function tieStore(gid,more){ const g=groupOf(gid); if(!g) return; if(isSelfGid(gid)){ toast(selfBuyMsg()); return; }
   const A=groupArtists(gid), solo=A.length===1;
-  if(!solo&&(tiePend(gid)||{}).n){ layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); return; }
+  if(!solo&&(tiePend(gid)||{}).n){ layer.innerHTML=""; ui.pickSet=null; navTo("#/fan/tiepick?id="+encodeURIComponent(gid)); return; }
   const hero=tieHero(gid), nm=solo?MEMBERS[A[0]].name:g.name, N=solo?1:(more?A.length:1);
   ui.tst={gid,more:!!more};
   setLayer(`<div class="tst">${tieTop("store")}<div class="tst-b">${hero?`<div class="tst-hero" style="background-image:url('${esc(hero)}')"></div>`:`<div class="tst-hero ph" style="background:${grad(g.g)}"><span>${esc(nm)}</span></div>`}
@@ -4726,7 +4736,7 @@ function tiePay(gid,n){ const A=groupArtists(gid), pl=tiePl(), ownL=A.filter(id=
   S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（${tieTk(gid,n)}・${pl.name}）`});
   const P=S.get(TIE_PEND,{}); P[gid]={n:((P[gid]||{}).n||0)+n,ts:Date.now(),days:pl.days}; S.set(TIE_PEND,P);
   if(A.length===1){ tpkBuyDone(gid,[A[0]]); return; }
-  layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); }
+  layer.innerHTML=""; ui.pickSet=null; navTo("#/fan/tiepick?id="+encodeURIComponent(gid)); }
 /* 選好藝人：開始訂閱；第一次訂閱要先設定暱稱（下面滑上來的半版面板） */
 function tieNickSheet(gid,ids){ ui.tpkNickFor={gid,ids}; const m=MEMBERS[ids[0]];
   setLayer(`<div class="scrim" data-a="tCloseLayer"><div class="sheet tpk-ns" role="dialog" aria-label="你的暱稱"><div class="grab"></div>
@@ -6736,7 +6746,7 @@ function loginAs(email){ const a=ACCOUNTS[email]; if(!a) return;
   go(a.role);
 }
 function switchTo(role){   // 只有管理員帳號可以切換身分（管理員同時也是藝人和粉絲）
-  if(!isAdminAcct()) return; if(isUni()){ layer.innerHTML=""; location.hash=role==="artist"?"#/artist?tab=home":role==="admin"?"#/fan?tab=me":"#/fan"; return; } const em=session().email;
+  if(!isAdminAcct()) return; if(isUni()){ layer.innerHTML=""; navTo(role==="artist"?"#/artist?tab=home":role==="admin"?"#/fan?tab=me":"#/fan"); return; } const em=session().email;
   SS.set(role==="artist"?{role:"artist",email:em,member:"luna",admin:true}:role==="admin"?{role:"admin",email:em,member:null,admin:true}:{role:"fan",email:em,member:null,admin:true});
   ui.sheet=null; layer.innerHTML=""; document.querySelectorAll(".toast").forEach(t=>t.remove()); go(role); window.scrollTo(0,0);
 }
@@ -6952,10 +6962,8 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
   function hScrollable(el){ for(let n=el;n&&n!==document.body;n=n.parentElement){ if(n.tagName==="CANVAS"||n.tagName==="INPUT"||n.tagName==="TEXTAREA"||n.dataset&&n.dataset.ls!=null) return true; const cs=getComputedStyle(n); if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft>0) return true; if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft===0&&false) return true; } return false; }
   function mkUnder(snap){ const u=document.createElement("div"); u.className="sb-under"; u.setAttribute("aria-hidden","true");
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }
-  /* 在 Safari／Chrome 瀏覽器裡：最左邊那一條是瀏覽器自己的返回手勢，讓給它（兩個一起動就會出現兩層畫面）；加到主畫面的 App 才由這裡處理 */
-  const STANDALONE=navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;
   document.addEventListener("touchstart",e=>{ if(!st) document.querySelectorAll(".sb-under").forEach(u=>u.remove());   // 上一次手勢留下的「上一頁」殘影清掉
-    if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
+    if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; const edge=t.clientX<30; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）；瀏覽器的紀錄只有一筆，系統的滑動不會再搶（11/11）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
     if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
@@ -7053,8 +7061,8 @@ function clickGen(a,t,e,r){ switch(a){
     case "ptOrig": { ui.ptOrig=ui.ptOrig||new Set(); const id=t.dataset.id; if(ui.ptOrig.has(id)) ui.ptOrig.delete(id); else ui.ptOrig.add(id); const p=getPosts().find(x=>x.id===id); const el=document.querySelector(`[data-ptx="${id}"]`); if(p&&el){ const cl=el.classList.contains("clamp"); t.remove(); el.outerHTML=postTextHtml(p,false,cl); } break; }
     case "replyTo": ui.cDraft=""; ui.sheet.replyTo=t.dataset.c; renderComments(true); break;
     
-    case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); aiOnLive(l.id,"enter"); } location.hash=(l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id; } else toast("這場直播已不存在"); break; }
-    case "openReplay": case "openReplayArt": ui.rpArt=a==="openReplayArt"; layer.innerHTML=""; location.hash="#/"+session().role+"/replay?id="+t.dataset.id; window.scrollTo(0,0); break;
+    case "openLive": { const id=t.dataset.lv||t.dataset.id; const l=getLive(id); if(l){ ui.lDraft=""; ui.endFor=null; if(!l.endTs){ logSelf("live",l.member,`你加入了 ${artName(l.member,"live")} 的文字直播間 🎥`,{liveId:l.id}); aiOnLive(l.id,"enter"); } navTo((l.endTs?"#/fan/replay?id=":"#/fan/live?id=")+id); } else toast("這場直播已不存在"); break; }
+    case "openReplay": case "openReplayArt": ui.rpArt=a==="openReplayArt"; layer.innerHTML=""; navTo("#/"+session().role+"/replay?id="+t.dataset.id); window.scrollTo(0,0); break;
     case "tkDown": { const b=document.getElementById("cmTick"); if(b) b.scrollTo({top:b.scrollHeight,behavior:"smooth"}); t.hidden=true; ui.tkUnseen=0; break; }
     case "rpMode": { const to=t.dataset.v==="art"; if(to===!!ui.rpArt) break; segSwitch(t,()=>{ ui.rpArt=to; },to?1:-1); break; }
     case "remind": { const on=toggleRemind(t.dataset.id); if(on===null) break; const y=window.scrollY; render(); window.scrollTo(0,y); toast(on?"開播時會提醒你 ⏰":"已取消提醒"); break; }
@@ -7215,12 +7223,12 @@ function clickGen(a,t,e,r){ switch(a){
     case "cardGyro": cardGyro(); break;
     case "gdDone": { const got=ui.drawGot||[], nw=ui.drawFresh?ui.drawFresh.size:0; layer.innerHTML=""; lsRerender(); const r3=got.filter(c=>c.endsWith(":3")).length; toast(r3?`收進卡冊了，有 ${r3} 張流光卡 ✨`:nw?`收進卡冊了，新卡 ${nw} 張 🃏`:"收進卡冊了 🃏"); break; }
     case "cardView": openCardView(t.dataset.v); break;
-    case "openCards": location.hash="#/fan/core?p=cards"; window.scrollTo(0,0); break;
+    case "openCards": navTo("#/fan/core?p=cards"); window.scrollTo(0,0); break;
     case "svVote": { if(3-svToday()<=0){ toast("今天的票投完了，明天再來"); break; } const k=new Date().toDateString(), mine=S.get(K.svMine,{}); S.set(K.svMine,{day:k,n:(mine.day===k?mine.n:0)+1});
       const vv=S.get(K.svVotes,{}); vv[t.dataset.v]=svVotes()[t.dataset.v]+1; S.set(K.svVotes,vv); const tr=TRAINEES.find(x=>x.id===t.dataset.v); const b=t.getBoundingClientRect(); confetti(b.left+b.width/2,b.top);
       const y=window.scrollY; render(); window.scrollTo(0,y); toast(`投給 ${tr.name} 了！今天還有 ${3-svToday()} 票`); break; }
     case "svToggle": S.set(K.svOpen,!svOpen()); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(svOpen()?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
-    case "svPreview": SS.set({...session(),role:"fan",member:null}); location.hash="#/fan/core?p=survival"; break;
+    case "svPreview": SS.set({...session(),role:"fan",member:null}); navTo("#/fan/core?p=survival"); break;
     case "chantStart": chantStart(); break;
     case "chantClose": { chantStop(); const b=document.getElementById("chant"); if(b){ b.hidden=true; b.innerHTML=""; } break; }
     case "focSeg": ui.focSeg=t.dataset.v; render(); window.scrollTo(0,0); break;
@@ -7303,7 +7311,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "exCat": ui.exCat=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "exAll": ui.exAll=!ui.exAll; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "gOpen": openGroup(t.dataset.v); break;
-    case "cmGo": { const r=route(); if(!r.id) break; layer.innerHTML=""; if(t.dataset.v==="meEdit") ui.meDraft=null; if(t.dataset.v==="write") ui.cwHide=false; location.hash=grpHash(r.id,t.dataset.v); window.scrollTo(0,0); break; }
+    case "cmGo": { const r=route(); if(!r.id) break; layer.innerHTML=""; if(t.dataset.v==="meEdit") ui.meDraft=null; if(t.dataset.v==="write") ui.cwHide=false; navTo(grpHash(r.id,t.dataset.v)); window.scrollTo(0,0); break; }
     case "cmMore": openCmMore(route().id); break;
     case "cmFab": openCmFab(route().id); break;
     case "aFab": openArtFab(); break;
@@ -7325,9 +7333,9 @@ function clickCm(a,t,e,r){ switch(a){
       ui.composePoll={q:d.q.trim(),opts:d.opts.filter(o=>o.t.trim()).map(o=>({t:o.t.trim(),img:o.img||""})),end,dur:d.dur,endIn:d.end}; layer.innerHTML=""; render(); break; }
     case "pollVote": { const V=S.get(K.pollVotes,{}), p=getPosts().find(x=>x.id===t.dataset.id); if(!p||!p.poll||V[p.id]!=null) break; if(Date.now()>=p.poll.end){ toast("票選已經結束了"); break; } V[p.id]=+t.dataset.i; S.set(K.pollVotes,V); { const PL=S.get(K.posts,[]), q=PL.find(x=>x.id===p.id); if(q&&q.poll){ q.poll.base=q.poll.opts.map((o,i)=>((q.poll.base&&q.poll.base[i])||0)+(i===+t.dataset.i?1:0)); S.set(K.posts,PL); } } { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "fabClose": if(e.target===t||t.tagName==="BUTTON") closeFab(); break;
-    case "aWrite": { const v=ART_W[t.dataset.v]?t.dataset.v:"all"; ui.composeVis=v; ui.composeText=""; ui.composeMedia=[]; ui.composePw=""; ui.composeColor=null; layer.innerHTML=""; location.hash="#/artist/write?p="+v; window.scrollTo(0,0); break; }
+    case "aWrite": { const v=ART_W[t.dataset.v]?t.dataset.v:"all"; ui.composeVis=v; ui.composeText=""; ui.composeMedia=[]; ui.composePw=""; ui.composeColor=null; layer.innerHTML=""; navTo("#/artist/write?p="+v); window.scrollTo(0,0); break; }
     case "cmLetterTo": openLetterTo(t.dataset.v); break;
-    case "cmLetter": { const r=route(); layer.innerHTML=""; ui.ltTpl=null; location.hash=grpHash(r.id,"letter",t.dataset.v); window.scrollTo(0,0); break; }
+    case "cmLetter": { const r=route(); layer.innerHTML=""; ui.ltTpl=null; navTo(grpHash(r.id,"letter",t.dataset.v)); window.scrollTo(0,0); break; }
     case "ltTpl": { ui.ltTpl=+t.dataset.v; const tx=document.getElementById("ltTxt"), keep=tx?tx.value:""; render(); const n=document.getElementById("ltTxt"); if(n) n.value=keep; break; }
     case "ltX": { const tx=(document.getElementById("ltTxt")||{}).value||""; if(!tx.trim()){ navBack(); break; } ui.ltHold=tx; tieModal("確定要取消撰寫嗎？","取消時，截至目前撰寫的內容不會儲存。",`<button class="t-mbtn" data-a="ltDiscard">取消撰寫</button><button class="t-mbtn main" data-a="ltSave">臨時儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "ltDiscard": { const r=route(), D=S.get(K.ltDraft,{}); delete D[ltKey(r.id,r.m)]; S.set(K.ltDraft,D); layer.innerHTML=""; navBack(); break; }
@@ -7368,10 +7376,10 @@ function clickCm(a,t,e,r){ switch(a){
     case "pdCLike": { const L=S.get(K.comments,[]), c=L.find(x=>x.id===t.dataset.c); if(!c) break; const me=myId()||"me", b=new Set(c.likedBy||[]); if(b.has(me)) b.delete(me); else b.add(me); c.likedBy=[...b]; S.set(K.comments,L); renderComments(); break; }
     case "pdRep": { const c=S.get(K.comments,[]).find(x=>x.id===t.dataset.c); if(!c) break; if(reportedByMe(c.id)){ toast("已經檢舉過了"); break; } iosSheet([["檢舉這則留言","report",`data-c="${c.id}" data-post="${c.postId}"`]]); break; }
     case "cmTab": { const r=route(); navReplace(grpHash(r.id,t.dataset.v)); window.scrollTo(0,0); break; }   // 社群裡 Home／Feed／LIVE／Shop 之間切換不留紀錄
-    case "cmShop": { const r=route(); ui.shopCat="all"; location.hash=grpHash(r.id,"shop"); window.scrollTo(0,0); break; }
-    case "cmAbout": { const r=route(); ui.abOpen=null; location.hash=grpHash(r.id,"about"); window.scrollTo(0,0); break; }
-    case "cmAbMem": { const r=route(), m=t.dataset.v; ui.abOpen=m; location.hash=grpHash(r.id,"about"); window.scrollTo(0,0); setTimeout(()=>{ const el=document.getElementById("ab-"+m); if(el) el.scrollIntoView({block:"center"}); },80); break; }
-    case "cmMem": { const r=route(); ui.mpTab="post"; location.hash=grpHash(r.id,"about",t.dataset.v); window.scrollTo(0,0); break; }
+    case "cmShop": { const r=route(); ui.shopCat="all"; navTo(grpHash(r.id,"shop")); window.scrollTo(0,0); break; }
+    case "cmAbout": { const r=route(); ui.abOpen=null; navTo(grpHash(r.id,"about")); window.scrollTo(0,0); break; }
+    case "cmAbMem": { const r=route(), m=t.dataset.v; ui.abOpen=m; navTo(grpHash(r.id,"about")); window.scrollTo(0,0); setTimeout(()=>{ const el=document.getElementById("ab-"+m); if(el) el.scrollIntoView({block:"center"}); },80); break; }
+    case "cmMem": { const r=route(); ui.mpTab="post"; navTo(grpHash(r.id,"about",t.dataset.v)); window.scrollTo(0,0); break; }
     case "cmNotices": openNoticeList(route().id); break;
     case "cmCal": ui.calMo=0; ui.calDay=null; openCal(route().id); break;
     case "calMo": ui.calMo=(ui.calMo||0)+(+t.dataset.v); ui.calDay=null; openCal(t.dataset.g); break;
@@ -7480,8 +7488,8 @@ function clickCm(a,t,e,r){ switch(a){
    回傳 CLICK_NO＝這裡沒有這個動作，交給下一份
    ========================================================= */
 function clickAdm(a,t,e,r){ switch(a){
-    case "tourOpen": location.hash="#/fan/core?p=tour&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
-    case "openTour": location.hash="#/fan/core?p=tour"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
+    case "tourOpen": navTo("#/fan/core?p=tour&id="+encodeURIComponent(t.dataset.v)); window.scrollTo(0,0); break;
+    case "openTour": navTo("#/fan/core?p=tour"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):"")); window.scrollTo(0,0); break;
     case "tourBuy": tourBuyAsk(t.dataset.v,t.dataset.s); break;
     case "tourBuyOk": { const tr=tourOf(t.dataset.v), st=tr&&tr.stops.find(x=>x.id===t.dataset.s); layer.innerHTML=""; if(!st) break; const tx=myTix(); if(tx[st.id]){ toast("已經有這一站的票了"); break; }
       if(points()<TOUR_TIX){ toast("積分不夠，先補充積分吧"); break; } S.set(K.points,points()-TOUR_TIX); tx[st.id]=Date.now(); S.set(K.tourTix,tx); recordSale("tour",{gid:tr.gid,pts:TOUR_TIX,label:`${tr.title}・${st.city}站門票`});
@@ -7508,14 +7516,14 @@ function clickAdm(a,t,e,r){ switch(a){
     case "trSayOk": { const txt=((document.getElementById("trSayIn")||{}).value||"").trim(); if(!txt){ toast("請輸入文字"); break; } const all=S.get(K.wtours,[])||[], tr=all.find(x=>x.id===t.dataset.v), st=tr&&tr.stops.find(x=>x.id===t.dataset.s); layer.innerHTML=""; if(!st) break;
       const mid=session().member||uniMe(); st.msg=txt; st.msgBy=mid; st.msgTs=Date.now(); S.set(K.wtours,all); feedPush({kind:"tour",member:mid,group:tr.gid,text:`${st.city}站・${txt}`,tourId:tr.id,direct:true},"tix:"+st.id); lsRerender(); toast("已送出"); break; }
     case "abLink": { const k=t.dataset.k, gid=t.dataset.g, mm=t.dataset.m; layer.innerHTML="";
-      if(k==="sns"){ ui.snsFrom=location.hash; location.hash=mm?"#/fan/sns?p=profile&id="+encodeURIComponent("m:"+mm):"#/fan/sns"; }
-      else if(k==="tie"){ if(mm&&tieGate(mm)){} else if(mm){ ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; location.hash="#/fan/chat?m="+mm; } else go("fan",null,"whisper"); }
+      if(k==="sns"){ ui.snsFrom=location.hash; navTo(mm?"#/fan/sns?p=profile&id="+encodeURIComponent("m:"+mm):"#/fan/sns"); }
+      else if(k==="tie"){ if(mm&&tieGate(mm)){} else if(mm){ ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; navTo("#/fan/chat?m="+mm); } else go("fan",null,"whisper"); }
       else { ui.shopG=gid; ui.shopCat="all"; go("fan",null,"shop"); }
       window.scrollTo(0,0); break; }
-    case "goArtist": { const mm=MEMBERS[t.dataset.v]; if(!mm) break; layer.innerHTML=""; ui.sheet=null; ui.mpTab="post"; location.hash=grpHash(mm.group,"about",t.dataset.v); window.scrollTo(0,0); break; }
+    case "goArtist": { const mm=MEMBERS[t.dataset.v]; if(!mm) break; layer.innerHTML=""; ui.sheet=null; ui.mpTab="post"; navTo(grpHash(mm.group,"about",t.dataset.v)); window.scrollTo(0,0); break; }
     case "newsF": ui.newsF=t.dataset.v; lsRerender(); break;
-    case "newsOpen": location.hash=t.dataset.b+"&id="+encodeURIComponent(t.dataset.v); window.scrollTo(0,0); break;
-    case "openNews": location.hash="#/fan/core?p=news"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""); window.scrollTo(0,0); break;
+    case "newsOpen": navTo(t.dataset.b+"&id="+encodeURIComponent(t.dataset.v)); window.scrollTo(0,0); break;
+    case "openNews": navTo("#/fan/core?p=news"+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):"")); window.scrollTo(0,0); break;
     case "nwG": { nwKeep(); const d=ui.nwDraft, v=t.dataset.v; d.gids=d.gids.includes(v)?d.gids.filter(x=>x!==v):[...d.gids,v]; lsRerender(); break; }
     case "nwImg": { nwKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const f=await cropImg(f0,{ratio:16/9}); if(!f) return; ui.nwBusy=true; lsRerender();
@@ -7539,9 +7547,9 @@ function clickAdm(a,t,e,r){ switch(a){
     case "muOpen": case "muSheet": openSongSheet(t.dataset.v); break;
     case "goExplore": ui.feedTab="discover"; go("fan",null,"home"); window.scrollTo(0,0); break;
     case "coreLocked": toast("選秀暫未開啟，請隨時關注社群公告"); break;
-    case "coreGo": ui.srch=null; location.hash=t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v; window.scrollTo(0,0); break;
-    case "openSns": ui.snsFrom=location.hash; location.hash="#/"+(route().role||session().role)+"/sns"; window.scrollTo(0,0); break;
-    case "focGo": location.hash="#/artist?tab=foc&p="+t.dataset.v; window.scrollTo(0,0); break;
+    case "coreGo": ui.srch=null; navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
+    case "openSns": ui.snsFrom=location.hash; navTo("#/"+(route().role||session().role)+"/sns"); window.scrollTo(0,0); break;
+    case "focGo": navTo("#/artist?tab=foc&p="+t.dataset.v); window.scrollTo(0,0); break;
     case "vPlay": { setTimeout(()=>{ try{ const v1=vodOf(t.dataset.v), pv=layer.querySelector(".ph-view"); if(v1&&v1.mid&&vodIsMV(v1)&&pv&&!pv.querySelector(".pv-like")){ const on=mvLikedV(v1.id); pv.insertAdjacentHTML("beforeend",`<button class="pv-like ${on?"on":""}" data-a="mvLikeV" data-v="${v1.id}">${on?"♥":"♡"} ${fmt(mvLikesV(v1.id))}</button>`); } }catch(e){} },30); const v0=vodOf(t.dataset.v); if(v0&&v0.mid){ playVideo(v0.mid); vodViewWatch(v0.id); break; } openVodPlayer(t.dataset.v,t.dataset.pl); break; }
     case "vsAdd": case "vsEd": { const gid=t.dataset.g, sid=t.dataset.v||"", cur=sid?(getSecs(gid).find(x=>x.id===sid)||{}).title||"":""; ui.vsFor={gid,sid};
       tieModal(sid?"分區名稱":"新增分區","",`<input id="vsTi" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(cur)}"><button class="t-mbtn main" data-a="vsSave">儲存</button>${sid?`<button class="t-mbtn danger" data-a="vsDel">刪除分區</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
@@ -7630,7 +7638,7 @@ function clickAdm(a,t,e,r){ switch(a){
       if(meBlocked()) break; const sid=t.dataset.v, sh=t.dataset.s, wk=curWeek(), v=S.get(K.msVotes,{}), m=S.get(K.msMine,{});
       if(m[myVoteKey(sh)]) break; if(showEnded(sh,wk)){ toast("這個節目這週已經結束了"); break; } addShowVote(sid,sh); m[myVoteKey(sh)]=sid; S.set(K.msMine,m);
       const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } { const so=songOf(sid), mc=so&&giveMcCard(so.gid,sh); toast(mc?`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}・拿到 ${itemName(mc)} 🎤`:`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); } break; }
-    case "openSigned": layer.innerHTML=""; location.hash="#/fan/core?p=signed"; window.scrollTo(0,0); break;
+    case "openSigned": layer.innerHTML=""; navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break;
     default: return CLICK_NO;
   } }
 
@@ -7643,11 +7651,11 @@ function clickTheme(a,t,e,r){ switch(a){
     case "coachSkip": coachEnd(); break;
     case "coachSkipSec": if(ui.coach&&ui.coach.kind==="full") fullNext(); else coachEnd(); break;
     case "coachAgain": { const e=(session()||{}).email||"", d=S.get(K.onboard,{}), T=S.get(K.tours,{}); Object.keys(d).forEach(k=>{ if(k===e||k.startsWith(e+"|")) delete d[k]; }); Object.keys(T).forEach(k=>{ if(k.startsWith(e+"|")) delete T[k]; }); S.set(K.onboard,d); S.set(K.tours,T); window.scrollTo(0,0); coachWelcome(); break; }
-    case "theme": location.hash="#/"+session().role+"/look"; break;
-    case "thStore": location.hash="#/"+session().role+"/tint"; break;
-    case "thOpen": ui.thPvDark=document.documentElement.getAttribute("data-theme")==="dark"; location.hash="#/"+session().role+"/tint?id="+t.dataset.v; break;
+    case "theme": navTo("#/"+session().role+"/look"); break;
+    case "thStore": navTo("#/"+session().role+"/tint"); break;
+    case "thOpen": ui.thPvDark=document.documentElement.getAttribute("data-theme")==="dark"; navTo("#/"+session().role+"/tint?id="+t.dataset.v); break;
     case "thPv": ui.thPvDark=t.dataset.v==="1"; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
-    case "thLook": location.hash="#/"+session().role+"/look"; break;
+    case "thLook": navTo("#/"+session().role+"/look"); break;
     case "thBuy": { const x=thById(t.dataset.v); if(!x) break; if(!x.price){ thBuy(x.id); break; } iosAlert("購買主題",`用 ${fmt(x.price)} 積分購買「${esc(x.name)}」？`,`<button data-a="tCloseLayer">取消</button><button data-a="thBuyOk" data-v="${x.id}">購買</button>`); break; }
     case "thBuyOk": thBuy(t.dataset.v); break;
     case "thUse": thUse(t.dataset.v); break;
@@ -7666,10 +7674,10 @@ function clickTheme(a,t,e,r){ switch(a){
     case "lkCancel": ui.lk=null; lockPaint(); break;
     case "lkForgot": iosAlert("忘記密碼","登出後重新登入，密碼鎖就會關掉。",`<button data-a="tCloseLayer">取消</button><button data-a="lkReset">登出</button>`); break;
     case "lkReset": S.set(acK(K.lockCfg),{on:false,pin:""}); ui.lk=null; lockPaint(); layer.innerHTML=""; SS.del(); go("auth"); break;
-    case "thAdmin": location.hash="#/admin/themes"; break;
-    case "thMine": location.hash="#/artist/thmine"; break;
-    case "thNew": ui.thDraft=null; ui.thImportRep=null; location.hash="#/"+session().role+"/thedit"; break;
-    case "thEdit": ui.thDraft=null; ui.thImportRep=null; location.hash="#/"+session().role+"/thedit?id="+t.dataset.v; break;
+    case "thAdmin": navTo("#/admin/themes"); break;
+    case "thMine": navTo("#/artist/thmine"); break;
+    case "thNew": ui.thDraft=null; ui.thImportRep=null; navTo("#/"+session().role+"/thedit"); break;
+    case "thEdit": ui.thDraft=null; ui.thImportRep=null; navTo("#/"+session().role+"/thedit?id="+t.dataset.v); break;
     case "thScope": { const d=thDraft(r.id); d.scope=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "thWho": { const d=thDraft(r.id); if(d.scope==="group") d.gid=t.dataset.v; else { d.mid=t.dataset.v; d.gid=MEMBERS[d.mid]?MEMBERS[d.mid].group:d.gid; } { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "thModes": { const d=thDraft(r.id); d.modes=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
@@ -7697,7 +7705,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "tLeave": openLeaveRoom(t.dataset.m); break;
     case "tLeaveOk": { const m0=t.dataset.m, L=tieLeft(); L[m0]=tiePeriod(m0); S.set(K.tieLeft,L); layer.innerHTML=""; go("fan",null,"whisper"); toast("已離開聊天室"); break; }
     case "tExpired": iosAlert("TIE 券已到期","續訂後就能再傳訊息、收到新訊息。",`<button data-a="tCloseLayer">取消</button><button data-a="goSubs">前往續訂</button>`); break;
-    case "uniGo": layer.innerHTML=""; ui.sheet=null; location.hash=t.dataset.v; break;
+    case "uniGo": layer.innerHTML=""; ui.sheet=null; navTo(t.dataset.v); break;
     case "uniSeg": navRoot(t.dataset.v); break;
     case "uniAnn": uniAnnOpen(); break;
     case "uniAnnTo": uniAnnKeep(); ui.annDraft.to=t.dataset.v; uniAnnOpen(); break;
@@ -7717,8 +7725,8 @@ function clickTheme(a,t,e,r){ switch(a){
     case "thOk": case "thNo": case "thOnOff": { const L=getThemes(), x=L.find(z=>z.id===t.dataset.v); if(!x) break; x.status=a==="thOk"?"on":a==="thNo"?"rejected":x.status==="on"?"off":"on"; saveThemes(L); applyTheme(); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(a==="thOk"?"已通過，上架到 "+TH_STORE:a==="thNo"?"已退回":x.status==="on"?"已上架":"已下架"); break; }
     case "themeSet": S.set(K.theme,t.dataset.v); applyTheme(); layer.innerHTML=""; render(); break;
     case "fsView": openSignedView(t.dataset.v); break;
-    case "fsDemoFan": fsDemoLive(false); location.hash="#/fan/core?p=fansign&id=fsshow"; window.scrollTo(0,0); break;
-    case "fsDemoDesk": fsDemoLive(true); location.hash="#/artist?tab=foc&p=fansign&id=fsshow"; window.scrollTo(0,0); break;
+    case "fsDemoFan": fsDemoLive(false); navTo("#/fan/core?p=fansign&id=fsshow"); window.scrollTo(0,0); break;
+    case "fsDemoDesk": fsDemoLive(true); navTo("#/artist?tab=foc&p=fansign&id=fsshow"); window.scrollTo(0,0); break;
     case "fsJoin": if(fsJoin(t.dataset.v,t.dataset.m)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`報名成功${t.dataset.m?"（"+artName(t.dataset.m,"feed")+"）":""}！目前 1 次機會 💜`); } break;
     case "fsBuy": { const ev=fsGet(t.dataset.v), mid=t.dataset.m; if(!ev) break; ask(`買一張 ${esc(fsName(ev))} 專輯（${fmt(MERCH.find(x=>x.k==="album").pts)} 積分），${mid?esc(artName(mid,"feed"))+" 的":""}抽籤機會多 1 次。`,()=>{ if(fsBuy(ev.id,mid)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`目前 ${fsEntries(fsGet(ev.id),mid)[FS_ME]} 次機會 💿`); } },{title:"買專輯增加機會",ok:"買專輯",danger:false}); break; }
     case "fsNote": { const ev=fsGet(t.dataset.v); if(!ev) break; const x=(fsMySlots(ev)[0]||{}).s||{}; ui.fsGreet=[...(x.greet||[])];
@@ -7729,8 +7737,8 @@ function clickTheme(a,t,e,r){ switch(a){
     case "fsNoteSave": { const ev=fsGet(t.dataset.v); if(!ev) break; const v=(document.getElementById("fsNoteIn").value||"").trim(), ti=document.getElementById("fsToIn"), to=ti?ti.value.trim():"";
       if(ti&&!fsToOk(to)){ toast("To 名字只能用韓文或英文，1～12 個字"); break; }
       ev.slots.forEach(x=>{ if(x.fk===FS_ME){ x.note=v; if(ti){ x.toName=to; x.greet=[...(ui.fsGreet||[])]; } } }); fsSave(ev); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); toast("存好了 📝"); break; }
-    case "fsRoom": layer.innerHTML=""; location.hash="#/fan/core?p=fansign&id="+t.dataset.v; window.scrollTo(0,0); break;
-    case "fsDesk": location.hash="#/artist?tab=foc&p=fansign&id="+t.dataset.v; break;
+    case "fsRoom": layer.innerHTML=""; navTo("#/fan/core?p=fansign&id="+t.dataset.v); window.scrollTo(0,0); break;
+    case "fsDesk": navTo("#/artist?tab=foc&p=fansign&id="+t.dataset.v); break;
     case "fsTo": ui.fsCreate={...(ui.fsCreate||{}),title:(document.getElementById("fsTitle")||{}).value||"",start:(document.getElementById("fsStartAt")||{}).value,toSign:t.dataset.v==="1"}; lsRerender(); break;
     case "fsType": case "fsGid": case "fsQuota": case "fsSpecials": { const k={fsType:"type",fsGid:"gid",fsQuota:"quota",fsSpecials:"specials"}[a]; ui.fsCreate={...(ui.fsCreate||{}),title:(document.getElementById("fsTitle")||{}).value||"",start:(document.getElementById("fsStartAt")||{}).value,[k]:/^\d+$/.test(t.dataset.v)?+t.dataset.v:t.dataset.v}; lsRerender(); break; }
     case "fsCreate": { const cr=ui.fsCreate||{}, gid=cr.gid||(GROUPS.find(g=>fsActiveGroup(g.id))||{}).id, ti=document.getElementById("fsTitle").value.trim(), st=new Date(document.getElementById("fsStartAt").value).getTime();
@@ -7789,8 +7797,8 @@ function clickLive(a,t,e,r){ switch(a){
     case "dlAskX": document.querySelector(".dl-ask")?.remove(); break;
     case "dlOut": ui.dlUi=false; navBack(); break;
     case "dlEnd": endLive(t.dataset.id); ui.hostReply=null; ui.dlUi=false; render(); window.scrollTo(0,0); toast("直播已結束，可以在重播裡回顧"); break;
-    case "dlMini": { ui.lvMini=t.dataset.id; ui.dlUi=false; const ss=session(); if(ss.role==="artist"&&!isUni()) go("artist",null,"home"); else if(document.querySelector(".dl.host")) location.hash="#/artist?tab=home"; else { history.length>1?navBack():go(ss.role); } setTimeout(lvMiniMount,60); break; }
-    case "lvMiniOpen": { const l=getLive(ui.lvMini); const ss=session(); if(!l){ ui.lvMini=null; lvMiniMount(); break; } const host=ss.role==="artist"||(isUni()&&route().role==="artist"); ui.lvMini=null; lvMiniMount(); if(host&&l.member===(ss.member||uniMe())) location.hash="#/artist?tab=live"; else location.hash="#/"+(isUni()?"fan":ss.role)+"/live?id="+l.id; break; }
+    case "dlMini": { ui.lvMini=t.dataset.id; ui.dlUi=false; const ss=session(); if(ss.role==="artist"&&!isUni()) go("artist",null,"home"); else if(document.querySelector(".dl.host")) navTo("#/artist?tab=home"); else { history.length>1?navBack():go(ss.role); } setTimeout(lvMiniMount,60); break; }
+    case "lvMiniOpen": { const l=getLive(ui.lvMini); const ss=session(); if(!l){ ui.lvMini=null; lvMiniMount(); break; } const host=ss.role==="artist"||(isUni()&&route().role==="artist"); ui.lvMini=null; lvMiniMount(); if(host&&l.member===(ss.member||uniMe())) navTo("#/artist?tab=live"); else navTo("#/"+(isUni()?"fan":ss.role)+"/live?id="+l.id); break; }
     case "lvMiniX": ui.lvMini=null; lvMiniMount(); break;
     case "rpSort": ui.rpSort=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "stOff": stOff(); break;
@@ -7881,7 +7889,7 @@ function clickLive(a,t,e,r){ switch(a){
    回傳 CLICK_NO＝這裡沒有這個動作，交給下一份
    ========================================================= */
 function clickTie(a,t,e,r){ switch(a){
-    case "openChatFromToast": document.querySelectorAll(".toast").forEach(x=>x.remove()); ui.srch=null; ui.scrollChat=true; location.hash="#/fan/chat?m="+ui.toastMember; break;
+    case "openChatFromToast": document.querySelectorAll(".toast").forEach(x=>x.remove()); ui.srch=null; ui.scrollChat=true; navTo("#/fan/chat?m="+ui.toastMember); break;
     case "passExpire": { const all=subs(), r2=all[t.dataset.m]; r2.seenUntil=Math.max(r2.seenUntil||0,Date.now()); r2.expires=Date.now()-(t.dataset.v==="long"?25:1)*3600e3; if(r2.since>r2.expires) r2.since=r2.expires-DAY; S.set(K.tieSubs,all); render();
       toast(t.dataset.v==="long"?"示範：這張券已到期超過 24 小時":"示範：這張券剛到期（1 小時前）"); break; }
     case "wsPlus": ui.banF="all"; openAllBan(); break;
@@ -7894,7 +7902,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "tWelcomeSave": { const v=document.getElementById("welTxt").value.trim(); if(!v){ toast("歡迎語不能空白"); break; }
       const w2=S.get(K.tieWelcome,{}); w2[session().member||uniMe()]=v; S.set(K.tieWelcome,w2); layer.innerHTML=""; toast("已儲存歡迎語"); break; }
     case "openChat": if(tieGate(t.dataset.m)) break; ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; layer.innerHTML="";
-      location.hash="#/fan/chat?m="+t.dataset.m;
+      navTo("#/fan/chat?m="+t.dataset.m);
       { const m1=t.dataset.m; if(!S.get(K.tieNotice,false)||(isActive(m1)&&!tieAgreed(m1))) setTimeout(()=>openTieAgree(m1,true),250); }
       break;
     
@@ -7905,9 +7913,9 @@ function clickTie(a,t,e,r){ switch(a){
     case "tMute": { const st=tieSet(t.dataset.m); saveTieSet(t.dataset.m,{muted:!st.muted}); openTieDrawer(t.dataset.m); toast(!st.muted?"已關閉這個聊天室的通知":"已開啟通知"); break; }
     case "tFav": { const st=tieSet(t.dataset.m); saveTieSet(t.dataset.m,{fav:!st.fav}); openTieDrawer(t.dataset.m); toast(!st.fav?"已加入我的最愛 ⭐":"已移出我的最愛"); break; }
     case "tTrToggle": { const st=tieSet(t.dataset.m); saveTieSet(t.dataset.m,{translate:!st.translate}); const inDrawer=!!t.closest(".t-drawer"); render(); if(inDrawer){ openTieDrawer(t.dataset.m); } break; }
-    case "tBox": { const m2=route().m; layer.innerHTML=""; ui.boxEdit=false; if(m2) location.hash="#/fan/chat?m="+m2+"&p=box"; break; }
-    case "tGallery": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=gallery"; window.scrollTo(0,0); break;
-    case "tToSettings": layer.innerHTML=""; location.hash="#/fan/chat?m="+t.dataset.m+"&p=settings"; break;
+    case "tBox": { const m2=route().m; layer.innerHTML=""; ui.boxEdit=false; if(m2) navTo("#/fan/chat?m="+m2+"&p=box"); break; }
+    case "tGallery": layer.innerHTML=""; navTo("#/fan/chat?m="+t.dataset.m+"&p=gallery"); window.scrollTo(0,0); break;
+    case "tToSettings": layer.innerHTML=""; navTo("#/fan/chat?m="+t.dataset.m+"&p=settings"); break;
     case "tTranslate": { const id=t.dataset.id, lang=tieSet(route().m).trLang||"zh"; const done=()=>{ const s2=new Set(S.get(K.tieTr,[])); s2.add(id); S.set(K.tieTr,[...s2]); const y=window.scrollY; render(); window.scrollTo(0,y); };
       const wl=getWhispers().find(x=>x.id===id); if(wl&&wl.welcome){ if(welTr(wl,lang)) done(); else { t.classList.add("busy"); welTranslate(id,lang).then(()=>{ t.classList.remove("busy"); if(welTr(wl,lang)) done(); else toast("翻譯失敗，等一下再試試"); }); } break; }
       t.classList.add("busy"); tieTrBoth(id,lang).then(ok=>{ t.classList.remove("busy"); if(ok) done(); }); break; }
@@ -7922,8 +7930,8 @@ function clickTie(a,t,e,r){ switch(a){
     
     
     case "tEmoji": { const i=document.getElementById("win"); ui.wDraft=(i?i.value:"")+t.dataset.v; i.value=ui.wDraft; document.getElementById("wsend").classList.add("on"); i.focus(); break; }
-    case "tEditName": ui.tieEditVal=null; location.hash="#/fan/chat?m="+t.dataset.m+"&p=name"; break;
-    case "tEditNick": ui.tieEditVal=null; location.hash="#/fan/chat?m="+t.dataset.m+"&p=nick"; break;
+    case "tEditName": ui.tieEditVal=null; navTo("#/fan/chat?m="+t.dataset.m+"&p=name"); break;
+    case "tEditNick": ui.tieEditVal=null; navTo("#/fan/chat?m="+t.dataset.m+"&p=nick"); break;
     case "tEditBack": { const st=tieSet(t.dataset.m), val=t.dataset.w==="name"?st.chatName:st.nickname;
       if(ui.tieEditVal!=null&&ui.tieEditVal!==val) tieModal("不保存更改？","",`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="tEditDiscard">確認</button>`,"row");
       else { ui.tieEditVal=null; navBack(); } break; }
@@ -7932,7 +7940,7 @@ function clickTie(a,t,e,r){ switch(a){
       saveTieSet(t.dataset.m,t.dataset.w==="name"?{chatName:v}:{nickname:v}); ui.tieEditVal=null; navBack(); toast("已儲存"); break; }
     case "tBgMenu": { const m2=t.dataset.m; if(!document.getElementById("tbgAlbum")){ const d=document.createElement("div"); d.innerHTML=`<input type="file" id="tbgAlbum" accept="image/*" hidden data-m="${m2}"><input type="file" id="tbgCam" accept="image/*" capture="environment" hidden data-m="${m2}">`; root.querySelector(".app").appendChild(d); }
       iosSheet([["選擇照片","tPickAlbum"],["變更背景顏色","tBgColor",`data-m="${m2}"`]]); break; }
-    case "tBgColor": layer.innerHTML=""; ui.bgPick=null; ui.bgcTab="color"; location.hash="#/fan/chat?m="+t.dataset.m+"&p=bgc"; break;
+    case "tBgColor": layer.innerHTML=""; ui.bgPick=null; ui.bgcTab="color"; navTo("#/fan/chat?m="+t.dataset.m+"&p=bgc"); break;
     case "bgcTab": ui.bgcTab=t.dataset.v; render(); break;
     case "bgcPick": ui.bgPick={mode:t.dataset.mode,v:t.dataset.v}; render(); break;
     case "tBgcOk": { const pk=ui.bgPick; if(!pk) break; const u={bgMode:pk.mode}; if(pk.mode==="color") u.bgColor=pk.v; else u.bgPattern=+pk.v; saveTieSet(t.dataset.m,u); ui.bgPick=null; toast("已變更背景"); navBack(); break; }
@@ -7950,8 +7958,8 @@ function clickTie(a,t,e,r){ switch(a){
       if(mode==="new"){ tpkBuyDone(gid,sel.filter(x=>!own.includes(x))); break; }
       const out=own.filter(x=>!sel.includes(x)), inn=sel.filter(x=>!own.includes(x)); if(!out.length){ navBack(); break; }
       const L=subs(), used=out.filter(x=>(L[x]||{}).swapPer===tiePeriod(x)); if(used.length){ toast(`${used.map(x=>MEMBERS[x].name).join("、")} 的券這段期間已經換過 1 次了`); break; }
-      const from=t.dataset.m; openPickNotice(()=>{ out.forEach((x,i)=>{ const rec=L[x], to=inn[i]; if(!rec||!to) return; L[to]={...rec,since:Date.now(),periods:[{start:Date.now(),end:null}],swapPer:Date.now()}; delete L[x]; }); S.set(K.tieSubs,L); ui.pickSet=null; toast("已更改藝人 💜"); location.hash="#/fan/chat?m="+(sel.includes(from)?from:inn[0]); }); break; }
-    case "tPickGo": ui.pickSet=null; location.hash="#/fan/chat?m="+t.dataset.m+"&p=pick"; break;
+      const from=t.dataset.m; openPickNotice(()=>{ out.forEach((x,i)=>{ const rec=L[x], to=inn[i]; if(!rec||!to) return; L[to]={...rec,since:Date.now(),periods:[{start:Date.now(),end:null}],swapPer:Date.now()}; delete L[x]; }); S.set(K.tieSubs,L); ui.pickSet=null; toast("已更改藝人 💜"); navTo("#/fan/chat?m="+(sel.includes(from)?from:inn[0])); }); break; }
+    case "tPickGo": ui.pickSet=null; navTo("#/fan/chat?m="+t.dataset.m+"&p=pick"); break;
     case "tKeep": { const L=S.get(K.boxKeep,[])||[], id=t.dataset.id, m0=route().m, room=m0?fanRoom(m0):[]; layer.innerHTML="";
       if(L.includes(id)){ toast(`已經在 ${WHISPER_NAME} BOX 裡了`); break; }
       if(L.filter(x=>room.some(w=>w.id===x)).length>=BOX_MAX){ toast(`${WHISPER_NAME} BOX 最多收藏 ${BOX_MAX} 則，先移除一些再收藏`); break; }
@@ -7988,7 +7996,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "tqPreview": openTieQPreview(); break;
     case "tvAsk": tvUseAsk(t.dataset.v); break;
     case "tvUse": tvUse(t.dataset.v,t.dataset.m); break;
-    case "meSecGo": ui.meSec=t.dataset.v; location.hash="#/fan?tab=me"; render(); window.scrollTo(0,0); break;
+    case "meSecGo": ui.meSec=t.dataset.v; navTo("#/fan?tab=me"); render(); window.scrollTo(0,0); break;
     case "tqBack": layer.innerHTML=""; break;
     case "tqSend": iosAlert(`要傳送 ${WHISPER_NAME} 嗎？`,"確認後，訊息會一起傳送。",`<button data-a="tCloseLayer">取消</button><button data-a="tqSendOk">確認</button>`); break;
     case "tqSendOk": { const mid=session().member, Q=tieQ(mid); layer.innerHTML=""; if(!Q.length||ui.tqBusy) break; ui.tqBusy=mid; ui.scrollChat=true; render();
@@ -9011,7 +9019,7 @@ function fullTourStart(){ const ro=route().role, navs=[...document.querySelector
 /* 教學時打開抽屜、留言、直播分頁 */
 const TOUR_OPEN={ ftLive:()=>{ ui.feedTab="live"; render(); },
   cm:()=>{ ui.feedTab="feed"; render(); window.scrollTo(0,0); const b=document.querySelector('.post [data-a="comments"]'); if(b) b.click(); },
-  grpfab:()=>openCmFab(route().id), muOpen:()=>{ const f=(SHOWS[0]||{}).id; if(f) ui.muOpen={[f]:true}; location.hash="#/fan/core?p=promo"; window.scrollTo(0,0); }, drawer:()=>openTieDrawer(route().m), fab:()=>openArtFab(), artdrawer:()=>openTieArtDrawer(session().member) };
+  grpfab:()=>openCmFab(route().id), muOpen:()=>{ const f=(SHOWS[0]||{}).id; if(f) ui.muOpen={[f]:true}; navTo("#/fan/core?p=promo"); window.scrollTo(0,0); }, drawer:()=>openTieDrawer(route().m), fab:()=>openArtFab(), artdrawer:()=>openTieArtDrawer(session().member) };
 function tourCloseOpen(){ ui.sheet=null; layer.innerHTML=""; if(ui.feedTab==="live"){ ui.feedTab="feed"; } }
 /* 教學用的示範內容：讓空的頁面也有東西可以看，教完就收掉 */
 const TDM_G={id:"tdm_g",name:"示範團",g:0}, TDM_M={name:"示範藝人",group:"tdm_g",g:2};
@@ -9045,10 +9053,10 @@ function tourDemoOff(){ ui.tourDemo=null; try{ const T=x=>String(x&&x.id||"").st
   }catch(e){} tdmDrop(); }
 function fullNext(){ const c=ui.coach; if(!c||c.kind!=="full") return;
   if(c.opened){ c.opened=false; tourCloseOpen(); }
-  if(c.si>=c.seq.length){ fullMarkDone(c.role); tourDemoOff(); ui.coach=null; if(c.home&&location.hash!==c.home) location.hash=c.home; setTimeout(()=>{ window.scrollTo(0,0); ui.coach={kind:"done"}; coachDone(); },350); return; }
+  if(c.si>=c.seq.length){ fullMarkDone(c.role); tourDemoOff(); ui.coach=null; if(c.home&&location.hash!==c.home) navTo(c.home); setTimeout(()=>{ window.scrollTo(0,0); ui.coach={kind:"done"}; coachDone(); },350); return; }
   const it=c.seq[c.si++], my=c.tick=(c.tick||0)+1; c.wait=true; coachMount(`<div class="coach-dim soft"></div>`);
   if(it.nav){ const ro=c.role, v=it.nav, h=ro==="admin"&&isUni()?(UNI_ATABGO[v]||"#/admin"):ro==="fan"&&isUni()?(UNI_ROUTE[v]||"#/fan"):(v==="home"?"#/"+ro+(ro==="artist"?"?tab=home":""):"#/"+ro+"?tab="+v); navRoot(h); c.label=TOUR_LBL[v]||v; }
-  else if(it.hash){ location.hash=it.hash; c.label=TOUR_LBL[it.lbl]||it.lbl||""; }
+  else if(it.hash){ navTo(it.hash); c.label=TOUR_LBL[it.lbl]||it.lbl||""; }
   else if(it.open){ try{ TOUR_OPEN[it.open](); }catch(e){} c.opened=it.open!=="ftLive"||true; c.label=TOUR_LBL[it.lbl]||it.lbl||c.label||""; }
   setTimeout(()=>{ if(ui.coach!==c) return; if(!it.open) window.scrollTo(0,0); const k=it.key||tourKey(); const steps=(TOURS[k]||[]).filter(([sel])=>{ const el=document.querySelector(sel); return el&&el.getBoundingClientRect().height>0; });
     if(c.tick!==my) return; c.wait=false; if(!steps.length) return fullNext(); c.steps=steps; c.i=0; c.key=k; c._scI=-1; coachShow(); },650); }
@@ -10553,10 +10561,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(tabLike&&cur.sub==="sns"){ /* 跟 App 的導覽列一樣：分頁之間直接換、不疊歷史；按目前這頁就捲回最上面 */
         const curTab=(cur.p||"home")===(t.dataset.v)&&!cur.id; if(curTab){ window.scrollTo({top:0,behavior:"smooth"}); document.querySelectorAll(".sn-reels,.sn-feed").forEach(x=>x.scrollTo&&x.scrollTo({top:0,behavior:"smooth"})); break; }
         navReplace(t.dataset.v==="home"?"#/"+session().role+"/sns":h); window.scrollTo(0,0); }
-      else location.hash=h; }
+      else navTo(h); }
     window.scrollTo(0,0); break;
     case "snsPTab": ui.snTab=t.dataset.v; render(); break;
-    case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")){ const inR=!!t.closest(".sn-reels"); setTimeout(()=>{ if(snTapT!==now) return; if(inR) snSndToggle(); else { ui.snReelOne=id; ui.snMute=false; location.hash="#/"+route().role+"/sns?p=reels&id="+encodeURIComponent(id); } },330); } } break; }
+    case "snTap": { const id=t.dataset.id, now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; if(t.querySelector("video.sn-vid")){ const inR=!!t.closest(".sn-reels"); setTimeout(()=>{ if(snTapT!==now) return; if(inR) snSndToggle(); else { ui.snReelOne=id; ui.snMute=false; navTo("#/"+route().role+"/sns?p=reels&id="+encodeURIComponent(id)); } },330); } } break; }
     case "snLike": { const id=t.dataset.id, d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id);   /* 只改這顆按鈕，不整頁重畫（整頁重畫會跳回最上面） */
       const p=snLikeUI(id);
       if(!p){ const sc=document.querySelector(".sn-scroll,.sn-page,.sn"), y=sc?sc.scrollTop:window.scrollY; render(); if(sc&&document.querySelector(".sn-scroll,.sn-page,.sn")) document.querySelector(".sn-scroll,.sn-page,.sn").scrollTop=y; else window.scrollTo(0,y); }
@@ -10615,9 +10623,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snCmLk": { const d=snDB(), me=snMeId(), c=(d.cms[t.dataset.id]||[]).find(x=>x.id===t.dataset.v); if(!c) break; const L=c.lk=c.lk||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else L.push(me); snSave(d); t.classList.toggle("on",i<0); const sm=t.previousElementSibling&&t.previousElementSibling.querySelector("small"); snOpenCm(t.dataset.id); break; }
     case "snEditCap": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; layer.innerHTML=""; tieModal("編輯說明",`<textarea id="snCapEd" class="a-nick-in sn-caped" rows="4" placeholder="輸入文字">${esc(p.cap||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snEditCapOk" data-id="${p.id}">完成</button>`,"row"); break; }
     case "snEditCapOk": { const v=((document.getElementById("snCapEd")||{}).value||"").trim(); if(v&&!isAdminAcct()&&banBlock(v)) break; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; p.cap=v; p.ed=Date.now(); snSave(d); layer.innerHTML=""; render(); toast("已更新"); break; }
-    case "snTagGo": layer.innerHTML=""; location.hash="#/"+session().role+"/sns?p=tag&id="+encodeURIComponent(t.dataset.v); break;
-    case "snAtGo": { const u=snAllUsers().find(x=>(x.u||"").toLowerCase()===t.dataset.v); if(!u){ toast("找不到這個帳號"); break; } layer.innerHTML=""; location.hash="#/"+session().role+"/sns?p=profile&id="+encodeURIComponent(u.id); break; }
-    case "snFl": ui.snFlK=t.dataset.k; ui.snFlQ=""; location.hash="#/"+session().role+"/sns?p=fl&id="+encodeURIComponent(t.dataset.v); break;
+    case "snTagGo": layer.innerHTML=""; navTo("#/"+session().role+"/sns?p=tag&id="+encodeURIComponent(t.dataset.v)); break;
+    case "snAtGo": { const u=snAllUsers().find(x=>(x.u||"").toLowerCase()===t.dataset.v); if(!u){ toast("找不到這個帳號"); break; } layer.innerHTML=""; navTo("#/"+session().role+"/sns?p=profile&id="+encodeURIComponent(u.id)); break; }
+    case "snFl": ui.snFlK=t.dataset.k; ui.snFlQ=""; navTo("#/"+session().role+"/sns?p=fl&id="+encodeURIComponent(t.dataset.v)); break;
     case "snFlK": ui.snFlK=t.dataset.v; render(); break;
     case "snFlRm": { const v=t.dataset.v; ask("要移除這位粉絲嗎？對方不會收到通知。",()=>{ const d=snDB(), me=snMeId(), F=snFol(d,v), i=F.indexOf(me); if(i>=0) F.splice(i,1); snSave(d); render(); },{ok:"移除"}); break; }
     case "snRecX": try{ localStorage.removeItem(snRecKey()); }catch(e){} render(); break;
@@ -10627,7 +10635,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snTagT": { const dr=ui.snDraft; if(!dr) break; const L=dr.tags=dr.tags||[], i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=20) toast("最多標註 20 人"); else L.push(t.dataset.v); t.classList.toggle("on",i<0); break; }
     case "snTagDone": layer.innerHTML=""; render(); break;
     case "snLikers": snLikers(t.dataset.id); break;
-    case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; location.hash="#/"+session().role+"/sns?p=new&id=sub"; break;
+    case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; navTo("#/"+session().role+"/sns?p=new&id=sub"); break;
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }
     case "snLkX": { layer.innerHTML=""; if(ui.snLkDirty){ ui.snLkDirty=0; render(); } break; }
     case "snLkFol": { const d=snDB(), me=snMeId(), v=t.dataset.v, L=snFol(d,me), i=L.indexOf(v); d.req=d.req||{};
@@ -10642,7 +10650,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snReqOk": case "snReqNo": { const d=snDB(), me=snMeId(), v=t.dataset.v; d.req=d.req||{}; d.req[me]=(d.req[me]||[]).filter(x=>x!==v); if(a==="snReqOk"){ const F=snFol(d,v); if(!F.includes(me)) F.push(me); } snSave(d); render(); break; }
     case "snPrivT": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; pr.priv=!pr.priv; if(!pr.priv&&d.req&&d.req[me]&&d.req[me].length){ d.req[me].forEach(x=>{ const F=snFol(d,x); if(!F.includes(me)) F.push(me); }); d.req[me]=[]; } snSave(d); render(); toast(pr.priv?"已改成私人帳號":"已改成公開帳號"); break; }
     case "snToStory": { const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; d.stories.push({id:"st"+Date.now(),uid:me,post:p.id,ts:Date.now()}); snSave(d); layer.innerHTML=""; render(); toast("已加到你的限時動態"); break; }
-    case "snStoryPost": { clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); location.hash="#/"+session().role+"/sns?p="+(p&&snIsVid(p)?"reels":"post")+"&id="+encodeURIComponent(t.dataset.id); break; }
+    case "snStoryPost": { clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); navTo("#/"+session().role+"/sns?p="+(p&&snIsVid(p)?"reels":"post")+"&id="+encodeURIComponent(t.dataset.id)); break; }
     case "snHlPick": t.classList.toggle("on"); break;
     case "snHlDel": { const id=t.dataset.v; ask("要刪除這個精選嗎？",()=>{ const d=snDB(), me=snMeId(); d.hl=d.hl||{}; d.hl[me]=(d.hl[me]||[]).filter(h=>h.id!==id); snSave(d); clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; render(); toast("已刪除精選"); }); break; }
     case "snHl": { const d=snDB(), h=snHls(d,t.dataset.v).find(x=>x.id===t.dataset.id); if(!h||!h.items.length) break; ui.snStory={order:[t.dataset.v],ui:0,si:0,list:h.items,title:h.title,hid:h.id}; snShowStory(); break; }
@@ -10650,7 +10658,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       tieModal("新增精選",`<input id="snHlIn" class="a-nick-in" maxlength="15" placeholder="輸入文字"><span class="sn-hlpk">${S2.slice().reverse().map((s,i)=>`<button class="${i===0?"on":""}" data-a="snHlPick" data-id="${s.id}">${snStThumb(d,s,snUser(me).g)}<i></i></button>`).join("")}</span>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snHlOk">新增</button>`,"row sn-hlm"); hydrateMedia(layer); setTimeout(()=>{ const i=document.getElementById("snHlIn"); if(i) i.focus(); },200); break; }
     case "snHlOk": { const v=((document.getElementById("snHlIn")||{}).value||"").trim()||"精選"; if(banBlock(v)) break; const d=snDB(), me=snMeId(); d.hl=d.hl||{}; const pk=[...document.querySelectorAll(".sn-hlpk .on")].map(b=>b.dataset.id); if(!pk.length){ toast("至少選一則"); break; } (d.hl[me]=d.hl[me]||[]).push({id:"hl"+Date.now(),title:v,items:d.stories.filter(x=>x.uid===me&&pk.includes(x.id)).sort((a,b)=>a.ts-b.ts)}); snSave(d); layer.innerHTML=""; render(); toast("已新增精選"); break; }
     case "snCreate": snSheet([[["貼文","snNewP",'data-v="post"',{ic:"grid"}],["限時動態","snNewP",'data-v="story"',{ic:"plus"}]]],{title:"建立"}); break;
-    case "snNewP": layer.innerHTML=""; ui.snDraft={media:[],cap:"",mode:t.dataset.v}; location.hash="#/"+route().role+"/sns?p=new"+(t.dataset.v==="story"?"&id=story":""); break;
+    case "snNewP": layer.innerHTML=""; ui.snDraft={media:[],cap:"",mode:t.dataset.v}; navTo("#/"+route().role+"/sns?p=new"+(t.dataset.v==="story"?"&id=story":"")); break;
     case "snFeedSw": snSheet([[["為你推薦","snFeedSet",'data-v="all"',{ic:"home",on:(ui.snFeed||"all")==="all"}],["追蹤中","snFeedSet",'data-v="following"',{ic:"user",on:ui.snFeed==="following"}]]]); break;
     case "snFeedSet": ui.snFeed=t.dataset.v; layer.innerHTML=""; render(); window.scrollTo(0,0); break;
     case "snMenu": snSheet([[["已儲存","snSavedTab","",{ic:"save"}],["摯友","snsGo",'data-v="cf"',{ic:"star"}]],[["分享個人檔案","snShareMe","",{ic:"send"}]]]); break;
@@ -11324,13 +11332,13 @@ const cfCur=mid=>{ const w=cfWindow(mid); return w?cfGet(mid,w.y):null; };
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^cf[A-Z]/.test(a)) return;
   const mid=t.dataset.v, rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
   switch(a){
-    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; const h=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); if(route().id!==mid) location.hash=h; else render(); window.scrollTo(0,0); },420); break; }
+    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; const h=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); if(route().id!==mid) navTo(h); else render(); window.scrollTo(0,0); },420); break; }
     case "cfOut": { ui.cfIn=null; const art=(session()||{}).role==="artist", skip=h=>/[?&]p=cafe&id=/.test(h)||(art&&/[?&]p=cafe(&|$)/.test(h)), cur=NAV_BASE+NAV_D; let to=null;   /* 店裡按返回：一次就離開咖啡廳，回到進來前的那一頁 */
       for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]&&!skip(NAV_STK[i])){ to=NAV_STK[i]; break; } } navBackTo(to||(art?"#/artist?tab=foc":"#/fan/core?p=cafe")); break; }
     case "cfZone": { const r=document.getElementById("cfRoom"), z=r&&r.querySelector(`[data-z="${t.dataset.v}"]`); if(z) r.scrollTo({left:z.offsetLeft-r.offsetLeft,behavior:"smooth"}); break; }
     case "cfGo": { const dr=e.target.closest(".cfs-door"), op=!!t.querySelector(".cfs.on");   /* 列表上直接點門：開門動畫後直接進店，不用再按一次 */
-      if(dr&&op){ dr.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); },420); break; } }
-      ui.cfIn=null; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
+      if(dr&&op){ dr.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; navTo((session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid)); window.scrollTo(0,0); },420); break; } }
+      ui.cfIn=null; navTo((session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid)); window.scrollTo(0,0); break;
     case "cfGift": { const n=+t.dataset.n, c=cfCur(mid), em=cfMe(); if(!c||!em) break; if(points()<n){ toast("積分不夠，先補充積分吧"); break; }
       ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); const gv=tvGive("cf_"+c2.id,`${MEMBERS[mid].name} 生日咖啡廳`); rr(); toast(gv?`生日應援送出了 🎂 拿到 ${WHISPER_NAME} 7 天體驗券`:"生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
     case "cfMenu": tieModal("生日特調",`<input id="cfMenuIn" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfMenuOk" data-v="${mid}">加到菜單</button>`,"row"); setTimeout(()=>document.getElementById("cfMenuIn")?.focus(),200); break;
@@ -12328,7 +12336,7 @@ function wkHc1(u){ if(!u||WKHC[u]!==undefined) return;
     document.querySelectorAll(`[data-hsrc="${CSS.escape(u)}"]`).forEach(el=>el.style.setProperty("--hc",WKHC[u][0])); }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
 function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
-  if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; location.hash=wkHash(v); window.scrollTo(0,0); }
+  if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; navTo(wkHash(v)); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
   else if(a==="wkCancel") wkLeave();
   else if(a==="wkSave") wkSaveS(v);
@@ -12337,10 +12345,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkEditS"){ ui.wkEd=v; ui.wkStg=null; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
   else if(a==="wkSaveS") wkSaveS(v);
   else if(a==="wkNb"){ ui.wkNb=ui.wkNb===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
-  else if(a==="wkJump"){ const [g2,k]=v.split("|"), to="g:"+g2; ui.wkNb=null; if(route().id===to){ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } else { ui.wkJ={id:to,k}; location.hash=wkHash(to); } }
+  else if(a==="wkJump"){ const [g2,k]=v.split("|"), to="g:"+g2; ui.wkNb=null; if(route().id===to){ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } else { ui.wkJ={id:to,k}; navTo(wkHash(to)); } }
   else if(a==="wkCat"){ ui.wkCat=ui.wkCat===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkLinks"){ ui.wkLk=ui.wkLk===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
-  else if(a==="wkCm"){ location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v); }
+  else if(a==="wkCm"){ navTo(route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v)); }
   else if(a==="wkTocT"){ ui.wkTocC=!ui.wkTocC; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="wkFn"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); const t=WKFN[+v-1]; if(!t) return; const r=e.target.getBoundingClientRect(), d=document.createElement("div"); d.className="wk-fnpop";
@@ -12360,13 +12368,13 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     const r=(e&&e.target&&e.target.closest('[data-a="wkTocGo"]')||document.querySelector('[data-a="wkTocGo"]')).getBoundingClientRect(); d.style.right=(innerWidth-r.left+8)+"px"; d.style.bottom=(innerHeight-r.top+8)+"px"; }
   else if(a==="wkTop") window.scrollTo({top:0,behavior:"smooth"});
   else if(a==="wkBot") window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
-  else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; location.hash=wkHash(L[Math.floor(Math.random()*L.length)]); window.scrollTo(0,0); } }
+  else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; navTo(wkHash(L[Math.floor(Math.random()*L.length)])); window.scrollTo(0,0); } }
   else if(a==="wkMenu"){ const old=document.querySelector(".wk-sheet"); if(old){ old.remove(); return; } const id=route().id, ok=id&&wkOk(id), d=document.createElement("div"); d.className="wk-sheet";
     d.innerHTML=`<div class="wk-shb"><i></i><div class="wk-shtop"><button data-a="wkRand" aria-label="隨機文件">⤮</button><label><input id="wkQ2" placeholder="SKpedia 搜尋" autocomplete="off"></label><button data-a="wkShX" aria-label="收起">⌄</button></div>
       <div class="wk-shchips"><a data-a="wkGo" data-v="">首頁・最近修改</a><a data-a="wkExit">回到 ${route().role==="artist"?"FOC":"FEST"}</a></div>
       ${ok?`<div class="wk-shcard"><b>${esc(wkName(id))}</b><div>${wkCanEdit(id)?`<a data-a="wkEditS" data-v="${id}#info">編輯</a>`:""}${wkFanView()?"":`<a data-a="wkHist" data-v="${id}">歷史</a>`}<a data-a="wkShare">複製連結</a></div></div>`:""}</div>`;
     document.querySelector("main.wk").appendChild(d); }
-  else if(a==="wkExit"){ layer.innerHTML=""; location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"; }
+  else if(a==="wkExit"){ layer.innerHTML=""; navTo(route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"); }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
 /* 下方搜尋：打字就跳出符合的藝人／團，點了直接去；按 Enter 去第一個，沒有就到首頁看結果 */
 const wkHits=q=>{ q=nz(q||""); return q?wkIds().filter(id=>nz(wkName(id)).includes(q)||nz(((wkPage(id).f||{}).kname)||"").includes(q)).slice(0,8):[]; };
@@ -12376,7 +12384,7 @@ function wkSug(inp){ document.querySelectorAll(".wk-sug").forEach(x=>x.remove())
 document.addEventListener("input",e=>{ if(e.target.id==="wkQ2") wkSug(e.target); });
 document.addEventListener("click",e=>{ const g=document.querySelector(".wk-sug"); if(g&&!e.target.closest("#wkQ2")) setTimeout(()=>g.remove(),0); },true);
 document.addEventListener("keydown",e=>{ if(e.target.id!=="wkQ2"||e.key!=="Enter") return; e.preventDefault(); const v=e.target.value, L=wkHits(v); document.querySelectorAll(".wk-sug,.wk-sheet").forEach(x=>x.remove()); e.target.blur();
-  ui.wkEd=null; if(L.length){ location.hash=wkHash(L[0]); window.scrollTo(0,0); return; } ui.wkQ=v; const h=wkHash(""); if(location.hash===h) render(); else location.hash=h; });
+  ui.wkEd=null; if(L.length){ navTo(wkHash(L[0])); window.scrollTo(0,0); return; } ui.wkQ=v; const h=wkHash(""); if(location.hash===h) render(); else navTo(h); });
 document.addEventListener("input",e=>{ if(e.target.id!=="wkQ") return; ui.wkQ=e.target.value; clearTimeout(ui.wkQT); ui.wkQT=setTimeout(()=>{ const p=e.target.selectionStart; render(); const i=document.getElementById("wkQ"); if(i){ i.focus(); try{ i.setSelectionRange(p,p); }catch(_){} } },250); });
 
 /* 編輯中：取消、返回鍵、左邊緣滑回去，都是回到百科頁；有改東西沒存才問一下 */
@@ -12413,7 +12421,7 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList|
 /* 切去別的 App 抄資料，iPhone 把 HAECHU 關掉重開：回到剛剛在編輯的地方，打的字原封不動（30 分鐘內） */
 setTimeout(function wkReopen(){ let o=null; try{ o=JSON.parse(localStorage.getItem("wk_open")||"null"); }catch(e){} if(!o||Date.now()-o.ts>30*60e3) return;
   if(typeof ME==="undefined"||!ME||!myEmail()){ if(!wkReopen.n||wkReopen.n<10){ wkReopen.n=(wkReopen.n||0)+1; setTimeout(wkReopen,500); } return; }
-  if(location.hash!==o.h) location.hash=o.h; setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
+  if(location.hash!==o.h) navTo(o.h); setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
 
 
 
@@ -13904,6 +13912,19 @@ function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v
     <main class="t-msgs" id="tryBody">${body||`<p class="t-none">還沒有訊息</p>`}<p class="t-wait">${wait?`${esc(nick)} 正在等你的訊息`:`以 ${esc(TRY_IDOL)} 的身分回覆 ${esc(nick)}`}</p><div id="tryEnd"></div></main>
     <form class="t-foot try-f" data-k="${esc(k)}"><div class="t-inp"><textarea rows="1" class="ag" id="tryIn" maxlength="300" autocomplete="off" placeholder="以 ${esc(TRY_IDOL)} 的身分回覆 ${esc(nick)}" aria-label="輸入訊息"></textarea></div><button class="t-send" id="trySend" type="submit" aria-label="送出">${TI.send}</button></form></div>`,"try");
   setTimeout(()=>{ const b=layer.querySelector(".try-tie"); if(b) b.scrollTop=b.scrollHeight; },30); }
+/* 從手機推播點進來：直接到那則通知的頁面（跟在 App 的通知頁點它一模一樣）
+   ・sw.js 收到點擊：App 開著 → 傳訊息過來；App 沒開 → 打開 App 時網址帶 ?nid=（通知代號） */
+let PUSH_OPEN=null;
+function pushOpenRun(){ const o=PUSH_OPEN; if(!o) return true; if(!session()||ui.resuming||ui.authBusy) return false; if(HB_ON&&!HB.pulled) return false;
+  if(o.open&&String(o.open).startsWith("try:")){ if(!isAdminAcct()){ PUSH_OPEN=null; return true; } const k="w:"+String(o.open).slice(4); if(!tryGet(k)){ tryFetch(true); return false; } PUSH_OPEN=null; layer.innerHTML=""; tryChat(k); return true; }
+  const n=o.id&&S.get(K.notifs,[]).find(x=>x.id===o.id); if(!n) return false;
+  PUSH_OPEN=null; layer.innerHTML=""; const w=document.createElement("div"); w.hidden=true; w.innerHTML=`<button type="button" ${nfAttrs(n)}></button>`; document.body.appendChild(w); w.firstElementChild.click(); w.remove(); return true; }
+function pushOpen(o){ if(!o||!(o.id||o.open||o.path)) return; PUSH_OPEN={...o,t0:Date.now()}; let k=0;
+  const tick=()=>{ if(!PUSH_OPEN||pushOpenRun()) return; if(Date.now()-PUSH_OPEN.t0>15000){ const p=PUSH_OPEN.path; PUSH_OPEN=null; if(p&&/^#\//.test(p)&&session()) navTo(p); return; }
+    if(++k%4===0){ try{ if(HB_ON&&HB.tok) hbSoon(); }catch(e){} } setTimeout(tick,700); }; tick(); }
+try{ if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message",e=>{ const d=e.data&&e.data.hcOpen; if(d) pushOpen(d); }); }catch(e){}
+(function(){ const q=new URLSearchParams(location.search), id=q.get("nid"), op=q.get("nop"), p=q.get("np"); if(!(id||op||p)) return;
+  try{ history.replaceState(history.state,"",location.pathname+location.hash); }catch(e){} setTimeout(()=>pushOpen({id,open:op,path:p}),0); })();
 document.addEventListener("input",e=>{ if(e.target.id!=="tryIn") return; const b=document.getElementById("trySend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); e.target.style.height="auto"; e.target.style.height=Math.min(110,e.target.scrollHeight)+"px"; });
 document.addEventListener("keydown",e=>{ if(e.target.id==="tryIn"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); const f=e.target.closest("form"); if(f) f.requestSubmit(); } });
 document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("textarea,input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k;
@@ -13959,7 +13980,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="cmAlbP"||a==="ofOpen"){ e.stopImmediatePropagation(); ofOpen(t.dataset.v); return; }
   if(a==="ofLk"){ e.stopImmediatePropagation(); ofLike(t.dataset.v); return; }
   if(a==="ofBm"){ e.stopImmediatePropagation(); ofBmT(t.dataset.v); return; }
-  if(a==="ofGrp"){ e.stopImmediatePropagation(); layer.innerHTML=""; location.hash=grpHash(t.dataset.v,"home"); window.scrollTo(0,0); return; }
+  if(a==="ofGrp"){ e.stopImmediatePropagation(); layer.innerHTML=""; navTo(grpHash(t.dataset.v,"home")); window.scrollTo(0,0); return; }
   if(!/^pr[A-Z]/.test(a)) return; e.stopImmediatePropagation(); dbKeep(); const f=ui.dbF; if(!f) return; const pr=f.pr||(f.pr=promoLoad(null));
   if(a==="prCvAdd"){ pr.cv.push({n:"",ph:[],phP:[]}); dbReform(); return; }
   if(a==="prCvDel"){ pr.cv.splice(+t.dataset.i,1); dbReform(); return; }
@@ -14031,7 +14052,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="coPage"){ e.stopImmediatePropagation(); openCoPage(t.dataset.v); return; }
   if(a==="coTab"){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tiei-body")||{}).scrollTop||0; openCoPage(t.dataset.c,t.dataset.v); return; }
   if(a==="coGx"){ e.stopImmediatePropagation(); const id=t.dataset.v; ui.coOpen={...(ui.coOpen||{}),[id]:!(ui.coOpen||{})[id]}; const s=t.closest(".copg-g"); if(s){ s.classList.toggle("open",!!ui.coOpen[id]); t.setAttribute("aria-expanded",ui.coOpen[id]?"true":"false"); } return; }
-  if(a==="coLink"){ e.stopImmediatePropagation(); { const m=/^#\/fan\/chat\?m=([^&]+)$/.exec(t.dataset.v); if(m&&tieGate(decodeURIComponent(m[1]))) return; } layer.innerHTML=""; location.hash=t.dataset.v; window.scrollTo(0,0); return; }
+  if(a==="coLink"){ e.stopImmediatePropagation(); { const m=/^#\/fan\/chat\?m=([^&]+)$/.exec(t.dataset.v); if(m&&tieGate(decodeURIComponent(m[1]))) return; } layer.innerHTML=""; navTo(t.dataset.v); window.scrollTo(0,0); return; }
   if(a==="newsOpen"&&t.closest("#layer")) setTimeout(()=>{ layer.innerHTML=""; },0);   /* 公司頁裡按「閱讀全文」：先把公司頁關掉 */
 },true);
 /* 多張照片滑動時，下面的小點跟著動 */
@@ -14108,7 +14129,7 @@ function hrGo(){ hrKeep(); const o=ui.hr, g=o&&groupOf(o.gid); if(!g) return; co
   else if(o.kind==="move") hrSetCo(o.gid,o.co2);
   else if(disb) hrDisband(o.gid,now);
   else o.mids.forEach(m=>hrRemoveMember(m,now));
-  ui.hr=null; layer.innerHTML=""; if(disb) location.hash="#/admin?tab=roster"; render(); toast("已發布"); }
+  ui.hr=null; layer.innerHTML=""; if(disb) navTo("#/admin?tab=roster"); render(); toast("已發布"); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^hr[A-Z]/.test(t.dataset.a)) return; e.stopImmediatePropagation(); const a=t.dataset.a;
   if(a==="hrNew"){ ui.hr={kind:t.dataset.v,gid:t.dataset.g,mids:[],eff:dayStart(Date.now())}; hrSheet(); return; }
   hrKeep(); const o=ui.hr; if(!o) return;

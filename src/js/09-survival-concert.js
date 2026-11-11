@@ -1057,5 +1057,5 @@ document.addEventListener("input",e=>{ if(e.target.id!=="exQ") return; const q=n
   document.querySelectorAll(".ex-g").forEach(r=>r.hidden=!!q&&!r.dataset.q.includes(q)); });
 document.addEventListener("scroll",e=>{ const b=e.target; if(!b||b.id!=="exBan") return; const i=Math.round(b.scrollLeft/b.clientWidth); document.querySelectorAll(".ex-dots i").forEach((d,k)=>d.classList.toggle("on",k===i)); },true);
 document.addEventListener("scroll",e=>{ const b=e.target; if(!b||b.id!=="spBan") return; const n=b.children.length, k=Math.round(b.scrollLeft/Math.max(1,b.clientWidth)), c=document.getElementById("spCnt"), th=document.getElementById("spThumb"); if(c) c.textContent=String(k+1).padStart(2,"0"); if(th) th.style.transform=`translateX(${k*100}%)`; },true);
-function openGroup(gid){ if(groupOf(gid)){ layer.innerHTML=""; ui.cmFeed=ui.cmMed=ui.cmVc=ui.mpTab=ui.abOpen=null; ui.shopCat="all"; location.hash=grpHash(gid); window.scrollTo(0,0); return; } }
+function openGroup(gid){ if(groupOf(gid)){ layer.innerHTML=""; ui.cmFeed=ui.cmMed=ui.cmVc=ui.mpTab=ui.abOpen=null; ui.shopCat="all"; navTo(grpHash(gid)); window.scrollTo(0,0); return; } }
 

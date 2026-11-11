@@ -491,13 +491,13 @@ const cfCur=mid=>{ const w=cfWindow(mid); return w?cfGet(mid,w.y):null; };
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^cf[A-Z]/.test(a)) return;
   const mid=t.dataset.v, rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
   switch(a){
-    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; const h=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); if(route().id!==mid) location.hash=h; else render(); window.scrollTo(0,0); },420); break; }
+    case "cfIn": { const d=t.closest(".cfs-door"); if(d) d.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; const h=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); if(route().id!==mid) navTo(h); else render(); window.scrollTo(0,0); },420); break; }
     case "cfOut": { ui.cfIn=null; const art=(session()||{}).role==="artist", skip=h=>/[?&]p=cafe&id=/.test(h)||(art&&/[?&]p=cafe(&|$)/.test(h)), cur=NAV_BASE+NAV_D; let to=null;   /* 店裡按返回：一次就離開咖啡廳，回到進來前的那一頁 */
       for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]&&!skip(NAV_STK[i])){ to=NAV_STK[i]; break; } } navBackTo(to||(art?"#/artist?tab=foc":"#/fan/core?p=cafe")); break; }
     case "cfZone": { const r=document.getElementById("cfRoom"), z=r&&r.querySelector(`[data-z="${t.dataset.v}"]`); if(z) r.scrollTo({left:z.offsetLeft-r.offsetLeft,behavior:"smooth"}); break; }
     case "cfGo": { const dr=e.target.closest(".cfs-door"), op=!!t.querySelector(".cfs.on");   /* 列表上直接點門：開門動畫後直接進店，不用再按一次 */
-      if(dr&&op){ dr.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); },420); break; } }
-      ui.cfIn=null; location.hash=(session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid); window.scrollTo(0,0); break;
+      if(dr&&op){ dr.classList.add("opening"); setTimeout(()=>{ ui.cfIn=mid; navTo((session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid)); window.scrollTo(0,0); },420); break; } }
+      ui.cfIn=null; navTo((session().role==="artist"?"#/artist?tab=foc&p=cafe&id=":"#/fan/core?p=cafe&id=")+encodeURIComponent(mid)); window.scrollTo(0,0); break;
     case "cfGift": { const n=+t.dataset.n, c=cfCur(mid), em=cfMe(); if(!c||!em) break; if(points()<n){ toast("積分不夠，先補充積分吧"); break; }
       ask(`送 ${fmt(n)} 積分當 ${MEMBERS[mid].name} 的生日應援？`,()=>{ const c2=cfCur(mid); S.set(K.points,points()-n); c2.pts[em]=(c2.pts[em]||0)+n; cfPut(c2); if(!c2.demo) recordSale("cafe",{mid,pts:n,label:`生日咖啡廳・${MEMBERS[mid].name}`}); const gv=tvGive("cf_"+c2.id,`${MEMBERS[mid].name} 生日咖啡廳`); rr(); toast(gv?`生日應援送出了 🎂 拿到 ${WHISPER_NAME} 7 天體驗券`:"生日應援送出了 🎂"); },{ok:"送出",danger:false}); break; }
     case "cfMenu": tieModal("生日特調",`<input id="cfMenuIn" class="a-nick-in" maxlength="16" placeholder="輸入文字">`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="cfMenuOk" data-v="${mid}">加到菜單</button>`,"row"); setTimeout(()=>document.getElementById("cfMenuIn")?.focus(),200); break;

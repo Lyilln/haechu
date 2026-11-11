@@ -366,7 +366,7 @@ function wkHc1(u){ if(!u||WKHC[u]!==undefined) return;
     document.querySelectorAll(`[data-hsrc="${CSS.escape(u)}"]`).forEach(el=>el.style.setProperty("--hc",WKHC[u][0])); }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
 function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
-  if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; location.hash=wkHash(v); window.scrollTo(0,0); }
+  if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; navTo(wkHash(v)); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
   else if(a==="wkCancel") wkLeave();
   else if(a==="wkSave") wkSaveS(v);
@@ -375,10 +375,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkEditS"){ ui.wkEd=v; ui.wkStg=null; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
   else if(a==="wkSaveS") wkSaveS(v);
   else if(a==="wkNb"){ ui.wkNb=ui.wkNb===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
-  else if(a==="wkJump"){ const [g2,k]=v.split("|"), to="g:"+g2; ui.wkNb=null; if(route().id===to){ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } else { ui.wkJ={id:to,k}; location.hash=wkHash(to); } }
+  else if(a==="wkJump"){ const [g2,k]=v.split("|"), to="g:"+g2; ui.wkNb=null; if(route().id===to){ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } else { ui.wkJ={id:to,k}; navTo(wkHash(to)); } }
   else if(a==="wkCat"){ ui.wkCat=ui.wkCat===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkLinks"){ ui.wkLk=ui.wkLk===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
-  else if(a==="wkCm"){ location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v); }
+  else if(a==="wkCm"){ navTo(route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v)); }
   else if(a==="wkTocT"){ ui.wkTocC=!ui.wkTocC; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="wkFn"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); const t=WKFN[+v-1]; if(!t) return; const r=e.target.getBoundingClientRect(), d=document.createElement("div"); d.className="wk-fnpop";
@@ -398,13 +398,13 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     const r=(e&&e.target&&e.target.closest('[data-a="wkTocGo"]')||document.querySelector('[data-a="wkTocGo"]')).getBoundingClientRect(); d.style.right=(innerWidth-r.left+8)+"px"; d.style.bottom=(innerHeight-r.top+8)+"px"; }
   else if(a==="wkTop") window.scrollTo({top:0,behavior:"smooth"});
   else if(a==="wkBot") window.scrollTo({top:document.documentElement.scrollHeight,behavior:"smooth"});
-  else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; location.hash=wkHash(L[Math.floor(Math.random()*L.length)]); window.scrollTo(0,0); } }
+  else if(a==="wkRand"){ const L=wkIds(); if(L.length){ ui.wkEd=null; navTo(wkHash(L[Math.floor(Math.random()*L.length)])); window.scrollTo(0,0); } }
   else if(a==="wkMenu"){ const old=document.querySelector(".wk-sheet"); if(old){ old.remove(); return; } const id=route().id, ok=id&&wkOk(id), d=document.createElement("div"); d.className="wk-sheet";
     d.innerHTML=`<div class="wk-shb"><i></i><div class="wk-shtop"><button data-a="wkRand" aria-label="隨機文件">⤮</button><label><input id="wkQ2" placeholder="SKpedia 搜尋" autocomplete="off"></label><button data-a="wkShX" aria-label="收起">⌄</button></div>
       <div class="wk-shchips"><a data-a="wkGo" data-v="">首頁・最近修改</a><a data-a="wkExit">回到 ${route().role==="artist"?"FOC":"FEST"}</a></div>
       ${ok?`<div class="wk-shcard"><b>${esc(wkName(id))}</b><div>${wkCanEdit(id)?`<a data-a="wkEditS" data-v="${id}#info">編輯</a>`:""}${wkFanView()?"":`<a data-a="wkHist" data-v="${id}">歷史</a>`}<a data-a="wkShare">複製連結</a></div></div>`:""}</div>`;
     document.querySelector("main.wk").appendChild(d); }
-  else if(a==="wkExit"){ layer.innerHTML=""; location.hash=route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"; }
+  else if(a==="wkExit"){ layer.innerHTML=""; navTo(route().role==="artist"?"#/artist?tab=foc":"#/fan?tab=core"); }
   else if(a==="wkTo"){ const s=document.querySelectorAll(".wk-s")[+v]; if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); } });
 /* 下方搜尋：打字就跳出符合的藝人／團，點了直接去；按 Enter 去第一個，沒有就到首頁看結果 */
 const wkHits=q=>{ q=nz(q||""); return q?wkIds().filter(id=>nz(wkName(id)).includes(q)||nz(((wkPage(id).f||{}).kname)||"").includes(q)).slice(0,8):[]; };
@@ -414,7 +414,7 @@ function wkSug(inp){ document.querySelectorAll(".wk-sug").forEach(x=>x.remove())
 document.addEventListener("input",e=>{ if(e.target.id==="wkQ2") wkSug(e.target); });
 document.addEventListener("click",e=>{ const g=document.querySelector(".wk-sug"); if(g&&!e.target.closest("#wkQ2")) setTimeout(()=>g.remove(),0); },true);
 document.addEventListener("keydown",e=>{ if(e.target.id!=="wkQ2"||e.key!=="Enter") return; e.preventDefault(); const v=e.target.value, L=wkHits(v); document.querySelectorAll(".wk-sug,.wk-sheet").forEach(x=>x.remove()); e.target.blur();
-  ui.wkEd=null; if(L.length){ location.hash=wkHash(L[0]); window.scrollTo(0,0); return; } ui.wkQ=v; const h=wkHash(""); if(location.hash===h) render(); else location.hash=h; });
+  ui.wkEd=null; if(L.length){ navTo(wkHash(L[0])); window.scrollTo(0,0); return; } ui.wkQ=v; const h=wkHash(""); if(location.hash===h) render(); else navTo(h); });
 document.addEventListener("input",e=>{ if(e.target.id!=="wkQ") return; ui.wkQ=e.target.value; clearTimeout(ui.wkQT); ui.wkQT=setTimeout(()=>{ const p=e.target.selectionStart; render(); const i=document.getElementById("wkQ"); if(i){ i.focus(); try{ i.setSelectionRange(p,p); }catch(_){} } },250); });
 
 /* 編輯中：取消、返回鍵、左邊緣滑回去，都是回到百科頁；有改東西沒存才問一下 */
@@ -451,6 +451,6 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList|
 /* 切去別的 App 抄資料，iPhone 把 HAECHU 關掉重開：回到剛剛在編輯的地方，打的字原封不動（30 分鐘內） */
 setTimeout(function wkReopen(){ let o=null; try{ o=JSON.parse(localStorage.getItem("wk_open")||"null"); }catch(e){} if(!o||Date.now()-o.ts>30*60e3) return;
   if(typeof ME==="undefined"||!ME||!myEmail()){ if(!wkReopen.n||wkReopen.n<10){ wkReopen.n=(wkReopen.n||0)+1; setTimeout(wkReopen,500); } return; }
-  if(location.hash!==o.h) location.hash=o.h; setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
+  if(location.hash!==o.h) navTo(o.h); setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
 
 

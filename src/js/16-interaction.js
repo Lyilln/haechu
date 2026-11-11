@@ -36,7 +36,7 @@ function loginAs(email){ const a=ACCOUNTS[email]; if(!a) return;
   go(a.role);
 }
 function switchTo(role){   // 只有管理員帳號可以切換身分（管理員同時也是藝人和粉絲）
-  if(!isAdminAcct()) return; if(isUni()){ layer.innerHTML=""; location.hash=role==="artist"?"#/artist?tab=home":role==="admin"?"#/fan?tab=me":"#/fan"; return; } const em=session().email;
+  if(!isAdminAcct()) return; if(isUni()){ layer.innerHTML=""; navTo(role==="artist"?"#/artist?tab=home":role==="admin"?"#/fan?tab=me":"#/fan"); return; } const em=session().email;
   SS.set(role==="artist"?{role:"artist",email:em,member:"luna",admin:true}:role==="admin"?{role:"admin",email:em,member:null,admin:true}:{role:"fan",email:em,member:null,admin:true});
   ui.sheet=null; layer.innerHTML=""; document.querySelectorAll(".toast").forEach(t=>t.remove()); go(role); window.scrollTo(0,0);
 }
@@ -252,10 +252,8 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
   function hScrollable(el){ for(let n=el;n&&n!==document.body;n=n.parentElement){ if(n.tagName==="CANVAS"||n.tagName==="INPUT"||n.tagName==="TEXTAREA"||n.dataset&&n.dataset.ls!=null) return true; const cs=getComputedStyle(n); if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft>0) return true; if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft===0&&false) return true; } return false; }
   function mkUnder(snap){ const u=document.createElement("div"); u.className="sb-under"; u.setAttribute("aria-hidden","true");
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }
-  /* 在 Safari／Chrome 瀏覽器裡：最左邊那一條是瀏覽器自己的返回手勢，讓給它（兩個一起動就會出現兩層畫面）；加到主畫面的 App 才由這裡處理 */
-  const STANDALONE=navigator.standalone===true||matchMedia("(display-mode: standalone)").matches;
   document.addEventListener("touchstart",e=>{ if(!st) document.querySelectorAll(".sb-under").forEach(u=>u.remove());   // 上一次手勢留下的「上一頁」殘影清掉
-    if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; if(!STANDALONE&&t.clientX<28){ st=null; return; } const edge=t.clientX<24; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）
+    if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; const edge=t.clientX<30; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）；瀏覽器的紀錄只有一筆，系統的滑動不會再搶（11/11）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
     if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }

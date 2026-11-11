@@ -191,7 +191,7 @@ const tieTop=(t)=>`<header class="tst-h"><button class="tst-ib" data-a="${t==="b
 const tiePend=gid=>(S.get(TIE_PEND,{})||{})[gid]||null;
 function tieStore(gid,more){ const g=groupOf(gid); if(!g) return; if(isSelfGid(gid)){ toast(selfBuyMsg()); return; }
   const A=groupArtists(gid), solo=A.length===1;
-  if(!solo&&(tiePend(gid)||{}).n){ layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); return; }
+  if(!solo&&(tiePend(gid)||{}).n){ layer.innerHTML=""; ui.pickSet=null; navTo("#/fan/tiepick?id="+encodeURIComponent(gid)); return; }
   const hero=tieHero(gid), nm=solo?MEMBERS[A[0]].name:g.name, N=solo?1:(more?A.length:1);
   ui.tst={gid,more:!!more};
   setLayer(`<div class="tst">${tieTop("store")}<div class="tst-b">${hero?`<div class="tst-hero" style="background-image:url('${esc(hero)}')"></div>`:`<div class="tst-hero ph" style="background:${grad(g.g)}"><span>${esc(nm)}</span></div>`}
@@ -215,7 +215,7 @@ function tiePay(gid,n){ const A=groupArtists(gid), pl=tiePl(), ownL=A.filter(id=
   S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（${tieTk(gid,n)}・${pl.name}）`});
   const P=S.get(TIE_PEND,{}); P[gid]={n:((P[gid]||{}).n||0)+n,ts:Date.now(),days:pl.days}; S.set(TIE_PEND,P);
   if(A.length===1){ tpkBuyDone(gid,[A[0]]); return; }
-  layer.innerHTML=""; ui.pickSet=null; location.hash="#/fan/tiepick?id="+encodeURIComponent(gid); }
+  layer.innerHTML=""; ui.pickSet=null; navTo("#/fan/tiepick?id="+encodeURIComponent(gid)); }
 /* 選好藝人：開始訂閱；第一次訂閱要先設定暱稱（下面滑上來的半版面板） */
 function tieNickSheet(gid,ids){ ui.tpkNickFor={gid,ids}; const m=MEMBERS[ids[0]];
   setLayer(`<div class="scrim" data-a="tCloseLayer"><div class="sheet tpk-ns" role="dialog" aria-label="你的暱稱"><div class="grab"></div>

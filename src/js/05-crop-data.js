@@ -351,7 +351,9 @@ function publishAnnounce(text){
 }
 
 /* ===== 留言 ===== */
-const commentCount=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).length;
+/* 留言數＝留言＋每則留言底下的回覆（藝人回覆粉絲也算一則，跟 Weverse 一樣） */
+const cmTotalOf=L=>L.reduce((n,c)=>n+1+(c.reply?1:0)+((c.reps||[]).length),0);
+const commentCount=postId=>cmTotalOf(S.get(K.comments,[]).filter(c=>c.postId===postId));
 const getComments=postId=>S.get(K.comments,[]).filter(c=>c.postId===postId).sort((a,b)=>a.ts-b.ts);
 function addComment(postId,text){
   const c={id:"c"+Date.now(),postId,author:"me",by:myEmail(),name:ME.name,g:ME.g,text,ts:Date.now(),reply:null};

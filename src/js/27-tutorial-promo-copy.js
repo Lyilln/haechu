@@ -469,6 +469,19 @@ function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v
     <main class="t-msgs" id="tryBody">${body||`<p class="t-none">還沒有訊息</p>`}<p class="t-wait">${wait?`${esc(nick)} 正在等你的訊息`:`以 ${esc(TRY_IDOL)} 的身分回覆 ${esc(nick)}`}</p><div id="tryEnd"></div></main>
     <form class="t-foot try-f" data-k="${esc(k)}"><div class="t-inp"><textarea rows="1" class="ag" id="tryIn" maxlength="300" autocomplete="off" placeholder="以 ${esc(TRY_IDOL)} 的身分回覆 ${esc(nick)}" aria-label="輸入訊息"></textarea></div><button class="t-send" id="trySend" type="submit" aria-label="送出">${TI.send}</button></form></div>`,"try");
   setTimeout(()=>{ const b=layer.querySelector(".try-tie"); if(b) b.scrollTop=b.scrollHeight; },30); }
+/* 從手機推播點進來：直接到那則通知的頁面（跟在 App 的通知頁點它一模一樣）
+   ・sw.js 收到點擊：App 開著 → 傳訊息過來；App 沒開 → 打開 App 時網址帶 ?nid=（通知代號） */
+let PUSH_OPEN=null;
+function pushOpenRun(){ const o=PUSH_OPEN; if(!o) return true; if(!session()||ui.resuming||ui.authBusy) return false; if(HB_ON&&!HB.pulled) return false;
+  if(o.open&&String(o.open).startsWith("try:")){ if(!isAdminAcct()){ PUSH_OPEN=null; return true; } const k="w:"+String(o.open).slice(4); if(!tryGet(k)){ tryFetch(true); return false; } PUSH_OPEN=null; layer.innerHTML=""; tryChat(k); return true; }
+  const n=o.id&&S.get(K.notifs,[]).find(x=>x.id===o.id); if(!n) return false;
+  PUSH_OPEN=null; layer.innerHTML=""; const w=document.createElement("div"); w.hidden=true; w.innerHTML=`<button type="button" ${nfAttrs(n)}></button>`; document.body.appendChild(w); w.firstElementChild.click(); w.remove(); return true; }
+function pushOpen(o){ if(!o||!(o.id||o.open||o.path)) return; PUSH_OPEN={...o,t0:Date.now()}; let k=0;
+  const tick=()=>{ if(!PUSH_OPEN||pushOpenRun()) return; if(Date.now()-PUSH_OPEN.t0>15000){ const p=PUSH_OPEN.path; PUSH_OPEN=null; if(p&&/^#\//.test(p)&&session()) navTo(p); return; }
+    if(++k%4===0){ try{ if(HB_ON&&HB.tok) hbSoon(); }catch(e){} } setTimeout(tick,700); }; tick(); }
+try{ if("serviceWorker" in navigator) navigator.serviceWorker.addEventListener("message",e=>{ const d=e.data&&e.data.hcOpen; if(d) pushOpen(d); }); }catch(e){}
+(function(){ const q=new URLSearchParams(location.search), id=q.get("nid"), op=q.get("nop"), p=q.get("np"); if(!(id||op||p)) return;
+  try{ history.replaceState(history.state,"",location.pathname+location.hash); }catch(e){} setTimeout(()=>pushOpen({id,open:op,path:p}),0); })();
 document.addEventListener("input",e=>{ if(e.target.id!=="tryIn") return; const b=document.getElementById("trySend"); if(b) b.classList.toggle("on",!!e.target.value.trim()); e.target.style.height="auto"; e.target.style.height=Math.min(110,e.target.scrollHeight)+"px"; });
 document.addEventListener("keydown",e=>{ if(e.target.id==="tryIn"&&e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); const f=e.target.closest("form"); if(f) f.requestSubmit(); } });
 document.addEventListener("submit",e=>{ const f=e.target.closest&&e.target.closest(".try-f"); if(!f) return; e.preventDefault(); const i=f.querySelector("textarea,input"), tx=(i.value||"").trim(); if(!tx) return; const k=f.dataset.k;
@@ -524,7 +537,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="cmAlbP"||a==="ofOpen"){ e.stopImmediatePropagation(); ofOpen(t.dataset.v); return; }
   if(a==="ofLk"){ e.stopImmediatePropagation(); ofLike(t.dataset.v); return; }
   if(a==="ofBm"){ e.stopImmediatePropagation(); ofBmT(t.dataset.v); return; }
-  if(a==="ofGrp"){ e.stopImmediatePropagation(); layer.innerHTML=""; location.hash=grpHash(t.dataset.v,"home"); window.scrollTo(0,0); return; }
+  if(a==="ofGrp"){ e.stopImmediatePropagation(); layer.innerHTML=""; navTo(grpHash(t.dataset.v,"home")); window.scrollTo(0,0); return; }
   if(!/^pr[A-Z]/.test(a)) return; e.stopImmediatePropagation(); dbKeep(); const f=ui.dbF; if(!f) return; const pr=f.pr||(f.pr=promoLoad(null));
   if(a==="prCvAdd"){ pr.cv.push({n:"",ph:[],phP:[]}); dbReform(); return; }
   if(a==="prCvDel"){ pr.cv.splice(+t.dataset.i,1); dbReform(); return; }
@@ -596,7 +609,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="coPage"){ e.stopImmediatePropagation(); openCoPage(t.dataset.v); return; }
   if(a==="coTab"){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tiei-body")||{}).scrollTop||0; openCoPage(t.dataset.c,t.dataset.v); return; }
   if(a==="coGx"){ e.stopImmediatePropagation(); const id=t.dataset.v; ui.coOpen={...(ui.coOpen||{}),[id]:!(ui.coOpen||{})[id]}; const s=t.closest(".copg-g"); if(s){ s.classList.toggle("open",!!ui.coOpen[id]); t.setAttribute("aria-expanded",ui.coOpen[id]?"true":"false"); } return; }
-  if(a==="coLink"){ e.stopImmediatePropagation(); { const m=/^#\/fan\/chat\?m=([^&]+)$/.exec(t.dataset.v); if(m&&tieGate(decodeURIComponent(m[1]))) return; } layer.innerHTML=""; location.hash=t.dataset.v; window.scrollTo(0,0); return; }
+  if(a==="coLink"){ e.stopImmediatePropagation(); { const m=/^#\/fan\/chat\?m=([^&]+)$/.exec(t.dataset.v); if(m&&tieGate(decodeURIComponent(m[1]))) return; } layer.innerHTML=""; navTo(t.dataset.v); window.scrollTo(0,0); return; }
   if(a==="newsOpen"&&t.closest("#layer")) setTimeout(()=>{ layer.innerHTML=""; },0);   /* 公司頁裡按「閱讀全文」：先把公司頁關掉 */
 },true);
 /* 多張照片滑動時，下面的小點跟著動 */
@@ -673,7 +686,7 @@ function hrGo(){ hrKeep(); const o=ui.hr, g=o&&groupOf(o.gid); if(!g) return; co
   else if(o.kind==="move") hrSetCo(o.gid,o.co2);
   else if(disb) hrDisband(o.gid,now);
   else o.mids.forEach(m=>hrRemoveMember(m,now));
-  ui.hr=null; layer.innerHTML=""; if(disb) location.hash="#/admin?tab=roster"; render(); toast("已發布"); }
+  ui.hr=null; layer.innerHTML=""; if(disb) navTo("#/admin?tab=roster"); render(); toast("已發布"); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^hr[A-Z]/.test(t.dataset.a)) return; e.stopImmediatePropagation(); const a=t.dataset.a;
   if(a==="hrNew"){ ui.hr={kind:t.dataset.v,gid:t.dataset.g,mids:[],eff:dayStart(Date.now())}; hrSheet(); return; }
   hrKeep(); const o=ui.hr; if(!o) return;

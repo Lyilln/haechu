@@ -8,12 +8,13 @@
       Text 變數：SUPABASE_URL = https://fgkyikpzqoovfffdulum.supabase.co
       Text 變數：SUPABASE_KEY = App 用的那把公開 key（sb_publishable_ 開頭）
       Text 變數（建議）：ALLOWED_ORIGIN = https://lyilln.github.io
+      Secret（試玩推播用）：TRY_HOOK = 跟 Supabase 的 HOOK_SECRET 同一串（有訪客在試玩頁傳 TIE，就叫 Supabase 的 try-push 通知四位管理員）
   ・這裡沒有任何秘密 key
 */
 const MAX = 50 * 1024 * 1024; // 單一檔案最大 50MB
 
 export default {
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url);
     const origin = req.headers.get("Origin") || "";
     const allowed = (env.ALLOWED_ORIGIN || "").trim().replace(/\/+$/, "");   // 網址後面多打一個「/」也沒關係
@@ -101,13 +102,21 @@ export default {
         const nick = clean(b && b.nick).slice(0, 12);
         const inc = (Array.isArray(b && b.msgs) ? b.msgs : []).filter(m => m && m.from === "fan" && typeof m.id === "string" && /^[a-z0-9]{4,24}$/.test(m.id)).slice(-20)
           .map(m => ({ id: m.id, from: "fan", text: clean(m.text).slice(0, 300), ts: Math.min(Number(m.ts) || Date.now(), Date.now()) })).filter(m => m.text);
+        let ping = null;
         const res = await update(k, v => {
           const have = new Set((v.msgs || []).map(m => m.id)), add = inc.filter(m => !have.has(m.id));
           if ((v.msgs || []).filter(m => m.from === "fan").length + add.length > 200) return null;
           if (!add.length && (v.nick || "") === (nick || v.nick || "")) return null;
-          return { ...v, nick: nick || v.nick || "", ts: Date.now(), msgs: [...(v.msgs || []), ...add].sort((a, c) => a.ts - c.ts) };
+          // 有新訊息就通知管理員；同一位訪客 2 分鐘內只通知一次（連發好幾則不會一直響）
+          let pingTs = v.pingTs || 0; ping = null;
+          if (add.length && Date.now() - pingTs > 2 * 60e3) { pingTs = Date.now(); ping = { id, nick: nick || v.nick || "訪客", text: add[add.length - 1].text, n: add.length }; }
+          return { ...v, nick: nick || v.nick || "", ts: Date.now(), pingTs, msgs: [...(v.msgs || []), ...add].sort((a, c) => a.ts - c.ts) };
         });
         if (res === "too_big") return reply({ error: "too_big" }, 413);
+        if (ping && env.TRY_HOOK && env.SUPABASE_URL) {
+          const call = fetch(env.SUPABASE_URL + "/functions/v1/try-push", { method: "POST", headers: { "Content-Type": "application/json", "x-hook-secret": env.TRY_HOOK, apikey: env.SUPABASE_KEY || "" }, body: JSON.stringify(ping) }).catch(() => {});
+          if (ctx && ctx.waitUntil) ctx.waitUntil(call); else await call;
+        }
         const { v } = await load(k);
         return reply(v || { nick, msgs: [] });
       }
