@@ -6559,3 +6559,12 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .sn-rpa>i{position:absolute;right:-5px;bottom:-4px;width:19px;height:19px;border-radius:50%;background:#7C3AED;display:grid;place-items:center;box-shadow:0 0 0 2px rgba(255,255,255,.95)}
 .sn-rpa>i .si{width:12px;height:12px;stroke:#fff;stroke-width:2.6}
 .sn-feed .sn-post{margin-bottom:6px}
+
+/* 留言：頭貼、名字可以點進個人檔案；@帳號 藍色可以點 */
+.sn-cav{flex:none;border:0;background:none;padding:0;border-radius:50%;align-self:flex-start}
+.sn-cun{border:0;background:none;padding:0;font:inherit;font-weight:600;color:inherit;cursor:pointer}
+.sn-ct .sn-lnk,.sn-meta .sn-lnk{color:#4A8BFF;font-weight:500}html[data-theme="dark"] .sn-ct .sn-lnk,html[data-theme="dark"] .sn-meta .sn-lnk{color:#A7CBFF}
+/* 左上角＋：照 IG 縮小 */
+.sn-top .sn-tic .si{width:24px!important;height:24px!important;stroke-width:1.9}
+.sn-prv.lock{opacity:.75}.sn-prv small{display:block;font-size:11.5px;color:var(--s);font-weight:400;margin-top:2px}
+.sn-sh.cm .sn-cun{font-size:14px;font-weight:700}.sn-cu .sn-cun{font-weight:700}
