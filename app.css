@@ -4831,7 +4831,7 @@ html[data-theme="dark"] .sn-vbusy>div{background:#262626;color:#F5F5F5}html[data
 .sn-hlpk button.on i{background:#0095F6;border-color:#fff}
 .sn-hlpk button.on i::after{content:"";position:absolute;left:6px;top:2px;width:5px;height:10px;border:solid #fff;border-width:0 2px 2px 0;transform:rotate(45deg)}
 /* ===== 雲端用量 ===== */
-.cu-c{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.cu-c{padding:14px 16px;display:flex;flex-direction:column;gap:8px}.cu .cu-c+.cu-c{margin-top:14px}
 .cu-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px}.cu-h span{font-variant-numeric:tabular-nums;color:var(--ink-3);font-size:13px}
 .cu-bar{display:block;height:8px;border-radius:4px;background:rgba(127,127,127,.18);overflow:hidden}.cu-bar u{display:block;height:100%;background:#34C759}.cu-bar.warm u{background:#FF9F0A}.cu-bar.hot u{background:#FF3B30}
 .cu-r{display:flex;justify-content:space-between;gap:12px;font-size:14px}.cu-r span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.cu-r b{font-variant-numeric:tabular-nums;font-weight:600}
