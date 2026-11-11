@@ -13179,12 +13179,25 @@ const promoSongs=()=>{ const d=MUS_DEMO(); return d.length?d:getMShow().songs.fi
 function showRank(show,wk){ wk=wk||curWeek(); return promoSongs().filter(s=>s.demo||songActIn(s,show,wk)).map(s=>({s,sc:showScore(s.id,show,wk),cr:!s.demo&&crowned(s.id,show,wk)})).sort((a,b)=>b.sc.total-a.sc.total); }
 /* 有排名週以來最近一個排名週（宣傳週要顯示上一個排名週的一位） */
 function lastRankedWk(){ const w=getMShow().wins, ks=Object.keys(w).filter(k=>k<curWeek()&&ranked(k)&&Object.keys(w[k]||{}).length).sort(); return ks[ks.length-1]||null; }
+/* 節目結束那一刻的分數（結算時記下來）：之後按讚、觀看還會長，但這週的排行和一位就以這份為準，不會「我比較高、一位卻是別人」 */
+const muFin=(show,wk)=>((getMShow().fin||{})[wk]||{})[show]||null;
+function muFinSave(show,wk,RK,NR){ const m=getMShow(); m.fin={...(m.fin||{})}; m.fin[wk]={...(m.fin[wk]||{}),[show]:{r:Object.fromEntries(RK.map(x=>[x.s.id,x.sc.total])),n:NR.map(n=>({name:n.name,title:n.title,total:n.total}))}}; S.set(K.mshow,m); }
+/* 畫面用：結束了就拿結算當下的分數（還沒結算就照現在的） */
+function muRankShown(show,wk,ended){ const R=showRank(show,wk), F=ended&&muFin(show,wk); if(!F) return {R,N:npcRivals(show,wk)};
+  return {R:R.map(x=>({...x,sc:{...x.sc,total:F.r[x.s.id]!=null?F.r[x.s.id]:x.sc.total}})).sort((a,b)=>b.sc.total-a.sc.total),N:F.n||[]}; }
 /* 自動結算：管理員的手機每分鐘看一次 */
 function msAutoSettle(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null)) return; const ms=getMShow(); if(!ms.songs.length) return; let n=0;
   [shiftWeek(curWeek(),-1),curWeek()].forEach(wk=>{ if(!ranked(wk)) return; SHOWS.forEach(sh=>{ const ws=(getMShow().wins[wk]||{}), man=((getMShow().manual||{})[wk]||{}); if(ws[sh.id]||man[sh.id]||!showEnded(sh.id,wk)) return;
-    if(npcWon(sh.id,wk)) return; const RK=showRank(sh.id,wk), top=RK.find(x=>!x.cr&&x.sc.total>0); if(!top) return;
-    { const all=[...RK.map(x=>({id:x.s.id,t:x.sc.total})),...npcRivals(sh.id,wk).map(n=>({id:"npc",t:n.total}))].sort((a,b)=>b.t-a.t), m3=getMShow(); m3.rk={...(m3.rk||{})}; m3.rk[wk]={...(m3.rk[wk]||{}),[sh.id]:Object.fromEntries(all.filter(x=>x.id!=="npc").map(x=>[x.id,all.indexOf(x)+1]))}; S.set(K.mshow,m3); }
-    const nb=npcTop(sh.id,wk); if(nb&&nb.total>=top.sc.total){ const m2=getMShow(); m2.npcWin={...(m2.npcWin||{})}; m2.npcWin[wk]={...(m2.npcWin[wk]||{}),[sh.id]:{name:nb.name,title:nb.title,total:nb.total}}; S.set(K.mshow,m2); n++; return; }   /* 虛擬對手比較高：這週這個節目沒有人拿到一位 */
+    const RK=showRank(sh.id,wk), top=RK.find(x=>!x.cr&&x.sc.total>0), nw0=npcWon(sh.id,wk);
+    if(nw0){ if(muFin(sh.id,wk)) return;
+      /* 11/11 修：以前結算後，真歌的分數（按讚、觀看、專輯）還一直長，虛擬歌手的分數也重算 → 明明自己比較高，一位卻是別人。
+         還沒有「結算當下的分數」的舊紀錄：真歌現在比虛擬歌手高 → 那次判錯了，改判給真歌；不然就把當時的結果記下來 */
+      if(!top||top.sc.total<=nw0.total){ muFinSave(sh.id,wk,RK,[{name:nw0.name,title:nw0.title,total:nw0.total},...npcRivals(sh.id,wk).filter(n=>n.name!==nw0.name).map(n=>({...n,total:Math.min(n.total,nw0.total)}))]); return; }
+      const m4=getMShow(); m4.npcWin={...(m4.npcWin||{})}; m4.npcWin[wk]={...(m4.npcWin[wk]||{})}; delete m4.npcWin[wk][sh.id]; S.set(K.mshow,m4); }
+    const fix=nw0&&top?top.sc.total-1:Infinity;
+    if(!top) return;
+    const NR=npcRivals(sh.id,wk).map(n=>({...n,total:Math.min(n.total,fix)})), all=[...RK.map(x=>({id:x.s.id,t:x.sc.total})),...NR.map(n=>({id:"npc",t:n.total}))].sort((a,b)=>b.t-a.t), m3=getMShow(); m3.rk={...(m3.rk||{})}; m3.rk[wk]={...(m3.rk[wk]||{}),[sh.id]:Object.fromEntries(all.filter(x=>x.id!=="npc").map(x=>[x.id,all.indexOf(x)+1]))}; S.set(K.mshow,m3); muFinSave(sh.id,wk,RK,NR);
+    const nb=NR[0]; if(nb&&nb.total>=top.sc.total){ const m2=getMShow(); m2.npcWin={...(m2.npcWin||{})}; m2.npcWin[wk]={...(m2.npcWin[wk]||{}),[sh.id]:{name:nb.name,title:nb.title,total:nb.total}}; S.set(K.mshow,m2); n++; return; }   /* 虛擬對手比較高：這週這個節目沒有人拿到一位 */
     setWinner(sh.id,top.s.id,wk); n++; }); });
   if(n) try{ render(); }catch(e){} }catch(e){} }
 setInterval(msAutoSettle,60e3); setTimeout(msAutoSettle,12e3);
@@ -13214,20 +13227,20 @@ const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
 function viewPromo(){
   const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=[];
-  const mod=sh=>{ const id=sh.id, R=showRank(id,wk), won=songOf((getMShow().wins[wk]||{})[id]), ended=rk&&showEnded(id,wk), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
+  const mod=sh=>{ const id=sh.id, ended=rk&&showEnded(id,wk), {R,N:NPCS}=muRankShown(id,wk,ended), won=songOf((getMShow().wins[wk]||{})[id]), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
     else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
     else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
     else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-st">${esc(nw.name)}</span>`; }
-    else if(!ended&&npcTop(id,wk)&&(!R[0]||npcTop(id,wk).total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(npcTop(id,wk).name)}</span>`;
+    else if(!ended&&NPCS[0]&&(!R[0]||NPCS[0].total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(NPCS[0].name)}</span>`;
     else if(ended) head=`<span class="mu3-st muted">本週沒有一位</span>`;
     else head=R[0]&&R[0].sc.total>0?`<span class="mu3-lb">目前第一名</span>${muWho(R[0].s,false)}`:`<span class="mu3-st muted">還沒有人投票</span>`;
     const when=!rk?"":ended?`<em class="mu3-end">已結束</em>`:`<em class="mu3-end">${showEndTxt(id)} 結束・${muLeft(showEndTs(id,wk)-Date.now())}</em>`;
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
       return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid,s.title)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
-      .concat(rk&&R.length?npcRivals(id,wk).map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
+      .concat(rk&&R.length?NPCS.map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
       .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>

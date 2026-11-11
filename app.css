@@ -6368,7 +6368,7 @@ html body .foc-conc .lsp-songs button.on{background:var(--violet);color:#fff}
 .db2 .db-media{display:flex;flex-wrap:nowrap;gap:6px;margin:10px 0 0 54px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}.db2 .db-media::-webkit-scrollbar{display:none}.db2 .db-th{width:64px;height:80px;border-radius:10px}
 .db2-a{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}.db2-a:empty{display:none}.db2-a .btn{min-width:64px}.db2-del{color:#E5484D!important}
 .dbx-ro{margin:0;padding:10px 14px;border-radius:14px;background:var(--s2);color:var(--ink-3);font-weight:700}
-.mu3-r .mu3-n,.mu3-r .mu2-cv{display:none!important}.mu3-r{padding:10px 14px}
+.mu3-r .mu3-n,.mu3-r .mu2-cv,.mu3-who .mu2-cv{display:none!important}.mu3-r{padding:10px 14px}
 
 .vs-pv{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:16/9;border-radius:20px;border:1.5px dashed var(--line);background:var(--s1);color:var(--ink-3);font:inherit;overflow:hidden;margin-bottom:6px}
 .vs-pv b{font-size:30px;font-weight:400;color:var(--violet)}.vs-pv span{position:absolute;bottom:22%;font-size:13px;font-weight:700}
