@@ -52,7 +52,7 @@ html.stko .t-foot{bottom:var(--stkh,300px)!important;transform:none!important;pa
 
 /* ===== TIE 固定外殼（js/33）：只有訊息區自己捲，框高＝看得到的高度 ===== */
 html.tie2l,html.tie2l body{height:100%;overflow:hidden;overscroll-behavior:none}
-html.tie2l .app:has(>main.t-msgs){position:fixed!important;left:0;right:0;top:var(--vvt,0px);height:var(--vvh,100dvh);min-height:0!important;display:flex;flex-direction:column;overflow:hidden;padding:0!important}
+html.tie2l .app:has(>main.t-msgs){position:fixed!important;left:0;right:0;top:0;bottom:0;height:auto;min-height:0!important;display:flex;flex-direction:column;overflow:hidden;padding:0!important}
 html.tie2l .app:has(>main.t-msgs)>.t-rh{position:relative!important;top:auto!important;flex:none;transform:none!important}
 html.tie2l .app>main.t-msgs{flex:1 1 auto;min-height:0;height:auto!important;overflow-y:auto!important;overflow-x:hidden;display:flex!important;flex-direction:column-reverse!important;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;transform:none!important;margin:0!important;padding-bottom:12px!important}
 html.tie2l main.t-msgs>.t-mi{display:flex;flex-direction:column;flex:none;margin-bottom:auto}
@@ -130,7 +130,9 @@ html.tie2l .app>:not(.t-bgl){z-index:1}
 .dl-foot .cm-in .mr-send{margin-bottom:6px!important}
 /* 待發訊息預覽：蓋滿整個畫面，下面的輸入列不能露出來 */
 .tq-pv{z-index:600!important;top:0!important;bottom:0!important}
-html.tie2l .tq-pv{top:var(--vvt,0px)!important;bottom:auto!important;height:var(--vvh,100dvh)!important}
+html.tie2l.tie2k .tq-pv{top:var(--vvt,0px)!important;bottom:auto!important;height:var(--vvh,100dvh)!important}
+/* 只有在打字（鍵盤打開）時，框才跟著「看得到的高度」走；沒在打字就是整個螢幕（11/11：iPhone 的可視高度偶爾會亂跳，背景照片跟著忽大忽小） */
+html.tie2l.tie2k .app:has(>main.t-msgs){top:var(--vvt,0px);bottom:auto;height:var(--vvh,100dvh)}
 html:has(.tq-pv) .app>.t-foot,html:has(.tq-pv) #stkDock{visibility:hidden}
 #layer:has(.tq-pv){z-index:600}
 

@@ -331,7 +331,7 @@ function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=a
   const A=S.get(K.artNSeen,{}); A[mid]=Date.now(); S.set(K.artNSeen,A); }
 
 /* SNS：輪播滑動時更新 1/3 和下面的點點 */
-document.addEventListener("scroll",e=>{ const c=e.target; if(!c||!c.classList||!c.classList.contains("sn-car")) return; const n=c.children.length, i=Math.round(c.scrollLeft/Math.max(1,c.clientWidth)); const m=c.parentElement, cnt=m&&m.querySelector(".sn-cnt"); if(cnt) cnt.textContent=`${i+1}/${n}`; const dots=m&&m.nextElementSibling; if(dots&&dots.classList.contains("sn-dots")) [...dots.children].forEach((x,k)=>x.classList.toggle("on",k===i)); },true);
+document.addEventListener("scroll",e=>{ const c=e.target; if(!c||!c.classList||!c.classList.contains("sn-car")) return; const n=c.children.length, i=Math.round(c.scrollLeft/Math.max(1,c.clientWidth)); const m=c.parentElement, cnt=m&&m.querySelector(".sn-cnt"); if(cnt) cnt.textContent=`${i+1}/${n}`; const dots=m&&m.nextElementSibling; if(dots&&dots.classList.contains("sn-dots")) snDotsSet(dots,i); },true);
 /* 藝人在自己的動態下留言（不是回覆某位粉絲） */
 function addArtistComment(postId,text){ const p=getPosts().find(x=>x.id===postId); if(!p) return; const m=MEMBERS[p.member];
   const c={id:"c"+Date.now(),postId,author:"artist",member:p.member,by:myEmail(),name:m.name,g:m.g,text,ts:Date.now(),reply:null};

@@ -13,12 +13,13 @@ const snMusEl=()=>{ if(!snMusA){ snMusA=new Audio(); snMusA.loop=true; snMusA.pl
 let snMusOk0=false; function snMusUnlock(){ if(snMusOk0) return; try{ const a=snMusEl(); if(!a.src){ const sr=8000, n=800, b=new ArrayBuffer(44+n*2), v=new DataView(b), w=(o,t)=>{ for(let k=0;k<t.length;k++) v.setUint8(o+k,t.charCodeAt(k)); }; w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVEfmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true); a.src=URL.createObjectURL(new Blob([b],{type:"audio/wav"})); a.dataset.mid=""; } a.muted=true; const p=a.play(); const done=()=>{ try{ a.pause(); }catch(e){} a.muted=false; snMusOk0=true; }; if(p&&p.then) p.then(done,()=>{ a.muted=false; }); else done(); }catch(e){} }
 ["touchend","click"].forEach(ev=>document.addEventListener(ev,()=>{ if(!snMusOk0&&route().sub==="sns") snMusUnlock(); },{capture:true,passive:true}));
 if(ui.snMusOn===undefined) ui.snMusOn=true;   /* 跟 Instagram 一樣，有音樂的貼文滑到就放；按右下角喇叭關掉 */
-async function snMusPlay(mid,key){ try{ const u=await mediaSrc(mid); if(!u) return; const a=snMusEl(); snMusCur=key||mid; if(a.dataset.mid!==mid){ a.src=u; a.dataset.mid=mid; } a.currentTime=0; await a.play(); }catch(e){} snMusPaint(); }
+async function snMusPlay(mid,key){ try{ const a0=snMusA, k=key||mid; if(a0&&a0.dataset.mid===mid&&snMusCur===k&&!a0.paused){ snMusPaint(); return; }   /* 同一則已經在放：不要從頭再放一次 */
+  const u=await mediaSrc(mid); if(!u) return; const a=snMusEl(); const same=a.dataset.mid===mid&&snMusCur===k; snMusCur=k; if(a.dataset.mid!==mid){ a.src=u; a.dataset.mid=mid; } if(!same) a.currentTime=0; await a.play(); }catch(e){} snMusPaint(); }
 function snMusStop(){ try{ if(snMusA){ snMusA.pause(); } }catch(e){} snMusCur=""; snMusPaint(); }
 function snMusPaint(){ document.querySelectorAll(".sn-mbtn").forEach(b=>b.classList.toggle("on",!!ui.snMusOn&&b.dataset.k===snMusCur)); }
 /* 動態：滑到哪一則（露出六成以上）就放那一則 */
 function snMusWatch(){ try{ if(snMusIO) snMusIO.disconnect(); const L=document.querySelectorAll(".sn-post[data-mus]"); if(!L.length){ if(snMusCur&&!snMusCur.startsWith("st:")) snMusStop(); return; }
-  snMusIO=new IntersectionObserver(es=>{ es.forEach(e=>{ const el=e.target, k="p:"+el.dataset.pid; if(e.isIntersecting&&e.intersectionRatio>=.6){ if(ui.snMusOn&&snMusCur!==k) snMusPlay(el.dataset.mus,k); } else if(snMusCur===k) snMusStop(); }); },{threshold:[0,.6]});
+  snMusIO=new IntersectionObserver(es=>{ es.forEach(e=>{ const el=e.target, k="p:"+el.dataset.pid; if(e.isIntersecting&&e.intersectionRatio>=.6){ if(ui.snMusOn&&snMusCur!==k) snMusPlay(el.dataset.mus,k); } else if(snMusCur===k&&(!e.isIntersecting||e.intersectionRatio<.3)) snMusStop(); }); },{threshold:[0,.3,.6]});   /* 露出六成才開始放、少於三成才停：左右滑照片、畫面微動都不會一停一放 */
   L.forEach(el=>snMusIO.observe(el)); snMusPaint(); }catch(e){} }
 addEventListener("hashchange",()=>{ if(snMusCur) snMusStop(); });
 document.addEventListener("visibilitychange",()=>{ if(document.hidden&&snMusCur) snMusStop(); });
@@ -226,7 +227,8 @@ function tie2Wrap(ms){ if(!ms) return; const k=[...ms.children]; if(k.length===1
 /* 可視高度 → 框的高度（除以 App 的縮放） */
 function tie2Sync(){ if(!tieFxOn()) return; const vv=window.visualViewport, z=parseFloat(getComputedStyle(document.documentElement).zoom)||1, de=document.documentElement;
   const h=vv?vv.height:innerHeight, t=vv?vv.offsetTop:0; de.style.setProperty("--vvh",(h/z)+"px"); de.style.setProperty("--vvt",(t/z)+"px");
-  de.classList.toggle("kb",!!vv&&vv.height<(screen.height||innerHeight)*0.75); }
+  de.classList.toggle("kb",!!vv&&vv.height<(screen.height||innerHeight)*0.75);
+  const ae=document.activeElement; de.classList.toggle("tie2k",!!ae&&/^(TEXTAREA|INPUT)$/.test(ae.tagName)&&!!ae.closest(".t-foot,.app")); }
 let t2raf=0; const t2q=()=>{ if(!t2raf) t2raf=requestAnimationFrame(()=>{ t2raf=0; tie2Sync(); tie2Anchor(); }); };
 if(window.visualViewport){ visualViewport.addEventListener("resize",t2q); visualViewport.addEventListener("scroll",t2q); }
 addEventListener("resize",t2q);
