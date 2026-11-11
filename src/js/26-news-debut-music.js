@@ -580,26 +580,24 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    打歌的歌的音樂：直接用 MV 轉成純音樂（不另外上傳音檔；比放整支影片省流量）
    ・回歸／出道申請放 MV 的那一刻，在藝人自己的手機上就順便轉好（song.au）
    ・以前的歌：管理員打開 App 時在背後一首一首補轉
-   ・轉法：讀出 MV 的聲音 → 單聲道 22kHz → MP3 64kbps（轉不了 MP3 就不轉）
+   ・轉法：讀出 MV 的聲音 → 44.1kHz 立體聲 → MP3 128kbps（11/11 起；以前是單聲道 22kHz 64kbps，音質差）
    ========================================================= */
 async function mvToAudio(blob){ try{ if(!blob||blob.size>200*1024*1024) return null; const AC=window.AudioContext||window.webkitAudioContext; if(!AC) return null; const c=new AC(); let buf;
     try{ try{ buf=await decodeAu(c,await blob.arrayBuffer()); }catch(e){ buf=null; } if(!(buf&&buf.duration)){ const am=await MB.audio(blob); if(am&&am.blob.size) buf=await decodeAu(c,await am.blob.arrayBuffer()); } } finally{ try{ c.close(); }catch(e){} } if(!buf) return null;   /* iPhone .MOV 直接解不出來：先用 mediabunny 取出聲音 */
-    const sr=22050, len=Math.min(buf.duration,360), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(1,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf; s.connect(oc.destination); s.start(0,0,len);
-    const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); }); const d=out.getChannelData(0);
-    const L=await snLame(); if(!L) return await compactWav(out);   /* MP3 轉檔工具載不到：改存 WAV（大一點，但一定有聲音） */ const enc=new L.Mp3Encoder(1,sr,64), pcm=new Int16Array(d.length); for(let i=0;i<d.length;i++) pcm[i]=Math.max(-32768,Math.min(32767,d[i]*32767));
-    const parts=[]; for(let i=0;i<pcm.length;i+=1152){ const m=enc.encodeBuffer(pcm.subarray(i,i+1152)); if(m.length) parts.push(new Uint8Array(m)); } const e=enc.flush(); if(e.length) parts.push(new Uint8Array(e));
-    return new Blob(parts,{type:"audio/mpeg"}); }catch(e){ return null; } }
+    const sr=44100, len=Math.min(buf.duration,360), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(2,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf; s.connect(oc.destination); s.start(0,0,len);
+    const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); });
+    return (await mp3Of(out))||await compactWav(out); }catch(e){ return null; } }
 async function mvAudioUpload(blob){ const a=await mvToAudio(blob); if(!a) return ""; const id="mva"+Date.now().toString(36); await MDB.put(id,a,true); return (await hbUpload(id,a))?id:""; }
 /* 這首歌的音樂（song.au＞演唱會音檔） */
 async function songAudio(s){ if(!s) return null; if(s.au){ const b=await MDB.get(s.au); if(b) return b; } return await auGet(s.id); }
 /* 歌還沒有音訊：直接從這首歌的 MV 取出聲音（誰先用到就誰轉，轉好存起來大家共用） */
 
 
-function songAuSet(sid,id){ try{ const m=getMShow(), x=[...m.songs,...(m.ended||[])].find(y=>y.id===sid); if(x&&x.au!==id){ x.au=id; delete x.auNo; S.set(K.mshow,m); } }catch(e){} }
+function songAuSet(sid,id){ try{ const m=getMShow(), x=[...m.songs,...(m.ended||[])].find(y=>y.id===sid); if(x&&x.au!==id){ x.au=id; x.auV=2; delete x.auNo; S.set(K.mshow,m); } }catch(e){} }
 /* 管理員：以前的歌補轉（一次一首；失敗的 12 小時後再試，不會永遠卡住） */
 let muAuBusy=false;
-async function muAudioJob(){ if(muAuBusy||!isAdminAcct()||(HB_ON&&HB.ver[K.mshow]==null)) return; const ms=getMShow(), now0=Date.now(), s=ms.songs.find(x=>!x.au&&(!x.auNo||(x.auNo>1e12&&now0-x.auNo>12*36e5))&&songMv(x)&&songMv(x).mid); if(!s) return; muAuBusy=true;
-  try{ const v=songMv(s), b=await MDB.get(v.mid), id=b?await mvAudioUpload(b):""; const m2=getMShow(), x=m2.songs.find(y=>y.id===s.id); if(x){ if(id){ x.au=id; delete x.auNo; } else x.auNo=Date.now(); S.set(K.mshow,m2); } }catch(e){} muAuBusy=false; }
+async function muAudioJob(){ if(muAuBusy||!isAdminAcct()||(HB_ON&&HB.ver[K.mshow]==null)) return; const ms=getMShow(), now0=Date.now(), s=ms.songs.find(x=>(!x.au||x.auV!==2)&&(!x.auNo||(x.auNo>1e12&&now0-x.auNo>12*36e5))&&songMv(x)&&songMv(x).mid); if(!s) return; muAuBusy=true;
+  try{ const v=songMv(s), b=await MDB.get(v.mid), id=b?await mvAudioUpload(b):""; const m2=getMShow(), x=m2.songs.find(y=>y.id===s.id); if(x){ if(id){ x.au=id; x.auV=2; delete x.auNo; } else x.auNo=Date.now(); S.set(K.mshow,m2); } }catch(e){} muAuBusy=false; }
 setInterval(muAudioJob,5*60e3); setTimeout(muAudioJob,40e3);
 
 /* =========================================================

@@ -85,14 +85,14 @@ const snFollowers=(d,uid)=>Object.keys(d.fol).filter(k=>(d.fol[k]||[]).includes(
 const snLikes=(d,p)=>(d.likes[p.id]||[]).length;
 /* 跟 IG 一樣：帳號下面不放本名；沒追蹤的人才出現「為你推薦」＋追蹤 */
 const snSugg=(d,uid)=>{ const me=snMeId(); return uid!==me&&!String(uid).startsWith("o:")&&!snFol(d,me).includes(uid); };
-/* 「誰誰誰和其他人都說讚」＋最多 3 個頭貼（優先顯示你追蹤的人） */
+/* 「誰誰誰和其他 N 人都說讚」（N 跟愛心旁的數字對得起來）＋最多 3 個頭貼（優先顯示你追蹤的人） */
 /* 轉發過這則的人（照 IG：照片左下角圓頭貼＋紫色轉發小章，最多兩個，追蹤中的優先） */
 const snRpWho=(d,p)=>Object.keys(d.rp||{}).filter(uid=>uid!==p.uid&&(d.rp[uid]||[]).some(x=>x.id===p.id)&&snUser(uid));
 const snRpN=(d,p)=>snRpWho(d,p).length;
 function snRpAvs(d,p){ const fol=snFol(d,snMeId()), L=snRpWho(d,p).sort((a,b)=>(fol.includes(b)?1:0)-(fol.includes(a)?1:0)).slice(0,2); if(!L.length) return "";
   return `<div class="sn-rpav">${L.map(uid=>`<button class="sn-rpa" data-a="snsGo" data-v="profile" data-id="${uid}" aria-label="${esc(snUser(uid).u)} 已轉發">${snAv(snUser(uid),43)}<i>${si("repost")}</i></button>`).join("")}</div>`; }
 function snLikedBy(d,p){ const L=(d.likes[p.id]||[]).filter(x=>snUser(x)); if(!L.length) return ""; const fol=snFol(d,snMeId()), S2=[...L.filter(x=>fol.includes(x)),...L.filter(x=>!fol.includes(x))].slice(0,3), u0=snUser(S2[0]);
-  return `<p class="sn-lb" data-a="snLikers" data-id="${p.id}" role="button"><span class="sn-lbav">${S2.map(x=>snAv(snUser(x),20)).join("")}</span><span><b>${esc(u0.u)}</b>${L.length>1?`和其他人都說讚`:" 說讚"}</span></p>`; }
+  return `<p class="sn-lb" data-a="snLikers" data-id="${p.id}" role="button"><span class="sn-lbav">${S2.map(x=>snAv(snUser(x),20)).join("")}</span><span><b>${esc(u0.u)}</b>${snLikes(d,p)>1?`和其他 ${fmt(snLikes(d,p)-1)} 人都說讚`:" 說讚"}</span></p>`; }
 /* 說明文字：#標籤、@帳號 可以點 */
 /* 已經是 HTML 的文字（翻譯外框）：只把 @帳號、#標籤 變成可以點的 */
 function snRichH(h){ return String(h||"").replace(/(^|[\s>])@([a-z0-9._]{2,30})/gi,(m,p,hd)=>`${p}<button class="sn-lnk" data-a="snAtGo" data-v="${hd.toLowerCase()}">@${hd}</button>`); }

@@ -10,7 +10,7 @@ const SN_MUS_LEN=30;
 let snMusA=null, snMusCur="", snMusIO=null;
 const snMusEl=()=>{ if(!snMusA){ snMusA=new Audio(); snMusA.loop=true; snMusA.playsInline=true; } return snMusA; };
 /* iPhone：音樂要先在手指點下去的當下「解鎖」一次，之後滑到哪一則、打開限動才能自動放（不然下載完歌已經不算手指點的，會被擋掉、沒聲音） */
-let snMusOk0=false; function snMusUnlock(){ if(snMusOk0) return; try{ const a=snMusEl(); if(!a.src){ const sr=8000, n=800, b=new ArrayBuffer(44+n*2), v=new DataView(b), w=(o,t)=>{ for(let k=0;k<t.length;k++) v.setUint8(o+k,t.charCodeAt(k)); }; w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVEfmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true); a.src=URL.createObjectURL(new Blob([b],{type:"audio/wav"})); a.dataset.mid=""; } a.muted=true; const p=a.play(); const done=()=>{ try{ a.pause(); }catch(e){} a.muted=false; snMusOk0=true; }; if(p&&p.then) p.then(done,()=>{ a.muted=false; }); else done(); }catch(e){} }
+let snMusOk0=false; function snMusUnlock(){ if(snMusOk0) return; try{ const a=snMusEl(); if(!a.src){ const sr=44100, n=441, b=new ArrayBuffer(44+n*2), v=new DataView(b), w=(o,t)=>{ for(let k=0;k<t.length;k++) v.setUint8(o+k,t.charCodeAt(k)); }; w(0,"RIFF"); v.setUint32(4,36+n*2,true); w(8,"WAVEfmt "); v.setUint32(16,16,true); v.setUint16(20,1,true); v.setUint16(22,1,true); v.setUint32(24,sr,true); v.setUint32(28,sr*2,true); v.setUint16(32,2,true); v.setUint16(34,16,true); w(36,"data"); v.setUint32(40,n*2,true); a.src=URL.createObjectURL(new Blob([b],{type:"audio/wav"})); a.dataset.mid=""; } a.muted=true; const p=a.play(); const done=()=>{ try{ a.pause(); }catch(e){} a.muted=false; snMusOk0=true; }; if(p&&p.then) p.then(done,()=>{ a.muted=false; }); else done(); }catch(e){} }
 ["touchend","click"].forEach(ev=>document.addEventListener(ev,()=>{ if(!snMusOk0&&route().sub==="sns") snMusUnlock(); },{capture:true,passive:true}));
 if(ui.snMusOn===undefined) ui.snMusOn=true;   /* 跟 Instagram 一樣，有音樂的貼文滑到就放；按右下角喇叭關掉 */
 async function snMusPlay(mid,key){ try{ const a0=snMusA, k=key||mid; if(a0&&a0.dataset.mid===mid&&snMusCur===k&&!a0.paused){ snMusPaint(); return; }   /* 同一則已經在放：不要從頭再放一次 */
@@ -99,18 +99,23 @@ function snMusPv(){ if(snMusPvSrc){ snMusPvStop(); return; } try{ const AC=windo
   const s=snMusPvCtx.createBufferSource(), len=Math.min(SN_MUS_LEN,ui.snMusT.dur-ui.snMusT.start); s.buffer=snMusBuf; s.connect(snMusPvCtx.destination); s.start(0,ui.snMusT.start,len); s.onended=()=>{ if(snMusPvSrc===s) snMusPvStop(); }; snMusPvSrc=s;
   const b=document.querySelector(".smp-pl"); if(b){ b.innerHTML=si("stop"); b.classList.add("on"); }
   const t0=snMusPvCtx.currentTime, tick=()=>{ if(snMusPvSrc!==s) return; const pg=document.getElementById("smpPg"); if(pg) pg.style.width=Math.min(100,(snMusPvCtx.currentTime-t0)/len*100)+"%"; snMusPvT=requestAnimationFrame(tick); }; tick(); }catch(e){} }
-/* 剪出 30 秒、轉成單聲道 22kHz；能轉 MP3 就轉（小很多） */
-async function snMusCut(buf,start){ const sr=22050, len=Math.min(SN_MUS_LEN,buf.duration-start), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(1,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf;
+/* 剪出 30 秒；11/11 改成 44.1kHz 立體聲 MP3 128kbps（以前單聲道 22kHz 64kbps，高音都被切掉、聽起來悶悶糊糊） */
+async function snMusCut(buf,start){ const sr=44100, len=Math.min(SN_MUS_LEN,buf.duration-start), OC=window.OfflineAudioContext||window.webkitOfflineAudioContext, oc=new OC(2,Math.ceil(len*sr),sr), s=oc.createBufferSource(); s.buffer=buf;
   const g=oc.createGain(); s.connect(g); g.connect(oc.destination); g.gain.setValueAtTime(0,0); g.gain.linearRampToValueAtTime(1,.4); g.gain.setValueAtTime(1,Math.max(.5,len-1)); g.gain.linearRampToValueAtTime(0,len);   /* 頭尾淡入淡出 */
-  s.start(0,start,len); const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); }); const d=out.getChannelData(0);
-  try{ const L=await snLame(); if(L){ const enc=new L.Mp3Encoder(1,sr,64), pcm=new Int16Array(d.length); for(let i=0;i<d.length;i++) pcm[i]=Math.max(-32768,Math.min(32767,d[i]*32767)); const parts=[]; for(let i=0;i<pcm.length;i+=1152){ const m=enc.encodeBuffer(pcm.subarray(i,i+1152)); if(m.length) parts.push(new Uint8Array(m)); } const e=enc.flush(); if(e.length) parts.push(new Uint8Array(e)); return {blob:new Blob(parts,{type:"audio/mpeg"}),dur:len}; } }catch(e){}
+  s.start(0,start,len); const out=await new Promise((res,rej)=>{ oc.oncomplete=e=>res(e.renderedBuffer); const p=oc.startRendering(); if(p&&p.then) p.then(res,rej); });
+  try{ const b=await mp3Of(out); if(b) return {blob:b,dur:len}; }catch(e){}
   return {blob:await compactWav(out),dur:len}; }
+/* 共用：把一段聲音轉成 MP3（立體聲 128kbps；每轉一小段就讓手機喘口氣，畫面不會卡） */
+async function mp3Of(buf){ const L=await snLame(); if(!L) return null; const ch=Math.min(2,buf.numberOfChannels), sr=buf.sampleRate, enc=new L.Mp3Encoder(ch,sr,128), i16=a=>{ const o=new Int16Array(a.length); for(let i=0;i<a.length;i++) o[i]=Math.max(-32768,Math.min(32767,a[i]*32767)); return o; };
+  const l=i16(buf.getChannelData(0)), r=ch>1?i16(buf.getChannelData(1)):null, parts=[], B=1152;
+  for(let i=0,k=0;i<l.length;i+=B,k++){ const m=r?enc.encodeBuffer(l.subarray(i,i+B),r.subarray(i,i+B)):enc.encodeBuffer(l.subarray(i,i+B)); if(m.length) parts.push(new Uint8Array(m)); if(k%400===399) await new Promise(z=>setTimeout(z,0)); }
+  const e=enc.flush(); if(e.length) parts.push(new Uint8Array(e)); return new Blob(parts,{type:"audio/mpeg"}); }
 function snLame(){ if(window.lamejs) return Promise.resolve(window.lamejs); if(snLame.p) return snLame.p;
   const load=src=>new Promise(res=>{ const s=document.createElement("script"); s.src=src; s.onload=()=>res(window.lamejs||null); s.onerror=()=>res(null); document.head.appendChild(s); setTimeout(()=>res(window.lamejs||null),8000); });
   snLame.p=(async()=>{ const L=await load("https://cdn.jsdelivr.net/npm/lamejs@1.2.1/lame.min.js")||await load("https://unpkg.com/lamejs@1.2.1/lame.min.js"); if(!L) snLame.p=null; return L; })(); return snLame.p; }
 async function snMusOk(){ const dr=ui.snDraft, t=ui.snMusT; if(!dr||!t||!snMusBuf) return; { const ti=document.getElementById("snMusTi"); if(ti&&!t.src) t.title=(ti.value||"").trim()||t.title; } snMusPvStop(); layer.innerHTML=""; steBack(); toast("音樂處理中…");
   try{ const {blob,dur}=await snMusCut(snMusBuf,t.start), id="snm"+Date.now().toString(36); await MDB.put(id,blob,true); if(!await hbUpload(id,blob)){ toast("音樂沒有上傳成功，請再試一次"); return; }
-    dr.mus={mid:id,title:t.title,dur:Math.round(dur)}; ["src","artist","uid","gid","sid"].forEach(k=>{ if(t[k]) dr.mus[k]=t[k]; }); snMusBuf=null; ui.snMusT=null; render(); try{ steMusTag(); }catch(e){} toast("已加入音樂"); }catch(e){ toast("音樂處理失敗，請換一首試試"); } }
+    dr.mus={mid:id,title:t.title,dur:Math.round(dur),start:Math.round((t.start||0)*10)/10}; ["src","artist","uid","gid","sid"].forEach(k=>{ if(t[k]) dr.mus[k]=t[k]; }); snMusBuf=null; ui.snMusT=null; render(); try{ steMusTag(); }catch(e){} toast("已加入音樂"); }catch(e){ toast("音樂處理失敗，請換一首試試"); } }
 
 /* =========================================================
    聲音總管：App 裡所有影片、音樂、語音的共同規則
