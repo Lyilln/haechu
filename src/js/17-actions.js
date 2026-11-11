@@ -617,7 +617,7 @@ function clickAdm(a,t,e,r){ switch(a){
    回傳 CLICK_NO＝這裡沒有這個動作，交給下一份
    ========================================================= */
 function clickTheme(a,t,e,r){ switch(a){
-    case "coachNext": if(ui.coach){ if(ui.coach.kind==="welcome"){ fullTourStart(); break; } ui.coach.i++; coachShow(); } break;
+    case "coachNext": if(ui.coach){ if(ui.coach.kind==="welcome"||ui.coach.kind==="next"){ ui.coach=null; fullTourStart(); break; } ui.coach.i++; coachShow(); } break;
     case "coachSkip": coachEnd(); break;
     case "coachSkipSec": if(ui.coach&&ui.coach.kind==="full") fullNext(); else coachEnd(); break;
     case "coachAgain": { const e=(session()||{}).email||"", d=S.get(K.onboard,{}), T=S.get(K.tours,{}); Object.keys(d).forEach(k=>{ if(k===e||k.startsWith(e+"|")) delete d[k]; }); Object.keys(T).forEach(k=>{ if(k.startsWith(e+"|")) delete T[k]; }); S.set(K.onboard,d); S.set(K.tours,T); window.scrollTo(0,0); coachWelcome(); break; }

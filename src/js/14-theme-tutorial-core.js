@@ -75,7 +75,7 @@ function coachShow(){
   coachMount(`<div class="coach-hole" style="left:${Math.max(0,r.left-pad)}px;top:${tall?Math.max(r.top,8):r.top-pad}px;width:${Math.min(vw,r.width+pad*2)}px;height:${tall?Math.max(60,Math.min(r.bottom,vh-8)-Math.max(r.top,8)):r.height+pad*2}px"></div>
     <div class="coach-tip ${below?"below":"above"}" style="left:${left}px;width:${W}px;${tall?"bottom:24px":below?`top:${r.bottom+16}px`:`bottom:${vh-r.top+16}px`}">
       <span class="coach-arrow" style="${tall?"display:none;":""}left:${Math.max(18,Math.min(W-18,r.left+r.width/2-left))}px"></span>
-      <div class="coach-th"><small>${c.kind==="full"?`${esc(c.label||"")}・`:""}${c.i+1}／${steps.length}</small>${c.kind==="full"?`<button class="coach-end" data-a="coachSkip">結束教學</button>`:""}</div><b>${title}</b><p>${text}</p>
+      <div class="coach-th"><small>${c.kind==="full"?`${esc(c.label||"")}・`:""}${c.kind==="full"&&c.pos?`${c.pos}／${c.of}`:`${c.i+1}／${steps.length}`}</small>${c.kind==="full"?`<button class="coach-end" data-a="coachSkip">結束教學</button>`:""}</div><b>${title}</b><p>${text}</p>
       <div class="coach-btns">${c.kind==="full"?`<button class="btn btn-soft btn-sm" data-a="coachSkipSec">跳過這頁</button>`:`<button class="btn btn-soft btn-sm" data-a="coachSkip">跳過</button>`}<button class="btn btn-main btn-sm" data-a="coachNext">${c.i===steps.length-1&&!(c.kind==="full"&&c.si<(c.seq||[]).length)?"完成":"下一個"}</button></div></div>`);
 }
 function coachDone(){ if(!ui.coach) ui.coach={kind:"done"};

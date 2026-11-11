@@ -312,7 +312,8 @@ function segSwitch(btn,apply,dir){ const seg=btn.closest(".seg2"); if(!seg||btn.
 function lsRerender(){ const y=window.scrollY; render(); window.scrollTo(0,y); }
 /* 管理員活動頁：三組可以收起來（記在這台手機；收起來時有待處理的會顯示紅點） */
 const FOC_FOLD_K="hc_focfold";
-function focFoldGet(){ try{ return JSON.parse(localStorage.getItem(FOC_FOLD_K)||"null")||{wk:1}; }catch(e){ return {wk:1}; } }
+function focFoldGet(){ if(ui.coach&&ui.coach.kind==="full") return {wk:1,pd:1,big:1};   /* 教學中三組都打開，才指得到每一格 */
+  try{ return JSON.parse(localStorage.getItem(FOC_FOLD_K)||"null")||{wk:1}; }catch(e){ return {wk:1}; } }
 function focFold(key,ic,title,tiles){ const open=!!focFoldGet()[key], n=(tiles.match(/class="tile /g)||[]).length, hot=/class="tile on"/.test(tiles);
   return `<button class="section-h foc-fold ${open?"open":""}" data-a="focFold" data-v="${key}" aria-expanded="${open}">${hi(ic)}${title}<span class="foc-fold-r">${hot&&!open?`<i class="seg-dot"></i>`:""}${open?"收起":n+" 項"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<div class="tiles">${tiles}</div>`:""}`; }
 function viewAdmin(tab){
