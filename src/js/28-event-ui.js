@@ -61,3 +61,5 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
 /* 代言：點兩下按讚（像限時動態） */
 document.addEventListener("dblclick",e=>{ const st=e.target.closest&&e.target.closest('[data-dbl="bzLike"]'); if(!st) return; const b=bzGet(st.dataset.id), me=myId(); if(!b||!me) return; const L=((b.likes||{})[st.dataset.v])||[];
   st.classList.remove("pop"); void st.offsetWidth; st.classList.add("pop"); if(L.includes(me)) return; const btn=st.querySelector('[data-a="bzLike"]'); if(btn) setTimeout(()=>btn.click(),350); });
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="isShare"]'); if(!t) return; e.stopImmediatePropagation(); const c=isCur(), mid=(session()||{}).member, ev=t.dataset.v, E=IS_EV[ev]; if(!c||!E) return;
+  const x=((c.sc||{})[ev]||{})[mid]||{}, rk=isBoard(c,ev).findIndex(([m])=>m===mid)+1; xvShare({small:c.name,title:`${E.ic} ${E.n}`,big:`${isFmt(ev,x.best)}${E.unit}`,chips:[`目前第 ${rk} 名`],cap:`${c.name}\n${E.n} ${isFmt(ev,x.best)}${E.unit}・目前第 ${rk} 名！`,c1:"#3B5BDB",c2:"#748FFC"}); },true);

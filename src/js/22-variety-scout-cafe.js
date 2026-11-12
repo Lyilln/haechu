@@ -672,16 +672,28 @@ function isShame(c){ const out=[]; Object.entries(IS_EV).forEach(([ev,E])=>{ con
 const isCheerTop=c=>Object.entries(c.ch||{}).map(([g,o])=>[g,Object.values(o).reduce((s,n)=>s+n,0)]).sort((a,b)=>b[1]-a[1]);
 function isTriesLeft(c,ev,mid){ const x=((c.sc||{})[ev]||{})[mid]; return IS_TRY-((x&&x.day===isDay())?x.n:0); }
 function viewIsac(){ const c=isCur(), s=session()||{}, mid=s.role==="artist"?s.member:null, w=isWin();
-  if(!c) return `<main class="page is"><div class="is-off"><b>偶像運動會</b><p>${w?`${w.y} ${w.n}運動會・等管理員開幕`:"每年中秋、過年前後開幕"}</p></div>${isPast()}</main>`;
-  const on=c.st==="on", md=isMedals(c), ch=isCheerTop(c), em=myEmail(), f=followed();
-  return `<main class="page is"><section class="is-hero"><small>IDOL STAR ATHLETICS CHAMPIONSHIPS</small><b>${esc(c.name)}</b><span class="is-led">${on?`閉幕倒數 ${vsLeft(c.end).replace("剩 ","")}`:"已閉幕"}</span></section>
-    ${on&&mid?`<section class="is-evs">${Object.entries(IS_EV).map(([k,E])=>{ const x=((c.sc||{})[k]||{})[mid], left=isTriesLeft(c,k,mid); return `<button class="is-ev" data-a="isPlay" data-v="${k}" ${left>0?"":"disabled"}><i>${E.ic}</i><b>${E.n}</b><small>${x&&x.best!=null?`最佳 ${isFmt(k,x.best)}${E.unit}`:"還沒挑戰"}・今天剩 ${left} 次</small></button>`; }).join("")}</section>`:""}
-    <section class="is-sb"><h3>獎牌榜</h3>${md.GM.length?md.GM.map(([g,a],i)=>`<div class="is-row"><em>${i+1}</em><b>${esc((groupOf(g)||{}).name||"")}</b><span>🥇${a[0]}</span><span>🥈${a[1]}</span><span>🥉${a[2]}</span></div>`).join(""):`<p class="is-dim">還沒有成績</p>`}</section>
-    ${Object.entries(IS_EV).map(([k,E])=>{ const L=isBoard(c,k).slice(0,8); return `<section class="is-sb"><h3>${E.ic} ${E.n}</h3>${L.length?L.map(([m,x],i)=>`<div class="is-row"><em>${i<3?["🥇","🥈","🥉"][i]:i+1}</em><b>${esc(MEMBERS[m].name)}</b><small>${esc((groupOf(MEMBERS[m].group)||{}).name||"")}</small><span class="is-num">${isFmt(k,x.best)}<i>${E.unit}</i></span></div>`).join(""):`<p class="is-dim">還沒有人挑戰</p>`}</section>`; }).join("")}
-    <section class="is-sb"><h3>🏃‍♀️ 團體接力</h3>${isRelay(c).length?isRelay(c).slice(0,8).map(([g,v],i)=>`<div class="is-row"><em>${i<3?["🥇","🥈","🥉"][i]:i+1}</em><b>${esc(groupOf(g).name)}</b><span class="is-num">${v.toFixed(2)}<i>秒</i></span></div>`).join(""):`<p class="is-dim">同團至少兩位跑完短跑才算</p>`}</section>
-    ${isShame(c).length?`<section class="is-sb shame"><h3>😵 丟臉大賞</h3>${isShame(c).map(([t,m,v])=>`<div class="is-row"><em>💀</em><b>${t}</b><small>${esc(MEMBERS[m]?MEMBERS[m].name:"")}</small><span class="is-num">${esc(v)}</span></div>`).join("")}</section>`:""}
-    <section class="is-sb cheer"><h3>📣 加油榜</h3>${ch.length?ch.slice(0,6).map(([g,n],i)=>`<div class="is-row"><em>${i+1}</em><b>${esc((groupOf(g)||{}).name||"")}</b><span class="is-num">${fmt(n)}</span></div>`).join(""):`<p class="is-dim">還沒有人加油</p>`}
-      ${on&&!mid&&s.role==="fan"?`<div class="is-cb">${GROUPS.filter(g=>f.includes(g.id)).map(g=>`<button data-a="isCheer" data-v="${g.id}">📣 ${esc(g.name)} 加油！<small>${fmt(((c.ch||{})[g.id]||{})[em]||0)}</small></button>`).join("")||`<p class="is-dim">加入社群才能幫團加油</p>`}</div><p class="is-dim">閉幕時加油第一名的團，有加油的粉絲每人 +${IS_FAN_PRIZE} 積分</p>`:""}</section></main>`; }
+  const evHow=xvHow(Object.values(IS_EV).map(E=>[E.ic,esc(E.n)]));
+  if(!c) return `<main class="page is xv is2">${xvHero({tone:"b",small:"IDOL STAR ATHLETICS CHAMPIONSHIPS",title:"偶像運動會",meta:w?`${w.y} ${w.n}運動會・等管理員開幕`:`每年中秋、過年前後開幕・${isNextTxt()}`})}
+    ${xvSh("項目","每項每天 3 次")}${evHow}${xvSh("規則")}${xvHow([["🥇","金牌<br>+500"],["🥈","銀牌<br>+300"],["🥉","銅牌<br>+200"],["📣","粉絲加油<br>第一名 +500"]])}${isPast()}</main>`;
+  const on=c.st==="on", md=isMedals(c), ch=isCheerTop(c), em=myEmail(), f=followed(), day=Math.max(1,Math.ceil((Date.now()-(c.start||Date.now()))/864e5)), tot=Math.max(1,Math.round(((c.end||0)-(c.start||0))/864e5));
+  const left=mid?Object.keys(IS_EV).reduce((n,k)=>n+Math.max(0,isTriesLeft(c,k,mid)),0):0, myCh=on&&!mid?GROUPS.reduce((n,g)=>n+(((c.chd||{})[`${em}|${isDay()}|${g.id}`])||0),0):0;
+  const hero=xvHero({tone:"b",tag:on?`● 第 ${Math.min(day,tot)} 天`:"已閉幕",small:esc(c.name),title:on?(mid?`今天還能比 ${left} 次`:"偶像運動會"):"運動會結束了",
+    meta:on?(mid?`每項每天 ${IS_TRY} 次・留最好的成績・金 +${IS_MEDAL[0]} 銀 +${IS_MEDAL[1]} 銅 +${IS_MEDAL[2]}`:`閉幕時加油第一名的團，有加油的粉絲每人 +${IS_FAN_PRIZE}`):"獎牌和積分已經發出去了",
+    cd:on?[...xvCd(c.end),...(!mid&&s.role==="fan"?[[`${Math.min(myCh,IS_CHEER_DAY)}`,"今天加油",2]]:[])]:[]});
+  const chMax=Math.max(1,...ch.map(x=>x[1])), cheerG=GROUPS.filter(g=>f.includes(g.id)||ch.some(x=>x[0]===g.id));
+  const cheer=on&&s.role==="fan"&&!mid?xvSh("加油排行","一下 +5 積分・一天最多 50")+cheerG.sort((a,b)=>(((ch.find(x=>x[0]===b.id)||[])[1])||0)-(((ch.find(x=>x[0]===a.id)||[])[1])||0)).map(g=>{ const n=((ch.find(x=>x[0]===g.id)||[])[1])||0, mine=((c.ch||{})[g.id]||{})[em]||0;
+      return xvRow({...xvGAv(g.id),title:`${esc(g.name)} <span class="is2-n">${fmt(n)}</span><span class="xv-bar"><i style="width:${n/chMax*100}%"></i></span>`,right:f.includes(g.id)?`<button class="xv-bt is2-ch" data-a="isCheer" data-v="${g.id}">📣 加油<small>${fmt(mine)}</small></button>`:""}); }).join("")
+    :xvSh("加油排行")+(ch.length?ch.slice(0,6).map(([g,n])=>xvRow({...xvGAv(g),title:`${esc((groupOf(g)||{}).name||"")} <span class="is2-n">${fmt(n)}</span><span class="xv-bar"><i style="width:${n/chMax*100}%"></i></span>`})).join(""):xvEmpty("還沒有人加油"));
+  const evs=on&&mid?xvSh("項目","今天剩幾次")+Object.entries(IS_EV).map(([k,E])=>{ const x=((c.sc||{})[k]||{})[mid], lf=isTriesLeft(c,k,mid), L=isBoard(c,k), rk=L.findIndex(([m])=>m===mid);
+      return xvRow({av:E.ic,sq:1,avStyle:"background:var(--s2)",title:esc(E.n),sub:x&&x.best!=null?`我最好 ${isFmt(k,x.best)}${E.unit}・第 ${rk+1} 名`:"還沒比",right:`${xvChip(`剩 ${Math.max(0,lf)}`,lf>0?"":"")}<button class="xv-bt" data-a="isPlay" data-v="${k}" ${lf>0?"":"disabled"}>比</button>`}); }).join("")
+      +xvRow({av:"🏃‍♀️",sq:1,avStyle:"background:var(--s2)",title:"團體接力",sub:"同團成員短跑平均，自動計算",right:xvChip("團體","on")}):"";
+  const lead=xvSh("目前第一")+`<div class="xv-g2">${Object.entries(IS_EV).map(([k,E])=>{ const t=isBoard(c,k)[0]; return xvRow({av:E.ic,sq:1,avStyle:"background:var(--s2)",title:esc(E.n),sub:t?`${esc(MEMBERS[t[0]].name)} ${isFmt(k,t[1].best)}${E.unit}`:"還沒人比"}); }).join("")}</div>`;
+  const myMd=mid&&md.M[mid]?xvSh("我的獎牌")+xvStats([[`🥇 ${md.M[mid][0]}`,"金"],[`🥈 ${md.M[mid][1]}`,"銀"],[`🥉 ${md.M[mid][2]}`,"銅"]]):"";
+  return `<main class="page is xv is2">${hero}${mid?evs+myMd:cheer}${lead}
+    ${xvSh("獎牌榜")}${md.GM.length?md.GM.map(([g,a],i)=>xvRow({...xvGAv(g),title:esc((groupOf(g)||{}).name||""),sub:`🥇 ${a[0]}　🥈 ${a[1]}　🥉 ${a[2]}`,right:xvChip(`第 ${i+1}`,i===0?"on":"")})).join(""):xvEmpty("還沒有成績")}
+    ${Object.entries(IS_EV).map(([k,E])=>{ const L=isBoard(c,k).slice(0,5); return L.length?`<details class="is2-d"><summary>${E.ic} ${esc(E.n)} 排行<i>${isBoard(c,k).length} 人</i></summary>${L.map(([m,x],i)=>xvRow({av:i<3?["🥇","🥈","🥉"][i]:i+1,sq:1,avStyle:"background:var(--s2)",title:esc(MEMBERS[m].name),sub:esc((groupOf(MEMBERS[m].group)||{}).name||""),right:`<b class="is2-v">${isFmt(k,x.best)}<i>${E.unit}</i></b>`})).join("")}</details>`:""; }).join("")}
+    ${isRelay(c).length?`<details class="is2-d"><summary>🏃‍♀️ 團體接力<i>${isRelay(c).length} 團</i></summary>${isRelay(c).slice(0,8).map(([g,v],i)=>xvRow({av:i<3?["🥇","🥈","🥉"][i]:i+1,sq:1,avStyle:"background:var(--s2)",title:esc(groupOf(g).name),right:`<b class="is2-v">${v.toFixed(2)}<i>秒</i></b>`})).join("")}</details>`:""}
+    ${isShame(c).length?xvSh("😵 丟臉大賞")+isShame(c).map(([t,m,v])=>xvRow({av:"💀",sq:1,avStyle:"background:var(--s2)",title:esc(t),sub:esc(MEMBERS[m]?MEMBERS[m].name:""),right:`<b class="is2-v">${esc(v)}</b>`})).join(""):""}</main>`; }
 function isPast(){ const P=(isGet().past||[]).slice(-3).reverse(); return P.length?`<div class="section-h">歷屆</div>${P.map(p=>`<section class="is-sb"><h3>${esc(p.name)}</h3>${(p.top||[]).map(([g,a],i)=>`<div class="is-row"><em>${i+1}</em><b>${esc((groupOf(g)||{}).name||"已解散")}</b><span>🥇${a[0]}</span><span>🥈${a[1]}</span><span>🥉${a[2]}</span></div>`).join("")}</section>`).join("")}`:""; }
 /* 閉幕結算：藝人獎牌積分、加油第一名的粉絲（管理員的手機發，每筆有固定編號） */
 function isPay(){ try{ if(!isAdminAcct()) return; const A=isGet(), c=A.cur; if(!c||c.paid) return; if(c.st==="on"&&Date.now()<c.end) return; c.st="done";
@@ -694,8 +706,11 @@ const isTile=()=>{ const c=isCur(); return c&&c.st==="on"?"● 開幕中":isWin(
 
 /* 小遊戲本體在 js/23-偶運小遊戲.js */
 function isDone(ev,v){ const G=ui.isG; if(!G||G.fin) return; G.fin=true; const c=isCur(), mid=(session()||{}).member; if(!c||!mid) return; const E=IS_EV[ev]; c.sc=c.sc||{}; const B=c.sc[ev]=c.sc[ev]||{}, o=B[mid]=B[mid]||{best:null,n:0,day:""};
+  const rk0=isBoard(c,ev).findIndex(([m])=>m===mid);
   if(o.day!==isDay()){ o.day=isDay(); o.n=0; } o.n++; const better=o.best==null||(E.hi?v>o.best:v<o.best); if(better) o.best=v; isPut(c);
-  const b=document.getElementById("isBtns"); if(b) b.innerHTML=`<p class="is-res">${isFmt(ev,v)} ${E.unit}${better?"・新紀錄！":""}</p><button class="is-big" data-a="isQuit">好</button>`; }
+  const rk1=isBoard(c,ev).findIndex(([m])=>m===mid)+1, lf=isTriesLeft(c,ev,mid), md=["金牌","銀牌","銅牌"][rk1-1];
+  const b=document.getElementById("isBtns"); if(b) b.innerHTML=`<p class="is-res">${isFmt(ev,v)} ${E.unit}${better?"・新紀錄！":""}</p><button class="is-big" data-a="isQuit">好</button>`;
+  setTimeout(()=>{ if(ui.isG) ui.isG.dead=true; ui.isG=null; xvResult({tone:"b",small:`${E.n}・今天第 ${o.n} 次`,title:`${isFmt(ev,v)} ${E.unit}${better?"！":""}`,big:rk0>=0&&rk0+1!==rk1?`第 ${rk0+1} → 第 ${rk1}`:`第 ${rk1} 名`,chips:[...(better?["新紀錄"]:[`最好 ${isFmt(ev,o.best)} ${E.unit}`]),...(md?[`${md} +${IS_MEDAL[rk1-1]}（閉幕時）`]:[]),lf>0?`今天還能比 ${lf} 次`:"今天用完了"],share:`data-a="isShare" data-v="${ev}"`,back:"回到運動會"}); },1100); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^is[A-Z]/.test(a)) return;
   switch(a){
     case "isPlay": isGame(t.dataset.v); break;
@@ -707,9 +722,12 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       isPut({id,name:`${w?w.y+" "+w.n:"特別"}偶像運動會`,st:"on",start:Date.now(),end:Date.now()+days*864e5,sc:{},ch:{}}); render(); toast("運動會開幕！"); break; }
     case "isClose": ask("現在閉幕並發獎？",()=>{ const c=isGet().cur; if(!c) return; c.end=Date.now(); c.st="done"; isPut(c); isPay(); render(); }); break;
   } });
-function isAdminHtml(){ const c=isGet().cur, w=isWin(); return `<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>偶像運動會</h3></div>
-  ${c&&c.st==="on"?`<p class="vs-wait">${esc(c.name)}・${vsLeft(c.end)}</p><button class="btn btn-soft btn-block" data-a="isClose">閉幕並發獎</button>`
-   :w?`<label class="foc-lab">${w.y} ${w.n}運動會・天數</label><label class="field"><select id="isDays"><option value="2">2 天</option><option value="1">1 天</option></select></label><button class="btn btn-main btn-block" data-a="isOpen">開幕</button>`
-   :`<p class="vs-wait">中秋、過年前後三週內才能開幕</p>`}</section>`; }
+function isAdminHtml(){ const c=isGet().cur, w=isWin(), on=c&&c.st==="on", md=c?isMedals(c):{GM:[]}, ch=c?isCheerTop(c):[], ppl=c?new Set(Object.values(c.sc||{}).flatMap(o=>Object.keys(o))).size:0;
+  const top=on?xvHero({tone:"b",tag:"● 進行中",small:esc(c.name),title:`還有 ${vsLeft(c.end).replace("剩 ","")}`,meta:`${ppl} 位藝人參加・加油 ${fmt(ch.reduce((n,x)=>n+x[1],0))} 次`,btns:[["閉幕並發獎",`data-a="isClose"`,1]]})
+    :w?xvHero({tone:"b",tag:"可以開幕",small:"IDOL STAR ATHLETICS",title:`${w.y} ${w.n}運動會`,meta:"開幕後藝人每項每天可以比 3 次，閉幕時自動發獎牌和積分",extra:`<label class="is2-days">天數<select id="isDays"><option value="2">2 天</option><option value="1">1 天</option></select></label>`,btns:[["開幕",`data-a="isOpen"`]]})
+    :xvHero({tone:"b",small:"IDOL STAR ATHLETICS",title:"還不能開幕",meta:`中秋、過年前後三週內才能開幕・${isNextTxt()}`});
+  return `<div class="xv is2">${top}${c?xvStats([[ppl,"參賽藝人"],[md.GM.length,"拿牌的團"],[fmt(ch.reduce((n,x)=>n+x[1],0)),"加油"]]):""}
+    ${on&&md.GM.length?xvSh("獎牌榜")+md.GM.slice(0,5).map(([g,a],i)=>xvRow({...xvGAv(g),title:esc((groupOf(g)||{}).name||""),sub:`🥇 ${a[0]}　🥈 ${a[1]}　🥉 ${a[2]}`,right:xvChip(`第 ${i+1}`)})).join(""):""}
+    ${(isGet().past||[]).length?xvSh("歷屆")+(isGet().past||[]).slice(-3).reverse().map(p=>xvRow({av:"🏅",sq:1,avStyle:"background:var(--s2)",title:esc(p.name),sub:(p.top||[]).map(([g])=>esc((groupOf(g)||{}).name||"")).join(" › ")})).join(""):""}</div>`; }
 
 

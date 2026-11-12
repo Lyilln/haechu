@@ -98,3 +98,12 @@ main.foc.xv{padding-top:18px}
 .bz2-blur{filter:blur(5px);opacity:.7;pointer-events:none}
 .bz2-lock,.dk-keep-xv{position:absolute;left:18px;right:18px;bottom:22px;background:#fff;color:#222;border-radius:18px;padding:16px;text-align:center;box-shadow:0 10px 30px rgba(0,0,0,.18);font-family:inherit}.bz2-lock b,.dk-keep-xv{font-size:15px}.bz2-lock small,.dk-keep-xv{display:block;font-size:11px;color:#888;margin:4px 0 12px}
 .bz2 .bz2-in .bz-qa b,.dk-keep-xv{color:#B5838D}.bz2 .bz2-in .bz-qa p,.dk-keep-xv{color:#3A3A3A}.bz2 .bz2-in h3,.dk-keep-xv{color:#2A2A2A}
+/* 偶像運動會（is2-） */
+.is2-n{font-size:11px;color:var(--ink-3);font-weight:700;margin-left:4px}.is2 .xv-t b .xv-bar{display:block}
+.is2-ch{display:flex;flex-direction:column;align-items:center;line-height:1.1;padding:6px 12px}.is2-ch small{font-size:10px;opacity:.85;font-weight:700}
+.is2-ch.pop{animation:is2Pop .35s}@keyframes is2Pop{40%{transform:scale(1.15)}}
+.is2-v{font-size:15px;color:var(--violet-ink);white-space:nowrap}.is2-v i{font-style:normal;font-size:10px;margin-left:2px;color:var(--ink-3)}
+.is2-d{margin-top:10px}.is2-d summary{list-style:none;display:flex;justify-content:space-between;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px 14px;font-size:13.5px;font-weight:700;color:var(--ink);cursor:pointer}.is2-d summary::-webkit-details-marker{display:none}.is2-d summary i{font-style:normal;font-size:11px;color:var(--ink-3);font-weight:500}
+.is2-d[open] summary{margin-bottom:8px}
+.is2-days,.dk-keep-xv{display:flex;align-items:center;gap:8px;margin-top:12px;font-size:12px}.is2-days select{border:0;border-radius:10px;padding:6px 10px;font:inherit}
+.is2 .xv-g2 .xv-row{margin:0}
