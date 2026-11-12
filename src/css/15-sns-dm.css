@@ -93,4 +93,16 @@
 /* 11/12 Reels 文案：跟 IG 一樣只露一行，點一下拉出留言面板（面板最上面是完整文案） */
 .sn-rb .sn-rcap{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;line-height:1.45;cursor:pointer;word-break:break-word}
 .sn-rb{gap:6px}.sn-rb small{font-size:12px;opacity:.9}
-.sn-capb{display:flex;gap:10px;padding:4px 16px 14px;border-bottom:1px solid rgba(127,127,127,.18);margin-bottom:8px}.sn-capb .sn-ct{white-space:pre-wrap;word-break:break-word}.sn-capb .sn-cu b{font-size:13px}
+/* 面板裡的文案：跟 IG 一樣，頭像＋帳號一行，文案整段照原本的換行、空行呈現，下面是時間 */
+.sn-capb{padding:2px 18px 16px;border-bottom:1px solid rgba(127,127,127,.18);margin-bottom:8px}
+.sn-capu{display:flex;align-items:center;gap:8px;border:0;background:none;color:inherit;font:inherit;padding:0;margin-bottom:12px}.sn-capu b{font-size:14px;font-weight:700}
+.sn-capt{margin:0;font-size:15.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
+.sn-capb time{display:block;margin-top:14px;font-size:13px;color:rgba(127,127,127,.95)}
+/* 11/12 個人檔案照 IG 的比例：頭像 96、數字 17／字 15、簡介 15、按鈕 32 高 15 字、IG 新的藍紫色 */
+.sn-pnm{font-size:15.5px!important;font-weight:600!important}
+.sn-phr .sn-stat>*{font-size:15px!important}.sn-phr .sn-stat b{font-size:17.5px!important}
+.sn-bio{font-size:15px!important;line-height:1.45}.sn-cat{font-size:15px!important}
+.sn-mut{font-size:14.5px!important}
+.sn-btns button{height:34px!important;font-size:15px!important;border-radius:9px!important}.sn-btns button.pri{background:#4A5DF9!important;color:#fff!important}
+.sn-hls small{font-size:13px;font-weight:600}
+.sn-capt .sn-lnk{color:#4A8BFF;font-weight:500;background:none;border:0;padding:0;font:inherit}html[data-theme="dark"] .sn-capt .sn-lnk{color:#A7CBFF}
