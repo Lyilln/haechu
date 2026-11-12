@@ -11248,25 +11248,55 @@ function viewBizArtist(mid,id){ if(id){ const b=bzGet(id); if(!b) return `<main 
         <button class="btn btn-main btn-block" data-a="bzSend" data-id="${id}">交件</button></section>`:""}
       ${a.st==="no"?`<p class="vs-wait bz-pad">已婉拒這個邀約</p>`:""}
       ${bzWorks(b,true)}</main>`; }
-  const L=bzAll(), mine=L.filter(b=>b.mids.includes(mid)), rest=L.filter(b=>!b.mids.includes(mid)&&bzSubs(b).length&&bzOut(b));
-  return `<main class="page bz">${mine.length?`<div class="section-h">給我的邀約</div>${mine.map(b=>bzCard(b,"#/artist?tab=foc&p=biz",mid)).join("")}`:`<div class="ux-empty"><span>📇</span><b>還沒有邀約</b></div>`}${rest.length?`<div class="section-h">其他藝人</div>${rest.map(b=>bzCard(b,"#/artist?tab=foc&p=biz")).join("")}`:""}</main>`; }
-function bzHero(b){ return `<section class="bz-hero ${b.type}"><small>${b.type==="mag"?"MAGAZINE":"ADVERTISEMENT"}</small><h2>${esc(b.name)}</h2>${b.issue?`<p>${esc(b.issue)}</p>`:""}<span class="vs-st ${bzOpen(b)?"on":""}">${bzOpen(b)?(b.type==="mag"?`拍攝中・${vsLeft(b.end)}`:`進行中・${vsLeft(b.end)}`):b.type==="mag"?"發售中":"已結束"}</span></section>`; }
+  const L=bzAll(), mine=L.filter(b=>b.mids.includes(mid)), rest=L.filter(b=>!b.mids.includes(mid)&&bzSubs(b).length&&bzOut(b)), base="#/artist?tab=foc&p=biz";
+  const ans=b=>(b.ans||{})[mid]||{}, inv=mine.filter(b=>bzOpen(b)&&!ans(b).st&&!ans(b).img), todo=mine.filter(b=>bzOpen(b)&&ans(b).st==="ok"&&!ans(b).img), done=mine.filter(b=>ans(b).img);
+  const f=inv[0]||todo[0];
+  const top=f?xvHero({tone:"o",tag:vsLeft(f.end),small:`${inv[0]?"新的邀約":"待交件"}・${f.type==="mag"?"雜誌拍攝":"廣告代言"}`,title:esc(f.name),meta:`概念：${esc(f.concept||"")}・報酬 +${fmt(f.reward||0)}`,btns:inv[0]?[["接下邀約",`data-a="bzOk" data-id="${f.id}"`],["看內容",`data-a="uniGo" data-v="${base}&id=${f.id}"`,1]]:[["去拍攝交件",`data-a="uniGo" data-v="${base}&id=${f.id}"`]]})
+    :xvHero({tone:"o",small:"ENDORSEMENT・MAGAZINE",title:"還沒有新的邀約",meta:"公司會邀請你拍廣告或雜誌，交件就拿報酬"});
+  const likes=done.filter(b=>b.type==="ad").reduce((n,b)=>n+(((b.likes||{})[mid])||[]).length,0);
+  const card=(b,m)=>`<button class="bz2-c" data-a="uniGo" data-v="${base}&id=${b.id}">${bzPhoto(b,m)}<span><b>${esc(b.name)}</b><small>${b.type==="ad"?`♡ ${fmt(((b.likes||{})[m]||[]).length)}`:`${fmt(Object.keys(b.buys||{}).length)} 人購買`}</small></span></button>`;
+  return `<main class="page bz xv bz2">${top}${xvStats([[done.filter(b=>b.type==="ad").length,"代言"],[done.filter(b=>b.type==="mag").length,"雜誌"],[fmt(likes),"總按讚"]])}
+    ${[...inv.slice(f===inv[0]?1:0),...todo.filter(b=>b!==f)].length?xvSh("待處理")+[...inv.slice(f===inv[0]?1:0),...todo.filter(b=>b!==f)].map(b=>xvRow({av:b.type==="mag"?"📖":"🧴",sq:1,avStyle:"background:var(--s2)",title:`${esc(b.name)}・${bzKind(b)}`,sub:`${ans(b).st==="ok"?"已接下・還沒交件":"等你回覆"}・${vsLeft(b.end)}`,right:xvChip(ans(b).st==="ok"?"製作中":"新邀約",ans(b).st==="ok"?"on":"w"),attrs:`data-a="uniGo" data-v="${base}&id=${b.id}"`})).join(""):""}
+    ${done.length?xvSh("我的作品",`${done.length} 個`)+`<div class="xv-g2">${done.map(b=>card(b,mid)).join("")}</div>`:""}
+    ${rest.length?xvSh("其他藝人")+`<div class="xv-g2">${rest.slice(0,6).map(b=>card(b,bzSubs(b)[0])).join("")}</div>`:""}</main>`; }
+function bzHero(b){ return xvHero({tone:b.type==="mag"?"k":"o",tag:bzOpen(b)?(b.type==="mag"?`拍攝中・${vsLeft(b.end)}`:`進行中・${vsLeft(b.end)}`):b.type==="mag"?"發售中":"已結束",small:b.type==="mag"?`MAGAZINE${b.issue?"・"+esc(b.issue):""}`:"ADVERTISEMENT",title:esc(b.name),meta:`${esc(b.mids.map(vsName).join("・"))}${b.concept?`<br>${esc(b.concept)}`:""}`}); }
 function bzCard(b,base,mid){ const sub=bzSubs(b), a=mid&&((b.ans||{})[mid]||{}), need=mid&&bzOpen(b)&&!a.img&&a.st!=="no";
   return `<button class="bz-card" data-a="uniGo" data-v="${base}&id=${b.id}"><span class="bz-cv">${sub.length?bzPhoto(b,sub[0]):`<span class="bz-img ph" style="background:${grad(b.type==="mag"?1:4)}"></span>`}<em>${bzKind(b)}</em></span><span class="bz-ci"><b>${esc(b.name)}</b><small>${esc(b.mids.map(vsName).join("・"))}</small></span><i class="vs-st ${need?"on":""}">${need?"有新邀約":bzOpen(b)?vsLeft(b.end):b.type==="mag"?"發售中":"已結束"}</i></button>`; }
 /* 作品：代言＝照片＋文案＋愛心；雜誌＝買了才看得到全部 */
 function bzWorks(b,artist){ const sub=bzSubs(b); if(!sub.length) return ""; const me=myId(), own=artist||isAdminAcct(), bought=own||!!(b.buys||{})[me];
-  if(b.type==="ad") return `<section class="bz-ads">${sub.map(m=>{ const a=b.ans[m], L=(b.likes||{})[m]||[]; return `<article class="bz-ad">${bzPhoto(b,m)}<div class="bz-adb"><b>${esc(vsName(m))} × ${esc(b.name)}</b>${a.text?`<p>${esc(a.text)}</p>`:""}<button class="bz-lk ${L.includes(me)?"on":""}" data-a="bzLike" data-id="${b.id}" data-v="${m}" ${artist?"disabled":""}>${L.includes(me)?"♥":"♡"} ${fmt(L.length)}</button></div></article>`; }).join("")}</section>`;
+  if(b.type==="ad") return `<section class="bz2-ads">${sub.map(m=>{ const a=b.ans[m], L=(b.likes||{})[m]||[]; return `<article class="bz2-st" ${artist?"":`data-dbl="bzLike" data-id="${b.id}" data-v="${m}"`}>${bzPhoto(b,m)}<div class="bz2-sto"><small>${esc(b.name)} × ${esc(vsName(m))}</small>${a.text?`<b>${esc(a.text)}</b>`:""}<div class="bz2-stf"><span>${artist?"":"點兩下按讚 +10"}</span><button class="bz-lk ${L.includes(me)?"on":""}" data-a="bzLike" data-id="${b.id}" data-v="${m}" ${artist?"disabled":""}>${L.includes(me)?"♥":"♡"} ${fmt(L.length)}</button></div></div><i class="bz2-heart">♥</i></article>`; }).join("")}</section>`;
   if(!bzOut(b)&&!own) return "";
-  return `<section class="bz-mag">${bought?sub.map(m=>{ const a=b.ans[m]; return `<article class="bz-page">${bzPhoto(b,m)}<h3>${esc(vsName(m))}</h3>${(b.qs||[]).map((q,i)=>a.qa&&a.qa[i]?`<div class="bz-qa"><b>Q. ${esc(q)}</b><p>${esc(a.qa[i])}</p></div>`:"").join("")}</article>`; }).join("")
-    :`<div class="bz-lock">${bzPhoto(b,sub[0],"blur")}<div><b>${fmt(sub.length)} 位藝人的畫報與專訪</b><button class="btn btn-main" data-a="bzBuy" data-id="${b.id}">${fmt(b.price)} 積分購買</button><small>你有 ${fmt(points())} 積分</small></div></div>`}</section>`; }
-function viewBizFan(id){ if(id){ const b=bzGet(id); if(!b) return `<main class="page bz"><div class="vs-none"><b>找不到</b></div></main>`; return `<main class="page bz">${bzHero(b)}${bzSubs(b).length?"":`<p class="vs-wait bz-pad">拍攝中</p>`}${bzWorks(b,false)}</main>`; }
-  const f=followed(), L=bzAll().filter(b=>bzSubs(b).length||b.type==="mag").sort((a,b)=>(b.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))-a.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group)))||b.ts-a.ts);
-  const ads=L.filter(b=>b.type==="ad"), mags=L.filter(b=>b.type==="mag");
-  return `<main class="page bz">${L.length?"":`<div class="ux-empty"><span>📰</span><b>還沒有廣告和雜誌</b></div>`}${mags.length?`<div class="section-h">雜誌</div><div class="bz-shelf">${mags.map(b=>{ const s=bzSubs(b); return `<button class="bz-book" data-a="uniGo" data-v="#/fan/core?p=biz&id=${b.id}">${s.length?bzPhoto(b,s[0]):`<span class="bz-img ph" style="background:${grad(1)}"></span>`}<span class="bz-mt">${esc(b.name)}</span><small>${bzOut(b)?((b.buys||{})[myEmail()]?"已購買":`${fmt(b.price)} 積分`):"拍攝中"}</small></button>`; }).join("")}</div>`:""}
-    ${ads.length?`<div class="section-h">廣告</div>${ads.map(b=>bzCard(b,"#/fan/core?p=biz")).join("")}`:""}</main>`; }
+  /* 雜誌：封面 → 每位藝人一頁（照片＋專訪）；沒買只能看到封面和第一題，後面變模糊 */
+  const pages=[`<div class="bz2-pg bz2-cov">${bzPhoto(b,sub[0])}<div><span>${esc(b.name)}</span><small>${esc(b.issue||"")}</small><b>${esc(sub.map(vsName).join("・"))}</b>${b.concept?`<p>「${esc(b.concept)}」</p>`:""}</div></div>`];
+  sub.forEach((m,k)=>{ const a=b.ans[m], qa=(b.qs||[]).map((q,i)=>a.qa&&a.qa[i]?{q,a:a.qa[i]}:null).filter(Boolean);
+    if(bought) pages.push(`<div class="bz2-pg bz2-in"><div class="bz2-ph">${bzPhoto(b,m)}</div><h3>${esc(vsName(m))}</h3>${qa.map((x,i)=>`<div class="bz-qa"><b>Q${i+1}. ${esc(x.q)}</b><p>${esc(x.a)}</p></div>`).join("")}</div>`);
+    else if(k===0) pages.push(`<div class="bz2-pg bz2-in"><h3>${esc(vsName(m))}</h3>${qa[0]?`<div class="bz-qa"><b>Q1. ${esc(qa[0].q)}</b><p>${esc(qa[0].a)}</p></div>`:""}<div class="bz2-blur">${qa.slice(1).map((x,i)=>`<div class="bz-qa"><b>Q${i+2}. ${esc(x.q)}</b><p>${esc(x.a)}</p></div>`).join("")||`<div class="bz-qa"><b>Q2. ……</b><p>……………………………………</p></div>`}</div>
+      <div class="bz2-lock"><b>🔒 後面還有 ${Math.max(1,sub.length*Math.max(1,(b.qs||[]).length)-1)} 段</b><small>解鎖後可以一直看・你有 ${fmt(points())} 積分</small><button class="xv-big" data-a="bzBuy" data-id="${b.id}">${fmt(b.price)} 積分解鎖</button></div></div>`); });
+  setTimeout(()=>{ const p=document.querySelector(".bz2-pages"); if(p&&!p.dataset.on){ p.dataset.on="1"; const dots=document.querySelectorAll(".bz2-dot i"); p.addEventListener("scroll",()=>{ const k=Math.round(p.scrollLeft/p.clientWidth); dots.forEach((x,i)=>x.classList.toggle("on",i===k)); },{passive:true}); } },0);
+  return `<section class="bz2-mag"><div class="bz2-pages">${pages.join("")}</div><div class="trp-dot bz2-dot">${pages.map((x,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div><p class="trp-hint">← 左右滑翻頁 →</p></section>`; }
+function viewBizFan(id){ if(id){ const b=bzGet(id); if(!b) return `<main class="page bz"><div class="vs-none"><b>找不到</b></div></main>`; return `<main class="page bz xv bz2">${b.type==="mag"&&bzSubs(b).length&&bzOut(b)?"":bzHero(b)}${bzSubs(b).length?"":`<p class="vs-wait bz-pad">拍攝中</p>`}${bzWorks(b,false)}</main>`; }
+  const f=followed(), me=myEmail(), L=bzAll().filter(b=>bzSubs(b).length&&bzOut(b)).sort((a,b)=>(b.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))-a.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group)))||b.ts-a.ts);
+  const soon=bzAll().filter(b=>b.type==="mag"&&!bzOut(b));
+  const how=xvSh("可以做什麼")+xvHow([["♡","廣告按讚<br>+10"],["📖","雜誌<br>試閱"],["🔓","積分<br>解鎖全文"],["📚","收進<br>我的雜誌"]]);
+  if(!L.length) return `<main class="page bz xv bz2">${xvHero({tone:"k",small:"ENDORSEMENT・MAGAZINE",title:"還沒有廣告和雜誌",meta:"藝人接到代言或雜誌拍攝，交件後就會出現在這裡"})}${how}
+    ${soon.length?xvSh("拍攝中的雜誌")+soon.map(b=>xvRow({av:"📖",sq:1,avStyle:"background:var(--s2)",title:esc(b.name),sub:`${esc(b.mids.map(vsName).join("・"))}・${vsLeft(b.end)}後發售`})).join(""):""}</main>`;
+  const mag=L.find(b=>b.type==="mag"), cur=xvSegCur("bzf","all"), V=cur==="ad"?L.filter(b=>b.type==="ad"):cur==="mag"?L.filter(b=>b.type==="mag"):L;
+  const top=mag?xvHero({tone:"k",tag:"新刊",small:`MAGAZINE${mag.issue?"・"+esc(mag.issue):""}`,title:`${esc(bzSubs(mag).map(vsName).join("・"))} × ${esc(mag.name)}`,meta:mag.concept?`「${esc(mag.concept)}」`:"",btns:(mag.buys||{})[me]||(mag.buys||{})[myId()]?[["翻開來看",`data-a="uniGo" data-v="#/fan/core?p=biz&id=${mag.id}"`]]:[[`${fmt(mag.price)} 積分看全文`,`data-a="bzBuy" data-id="${mag.id}"`],["試閱",`data-a="uniGo" data-v="#/fan/core?p=biz&id=${mag.id}"`,1]]})
+    :xvHero({tone:"o",small:"ADVERTISEMENT",title:esc(L[0].name),meta:esc(bzSubs(L[0]).map(vsName).join("・")),btns:[["去看看",`data-a="uniGo" data-v="#/fan/core?p=biz&id=${L[0].id}"`]]});
+  const cards=V.flatMap(b=>b.type==="ad"?bzSubs(b).map(m=>({b,m})):[{b,m:bzSubs(b)[0]}]);
+  return `<main class="page bz xv bz2">${top}<div style="margin-top:12px">${xvSeg("bzf",[["all","全部"],["ad","廣告代言"],["mag","雜誌"]],cur)}</div>
+    ${xvSh("最新","按讚 +10・一天最多 50")}<div class="xv-g2">${cards.map(({b,m})=>`<button class="bz2-c" data-a="uniGo" data-v="#/fan/core?p=biz&id=${b.id}">${bzPhoto(b,m)}<span><b>${esc(b.name)}</b><small>${esc(vsName(m))}・${b.type==="ad"?`♡ ${fmt(((b.likes||{})[m]||[]).length)}`:(b.buys||{})[me]||(b.buys||{})[myId()]?"已解鎖":`${fmt(b.price)} 積分`}</small></span></button>`).join("")||xvEmpty("這裡還沒有東西")}</div>
+    ${soon.length?xvSh("拍攝中的雜誌")+soon.map(b=>xvRow({av:"📖",sq:1,avStyle:"background:var(--s2)",title:esc(b.name),sub:`${esc(b.mids.map(vsName).join("・"))}・${vsLeft(b.end)}後發售`})).join(""):""}</main>`; }
 /* 管理員：發邀約 */
 function bzAdminHtml(){ const d=ui.bzA||(ui.bzA={type:"ad",mids:[],days:5,reward:500,price:300,qs:["","",""]}), AM=Object.keys(MEMBERS).filter(m=>!MEMBERS[m].official&&groupOf(MEMBERS[m].group)), E=bzAll();
-  return `<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>發邀約</h3></div>
+  const O=E.filter(b=>bzOpen(b)&&!String(b.id).startsWith("demo_")), D=E.filter(b=>!bzOpen(b)&&!String(b.id).startsWith("demo_")), cur=xvSegCur("bza","on"), L=cur==="on"?O:D;
+  const rows=L.map(b=>`<section class="tr2-c">${xvRow({av:b.type==="mag"?"📖":"🧴",sq:1,avStyle:"background:var(--s2)",title:`${esc(b.name)}・${bzKind(b)}`,sub:`${esc(b.mids.map(vsName).join("・"))}・交件 ${bzSubs(b).length}/${b.mids.length}・報酬 ${fmt(b.reward||0)}${b.type==="mag"?`・售價 ${fmt(b.price)}・賣出 ${fmt(Object.keys(b.buys||{}).length)} 本`:""}`,right:bzOpen(b)?xvChip(bzSubs(b).length?"製作中":"等回覆",bzSubs(b).length?"on":"w"):xvChip("已上架","ok")})}
+      <div class="tr2-b">${bzOpen(b)?`<button class="xv-bt g" data-a="bzAEnd" data-id="${b.id}">結束</button>`:""}<button class="xv-bt g" data-a="bzADel" data-id="${b.id}">刪除</button></div></section>`).join("");
+  return `<div class="xv bz2">${xvStats([[O.length,"邀約中"],[D.length,"已結束"],[fmt(E.reduce((n,b)=>n+Object.keys(b.buys||{}).length,0)),"雜誌賣出"]])}
+    <div style="margin-top:12px">${xvSeg("bza",[["on",`邀約中 ${O.length}`],["done",`已結束 ${D.length}`]],cur)}</div>
+    <div style="margin-top:12px">${rows||xvEmpty(cur==="on"?"沒有進行中的邀約":"還沒有結束的邀約")}</div>
+    ${ui.bzAddOpen?"":xvAdd("發邀約",`data-a="bzAddOpen"`)}</div>
+  ${ui.bzAddOpen?`<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>發邀約</h3><button class="xv-bt g" data-a="bzAddOpen">收起</button></div>
     <div class="chips">${[["ad","廣告代言"],["mag","雜誌拍攝"]].map(([k,l])=>`<button class="chip ${d.type===k?"on":""}" data-a="bzAT" data-v="${k}">${l}</button>`).join("")}</div>
     <label class="foc-lab">${d.type==="mag"?"雜誌名稱":"品牌名稱"}</label><label class="field"><input id="bzAName" value="${esc(d.name||"")}" placeholder="輸入文字"></label>
     ${d.type==="mag"?`<label class="foc-lab">期數</label><label class="field"><input id="bzAIssue" value="${esc(d.issue||"")}" placeholder="輸入文字"></label>`:""}
@@ -11278,7 +11308,7 @@ function bzAdminHtml(){ const d=ui.bzA||(ui.bzA={type:"ad",mids:[],days:5,reward
     <label class="foc-lab">每位藝人酬勞</label><div class="chips">${[300,500,1000,2000].map(x=>`<button class="chip ${d.reward===x?"on":""}" data-a="bzAR" data-v="${x}">${fmt(x)}</button>`).join("")}</div>
     ${d.type==="mag"?`<label class="foc-lab">售價</label><div class="chips">${[100,300,500,800].map(x=>`<button class="chip ${d.price===x?"on":""}" data-a="bzAP" data-v="${x}">${fmt(x)}</button>`).join("")}</div>`:""}
     <button class="btn btn-main btn-block" data-a="bzAGo">發出邀約</button></section>
-    ${E.length?`<div class="section-h">邀約</div><section class="card">${E.map(b=>`<div class="vd-r vs-ar"><span><b>${bzKind(b)}・${esc(b.name)}</b><small>${bzOpen(b)?vsLeft(b.end):"已結束"}・交件 ${bzSubs(b).length}/${b.mids.length}${b.type==="mag"?`・賣出 ${fmt(Object.keys(b.buys||{}).length)} 本`:""}</small></span>${bzOpen(b)?`<button class="btn btn-soft btn-sm" data-a="bzAEnd" data-id="${b.id}">結束</button>`:""}<button class="btn btn-soft btn-sm" data-a="bzADel" data-id="${b.id}">刪除</button></div>`).join("")}</section>`:""}`; }
+`:""}`; }
 function bzAKeep(){ const d=ui.bzA; if(!d) return; const g=id=>document.getElementById(id); if(g("bzAName")) d.name=g("bzAName").value; if(g("bzAIssue")) d.issue=g("bzAIssue").value; if(g("bzACon")) d.concept=g("bzACon").value; document.querySelectorAll(".bzAQ").forEach(x=>{ d.qs[+x.dataset.i]=x.value; }); }
 function bzKeep(){ const d=ui.bzD; if(!d) return; const t=document.getElementById("bzTxt"); if(t) d.text=t.value; document.querySelectorAll(".bzQa").forEach(x=>{ d.qa[+x.dataset.i]=x.value; }); }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^(sc|bz)[A-Z]/.test(a)) return;
@@ -14516,3 +14546,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(t.dataset.a==="vsAddOpen"){ ui.vsAddOpen=!ui.vsAddOpen; lsRerender(); return; }
   const ep=vsGet(t.dataset.id); if(!ep) return; const S0=VSHOW[ep.show], my=(ep.bets||{})[myEmail()]||{};
   xvShare({small:`${S0.name} ${ep.title}`,title:"我押中了！",big:"🎯",chips:[`冠軍 ${(ep.res&&ep.res.win||[]).map(vsName).join("、")}`],cap:`${S0.name} ${ep.title}\n押 ${vsName(my.mid||"")} 押中了！ 🎯`,c1:"#D6336C",c2:"#F783AC"}); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="bzAddOpen"]'); if(!t) return; e.stopImmediatePropagation(); ui.bzAddOpen=!ui.bzAddOpen; lsRerender(); },true);
+/* 代言：點兩下按讚（像限時動態） */
+document.addEventListener("dblclick",e=>{ const st=e.target.closest&&e.target.closest('[data-dbl="bzLike"]'); if(!st) return; const b=bzGet(st.dataset.id), me=myId(); if(!b||!me) return; const L=((b.likes||{})[st.dataset.v])||[];
+  st.classList.remove("pop"); void st.offsetWidth; st.classList.add("pop"); if(L.includes(me)) return; const btn=st.querySelector('[data-a="bzLike"]'); if(btn) setTimeout(()=>btn.click(),350); });

@@ -57,3 +57,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(t.dataset.a==="vsAddOpen"){ ui.vsAddOpen=!ui.vsAddOpen; lsRerender(); return; }
   const ep=vsGet(t.dataset.id); if(!ep) return; const S0=VSHOW[ep.show], my=(ep.bets||{})[myEmail()]||{};
   xvShare({small:`${S0.name} ${ep.title}`,title:"我押中了！",big:"🎯",chips:[`冠軍 ${(ep.res&&ep.res.win||[]).map(vsName).join("、")}`],cap:`${S0.name} ${ep.title}\n押 ${vsName(my.mid||"")} 押中了！ 🎯`,c1:"#D6336C",c2:"#F783AC"}); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="bzAddOpen"]'); if(!t) return; e.stopImmediatePropagation(); ui.bzAddOpen=!ui.bzAddOpen; lsRerender(); },true);
+/* 代言：點兩下按讚（像限時動態） */
+document.addEventListener("dblclick",e=>{ const st=e.target.closest&&e.target.closest('[data-dbl="bzLike"]'); if(!st) return; const b=bzGet(st.dataset.id), me=myId(); if(!b||!me) return; const L=((b.likes||{})[st.dataset.v])||[];
+  st.classList.remove("pop"); void st.offsetWidth; st.classList.add("pop"); if(L.includes(me)) return; const btn=st.querySelector('[data-a="bzLike"]'); if(btn) setTimeout(()=>btn.click(),350); });
