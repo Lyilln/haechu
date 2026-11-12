@@ -159,7 +159,7 @@ function viewCoreSub(page,id){
   if(page==="concert") return coreHead("演唱會")+`<main class="page">${ccFanPage()}</main>`;
   if(page==="fsl") return coreHead("簽售")+`<main class="page">${fsFanCards()}</main>`;
   if(page==="cards") return viewCards();
-  if(page==="survival") return viewSurvival();
+  if(page==="survival") return viewSurvival(id);
   if(page==="stubs") return viewStubs();
   if(page==="fansign") return viewFsFanRoom(id);
   if(page==="signed") return viewSigned();
@@ -407,7 +407,7 @@ function viewAdmin(tab){
         ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="act"?`打歌第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>
-        <div class="ls-btns"><button class="btn ${S.get(K.svOpen,false)?"btn-soft":"btn-main"}" data-a="svToggle">${S.get(K.svOpen,false)?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
+        <div class="ls-btns"><button class="btn ${S.get(K.svOpen,false)?"btn-soft":"btn-main"}" data-a="svToggle">${S.get(K.svOpen,false)?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svTheme">配色：${svTheme()==="g"?"女生版（粉）":"男生版（藍）"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
 `}[seg]||(seg==="show"?vsAdminHtml():seg==="biz"?bzAdminHtml():seg==="isac"?isAdminHtml():seg==="cafe"?viewCafe().replace(/^<main[^>]*>|<\/main>$/g,""):"");
     return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="focSegBack" aria-label="返回">${I.back}</button><div class="top-title">${SEGN[seg]||"FOC"}</div><span class="sh-sp"></span></div></header><main class="page foc-sub">
       ${body}

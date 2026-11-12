@@ -204,7 +204,9 @@ function clickGen(a,t,e,r){ switch(a){
     case "openCards": navTo("#/fan/core?p=cards"); window.scrollTo(0,0); break;
     case "svVote": { if(3-svToday()<=0){ toast("今天的票投完了，明天再來"); break; } const k=new Date().toDateString(), mine=S.get(K.svMine,{}); S.set(K.svMine,{day:k,n:(mine.day===k?mine.n:0)+1});
       const vv=S.get(K.svVotes,{}); vv[t.dataset.v]=svVotes()[t.dataset.v]+1; S.set(K.svVotes,vv); const tr=TRAINEES.find(x=>x.id===t.dataset.v); const b=t.getBoundingClientRect(); confetti(b.left+b.width/2,b.top);
-      const y=window.scrollY; render(); window.scrollTo(0,y); toast(`投給 ${tr.name} 了！今天還有 ${3-svToday()} 票`); break; }
+      { const m=svMy(); m[t.dataset.v]=(m[t.dataset.v]||0)+1; S.set(SV_MY,m); }
+      const y=window.scrollY; render(); window.scrollTo(0,y); { const v2=svVotes(), L=[...TRAINEES].sort((a,b)=>v2[b.id]-v2[a.id]), r=L.findIndex(x=>x.id===tr.id)+1, gap=r>1?v2[L[r-2].id]-v2[tr.id]:v2[tr.id]-v2[(L[1]||tr).id];
+        xvResult({tone:svTheme()==="g"?"p":"b",small:"SURVIVAL PROJECT",title:`PICK ${tr.name}！`,big:`${r}位`,chips:[r>1?`離 ${r-1} 位還差 ${fmt(gap+1)} 票`:`領先 2 位 ${fmt(gap)} 票`,`今天還能投 ${3-svToday()} 票`]}); } break; }
     case "svToggle": S.set(K.svOpen,!S.get(K.svOpen,false)); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(S.get(K.svOpen,false)?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
     case "svPreview": SS.set({...session(),role:"fan",member:null}); navTo("#/fan/core?p=survival"); break;
     case "chantStart": chantStart(); break;

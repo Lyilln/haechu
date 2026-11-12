@@ -17,17 +17,28 @@ const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false)||String((session()||{}).email|
 const svVotes=()=>({t1:18420,t2:17110,t3:16980,t4:15230,t5:12870,t6:11940,t7:9820,t8:9310,...S.get(K.svVotes,{})});
 const svToday=()=>{ const r=S.get(K.svMine,{}), k=new Date().toDateString(); return r.day===k?r.n:0; };
 function svEnd(){ const t=new Date(); t.setDate(t.getDate()+((7-t.getDay())%7)); t.setHours(23,59,0,0); return t.getTime(); }
-function viewSurvival(){
-  const v=svVotes(), list=[...TRAINEES].sort((a,b)=>v[b.id]-v[a.id]), left=3-svToday(), end=svEnd(), d=Math.max(0,end-Date.now());
-  return coreHead("SURVIVAL PROJECT")+`<main class="page sv">
-    ${svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`}
-    <section class="sv-hero"><span class="sv-eb">🏆 第 2 輪・生存排名戰</span><p>這裡是練習生們的磨練之地。快為你心儀的 Idol 投下珍貴的一票，幫助他們衝向 PAK（Perfect All-Kill）！</p>
-      <div class="sv-meta"><span>今天還有 <b>${left}</b> 票</span><span>本輪結算倒數 <b>${Math.floor(d/864e5)} 天 ${Math.floor(d%864e5/36e5)} 小時</b></span></div></section>
-    ${list.map((t,i)=>`<article class="card sv-c ${i<3?"top":""}"><span class="sv-rk">${i+1}</span><span class="sv-av" style="background:${grad(t.g)}">${esc(ini(t.name))}</span>
-      <div class="sv-b"><b>${esc(t.name)}</b><small>${esc(t.agency)}・${t.tags.map(x=>esc(x)).join("・")}</small>
-        <div class="sv-st">${["Vocal","Dance","Charm"].map((l,k)=>`<span><em>${l}</em><i><u style="width:${t.st[k]}%"></u></i></span>`).join("")}</div></div>
-      <div class="sv-r"><b>${fmt(v[t.id])}</b><button class="btn btn-sm ${left?"btn-main":"btn-soft"}" data-a="svVote" data-v="${t.id}" ${left?"":"disabled"}>Pick Me</button></div></article>`).join("")}
-  </main>`;
+/* 11/12 改版：照 PRODUCE 的順位金字塔（女生版粉＋白、男生版藍＋白，管理員在 FOC → 選秀切換） */
+const SV_MY="daisuki_sv_my", svMy=()=>S.get(SV_MY,{})||{}, svTheme=()=>S.get("daisuki_sv_theme","b")==="g"?"g":"b";
+const svPh=t=>t&&t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil"></i>`;
+function viewSurvival(id){
+  const v=svVotes(), list=[...TRAINEES].sort((a,b)=>v[b.id]-v[a.id]), left=3-svToday(), end=svEnd(), d=Math.max(0,end-Date.now()), my=svMy(), th=svTheme(), dt=new Date(); dt.setMinutes(0,0,0);
+  const rk=tid=>list.findIndex(x=>x.id===tid)+1, DEBUT=Math.min(6,list.length);
+  if(id){ const t=TRAINEES.find(x=>x.id===id); if(!t) return coreHead("選秀")+`<main class="page"><p class="me-none">找不到這位練習生</p></main>`; const r=rk(t.id);
+    return coreHead("練習生")+`<main class="page sv2 ${th}"><section class="sv2-prof"><div class="sv2-pp">${svPh(t)}</div><span class="sv2-no">${pad(r)}</span><div class="sv2-pn"><small>${esc(t.agency)}</small><b>${esc(t.name)}</b><span>${t.tags.map(esc).join("・")}</span></div></section>
+      <div class="sv2-bar"><div><b>${fmt(v[t.id])}</b><span>票數</span></div><div><b>${r}位</b><span>目前順位</span></div><div><b>${my[t.id]||0}</b><span>我的 PICK</span></div></div>
+      <div class="sv2-sh"><b>能力值</b></div><div class="sv2-st">${["Vocal","Dance","Charm"].map((l,k)=>`<span><em>${l}</em><i><u style="width:${t.st[k]}%"></u></i><b>${t.st[k]}</b></span>`).join("")}</div>
+      <p class="sv2-note">${r<=DEBUT?`現在在出道組（前 ${DEBUT} 位）`:`離出道組還差 ${fmt(v[list[DEBUT-1].id]-v[t.id]+1)} 票`}</p>
+      <button class="sv2-cta" data-a="svVote" data-v="${t.id}" ${left?"":"disabled"}>${left?`PICK ${esc(t.name)}（今天還能投 ${left} 票）`:"今天的票投完了"}</button></main>`; }
+  const rows=[]; let n=0, k=1; while(n<Math.min(10,list.length)){ rows.push(list.slice(n,n+k)); n+=k; k++; }
+  const tile=t=>{ const r=rk(t.id), me=!!my[t.id]; return `<button class="sv2-t ${me?"me":""}" data-a="uniGo" data-v="#/fan/core?p=survival&id=${t.id}"><span class="sv2-p">${svPh(t)}</span><b>${r}位</b><span>${esc(t.name)}</span><small>${fmt(v[t.id])}</small></button>`; };
+  const row=(t,i)=>`<div class="sv2-row" data-a="uniGo" data-v="#/fan/core?p=survival&id=${t.id}"><span class="sv2-rk">${i+1}位</span><span class="sv2-av">${svPh(t)}</span><div class="sv2-nm"><b>${esc(t.name)}</b><small>${esc(t.agency)}・${fmt(v[t.id])} 票</small></div><button class="sv2-pk" data-a="svVote" data-v="${t.id}" ${left?"":"disabled"}>PICK</button></div>`;
+  const mine=list.filter(t=>my[t.id]).length;
+  return coreHead("選秀")+`<main class="page sv2 ${th}">${svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`}
+    <section class="sv2-pyr"><div class="sv2-rib"><span>SURVIVAL PROJECT</span><span>出道組選拔・投票倒數 ${Math.floor(d/864e5)} 天 ${Math.floor(d%864e5/36e5)} 時</span></div><span class="sv2-date">${dt.getMonth()+1}/${dt.getDate()} ${pad(dt.getHours())}:00 基準</span>
+      <div class="sv2-rows"><i class="sv2-crown">👑</i>${rows.map(r=>`<div class="sv2-r">${r.map(tile).join("")}</div>`).join("")}</div><div class="sv2-foot">《1位～${Math.min(10,list.length)}位》</div></section>
+    <div class="sv2-bar"><div><b>${left} / 3</b><span>今天還能 PICK</span></div><div><b>TOP ${DEBUT}</b><span>出道組</span></div><div><b>${mine} 位</b><span>我的 PICK</span></div></div>
+    <div class="sv2-sh"><b>出道組</b><i>1～${DEBUT} 位</i></div>${list.slice(0,DEBUT).map(row).join("")}
+    ${list.length>DEBUT?`<div class="sv2-sh out"><b>淘汰邊緣</b><i>${DEBUT+1} 位以下</i></div>${list.slice(DEBUT).map((t,i)=>row(t,i+DEBUT)).join("")}`:""}</main>`;
 }
 
 /* =========================================================
