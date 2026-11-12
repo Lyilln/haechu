@@ -6203,40 +6203,83 @@ function tourMapHtml(t,{stamps={}}={}){ const L=tourStops(t), g=groupOf(t.gid), 
         ${stp?`<g transform="translate(-17 15) rotate(-14)"><circle r="13" fill="none" stroke="#E04F86" stroke-width="2" stroke-dasharray="3 2"/><text y="3.5" text-anchor="middle" font-size="8.5" font-weight="900" fill="#E04F86">到此</text></g>`:""}</g>`; }).join("")}
   </svg></div>`; }
 function trmScroll(){ document.querySelectorAll(".trm:not([data-sc])").forEach(m=>{ m.dataset.sc="1"; const sv=m.querySelector("svg"); if(!sv) return; const k=sv.clientWidth/1000; m.scrollLeft=Math.max(0,(+m.dataset.cx||500)*k-m.clientWidth/2); }); }
-/* ---------- 粉絲端 ---------- */
-function viewTourFan(id){ const fol=followed(), tix=myTix(), stamps=myStamps();
-  if(!id){ const L=toursShown().filter(t=>t.status==="approved").sort((a,b)=>(fol.includes(b.gid)-fol.includes(a.gid))||((b.ts||0)-(a.ts||0)));
-    return coreHead("世巡")+`<main class="page tr">${L.length?L.map(t=>{ const g=groupOf(t.gid), S2=tourStops(t), d=S2.filter(st=>stopState(st)==="done").length;
-      return `<button class="card tr-card" data-a="tourOpen" data-v="${t.id}" style="--gt:${gTheme(t.gid)}"><span class="tr-g">${esc(g.name)}</span><b>${esc(t.title)}</b><small>${S2.length} 站・${S2.length?`${tourMD(S2[0].startTs)} – ${tourMD(S2[S2.length-1].startTs)}`:""}</small><span class="tr-bar"><i style="width:${S2.length?d/S2.length*100:0}%"></i></span><em>${d===S2.length&&d?"巡演完成":`已完成 ${d} / ${S2.length} 站`}</em></button>`; }).join(""):`<div class="ux-empty"><span>🌏</span><b>目前沒有世界巡演</b></div>`}</main>`; }
-  const t=tourOf(id); if(!t||t.status!=="approved") return coreHead("世巡")+`<main class="page"><p class="me-none">這個巡演已經取消</p></main>`;
-  const g=groupOf(t.gid), L=tourStops(t), d=L.filter(st=>stopState(st)==="done").length; setTimeout(trmScroll,0);
-  return coreHead("世巡")+`<main class="page tr" style="--gt:${gTheme(t.gid)}"><div class="tr-hero"><span class="tr-g">${esc(g.name)}</span><h2>${esc(t.title)}</h2><small>${L.length} 站・${wtDone(t)?"巡演完成":`已完成 ${d} 站`}</small></div>
-    ${tourMapHtml(t,{stamps})}
-    <section class="card tr-list">${L.map((st,i)=>{ const s=stopState(st), has=t.demo||!!tix[st.id], c=stopCC(st);
-      const act=s==="off"?`<span class="tr-st off">取消</span>`:s==="done"?`<span class="tr-st done">${stamps[st.id]?"已蓋章":"已結束"}</span>`:s==="live"?(has?`<button class="tr-btn on" ${t.demo?`data-a="lsDemoPlay" data-v="demo"`:`data-a="concertOn"`}>進場</button>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`):(has?`<span class="tr-st have">已購票</span>`:`<button class="tr-btn" data-a="tourBuy" data-v="${t.id}" data-s="${st.id}">購票 ${fmt(TOUR_TIX)} 積分</button>`);
-      return `<div class="tr-row ${s}"><span class="tr-n">${i+1}</span><div class="tr-i"><b>${esc(st.city)}</b><small>${c?evWhen(c.startTs):tourMD(st.startTs)}${s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>${act}</div>`; }).join("")}</section></main>`; }
+/* ---------- 粉絲端（11/12 改版：入口＝大卡＋各站；點進去＝巡演護照） ---------- */
+const TR_FLAG={首爾:"🇰🇷",釜山:"🇰🇷",東京:"🇯🇵",大阪:"🇯🇵",名古屋:"🇯🇵",福岡:"🇯🇵",台北:"🇹🇼",高雄:"🇹🇼",香港:"🇭🇰",澳門:"🇲🇴",曼谷:"🇹🇭",新加坡:"🇸🇬",吉隆坡:"🇲🇾",馬尼拉:"🇵🇭",雅加達:"🇮🇩",胡志明市:"🇻🇳",雪梨:"🇦🇺",墨爾本:"🇦🇺",奧克蘭:"🇳🇿",洛杉磯:"🇺🇸",舊金山:"🇺🇸",西雅圖:"🇺🇸",拉斯維加斯:"🇺🇸",達拉斯:"🇺🇸",芝加哥:"🇺🇸",紐約:"🇺🇸",亞特蘭大:"🇺🇸",多倫多:"🇨🇦",溫哥華:"🇨🇦",墨西哥城:"🇲🇽",聖保羅:"🇧🇷",布宜諾斯艾利斯:"🇦🇷",聖地牙哥:"🇨🇱",倫敦:"🇬🇧",巴黎:"🇫🇷",柏林:"🇩🇪",阿姆斯特丹:"🇳🇱",馬德里:"🇪🇸",米蘭:"🇮🇹",杜拜:"🇦🇪"};
+const TR_EN={首爾:"SEOUL",釜山:"BUSAN",東京:"TOKYO",大阪:"OSAKA",名古屋:"NAGOYA",福岡:"FUKUOKA",台北:"TAIPEI",高雄:"KAOHSIUNG",香港:"HONG KONG",澳門:"MACAU",曼谷:"BANGKOK",新加坡:"SINGAPORE",吉隆坡:"KUALA LUMPUR",馬尼拉:"MANILA",雅加達:"JAKARTA",胡志明市:"HO CHI MINH",雪梨:"SYDNEY",墨爾本:"MELBOURNE",奧克蘭:"AUCKLAND",洛杉磯:"LOS ANGELES",舊金山:"SAN FRANCISCO",西雅圖:"SEATTLE",拉斯維加斯:"LAS VEGAS",達拉斯:"DALLAS",芝加哥:"CHICAGO",紐約:"NEW YORK",亞特蘭大:"ATLANTA",多倫多:"TORONTO",溫哥華:"VANCOUVER",墨西哥城:"MEXICO CITY",聖保羅:"SÃO PAULO",布宜諾斯艾利斯:"BUENOS AIRES",聖地牙哥:"SANTIAGO",倫敦:"LONDON",巴黎:"PARIS",柏林:"BERLIN",阿姆斯特丹:"AMSTERDAM",馬德里:"MADRID",米蘭:"MILAN",杜拜:"DUBAI"};
+const trFlag=c=>TR_FLAG[c]||"📍";
+const trYMD=ts=>{ const d=new Date(ts); return `${d.getFullYear()}.${pad(d.getMonth()+1)}.${pad(d.getDate())}`; };
+/* 一站的購票／進場按鈕（粉絲端入口和護照共用） */
+function trStopAct(t,st){ const s=stopState(st), has=t.demo||!!myTix()[st.id], stp=myStamps()[st.id];
+  if(s==="off") return xvChip("取消");
+  if(s==="done") return stp?xvChip("已蓋章","ok"):xvChip(has?"已結束":"沒去");
+  if(s==="live") return has?xvBtn("進場",t.demo?`data-a="lsDemoPlay" data-v="demo"`:`data-a="concertOn"`):xvBtn(`購票 ${fmt(TOUR_TIX)}`,`data-a="tourBuy" data-v="${t.id}" data-s="${st.id}"`);
+  return has?xvChip("已購票","on"):xvBtn("購票",`data-a="tourBuy" data-v="${t.id}" data-s="${st.id}"`); }
+const trStopRow=(t,st)=>{ const s=stopState(st), c=stopCC(st); return xvRow({av:trFlag(st.city),sq:1,avStyle:"background:var(--s2)",title:esc(st.city),sub:`${c?evWhen(c.startTs):tourMD(st.startTs)}${s==="done"?"・已結束":s==="live"?"・● 進行中":""}${st.msg?`<br>「${esc(st.msg)}」`:""}`,right:trStopAct(t,st)}); };
+function trTag(t){ const L=tourStops(t), n=Date.now(); if(wtDone(t)) return "巡演完成"; if(L.some(st=>stopState(st)==="live")) return "● 進行中"; if(L.some(st=>stopState(st)==="done")) return "巡演中";
+  const f=L[0], c=f&&stopCC(f); const d=c?Math.ceil((c.startTs-n)/864e5):0; return d>0?`${d} 天後開始`:"即將開始"; }
+function trDots(t){ const L=tourStops(t).filter(st=>stopState(st)!=="off"); if(!L.length) return "";
+  return `<div class="xv-dots">${L.map((st,i)=>`${i?"<s></s>":""}<i class="${stopState(st)==="done"||stopState(st)==="live"?"on":""}"></i>`).join("")}</div><div class="xv-dl">${L.map(st=>`<span>${esc(st.city)}</span>`).join("")}</div>`; }
+function viewTourFan(id){ const fol=followed(), stamps=myStamps();
+  if(id) return viewTourPass(id);
+  const L=toursShown().filter(t=>t.status==="approved").sort((a,b)=>(wtDone(a)-wtDone(b))||(fol.includes(b.gid)-fol.includes(a.gid))||((b.ts||0)-(a.ts||0)));
+  if(!L.length) return coreHead("世巡")+`<main class="page xv tr2">${xvHero({tone:"g",small:"WORLD TOUR",title:"目前沒有世界巡演",meta:"藝人申請、管理員核准後，巡演就會出現在這裡"})}
+    ${xvSh("要怎麼參加")}${xvHow([["🎫",`每站買票<br>${fmt(TOUR_TIX)} 積分`],["🗺️","進場就<br>蓋一個章"],["📘","蓋滿五站<br>護照變金色"],["💰","剩下全買<br>打 9 折"]])}</main>`;
+  const t=L[0], g=groupOf(t.gid), S2=tourStops(t), d=S2.filter(st=>stopState(st)==="done").length, nS=S2.filter(st=>stamps[st.id]).length;
+  return coreHead("世巡")+`<main class="page xv tr2">${xvHero({tone:"g",tag:trTag(t),small:`${esc(g.name)} WORLD TOUR`,title:`〈${esc(t.title)}〉`,meta:`已完成 ${d} 站・我蓋了 ${nS} 個章`,extra:trDots(t),btns:[["📘 我的巡演護照",`data-a="tourOpen" data-v="${t.id}"`]]})}
+    ${xvSh("各站",`一張 ${fmt(TOUR_TIX)}・剩下全買 9 折`)}${S2.map(st=>trStopRow(t,st)).join("")}
+    ${L.length>1?xvSh("其他巡演",`${L.length-1} 個`)+L.slice(1).map(x=>{ const gg=groupOf(x.gid), LL=tourStops(x), dd=LL.filter(st=>stopState(st)==="done").length; return xvRow({...xvGAv(x.gid),title:`${esc(gg.name)}〈${esc(x.title)}〉`,sub:`${LL.length} 站・${wtDone(x)?"巡演完成":`已完成 ${dd} 站`}`,right:xvChip(trTag(x),wtDone(x)?"":"on"),attrs:`data-a="tourOpen" data-v="${x.id}"`}); }).join(""):""}</main>`; }
+/* 巡演護照：封面 → 蓋章頁 → 地圖；左右滑。全部蓋滿封面變金色 */
+function viewTourPass(id){ const t=tourOf(id); if(!t||t.status!=="approved") return coreHead("世巡")+`<main class="page"><p class="me-none">這個巡演已經取消</p></main>`;
+  const g=groupOf(t.gid), L=tourStops(t), live=L.filter(st=>stopState(st)!=="off"), stamps=myStamps(), nS=live.filter(st=>stamps[st.id]).length, full=live.length&&nS===live.length;
+  ui.trAnim=ui.trAnim||{}; const fresh=st=>{ const ts=stamps[st.id]; if(!ts||Date.now()-ts>864e5||ui.trAnim[st.id]) return false; ui.trAnim[st.id]=1; return true; };
+  setTimeout(()=>{ trmScroll(); const p=document.querySelector(".trp-pages"); if(p&&!p.dataset.on){ p.dataset.on="1"; const dots=document.querySelectorAll(".trp-dot i"); p.addEventListener("scroll",()=>{ const k=Math.round(p.scrollLeft/p.clientWidth); dots.forEach((x,i)=>x.classList.toggle("on",i===k)); },{passive:true}); } },0);
+  const cover=`<div class="trp-pg"><div class="trp-cov ${full?"gold":""}" style="--gt:${gTheme(t.gid)}"><small>WORLD TOUR PASSPORT</small><div class="trp-ico">${full?"🏆":"🌍"}</div><b>${esc(t.title)}</b><span>${esc(g.name)}</span><em>${nS} / ${live.length} STAMPS${full?"・COMPLETE":""}</em></div></div>`;
+  const page=`<div class="trp-pg"><div class="trp-paper"><div class="trp-grid">${L.map((st,i)=>{ const s=stopState(st), ts=stamps[st.id];
+      return ts?`<div class="trp-st ${i%2?"b":""} ${fresh(st)?"in":""}"><b>${esc(TR_EN[st.city]||st.city)}</b><small>${trYMD(ts)}</small><span>${trFlag(st.city)}</span></div>`:`<div class="trp-st e"><b>${esc(TR_EN[st.city]||st.city)}</b><small>${s==="done"?"沒去":s==="off"?"取消":tourMD(st.startTs)}</small></div>`; }).join("")}</div></div></div>`;
+  const map=`<div class="trp-pg"><div class="trp-map">${tourMapHtml(t,{stamps})}</div></div>`;
+  return coreHead("我的巡演護照")+`<main class="page xv tr2"><div class="trp"><div class="trp-pages">${cover}${page}${map}</div><div class="trp-dot"><i class="on"></i><i></i><i></i></div><p class="trp-hint">← 左右滑翻頁 →</p></div>
+    ${xvSh("各站",`一張 ${fmt(TOUR_TIX)}・剩下全買 9 折`)}${L.map(st=>trStopRow(t,st)).join("")}
+    ${full?`<button class="xv-big" data-a="trShare" data-v="${t.id}">分享護照到 SNS</button>`:""}</main>`; }
 /* ---------- 藝人端 ---------- */
 function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=toursShown().filter(t=>t.gid===gid), d=ui.trDraft;
-  const form=d?`<section class="card studio tr-form"><div class="foc-cfg-h"><h3>申請世巡</h3></div>
+  const form=d?`<section class="card studio tr-form"><div class="foc-cfg-h"><h3>申請世巡</h3><span class="badge">最多 ${TOUR_MAX_STOPS} 站</span></div>
       <span class="fld-lab">巡演名稱</span><label class="field"><input id="trTi" maxlength="40" placeholder="輸入文字" value="${esc(d.title)}"></label>
-      <span class="fld-lab">站點</span>${d.stops.length?`<div class="tr-dl">${d.stops.slice().sort((a,b)=>a.startTs-b.startTs).map(st=>`<div class="tr-di"><b>${esc(st.city)}</b><small>${evWhen(st.startTs)}</small><button data-a="trStopDel" data-v="${st.id}" aria-label="刪掉這站">${XI}</button></div>`).join("")}</div>`:""}
+      <span class="fld-lab">站點（${d.stops.length} / ${TOUR_MAX_STOPS}）</span>${d.stops.length?`<div class="tr-dl">${d.stops.slice().sort((a,b)=>a.startTs-b.startTs).map(st=>`<div class="tr-di"><b>${trFlag(st.city)} ${esc(st.city)}</b><small>${evWhen(st.startTs)}</small><button data-a="trStopDel" data-v="${st.id}" aria-label="刪掉這站">${XI}</button></div>`).join("")}</div>`:""}
       <div class="tr-add"><label class="field"><select id="trCity">${TOUR_CITIES.map(c=>`<option ${d.city===c[0]?"selected":""}>${c[0]}</option>`).join("")}</select></label><label class="field"><input id="trWhen" type="datetime-local" value="${esc(d.when||dtLocal(Math.ceil((Date.now()+2*36e5)/36e5)*36e5))}" min="${dtLocal(Date.now()+36e5)}"></label><button class="btn btn-soft" data-a="trStopAdd">加入</button></div>
-      <div class="ls-btns"><button class="btn btn-soft" data-a="trCancel">取消</button><button class="btn btn-main" data-a="trSubmit">送出申請</button></div></section>`:`<button class="btn btn-main btn-block" data-a="trNew">申請世巡</button>`;
-  const ST={pending:"審核中",approved:"已核准",rejected:"沒有通過"};
+      <div class="ls-btns"><button class="btn btn-soft" data-a="trCancel">取消</button><button class="btn btn-main" data-a="trSubmit">送出申請</button></div></section>`:"";
   if(mine.some(t=>t.status==="approved")) setTimeout(trmScroll,0);
-  return `<main class="page foc tr">${form}${mine.map(t=>{ const L=tourStops(t);
-    return `<section class="card tr-a"><div class="tr-ah"><b>${esc(t.title)}</b><span class="tr-badge ${t.status}">${ST[t.status]||""}</span></div>${t.status==="rejected"&&t.why?`<p class="tr-why">${esc(t.why)}</p>`:""}${t.status==="approved"?`<div class="tr-amap">${tourMapHtml(t)}</div>`:""}
-      ${L.map(st=>{ const s=t.status==="approved"?stopState(st):"", c=stopCC(st);
-        return `<div class="tr-row ${s}"><div class="tr-i"><b>${esc(st.city)}</b><small>${evWhen(c?c.startTs:st.startTs)}${s==="done"?`・+${fmt(TOUR_STOP_PTS)}`:s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>
-          ${s==="soon"&&!st.msg&&!t.demo?`<button class="tr-btn" data-a="trSay" data-v="${t.id}" data-s="${st.id}">說一句話</button>`:s==="live"?`<button class="tr-btn on" data-a="${t.demo?"lsDemo":"stOn"}">進場</button>`:""}</div>`; }).join("")}
-      ${t.status==="approved"&&wtDone(t)?`<p class="tr-fin">巡演完成${TOUR_DONE_PTS?`・+${fmt(TOUR_DONE_PTS)}`:""}</p>`:""}</section>`; }).join("")}</main>`; }
+  const act=mine.find(t=>t.status==="approved"&&!wtDone(t)), pend=mine.filter(t=>t.status==="pending"||t.status==="rejected"), past=mine.filter(t=>t.status==="approved"&&wtDone(t));
+  let top="";
+  if(act){ const L=tourStops(act), live=L.filter(st=>stopState(st)!=="off"), dn=live.filter(st=>stopState(st)==="done").length, nx=live.find(st=>stopState(st)==="live")||live.find(st=>stopState(st)==="soon"), c=nx&&stopCC(nx);
+    const on=nx&&stopState(nx)==="live", dd=c?Math.ceil((c.startTs-Date.now())/864e5):0;
+    const btns=on?[["進場",`data-a="${act.demo?"lsDemo":"stOn"}"`]]:nx&&!nx.msg&&!act.demo?[["留一句話給粉絲",`data-a="trSay" data-v="${act.id}" data-s="${nx.id}"`]]:[];
+    top=xvHero({tone:"g",tag:on?"● 進行中":dd>0?`下一站 ${dd} 天後`:"下一站快到了",small:`WORLD TOUR〈${esc(act.title)}〉`,title:nx?`${trFlag(nx.city)} ${esc(nx.city)}站`:esc(act.title),meta:nx?`${c?evWhen(c.startTs):""}${nx.msg?`・「${esc(nx.msg)}」`:""}`:"",extra:trDots(act),btns})
+      +xvStats([[`${dn}/${live.length}`,"已完成"],[`+${fmt(dn*TOUR_STOP_PTS)}`,"已拿到"],[`+${fmt((live.length-dn)*TOUR_STOP_PTS)}`,"還能拿"]])
+      +xvSh("各站",`一站 +${fmt(TOUR_STOP_PTS)}`)+L.map(st=>{ const s=stopState(st), cc=stopCC(st);
+        return xvRow({av:trFlag(st.city),sq:1,avStyle:"background:var(--s2)",title:esc(st.city),sub:`${evWhen(cc?cc.startTs:st.startTs)}${st.msg?`<br>「${esc(st.msg)}」`:s==="soon"?"<br>還沒留話":""}`,
+          right:s==="done"?xvChip(`+${fmt(TOUR_STOP_PTS)}`,"ok"):s==="live"?xvBtn("進場",`data-a="${act.demo?"lsDemo":"stOn"}"`):s==="off"?xvChip("取消"):st===nx?(!st.msg&&!act.demo?xvBtn("說一句話",`data-a="trSay" data-v="${act.id}" data-s="${st.id}"`):xvChip("下一站","on")):(!st.msg&&!act.demo?xvBtn("說一句話",`data-a="trSay" data-v="${act.id}" data-s="${st.id}"`,"g"):"")}); }).join("")
+      +`<div class="trp-map sm">${tourMapHtml(act)}</div>`;
+  } else if(!d){ const taken=tourYearTaken(gid,new Date().getFullYear());
+    top=xvHero({tone:"g",small:"WORLD TOUR",title:taken?"今年的世巡辦過了":"辦一場世界巡演",meta:taken?"一年一次世巡，明年再來申請吧":`最多 ${TOUR_MAX_STOPS} 站，每一站都會排成一場演唱會`,btns:taken?[]:[["申請世巡",`data-a="trNew"`]]})
+      +xvSh("怎麼辦世巡")+xvHow([["📝","申請<br>名稱＋站點"],["✅","管理員<br>核准"],["🎤","每站一場<br>演唱會"],["💜",`一站<br>+${fmt(TOUR_STOP_PTS)}`]]); }
+  const ST={pending:["審核中","w"],rejected:["沒有通過",""]};
+  return `<main class="page foc xv tr2">${form}${top}
+    ${pend.length?xvSh("申請")+pend.map(t=>xvRow({av:"📝",sq:1,avStyle:"background:var(--s2)",title:esc(t.title),sub:`${tourStops(t).map(st=>esc(st.city)).join(" → ")}${t.status==="rejected"&&t.why?`<br>${esc(t.why)}`:""}`,right:xvChip(...(ST[t.status]||["",""]))})).join(""):""}
+    ${past.length?xvSh("之前的世巡")+past.map(t=>xvRow({av:"🏆",sq:1,avStyle:"background:var(--s2)",title:esc(t.title),sub:`${tourStops(t).length} 站・巡演完成`,right:xvChip(`+${fmt(tourStops(t).filter(st=>stopState(st)==="done").length*TOUR_STOP_PTS+TOUR_DONE_PTS)}`,"ok")})).join(""):""}
+    ${act||!d?`<p class="xv-note">一年一次世巡、最多 ${TOUR_MAX_STOPS} 站</p>`:""}</main>`; }
 /* ---------- 管理員 ---------- */
-function tourAdminHtml(){ const L=getTours(), P=L.filter(t=>t.status==="pending"), A=L.filter(t=>t.status==="approved");
-  const card=(t,adm)=>{ const g=groupOf(t.gid); return `<section class="card tr-a"><div class="tr-ah"><b><span class="tr-g">${esc(g.name)}</span>${esc(t.title)}</b></div>
-    ${tourStops(t).map(st=>{ const s=t.status==="approved"?stopState(st):"", c=stopCC(st); return `<div class="tr-row ${s}"><div class="tr-i"><b>${esc(st.city)}</b><small>${evWhen(c?c.startTs:st.startTs)}${s==="done"?"・已結束":s==="live"?"・進行中":s==="off"?"・已取消":""}</small></div>${adm&&s!=="done"&&s!=="live"?`<button class="btn btn-soft btn-sm" data-a="trStopRm" data-v="${t.id}" data-s="${st.id}">刪除</button>`:""}</div>`; }).join("")}
-    ${adm?`<div class="ls-btns"><button class="btn btn-soft" data-a="trEnd" data-v="${t.id}">取消世巡</button></div>`:`<div class="ls-btns"><button class="btn btn-soft" data-a="trReject" data-v="${t.id}">退回</button><button class="btn btn-main" data-a="trApprove" data-v="${t.id}">核准</button></div>`}</section>`; };
-  return `<div class="section-h">待審核<span class="muted">${P.length} 件</span></div>${P.length?P.map(t=>card(t,false)).join(""):`<p class="me-none">沒有待審核的申請</p>`}
-    <div class="section-h">進行中與已完成<span class="muted">${A.length} 個</span></div>${A.length?A.map(t=>card(t,true)).join(""):`<p class="me-none">還沒有世巡</p>`}`; }
+function tourAdminHtml(){ const L=getTours(), P=L.filter(t=>t.status==="pending"), A=L.filter(t=>t.status==="approved"&&!wtDone(t)), D=L.filter(t=>t.status==="approved"&&wtDone(t));
+  const cur=xvSegCur("tour",P.length?"pend":"on"), y=new Date().getFullYear();
+  const stops=(t,adm)=>tourStops(t).map(st=>{ const s=t.status==="approved"?stopState(st):"", c=stopCC(st); return `<div class="tr2-s"><span>${trFlag(st.city)} ${esc(st.city)}</span><small>${evWhen(c?c.startTs:st.startTs)}${s==="done"?"・已結束":s==="live"?"・● 進行中":s==="off"?"・已取消":""}</small>${adm&&s!=="done"&&s!=="live"&&s!=="off"?`<button class="xv-bt g" data-a="trStopRm" data-v="${t.id}" data-s="${st.id}">刪除</button>`:""}</div>`; }).join("");
+  const card=(t,k)=>{ const g=groupOf(t.gid), Ls=tourStops(t), dn=Ls.filter(st=>stopState(st)==="done").length;
+    return `<section class="tr2-c">${xvRow({...xvGAv(t.gid),title:`${esc(g.name)}〈${esc(t.title)}〉`,sub:k==="pend"?`${Ls.length} 站・${Ls.map(st=>esc(st.city)).join(" → ")}`:k==="on"?`${dn}/${Ls.length} 站`:`${Ls.length} 站・巡演完成`,right:xvChip(k==="pend"?"待審核":k==="on"?"巡演中":"已結束",k==="pend"?"w":k==="on"?"ok":"")})}
+      <div class="tr2-sl">${stops(t,k==="on")}</div>
+      ${k==="pend"?`<div class="tr2-b"><button class="xv-bt g" data-a="trReject" data-v="${t.id}">退回</button><button class="xv-bt" data-a="trApprove" data-v="${t.id}">核准</button></div>`:k==="on"?`<div class="tr2-b"><button class="xv-bt g" data-a="trEnd" data-v="${t.id}">取消世巡</button></div>`:""}</section>`; };
+  const list=cur==="pend"?P:cur==="on"?A:D;
+  return `<div class="xv tr2">${xvStats([[P.length,"待審核"],[A.length,"巡演中"],[D.filter(t=>tourStops(t).some(st=>{ const c=stopCC(st); return c&&new Date(c.endTs).getFullYear()===y; })).length,"今年辦完"]])}
+    <div style="margin-top:12px">${xvSeg("tour",[["pend",`待審核 ${P.length}`],["on",`巡演中 ${A.length}`],["done",`已結束 ${D.length}`]],cur)}</div>
+    <div style="margin-top:12px">${list.length?list.map(t=>card(t,cur)).join(""):xvEmpty(cur==="pend"?"沒有待審核的申請":cur==="on"?"現在沒有巡演":"還沒有辦完的世巡")}</div>
+    <p class="xv-note">世巡由藝人在 FOC 申請：一年一次、最多 ${TOUR_MAX_STOPS} 站，核准後每一站自動排成演唱會</p></div>`; }
 const trKeep=()=>{ const d=ui.trDraft; if(!d) return; const a=document.getElementById("trTi"), b=document.getElementById("trCity"), c=document.getElementById("trWhen"); if(a) d.title=a.value; if(b) d.city=b.value; if(c) d.when=c.value; };
 function tourApprove(id){ const all=S.get(K.wtours,[])||[], t=all.find(x=>x.id===id); if(!t) return;
   const list=S.get(K.concerts,[]), add=[];
@@ -13641,7 +13684,7 @@ const TOURS={
   "fan:core:wiki":[[".wk-box","SKpedia","每個團、每位成員的百科。"],['[data-a="wkRand"]',"隨機","隨便看一篇。"],['[data-a="wkMenu"]',"目錄","所有條目都在這裡。"]],
   "fan:core:fsl":[[".fs-card","簽售","正在報名的簽售都在這裡。"],['[data-a="fsJoin"]',"報名","按這裡報名，等抽籤結果。抽中會收到通知。"],['[data-a="fsBuy"]',"多一次機會","多買一張專輯，抽籤機會就多一次。"],['[data-a="fsRoom"]',"進簽售室","輪到你的時候按這裡，跟藝人視訊、拿簽名專輯。"]],
   "fan:core:concert":[[".cl-h","演唱會時間","下一場演唱會什麼時候開始。時間到了才能進場。"],[".ls-stage","你的應援棒","進場後舉起來的就是這支。手指可以轉著看。"],[".ls-buy","官方應援棒","到 SHOP 買你喜歡的團的官方應援棒，演唱會上會亮成那個團的顏色。"],['[data-a="concertOn"]',"進場","演唱會開始後按這裡進場，跟大家一起變成燈海。"],['[data-a="coreStick"]',"應援棒","買了官方應援棒，進場就會舉這一支。"],["#bdText","應援板","寫一句想對藝人說的話。互動歌的時候舉起來，藝人可能會回應你！"],[".ls-buy","還沒有應援棒","到 SHOP 買官方應援棒，演唱會就能舉起來。"]],
-  "fan:core:tour":[[".tr-card","世巡","藝人的世界巡演，每一站都是一場演唱會。"],['[data-a="tourBuy"]',"買票","每一站要先買票才能進場。剩兩站以上可以一次全買，打 9 折。"],[".tr-st","蓋章","去過的站會蓋章，看你跑了幾站。"]],
+  "fan:core:tour":[[".tr2 .xv-hero","世巡","藝人的世界巡演，每一站都是一場演唱會。"],['[data-a="tourBuy"]',"買票","每一站要先買票才能進場。剩兩站以上可以一次全買，打 9 折。"],['.tr2 [data-a="tourOpen"]',"巡演護照","進場就會在護照上蓋章，五站蓋滿封面會變金色。"]],
   "fan:shop":[[".ws-pts","積分","你現在有多少積分。所有東西都用積分買。"],
     [".th-shop","TINT","換一套主題，整個 App 的顏色都會跟著變。"],
     [".ws-sl","推薦","現在買得到的 Membership 和專輯，左右滑看更多。"],
@@ -13729,7 +13772,7 @@ const TOURS={
     [".trk-list","每一台","點一下就能再看一次。"],
     ['[data-a="tkNew"]',"送一台","也可以送餐車給別團的藝人。"]],
   "artist:foc:concert":[["#acTitle","演唱會名稱","幫這場演唱會取個名字。"],[".lsp-songs","歌單","照順序點歌名，前面的數字就是第幾首。"],[".ls-seg","互動歌","前幾首是互動歌，粉絲會在燈海裡舉起應援板。"],['[data-a="acLater"]',"10 分鐘後開演","先通知粉絲，讓大家有時間做應援板。"],['[data-a="acNow"]',"現在開演","不用等，馬上開始。"],['[data-a="ccNow"]',"現在開始","時間到了就按這裡開始。"],['[data-a="stOn"]',"進入現場","走進燈海，拖動麥克風跟大家一起揮；點一下舉著應援板的粉絲就能回應他。"]],
-  "artist:foc:tour":[['[data-a="trNew"]',"申請世巡","想辦世界巡演，從這裡開始。"],["#trTi","巡演名稱","幫這次巡演取個名字。"],["#trCity","城市","選一個城市。"],["#trWhen","時間","這一站什麼時候開演。"],['[data-a="trStopAdd"]',"加入","加進站點，可以加很多站。"],['[data-a="trSubmit"]',"送出申請","送給管理員審核，核准後粉絲就能買票。"],[".tr-a","你的世巡","審核結果和每一站都在這裡。"],['[data-a="trSay"]',"說一句話","開演前留一句話給這一站的粉絲。"]],
+  "artist:foc:tour":[['[data-a="trNew"]',"申請世巡","想辦世界巡演，從這裡開始。"],["#trTi","巡演名稱","幫這次巡演取個名字。"],["#trCity","城市","選一個城市。"],["#trWhen","時間","這一站什麼時候開演。"],['[data-a="trStopAdd"]',"加入","加進站點，最多 5 站。"],['[data-a="trSubmit"]',"送出申請","送給管理員審核，核准後粉絲就能買票。一年一次世巡。"],[".tr2 .xv-hero","你的世巡","下一站、拿到的積分和每一站都在這裡。"],['[data-a="trSay"]',"說一句話","開演前留一句話給這一站的粉絲。"]],
   "artist:foc:sign":[[".fs-row","簽售","公司排好的簽售，報名人數和名單都看得到。"],['[data-a="fsDesk"]',"進簽售台","開場後按這裡，一位一位跟粉絲視訊、簽名。"]],
   "artist:foc:stick":[[".ls-box","官方應援棒","你們團的應援棒，可以轉來轉去看。"]],
   "artist:foc:news":[['[data-a="newsF"]',"篩選","全部，或只看某一團。"],[".nw-row,.nw-hero","新聞","出道、回歸、拿一位，都會上 HAECHU 娛樂新聞。"]],
@@ -14344,3 +14387,55 @@ const capRich=v=>esc(String(v||"").replace(/「([^」《》]{1,30})」(?=[^\s，
 
 const capHtml=c=>`<p class="cp-t">${capRich(c.t)}</p>${c.b?`<p class="cp-x cp-cap">${capRich(c.b)}</p>`:""}`;
 
+
+/* HAECHU｜活動頁共用外觀（11/12 改版：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會）
+   ・只管「長相」：大卡（hero）、三格數字、怎麼參加、列、分頁、結算卡
+   ・每個活動自己的資料和規則還是在各自的檔案裡，這裡不碰
+   ・class 一律 xv- 開頭，不跟舊樣式撞名
+   ========================================================= */
+/* 大卡：o={tone,tag,small,title,meta,cd:[[值,字],...],btns:[[字,屬性,次要?],...],extra,cls,style} */
+function xvHero(o){ const cd=o.cd&&o.cd.length?`<div class="xv-cd">${o.cd.map(([v,l,w])=>`<div${w?` style="flex:${w}"`:""}><b>${v}</b><span>${l}</span></div>`).join("")}</div>`:"";
+  const bt=o.btns&&o.btns.length?`<div class="xv-hb">${o.btns.map(([l,a,s])=>`<button class="${s?"s":""}" ${a||""}>${l}</button>`).join("")}</div>`:"";
+  return `<section class="xv-hero ${o.tone||""} ${o.cls||""}" ${o.style?`style="${o.style}"`:""}>${o.tag?`<span class="xv-tag">${o.tag}</span>`:""}${o.small?`<small>${o.small}</small>`:""}<h2>${o.title||""}</h2>${o.meta?`<p>${o.meta}</p>`:""}${o.extra||""}${cd}${bt}</section>`; }
+/* 倒數：回傳 [[天],[時],[分]]，不到一天就時/分 */
+function xvCd(ts){ let s=Math.max(0,Math.floor((ts-Date.now())/1000)); const d=Math.floor(s/86400); s%=86400; const h=Math.floor(s/3600), m=Math.floor(s%3600/60);
+  return d?[[pad(d),"天"],[pad(h),"時"],[pad(m),"分"]]:[[pad(h),"時"],[pad(m),"分"]]; }
+const xvStats=L=>`<div class="xv-st">${L.map(([v,l])=>`<div><b>${v}</b><span>${l}</span></div>`).join("")}</div>`;
+const xvHow=L=>`<div class="xv-how">${L.map(([e,l])=>`<div><b>${e}</b>${l}</div>`).join("")}</div>`;
+const xvSh=(t,r="")=>`<div class="xv-sh"><b>${t}</b>${r?`<i>${r}</i>`:""}</div>`;
+/* 一列：o={av,avStyle,sq,title,sub,right,attrs,cls} */
+const xvRow=o=>`<${o.attrs?"button":"div"} class="xv-row ${o.cls||""}" ${o.attrs||""}><span class="xv-av ${o.sq?"sq":""}" ${o.avStyle?`style="${o.avStyle}"`:""}>${o.av||""}</span><span class="xv-t"><b>${o.title||""}</b>${o.sub?`<small>${o.sub}</small>`:""}</span>${o.right||""}</${o.attrs?"button":"div"}>`;
+const xvChip=(t,k="")=>`<span class="xv-chip ${k}">${t}</span>`;
+const xvBtn=(t,a,k="")=>`<button class="xv-bt ${k}" ${a}>${t}</button>`;
+const xvEmpty=t=>`<p class="xv-none">${t}</p>`;
+/* 分頁（管理員端：進行中／待處理／已結束）：記在 ui.xvSeg[key] */
+function xvSegCur(key,def){ ui.xvSeg=ui.xvSeg||{}; return ui.xvSeg[key]||def; }
+const xvSeg=(key,L,cur)=>`<div class="xv-seg">${L.map(([v,l])=>`<button class="${v===cur?"on":""}" data-a="xvSeg" data-k="${key}" data-v="${v}">${l}</button>`).join("")}</div>`;
+const xvAdd=(t,a)=>`<button class="xv-add" ${a}>＋ ${t}</button>`;
+/* 團的頭像（照片或顏色） */
+const xvGAv=gid=>{ const g=groupOf(gid); if(!g) return {av:"?"}; const ph=typeof gPhoto==="function"?gPhoto(gid):""; return ph?{av:"",avStyle:`background:url('${ph}') center/cover`}:{av:esc((g.name||"?")[0]),avStyle:`background:${grad(g.g)}`}; };
+/* 全螢幕「現場」頁：上面細條（✕、名稱、右邊小膠囊）＋內容；關掉回到入口 */
+function xvLive(o){ return `<div class="xv-live ${o.cls||""}" ${o.style?`style="${o.style}"`:""}><header class="xv-top"><button class="xv-x" data-a="${o.close||"tCloseLayer"}" aria-label="關閉">✕</button><span class="xv-tn"><b>${o.title||""}</b>${o.sub?`<small>${o.sub}</small>`:""}</span>${o.right||""}</header>${o.body||""}</div>`; }
+/* 結算卡：六個活動共用 */
+function xvResult(o){ setLayer(`<div class="xv-res-w ${o.tone||""}"><div class="xv-conf"></div><section class="xv-res"><small>${o.small||""}</small><h2>${o.title||""}</h2><div class="xv-pt">${o.big||""}</div>${o.chips&&o.chips.length?`<div class="xv-rk">${o.chips.map(c=>`<span>${c}</span>`).join("")}</div>`:""}
+    ${o.share?`<button class="xv-big" ${o.share}>分享到 SNS</button>`:""}<button class="xv-back" data-a="tCloseLayer">${o.back||"回到入口"}</button></section></div>`,"xvres"); try{ confetti(innerWidth/2,innerHeight/3); }catch(e){} }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="xvSeg"]'); if(!t) return; e.stopImmediatePropagation(); ui.xvSeg=ui.xvSeg||{}; ui.xvSeg[t.dataset.k]=t.dataset.v; lsRerender(); },true);
+/* 分享到 SNS：把結算卡畫成一張 4:5 圖，放進新貼文草稿（使用者自己按分享才會發出去）
+   o={small,title,big,chips,cap,c1,c2} */
+async function xvShare(o){ try{ const W=1080,H=1350, cv=document.createElement("canvas"); cv.width=W; cv.height=H; const x=cv.getContext("2d");
+    const g=x.createLinearGradient(0,0,W,H); g.addColorStop(0,o.c1||"#7C4DFF"); g.addColorStop(1,o.c2||"#F783AC"); x.fillStyle=g; x.fillRect(0,0,W,H);
+    const dot=["#FFD43B","#FFFFFF","#B197FC","#74C0FC"]; for(let i=0;i<90;i++){ x.fillStyle=dot[i%4]; x.globalAlpha=.55; x.beginPath(); x.arc((i*263)%W,(i*397)%H,4+(i%3)*3,0,7); x.fill(); } x.globalAlpha=1;
+    const r=(X,Y,w,h,rr)=>{ x.beginPath(); x.moveTo(X+rr,Y); x.arcTo(X+w,Y,X+w,Y+h,rr); x.arcTo(X+w,Y+h,X,Y+h,rr); x.arcTo(X,Y+h,X,Y,rr); x.arcTo(X,Y,X+w,Y,rr); x.closePath(); };
+    x.fillStyle="#fff"; r(110,330,860,690,60); x.fill(); x.textAlign="center"; const F='"PingFang TC","Noto Sans TC",sans-serif';
+    x.fillStyle="#888"; x.font=`500 40px ${F}`; x.fillText(o.small||"",W/2,450);
+    x.fillStyle="#222"; x.font=`800 70px ${F}`; x.fillText(o.title||"",W/2,560);
+    const gt=x.createLinearGradient(300,0,780,0); gt.addColorStop(0,"#7C4DFF"); gt.addColorStop(1,"#F783AC"); x.fillStyle=gt; x.font=`900 150px ${F}`; x.fillText(o.big||"",W/2,750);
+    x.fillStyle="#5F3DC4"; x.font=`700 40px ${F}`; x.fillText((o.chips||[]).join("・"),W/2,880);
+    x.fillStyle="rgba(255,255,255,.9)"; x.font=`800 46px ${F}`; x.fillText("HAECHU",W/2,1220);
+    const blob=await new Promise(res=>cv.toBlob(res,"image/jpeg",.9)), id="sn"+Date.now()+"x"; await MDB.put(id,blob);
+    ui.snDraft={media:[{mid:id,w:W,h:H}],cap:o.cap||"",mode:"post"}; try{ layer.innerHTML=""; }catch(e){} navTo(route().role==="artist"?"#/artist/sns?p=new":"#/fan/sns?p=new");
+  }catch(e){ toast("分享圖做不出來，再試一次"); } }
+/* 各活動的分享按鈕 */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="trShare"]'); if(!t) return; e.stopImmediatePropagation();
+  const tr=tourOf(t.dataset.v); if(!tr) return; const g=groupOf(tr.gid), L=tourStops(tr).filter(st=>stopState(st)!=="off");
+  xvShare({small:`${g?g.name:""} WORLD TOUR`,title:`〈${tr.title}〉`,big:`${L.length} / ${L.length}`,chips:["巡演護照全部蓋滿 🏆"],cap:`${g?g.name:""} WORLD TOUR〈${tr.title}〉\n${L.map(x=>x.city).join(" · ")}\n\n護照全部蓋滿了！ 📘✨`,c1:"#B08D2B",c2:"#F5D77A"}); },true);
