@@ -668,3 +668,5 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .prg-r.auto .prg-b em{color:var(--ink-3)!important}.prg-r.auto .prg-n{color:var(--ink-3)}
 .prg-app{margin:10px 0;border:1px solid var(--line);border-radius:14px;padding:10px 14px;font-size:13px;background:var(--s1)}.prg-app>b{display:block;font-size:13px;margin-bottom:6px}
 .prg-app div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-top:1px dashed var(--line)}.prg-app div span{color:var(--ink-2);min-width:0}.prg-app em{font-style:normal;font-weight:600;white-space:nowrap}
+html:not([data-theme="dark"]) .wkg-logo.lg-lt,html:not([data-theme="dark"]) .wkg-cap2 img.lg-lt{filter:invert(1)}
+html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg-dk{filter:invert(1)}

@@ -454,3 +454,13 @@ setTimeout(function wkReopen(){ let o=null; try{ o=JSON.parse(localStorage.getIt
   if(location.hash!==o.h) navTo(o.h); setTimeout(()=>{ ui.wkEd=o.ed; ui.wkStg=null; render(); ui.wkSnap=""; setTimeout(()=>window.scrollTo(0,o.y||0),80); },150); },700);
 
 
+/* 團名 Logo 自動配合深淺色：只有黑白（沒什麼顏色）的 Logo 才處理——白色 Logo 在淺色模式反成黑色、黑色 Logo 在深色模式反成白色；有顏色的 Logo 不動 */
+const WK_LT={};
+function wkLogoTone(img){ const src=img.getAttribute("src")||""; if(!src) return; const ap=t=>{ img.classList.toggle("lg-lt",t==="lt"); img.classList.toggle("lg-dk",t==="dk"); };
+  if(WK_LT[src]!==undefined){ ap(WK_LT[src]); return; } WK_LT[src]="";
+  const im=new Image(); im.crossOrigin="anonymous"; im.onload=()=>{ try{ const c=document.createElement("canvas"), w=c.width=48, h=c.height=Math.max(1,Math.round(48*im.naturalHeight/Math.max(1,im.naturalWidth))), x=c.getContext("2d"); x.drawImage(im,0,0,w,h); const D=x.getImageData(0,0,w,h).data; let n=0,L=0,Sa=0;
+      for(let i=0;i<D.length;i+=4){ if(D[i+3]<60) continue; const r=D[i]/255,g=D[i+1]/255,b=D[i+2]/255, mx=Math.max(r,g,b), mn=Math.min(r,g,b); n++; L+=(r*.3+g*.59+b*.11); Sa+=mx-mn; }
+      if(n<20||n>D.length/4*.92){ WK_LT[src]=""; return; }   /* 幾乎沒有透明背景的（整張圖）就不處理 */
+      const lum=L/n, sat=Sa/n, t=sat>.18?"":lum>.62?"lt":lum<.38?"dk":""; WK_LT[src]=t; document.querySelectorAll(".wkg-logo,.wkg-cap2 img").forEach(e=>{ if(e.getAttribute("src")===src) ap(t); }); }catch(e){} };
+  im.src=src; }
+document.addEventListener("load",e=>{ const t=e.target; if(t&&t.tagName==="IMG"&&(t.classList.contains("wkg-logo")||(t.parentElement&&t.parentElement.classList.contains("wkg-cap2")))) wkLogoTone(t); },true);
