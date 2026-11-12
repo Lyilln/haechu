@@ -519,7 +519,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snShare": snOpenShare(t.dataset.id); break;
     case "snShareTo": { const me=snMeId(), to=t.dataset.v; dmAppend(me,to,{text:"",post:t.dataset.id,ts:Date.now()}); layer.innerHTML=""; toast("已傳送"); snFakeReply(to); break; }
     case "snSaveP": { const d=snDB(), me=snMeId(), L=d.saved[me]=d.saved[me]||[], pid=t.dataset.id, i=L.indexOf(pid); if(i>=0){ L.splice(i,1); ((d.col||{})[me]||[]).forEach(c=>{ c.items=c.items.filter(x=>x!==pid); }); } else L.unshift(pid); snSave(d); t.classList.toggle("saved",i<0); hap(8); AN.bounce(t); document.querySelectorAll(`[data-a="snSaveP"][data-id="${CSS.escape(pid)}"]:not([data-sheet])`).forEach(b=>b.classList.toggle("saved",i<0)); if(t.dataset.sheet) layer.innerHTML="";
-      if(i>=0){ toast("已從收藏移除"); const y=window.scrollY; render(); window.scrollTo(0,y); } else snColSheet(pid); break; }
+      /* 11/12：取消收藏不再整頁重畫（重畫會讓正在播的 Reels 從頭開始）；只有在「已儲存」清單裡才需要重畫把它拿掉 */
+      if(i>=0){ toast("已從收藏移除"); if(document.querySelector(".sn-fmode")){ const y=window.scrollY; render(); window.scrollTo(0,y); } } else snColSheet(pid); break; }
     case "snMore": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; const me=snMeId(), fo=snFol(d,me).includes(p.uid), mine=p.uid===me, sv=(d.saved[me]||[]).includes(p.id), go=route().p!=="post"?[["前往這則貼文","snsGo",`data-v="post" data-id="${p.id}"`,{ic:"link"}]]:[];
       snSheet(mine?[[["編輯","snEditCap",`data-id="${p.id}"`,{ic:"pen"}],...go],[["刪除","snDelP",`data-id="${p.id}"`,{ic:"trash",red:1}]]]
         :[[[sv?"取消儲存":"儲存","snSaveP",`data-id="${p.id}" data-sheet="1"`,{ic:"save"}],...go],
@@ -776,8 +777,21 @@ document.addEventListener("pointerdown",e=>{ const bg=e.target.closest(".sn-reel
 /* 長按放開後的那一下點擊不算（不然會變成開關聲音） */
 document.addEventListener("click",e=>{ if(snLp&&snLp.skip&&Date.now()-snLp.skip<400&&e.target.closest(".sn-reel1 .sn-rbg")){ e.stopPropagation(); e.preventDefault(); snLp=null; } },true);
 document.addEventListener("timeupdate",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")) return; const r=v.closest(".sn-reel1"); if(!r) return; const b=r.querySelector(".sn-prog i"); if(b&&v.duration) b.style.width=(v.currentTime/v.duration*100)+"%"; },true);
-/* Reels 橫的影片（例如 MV Teaser）：不裁切，整支置中、上下留黑（照 IG） */
-document.addEventListener("loadedmetadata",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")||!v.closest(".sn-reel1")) return; v.classList.toggle("land",v.videoWidth>v.videoHeight*1.05); },true);
+/* Reels 影片的位置（照 IG）：
+   ・直的影片：滿版
+   ・橫的影片（例如 MV Teaser）：整支看得到，放在可看區域的正中間
+   ・打開留言時：影片縮到上面那塊，照影片自己的比例、置中、圓角
+   直接算出影片畫面的框（不靠瀏覽器的 contain），iPhone 上也不會偏 */
+let SN_SAFE_T=-1; const snSafeT=()=>{ if(SN_SAFE_T<0){ const p=document.createElement("div"); p.style.cssText="position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none"; document.body.appendChild(p); SN_SAFE_T=p.offsetHeight; p.remove(); } return SN_SAFE_T; };
+function snVidFit(v){ try{ const bg=v.closest(".sn-rbg"); if(!bg||!v.videoWidth) return; const W=bg.offsetWidth, H=bg.offsetHeight, ar=v.videoWidth/v.videoHeight, sh=document.documentElement.classList.contains("sn-vshrink"), land=ar>1.05;
+    v.classList.toggle("land",land);
+    if(!sh&&!land){ v.style.cssText=""; v.classList.remove("fit"); return; }
+    const pt=sh?snSafeT()+10:0, pb=sh?12:0, ph=sh?16:0, aw=W-ph*2, ah=H-pt-pb; let w=aw, h=w/ar; if(h>ah){ h=ah; w=h*ar; }
+    v.classList.add("fit"); v.style.cssText=`position:absolute;left:${(W-w)/2}px;top:${pt+(ah-h)/2}px;width:${w}px;height:${h}px;object-fit:cover;border-radius:${sh?14:0}px`; }catch(e){} }
+const snVidFitAll=()=>document.querySelectorAll(".sn-reel1 video.sn-vid").forEach(snVidFit);
+document.addEventListener("loadedmetadata",e=>{ const v=e.target; if(v instanceof HTMLVideoElement&&v.classList.contains("sn-vid")&&v.closest(".sn-reel1")) snVidFit(v); },true);
+addEventListener("resize",()=>requestAnimationFrame(snVidFitAll));
+new MutationObserver(()=>{ snVidFitAll(); setTimeout(snVidFitAll,260); }).observe(document.documentElement,{attributes:true,attributeFilter:["class"]});
 /* Reels 進度條（照 IG）：手指按住拖 → 上面的按鈕、文字先藏起來，手指上方出現小預覽圖＋「0:08 / 0:30」；放開才跳到那裡 */
 const snMSS=t=>{ t=Math.max(0,Math.floor(t||0)); return Math.floor(t/60)+":"+String(t%60).padStart(2,"0"); };
 document.addEventListener("pointerdown",e=>{ const pg=e.target.closest(".sn-prog"); if(!pg) return; const v=snReelVid(pg); if(!v||!v.duration) return; e.preventDefault(); e.stopPropagation();
