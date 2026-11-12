@@ -581,7 +581,7 @@ html[data-theme="dark"] .sn-sh{--sn-b:#262626;--sn-t:#F5F5F5}
 .sn-sbar{position:absolute;z-index:2;left:8px;right:8px;top:calc(env(safe-area-inset-top,0px) + 8px);display:flex;gap:4px}
 .sn-sbar i{flex:1;height:2.5px;border-radius:2px;background:rgba(255,255,255,.35);overflow:hidden}
 .sn-sbar u{display:block;height:100%;width:0;background:#fff}
-.sn-sbar u.done{width:100%}.sn-sbar u.run,.sn-story.static .sn-sbar u.run{animation:snRun 5s linear forwards!important}
+.sn-sbar u.done{width:100%}.sn-sbar u.run,.sn-story.static .sn-sbar u.run{animation:snRun var(--d,5s) linear forwards!important;animation-play-state:var(--ps,running)!important}
 @keyframes snRun{to{width:100%}}
 .sn-sh2{position:absolute;z-index:2;left:0;right:0;top:calc(env(safe-area-inset-top,0px) + 18px);display:flex;align-items:center;gap:8px;padding:0 6px 0 12px}
 .sn-sh2 b{font-size:14px}.sn-sh2 small{font-size:13px;color:rgba(255,255,255,.7)}
