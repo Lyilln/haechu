@@ -721,8 +721,16 @@ function pdFit(){ const L=[...document.querySelectorAll(".pd")], pd=L[L.length-1
 })();
 let pdRaf=0; const pdFitSoon=()=>{ if(pdRaf) return; pdRaf=requestAnimationFrame(()=>{ pdRaf=0; pdFit(); }); };   /* 鍵盤滑上來時事件會一直來：一格畫面只算一次，內容不會跳 */
 if(window.visualViewport){ visualViewport.addEventListener("resize",pdFitSoon); visualViewport.addEventListener("scroll",pdFitSoon); }
-document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) [0,120,350].forEach(t=>setTimeout(pdFit,t)); });
-document.addEventListener("focusout",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) setTimeout(pdFit,80); });
+/* 11/12：打字時把後面那頁「釘住」（跟 TIE 一樣整頁不能被 iPhone 往上推）。
+   以前後面的頁面（例如很長的藝人動態）可以被鍵盤推著捲，貼文頁的位置就算錯 → 鍵盤上方一片黑、貼文跑到鍵盤後面 */
+const PDL={on:false,y:0};
+function pdLock(){ if(PDL.on) return; PDL.on=true; PDL.y=window.scrollY; const b=document.body.style; b.position="fixed"; b.top=(-PDL.y)+"px"; b.left="0"; b.right="0"; b.width="100%"; }
+function pdUnlock(){ if(!PDL.on) return; PDL.on=false; const b=document.body.style; b.position=""; b.top=""; b.left=""; b.right=""; b.width=""; window.scrollTo(0,PDL.y); }
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")){ pdLock(); [0,60,120,250,350,600].forEach(t=>setTimeout(()=>{ if(PDL.on&&window.scrollY) window.scrollTo(0,0); pdFit(); },t)); } });
+document.addEventListener("focusout",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) setTimeout(()=>{ const a=document.activeElement; if(!(a&&a.closest&&a.closest(".pd-in"))) pdUnlock(); pdFit(); },80); });
+addEventListener("scroll",()=>{ if(!PDL.on) return; if(window.scrollY) window.scrollTo(0,0); pdFitSoon(); },{passive:true});
+/* 貼文頁關掉時一定放開（不然後面那頁會滑不動） */
+new MutationObserver(()=>{ if(PDL.on&&!document.querySelector(".pd")) pdUnlock(); }).observe(document.getElementById("layer")||document.body,{childList:true});
 document.addEventListener("touchmove",e=>{ const mr=e.target.closest&&e.target.closest(".mr.dl"); if(!mr||!e.cancelable) return; const sc=e.target.closest("#cmTick,.cm-tick"); if(sc&&sc.scrollHeight>sc.clientHeight+2) return; e.preventDefault(); },{passive:false});
 document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="lin") setTimeout(()=>{ window.scrollTo(0,0); lvFit(); },60); });
 addEventListener("scroll",()=>{ try{ const r=route(); if(r.sub==="chat"&&!r.p&&document.getElementById("chat-end")){ const de=document.documentElement; ui.chatPos={m:r.m,y:window.scrollY,bottom:window.scrollY+window.innerHeight>=de.scrollHeight-60}; } }catch(e){} },{passive:true});

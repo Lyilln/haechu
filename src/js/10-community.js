@@ -488,7 +488,6 @@ function viewArtist(tab){
       <div class="section-h">團體</div>
       <section class="card">
         ${cbrRow(mid)}
-        <button class="list-btn" data-a="focGo" data-v="honor">${I.star}打歌戰況</button>
         <button class="list-btn" data-a="focGo" data-v="stick">${I.star}官方應援棒<span class="r">${g.solo?"":esc(g.name)}</span></button>
       </section>
       <div class="section-h">App</div>

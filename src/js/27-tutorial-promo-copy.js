@@ -231,7 +231,6 @@ const TOURS={
     ['[data-a="aNick"]',"粉絲的愛稱","幫 Membership 粉絲取一個專屬的愛稱。"],
     ['[data-a="thMine"]',"做主題","設計一套你自己的 App 主題，通過審核就會上架 SHOP。"],
     ['[data-a="cbrAsk"]',"申請回歸","填歌名、發行型態、日期，放 Teaser、MV 和 MV Teaser，送給公司審核。每間公司的冷卻期不一樣，冷卻期過了才能申請。"],
-    ['[data-a="focGo"][data-v="honor"]',"打歌戰況","打歌期間的名次、分數、結尾妖精和獎項。"],
     ['[data-a="focGo"][data-v="stick"]',"官方應援棒","你們團的應援棒。"],
     ['[data-v="#/artist?tab=points"]',"積分收入","你收到了多少積分。"],
     ['[data-a="swapRole"]',"切換到粉絲","回到你的粉絲帳號，去追其他藝人。"],

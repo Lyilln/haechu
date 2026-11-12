@@ -3576,8 +3576,16 @@ function pdFit(){ const L=[...document.querySelectorAll(".pd")], pd=L[L.length-1
 })();
 let pdRaf=0; const pdFitSoon=()=>{ if(pdRaf) return; pdRaf=requestAnimationFrame(()=>{ pdRaf=0; pdFit(); }); };   /* 鍵盤滑上來時事件會一直來：一格畫面只算一次，內容不會跳 */
 if(window.visualViewport){ visualViewport.addEventListener("resize",pdFitSoon); visualViewport.addEventListener("scroll",pdFitSoon); }
-document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) [0,120,350].forEach(t=>setTimeout(pdFit,t)); });
-document.addEventListener("focusout",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) setTimeout(pdFit,80); });
+/* 11/12：打字時把後面那頁「釘住」（跟 TIE 一樣整頁不能被 iPhone 往上推）。
+   以前後面的頁面（例如很長的藝人動態）可以被鍵盤推著捲，貼文頁的位置就算錯 → 鍵盤上方一片黑、貼文跑到鍵盤後面 */
+const PDL={on:false,y:0};
+function pdLock(){ if(PDL.on) return; PDL.on=true; PDL.y=window.scrollY; const b=document.body.style; b.position="fixed"; b.top=(-PDL.y)+"px"; b.left="0"; b.right="0"; b.width="100%"; }
+function pdUnlock(){ if(!PDL.on) return; PDL.on=false; const b=document.body.style; b.position=""; b.top=""; b.left=""; b.right=""; b.width=""; window.scrollTo(0,PDL.y); }
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")){ pdLock(); [0,60,120,250,350,600].forEach(t=>setTimeout(()=>{ if(PDL.on&&window.scrollY) window.scrollTo(0,0); pdFit(); },t)); } });
+document.addEventListener("focusout",e=>{ if(e.target&&e.target.closest&&e.target.closest(".pd-in")) setTimeout(()=>{ const a=document.activeElement; if(!(a&&a.closest&&a.closest(".pd-in"))) pdUnlock(); pdFit(); },80); });
+addEventListener("scroll",()=>{ if(!PDL.on) return; if(window.scrollY) window.scrollTo(0,0); pdFitSoon(); },{passive:true});
+/* 貼文頁關掉時一定放開（不然後面那頁會滑不動） */
+new MutationObserver(()=>{ if(PDL.on&&!document.querySelector(".pd")) pdUnlock(); }).observe(document.getElementById("layer")||document.body,{childList:true});
 document.addEventListener("touchmove",e=>{ const mr=e.target.closest&&e.target.closest(".mr.dl"); if(!mr||!e.cancelable) return; const sc=e.target.closest("#cmTick,.cm-tick"); if(sc&&sc.scrollHeight>sc.clientHeight+2) return; e.preventDefault(); },{passive:false});
 document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="lin") setTimeout(()=>{ window.scrollTo(0,0); lvFit(); },60); });
 addEventListener("scroll",()=>{ try{ const r=route(); if(r.sub==="chat"&&!r.p&&document.getElementById("chat-end")){ const de=document.documentElement; ui.chatPos={m:r.m,y:window.scrollY,bottom:window.scrollY+window.innerHeight>=de.scrollHeight-60}; } }catch(e){} },{passive:true});
@@ -4426,7 +4434,6 @@ function viewArtist(tab){
       <div class="section-h">團體</div>
       <section class="card">
         ${cbrRow(mid)}
-        <button class="list-btn" data-a="focGo" data-v="honor">${I.star}打歌戰況</button>
         <button class="list-btn" data-a="focGo" data-v="stick">${I.star}官方應援棒<span class="r">${g.solo?"":esc(g.name)}</span></button>
       </section>
       <div class="section-h">App</div>
@@ -13657,7 +13664,6 @@ const TOURS={
     ['[data-a="aNick"]',"粉絲的愛稱","幫 Membership 粉絲取一個專屬的愛稱。"],
     ['[data-a="thMine"]',"做主題","設計一套你自己的 App 主題，通過審核就會上架 SHOP。"],
     ['[data-a="cbrAsk"]',"申請回歸","填歌名、發行型態、日期，放 Teaser、MV 和 MV Teaser，送給公司審核。每間公司的冷卻期不一樣，冷卻期過了才能申請。"],
-    ['[data-a="focGo"][data-v="honor"]',"打歌戰況","打歌期間的名次、分數、結尾妖精和獎項。"],
     ['[data-a="focGo"][data-v="stick"]',"官方應援棒","你們團的應援棒。"],
     ['[data-v="#/artist?tab=points"]',"積分收入","你收到了多少積分。"],
     ['[data-a="swapRole"]',"切換到粉絲","回到你的粉絲帳號，去追其他藝人。"],
