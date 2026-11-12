@@ -6795,3 +6795,13 @@ main.foc.xv{padding-top:18px}
 .sv2-note,.dk-keep-xv{text-align:center;font-size:12px;color:var(--a);font-weight:800;margin:18px 0 0}
 .sv2-cta,.dk-keep-xv{display:block;width:100%;margin-top:14px;border:0;background:var(--a);color:#fff;font:inherit;font-size:15px;font-weight:900;padding:15px;border-radius:16px;box-shadow:0 10px 24px -10px var(--a)}.sv2-cta:disabled,.dk-keep-xv{opacity:.45}
 .pd-del{margin-left:auto;border:0;background:none;color:var(--ink-3);font:inherit;font-size:11.5px;padding:2px 4px}
+/* 積分回溯（ptt-） */
+.ptt-sum{display:flex;gap:8px}.ptt-sum>div{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 4px;text-align:center}.ptt-sum b{display:block;font-size:17px;color:var(--violet-ink)}.ptt-sum span{font-size:10.5px;color:var(--ink-3)}
+.ptt-note{font-size:11.5px;color:var(--ink-3);margin:10px 2px;line-height:1.5}
+.ptt-fix{background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:12px;margin-top:10px}.ptt-fix>b{font-size:13.5px}.ptt-fix>div{display:flex;gap:8px;margin-top:8px}.ptt-fix .field{flex:1;margin:0}.ptt-fix small{display:block;font-size:11px;color:var(--ink-3);margin-top:6px}
+.ptt-l{padding:4px 12px}.ptt-r{display:flex;align-items:center;gap:8px;padding:10px 0;border-bottom:1px solid var(--line)}.ptt-r:last-child{border:0}.ptt-r.off{opacity:.45}.ptt-r.off b{text-decoration:line-through}
+.ptt-era{flex:none;font-size:10px;font-weight:800;border-radius:6px;padding:2px 6px;background:var(--s2);color:var(--ink-2)}.ptt-era.art{background:var(--violet-soft);color:var(--violet-ink)}
+.ptt-i{flex:1;min-width:0;display:flex;flex-direction:column}.ptt-i b{font-size:14px;color:#2F9E44}.ptt-i b.neg{color:var(--red)}.ptt-i b.set{color:var(--violet-ink)}.ptt-i small{font-size:11px;color:var(--ink-3);line-height:1.4}
+html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
+.ptt-t{flex:none;font-size:12px;font-weight:800;color:var(--ink-2);min-width:52px;text-align:right}
+.ptt-div{margin:6px -12px;padding:10px 12px;background:var(--violet-soft);color:var(--violet-ink);font-size:12.5px;font-weight:800}.ptt-div small{display:block;font-weight:500;font-size:11px;opacity:.8}

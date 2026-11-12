@@ -46,7 +46,7 @@ function ptCollect(){ try{ ptArtCollect(); const s=session(); if(!s||s.role!=="f
 function viewPtAdd(){ const d=ui.ptD||(ui.ptD={to:[],n:"",why:"",q:"",sign:1}), q=nz(d.q.trim());
   const L=Object.entries(ACCOUNTS).filter(([e,a])=>e!==DEMO_FAN).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e)));
   const hist0=ptGrants().slice().sort((a,b)=>b.ts-a.ts), hist=calFilter("pt",hist0,g=>g.ts);
-  return `<main class="page pta">${ptRegCard()}
+  return `<main class="page pta">${ptRegCard()}${ptTraceHtml()}
     <div class="section-h">手動加分</div>
     <section class="card studio">
       <span class="fld-lab">給誰（可以選很多個）</span>
