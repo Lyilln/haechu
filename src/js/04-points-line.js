@@ -186,7 +186,8 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
 /* 管理員對照用：登記的那幾天，App 自己加給這個人的分（自動項目）＋藝人分潤（不用登記，自動算） */
 function ptRegApp(email,days){ const a=ACCOUNTS[email]||{}, mid=a.member&&MEMBERS[a.member]?a.member:"", D=new Set(days.filter(Boolean)); if(!D.size) return null;
   const inD=ts=>D.has(ymdK(ts)), skip=g=>/^(lr|rev_|ufm_|ufg_|fixdup_)/.test(g.id)||/^(LINE 登記|登記算錯|照 LINE|撤銷)/.test(g.why||"");
-  const L=ptGrants().filter(g=>inD(g.ts)&&!skip(g)&&(g.to===email||(mid&&g.mid===mid&&(g.art||String(g.id).startsWith("tqf2_"))))).map(g=>({d:ymdK(g.ts),why:g.why||"",n:g.n||0}));
+  const EL=(()=>{ try{ return (S.get(K.earnLog+"@"+email,[])||[]).filter(x=>inD(x.ts)).map(x=>({d:ymdK(x.ts),why:x.why||x.k,n:x.n||0})); }catch(e){ return []; } })();
+  const L=EL.concat(ptGrants().filter(g=>inD(g.ts)&&!skip(g)&&(g.to===email||(mid&&g.mid===mid&&(g.art||String(g.id).startsWith("tqf2_"))))).map(g=>({d:ymdK(g.ts),why:g.why||"",n:g.n||0})));
   let share=null; if(mid){ const sh=revShare(); share={pct:sh,by:{}}; (S.get(K.sales,[])||[]).forEach(x=>{ if((x.type==="tie"||x.type==="truck")&&x.mid===mid&&inD(x.ts)){ const k=ymdK(x.ts); share.by[k]=(share.by[k]||0)+x.pts; } }); share.n=Math.round(Object.values(share.by).reduce((n,v)=>n+v,0)*sh/100); }
   return {L,share,mid}; }
 function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",auto:"🔄"};

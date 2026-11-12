@@ -458,7 +458,7 @@ function fanEarn(kind,n,o={}){ try{ const s=session()||{}; if(s.role!=="fan"||!m
     if(o.once){ if(E.once[o.once]) return 0; }
     const bag=o.life?(E.life=E.life||{}):E.d, capK=o.capKey||kind, used=bag[capK]||0; if(o.cap!=null&&used>=o.cap) return 0; const add=o.cap!=null?Math.min(n,o.cap-used):n; if(add<=0) return 0;
     bag[capK]=used+add; if(o.once) E.once[o.once]=1; const ks=Object.keys(E.once); if(ks.length>800) ks.slice(0,ks.length-800).forEach(k=>delete E.once[k]);
-    localStorage.setItem(key,JSON.stringify(E)); S.set(K.points,points()+add); if(!o.quiet) toast(`+${add} 積分・${o.why||""}`); return add; }catch(e){ return 0; } }
+    localStorage.setItem(key,JSON.stringify(E)); S.set(K.points,points()+add); try{ const lg=S.get(K.earnLog,[])||[], lim=Date.now()-60*864e5; lg.push({k:kind,n:add,why:o.why||"",ts:Date.now()}); S.set(K.earnLog,lg.filter(x=>x.ts>lim).slice(-600)); }catch(e){}   /* 粉絲自動加的分也記到雲端（只留 60 天），管理員在後台對照得到 */ if(!o.quiet) toast(`+${add} 積分・${o.why||""}`); return add; }catch(e){ return 0; } }
 /* 餐車送到了：出錢的粉絲 +200（看到的時候領） */
 function tkEarnCheck(){ try{ const me=myEmail(); if(!me||(session()||{}).role!=="fan") return; getTrucks().forEach(t=>{ if(tkState(t)==="done"&&tkPaidMe(t)) fanEarn("truck",200,{once:"tk_"+t.id,why:`應援餐車送到 ${MEMBERS[t.mid].name} 那裡了`}); }); }catch(e){} }
 setInterval(tkEarnCheck,90e3); setTimeout(tkEarnCheck,15e3);
