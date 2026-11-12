@@ -665,7 +665,7 @@ function render(){
   if(r.sub==="tint") return paint(viewTint(r.id),false);
   if(r.sub==="thedit"&&(s.role==="admin"||s.role==="artist")) return paint(viewThEdit(r.id),false);
   if(r.sub==="thmine"&&s.role==="artist") return paint(viewThMine(),false);
-  if(r.sub==="themes"&&s.role==="admin") return paint(viewThAdmin(),false);
+  if(r.sub==="themes"&&s.role==="admin") return isUni()?paint(viewThAdmin(),true,""):paint(viewThAdmin(),false);
   if(s.role==="fan"){
     deliverMilestones();
     if(r.sub==="select") return paint(viewSelect(),false);

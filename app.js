@@ -3520,7 +3520,7 @@ function render(){
   if(r.sub==="tint") return paint(viewTint(r.id),false);
   if(r.sub==="thedit"&&(s.role==="admin"||s.role==="artist")) return paint(viewThEdit(r.id),false);
   if(r.sub==="thmine"&&s.role==="artist") return paint(viewThMine(),false);
-  if(r.sub==="themes"&&s.role==="admin") return paint(viewThAdmin(),false);
+  if(r.sub==="themes"&&s.role==="admin") return isUni()?paint(viewThAdmin(),true,""):paint(viewThAdmin(),false);
   if(s.role==="fan"){
     deliverMilestones();
     if(r.sub==="select") return paint(viewSelect(),false);
@@ -8199,8 +8199,8 @@ function thAdminRow(t,mine){ return `<div class="th-ar">${thCover(t,"row")}<div 
   <div class="th-ar-a"><button class="btn btn-soft btn-sm" data-a="thOpen" data-v="${t.id}">預覽</button>${mine?(t.status!=="on"?`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button>`:""):t.status==="pending"?`<button class="btn btn-main btn-sm" data-a="thOk" data-v="${t.id}">通過</button><button class="btn btn-soft btn-sm" data-a="thNo" data-v="${t.id}">退回</button>`
     :`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button><button class="btn btn-soft btn-sm" data-a="thOnOff" data-v="${t.id}">${t.status==="on"?"下架":"上架"}</button>`}</div></div></div>`; }
 function viewThAdmin(){ const L=getThemes().filter(t=>t.status!=="deleted"), pend=L.filter(t=>t.status==="pending"), rest=L.filter(t=>t.status!=="pending");
-  return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">主題管理</div><span class="sh-sp"></span></div></header><main class="page">
-    <button class="btn btn-main btn-block" data-a="thNew">新增主題</button>
+  /* 11/12：跟營運其他頁一樣（上面三段切換、下面導覽列）；「新增主題」改到右上角＋，不再頂在最上面 */
+  return `${uniHead("主題管理",`<button class="icon-btn" data-a="thNew" aria-label="新增主題">＋</button>`)}<main class="page">
     ${pend.length?`<div class="section-h">藝人申請<span class="muted">${pend.length} 件</span></div><section class="card th-al">${pend.map(t=>thAdminRow(t,false)).join("")}</section>`:""}
     <div class="section-h">全部主題<span class="muted">${rest.length} 套</span></div>
     ${rest.length?`<section class="card th-al">${rest.map(t=>thAdminRow(t,false)).join("")}</section>`:`<p class="me-none">還沒有主題</p>`}
@@ -8570,7 +8570,7 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
       return {ts,h:gs.length<2?one(g):`<details class="pt-grp"><summary class="pt-d"><span class="rev-t t-grant">${gT(g)}</span><p><span>${esc(g.why||"")}<em class="pt-x">×${gs.length}</em></span><small>${ago(ts)}</small></p><b class="${n<0?"neg":""}">${n<0?"−":"+"}${fmt(Math.abs(n))}</b><i class="pt-chev"></i></summary>${gs.map(one).join("")}</details>`}; })].sort((a,b)=>b.ts-a.ts).slice(0,60);
   const mine=mid===(session()||{}).member||mid===uniMe(), solo=(groupOf(m.group)||{}).solo, who=mine?"你":"他", open=!!ui.ptOpen;
   return `<main class="page pt">${ptPeriodChips()}
-    <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got+gp)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut+gm)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
+    <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got+gp)}</b></div><div><span>扣除</span><b class="${p.cut+gm?"neg":""}">${p.cut+gm?"−":""}${fmt(p.cut+gm)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
     <p class="pt-rule">${solo?`粉絲買${who}的 ${WHISPER_NAME} 券、Membership、周邊、主題，積分都算${who}的。`:`粉絲買${who}的 ${WHISPER_NAME} 券，積分全部算${who}的；買 Membership、周邊、主題這些，會先算給整個團，再平均分給團裡每一位。`}${who}實際拿到的是收到的 ${sh}%，就是右邊的「實得」。</p>
     ${rows.length?`<button class="section-h pt-fold ${open?"open":""}" data-a="ptFold" aria-expanded="${open}">明細<span class="muted">${rows.length} 筆</span><span class="foc-fold-r">${open?"收起":"展開"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<section class="card pt-list">${rows.map(r=>r.h).join("")}</section>`:""}`:`<div class="section-h">明細</div><p class="me-none">這段時間還沒有積分</p>`}
   </main>`; }

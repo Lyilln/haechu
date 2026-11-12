@@ -68,7 +68,7 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
       return {ts,h:gs.length<2?one(g):`<details class="pt-grp"><summary class="pt-d"><span class="rev-t t-grant">${gT(g)}</span><p><span>${esc(g.why||"")}<em class="pt-x">×${gs.length}</em></span><small>${ago(ts)}</small></p><b class="${n<0?"neg":""}">${n<0?"−":"+"}${fmt(Math.abs(n))}</b><i class="pt-chev"></i></summary>${gs.map(one).join("")}</details>`}; })].sort((a,b)=>b.ts-a.ts).slice(0,60);
   const mine=mid===(session()||{}).member||mid===uniMe(), solo=(groupOf(m.group)||{}).solo, who=mine?"你":"他", open=!!ui.ptOpen;
   return `<main class="page pt">${ptPeriodChips()}
-    <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got+gp)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut+gm)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
+    <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got+gp)}</b></div><div><span>扣除</span><b class="${p.cut+gm?"neg":""}">${p.cut+gm?"−":""}${fmt(p.cut+gm)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
     <p class="pt-rule">${solo?`粉絲買${who}的 ${WHISPER_NAME} 券、Membership、周邊、主題，積分都算${who}的。`:`粉絲買${who}的 ${WHISPER_NAME} 券，積分全部算${who}的；買 Membership、周邊、主題這些，會先算給整個團，再平均分給團裡每一位。`}${who}實際拿到的是收到的 ${sh}%，就是右邊的「實得」。</p>
     ${rows.length?`<button class="section-h pt-fold ${open?"open":""}" data-a="ptFold" aria-expanded="${open}">明細<span class="muted">${rows.length} 筆</span><span class="foc-fold-r">${open?"收起":"展開"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<section class="card pt-list">${rows.map(r=>r.h).join("")}</section>`:""}`:`<div class="section-h">明細</div><p class="me-none">這段時間還沒有積分</p>`}
   </main>`; }

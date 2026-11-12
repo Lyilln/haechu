@@ -279,8 +279,8 @@ function thAdminRow(t,mine){ return `<div class="th-ar">${thCover(t,"row")}<div 
   <div class="th-ar-a"><button class="btn btn-soft btn-sm" data-a="thOpen" data-v="${t.id}">預覽</button>${mine?(t.status!=="on"?`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button>`:""):t.status==="pending"?`<button class="btn btn-main btn-sm" data-a="thOk" data-v="${t.id}">通過</button><button class="btn btn-soft btn-sm" data-a="thNo" data-v="${t.id}">退回</button>`
     :`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button><button class="btn btn-soft btn-sm" data-a="thOnOff" data-v="${t.id}">${t.status==="on"?"下架":"上架"}</button>`}</div></div></div>`; }
 function viewThAdmin(){ const L=getThemes().filter(t=>t.status!=="deleted"), pend=L.filter(t=>t.status==="pending"), rest=L.filter(t=>t.status!=="pending");
-  return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">主題管理</div><span class="sh-sp"></span></div></header><main class="page">
-    <button class="btn btn-main btn-block" data-a="thNew">新增主題</button>
+  /* 11/12：跟營運其他頁一樣（上面三段切換、下面導覽列）；「新增主題」改到右上角＋，不再頂在最上面 */
+  return `${uniHead("主題管理",`<button class="icon-btn" data-a="thNew" aria-label="新增主題">＋</button>`)}<main class="page">
     ${pend.length?`<div class="section-h">藝人申請<span class="muted">${pend.length} 件</span></div><section class="card th-al">${pend.map(t=>thAdminRow(t,false)).join("")}</section>`:""}
     <div class="section-h">全部主題<span class="muted">${rest.length} 套</span></div>
     ${rest.length?`<section class="card th-al">${rest.map(t=>thAdminRow(t,false)).join("")}</section>`:`<p class="me-none">還沒有主題</p>`}
