@@ -57,7 +57,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     if(/^(加分|額外加分|管理員加分|獎勵)\s*[+＋]/.test(n)){ const c=ptNum((n.match(/[+]\s*([\d,]+)/)||[])[1]); D.claim+=c; D.give+=c; D.items.push({seg,claim:c,give:c,st:"ask",why:"管理員另外加的分，照登記算"}); return; }
     const role=roleAt(D.ds), r=ptMatch(seg,R,role), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null; if(claim!=null) D.claim+=claim;
     if(!r){ if(claim!=null) D.items.push({seg,claim,give:0,st:"no",why:"對不到積分表的項目"}); return; }
-    if(r.auto){ D.items.push({seg,r,claim,give:0,st:"no",why:"App 會自己加，不用登記"}); return; }
+    if(r.auto){ D.items.push({seg,r,claim,give:claim||0,st:"auto",why:"App 自己會加（照登記的數字算進總分，不會另外加分）"}); return; }
     if(r.ask||r.pts==null){ D.items.push({seg,r,claim,give:claim||0,st:"ask",why:"這項是管理員決定的分數，照登記算"}); D.give+=claim||0; return; }
     const rest=seg.replace(cl?cl[0]:""," "); let cnt=null; const um=rest.match(/(\d+)\s*(則|篇|個|句|場|封|首|次|張|群|位|人|分鐘|min|條|天)/i)||rest.match(/[x×＊*]\s*(\d+)/i); if(um&&!/字/.test(um[0])) cnt=+um[1];
     if(cnt==null) cnt=claim!=null&&claim%r.pts===0?claim/r.pts:1; const nd=D.ds.length, why=[];
@@ -85,7 +85,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
   iss.sort((x,y)=>days.indexOf(x.D)-days.indexOf(y.D)); const last=[...days].reverse().find(D=>D.said!=null);
   return {days,run,runC,first,DB,inf,iss,last}; }
 function ptRecountHtml(email){ const P=ui.ptRc&&ui.ptRc.e===email?ui.ptRc:(ui.ptRc={e:email,text:"",start:""}), res=P.text.trim()?ptRecount(email,P.text,ptNum(P.start)||0):null;
-  const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️"};
+  const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",auto:"🔄"};
   const body=res?`${ptRcTop(email,res)}
     ${res.inf?`<p class="ptt-note">起始分數沒填，照他第一天寫的總分推回去：${fmt(res.inf)}</p>`:""}${res.first?`<p class="ptrc-first">⚠️ 照積分表：從 <b>${ptDs(res.first.ds)}</b> 開始有項目分數不對，那天登記寫 +${fmt(res.first.claim)}，照積分表應該是 +${fmt(res.first.give)}</p>`:`<p class="ptrc-ok">✅ 每一項分數都照積分表</p>`}
     ${(()=>{ const DB=res.DB, dk=DB.ts!=null?ymdK(DB.ts):null; let put=false; const out=[]; res.days.forEach(D=>{ if(dk&&!put&&D.ds[0]>=dk){ put=true; out.push(`<div class="ptt-div">🎉 ${ptDs([dk])} 出道（${esc(DB.name||"藝人")}）・之後照「藝人」的項目算<small>積分原封不動帶過去，出道前後同一個數字</small></div>`); } out.push(D); }); return out.reverse(); })().map(D=>typeof D==="string"?D:`<details class="ptrc-d ${D.claim!==D.give||D.addBad?"bad":""}"><summary><b>${ptDs(D.ds)}</b><span>登記 +${fmt(D.claim)}・應該 +${fmt(D.give)}</span><em>${D.said!=null?`總 ${fmt(D.said)}${D.addBad?`<small class="bad">應該 ${fmt(D.exp)}</small>`:D.gap?`<small>前面有日子沒貼到</small>`:""}`:`總 ${fmt(D.exp)}`}</em></summary>

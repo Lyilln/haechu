@@ -1122,7 +1122,9 @@ const PT_RULES_DEF=`#KISS
 
 App 外流、情節嚴重者的處理方式請看 #NTK
 
-≈ 標（自動）的不用登記，App 會自己加 ≈
+≈ 標（自動）的也請照樣登記，App 會自己加，管理員只拿來對照，不會重複加分 ≈
+≈ 分潤不用登記，App 會自己算 ≈
+≈ 不用再寫「共」和「總」 ≈
 ≈ 積分花掉低於門檻會降級 ≈
 
 ≈ 每日請在留言區登記積分 ≈
@@ -1185,7 +1187,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
     const rest=seg.replace(cl?cl[0]:"",""); let cnt=null; const um=rest.match(/(\d+)\s*(則|篇|個|句|場|封|首|次|張|群|位|人|分鐘|min|條|天)/i)||rest.match(/[x×＊*]\s*(\d+)/i);
     if(um&&!/字/.test(um[0])) cnt=+um[1]; const unit=r.pts;
     const it={seg,r,d,ds,claim,cnt:null,unit,act:null,give:0,st:"ok",why:[]};
-    if(r.auto){ it.st="no"; it.why.push("App 會自己加，不用登記"); out.push(it); return; }
+    if(r.auto){ it.st="auto"; it.why.push("App 自己會加，這裡只是對照，不會重複加分（App 加了多少看最下面）"); out.push(it); return; }
     if(r.ask||unit==null){ it.st="ask"; it.give=claim||0; it.why.push("這項要管理員自己決定分數"); out.push(it); return; }
     if(cnt==null) cnt=claim!=null&&claim%unit===0?claim/unit:1;
     if(r.once&&cnt>days){ it.why.push(days>1?`一天只能一次，${days} 天最多 ${days} 次`:"一天只能一次"); cnt=days; }
@@ -1196,13 +1198,20 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
     used[kk]=(used[kk]||0)+give; it.give=give;
     if(claim!=null&&claim!==give&&!it.why.length) it.why.push(`${fmt(unit)} × ${cnt} = ${fmt(unit*cnt)}，登記寫 ${fmt(claim)}`);
     it.st=give===0?"no":(claim!=null&&claim!==give)||it.why.length?"fix":"ok"; out.push(it); });
-  return {items:out,total,notes,sum:out.reduce((n,x)=>n+(x.give||0),0),claimSum:out.reduce((n,x)=>n+(x.claim||0),0)}; }
-function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️"};
+  const res={items:out,total,notes,sum:out.reduce((n,x)=>n+(x.give||0),0),claimSum:out.reduce((n,x)=>n+(x.claim||0),0)}; try{ res.app=ptRegApp(email,[...new Set(out.flatMap(x=>x.ds||[x.d]))]); }catch(e){} return res; }
+/* 管理員對照用：登記的那幾天，App 自己加給這個人的分（自動項目）＋藝人分潤（不用登記，自動算） */
+function ptRegApp(email,days){ const a=ACCOUNTS[email]||{}, mid=a.member&&MEMBERS[a.member]?a.member:"", D=new Set(days.filter(Boolean)); if(!D.size) return null;
+  const inD=ts=>D.has(ymdK(ts)), skip=g=>/^(lr|rev_|ufm_|ufg_|fixdup_)/.test(g.id)||/^(LINE 登記|登記算錯|照 LINE|撤銷)/.test(g.why||"");
+  const L=ptGrants().filter(g=>inD(g.ts)&&!skip(g)&&(g.to===email||(mid&&g.mid===mid&&(g.art||String(g.id).startsWith("tqf2_"))))).map(g=>({d:ymdK(g.ts),why:g.why||"",n:g.n||0}));
+  let share=null; if(mid){ const sh=revShare(); share={pct:sh,by:{}}; (S.get(K.sales,[])||[]).forEach(x=>{ if((x.type==="tie"||x.type==="truck")&&x.mid===mid&&inD(x.ts)){ const k=ymdK(x.ts); share.by[k]=(share.by[k]||0)+x.pts; } }); share.n=Math.round(Object.values(share.by).reduce((n,v)=>n+v,0)*sh/100); }
+  return {L,share,mid}; }
+function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",auto:"🔄"};
   return res.items.length?res.items.map((x,i)=>`<div class="prg-r ${x.st}"><span class="prg-ic">${ic[x.st]}</span><div class="prg-b"><b>${x.r?esc(x.r.name):"？"}</b><small class="prg-sg">${esc(x.seg)}</small>${x.r&&x.unit!=null&&x.cnt!=null?`<small>${fmt(x.unit)} × ${x.cnt}${x.r.per?" 分鐘":""}${x.act!=null?`・App 紀錄 ${x.act}`:""}・${ptDs(x.ds||[x.d])}</small>`:x.r?`<small>${ptDs(x.ds||[x.d])}</small>`:""}${(Array.isArray(x.why)?x.why:[x.why]).filter(Boolean).map(w=>`<em>${esc(w)}</em>`).join("")}</div>
     ${x.st==="ask"?`<input class="prg-in" data-i="${i}" inputmode="numeric" value="${x.give||""}" placeholder="分數">`:`<span class="prg-n">${x.give?"+"+fmt(x.give):"0"}${x.claim!=null&&x.claim!==x.give?`<s>+${fmt(x.claim)}</s>`:""}</span>`}</div>`).join("")
    :`<p class="prg-e">貼上之後這裡會一項一項列出來</p>`; }
-function ptRegFoot(res){ const sum=res.items.reduce((n,x)=>n+(+x.give||0),0), bad=res.total!=null&&res.total!==res.claimSum;
-  return `${(res.notes||[]).map(n=>`<p class="prg-t">${esc(n)}</p>`).join("")}${res.total!=null?`<p class="prg-t ${bad?"bad":""}">登記寫總共 +${fmt(res.total)}${bad?`，但各項加起來是 +${fmt(res.claimSum)}`:""}</p>`:""}<button class="btn btn-main btn-block" data-a="prgGo" ${sum>0?"":"disabled"}>${sum>0?`加 ${fmt(sum)} 分`:"沒有可以加的分數"}</button>`; }
+function ptRegFoot(res){ const sum=res.items.reduce((n,x)=>n+(+x.give||0),0), bad=res.total!=null&&res.total!==res.claimSum, A=res.app;
+  const app=A&&(A.L.length||A.share)?`<div class="prg-app"><b>App 自己加的（不用登記，只是給你對照）</b>${A.L.map(g=>`<div><span>${ptDs([g.d])}・${esc(g.why)}</span><em>${g.n<0?"−":"+"}${fmt(Math.abs(g.n))}</em></div>`).join("")}${A.share?`<div><span>分潤（粉絲花在他身上的 ${A.share.pct}%）${Object.keys(A.share.by).length?"":"・這幾天沒有"}</span><em>+${fmt(A.share.n)}</em></div>`:""}${!A.L.length&&!A.share?"":""}</div>`:"";
+  return `${app}${(res.notes||[]).map(n=>`<p class="prg-t">${esc(n)}</p>`).join("")}${res.total!=null?`<p class="prg-t ${bad?"bad":""}">登記寫總共 +${fmt(res.total)}${bad?`，但各項加起來是 +${fmt(res.claimSum)}`:""}</p>`:""}<button class="btn btn-main btn-block" data-a="prgGo" ${sum>0?"":"disabled"}>${sum>0?`加 ${fmt(sum)} 分`:"沒有可以加的分數"}</button>`; }
 /* 檢查前先跟雲端同步到最新：大家剛傳的 TIE、留言、直播…都抓下來了才開始對數字 */
 async function ptRegSync(){ const P=ui.prg; if(!P) return; P.sync=1; ptRegSt(); 
   try{ if(typeof HB!=="undefined"&&HB_ON&&HB.tok){ for(let i=0;i<8;i++){ const before=HB.since; await hbPoll(); if(HB.since===before) break; } } }catch(e){}
@@ -14746,7 +14755,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     if(/^(加分|額外加分|管理員加分|獎勵)\s*[+＋]/.test(n)){ const c=ptNum((n.match(/[+]\s*([\d,]+)/)||[])[1]); D.claim+=c; D.give+=c; D.items.push({seg,claim:c,give:c,st:"ask",why:"管理員另外加的分，照登記算"}); return; }
     const role=roleAt(D.ds), r=ptMatch(seg,R,role), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null; if(claim!=null) D.claim+=claim;
     if(!r){ if(claim!=null) D.items.push({seg,claim,give:0,st:"no",why:"對不到積分表的項目"}); return; }
-    if(r.auto){ D.items.push({seg,r,claim,give:0,st:"no",why:"App 會自己加，不用登記"}); return; }
+    if(r.auto){ D.items.push({seg,r,claim,give:claim||0,st:"auto",why:"App 自己會加（照登記的數字算進總分，不會另外加分）"}); return; }
     if(r.ask||r.pts==null){ D.items.push({seg,r,claim,give:claim||0,st:"ask",why:"這項是管理員決定的分數，照登記算"}); D.give+=claim||0; return; }
     const rest=seg.replace(cl?cl[0]:""," "); let cnt=null; const um=rest.match(/(\d+)\s*(則|篇|個|句|場|封|首|次|張|群|位|人|分鐘|min|條|天)/i)||rest.match(/[x×＊*]\s*(\d+)/i); if(um&&!/字/.test(um[0])) cnt=+um[1];
     if(cnt==null) cnt=claim!=null&&claim%r.pts===0?claim/r.pts:1; const nd=D.ds.length, why=[];
@@ -14774,7 +14783,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
   iss.sort((x,y)=>days.indexOf(x.D)-days.indexOf(y.D)); const last=[...days].reverse().find(D=>D.said!=null);
   return {days,run,runC,first,DB,inf,iss,last}; }
 function ptRecountHtml(email){ const P=ui.ptRc&&ui.ptRc.e===email?ui.ptRc:(ui.ptRc={e:email,text:"",start:""}), res=P.text.trim()?ptRecount(email,P.text,ptNum(P.start)||0):null;
-  const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️"};
+  const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",auto:"🔄"};
   const body=res?`${ptRcTop(email,res)}
     ${res.inf?`<p class="ptt-note">起始分數沒填，照他第一天寫的總分推回去：${fmt(res.inf)}</p>`:""}${res.first?`<p class="ptrc-first">⚠️ 照積分表：從 <b>${ptDs(res.first.ds)}</b> 開始有項目分數不對，那天登記寫 +${fmt(res.first.claim)}，照積分表應該是 +${fmt(res.first.give)}</p>`:`<p class="ptrc-ok">✅ 每一項分數都照積分表</p>`}
     ${(()=>{ const DB=res.DB, dk=DB.ts!=null?ymdK(DB.ts):null; let put=false; const out=[]; res.days.forEach(D=>{ if(dk&&!put&&D.ds[0]>=dk){ put=true; out.push(`<div class="ptt-div">🎉 ${ptDs([dk])} 出道（${esc(DB.name||"藝人")}）・之後照「藝人」的項目算<small>積分原封不動帶過去，出道前後同一個數字</small></div>`); } out.push(D); }); return out.reverse(); })().map(D=>typeof D==="string"?D:`<details class="ptrc-d ${D.claim!==D.give||D.addBad?"bad":""}"><summary><b>${ptDs(D.ds)}</b><span>登記 +${fmt(D.claim)}・應該 +${fmt(D.give)}</span><em>${D.said!=null?`總 ${fmt(D.said)}${D.addBad?`<small class="bad">應該 ${fmt(D.exp)}</small>`:D.gap?`<small>前面有日子沒貼到</small>`:""}`:`總 ${fmt(D.exp)}`}</em></summary>
