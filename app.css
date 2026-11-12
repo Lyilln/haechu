@@ -6805,3 +6805,12 @@ main.foc.xv{padding-top:18px}
 html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .ptt-t{flex:none;font-size:12px;font-weight:800;color:var(--ink-2);min-width:52px;text-align:right}
 .ptt-div{margin:6px -12px;padding:10px 12px;background:var(--violet-soft);color:var(--violet-ink);font-size:12.5px;font-weight:800}.ptt-div small{display:block;font-weight:500;font-size:11px;opacity:.8}
+/* 回溯：貼 LINE 登記重算（ptr-） */
+.ptrc .fld-lab{display:block;margin-top:10px}.ptrc textarea{width:100%;min-height:150px}
+.ptrc-sum{display:flex;gap:8px;margin-top:12px}.ptrc-sum>div{flex:1;background:var(--s1);border:1px solid var(--line);border-radius:14px;padding:10px 4px;text-align:center}.ptrc-sum b{display:block;font-size:17px;color:var(--violet-ink)}.ptrc-sum b.bad{color:var(--red)}.ptrc-sum span{font-size:10.5px;color:var(--ink-3)}
+.ptrc-first{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(253,126,20,.12);font-size:12.5px;line-height:1.5}.ptrc-ok{margin:10px 0;font-size:12.5px;color:#2F9E44}
+.ptrc-d{background:var(--s1);border:1px solid var(--line);border-radius:14px;margin-top:8px;overflow:hidden}.ptrc-d.bad{border-color:rgba(229,72,77,.45)}
+.ptrc-d summary{list-style:none;display:flex;align-items:center;gap:8px;padding:10px 12px;font-size:12.5px;cursor:pointer}.ptrc-d summary::-webkit-details-marker{display:none}.ptrc-d summary b{font-size:13.5px}.ptrc-d summary span{flex:1;color:var(--ink-2)}.ptrc-d summary em{font-style:normal;font-weight:800;color:var(--ink);text-align:right}.ptrc-d summary em small{display:block;font-weight:600;font-size:10.5px;color:var(--ink-3)}.ptrc-d summary em small.bad{color:var(--red)}
+.ptrc-r{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-top:1px dashed var(--line);font-size:12px}.ptrc-r>div{flex:1;min-width:0;display:flex;flex-direction:column}.ptrc-r b{font-size:12.5px}.ptrc-r small{color:var(--ink-3)}.ptrc-r em{font-style:normal;color:#E8590C;font-size:11.5px}.ptrc-r i{font-style:normal;font-weight:800;white-space:nowrap}.ptrc-r s{display:block;color:var(--ink-3);font-weight:500;font-size:11px}
+.ptrc-note{margin:0;padding:6px 12px 10px;font-size:11.5px;color:var(--red)}
+.ptt-fix>div .btn{flex:none;white-space:nowrap;padding:0 18px}
