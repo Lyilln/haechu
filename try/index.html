@@ -54,6 +54,7 @@ html[data-theme="dark"] .tz-win{background:linear-gradient(135deg,rgba(255,200,8
 html[data-theme="dark"] .tz-room .t-inp{background:#2A2733!important;border-color:rgba(255,255,255,.08)!important}html[data-theme="dark"] .tz-room .t-inp input{color:#F1EEF7}
 /* 結尾 */
 .tz-end h2{margin:4px 0 6px;font-size:24px}.tz-end>p{margin:0 0 16px;color:var(--ink-2,#5F5A6B);line-height:1.7;font-size:14.5px}
+.tz-how ol{margin:8px 0 0;padding-left:20px}.tz-how li{margin-bottom:10px}.tz-how li b{display:block;color:var(--ink,#1E1B2E);font-size:14px;margin-bottom:2px}.tz-how .tz-how-n{margin:4px 0 0;font-size:12.5px!important}
 .tz-end .card{padding:16px 18px!important;margin-bottom:12px}.tz-end .card h3{margin:0 0 6px;font-size:16px}.tz-end .card p,.tz-end .card li{font-size:13.5px;line-height:1.7;color:var(--ink-2,#5F5A6B)}.tz-end .card ol{margin:6px 0 0;padding-left:20px}
 .tz-end .btn{text-decoration:none;display:flex;align-items:center;justify-content:center}
 .tz-end .btn+.btn{margin-top:10px}
@@ -191,8 +192,7 @@ function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) r
 
 /* ---------- 結尾 ---------- */
 function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>真正的 HAECHU 裡，偶像都是社群裡的真人，每天都在發生新的事。</p>
-  <section class="card"><h3>💌 當粉絲</h3><p>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</p></section>
-  <section class="card"><h3>🎤 當偶像</h3><p>從練習生開始：</p><ol><li>在社群累積積分（打卡、宣群、發文、創作…）</li><li>準備好藝名、Teaser 和 MV，在 App 裡申請出道</li><li>管理員審核通過、出道日一到就正式出道，有自己的 TIE、SNS、打歌</li><li>當練習生時累積的積分，出道後原封不動帶過去</li></ol></section>
+  <section class="card tz-how"><h3>💜 在 HAECHU 怎麼玩</h3><ol><li><b>加入後先當粉絲</b>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</li><li><b>想當偶像？從練習生開始</b>在社群累積積分（打卡、宣群、發文、創作…），準備好藝名、Teaser 和 MV，在 App 裡申請出道。</li><li><b>出道</b>管理員審核通過、出道日一到，就有自己的 TIE、SNS、打歌。當粉絲時累積的積分會原封不動帶過去。</li></ol><p class="tz-how-n">只想追星停在第 1 步就好，想出道就繼續往下。</p></section>
   <a class="btn btn-main btn-block" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
   <a class="btn btn-soft btn-block" href="../">我已經有帳號，回到 HAECHU</a></main>`; }
 
