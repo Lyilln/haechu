@@ -6819,3 +6819,4 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .pta-sw-in{position:relative;display:flex;max-width:340px;margin:0 auto;padding:3px;border-radius:999px;background:var(--s2);border:1px solid var(--line)}
 .pta-sw-ind{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/3);border-radius:999px;background:var(--s1);box-shadow:0 2px 8px -3px rgba(0,0,0,.25);transform:translateX(calc(var(--i)*100%));transition:transform .25s cubic-bezier(.3,.7,.3,1)}
 .pta-sw button{position:relative;z-index:1;flex:1;border:0;background:none;font:inherit;padding:7px 0;font-size:13.5px;font-weight:800;color:var(--ink-3)}.pta-sw button.on{color:var(--violet-ink)}
+.ptrc .prg-ta{margin-top:10px}.ptrc .field+.field{margin-top:10px}

@@ -145,7 +145,7 @@ function ptAct(email,r,d){ const t0=new Date(d+"T00:00:00").getTime(), t1=t0+864
 const ptRegGot=(email,ds,name)=>{ const D=new Set(Array.isArray(ds)?ds:[ds]); return (S.get(K.ptGrants,[])||[]).filter(g=>g.reg&&g.to===email&&g.reg.k===name&&(g.reg.ds||[g.reg.d]).some(x=>D.has(x))).reduce((n,g)=>n+(g.n||0),0); };
 const ymdK=t=>{ const x=new Date(t); return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,"0")}-${String(x.getDate()).padStart(2,"0")}`; };
 /* 常見的寫法 → 積分表上的名字（名字本身找得到時，以積分表為準） */
-const PT_ALIAS=[[/sns發文/,["發文","發限動","限動","發ig","ig發文","貼文","sns"]],[/給予回饋/,["回饋","回報bug","bug"]],[/帶領新人/,["帶新人","新人"]],[/活躍氣氛/,["活躍","炒氣氛"]],[/宣群/,["宣傳"]],[/打卡/,["簽到"]],[/粉絲信/,["寫信"]],[/被翻牌/,["被翻牌","翻牌","被翻"]]];
+const PT_ALIAS=[[/sns發文/,["發文","發限動","限動","發ig","ig發文","貼文","sns"]],[/給予回饋/,["回饋","回報bug","bug"]],[/帶領新人/,["帶新人","新人"]],[/活躍氣氛/,["活躍","炒氣氛"]],[/宣群/,["宣傳"]],[/打卡/,["簽到"]],[/粉絲信/,["寫信"]],[/被翻牌/,["被翻牌","翻牌","被翻"]],[/指定曲翻唱/,["指定曲"]],[/自選曲翻唱/,["自選曲"]],[/幫忙管理員做事/,["幫管做事","幫管理員","幫管","幫忙做事","幫管理"]]];
 /* 日期：1103、11/3、11.03、11月3日；區間 1103-1104、11/3~11/5、11/3-5 */
 function ptDateLine(seg,yr,curMo){ const t=seg.normalize("NFKC").trim(); if(/[+]\s*\d/.test(t)) return null; if(!/^[\s\d\/.\-~到至月日年()（）]+$/.test(t)||!/\d/.test(t)) return null;
   const parts=t.split(/\s*(?:[-~]|到|至)\s*/).filter(Boolean); if(!parts.length||parts.length>2) return null; let mo=curMo; const out=[];
