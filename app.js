@@ -12725,8 +12725,8 @@ function steStageEvents(){ const st=steEl(); if(!st) return; const P=new Map(); 
 function steTextOpen(i){ const it=i!=null?STE.items[i]:null; STE.edit=i!=null?i:null; if(it){ STE.col=it.col; STE.font=it.font; STE.bg=it.bg; STE.al=it.al; STE.fx=it.fx||""; }
   const p=document.getElementById("stePanel"); if(!p) return; p.className="ste-panel txtp on";
   p.innerHTML=`<div class="ste-ptop"><button class="ste-chip" data-a="snEdFont">${STE_FONT[STE.font][0]}</button><button class="ste-chip ${STE.bg?"on":""}" data-a="snEdBgT" aria-label="文字底色"><b>A</b></button><button class="ste-chip ${STE.fx?"on":""}" data-a="snEdFx">${STE_FX.find(f=>f[0]===(STE.fx||""))[1]}</button><button class="ste-chip" data-a="snEdAlign" aria-label="對齊">${STE.al==="center"?"置中":STE.al==="left"?"靠左":"靠右"}</button><span class="sn-sp"></span><button class="ste-done" data-a="snEdTextOk">完成</button></div>
-    <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.col?"on":""}" data-a="snEdCol" data-v="${c}" style="background:${c}" aria-label="顏色"></button>`).join("")}</div>
-    <div class="ste-mid"><textarea id="steTxt" class="ste-ta al-${STE.al}" rows="1" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea></div>`;
+    <div class="ste-mid"><textarea id="steTxt" class="ste-ta al-${STE.al}" rows="1" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea></div>
+    <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.col?"on":""}" data-a="snEdCol" data-v="${c}" style="background:${c}" aria-label="顏色"></button>`).join("")}</div>`;
   steTapKeep(p); const t0=document.getElementById("steTxt"); if(t0){ t0.addEventListener("input",()=>steTaGrow(t0)); steTaGrow(t0); }
   steKbFit(); setTimeout(()=>{ const t=document.getElementById("steTxt"); if(t){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } },60); }
 /* 字框跟著字長高（不再整片撐滿 → 字在畫面中間，不會頂在最上面） */
@@ -12734,7 +12734,20 @@ function steTaGrow(t){ t.style.height="auto"; t.style.height=Math.min(t.scrollHe
 /* 打字面板＝鍵盤上方看得到的那一塊（App 有 zoom，先量 1px 畫出來多大再換算；跟留言頁同一招） */
 /* 11/12 改：不再跟著鍵盤算位置（iPhone 上算錯會整片往下掉）。打字面板固定蓋滿整個畫面，
    字型、顏色、輸入框都放在上半部，鍵盤怎麼彈都蓋不到 */
-function steKbFit(){ const p=document.getElementById("stePanel"); if(p){ p.style.top=""; p.style.height=""; p.style.bottom=""; } }
+/* 11/12 第二版：跟 TIE 用一樣的做法（TIE 在 iPhone 上是好的）——
+   打字時先把後面整頁「釘住」不讓 iPhone 往上推，再讓面板＝鍵盤上方看得到的那一塊（字型在上、字在中間、顏色貼著鍵盤） */
+const STEL={on:false,y:0};
+function steLock(){ if(STEL.on) return; STEL.on=true; STEL.y=window.scrollY; const b=document.body.style; b.position="fixed"; b.top=(-STEL.y)+"px"; b.left="0"; b.right="0"; b.width="100%"; window.scrollTo(0,0); }
+function steUnlock(){ if(!STEL.on) return; STEL.on=false; const b=document.body.style; b.position=""; b.top=""; b.left=""; b.right=""; b.width=""; window.scrollTo(0,STEL.y); }
+function steKbFit(){ const p=document.getElementById("stePanel"), vv=window.visualViewport, on=!!p&&p.classList.contains("txtp")&&p.classList.contains("on");
+  if(!on){ if(p){ p.style.top=""; p.style.height=""; p.style.bottom=""; } steUnlock(); return; }
+  steLock(); if(!vv) return; const z=parseFloat(getComputedStyle(document.documentElement).zoom)||1;
+  p.style.bottom="auto"; p.style.top=(vv.offsetTop/z)+"px"; p.style.height=(vv.height/z)+"px"; }
+addEventListener("scroll",()=>{ if(!STEL.on) return; if(window.scrollY) window.scrollTo(0,0); steKbFit(); },{passive:true});
+document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="steTxt") [0,60,180,350,600].forEach(t=>setTimeout(steKbFit,t)); });
+document.addEventListener("focusout",e=>{ if(e.target&&e.target.id==="steTxt") [80,300].forEach(t=>setTimeout(steKbFit,t)); });
+/* 編輯器整個關掉時一定放開（不然後面的 App 會滑不動） */
+setInterval(()=>{ if(STEL.on&&!document.querySelector("#stePanel.txtp.on")) steUnlock(); },500);
 if(window.visualViewport){ let q=0; const f=()=>{ if(q) return; q=requestAnimationFrame(()=>{ q=0; steKbFit(); }); }; visualViewport.addEventListener("resize",f); visualViewport.addEventListener("scroll",f); }
 /* iPhone：手指點顏色／按鈕時，字框不能失去焦點（失焦 → 鍵盤收起、畫面跳，點的那一下就落空，顏色換不了）。
    自己判斷「是點、不是在滑顏色列」→ 擋掉系統的失焦，直接觸發那顆按鈕 */

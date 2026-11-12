@@ -365,7 +365,7 @@ input[type="date"].a-nick-in::-webkit-date-and-time-value,input[type="datetime-l
 
 
 /* 11/12 限動打字：整片蓋滿、全部放上半部（字型列 → 顏色列 → 輸入的字），鍵盤不會蓋到 */
-.ste-panel.txtp{top:0!important;bottom:0!important;height:auto!important}
-.ste-panel.txtp .ste-cols{margin-top:10px;touch-action:pan-x;overscroll-behavior-x:contain}
-.ste-panel.txtp .ste-mid{flex:none;align-items:flex-start;padding:9vh 0 0}
+.ste-panel.txtp{background:rgba(0,0,0,.6)}
+.ste-panel.txtp .ste-cols{touch-action:pan-x;overscroll-behavior-x:contain}
+.ste-panel.txtp .ste-mid{flex:1;align-items:center;padding:0 0 4vh}
 .ste:has(.ste-panel.txtp.on) :is(.ste-tools,.ste-top,.ste-bot){opacity:0!important;pointer-events:none!important}
