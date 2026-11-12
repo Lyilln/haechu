@@ -734,7 +734,7 @@ async function hbPoll(){ if(!HB.tok||document.hidden||sbxOn()) return; let ch=fa
   if(ch) hbSoon(); }
 /* 別人的新資料進來要重畫：手指正在滑（或剛滑完）就先等一下，重畫完把 SNS 自己的捲動位置放回去（不然滑到一半畫面會跳、卡住） */
 let hbTouchT=0; ["touchstart","touchmove","wheel"].forEach(ev=>document.addEventListener(ev,()=>{ hbTouchT=Date.now(); },{passive:true,capture:true})); document.addEventListener("scroll",()=>{ hbTouchT=Date.now(); },{passive:true,capture:true});
-function hbSoon(){ clearTimeout(HB.rt); HB.rt=setTimeout(()=>{ try{ const s=session(); if(!s) return; if(Date.now()-hbTouchT<1500){ hbSoon(); return; } if(s.role==="fan") feedDeliver(); if(document.querySelector("textarea:focus,input:focus,select:focus")) return; if(layer&&layer.querySelector(".fv,.sn-stv,.sn-st")) return;
+function hbSoon(){ clearTimeout(HB.rt); HB.rt=setTimeout(()=>{ try{ const s=session(); if(!s) return; if(Date.now()-hbTouchT<1500){ hbSoon(); return; } if(s.role==="fan") feedDeliver(); if(document.querySelector("textarea:focus,input:focus,select:focus")){ if(document.activeElement&&document.activeElement.id==="win") tieSyncPatch(); return; } if(layer&&layer.querySelector(".fv,.sn-stv,.sn-st")) return;
   const y=window.scrollY, sn=document.querySelector(".sn"), sy=sn?sn.scrollTop:0; ui._syncPaint=true; try{ render(); }finally{ ui._syncPaint=false; } window.scrollTo(0,y); const sn2=document.querySelector(".sn"); if(sn2&&sy) sn2.scrollTop=sy; }catch(e){} },120); }
 let hbPT=0; function hbProfilesNow(){ if(!HB_ON||!HB.tok||Date.now()-hbPT<3000) return; hbPT=Date.now(); const before=JSON.stringify(ACCOUNTS); hbLoadProfiles().then(()=>{ if(JSON.stringify(ACCOUNTS)!==before) hbSoon(); }).catch(()=>{}); }
 function hbStart(){ hbStop(); HB.pt=setInterval(hbPoll,4000); setTimeout(msPublish,800); setTimeout(mutesMigrate,900); setTimeout(imgMigrate,3000); }
@@ -6991,6 +6991,19 @@ function tieRoomPatch(fn){ try{ const cur=document.querySelector(".app > main.t-
   const oh=document.querySelector(".app > .t-rh"), nh=tmp.querySelector(".t-rh"); if(oh&&nh&&oh.innerHTML!==nh.innerHTML) oh.innerHTML=nh.innerHTML;
   inp.value=""; inp.dispatchEvent(new Event("input",{bubbles:true}));
   requestAnimationFrame(()=>{ if(tie2Patched(cur)) return; if(cur.classList.contains("kbbox")) cur.scrollTop=cur.scrollHeight; else { try{ tieFootPad(); }catch(e){} window.scrollTo(0,document.documentElement.scrollHeight); } }); return true; }catch(e){ return false; } }
+/* 別人的新資料進來、但 TIE 輸入框正在打字（鍵盤開著）時：只換訊息區，輸入框不動
+   ・藝人在聊天室裡 → 新訊息算已讀（粉絲那邊的 1 會消失）
+   ・粉絲在聊天室裡 → 藝人讀了，1 馬上消失 */
+function tieSyncPatch(){ try{ const s=session()||{}, r=route(), inp=document.getElementById("win"), cur=document.querySelector("main.t-msgs"); if(!inp||!cur) return false;
+  let html=null;
+  if(s.role==="artist"&&r.tab==="whisper"&&s.member){ const mid=s.member; artReadSet(Date.now()); const RB=S.get(K.tieReadBy,{})||{}; if(getWhispers().some(w=>w.member===mid&&w.from!=="artist"&&w.ts>(RB[mid]||0))) S.set(K.tieReadBy,{...RB,[mid]:Date.now()}); html=viewTieArtist(mid); }
+  else if(r.sub==="chat"&&r.m&&MEMBERS[r.m]) html=viewTieRoom(r.m);
+  if(!html) return false; const tmp=document.createElement("div"); tmp.innerHTML=html; const nw=tmp.querySelector("main.t-msgs"); if(!nw) return true;
+  const fx=tieFxOn(), inner=fx&&cur.firstElementChild&&cur.firstElementChild.classList.contains("t-mi")?cur.firstElementChild:cur; if(nw.innerHTML===inner.innerHTML) return true;
+  const box=cur.classList.contains("kbbox"), atEnd=fx?true:box?cur.scrollHeight-cur.scrollTop-cur.clientHeight<80:document.documentElement.scrollHeight-window.scrollY-innerHeight<120;   /* 倒過來排（tie2）時，停在最底下會自己留在最底下 */
+  cur.innerHTML=nw.innerHTML; if(fx) tie2Wrap(cur); try{ hydrateMedia(cur); }catch(e){}
+  const oh=document.querySelector(".t-rh"), nh=tmp.querySelector(".t-rh"); if(oh&&nh&&oh.innerHTML!==nh.innerHTML) oh.innerHTML=nh.innerHTML;
+  if(atEnd&&!fx) requestAnimationFrame(()=>{ if(box) cur.scrollTop=cur.scrollHeight; else window.scrollTo(0,document.documentElement.scrollHeight); }); return true; }catch(e){ return false; } }
 /* 藝人 TIE：加進待發訊息時，只更新訊息區（不重畫整頁，輸入框、鍵盤、高度都不動） */
 function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
   const tmp=document.createElement("div"); tmp.innerHTML=viewTieArtist(mid); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
@@ -10388,7 +10401,7 @@ function snNotif(d){ const me=snMeId(), L=snNotifList(d); (d.ntSeen=d.ntSeen||{}
 function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) return; const me=snMeId(), L=d.cms[id]||[], srt=ui.snCmSort==="top"?"top":"new", old=layer.querySelector("#snCmIn"), draft=old&&layer.querySelector(".sn-sh.cm")?old.value:null, cl0=layer.querySelector(".sn-sh.cm .sn-cl"), cly=cl0?cl0.scrollTop:0, reopen=!!cl0;
   const ids=new Set(L.map(c=>c.id)), lkN=c=>(c.lk||[]).length;
   const row=(c,sub)=>{ const u=snUser(c.uid); if(!u) return ""; const lk=c.lk||[], mine=c.uid===me;
-    return `<div class="sn-cr ${sub?"sub":""}"><button class="sn-cav" data-a="snsGo" data-v="profile" data-id="${u.id}" aria-label="${esc(u.u)}">${snAv(u,sub?28:38)}</button><div class="sn-cb"><p class="sn-cu"><button class="sn-cun" data-a="snsGo" data-v="profile" data-id="${u.id}">${esc(u.u)}</button><time>${snsAgo(c.ts)}</time></p><p class="sn-ct">${mine?snRich(c.text):snRichH(trT("s:"+c.id,c.text,"","span"))}</p>
+    return `<div class="sn-cr ${sub?"sub":""}"><button class="sn-cav" data-a="snsGo" data-v="profile" data-id="${u.id}" aria-label="${esc(u.u)}">${snAv(u,sub?28:38)}</button><div class="sn-cb"><p class="sn-cu"><button class="sn-cun" data-a="snsGo" data-v="profile" data-id="${u.id}">${esc(u.u)}${u.ver?SN_VER:""}</button><time>${snsAgo(c.ts)}</time></p><p class="sn-ct">${mine?snRich(c.text):snRichH(trT("s:"+c.id,c.text,"","span"))}</p>
       <div class="sn-ca"><button data-a="snCmRe" data-id="${id}" data-v="${c.re&&ids.has(c.re)?c.re:c.id}" data-u="${esc(u.u)}">回覆</button>${mine||isAdminAcct()?`<button data-a="snCmDel" data-id="${id}" data-v="${c.id}">${mine?"刪除":"隱藏"}</button>`:""}</div></div>
       <button class="sn-clk ${lk.includes(me)?"on":""}" data-a="snCmLk" data-id="${id}" data-v="${c.id}" aria-label="讚">${si("heart")}${lk.length?`<small>${fmt(lk.length)}</small>`:""}</button></div>`; };
   const top=L.filter(c=>!c.re||!ids.has(c.re)).sort((a,b)=>srt==="top"?(lkN(b)-lkN(a))||(b.ts-a.ts):(b.ts-a.ts));

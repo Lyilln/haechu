@@ -310,6 +310,19 @@ function tieRoomPatch(fn){ try{ const cur=document.querySelector(".app > main.t-
   const oh=document.querySelector(".app > .t-rh"), nh=tmp.querySelector(".t-rh"); if(oh&&nh&&oh.innerHTML!==nh.innerHTML) oh.innerHTML=nh.innerHTML;
   inp.value=""; inp.dispatchEvent(new Event("input",{bubbles:true}));
   requestAnimationFrame(()=>{ if(tie2Patched(cur)) return; if(cur.classList.contains("kbbox")) cur.scrollTop=cur.scrollHeight; else { try{ tieFootPad(); }catch(e){} window.scrollTo(0,document.documentElement.scrollHeight); } }); return true; }catch(e){ return false; } }
+/* 別人的新資料進來、但 TIE 輸入框正在打字（鍵盤開著）時：只換訊息區，輸入框不動
+   ・藝人在聊天室裡 → 新訊息算已讀（粉絲那邊的 1 會消失）
+   ・粉絲在聊天室裡 → 藝人讀了，1 馬上消失 */
+function tieSyncPatch(){ try{ const s=session()||{}, r=route(), inp=document.getElementById("win"), cur=document.querySelector("main.t-msgs"); if(!inp||!cur) return false;
+  let html=null;
+  if(s.role==="artist"&&r.tab==="whisper"&&s.member){ const mid=s.member; artReadSet(Date.now()); const RB=S.get(K.tieReadBy,{})||{}; if(getWhispers().some(w=>w.member===mid&&w.from!=="artist"&&w.ts>(RB[mid]||0))) S.set(K.tieReadBy,{...RB,[mid]:Date.now()}); html=viewTieArtist(mid); }
+  else if(r.sub==="chat"&&r.m&&MEMBERS[r.m]) html=viewTieRoom(r.m);
+  if(!html) return false; const tmp=document.createElement("div"); tmp.innerHTML=html; const nw=tmp.querySelector("main.t-msgs"); if(!nw) return true;
+  const fx=tieFxOn(), inner=fx&&cur.firstElementChild&&cur.firstElementChild.classList.contains("t-mi")?cur.firstElementChild:cur; if(nw.innerHTML===inner.innerHTML) return true;
+  const box=cur.classList.contains("kbbox"), atEnd=fx?true:box?cur.scrollHeight-cur.scrollTop-cur.clientHeight<80:document.documentElement.scrollHeight-window.scrollY-innerHeight<120;   /* 倒過來排（tie2）時，停在最底下會自己留在最底下 */
+  cur.innerHTML=nw.innerHTML; if(fx) tie2Wrap(cur); try{ hydrateMedia(cur); }catch(e){}
+  const oh=document.querySelector(".t-rh"), nh=tmp.querySelector(".t-rh"); if(oh&&nh&&oh.innerHTML!==nh.innerHTML) oh.innerHTML=nh.innerHTML;
+  if(atEnd&&!fx) requestAnimationFrame(()=>{ if(box) cur.scrollTop=cur.scrollHeight; else window.scrollTo(0,document.documentElement.scrollHeight); }); return true; }catch(e){ return false; } }
 /* 藝人 TIE：加進待發訊息時，只更新訊息區（不重畫整頁，輸入框、鍵盤、高度都不動） */
 function tieMsgsPatch(mid){ try{ const cur=document.querySelector("main.t-msgs"), inp=document.getElementById("win"); if(!cur||!inp) return false;
   const tmp=document.createElement("div"); tmp.innerHTML=viewTieArtist(mid); const nw=tmp.querySelector("main.t-msgs"); if(!nw) return false;
