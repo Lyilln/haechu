@@ -98,11 +98,13 @@
 .sn-capu{display:flex;align-items:center;gap:8px;border:0;background:none;color:inherit;font:inherit;padding:0;margin-bottom:12px}.sn-capu b{font-size:14px;font-weight:700}
 .sn-capt{margin:0;font-size:15.5px;line-height:1.6;white-space:pre-wrap;word-break:break-word}
 .sn-capb time{display:block;margin-top:14px;font-size:13px;color:rgba(127,127,127,.95)}
-/* 11/12 個人檔案照 IG 的比例：頭像 96、數字 17／字 15、簡介 15、按鈕 32 高 15 字、IG 新的藍紫色 */
-.sn-pnm{font-size:15.5px!important;font-weight:600!important}
-.sn-phr .sn-stat>*{font-size:15px!important}.sn-phr .sn-stat b{font-size:17.5px!important}
-.sn-bio{font-size:15px!important;line-height:1.45}.sn-cat{font-size:15px!important}
-.sn-mut{font-size:14.5px!important}
-.sn-btns button{height:34px!important;font-size:15px!important;border-radius:9px!important}.sn-btns button.pri{background:#4A5DF9!important;color:#fff!important}
-.sn-hls small{font-size:13px;font-weight:600}
-.sn-capt .sn-lnk{color:#4A8BFF;font-weight:500;background:none;border:0;padding:0;font:inherit}html[data-theme="dark"] .sn-capt .sn-lnk{color:#A7CBFF}
+/* 11/12 個人檔案照 IG 截圖（同樣 393 寬）對過的比例 */
+.sn-pnm{font-size:13.5px!important;font-weight:600!important;color:var(--ink)}
+.sn-phr .sn-stat>*{font-size:13.5px!important;line-height:1.2!important}.sn-phr .sn-stat b{font-size:15.5px!important;font-weight:700!important}
+.sn-bio{font-size:13.5px!important;line-height:1.3;padding:0 16px!important}.sn-bio p{margin:1px 0 0}
+.sn-cat{font-size:13.5px!important;color:rgba(160,160,160,.95)!important;margin-top:6px!important}
+.sn-mut{font-size:12.5px!important}
+.sn-btns{padding:14px 16px 12px!important;gap:6px!important}.sn-btns button{height:31px!important;font-size:13.5px!important;border-radius:8px!important}.sn-btns button.pri{background:#4A5DF9!important;color:#fff!important}
+.sn-hls small{font-size:11.5px;font-weight:600}
+.sn-ph{padding:4px 16px 4px 10px!important;gap:16px!important;align-items:center}
+.sn-phr{gap:8px!important}.sn-phr .sn-stat{justify-content:space-between!important;max-width:222px!important}
