@@ -9,15 +9,15 @@ function ptTraceRows(email){ const e=String(email||"").toLowerCase(), a=ACCOUNTS
   const fan=all.filter(g=>String(g.to||"").toLowerCase()===e&&!g.art), art=m?all.filter(g=>g.mid===m&&g.art&&!/^ufg_/.test(g.id)):[], ufm=all.find(g=>g.id==="ufm_"+e);
   const rows=[...fan.map(g=>({g,era:"fan"})),...art.filter(g=>!/^ufm_/.test(g.id)).map(g=>({g,era:"art"}))].sort((x,y)=>x.g.ts-y.g.ts);
   let tot=0; const out=[]; let deb=false;
-  rows.forEach(r=>{ const g=r.g; if(m&&!deb&&ufm&&g.ts>=ufm.ts){ deb=true; tot=Math.max(tot,ufm.n||0); out.push({div:1,ts:ufm.ts,n:ufm.n,tot}); }
+  rows.forEach(r=>{ const g=r.g; if(m&&!deb&&ufm&&g.ts>=ufm.ts){ deb=true; tot=Math.max(0,ufm.n||0); out.push({div:1,ts:ufm.ts,n:ufm.n,tot}); }
     if(m&&ufm) r.era=g.ts>=ufm.ts?"art":"fan";
     if(g.set) tot=Math.max(0,g.n); else tot=Math.max(0,tot+(g.n||0)); out.push({...r,tot,undone:have.has("rev_"+g.id)||/^rev_/.test(g.id)}); });
   if(m&&!deb&&ufm) out.push({div:1,ts:ufm.ts,n:ufm.n});
   return {e,a,m,rows:out,tot}; }
 function ptTraceNow(e,m){ try{ if(m) return (pointsOf(m)||{}).net||0; const k=K.points+"@"+e, v=store.get(k,undefined); return Math.round(+(v===undefined?mem[k]:v)||0); }catch(err){ return null; } }
 function ptTraceOpen(email){ const T=ptTraceRows(email), now=ptTraceNow(T.e,T.m), who=esc(acctUser(T.e)), rows=T.rows.slice().reverse();
-  const row=r=>r.div?`<div class="ptt-div">🎉 出道・轉成藝人${r.n?`（粉絲時期的 ${fmt(r.n)} 積分併進藝人積分）`:""}<small>${ymd(r.ts)}${r.tot!=null?`・從 ${fmt(r.tot)} 開始算`:""}</small></div>`
-    :`<div class="ptt-r ${r.undone?"off":""}"><span class="ptt-era ${r.era}">${r.era==="art"?"藝人":"粉絲"}</span><div class="ptt-i"><b class="${r.g.set?"set":(r.g.n||0)<0?"neg":""}">${r.g.set?"＝":(r.g.n||0)>=0?"+":"−"}${fmt(Math.abs(r.g.n||0))}</b><small>${esc(r.g.why||"")}${r.g.why?"・":""}${ymd(r.g.ts)}・${esc(r.g.by==="auto"?"App 自動":acctUser(r.g.by||""))}${r.undone&&!/^rev_/.test(r.g.id)?"・已撤銷":""}</small></div><span class="ptt-t">${fmt(r.tot)}</span>${!r.undone&&!r.g.set&&r.g.by!=="auto"?`<button class="xv-bt g" data-a="ptTrUndo" data-v="${esc(r.g.id)}" data-e="${esc(T.e)}">撤銷</button>`:""}</div>`;
+  const row=r=>r.div?`<div class="ptt-div">🎉 出道・身分變成藝人，積分原封不動帶過去<small>${ymd(r.ts)}・出道當下有 ${fmt(r.n||0)}，出道後還是 ${fmt(r.n||0)}，不會變多也不會變少</small></div>`
+:`<div class="ptt-r ${r.undone?"off":""}"><span class="ptt-era ${r.era}">${r.era==="art"?"藝人":"粉絲"}</span><div class="ptt-i"><b class="${r.g.set?"set":(r.g.n||0)<0?"neg":""}">${r.g.set?"＝":(r.g.n||0)>=0?"+":"−"}${fmt(Math.abs(r.g.n||0))}</b><small>${esc(r.g.why||"")}${r.g.why?"・":""}${ymd(r.g.ts)}・${esc(r.g.by==="auto"?"App 自動":acctUser(r.g.by||""))}${r.undone&&!/^rev_/.test(r.g.id)?"・已撤銷":""}</small></div><span class="ptt-t">${fmt(r.tot)}</span>${!r.undone&&!r.g.set&&r.g.by!=="auto"?`<button class="xv-bt g" data-a="ptTrUndo" data-v="${esc(r.g.id)}" data-e="${esc(T.e)}">撤銷</button>`:""}</div>`;
   setLayer(`<div class="tiei ptt"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${who} 的積分回溯</b><span class="sh-sp"></span></header>
     <main class="tiei-body"><section class="ptt-sum"><div><b>${fmt(T.tot)}</b><span>照紀錄算出來</span></div><div><b>${now==null?"—":fmt(now)}</b><span>App 現在顯示</span></div><div><b>${T.m?"藝人":"粉絲"}</b><span>${T.m?esc(MEMBERS[T.m].name)+"・已出道":"還沒出道"}</span></div></section>
       ${now!=null&&now!==T.tot?`<p class="ptt-note">兩個數字差 ${fmt(Math.abs(now-T.tot))}：${T.m?"藝人積分還包含粉絲花在他身上的分潤，":""}App 自己加的（打卡、留言、活動）和買東西花掉的不在下面的清單裡</p>`:""}
