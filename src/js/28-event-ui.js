@@ -64,5 +64,5 @@ document.addEventListener("dblclick",e=>{ const st=e.target.closest&&e.target.cl
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="isShare"]'); if(!t) return; e.stopImmediatePropagation(); const c=isCur(), mid=(session()||{}).member, ev=t.dataset.v, E=IS_EV[ev]; if(!c||!E) return;
   const x=((c.sc||{})[ev]||{})[mid]||{}, rk=isBoard(c,ev).findIndex(([m])=>m===mid)+1; xvShare({small:c.name,title:`${E.ic} ${E.n}`,big:`${isFmt(ev,x.best)}${E.unit}`,chips:[`目前第 ${rk} 名`],cap:`${c.name}\n${E.n} ${isFmt(ev,x.best)}${E.unit}・目前第 ${rk} 名！`,c1:"#3B5BDB",c2:"#748FFC"}); },true);
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="svTheme"]'); if(!t) return; e.stopImmediatePropagation(); S.set("daisuki_sv_theme",svTheme()==="g"?"b":"g"); lsRerender(); toast(svTheme()==="g"?"選秀換成女生版（粉＋白）":"選秀換成男生版（藍＋白）"); },true);
-/* Reels 文案點一下展開／收起 */
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="snRcap"]'); if(!t) return; e.stopImmediatePropagation(); e.preventDefault(); const b=t.closest(".sn-rb"); if(b) b.classList.toggle("open"); },true);
+/* Reels 文案：點一下跟 IG 一樣拉出面板（上面是完整文案、下面是留言） */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="snRcap"]'); if(!t) return; e.stopImmediatePropagation(); e.preventDefault(); ui.snCmCap=t.dataset.id; snOpenCm(t.dataset.id); },true);
