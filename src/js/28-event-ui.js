@@ -66,3 +66,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="svTheme"]'); if(!t) return; e.stopImmediatePropagation(); S.set("daisuki_sv_theme",svTheme()==="g"?"b":"g"); lsRerender(); toast(svTheme()==="g"?"選秀換成女生版（粉＋白）":"選秀換成男生版（藍＋白）"); },true);
 /* Reels 文案：點一下跟 IG 一樣拉出面板（上面是完整文案、下面是留言） */
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="snRcap"]'); if(!t) return; e.stopImmediatePropagation(); e.preventDefault(); ui.snCmCap=t.dataset.id; snOpenCm(t.dataset.id); },true);
+/* 貼文留言：只刪得到自己的 */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="pdCDel"],[data-a="pdRDel"]'); if(!t) return; e.stopImmediatePropagation();
+  ask("刪除這則留言？",()=>{ const L=S.get(K.comments,[])||[];
+    if(t.dataset.a==="pdCDel"){ const c=L.find(x=>x.id===t.dataset.c); if(!c||!pdMineC(c)) return; S.set(K.comments,L.filter(x=>x.id!==c.id)); }
+    else { const c=L.find(x=>x.id===t.dataset.c), r=c&&(c.reps||[]).find(x=>x.id===t.dataset.r); if(!r||!pdMineC(r)) return; c.reps=c.reps.filter(x=>x.id!==r.id); S.set(K.comments,L); }
+    try{ renderComments(); }catch(err){ render(); } toast("已刪除留言"); },{title:"刪除留言",ok:"刪除"}); },true);

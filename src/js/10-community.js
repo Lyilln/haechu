@@ -526,6 +526,8 @@ const PDI={share:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" str
   send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M6 11l6-6 6 6"/></svg>'};
 const cLiked=c=>Array.isArray(c.likedBy)&&c.likedBy.includes(myId());
 const cReps=c=>(c.reps||[]).slice().sort((a,b)=>a.ts-b.ts);
+/* 自己的留言才能刪（粉絲：自己寫的；藝人：自己這位成員寫的） */
+const pdMineC=c=>{ if(!c||!c.id) return false; const s=session()||{}; if(c.author==="artist") return s.role==="artist"&&!!c.member&&c.member===s.member&&!String(c.id).endsWith("_r"); return c.author==="me"&&c.by===myEmail(); };
 function pdMediaHtml(p){ const ms=p.media||[]; if(!ms.length) return ""; if(ms[0].kind==="video") return postMediaHtml(p);
   return `<div class="pd-imgs">${ms.map((x,i)=>`<button class="pd-img" data-a="pdView" data-v="${p.id}" data-i="${i}" style="aspect-ratio:${x.w||4}/${x.h||5}" aria-label="照片 ${i+1}"><span class="imgph"><i>HAECHU</i></span><img data-mid="${x.mid}" alt=""></button>`).join("")}</div>`; }
 function renderComments(first=false){
@@ -543,13 +545,13 @@ function renderComments(first=false){
   const tr=c=>role==="artist"&&c.zh&&!isZhText(c.text)?`<p class="pd-tr">${esc(c.zh)}</p>`:"";
   const nRep=c=>cReps(c).length+(c.reply?1:0);
   const item=(c,top)=>`<div class="pd-c ${c.id===focusC?"flash":""} ${top?"top":""}" id="cm-${c.id}">${av(c)}<div class="pd-cb">
-      <div class="pd-ch"><b class="${c.author==="artist"?"art":""}">${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}</div>
+      <div class="pd-ch"><b class="${c.author==="artist"?"art":""}">${who(c)}</b><small>${ymdhm(c.ts)}</small>${more(c)}${pdMineC(c)?`<button class="pd-del" data-a="pdCDel" data-c="${c.id}">刪除</button>`:""}</div>
       ${isMeC(c)?`<p class="pd-ct">${esc(c.text)}</p>`:trT("c:"+c.id,c.text,"pd-ct","p",c.author!=="artist")}
       <div class="pd-ca"><button class="pd-lk ${cLiked(c)?"on":""}" data-a="pdCLike" data-c="${c.id}" aria-label="喜歡">${I.heart}${(c.likedBy||[]).length?`<span>${fmt(c.likedBy.length)}</span>`:""}</button>
         ${top===undefined?`<button class="pd-rp" data-a="pdOpenRep" data-c="${c.id}" aria-label="回覆">${PDI.reply}${nRep(c)?`<span>${fmt(nRep(c))}</span>`:""}</button>`:`<span class="pd-rp">${PDI.reply}<span>${fmt(nRep(c))}</span></span>`}</div></div></div>`;
   const rLk=r=>{ const L=r.likedBy||[]; return `<div class="pd-ca"><button class="pd-lk ${L.includes(myEmail())?"on":""}" data-a="pdRLike" data-c="${r.cid||""}" data-r="${r.id}" aria-label="喜歡">${I.heart}${L.length?`<span>${fmt(L.length)}</span>`:""}</button></div>`; };
   const repItem=r=>`<div class="pd-c pd-r" id="cm-${r.id}">${r.author==="artist"?av({author:"artist",member:r.member}):cmWhoAv(r,p.group,"pd-av",r.g)}<div class="pd-cb">
-      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}`:esc(SNm(r))}</b><small>${ymdhm(r.ts)}</small></div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
+      <div class="pd-ch"><b class="${r.author==="artist"?"art":""}">${r.author==="artist"?`${esc(artName(r.member&&MEMBERS[r.member]?r.member:p.member,"feed"))}${I.verified}`:esc(SNm(r))}</b><small>${ymdhm(r.ts)}</small>${pdMineC(r)?`<button class="pd-del" data-a="pdRDel" data-c="${r.cid||""}" data-r="${r.id}">刪除</button>`:""}</div>${r.author==="me"&&r.by===myEmail()?`<p class="pd-ct">${esc(r.text)}</p>`:trT("r:"+r.id,r.text,"pd-ct","p",r.author!=="artist")}${rLk(r)}</div></div>`;
   const sec=(t,n,body,k,ids)=>`<section class="pd-sec ${k?"k-"+k:""}"><button class="pd-sh" ${k?`data-a="pdFold" data-v="${k}"`:""}><b>${t}</b><em>${fmt(n)}</em>${(k==="ac"||k==="ar")&&g&&!g.solo&&(ids||[]).length?`<span class="pd-savs">${[...new Set(ids)].filter(id=>MEMBERS[id]).slice(0,4).map(id=>`<span class="pd-sav" style="background:${grad(MEMBERS[id].g)}">${mAvIn(id)}</span>`).join("")}</span>`:""}${k?`<i class="${(ui.pdFold||{})[k]?"dn":""}">${PDI.chev}</i>`:""}</button>${k&&(ui.pdFold||{})[k]?"":body}</section>`;
   const head=(t)=>`<header class="pd-top"><button class="pd-ib" data-a="pdBack" aria-label="返回">${I.back}</button><span class="pd-tt"><b>${t}</b>${role==="fan"&&g?`<button data-a="pdGrp" data-v="${g.id}">前往社群 ›</button>`:""}</span>${!cid&&navigator.share?`<button class="pd-ib" data-a="pdShare" aria-label="分享">${PDI.share}</button>`:`<span class="pd-ib"></span>`}</header>`;
   const draft=ui.cDraft||"";

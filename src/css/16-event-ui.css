@@ -133,3 +133,4 @@ main.foc.xv{padding-top:18px}
 .sv2-st{display:flex;flex-direction:column;gap:8px}.sv2-st span{display:flex;align-items:center;gap:10px;font-size:12px}.sv2-st em{font-style:normal;width:46px;color:var(--ink-2);font-weight:700}.sv2-st i{flex:1;height:8px;border-radius:4px;background:var(--s2);overflow:hidden}.sv2-st u{display:block;height:100%;background:var(--a)}.sv2-st b{width:24px;text-align:right;color:var(--a)}
 .sv2-note,.dk-keep-xv{text-align:center;font-size:12px;color:var(--a);font-weight:800;margin:18px 0 0}
 .sv2-cta,.dk-keep-xv{display:block;width:100%;margin-top:14px;border:0;background:var(--a);color:#fff;font:inherit;font-size:15px;font-weight:900;padding:15px;border-radius:16px;box-shadow:0 10px 24px -10px var(--a)}.sv2-cta:disabled,.dk-keep-xv{opacity:.45}
+.pd-del{margin-left:auto;border:0;background:none;color:var(--ink-3);font:inherit;font-size:11.5px;padding:2px 4px}
