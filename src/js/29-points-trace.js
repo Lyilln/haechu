@@ -62,6 +62,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     const rest=seg.replace(cl?cl[0]:""," "); let cnt=null; const um=rest.match(/(\d+)\s*(則|篇|個|句|場|封|首|次|張|群|位|人|分鐘|min|條|天)/i)||rest.match(/[x×＊*]\s*(\d+)/i); if(um&&!/字/.test(um[0])) cnt=+um[1];
     if(cnt==null) cnt=claim!=null&&claim%r.pts===0?claim/r.pts:1; const nd=D.ds.length, why=[];
     if(r.once&&cnt>nd){ why.push(nd>1?`一天只能一次，${nd} 天最多 ${nd} 次`:"一天只能一次"); cnt=nd; }
+    if(r.capN){ const gk=D.ds.join(",")+"#"+r.grp, prev=used[gk]||0, lim=r.capN*nd; if(cnt+prev>lim){ why.push(`${r.grp}${nd>1?`${nd} 天`:"一天"}最多 ${lim} 首`); cnt=Math.max(0,lim-prev); } used[gk]=prev+cnt; }
     let give=r.pts*cnt; const kk=D.ds.join(",")+"|"+r.name, got=used[kk]||0, cap=r.cap!=null?r.cap*nd:null;
     if(cap!=null&&give+got>cap){ why.push(`${nd>1?`${nd} 天`:"一天"}最多 ${fmt(cap)}`); give=Math.max(0,cap-got); } used[kk]=got+give;
     if(claim!=null&&claim!==give&&!why.length) why.push(`${fmt(r.pts)} × ${cnt} = ${fmt(r.pts*cnt)}，登記寫 ${fmt(claim)}`);

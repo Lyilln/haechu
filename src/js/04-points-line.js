@@ -42,8 +42,8 @@ const PT_RULES_DEF=`#KISS
 ➞挑戰自戲 +500｜兩人合寫一篇
 ➞粉絲信 +100｜一封，一天最多 300 分
 ➞填詞 +500｜至少到副歌一半
-➞自選曲翻唱 +500｜每首一次，30 秒以上
-➞指定曲翻唱 +800｜每首一次，1 分鐘以上
+➞自選曲翻唱 +500｜每首一次，30 秒以上，翻唱合計一天最多 20 首
+➞指定曲翻唱 +800｜每首一次，1 分鐘以上，翻唱合計一天最多 20 首
 
 ✦ 舞台與里程碑
 ➞出道 showcase +3,000
@@ -122,7 +122,7 @@ function ptRulesParse(txt){ const out=[]; let sec="";
     if(m){ name=m[1].trim(); if(m[3]&&/\d/.test(m[3])) pts=ptNum(m[3]); if(m[2]==="−"||m[2]==="-") neg=true; }
     const auto=/自動/.test(desc+head), cm=desc.match(/一天最多\s*([\d,，]+)\s*分/), once=/一天一次/.test(desc);
     const role=/[（(]粉絲[）)]/.test(name)?"fan":/[（(]藝人[）)]/.test(name)?"artist":"", base=name.replace(/[（(][^）)]*[）)]/g,"").trim();
-    out.push({name,base,key:ptNz(base),pts,ask:pts==null&&!auto,neg,auto,cap:cm?ptNum(cm[1]):once&&pts?pts:null,once,role,desc,per:/一分鐘/.test(desc)?"分鐘":""}); });
+    out.push({name,base,key:ptNz(base),pts,ask:pts==null&&!auto,neg,auto,cap:cm?ptNum(cm[1]):once&&pts?pts:null,once,role,desc,per:/一分鐘/.test(desc)?"分鐘":"",...(()=>{ const g=desc.match(/([^\s，,、。]{1,6})合計一天最多\s*([\d,，]+)\s*首/); return g?{grp:g[1],capN:ptNum(g[2])}:{}; })()}); });
   return out; }
 /* 把一行登記對到積分表的哪一項：先找完整包含名字的，再用字元比對（「TIE訊息」也能對到「TIE 發訊息」） */
 function ptMatch(seg,R,role){ const k=ptNz(seg), want=/粉絲/.test(seg)?"fan":/藝人/.test(seg)?"artist":"";
@@ -174,6 +174,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
     if(cnt==null) cnt=claim!=null&&claim%unit===0?claim/unit:1;
     if(r.once&&cnt>days){ it.why.push(days>1?`一天只能一次，${days} 天最多 ${days} 次`:"一天只能一次"); cnt=days; }
     let act=null; ds.forEach(x=>{ const v=ptAct(email,r,x); if(v!=null) act=(act||0)+v; }); it.act=act; if(act!=null&&cnt>act){ it.why.push(`App 紀錄${days>1?"這幾天":"那天"}只有 ${act}${r.per?" 分鐘":" 次"}`); cnt=act; }
+    if(r.capN){ const gk=ds.join(",")+"#"+r.grp, prev=R.filter(x=>x.grp===r.grp&&x.pts).reduce((n,x)=>n+Math.floor(ptRegGot(email,ds,x.name)/x.pts),0)+(used[gk]||0), lim=r.capN*days; if(cnt+prev>lim){ it.why.push(`${r.grp}${days>1?`${days} 天`:"一天"}最多 ${lim} 首${prev?`，已經登記 ${prev} 首`:""}`); cnt=Math.max(0,lim-prev); } used[gk]=(used[gk]||0)+cnt; }
     it.cnt=cnt; let give=unit*cnt; const kk=ds.join(",")+"|"+r.name, got=ptRegGot(email,ds,r.name)+(used[kk]||0), cap=r.cap!=null?r.cap*days:null;
     if(cap!=null&&give+got>cap){ const left=Math.max(0,cap-got); it.why.push(r.once?(got?`一天只能一次，${days>1?"這幾天":"那天"}已經加過了`:"一天只能一次"):got?`${days>1?`${days} 天`:"一天"}最多 ${fmt(cap)}，已經加過 ${fmt(got)}`:`${days>1?`${days} 天`:"一天"}最多 ${fmt(cap)}`); give=left; }
     used[kk]=(used[kk]||0)+give; it.give=give;
