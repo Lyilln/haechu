@@ -10306,7 +10306,9 @@ let snTapT=0;
 /* 任何重畫（別人的新資料、定時檢查…）都把 SNS 的捲動位置放回去：iPhone 上換掉內容的當下設 scrollTop 常常沒用，下一格畫面再補一次 */
 /* 手指最後一次碰螢幕的時間：之後才補的「放回原位置」就不做，不然會跟手指搶、畫面亂跳 */
 let SN_FINGER=0; ["touchstart","touchmove","wheel"].forEach(ev=>document.addEventListener(ev,()=>{ SN_FINGER=Date.now(); },{passive:true,capture:true}));
-{ const R0=render; render=function(){ const h=location.hash, sn=document.querySelector(".sn"), sy=sn?sn.scrollTop:0; const r=R0.apply(this,arguments);
+{ let lastH=""; const R0=render; render=function(){ const h=location.hash, same=lastH===h, sn=document.querySelector(".sn"), sy=sn&&same?sn.scrollTop:0; const r=R0.apply(this,arguments); lastH=location.hash;   /* same：同一頁重畫才保留位置；換頁時舊頁的位置不能帶到新頁（以前會把新頁直接捲到最底） */
+    /* 11/12：換頁後新的那頁一畫好就馬上放到對的位置（往前＝最上面、返回＝原本的位置），不會先閃一下錯的位置再跳 */
+    try{ if(window.SN_PEND&&SN_PEND.h===location.hash&&Date.now()-SN_PEND.t<1500){ SN_PEND.apply(); } }catch(e){}
     try{ const sp=ui.snPop; if(sp&&Date.now()-sp.ts<600&&location.hash===h){ const el=document.querySelector(`#snp-${CSS.escape(sp.id)} .sn-heart`); if(el&&!el.classList.contains("pop")){ el.classList.add("pop"); } } }catch(e){}
     if(sy>0&&location.hash===h){ const t0=Date.now(), fix=()=>{ if(SN_FINGER>t0) return; const s2=document.querySelector(".sn"); if(s2&&Math.abs(s2.scrollTop-sy)>2) s2.scrollTop=sy; }; fix(); requestAnimationFrame(fix); setTimeout(fix,80); setTimeout(fix,250); } return r; }; }
 /* SNS 換頁：新頁從最上面開始；按返回回到原本滑到的位置（跟 IG 一樣） */
@@ -10314,7 +10316,7 @@ let SN_FINGER=0; ["touchstart","touchmove","wheel"].forEach(ev=>document.addEven
   document.addEventListener("scroll",e=>{ if(Date.now()-navAt<400||!isSn(location.hash)) return; const t=e.target; if(t===document||(t.classList&&t.classList.contains("sn"))) SNPOS[location.hash]=(t===document?document.scrollingElement:t).scrollTop; },{passive:true,capture:true});
   /* 貼文頁第一次進來：停在點的那一則（上面還有他比較新的貼文，往上滑就看得到，跟 IG 一樣） */
   const postY=()=>{ const m=/[?&]p=post&id=([^&]+)/.exec(location.hash), el=sc(); if(!m||!el) return 0; const a=document.getElementById("snp-"+decodeURIComponent(m[1])), hd=document.querySelector(".sn-pvh"); if(!a) return 0; return Math.max(0,Math.round(el.scrollTop+a.getBoundingClientRect().top-(hd?hd.getBoundingClientRect().bottom:0))); };
-  addEventListener("hashchange",()=>{ if(!isSn(location.hash)) return; navAt=Date.now(); const fwd=performance.now()-(ui.navFwd||0)<300; if(fwd) delete SNPOS[location.hash]; const t0=navAt, saved=fwd?null:SNPOS[location.hash], go=()=>{ if(SN_FINGER>t0) return; const el=sc(), y=saved!=null?saved:postY(); if(el&&Math.abs(el.scrollTop-y)>2) el.scrollTop=y; }; go(); requestAnimationFrame(go); setTimeout(go,60); setTimeout(go,200); setTimeout(go,380); }); }
+  addEventListener("hashchange",()=>{ if(!isSn(location.hash)) return; navAt=Date.now(); const fwd=performance.now()-(ui.navFwd||0)<300; if(fwd) delete SNPOS[location.hash]; const t0=navAt, saved=fwd?null:SNPOS[location.hash], go=()=>{ if(SN_FINGER>t0) return; const el=sc(), y=saved!=null?saved:postY(); if(el&&Math.abs(el.scrollTop-y)>2) el.scrollTop=y; }; window.SN_PEND={h:location.hash,t:Date.now(),apply:go}; go(); requestAnimationFrame(go); setTimeout(go,60); setTimeout(go,200); setTimeout(go,380); }); }
 function snHeartPop(id){ ui.snPop={id,ts:Date.now()}; const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 /* 按讚後只改畫面上需要改的地方（愛心、數字、誰說讚那行），不重畫整頁（重畫會閃、會跳） */
 function snLikeUI(id){ const d=snDB(), me=snMeId(), p=(d.posts||[]).find(x=>x.id===id); if(!p) return false; const on=(d.likes[id]||[]).includes(me), n=snN(snLikes(d,p));
