@@ -12,7 +12,8 @@ const TRAINEES=[
   {id:"t6",name:"時溫",agency:"Aurora Lab",tags:["話少","舞蹈狂"],st:[68,96,79],g:1},
   {id:"t7",name:"若川",agency:"Prism Works",tags:["搞笑","元氣"],st:[80,82,90],g:7},
   {id:"t8",name:"一然",agency:"Cloud Nine",tags:["穩重","主唱"],st:[97,74,83],g:3}];
-const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false);
+/* 先只開給 HUSSEY（husay）自己的帳號試用，其他人照管理員的開關 */
+const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false)||String((session()||{}).email||"").toLowerCase()==="husay";
 const svVotes=()=>({t1:18420,t2:17110,t3:16980,t4:15230,t5:12870,t6:11940,t7:9820,t8:9310,...S.get(K.svVotes,{})});
 const svToday=()=>{ const r=S.get(K.svMine,{}), k=new Date().toDateString(); return r.day===k?r.n:0; };
 function svEnd(){ const t=new Date(); t.setDate(t.getDate()+((7-t.getDay())%7)); t.setHours(23,59,0,0); return t.getTime(); }

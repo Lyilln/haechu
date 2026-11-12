@@ -2879,7 +2879,8 @@ const TRAINEES=[
   {id:"t6",name:"時溫",agency:"Aurora Lab",tags:["話少","舞蹈狂"],st:[68,96,79],g:1},
   {id:"t7",name:"若川",agency:"Prism Works",tags:["搞笑","元氣"],st:[80,82,90],g:7},
   {id:"t8",name:"一然",agency:"Cloud Nine",tags:["穩重","主唱"],st:[97,74,83],g:3}];
-const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false);
+/* 先只開給 HUSSEY（husay）自己的帳號試用，其他人照管理員的開關 */
+const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false)||String((session()||{}).email||"").toLowerCase()==="husay";
 const svVotes=()=>({t1:18420,t2:17110,t3:16980,t4:15230,t5:12870,t6:11940,t7:9820,t8:9310,...S.get(K.svVotes,{})});
 const svToday=()=>{ const r=S.get(K.svMine,{}), k=new Date().toDateString(); return r.day===k?r.n:0; };
 function svEnd(){ const t=new Date(); t.setDate(t.getDate()+((7-t.getDay())%7)); t.setHours(23,59,0,0); return t.getTime(); }
@@ -6607,8 +6608,8 @@ function viewAdmin(tab){
         <p class="reach" style="margin:12px 0 10px">打歌中的歌（MV 公開就加入、打滿 4 週下檔；參賽不到 3 首自動補虛擬對手）</p>
         ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="act"?`打歌第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
-      music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${svOpen()?"開放中":"關閉中"}</span></div>
-        <div class="ls-btns"><button class="btn ${svOpen()?"btn-soft":"btn-main"}" data-a="svToggle">${svOpen()?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
+      music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>
+        <div class="ls-btns"><button class="btn ${S.get(K.svOpen,false)?"btn-soft":"btn-main"}" data-a="svToggle">${S.get(K.svOpen,false)?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
 `}[seg]||(seg==="show"?vsAdminHtml():seg==="biz"?bzAdminHtml():seg==="isac"?isAdminHtml():seg==="cafe"?viewCafe().replace(/^<main[^>]*>|<\/main>$/g,""):"");
     return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="focSegBack" aria-label="返回">${I.back}</button><div class="top-title">${SEGN[seg]||"FOC"}</div><span class="sh-sp"></span></div></header><main class="page foc-sub">
       ${body}
@@ -7187,7 +7188,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "svVote": { if(3-svToday()<=0){ toast("今天的票投完了，明天再來"); break; } const k=new Date().toDateString(), mine=S.get(K.svMine,{}); S.set(K.svMine,{day:k,n:(mine.day===k?mine.n:0)+1});
       const vv=S.get(K.svVotes,{}); vv[t.dataset.v]=svVotes()[t.dataset.v]+1; S.set(K.svVotes,vv); const tr=TRAINEES.find(x=>x.id===t.dataset.v); const b=t.getBoundingClientRect(); confetti(b.left+b.width/2,b.top);
       const y=window.scrollY; render(); window.scrollTo(0,y); toast(`投給 ${tr.name} 了！今天還有 ${3-svToday()} 票`); break; }
-    case "svToggle": S.set(K.svOpen,!svOpen()); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(svOpen()?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
+    case "svToggle": S.set(K.svOpen,!S.get(K.svOpen,false)); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(S.get(K.svOpen,false)?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
     case "svPreview": SS.set({...session(),role:"fan",member:null}); navTo("#/fan/core?p=survival"); break;
     case "chantStart": chantStart(); break;
     case "chantClose": { chantStop(); const b=document.getElementById("chant"); if(b){ b.hidden=true; b.innerHTML=""; } break; }

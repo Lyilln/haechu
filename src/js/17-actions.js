@@ -205,7 +205,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "svVote": { if(3-svToday()<=0){ toast("今天的票投完了，明天再來"); break; } const k=new Date().toDateString(), mine=S.get(K.svMine,{}); S.set(K.svMine,{day:k,n:(mine.day===k?mine.n:0)+1});
       const vv=S.get(K.svVotes,{}); vv[t.dataset.v]=svVotes()[t.dataset.v]+1; S.set(K.svVotes,vv); const tr=TRAINEES.find(x=>x.id===t.dataset.v); const b=t.getBoundingClientRect(); confetti(b.left+b.width/2,b.top);
       const y=window.scrollY; render(); window.scrollTo(0,y); toast(`投給 ${tr.name} 了！今天還有 ${3-svToday()} 票`); break; }
-    case "svToggle": S.set(K.svOpen,!svOpen()); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(svOpen()?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
+    case "svToggle": S.set(K.svOpen,!S.get(K.svOpen,false)); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(S.get(K.svOpen,false)?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
     case "svPreview": SS.set({...session(),role:"fan",member:null}); navTo("#/fan/core?p=survival"); break;
     case "chantStart": chantStart(); break;
     case "chantClose": { chantStop(); const b=document.getElementById("chant"); if(b){ b.hidden=true; b.innerHTML=""; } break; }
