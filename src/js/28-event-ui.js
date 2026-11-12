@@ -49,3 +49,7 @@ async function xvShare(o){ try{ const W=1080,H=1350, cv=document.createElement("
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="trShare"]'); if(!t) return; e.stopImmediatePropagation();
   const tr=tourOf(t.dataset.v); if(!tr) return; const g=groupOf(tr.gid), L=tourStops(tr).filter(st=>stopState(st)!=="off");
   xvShare({small:`${g?g.name:""} WORLD TOUR`,title:`〈${tr.title}〉`,big:`${L.length} / ${L.length}`,chips:["巡演護照全部蓋滿 🏆"],cap:`${g?g.name:""} WORLD TOUR〈${tr.title}〉\n${L.map(x=>x.city).join(" · ")}\n\n護照全部蓋滿了！ 📘✨`,c1:"#B08D2B",c2:"#F5D77A"}); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="fsFeat"],[data-a="fsShare"]'); if(!t) return; e.stopImmediatePropagation();
+  if(t.dataset.a==="fsFeat"){ ui.fsFeat=t.dataset.v; lsRerender(); window.scrollTo({top:0,behavior:"smooth"}); return; }
+  const ev=fsGet(t.dataset.v); if(!ev) return; xvShare({small:`${fsName(ev)}・${fsTypeName(ev)}`,title:ev.title,big:"✍️ 💜",chips:[ev.toSign?`To. ${fsMyTo(ev)}`:"簽名專輯到手"],cap:`${fsName(ev)}〈${ev.title}〉${fsTypeName(ev)}\n拿到簽名專輯了 💜`}); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="fsAddOpen"]'); if(!t) return; e.stopImmediatePropagation(); ui.fsAddOpen=!ui.fsAddOpen; lsRerender(); },true);

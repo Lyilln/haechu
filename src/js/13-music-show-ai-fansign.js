@@ -363,11 +363,7 @@ const fsWhen=ts=>{ const d=new Date(ts); return `${d.getMonth()+1}/${d.getDate()
 const fsHead=ev=>{ const g=groupOf(ev.group); return `<div class="fs-h"><span class="av sm" style="background:${grad(g?g.g:0)}">${esc(fsName(ev)[0]||"")}</span><div><b>${esc(ev.title)}</b><small>${esc(fsName(ev))}・${fsTypeName(ev)}・${ev.toSign?"含 To 簽":"盲簽（只簽名）"}・${fsWhen(ev.startTs)}・${ev.type==="solo"?"一人 90 秒":"每位成員 60 秒"}</small></div></div>`; };
 const fsMav=(mid,cls="")=>{ const m=MEMBERS[mid]; return `<span class="fs-mav ${cls}" style="background:${grad(m?m.g:0)}">${esc(m?ini(m.name):"?")}</span>`; };
 /* ---------- 粉絲端：CORE ---------- */
-function fsFanCards(){
-  const f=followed(), list=fsAll().filter(e=>f.includes(e.group)&&groupOf(e.group)&&e.id!=="fsshow"&&(e.status!=="done"||(fsMySlots(e).length&&Date.now()-e.startTs<3*864e5))).sort((a,b)=>a.startTs-b.startTs);
-  const demo=demoOn()?`<button class="btn btn-soft btn-block fs-demo" data-a="fsDemoFan">👀 示範：直接進簽售室看看</button>`:"";
-  if(!list.length) return demo+`<div class="ux-empty"><span>✍️</span><b>目前沒有簽售</b></div>`;
-  return demo+list.map(ev=>{ let body=""; const mine=fsMySlots(ev);
+function fsFanBody(ev){ let body=""; const mine=fsMySlots(ev);
     if(ev.status==="open"){
       if(ev.type==="solo"){ body=`<div class="fs-st"><span>報名中・${fsWhen(ev.closeTs)} 截止抽籤</span><span>每位成員抽 ${ev.quota} 名</span></div>
         <p class="fs-tip">選你想通話的成員。免費報名＝1 次機會，買專輯每張再多 1 次；想跟多位成員聊，就分別報名</p>
@@ -388,7 +384,25 @@ function fsFanCards(){
       else if(ev.status==="live"&&nx===ev.cur) body=`<button class="btn btn-main btn-block fs-go" data-a="fsRoom" data-v="${ev.id}">📞 輪到你了！進入簽售室</button>`;
       else if(ev.status==="live"&&nx>ev.cur) body=`<div class="fs-win">前面還有 <b>${nx-ev.cur}</b> 位</div><div class="fs-mine">${lines}</div><button class="btn btn-soft btn-block" data-a="fsRoom" data-v="${ev.id}">進入等候室</button>`;
       else body=`<div class="fs-win">已完成 ✔ 簽名專輯收在 ME</div>`; }
-    return `<section class="card fs-card">${fsHead(ev)}${body}</section>`; }).join("");
+    return body; }
+const FS_ST={open:["報名中",""],drawn:["抽籤完成","on"],live:["● 進行中","ok"],done:["已結束",""]};
+function fsFanCards(){
+  const f=followed(), list=fsAll().filter(e=>f.includes(e.group)&&groupOf(e.group)&&e.id!=="fsshow"&&(e.status!=="done"||(fsMySlots(e).length&&Date.now()-e.startTs<3*864e5))).sort((a,b)=>a.startTs-b.startTs);
+  const demo=demoOn()?`<button class="btn btn-soft btn-block fs-demo" data-a="fsDemoFan">👀 示範：直接進簽售室看看</button>`:"";
+  const how=xvSh("要怎麼參加","買專輯每張多 1 次")+xvHow([["✍️","免費報名"],["💿","買專輯<br>加機會"],["🎲","開始前 5 天<br>抽籤"],["📹","時間到<br>進簽售室"]]);
+  if(!list.length) return `<div class="xv fs2">${xvHero({small:"FANSIGN",title:"目前沒有簽售",meta:"打歌期間公司會開簽售，抽中就能跟成員一對一聊天、拿簽名專輯"})}${how}${demo}</div>`;
+  const pri=ev=>{ const nx=fsMyNext(ev); return ev.status==="live"&&nx===ev.cur?0:ev.status==="live"&&fsMySlots(ev).length?1:ev.status==="open"?2:ev.status==="drawn"&&fsMySlots(ev).length?3:ev.status==="done"?6:4; };
+  const ev=list.find(e=>e.id===ui.fsFeat)||list.slice().sort((a,b)=>pri(a)-pri(b)||a.startTs-b.startTs)[0], rest=list.filter(e=>e!==ev);
+  const my=ev.type==="solo"?ev.members.reduce((n,m)=>n+(fsEntries(ev,m)[FS_ME]||0),0):(ev.entries||{})[FS_ME]||0, mine=fsMySlots(ev), nx=fsMyNext(ev);
+  const ppl=ev.type==="solo"?new Set(ev.members.flatMap(m=>Object.keys(fsEntries(ev,m)))).size:Object.keys(ev.entries||{}).length;
+  const cd=ev.status==="open"?[...xvCd(ev.closeTs),[`${my} 次`,"我的抽籤機會",2]]:ev.status==="drawn"?[...xvCd(ev.startTs),[mine.length?`第 ${mine[0].i+1} 位`:"沒抽中",mine.length?"我的順序":"下次再試",2]]:ev.status==="live"&&mine.length&&nx>=0?[[nx===ev.cur?"輪到你":`${nx-ev.cur} 位`,nx===ev.cur?"快進簽售室":"前面還有",3]]:[];
+  const st=FS_ST[ev.status]||["",""];
+  const hero=xvHero({tag:st[0],small:`${esc(fsName(ev))}・${fsTypeName(ev)}`,title:esc(ev.title),meta:`${fsWhen(ev.startTs)}・${ev.type==="solo"?`每位成員抽 ${ev.quota} 名・一人 90 秒`:`抽 ${ev.quota} 名・每位成員 60 秒`}・${ev.toSign?"To 簽":"盲簽"}`,cd});
+  return `<div class="xv fs2">${hero}${xvStats([[ppl,"已報名"],[ev.type==="solo"?`${ev.quota}×${ev.members.length}`:ev.quota,"名額"],["+100","參加積分"]])}
+    <section class="card fs-card xv-fsb">${fsFanBody(ev)}</section>
+    ${ev.status==="open"?how:""}
+    ${rest.length?xvSh("其他簽售",`${rest.length} 場`)+rest.map(e=>{ const s2=FS_ST[e.status]||["",""]; return xvRow({...xvGAv(e.group),title:`${esc(fsName(e))}・${esc(e.title)}`,sub:`${fsTypeName(e)}・${fsWhen(e.startTs)}${fsMySlots(e).length?"・你有抽中":""}`,right:xvChip(s2[0],s2[1]),attrs:`data-a="fsFeat" data-v="${e.id}"`}); }).join(""):""}
+    ${demo}</div>`;
 }
 /* ---------- 粉絲端：簽售室（像視訊通話） ---------- */
 function viewFsFanRoom(id){
@@ -407,11 +421,16 @@ function viewFsFanRoom(id){
       <main class="fs-chat" id="fsChat">${fsChatHtml(ev.chats[FS_ME],"fan")}</main>
       <div class="fs-albbar" id="fsAlbBar">${fsAlbBar(ev,sign,need)}</div>
       <form class="fs-foot" id="fsForm"><textarea rows="1" class="ag" id="fsIn" autocomplete="off" aria-label="輸入訊息"></textarea><button class="mr-send on" type="submit" aria-label="送出">${TI.send}</button></form></div>`; }
-  if(ev.status==="done"||nx<0) return `<div class="fs-room">${top}<main class="fs-wait"><b>簽售完成 💜</b>${mine.map(x=>{ const sg=ev.signed[fsSignKey(ev,x.s)]; return sg?fsAlbum(ev,sg,{fan:true,big:true}):""; }).join("")}<small>簽名專輯已收進 ME 的「簽名專輯」</small></main></div>`;
-  const n=ev.status==="live"?nx-ev.cur:nx+1;
-  return `<div class="fs-room" data-fs="${ev.id}">${top}<main class="fs-wait"><span class="fs-wait-av" style="background:${grad(g?g.g:0)}">${esc(fsName(ev)[0]||"")}</span>
-    <b>${ev.status==="live"?`前面還有 ${n} 位`:"簽售還沒開始"}</b><small>${ev.status==="live"?`輪到你時這裡會自動接通`:fsWhen(ev.startTs)+" 開始"}</small>
-    <div class="fs-mine">${mine.map(x=>`<span>${x.s.mid?esc(artName(x.s.mid,"feed"))+"・":""}第 ${x.i+1} 位</span>`).join("")}</div></main></div>`;
+  if(ev.status==="done"||nx<0){ const sg=mine.map(x=>ev.signed[fsSignKey(ev,x.s)]).filter(Boolean);
+    return `<div class="fs-room fs2-done">${top}<main class="fs-wait"><div class="fs2-alb">${sg.map(x=>fsAlbum(ev,x,{fan:true,big:true})).join("")||`<span class="fs-wait-av" style="background:${grad(g?g.g:0)}">✍️</span>`}</div>
+      <b>${sg.length?"拿到簽名專輯了 💜":"簽售結束了"}</b><small>${sg.length?"已收進 ME 的「簽名專輯」・參加積分 +100":"謝謝你的參加"}</small>
+      <div class="fs2-btns"><button class="xv-bt g" data-a="openSigned">看簽名專輯</button>${sg.length?`<button class="xv-bt" data-a="fsShare" data-v="${ev.id}">分享到 SNS</button>`:""}</div></main></div>`; }
+  const n=ev.status==="live"?nx-ev.cur:nx+1, cur=ev.status==="live"?ev.cur:-1, from=Math.max(0,Math.min(cur<0?0:cur,nx-4)), q=(ev.slots||[]).slice(from,from+6), me0=mine[0].s;
+  return `<div class="fs-room fs2-wait" data-fs="${ev.id}">${top}<main class="fs-wait"><small>${ev.status==="live"?"前面還有":"簽售還沒開始"}</small>
+    <div class="fs2-n">${ev.status==="live"?`${n}<em>位</em>`:`<span>${fsWhen(ev.startTs)}</span>`}</div><small>${ev.status==="live"?`大約 ${Math.max(1,Math.round(n*fsSec(ev)*(ev.type==="solo"?1:ev.members.length)/60))} 分鐘後輪到你・輪到時會自動接通`:`你是第 ${nx+1} 位`}</small>
+    <div class="fs2-q">${q.map((x,k)=>{ const i=from+k; return `${k?"<s></s>":""}<i class="${i<cur?"done":i===cur?"now":""} ${x.fk===FS_ME?"me":""}">${x.fk===FS_ME?"你":i+1}</i>`; }).join("")}</div>
+    <div class="fs2-note"><b>先想好要說什麼</b>${me0.note?`<p>📝 ${esc(me0.note)}</p>`:""}${ev.toSign?`<p>✍️ To 簽：${esc(fsToOf(me0))}</p>`:""}${!me0.note&&!ev.toSign?`<p>還沒寫想問的話</p>`:""}${ev.status!=="live"?`<button class="xv-bt g" data-a="fsNote" data-v="${ev.id}">改</button>`:""}</div>
+    <p class="fs2-tip">輪到你時 20 秒內沒進來，會換候補的人</p></main></div>`;
 }
 function fsCallRing(ev,mid){ const m=MEMBERS[mid], left=fsLeft(ev), total=fsSec(ev), r=56, C=2*Math.PI*r;
   return `<svg class="fs-cring" viewBox="0 0 128 128"><circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" class="fg" style="stroke-dasharray:${C};stroke-dashoffset:${C*(1-left/total)}"/></svg>
@@ -431,16 +450,20 @@ function openSignedView(id){
 }
 /* ---------- 藝人端：FOC 卡片 ---------- */
 function fsArtistCard(mid){
-  const gid=MEMBERS[mid].group, mine=fsAll().filter(e=>e.group===gid&&e.id!=="fsshow").sort((a,b)=>b.startTs-a.startTs);
-  const row=ev=>{ const cnt=ev.type==="solo"?Object.keys(fsEntries(ev,mid)).length:Object.keys(ev.entries).length, myQ=(ev.slots||[]).filter(s=>ev.type!=="solo"||s.mid===mid);
-    const st={open:`報名中・${ev.type==="solo"?"選你的有 ":""}${cnt} 人・${fsWhen(ev.closeTs)} 抽籤`,drawn:`已抽籤・${ev.type==="solo"?"你的名單 ":""}${myQ.length} 位`,live:`簽售中・第 ${ev.cur+1}／${ev.slots.length} 位`,done:"已結束"}[ev.status];
-    const btn=ev.status==="drawn"?`<span class="fs-wait-tag">等公司方開場</span>`:ev.status==="live"?`<button class="btn btn-main btn-sm" data-a="fsDesk" data-v="${ev.id}">進簽售台</button>`:"";
-    return `<div class="fs-row"><div><b>${esc(ev.title)}</b><small>${fsTypeName(ev)}・${fsWhen(ev.startTs)}・${st}</small>
-      ${ev.status==="drawn"?`<div class="fs-q">${myQ.map((w,i)=>`<span>${w.special?"⭐":""}${esc(w.name)}${w.note?" 📝":""}</span>`).join("")}</div>`:""}</div>${btn}</div>`; };
-  return `<section class="card foc-c fs-art"><div class="foc-h"><span class="foc-ic">${FIC.sign}</span><div><b>簽售現場</b><small>FANSIGN ROOM</small></div></div>
-    ${mine.slice(0,4).map(row).join("")}
-    <p class="reach" style="margin:8px 2px 0">${mine.length?"簽售當天記得上線，開場後按「進簽售台」。":"還沒有簽售。"}簽售在歌曲活動期由公司方（管理員）安排。</p>
-    ${demoOn()?`<button class="btn btn-soft btn-block fs-demo" data-a="fsDemoDesk">👀 示範：直接進簽售台看看</button>`:""}</section>`;
+  const gid=MEMBERS[mid].group, all=fsAll().filter(e=>e.group===gid&&e.id!=="fsshow"), up=all.filter(e=>e.status!=="done").sort((a,b)=>a.startTs-b.startTs), past=all.filter(e=>e.status==="done").sort((a,b)=>b.startTs-a.startTs);
+  const demo=demoOn()?`<button class="btn btn-soft btn-block fs-demo" data-a="fsDemoDesk">👀 示範：直接進簽售台看看</button>`:"";
+  const cnt=ev=>ev.type==="solo"?Object.keys(fsEntries(ev,mid)).length:Object.keys(ev.entries||{}).length, myQ=ev=>(ev.slots||[]).filter(s=>ev.type!=="solo"||s.mid===mid);
+  const ev=up.find(e=>e.status==="live")||up[0];
+  let top;
+  if(!ev) top=xvHero({small:"FANSIGN",title:"還沒有簽售",meta:"簽售在歌曲活動期由公司方（管理員）安排，排好會出現在這裡"});
+  else { const st=FS_ST[ev.status]||["",""], q=myQ(ev);
+    top=xvHero({tag:st[0],small:`${esc(ev.title)}・${fsTypeName(ev)}`,title:fsWhen(ev.startTs),meta:ev.status==="open"?`報名中・${ev.type==="solo"?"選你的有 ":""}${cnt(ev)} 人・${fsWhen(ev.closeTs)} 抽籤`:ev.status==="drawn"?`${q.length} 位粉絲・${ev.type==="solo"?"每位跟你聊 90 秒":"每位跟你聊 60 秒"}・等公司方開場`:`簽售中・第 ${ev.cur+1}／${ev.slots.length} 位`,
+      cd:ev.status!=="live"?xvCd(ev.startTs):[],btns:ev.status==="live"?[["進簽售台",`data-a="fsDesk" data-v="${ev.id}"`]]:[]})
+      +(ev.status==="drawn"||ev.status==="live"?xvSh("中籤名單",`${ev.toSign?"To 簽":"盲簽"}・照順序`)+q.map((w,k)=>xvRow({av:k+1,title:esc(w.name),sub:[w.toName&&ev.toSign?`To. ${esc(w.toName)}`:"",w.note?`📝 ${esc(w.note)}`:""].filter(Boolean).join("<br>"),right:w.special?xvChip("⭐ 特別粉絲","on"):""})).join(""):""); }
+  return `<div class="xv fs2">${top}${xvStats([[past.length,"辦過"],[ev?myQ(ev).length||cnt(ev):0,ev&&ev.status==="open"?"報名中":"這場名單"],[all.filter(e=>e.status!=="done").length,"排好的"]])}
+    ${up.filter(e=>e!==ev).length?xvSh("接下來")+up.filter(e=>e!==ev).map(e=>{ const s2=FS_ST[e.status]||["",""]; return xvRow({av:"✍️",sq:1,avStyle:"background:var(--s2)",title:esc(e.title),sub:`${fsTypeName(e)}・${fsWhen(e.startTs)}`,right:xvChip(s2[0],s2[1])}); }).join(""):""}
+    ${past.length?xvSh("之前的簽售")+past.slice(0,5).map(e=>xvRow({av:"✔",sq:1,avStyle:"background:var(--s2);color:var(--ink-3)",title:esc(e.title),sub:`${fsTypeName(e)}・${fsWhen(e.startTs)}・${(e.slots||[]).length} 位粉絲`})).join(""):""}
+    <p class="xv-note">簽售當天記得上線，開場後按「進簽售台」</p>${demo}</div>`;
 }
 /* ---------- 藝人端：簽售台 ---------- */
 function fsSignTxt(ev,key){ const me=(session()||{}).member, sg=ev.signed[key], mine=sg&&sg.sigs&&sg.sigs[me], msg=sg&&sg.msgs&&sg.msgs[me], others=sg&&sg.sigs?Object.keys(sg.sigs).filter(x=>x!==me).length:0;
@@ -464,13 +487,19 @@ function viewFsDesk(id){
 }
 /* ---------- 管理員：安排與控場 ---------- */
 function adminFsHtml(){
-  const cr=ui.fsCreate||{}, gsel=cr.gid||(GROUPS.find(g=>fsActiveGroup(g.id))||GROUPS[0]).id, type=cr.type||"all", list=fsAll().filter(e=>e.id!=="fsshow"&&(e.status!=="done"||Date.now()-e.startTs<7*864e5)).sort((a,b)=>a.startTs-b.startTs);
+  const cr=ui.fsCreate||{}, gsel=cr.gid||(GROUPS.find(g=>fsActiveGroup(g.id))||GROUPS[0]).id, type=cr.type||"all", list=fsAll().filter(e=>e.id!=="fsshow"&&(e.status!=="done"||Date.now()-e.startTs<30*864e5)).sort((a,b)=>a.startTs-b.startTs);
   const d=x=>{ const t=new Date(x); return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}T${pad(t.getHours())}:00`; };
-  const stx=ev=>({open:`報名 ${ev.type==="solo"?ev.members.map(m=>`${artName(m,"feed")} ${Object.keys(fsEntries(ev,m)).length}`).join("・"):Object.keys(ev.entries).length+" 人"}`,drawn:`已抽籤 ${ev.slots.length} 位`,live:`簽售中 ${ev.cur+1}／${ev.slots.length}`,done:"已結束"})[ev.status];
-  return `<section class="card studio fs-adm"><div class="foc-cfg-h"><h3>簽售</h3><span class="badge">${list.length} 場</span></div>
-    ${list.map(ev=>{ const s=fsSlot(ev); return `<div class="fs-row"><div><b>${esc(fsName(ev))}・${esc(ev.title)}</b><small>${fsTypeName(ev)}・${fsWhen(ev.startTs)}・${stx(ev)}</small></div>
-      <span class="fs-adm-b">${ev.status==="open"?`<button class="btn btn-soft btn-sm" data-a="fsDraw" data-v="${ev.id}">立即抽籤</button>`:""}${ev.status==="drawn"?`<button class="btn btn-main btn-sm" data-a="fsStartAdm" data-v="${ev.id}">開始</button>`:""}${ev.status==="live"?`<button class="btn btn-soft btn-sm" data-a="fsAdmSkip" data-v="${ev.id}">缺席</button><button class="btn btn-soft btn-sm" data-a="fsAdmNext" data-v="${ev.id}">下一位</button><button class="btn btn-soft btn-sm" data-a="fsAdmEnd" data-v="${ev.id}">結束</button>`:""}${ev.status!=="live"?`<button class="del" data-a="fsDel" data-v="${ev.id}">刪除</button>`:""}</span></div>
-      ${ev.status==="live"&&s?`<p class="fs-adm-now">現在：${s.special?"⭐":""}${esc(s.name)}・正在跟 ${esc(MEMBERS[fsTalking(ev)]?artName(fsTalking(ev),"feed"):"")} 通話・輪到後 20 秒沒進簽售室會自動算缺席、由候補遞補</p>`:""}`; }).join("")}
+  const stx=ev=>({open:`報名 ${ev.type==="solo"?ev.members.map(m=>`${artName(m,"feed")} ${Object.keys(fsEntries(ev,m)).length}`).join("・"):Object.keys(ev.entries).length+" 人"}・${fsWhen(ev.closeTs)} 抽籤`,drawn:`已抽籤 ${ev.slots.length} 位`,live:`簽售中 ${ev.cur+1}／${ev.slots.length}`,done:"已結束"})[ev.status];
+  const O=list.filter(e=>e.status==="open"), W=list.filter(e=>e.status==="drawn"||e.status==="live"), D=list.filter(e=>e.status==="done"), cur=xvSegCur("fs",W.some(e=>e.status==="live")?"wait":O.length?"open":W.length?"wait":"open"), L=cur==="open"?O:cur==="wait"?W:D;
+  const rows=L.map(ev=>{ const s=fsSlot(ev), st=FS_ST[ev.status]||["",""];
+    return `<section class="tr2-c">${xvRow({...xvGAv(ev.group),title:`${esc(fsName(ev))}・${esc(ev.title)}`,sub:`${fsTypeName(ev)}・${fsWhen(ev.startTs)}・${stx(ev)}`,right:xvChip(st[0],st[1])})}
+      ${ev.status==="live"&&s?`<p class="fs-adm-now">現在：${s.special?"⭐":""}${esc(s.name)}・正在跟 ${esc(MEMBERS[fsTalking(ev)]?artName(fsTalking(ev),"feed"):"")} 通話・輪到後 20 秒沒進簽售室會自動算缺席、由候補遞補</p>`:""}
+      <div class="tr2-b">${ev.status==="open"?`<button class="xv-bt g" data-a="fsDraw" data-v="${ev.id}">立即抽籤</button>`:""}${ev.status==="drawn"?`<button class="xv-bt" data-a="fsStartAdm" data-v="${ev.id}">開始</button>`:""}${ev.status==="live"?`<button class="xv-bt g" data-a="fsAdmSkip" data-v="${ev.id}">缺席</button><button class="xv-bt g" data-a="fsAdmNext" data-v="${ev.id}">下一位</button><button class="xv-bt g" data-a="fsAdmEnd" data-v="${ev.id}">結束</button>`:""}${ev.status!=="live"?`<button class="xv-bt g" data-a="fsDel" data-v="${ev.id}">刪除</button>`:""}</div></section>`; }).join("");
+  return `<div class="xv fs2">${xvStats([[O.length,"報名中"],[W.length,"等開始・進行中"],[D.length,"30 天內結束"]])}
+    <div style="margin-top:12px">${xvSeg("fs",[["open",`報名中 ${O.length}`],["wait",`等開始 ${W.length}`],["done",`已結束 ${D.length}`]],cur)}</div>
+    <div style="margin-top:12px">${rows||xvEmpty(cur==="open"?"沒有報名中的簽售":cur==="wait"?"沒有等開始的簽售":"30 天內沒有結束的簽售")}</div>
+    ${ui.fsAddOpen?"":xvAdd("開一場簽售",`data-a="fsAddOpen"`)}</div>
+  ${ui.fsAddOpen?`<section class="card studio fs-adm"><div class="foc-cfg-h"><h3>開一場簽售</h3><button class="xv-bt g" data-a="fsAddOpen">收起</button></div>
     <label class="foc-lab">模式</label>
     <div class="chips"><button class="chip ${type==="all"?"on":""}" data-a="fsType" data-v="all">全體簽售</button><button class="chip ${type==="solo"?"on":""}" data-a="fsType" data-v="solo">個人簽售</button></div>
     
@@ -482,7 +511,7 @@ function adminFsHtml(){
     <label class="foc-lab">簽售開始（開始前 5 天截止報名並抽籤）</label><label class="field"><input id="fsStartAt" type="datetime-local" value="${cr.start||d(Date.now()+6*864e5)}"></label>
     <label class="foc-lab">${type==="solo"?"每位成員抽幾名":"總共抽幾名"}</label><div class="chips">${[3,5,10,20].map(n=>`<button class="chip ${(cr.quota||10)===n?"on":""}" data-a="fsQuota" data-v="${n}">${n} 名</button>`).join("")}</div>
     <label class="foc-lab">特別粉絲（先進場${type==="solo"?"・每位成員":""}）</label><div class="chips">${[0,1,3,5].map(n=>`<button class="chip ${(cr.specials??3)===n?"on":""}" data-a="fsSpecials" data-v="${n}">${n?n+" 位":"不抽"}</button>`).join("")}</div>
-    <button class="btn btn-main btn-block" data-a="fsCreate" ${fsActiveGroup(gsel)?"":"disabled"}>開放報名</button></section>`;
+    <button class="btn btn-main btn-block" data-a="fsCreate" ${fsActiveGroup(gsel)?"":"disabled"}>開放報名</button></section>`:""}`;
 }
 /* 手寫簽名板 */
 function openSignPad(id){
