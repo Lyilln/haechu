@@ -6658,6 +6658,8 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .sn-hls small{font-size:11.5px;font-weight:600}
 .sn-ph{padding:4px 16px 4px 10px!important;gap:16px!important;align-items:center}
 .sn-phr{gap:8px!important}.sn-phr .sn-stat{justify-content:space-between!important;max-width:222px!important}
+.sn-stlog{text-align:left;font-size:13px;line-height:1.5}.sn-stlog ul{margin:8px 0 0;padding:0;list-style:none;max-height:50vh;overflow:auto}.sn-stlog li{padding:6px 0;border-top:1px solid var(--line)}.sn-stlog li.del b{color:#C2410C}.sn-stlog p.bad{color:#C2410C;margin-top:8px}
+.sn-stlog .sn-strs{margin-left:8px;border:0;border-radius:999px;padding:3px 10px;background:var(--p50,#F1ECFF);color:var(--p,#7C3AED);font:inherit;font-size:12px;font-weight:600}
 
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}

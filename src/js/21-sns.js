@@ -124,7 +124,7 @@ const snThumb=(p,u)=>{ const m=p.media&&p.media[0]; if(m&&m.type==="html") retur
 const snCount=p=>p.media?p.media.length:(p.pics||[1]).length;
 /* 被 @／被標註的人收到通知（粉絲帳號＝鈴鐺通知；藝人帳號＝藝人端鈴鐺從限動／貼文資料算出來） */
 function snMentNotify(ids,what){ const me=snMeId(), u=snUser(me)||{}, who=u.u||u.name||"有人"; [...new Set(ids||[])].filter(id=>id&&id!==me).forEach(id=>{ if(String(id).startsWith("u:")) feedPush({kind:"core",self:true,text:`${who} ${what}`},"u:"+id.slice(2)); }); }
-const snStDel=s=>({id:s.id,uid:s.uid,ts:0,del:Date.now()});
+const snStDel=s=>{ const o={...s,ts:0,del:Date.now(),ots:s.ts}; return o; };   /* 刪掉時內容留著（14 天內管理員還能在「限動紀錄」救回來）；ts=0 舊版 App 也當成過期 */
 /* 刪貼文：拿掉，同時留一個「已刪除」記號（別支手機才不會又合併回來） */
 const snPDel=(d,pred)=>{ const gone=d.posts.filter(pred); d.posts=[...d.posts.filter(x=>!pred(x)),...gone.map(p=>({id:p.id,uid:p.uid,ts:0,del:Date.now()}))]; return gone.length; };   /* 刪掉的限動：留一個記號，別支手機才不會又把它合併回來 */
 function snActiveStories(d){ const lim=Date.now()-864e5, me=snMeId(); return d.stories.filter(s=>!s.del&&s.ts>lim&&snCanSee(d,s.uid)&&(!s.cf||s.uid===me||((d.cf||{})[s.uid]||[]).includes(me))); }
@@ -273,7 +273,7 @@ function snNotifList(d){ const me=snMeId(), mine=d.posts.filter(p=>p.uid===me), 
   const myU=(snUser(me)||{}).u||"";
   d.posts.forEach(p=>{ if(p.uid!==me&&(p.tags||[]).includes(me)) L.push({uid:p.uid,t:"在貼文中標註了你。",p:p.id,ts:p.ts}); if(p.uid!==me&&myU&&new RegExp("@"+myU.replace(/[.]/g,"\\.")+"(?![a-z0-9._])","i").test(p.cap||"")) L.push({uid:p.uid,t:"在貼文中提到你。",p:p.id,ts:p.ts+1});
     const C=d.cms[p.id]||[]; C.forEach(c=>{ if(c.uid===me) return; const par=c.re&&C.find(x=>x.id===c.re); if(par&&par.uid===me&&p.uid!==me) L.push({uid:c.uid,t:`回覆了你的留言：${c.text}`,p:p.id,ts:c.ts}); else if(p.uid!==me&&myU&&c.text.toLowerCase().includes("@"+myU)) L.push({uid:c.uid,t:`在留言中提到你：${c.text}`,p:p.id,ts:c.ts}); (c.lk||[]).length; }); });
-  (d.stories||[]).forEach(s=>{ if(s.post&&s.uid!==me&&mine.some(p=>p.id===s.post)) L.push({uid:s.uid,t:"把你的貼文加到限時動態。",p:s.post,ts:s.ts}); if(s.uid!==me&&(s.ment||[]).some(m=>m.u===me)) L.push({uid:s.uid,t:"在限時動態中提到你。",ts:s.ts}); });
+  (d.stories||[]).forEach(s=>{ if(s.del) return; if(s.post&&s.uid!==me&&mine.some(p=>p.id===s.post)) L.push({uid:s.uid,t:"把你的貼文加到限時動態。",p:s.post,ts:s.ts}); if(s.uid!==me&&(s.ment||[]).some(m=>m.u===me)) L.push({uid:s.uid,t:"在限時動態中提到你。",ts:s.ts}); });
   Object.keys(d.fol).filter(k=>k!==me&&(d.fol[k]||[]).includes(me)).forEach(k=>L.push({uid:k,t:"開始追蹤你。",ts:(d.folTs||{})[k]||0}));
   return L.sort((a,b)=>b.ts-a.ts); }
 function snNotif(d){ const me=snMeId(), L=snNotifList(d); (d.ntSeen=d.ntSeen||{})[me]=Date.now(); snSave(d);
@@ -655,7 +655,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snMusX": snMusPvStop(); snMusBuf=null; ui.snMusT=null; layer.innerHTML=""; steBack(); break;
     case "snMusTg": { ui.snMusOn=!(ui.snMusOn&&snMusCur===t.dataset.k); if(ui.snMusOn) snMusPlay(t.dataset.v,t.dataset.k); else snMusStop(); break; }
     case "snStoryDel": { const id=t.dataset.v; const d=snDB(); d.stories=d.stories.map(x=>x.id===id&&!x.del?snStDel(x):x); snSave(d); toast("已刪除限時動態"); clearTimeout(ui.snStT); if(ui.snStory){ snShowStory(); } break; }
-    case "snAdmUser": { const uid=t.dataset.v; snSheet([[["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`,{ic:"trash",red:1}]]]); break; }
+    case "snAdmUser": { const uid=t.dataset.v; snSheet([[["限動紀錄","snStLog",`data-v="${uid}"`,{ic:"clock"}],["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`,{ic:"trash",red:1}]]]); break; }
+    case "snStLog": { snStLog(t.dataset.v); break; }
+    case "snStRestore": { const d=snDB(), x=d.stories.find(y=>y.id===t.dataset.v); if(!x) break; const now=Date.now(), c={...x,id:"st"+now,ts:x.ots&&x.ots>now-864e5?x.ots:now}; delete c.del; delete c.ots; d.stories.push(c); snSave(d); toast("已救回來"); snStLog(x.uid); break; }   /* 用新的編號放回去（舊編號有刪除記號，別支手機會一直蓋掉）；已超過 24 小時就從現在重新算 */
     case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); snPDel(d,p=>p.uid===uid); d.stories=d.stories.map(x=>x.uid===uid&&!x.del?snStDel(x):x); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
     case "snsExit": { let f=ui.snsFrom; ui.snsFrom=null;
       /* 重新整理過不知道從哪進來：找進 SNS 之前的那一頁；找不到就回首頁（不會只退一步又停在 SNS 裡） */
@@ -839,3 +841,10 @@ new MutationObserver(()=>{ document.querySelectorAll(".sn-dots.win:not([data-ok]
 })();
 
 Object.assign(SI,{menu2:'<path d="M2.5 8h19M2.5 15.5h13"/>'});   /* IG 貼文右上的兩條線 */
+/* 管理員查限動：這個帳號發過的每一則（顯示中／過期／被刪掉＋刪掉的時間），還有這支手機送不上雲端的紀錄 */
+function snStLog(uid){ try{ const raw=S.get(snKey("stories"),[])||[], now=Date.now(), tm=x=>{ const d=new Date(x); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
+  const L=raw.filter(x=>x&&x.uid===uid).sort((a,b)=>(b.del||b.ts)-(a.del||a.ts)).slice(0,40);
+  const rows=L.map(x=>x.del?`<li class="del">🗑 ${x.ots?tm(x.ots):x.id.startsWith("st")?tm(+x.id.slice(2)):"?"} 發的・<b>${tm(x.del)} 被刪掉</b>${x.mid||x.post?`<button class="sn-strs" data-a="snStRestore" data-v="${esc(x.id)}">救回來</button>`:""}</li>`:x.ts>now-864e5?`<li class="on">🟢 ${tm(x.ts)} 發的・顯示中</li>`:`<li>⏱ ${tm(x.ts)} 發的・已過 24 小時</li>`).join("");
+  let pf=[]; try{ pf=JSON.parse(localStorage.getItem("hc_pushfail")||"[]").filter(f=>/sn_stories/.test(f.k)).slice(0,5); }catch(e){}
+  const sz=Math.round(JSON.stringify(raw).length/1024);
+  tieModal("限動紀錄",`<div class="sn-stlog"><p>${esc((snUser(uid)||{}).u||uid)}・全部 ${raw.length} 則限動資料（${sz} KB）</p><ul>${rows||"<li>這支手機裡沒有這個帳號的限動</li>"}</ul>${pf.length?`<p class="bad">這支手機送不上雲端：${pf.map(f=>`${tm(f.t)}（${f.s}）`).join("、")}</p>`:""}</div>`,`<button class="t-mbtn main" data-a="tCloseLayer">關閉</button>`); }catch(e){ toast("讀不到限動資料"); } }
