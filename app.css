@@ -6640,6 +6640,12 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .sn-top .sn-tic .si{width:24px!important;height:24px!important;stroke-width:1.9}
 .sn-prv.lock{opacity:.75}.sn-prv small{display:block;font-size:11.5px;color:var(--s);font-weight:400;margin-top:2px}
 .sn-sh.cm .sn-cun{font-size:14px;font-weight:700}.sn-cu .sn-cun{font-weight:700}
+/* 11/12 Reels 文案：跟 IG 一樣只露一行，點一下展開（展開時底下加深色漸層才看得清楚） */
+.sn-rb .sn-rcap{display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden;font-size:13px;line-height:1.45;cursor:pointer;word-break:break-word}
+.sn-rb.open .sn-rcap{-webkit-line-clamp:12;max-height:40vh;overflow-y:auto}
+.sn-rb.open:before{content:"";position:absolute;left:-14px;right:-70px;bottom:-30px;top:-40px;z-index:-1;background:linear-gradient(transparent,rgba(0,0,0,.7) 30%);pointer-events:none}
+.sn-rb{gap:6px}.sn-rb small{font-size:12px;opacity:.9}
+.sn-rb.open{isolation:isolate}
 
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}
