@@ -156,7 +156,7 @@ function viewCoreSub(page,id){
   if(page==="vod") return go("fan",null,"core");
   if(page==="gallery") return go("fan",null,"core");
   if(page==="promo") return viewPromo();
-  if(page==="concert") return coreHead("演唱會")+`<main class="page">${coreConcertCard()}${bdEntryHtml()}</main>`;
+  if(page==="concert") return coreHead("演唱會")+`<main class="page">${ccFanPage()}</main>`;
   if(page==="fsl") return coreHead("簽售")+`<main class="page">${fsFanCards()}</main>`;
   if(page==="cards") return viewCards();
   if(page==="survival") return viewSurvival();
@@ -310,16 +310,14 @@ function reportCard(r){
   </article>`;
 }
 function concertAdminHtml(){
-  const gid=ui.ccGid&&groupOf(ui.ccGid)?ui.ccGid:GROUPS[0].id, mins=ui.ccMins||90, now=Date.now(), list=getConcerts(), live=liveConcert();
-  const up=list.filter(c=>!c.ended&&c.endTs>now), past=list.filter(c=>c.ended||c.endTs<=now).slice(-5).reverse();
-  const row=c=>{ const on=live&&live.id===c.id; return `<div class="cc-row ${on?"on":""}"><span class="cc-av g-ico" style="background:${grad(groupOf(c.gid).g)}">${gIcoIn(groupOf(c.gid))}</span><span class="cc-i"><b>${esc(groupOf(c.gid).name)}・${esc(c.title)}</b><small>${on?"● 進行中・":""}${evWhen(c.startTs)} – ${fsWhen(c.endTs).split(" ")[1]}</small></span>
-    ${on?"":`<button class="del" data-a="ccDel" data-id="${c.id}">刪除</button>`}</div>`; };
-  return `<section class="card studio"><div class="foc-cfg-h"><h3>演唱會燈海</h3><span class="badge">${live?"進行中":"排程"}</span></div>
-    
-    ${up.length?`<label class="foc-lab">即將舉行</label>${up.map(row).join("")}`:`<p class="muted" style="margin:6px 0 0">目前沒有演唱會</p>`}
-    ${past.length?`<label class="foc-lab">已結束</label>${past.map(c=>`<div class="cc-row done"><span class="cc-av g-ico" style="background:${grad(groupOf(c.gid).g)}">${gIcoIn(groupOf(c.gid))}</span><span class="cc-i"><b>${esc(groupOf(c.gid).name)}・${esc(c.title)}</b><small>${evWhen(c.startTs)}</small></span></div>`).join("")}`:""}
-  </section>`;
-}
+  const now=Date.now(), list=getConcerts(), live=liveConcert(), up=list.filter(c=>!c.ended&&c.startTs>now), L=list.filter(c=>!c.ended&&c.startTs<=now&&c.endTs>now), past=list.filter(c=>c.ended||c.endTs<=now).slice(-10).reverse();
+  const cur=xvSegCur("cc",L.length?"live":"up"), rows=cur==="up"?up:cur==="live"?L:past;
+  const row=c=>{ const g=groupOf(c.gid), on=live&&live.id===c.id, done=c.ended||c.endTs<=now; return xvRow({...xvGAv(c.gid),title:`${esc(g.name)}・${esc(c.title)}`,sub:`${evWhen(c.startTs)} – ${fsWhen(c.endTs).split(" ")[1]}・${c.tour?"世巡自動排的":c.host?"藝人排的":"公司排的"}`,right:on?xvChip("● 進行中","ok"):done?xvChip("已結束"):`${xvChip("等開演","on")}<button class="xv-bt g" data-a="ccDel" data-id="${c.id}">刪除</button>`}); };
+  return `<div class="xv cc2">${xvStats([[up.length,"接下來"],[L.length,"進行中"],[past.length,"最近結束"]])}
+    <div style="margin-top:12px">${xvSeg("cc",[["up",`接下來 ${up.length}`],["live",`進行中 ${L.length}`],["done",`已結束 ${past.length}`]],cur)}</div>
+    <div style="margin-top:12px">${rows.length?rows.map(row).join(""):xvEmpty(cur==="up"?"沒有排好的演唱會":cur==="live"?"現在沒有演唱會":"還沒有結束的演唱會")}</div>
+    <p class="xv-note">演唱會由藝人在 FOC 開（可以約 10 分鐘後），世巡核准後也會自動排；積分一個月算一場</p>
+    ${xvSh("共用設定")}</div>`; }
 function lsAdminHtml(){
   const gid=ui.lsGid&&groupOf(ui.lsGid)?ui.lsGid:GROUPS[0].id, g=groupOf(gid), has=!!getSticks()[gid], dr=ui.lsDraft, ds=dr&&dr.ds;
   const c=GRADS[g.g%GRADS.length], sw=[...new Set([...((ds&&ds.glows)||[]),ds&&ds.detGlow,c[0],c[1],"#F472B6","#60A5FA","#34D399","#FBBF24","#FFFFFF"].filter(Boolean))];

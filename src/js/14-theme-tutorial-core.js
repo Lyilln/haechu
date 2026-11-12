@@ -94,10 +94,15 @@ function viewArtistFoc(mid,p){
   const wk=curWeek(), wt=weekType(wk), ws=getMShow().wins[wk]||{}, wonShows=SHOWS.filter(x=>{ const sg=songOf(ws[x.id]); return sg&&sg.gid===gid; }), mcs=mcShows(mid);
   const sts=[...getMShow().songs,...(getMShow().ended||[])].filter(x=>x.gid===gid).map(x=>songStats(x.id)), wins=sts.reduce((n,x)=>n+x.wins.length,0), hasAK=sts.some(x=>x.aks.length), hasPAK=sts.some(x=>x.pak), hasFive=sts.some(x=>x.five), hasCrown=sts.some(x=>x.crowns.length);
   const now=new Date(), left=(7-now.getDay())%7, yearPts=groupMusicPts(gid,{year:String(now.getFullYear())})+tourPts(gid,{year:String(now.getFullYear())});
-  if(p==="concert") return focHead("演唱會")+`<main class="page foc foc-conc">
-      ${mine||nc?`<section class="card foc-c"><div class="foc-cc ${mine?"on":""}"><b>${mine?`✺ 進行中・${esc(ls.title)}`:`下一場：${esc(nc.title)}`}</b><small>${mine?`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`:`${evWhen(nc.startTs)} 開始`}</small></div>
-      ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:canCtl(nc,mid)?`<button class="btn btn-main btn-block cc-ctl" data-a="ccNow" data-id="${nc.id}">現在開始演唱會</button>`:""}</section>`:acOpenCard(mid)}
-      ${!mine&&demoOn()?`<button class="foc-demo" data-a="lsDemo">先看看燈控台長怎樣 ›</button>`:""}</main>`;
+  if(p==="concert"){ const mon=new Date(), ym=`${mon.getFullYear()}-${mon.getMonth()}`, done=getConcerts().filter(c=>c.gid===gid&&(c.ended||c.endTs<=Date.now())), monN=done.filter(c=>{ const d=new Date(c.startTs); return `${d.getFullYear()}-${d.getMonth()}`===ym&&!c.tour; }).length;
+    const hero=mine?xvHero({tone:"k",tag:"● 進行中",small:"演唱會現場",title:esc(ls.title),meta:`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`,btns:[["🎤 進入演唱會現場",`data-a="stOn" class="st-enter"`]]})
+      :nc?xvHero({tone:"k",tag:nc.tour?"世巡":"下一場",small:"下一場演唱會",title:esc(nc.title),meta:`${evWhen(nc.startTs)} 開始${monN?"":`・這個月第 1 場（+5,000）`}`,cd:xvCd(nc.startTs),btns:canCtl(nc,mid)?[["現在開始演唱會",`data-a="ccNow" data-id="${nc.id}" class="cc-ctl"`]]:[]})
+      :xvHero({tone:"k",small:"LIVE SYNC",title:"開一場演唱會",meta:`2 小時・選歌單、互動歌，粉絲進場變成燈海${monN?"":"・這個月第 1 場 +5,000"}`});
+    return focHead("演唱會")+`<main class="page foc foc-conc xv cc2">${hero}${xvStats([[done.length,"辦過"],[monN,"這個月"],[getConcerts().filter(c=>c.gid===gid&&!c.ended&&c.startTs>Date.now()).length,"排好的"]])}
+      ${mine||nc?"":xvSh("開一場")+acOpenCard(mid)}
+      ${!mine&&demoOn()?`<button class="foc-demo" data-a="lsDemo">先看看燈控台長怎樣 ›</button>`:""}
+      ${xvSh("現場可以做什麼")}${xvHow([["🎵","照歌單<br>播歌"],["💡","換燈色<br>放效果"],["🪧","回應<br>應援板"],["🌊","看燈海<br>即時反應"]])}
+      <p class="xv-note">演唱會積分一個月算一場（世巡的站另外算），再開不會多加分</p></main>`; }
   if(p==="truck") return focHead("應援餐車")+viewTruckArtist(mid);
   if(p==="biz") return focHead("代言・雜誌")+viewBizArtist(mid,route().id);
   if(p==="cafe") return focHead("生日咖啡廳")+viewCafe(route().id||mid);
@@ -136,6 +141,20 @@ const FIC={
 const CORE_SECTIONS={tour:"世巡 世界巡演 巡演 tour 地圖",truck:"應援餐車 餐車 咖啡車 應援 truck",news:"新聞 news 娛樂 快訊 一位 出道 回歸",card:"PHOTOCARD 抽卡 卡冊 小卡 photocard",survival:"選秀宇宙 survival project 宇宙 選秀",promo:"打歌戰場 promotion 正在打歌中的藝人 打歌 戰場 藝人",live:"體感演唱會 live sync 演唱會 體感 應援 應援棒",meet:"90s 簽售 meet greet 簽售"};
 const PLAY='<svg viewBox="0 0 24 24" fill="currentColor"><path d="M8 5.5v13l11-6.5z"/></svg>';
 function coreStickGroup(){ const ls=lightsea(); if(ls) return ls.gid; const f=followed(), p=S.get(K.pick,null), cg=curGrp(); if(cg!=="all"&&f.includes(cg)&&!ui.coreStick) return cg; if(ui.coreStick&&f.includes(ui.coreStick)) return ui.coreStick; return p&&f.includes(p)?p:(f[0]||GROUPS[0].id); }
+/* 粉絲端演唱會入口（11/12 改版）：大卡 → 我的應援棒 → 應援板 → 怎麼玩 → 接下來 → 之前的 */
+function ccFanPage(){ const ls=lightsea(), lg=ls&&groupOf(ls.gid), sg=coreStickGroup(), fg=followed(), n=Date.now(), nx=getConcerts().filter(c=>!c.ended&&c.startTs>n), nxf=nx.filter(c=>fg.includes(c.gid)), nc=nxf[0]||nx[0], hs=hasStick(sg);
+  const past=getConcerts().filter(c=>(c.ended||c.endTs<=n)&&fg.includes(c.gid)).slice(-3).reverse();
+  const hero=ls?xvHero({tone:"k",tag:"● LIVE",small:`${esc(lg.name)} LIVE`,title:esc(ls.title),meta:`進行到 ${fsWhen(ls.endTs).split(" ")[1]}・藝人正在控燈`,btns:[["進入演唱會・舉起應援棒",`data-a="concertOn"`]]})
+    :nc?xvHero({tone:"k",tag:nc.tour?"世巡":"即將開演",small:`${esc(groupOf(nc.gid).name)} LIVE`,title:esc(nc.title),meta:`${evWhen(nc.startTs)} 開始・時間到就能進場`,cd:xvCd(nc.startTs)})
+    :xvHero({tone:"k",small:"LIVE SYNC 演唱會燈海",title:"目前沒有排定的演唱會",meta:"藝人開演唱會時這裡會通知你，進場就能一起變成燈海"});
+  return `<div class="xv cc2">${hero}${!ls&&demoOn()?`<button class="btn btn-soft btn-block" style="margin-top:10px" data-a="lsDemo">示範：直接進演唱會看看</button>`:""}
+    ${xvSh("我的應援棒",hs?"官方款":"通用款")}
+    ${!ls&&fg.length>1?`<div class="cl-gs">${fg.map(id=>`<button class="${id===sg?"on":""}" data-a="coreStick" data-v="${id}">${esc(groupOf(id).name)}</button>`).join("")}</div>`:""}
+    <div class="card core-live cc2-stick"><div class="ls-stage"><span class="ls-tag">${hs?esc(groupOf(sg).name)+" 官方應援棒":"通用應援棒"}</span><div class="ls-box" data-ls="${hs?sg:"generic"}"></div>${hs?"":`<button class="ls-buy" data-a="tab" data-v="shop">到 SHOP 買 ${esc(groupOf(sg).name)} 官方應援棒，或加入 Membership 直接擁有</button>`}</div></div>
+    ${bdConcert()?xvRow({av:"🪧",sq:1,avStyle:"background:var(--s2)",title:"我的應援板",sub:"演唱會時舉起來，被藝人回應 +30",right:xvBtn("製作",`data-a="bdOpen"`)}):""}
+    ${xvSh("怎麼玩")}${xvHow([["🔦","進場<br>舉應援棒"],["🌈","燈色跟著<br>藝人變"],["🪧","舉應援板<br>被回應 +30"],["🥁","節奏挑戰<br>S 級 +300"]])}
+    ${nx.length>(ls?0:1)?xvSh("接下來",`${nx.length-(ls?0:1)} 場`)+nx.filter(c=>c!==nc||ls).slice(0,4).map(c=>xvRow({...xvGAv(c.gid),title:`${esc(groupOf(c.gid).name)}・${esc(c.title)}`,sub:evWhen(c.startTs),right:c.tour?xvChip("世巡","on"):""})).join(""):""}
+    ${past.length?xvSh("之前的演唱會")+past.map(c=>xvRow({...xvGAv(c.gid),title:`${esc(groupOf(c.gid).name)}・${esc(c.title)}`,sub:evWhen(c.startTs),right:xvChip("已結束")})).join(""):""}</div>`; }
 function coreConcertCard(){ const ls=lightsea(), lg=ls&&groupOf(ls.gid), sg=coreStickGroup(), fg=followed(), nx=getConcerts().filter(c=>!c.ended&&c.startTs>Date.now()), nxf=nx.filter(c=>fg.includes(c.gid)), nc=nxf[0]||nx[0], hs=hasStick(sg);
       return `<div class="card core-live ${ls?"on":""}"><div class="cl-h"><div><span>LIVE SYNC 演唱會燈海</span><h4>${ls?`<i class="cl-dot"></i>${esc(lg.name)}・${esc(ls.title)}`:nc?`下一場：${esc(groupOf(nc.gid).name)}・${esc(nc.title)}`:"目前沒有排定的演唱會"}</h4>
         <small class="cl-sub">${ls?`進行到 ${fsWhen(ls.endTs).split(" ")[1]}・藝人正在控燈`:nc?`${evWhen(nc.startTs)} 開始・時間到就能進場`:""}</small></div>✨</div>

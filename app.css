@@ -6713,3 +6713,7 @@ main.foc.xv{padding-top:18px}
 .fs2-tip{font-size:11px;color:var(--ink-3);margin-top:14px}
 .fs2-done .fs2-alb{width:min(78vw,300px);transform:rotate(-3deg);margin:10px auto 16px;filter:drop-shadow(0 18px 30px rgba(0,0,0,.3))}.fs2-done .fs2-alb .fs-alb{width:100%}
 .fs2-btns{display:flex;gap:8px;margin-top:16px;width:100%;max-width:340px}.fs2-btns .xv-bt{flex:1;padding:12px}
+/* 演唱會（cc2-） */
+.cc2 .cl-gs{margin:0 0 8px}.cc2-stick{margin:0;padding:10px}.cc2-stick .ls-stage{margin:0}
+.cc2 .lsp{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:14px}
+.cc2 .foc-demo{margin-top:10px}

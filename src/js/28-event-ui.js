@@ -5,7 +5,7 @@
    ========================================================= */
 /* 大卡：o={tone,tag,small,title,meta,cd:[[值,字],...],btns:[[字,屬性,次要?],...],extra,cls,style} */
 function xvHero(o){ const cd=o.cd&&o.cd.length?`<div class="xv-cd">${o.cd.map(([v,l,w])=>`<div${w?` style="flex:${w}"`:""}><b>${v}</b><span>${l}</span></div>`).join("")}</div>`:"";
-  const bt=o.btns&&o.btns.length?`<div class="xv-hb">${o.btns.map(([l,a,s])=>`<button class="${s?"s":""}" ${a||""}>${l}</button>`).join("")}</div>`:"";
+  const bt=o.btns&&o.btns.length?`<div class="xv-hb">${o.btns.map(([l,a,s])=>{ a=a||""; let c=s?"s":""; a=a.replace(/class="([^"]*)"/,(m,k)=>{ c+=" "+k; return ""; }); return `<button class="${c.trim()}" ${a}>${l}</button>`; }).join("")}</div>`:"";
   return `<section class="xv-hero ${o.tone||""} ${o.cls||""}" ${o.style?`style="${o.style}"`:""}>${o.tag?`<span class="xv-tag">${o.tag}</span>`:""}${o.small?`<small>${o.small}</small>`:""}<h2>${o.title||""}</h2>${o.meta?`<p>${o.meta}</p>`:""}${o.extra||""}${cd}${bt}</section>`; }
 /* 倒數：回傳 [[天],[時],[分]]，不到一天就時/分 */
 function xvCd(ts){ let s=Math.max(0,Math.floor((ts-Date.now())/1000)); const d=Math.floor(s/86400); s%=86400; const h=Math.floor(s/3600), m=Math.floor(s%3600/60);
