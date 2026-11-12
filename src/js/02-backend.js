@@ -308,7 +308,10 @@ const BUILD=window.HC_BUILD||"dev";   /* 版本號寫在 index.html（build.py �
 async function verPrefetch(v){ try{ const r=await fetch("index.html?v="+encodeURIComponent(v),{cache:"no-store"}); if(!r.ok) return; const t=await r.text();
   const L=[...new Set([...t.matchAll(/(?:src|href)="((?:app\.(?:js|css)|vendor\/[^"]+)\?v=[^"]+)"/g)].map(m=>m[1]))]; await Promise.all(L.map(u=>fetch(u).then(x=>x.ok&&x.blob()).catch(()=>{}))); }catch(e){} }
 async function verCheck(){ if(!HB_ON||BUILD==="dev") return; try{ const r=await fetch("version.txt?t="+Date.now(),{cache:"no-store"}); if(!r.ok) return; const v=(await r.text()).trim();
-  if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); await verPrefetch(v); toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
+  if(v&&v!==BUILD&&(ui.verNew!==v||Date.now()-(ui.verTs||0)>30*60e3)){ ui.verNew=v; ui.verTs=Date.now(); await verPrefetch(v);
+    /* 登入頁（還沒登入）不跳提示：沒在打字就直接安靜換成新版，有打字就等下次 */
+    let si=null; try{ si=session(); }catch(e){} if(!si){ if(![...document.querySelectorAll("input,textarea")].some(x=>String(x.value||"").trim())) location.replace(location.pathname+"?v="+encodeURIComponent(v)+location.hash); return; }
+    toast("HAECHU 有新版本","更新","appReload"); } }catch(e){} }
 let verHid=0; document.addEventListener("visibilitychange",()=>{ if(document.hidden){ verHid=Date.now(); return; }   /* 離開 App 一陣子再回來、又有新版本：沒在打字就直接換新版（舊版的手機會把資料弄亂） */
   if(ui.verNew&&ui.verNew!==BUILD&&verHid&&Date.now()-verHid>90e3&&!ui.snDraft&&![...document.querySelectorAll("textarea,input")].some(x=>x.type!=="file"&&x.type!=="range"&&x.type!=="checkbox"&&String(x.value||"").trim())){ try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew)+location.hash); } });
 setInterval(verCheck,5*60e3); document.addEventListener("visibilitychange",()=>{ if(!document.hidden) verCheck(); }); setTimeout(verCheck,2500);
