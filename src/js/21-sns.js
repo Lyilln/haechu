@@ -77,7 +77,8 @@ function snFolFix(d){ const me=snMeId(), k="daisuki_sn_folfix", done=S.get(k,{})
 function snSuggest(d){ const me=snMeId(), fol=snFol(d,me); let dis=[]; try{ dis=JSON.parse(localStorage.getItem("hc_sndis_"+me)||"[]"); }catch(e){} return Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&"m:"+id!==me&&!fol.includes("m:"+id)&&!dis.includes("m:"+id)&&!snLockOf(id)).map(id=>"m:"+id).sort((a,b)=>snFollowers(d,b)-snFollowers(d,a)).slice(0,12); }
 /* 私人帳號：要對方按「確認」才能追蹤；沒追蹤的人看不到貼文、限時動態 */
 /* 粉絲轉成藝人：以前的一般 SNS 帳號一律是私人帳號（不能改成公開，也不會出現在別人的推薦裡） */
-const snForcePriv=uid=>{ if(!String(uid||"").startsWith("u:")) return false; const a=ACCOUNTS[uid.slice(2)]; return !!(a&&a.member&&MEMBERS[a.member]); };
+/* 出道後的舊粉絲帳號固定私人。管理員除外（管理員同時是粉絲、藝人、管理，粉絲帳號本來就要大家看得到；跟「出道清空舊帳號」一樣不算管理員） */
+const snForcePriv=uid=>{ if(!String(uid||"").startsWith("u:")) return false; const a=ACCOUNTS[uid.slice(2)]; return !!(a&&a.role!=="admin"&&a.member&&MEMBERS[a.member]); };
 const snPriv=(d,uid)=>snForcePriv(uid)||!!((d.prof[uid]||{}).priv);
 /* 私人帳號：只有追蹤他的人看得到（11/12：管理員也一樣，不再例外；出道後的舊帳號也照這個規則藏起來） */
 const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid); };
@@ -367,7 +368,12 @@ function snFix1(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix1",false)) retur
   const pid=new Set(d.posts.map(p=>p.id)); Object.keys(d.rp||{}).forEach(k=>{ d.rp[k]=(d.rp[k]||[]).filter(x=>pid.has(x.id)); });
   Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.member&&MEMBERS[a.member]){ const id="u:"+String(e).toLowerCase(); (d.prof[id]=d.prof[id]||{}).priv=true; } });
   snSave(d); S.set("daisuki_sn_fix1",Date.now()); }catch(e){} }
-setTimeout(function snFixGo(){ if(typeof session==="function"&&session()&&(!HB_ON||HB.tok&&Object.keys(HB.ver||{}).length)) snFix1(); else setTimeout(snFixGo,5000); },7000);
+/* 11/12：以前那次整理把「管理員的粉絲帳號」也一起設成私人帳號 → 今天限時動態照私人帳號規則藏起來後，別人就看不到管理員發的限動（看起來像被刪掉）。
+   管理員的粉絲帳號改回公開（只做一次；之後管理員自己要設私人還是可以） */
+function snFix2(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix2",false)) return; if(HB_ON&&HB.ver[snKey("prof")]==null&&HB.ver[snKey("posts")]==null) return;
+  const d=snDB(); let ch=false; Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(!a||a.role!=="admin") return; const id="u:"+String(e).toLowerCase(), pr=d.prof[id]; if(pr&&pr.priv){ pr.priv=false; ch=true; } });
+  if(ch) snSave(d); S.set("daisuki_sn_fix2",Date.now()); }catch(e){} }
+setTimeout(function snFixGo(){ if(typeof session==="function"&&session()&&(!HB_ON||HB.tok&&Object.keys(HB.ver||{}).length)) snFix1(), snFix2(); else setTimeout(snFixGo,5000); },7000);
 /* ===== #標籤頁、粉絲／追蹤中名單、最近搜尋 ===== */
 function snTagPage(d,tag){ const t=String(tag||"").toLowerCase(), P=d.posts.filter(p=>snTagsOf(p).includes(t)&&snCanSee(d,p.uid)&&!(snPriv(d,p.uid)&&p.uid!==snMeId()&&!snFol(d,snMeId()).includes(p.uid))).sort((a,b)=>snLikes(d,b)-snLikes(d,a));
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>#${esc(t)}</b><span class="sn-sp"></span></header>

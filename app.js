@@ -10049,7 +10049,8 @@ function snFolFix(d){ const me=snMeId(), k="daisuki_sn_folfix", done=S.get(k,{})
 function snSuggest(d){ const me=snMeId(), fol=snFol(d,me); let dis=[]; try{ dis=JSON.parse(localStorage.getItem("hc_sndis_"+me)||"[]"); }catch(e){} return Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&"m:"+id!==me&&!fol.includes("m:"+id)&&!dis.includes("m:"+id)&&!snLockOf(id)).map(id=>"m:"+id).sort((a,b)=>snFollowers(d,b)-snFollowers(d,a)).slice(0,12); }
 /* 私人帳號：要對方按「確認」才能追蹤；沒追蹤的人看不到貼文、限時動態 */
 /* 粉絲轉成藝人：以前的一般 SNS 帳號一律是私人帳號（不能改成公開，也不會出現在別人的推薦裡） */
-const snForcePriv=uid=>{ if(!String(uid||"").startsWith("u:")) return false; const a=ACCOUNTS[uid.slice(2)]; return !!(a&&a.member&&MEMBERS[a.member]); };
+/* 出道後的舊粉絲帳號固定私人。管理員除外（管理員同時是粉絲、藝人、管理，粉絲帳號本來就要大家看得到；跟「出道清空舊帳號」一樣不算管理員） */
+const snForcePriv=uid=>{ if(!String(uid||"").startsWith("u:")) return false; const a=ACCOUNTS[uid.slice(2)]; return !!(a&&a.role!=="admin"&&a.member&&MEMBERS[a.member]); };
 const snPriv=(d,uid)=>snForcePriv(uid)||!!((d.prof[uid]||{}).priv);
 /* 私人帳號：只有追蹤他的人看得到（11/12：管理員也一樣，不再例外；出道後的舊帳號也照這個規則藏起來） */
 const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid); };
@@ -10339,7 +10340,12 @@ function snFix1(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix1",false)) retur
   const pid=new Set(d.posts.map(p=>p.id)); Object.keys(d.rp||{}).forEach(k=>{ d.rp[k]=(d.rp[k]||[]).filter(x=>pid.has(x.id)); });
   Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.member&&MEMBERS[a.member]){ const id="u:"+String(e).toLowerCase(); (d.prof[id]=d.prof[id]||{}).priv=true; } });
   snSave(d); S.set("daisuki_sn_fix1",Date.now()); }catch(e){} }
-setTimeout(function snFixGo(){ if(typeof session==="function"&&session()&&(!HB_ON||HB.tok&&Object.keys(HB.ver||{}).length)) snFix1(); else setTimeout(snFixGo,5000); },7000);
+/* 11/12：以前那次整理把「管理員的粉絲帳號」也一起設成私人帳號 → 今天限時動態照私人帳號規則藏起來後，別人就看不到管理員發的限動（看起來像被刪掉）。
+   管理員的粉絲帳號改回公開（只做一次；之後管理員自己要設私人還是可以） */
+function snFix2(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix2",false)) return; if(HB_ON&&HB.ver[snKey("prof")]==null&&HB.ver[snKey("posts")]==null) return;
+  const d=snDB(); let ch=false; Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(!a||a.role!=="admin") return; const id="u:"+String(e).toLowerCase(), pr=d.prof[id]; if(pr&&pr.priv){ pr.priv=false; ch=true; } });
+  if(ch) snSave(d); S.set("daisuki_sn_fix2",Date.now()); }catch(e){} }
+setTimeout(function snFixGo(){ if(typeof session==="function"&&session()&&(!HB_ON||HB.tok&&Object.keys(HB.ver||{}).length)) snFix1(), snFix2(); else setTimeout(snFixGo,5000); },7000);
 /* ===== #標籤頁、粉絲／追蹤中名單、最近搜尋 ===== */
 function snTagPage(d,tag){ const t=String(tag||"").toLowerCase(), P=d.posts.filter(p=>snTagsOf(p).includes(t)&&snCanSee(d,p.uid)&&!(snPriv(d,p.uid)&&p.uid!==snMeId()&&!snFol(d,snMeId()).includes(p.uid))).sort((a,b)=>snLikes(d,b)-snLikes(d,a));
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>#${esc(t)}</b><span class="sn-sp"></span></header>
@@ -12705,16 +12711,16 @@ function steStageEvents(){ const st=steEl(); if(!st) return; const P=new Map(); 
 function steTextOpen(i){ const it=i!=null?STE.items[i]:null; STE.edit=i!=null?i:null; if(it){ STE.col=it.col; STE.font=it.font; STE.bg=it.bg; STE.al=it.al; STE.fx=it.fx||""; }
   const p=document.getElementById("stePanel"); if(!p) return; p.className="ste-panel txtp on";
   p.innerHTML=`<div class="ste-ptop"><button class="ste-chip" data-a="snEdFont">${STE_FONT[STE.font][0]}</button><button class="ste-chip ${STE.bg?"on":""}" data-a="snEdBgT" aria-label="文字底色"><b>A</b></button><button class="ste-chip ${STE.fx?"on":""}" data-a="snEdFx">${STE_FX.find(f=>f[0]===(STE.fx||""))[1]}</button><button class="ste-chip" data-a="snEdAlign" aria-label="對齊">${STE.al==="center"?"置中":STE.al==="left"?"靠左":"靠右"}</button><span class="sn-sp"></span><button class="ste-done" data-a="snEdTextOk">完成</button></div>
-    <div class="ste-mid"><textarea id="steTxt" class="ste-ta al-${STE.al}" rows="1" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea></div>
-    <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.col?"on":""}" data-a="snEdCol" data-v="${c}" style="background:${c}" aria-label="顏色"></button>`).join("")}</div>`;
+    <div class="ste-cols">${STE_COL.map(c=>`<button class="${c===STE.col?"on":""}" data-a="snEdCol" data-v="${c}" style="background:${c}" aria-label="顏色"></button>`).join("")}</div>
+    <div class="ste-mid"><textarea id="steTxt" class="ste-ta al-${STE.al}" rows="1" maxlength="200" placeholder="輸入文字" style="font:${STE_FONT[STE.font][1]};color:${STE.bg?"#fff":STE.col}">${it?esc(it.txt):""}</textarea></div>`;
   steTapKeep(p); const t0=document.getElementById("steTxt"); if(t0){ t0.addEventListener("input",()=>steTaGrow(t0)); steTaGrow(t0); }
   steKbFit(); setTimeout(()=>{ const t=document.getElementById("steTxt"); if(t){ t.focus(); t.setSelectionRange(t.value.length,t.value.length); } },60); }
 /* 字框跟著字長高（不再整片撐滿 → 字在畫面中間，不會頂在最上面） */
 function steTaGrow(t){ t.style.height="auto"; t.style.height=Math.min(t.scrollHeight,innerHeight*.45)+"px"; }
 /* 打字面板＝鍵盤上方看得到的那一塊（App 有 zoom，先量 1px 畫出來多大再換算；跟留言頁同一招） */
-function steKbFit(){ const p=document.getElementById("stePanel"), vv=window.visualViewport; if(!p||!vv||!p.classList.contains("txtp")) { if(p){ p.style.top=""; p.style.height=""; p.style.bottom=""; } return; }
-  p.style.bottom="auto"; p.style.top="0px"; p.style.height="1000px"; const r=p.getBoundingClientRect(), k=r.height/1000||1, t0=r.top/k;
-  p.style.top=(vv.offsetTop/k-t0)+"px"; p.style.height=(vv.height/k)+"px"; }
+/* 11/12 改：不再跟著鍵盤算位置（iPhone 上算錯會整片往下掉）。打字面板固定蓋滿整個畫面，
+   字型、顏色、輸入框都放在上半部，鍵盤怎麼彈都蓋不到 */
+function steKbFit(){ const p=document.getElementById("stePanel"); if(p){ p.style.top=""; p.style.height=""; p.style.bottom=""; } }
 if(window.visualViewport){ let q=0; const f=()=>{ if(q) return; q=requestAnimationFrame(()=>{ q=0; steKbFit(); }); }; visualViewport.addEventListener("resize",f); visualViewport.addEventListener("scroll",f); }
 /* iPhone：手指點顏色／按鈕時，字框不能失去焦點（失焦 → 鍵盤收起、畫面跳，點的那一下就落空，顏色換不了）。
    自己判斷「是點、不是在滑顏色列」→ 擋掉系統的失焦，直接觸發那顆按鈕 */
@@ -12722,7 +12728,10 @@ function steTapKeep(p){ if(p._tk) return; p._tk=1; let b=null, x0=0, y0=0;
   p.addEventListener("touchstart",e=>{ b=e.target.closest&&e.target.closest("button"); if(b&&!p.contains(b)) b=null; const t=e.touches[0]; x0=t.clientX; y0=t.clientY; },{passive:true});
   p.addEventListener("touchmove",e=>{ const t=e.touches[0]; if(b&&(Math.abs(t.clientX-x0)>8||Math.abs(t.clientY-y0)>8)) b=null; },{passive:true});
   p.addEventListener("touchend",e=>{ if(!b||!p.classList.contains("txtp")) { b=null; return; } const x=b; b=null; e.preventDefault(); x.click(); });
-  p.addEventListener("mousedown",e=>{ if(p.classList.contains("txtp")&&e.target.closest("button")) e.preventDefault(); }); }
+  p.addEventListener("mousedown",e=>{ if(p.classList.contains("txtp")&&e.target.closest("button")) e.preventDefault(); });
+  /* 點灰色的任何空白地方＝完成（跟 IG 一樣，不用一定要按「完成」） */
+  let tx=0, ty=0; p.addEventListener("pointerdown",e=>{ tx=e.clientX; ty=e.clientY; });
+  p.addEventListener("click",e=>{ if(!p.classList.contains("txtp")) return; if(e.target.closest("button,textarea,.ste-cols,.ste-ptop")) return; if(Math.abs(e.clientX-tx)>10||Math.abs(e.clientY-ty)>10) return; const d=p.querySelector('[data-a="snEdTextOk"]'); if(d) d.click(); }); }
 function steTextOk(){ const t=document.getElementById("steTxt"), v=((t||{}).value||"").replace(/\s+$/,""), p=document.getElementById("stePanel");
   if(v&&!isAdminAcct()&&banBlock(v)) return;
   if(STE.edit!=null){ const it=STE.items[STE.edit]; if(v) Object.assign(it,{txt:v,col:STE.col,font:STE.font,bg:STE.bg,al:STE.al,fx:STE.fx||""}); else STE.items.splice(STE.edit,1); }

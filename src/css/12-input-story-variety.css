@@ -363,3 +363,9 @@ header.top,.nav-in{-webkit-backface-visibility:hidden;backface-visibility:hidden
 input[type="date"].a-nick-in,input[type="datetime-local"].a-nick-in{-webkit-appearance:none;appearance:none;display:block;width:100%;max-width:100%;min-width:0;box-sizing:border-box;height:44px;line-height:44px;padding-top:0;padding-bottom:0}
 input[type="date"].a-nick-in::-webkit-date-and-time-value,input[type="datetime-local"].a-nick-in::-webkit-date-and-time-value{text-align:center;margin:0}
 
+
+/* 11/12 限動打字：整片蓋滿、全部放上半部（字型列 → 顏色列 → 輸入的字），鍵盤不會蓋到 */
+.ste-panel.txtp{top:0!important;bottom:0!important;height:auto!important}
+.ste-panel.txtp .ste-cols{margin-top:10px;touch-action:pan-x;overscroll-behavior-x:contain}
+.ste-panel.txtp .ste-mid{flex:none;align-items:flex-start;padding:9vh 0 0}
+.ste:has(.ste-panel.txtp.on) :is(.ste-tools,.ste-top,.ste-bot){opacity:0!important;pointer-events:none!important}
