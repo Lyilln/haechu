@@ -1023,6 +1023,7 @@ const PT_RULES_DEF=`#KISS
 ➞打卡 +50｜一天一次
 ➞sns發文（粉絲）+50｜一則，一天最多 150 分
 ➞sns發文（藝人）+50｜一則，一天最多 150 分
+➞sns投稿（還沒開通 sns 的藝人，投給團體／公司帳號）+50｜一則，跟 sns 發文（藝人）共用一天 150 分上限
 ➞宣群（附截圖）+100｜一個群，一天最多 1,000 分
 ➞給予回饋 +100｜一個 Bug
 ➞帶領新人 +100｜只要有做出這個舉動都可加，一天最多 300 分
@@ -1057,11 +1058,14 @@ const PT_RULES_DEF=`#KISS
 ✦ 舞台與里程碑
 ➞出道 showcase +3,000
 ➞回歸 +2,000
-➞打歌一位 +3,000
-➞MC +1,000｜一次
+➞打歌一位 +3,000｜一個節目一次
+➞5 台冠軍 +5,000｜同一首歌拿過五個節目的一位
+➞AK +10,000｜同一週五個節目全拿
+➞PAK +15,000｜連續 4 個排名週都有一位
+➞MC +1,000｜主持一個節目，一週一次
 ➞見面會、簽售 +1,000｜一場
-➞演唱會 +5,000｜一場
-➞月度大賞 +3,000
+➞演唱會 +5,000｜一個月一場（世巡的站另外算）
+➞世巡 +5,000｜一站，一年一次世巡、最多 5 站
 ➞年末大賞 +7,000
 ➞被選為結尾妖精（團體藝人）+200｜一個舞台一次（自動）
 
@@ -1072,6 +1076,7 @@ const PT_RULES_DEF=`#KISS
 ➞綜藝留言應援（粉絲）+10｜一天最多 50 分（自動）
 ➞代言・雜誌（藝人）+？？｜看邀約
 ➞代言按讚（粉絲）+10｜一張一次，一天最多 50 分（自動）
+➞演唱會應援板被藝人回應（粉絲）+30｜一塊（自動）
 ➞生日咖啡廳到店（藝人）+300｜一年一次（自動）
 ➞生日咖啡廳留言卡（粉絲）+30｜一家店一次（自動）
 ➞幫忙佈置咖啡廳（粉絲）+50｜一家店最多 150 分（自動）
@@ -1092,6 +1097,14 @@ const PT_RULES_DEF=`#KISS
 ➞抽小卡
 
 怎麼扣⌫
+➞TIE 券（一張＝一位藝人）−1,000｜7 天
+➞TIE 券（一張＝一位藝人）−3,500｜30 天
+➞TIE 券（一張＝一位藝人）−35,000｜365 天
+　✧ 續訂：買跟目前訂閱人數一樣的張數，每位都延長選的天數
+　✧ 券使用期間可以換 1 次藝人，續訂後重新算
+➞Membership −3,500｜30 天
+➞Membership −35,000｜365 天
+➞世巡門票（粉絲）−3,500｜一站，一次買剩下全部站打 9 折
 ➞訂應援餐車（粉絲）−30,000｜可以多人分攤，3 天內沒湊滿全部退回
 ➞送應援餐車（藝人）−30,000｜只能送給出道／回歸中的藝人
 ➞TIE 連續 3 天沒發訊息（藝人）｜第 4 天起，每天扣目前積分的 30%（自動）
@@ -1103,7 +1116,6 @@ const PT_RULES_DEF=`#KISS
 App 外流、情節嚴重者的處理方式請看 #NTK
 
 ≈ 標（自動）的不用登記，App 會自己加 ≈
-≈ 出道後，粉絲身分和藝人身分共用同一份積分 ≈
 ≈ 積分花掉低於門檻會降級 ≈
 
 ≈ 每日請在留言區登記積分 ≈
@@ -1395,7 +1407,7 @@ function markRoomRead(member){ const r=S.get(K.wRead,{}); r[member]=Date.now(); 
      舊對話先收起來，可在聊天室設定「載入歷史對話」找回
    ========================================================= */
 const GRACE=DAY;
-const PLANS=[{id:"d7",days:7,pts:1000,name:"7 天"},{id:"d30",days:30,pts:3500,name:"30 天"},{id:"d365",days:365,pts:38000,name:"365 天"}];
+const PLANS=[{id:"d7",days:7,pts:1000,name:"7 天"},{id:"d30",days:30,pts:3500,name:"30 天"},{id:"d365",days:365,pts:35000,name:"365 天"}];
 /* 管理員自己的藝人身分：粉絲訂 TIE 免費 */
 const tieFree=mid=>Object.keys(ACCOUNTS).some(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid&&ACCOUNTS[k].role==="admin");
 const planPts=(mid,p)=>tieFree(mid)?0:p.pts;
@@ -5258,9 +5270,9 @@ function dtDefault(){const t=new Date(Date.now()+864e5);t.setHours(20,0,0,0);ret
    ・排名週、打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
    ・一位得主由管理員在 FOC 公布
    ・同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選
-   ・積分：一位 +1000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
+   ・積分：一位 +3000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
           AK（同一週五個節目全拿）+10000／PAK（連續 4 個排名週都有一位，宣傳週不算中斷）+15000
-   ・MC：每月輪替，主持 1 個節目每週 +500、2 個 +1000、3 個 +1500、4 個 +2000、5 個 +3000
+   ・MC：每月輪替，主持一個節目每週 +1,000（照積分表 MC 一次 +1,000）
    ========================================================= */
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"MUSIC BANK",day:5},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
@@ -5281,7 +5293,7 @@ function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length;
   return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
 const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
-const MSP={win:1000,five:5000,ak:10000,pak:15000}, MC_PTS=[0,500,1000,1500,2000,3000];
+const MSP={win:3000,five:5000,ak:10000,pak:15000};
 function wkDate(wk){ const [y,m,d]=wk.split("-").map(Number); return new Date(y,m-1,d); }
 function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 const curWeek=()=>weekKey(Date.now());
@@ -5322,7 +5334,7 @@ function songStats(sid){
 function groupMusicPts(gid,{year=null}={}){ const m=getMShow(); return [...m.songs,...(m.ended||[])].filter(s=>s.gid===gid).reduce((n,s)=>{ const st=songStats(s.id); if(year==null) return n+st.pts;
   return n+st.wins.filter(x=>x.wk.startsWith(year)).length*MSP.win+(st.five?MSP.five:0)+st.aks.filter(k=>k.startsWith(year)).length*MSP.ak+(st.pak&&st.pak.startsWith(year)?MSP.pak:0); },0); }
 function mcShows(mid,mon){ const m=getMShow().mc[mon||monthKey(Date.now())]||{}; return SHOWS.filter(s=>(m[s.id]||[]).includes(mid)); }
-const mcWeekly=n=>MC_PTS[Math.min(5,n)];
+const mcWeekly=n=>n*1000; /* 積分表：MC 一次 +1,000（一週主持幾個節目就幾次） */
 /* 粉絲應援：投票（排名週／打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
    // 只算真的票
 
@@ -5332,7 +5344,7 @@ const mvLikes=gid=>(S.get(K.mvLike,{})[gid]?1:0);
 
 const albumSales=(gid,since=0)=>S.get(K.sales,[]).filter(x=>x.type==="merch"&&x.gid===gid&&x.ts>=since&&/專輯/.test(x.label)).length;
 
-const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +1,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
+const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +3,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
 /* 粉絲：CORE 打歌戰場頁 */
 
 
@@ -6143,12 +6155,14 @@ const TOUR_LAND="M670 188l3 1 2 0 1-1 2-1 1-1 1-2 2-1 1-1 1 1 2 0 2 0 1 1 2-1 2-
 /* =========================================================
    世巡＋地圖
    ・藝人在 FOC 申請（名稱＋站點），管理員在 FOC → 世巡 核准／退回
-   ・核准後每一站自動排成一場「演唱會燈海」（2 小時）；粉絲用 500 點買票才能進場，進場就在地圖上蓋章
-   ・藝人每辦完一站 +2,000 積分，全部辦完再 +10,000（算在「榮譽與職務」的今年積分）
+   ・核准後每一站自動排成一場「演唱會燈海」（2 小時）；粉絲用 3,500 積分買票才能進場，進場就在地圖上蓋章
+   ・照積分表：每一站算一場演唱會 +5,000；一年一次世巡、最多 5 站（算在「今年打歌積分」的顯示）
    ・開場前藝人可以說一句話，推播給買票的粉絲
    ・核准、每站結束、全部結束都會自動出一則娛樂新聞
    ========================================================= */
-const TOUR_TIX=3500, TOUR_STOP_PTS=2000, TOUR_DONE_PTS=5000, TOUR_MINS=120;
+const TOUR_TIX=3500, TOUR_STOP_PTS=5000, TOUR_DONE_PTS=0, TOUR_MINS=120, TOUR_MAX_STOPS=5;
+/* 一年一次：同一團、同一年（看第一站）已經有審核中或核准的世巡 */
+const tourYearTaken=(gid,y)=>getTours().some(t=>t.gid===gid&&(t.status==="pending"||t.status==="approved")&&t.stops&&t.stops.length&&new Date(Math.min(...t.stops.map(x=>x.startTs))).getFullYear()===y);
 const TOUR_CITIES=[["首爾",37.57,126.98],["釜山",35.18,129.08],["東京",35.68,139.69],["大阪",34.69,135.5],["名古屋",35.18,136.91],["福岡",33.59,130.4],["台北",25.03,121.56],["高雄",22.63,120.3],["香港",22.32,114.17],["澳門",22.2,113.54],["曼谷",13.76,100.5],["新加坡",1.35,103.82],["吉隆坡",3.14,101.69],["馬尼拉",14.6,120.98],["雅加達",-6.21,106.85],["胡志明市",10.82,106.63],["雪梨",-33.87,151.21],["墨爾本",-37.81,144.96],["奧克蘭",-36.85,174.76],["洛杉磯",34.05,-118.24],["舊金山",37.77,-122.42],["西雅圖",47.61,-122.33],["拉斯維加斯",36.17,-115.14],["達拉斯",32.78,-96.8],["芝加哥",41.88,-87.63],["紐約",40.71,-74.01],["亞特蘭大",33.75,-84.39],["多倫多",43.65,-79.38],["溫哥華",49.28,-123.12],["墨西哥城",19.43,-99.13],["聖保羅",-23.55,-46.63],["布宜諾斯艾利斯",-34.6,-58.38],["聖地牙哥",-33.45,-70.67],["倫敦",51.51,-0.13],["巴黎",48.86,2.35],["柏林",52.52,13.4],["阿姆斯特丹",52.37,4.9],["馬德里",40.42,-3.7],["米蘭",45.46,9.19],["杜拜",25.2,55.27]];
 const cityOf=n=>TOUR_CITIES.find(c=>c[0]===n);
 /* 地圖投影（Miller）：跟 TOUR_LAND 的陸地是同一套，寬 1000、高 474 */
@@ -6215,7 +6229,7 @@ function viewTourArtist(mid){ const gid=MEMBERS[mid].group, mine=toursShown().fi
       ${L.map(st=>{ const s=t.status==="approved"?stopState(st):"", c=stopCC(st);
         return `<div class="tr-row ${s}"><div class="tr-i"><b>${esc(st.city)}</b><small>${evWhen(c?c.startTs:st.startTs)}${s==="done"?`・+${fmt(TOUR_STOP_PTS)}`:s==="live"?"・進行中":""}</small>${st.msg?`<p class="tr-msg">「${esc(st.msg)}」</p>`:""}</div>
           ${s==="soon"&&!st.msg&&!t.demo?`<button class="tr-btn" data-a="trSay" data-v="${t.id}" data-s="${st.id}">說一句話</button>`:s==="live"?`<button class="tr-btn on" data-a="${t.demo?"lsDemo":"stOn"}">進場</button>`:""}</div>`; }).join("")}
-      ${t.status==="approved"&&wtDone(t)?`<p class="tr-fin">巡演完成・+${fmt(TOUR_DONE_PTS)}</p>`:""}</section>`; }).join("")}</main>`; }
+      ${t.status==="approved"&&wtDone(t)?`<p class="tr-fin">巡演完成${TOUR_DONE_PTS?`・+${fmt(TOUR_DONE_PTS)}`:""}</p>`:""}</section>`; }).join("")}</main>`; }
 /* ---------- 管理員 ---------- */
 function tourAdminHtml(){ const L=getTours(), P=L.filter(t=>t.status==="pending"), A=L.filter(t=>t.status==="approved");
   const card=(t,adm)=>{ const g=groupOf(t.gid); return `<section class="card tr-a"><div class="tr-ah"><b><span class="tr-g">${esc(g.name)}</span>${esc(t.title)}</b></div>
@@ -7357,9 +7371,9 @@ function clickAdm(a,t,e,r){ switch(a){
     case "trNew": ui.trDraft={title:"",stops:[],city:TOUR_CITIES[0][0],when:""}; lsRerender(); break;
     case "trCancel": ui.trDraft=null; lsRerender(); break;
     case "trStopAdd": { trKeep(); const d=ui.trDraft; if(!d) break; const ts=d.when?new Date(d.when).getTime():NaN; if(!ts||isNaN(ts)){ toast("請選日期和時間"); break; } if(ts<Date.now()+36e5){ const m=new Date(Date.now()+36e5); toast(`要選 ${m.getMonth()+1}/${m.getDate()} ${pad(m.getHours())}:${pad(m.getMinutes())} 以後`); break; }
-      if(d.stops.some(x=>Math.abs(x.startTs-ts)<TOUR_MINS*60e3)){ toast("跟另一站的時間太近了"); break; } d.stops.push({id:"ts"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),city:d.city,startTs:ts}); d.when=""; lsRerender(); break; }
+      if(d.stops.length>=TOUR_MAX_STOPS){ toast(`一次世巡最多 ${TOUR_MAX_STOPS} 站`); break; } if(d.stops.some(x=>Math.abs(x.startTs-ts)<TOUR_MINS*60e3)){ toast("跟另一站的時間太近了"); break; } d.stops.push({id:"ts"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),city:d.city,startTs:ts}); d.when=""; lsRerender(); break; }
     case "trStopDel": { trKeep(); const d=ui.trDraft; if(d) d.stops=d.stops.filter(x=>x.id!==t.dataset.v); lsRerender(); break; }
-    case "trSubmit": { trKeep(); const d=ui.trDraft, mid=session().member||uniMe(); if(!d||!mid) break; if(!d.title.trim()){ toast("請輸入巡演名稱"); break; } if(!d.stops.length){ toast("至少要有一站"); break; }
+    case "trSubmit": { trKeep(); const d=ui.trDraft, mid=session().member||uniMe(); if(!d||!mid) break; if(!d.title.trim()){ toast("請輸入巡演名稱"); break; } if(!d.stops.length){ toast("至少要有一站"); break; } { const gid=MEMBERS[mid].group, y=new Date(d.stops.slice().sort((a,b)=>a.startTs-b.startTs)[0].startTs).getFullYear(); if(tourYearTaken(gid,y)){ toast(`${y} 年已經有一個世巡了，一年一次`); break; } }
       const tr={id:"tr"+Date.now(),gid:MEMBERS[mid].group,by:mid,title:d.title.trim(),stops:d.stops.slice().sort((a,b)=>a.startTs-b.startTs),status:"pending",ts:Date.now()};
       S.set(K.wtours,[...(S.get(K.wtours,[])||[]),tr]); ui.trDraft=null; lsRerender(); toast("已送出，等管理員核准"); break; }
     case "trApprove": tourApprove(t.dataset.v); lsRerender(); break;

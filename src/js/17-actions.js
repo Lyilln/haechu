@@ -478,9 +478,9 @@ function clickAdm(a,t,e,r){ switch(a){
     case "trNew": ui.trDraft={title:"",stops:[],city:TOUR_CITIES[0][0],when:""}; lsRerender(); break;
     case "trCancel": ui.trDraft=null; lsRerender(); break;
     case "trStopAdd": { trKeep(); const d=ui.trDraft; if(!d) break; const ts=d.when?new Date(d.when).getTime():NaN; if(!ts||isNaN(ts)){ toast("請選日期和時間"); break; } if(ts<Date.now()+36e5){ const m=new Date(Date.now()+36e5); toast(`要選 ${m.getMonth()+1}/${m.getDate()} ${pad(m.getHours())}:${pad(m.getMinutes())} 以後`); break; }
-      if(d.stops.some(x=>Math.abs(x.startTs-ts)<TOUR_MINS*60e3)){ toast("跟另一站的時間太近了"); break; } d.stops.push({id:"ts"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),city:d.city,startTs:ts}); d.when=""; lsRerender(); break; }
+      if(d.stops.length>=TOUR_MAX_STOPS){ toast(`一次世巡最多 ${TOUR_MAX_STOPS} 站`); break; } if(d.stops.some(x=>Math.abs(x.startTs-ts)<TOUR_MINS*60e3)){ toast("跟另一站的時間太近了"); break; } d.stops.push({id:"ts"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),city:d.city,startTs:ts}); d.when=""; lsRerender(); break; }
     case "trStopDel": { trKeep(); const d=ui.trDraft; if(d) d.stops=d.stops.filter(x=>x.id!==t.dataset.v); lsRerender(); break; }
-    case "trSubmit": { trKeep(); const d=ui.trDraft, mid=session().member||uniMe(); if(!d||!mid) break; if(!d.title.trim()){ toast("請輸入巡演名稱"); break; } if(!d.stops.length){ toast("至少要有一站"); break; }
+    case "trSubmit": { trKeep(); const d=ui.trDraft, mid=session().member||uniMe(); if(!d||!mid) break; if(!d.title.trim()){ toast("請輸入巡演名稱"); break; } if(!d.stops.length){ toast("至少要有一站"); break; } { const gid=MEMBERS[mid].group, y=new Date(d.stops.slice().sort((a,b)=>a.startTs-b.startTs)[0].startTs).getFullYear(); if(tourYearTaken(gid,y)){ toast(`${y} 年已經有一個世巡了，一年一次`); break; } }
       const tr={id:"tr"+Date.now(),gid:MEMBERS[mid].group,by:mid,title:d.title.trim(),stops:d.stops.slice().sort((a,b)=>a.startTs-b.startTs),status:"pending",ts:Date.now()};
       S.set(K.wtours,[...(S.get(K.wtours,[])||[]),tr]); ui.trDraft=null; lsRerender(); toast("已送出，等管理員核准"); break; }
     case "trApprove": tourApprove(t.dataset.v); lsRerender(); break;

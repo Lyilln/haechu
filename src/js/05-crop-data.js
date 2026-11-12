@@ -156,7 +156,7 @@ function markRoomRead(member){ const r=S.get(K.wRead,{}); r[member]=Date.now(); 
      舊對話先收起來，可在聊天室設定「載入歷史對話」找回
    ========================================================= */
 const GRACE=DAY;
-const PLANS=[{id:"d7",days:7,pts:1000,name:"7 天"},{id:"d30",days:30,pts:3500,name:"30 天"},{id:"d365",days:365,pts:38000,name:"365 天"}];
+const PLANS=[{id:"d7",days:7,pts:1000,name:"7 天"},{id:"d30",days:30,pts:3500,name:"30 天"},{id:"d365",days:365,pts:35000,name:"365 天"}];
 /* 管理員自己的藝人身分：粉絲訂 TIE 免費 */
 const tieFree=mid=>Object.keys(ACCOUNTS).some(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid&&ACCOUNTS[k].role==="admin");
 const planPts=(mid,p)=>tieFree(mid)?0:p.pts;
