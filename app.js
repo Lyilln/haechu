@@ -14675,14 +14675,27 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     if(claim!=null&&claim!==give&&!why.length) why.push(`${fmt(r.pts)} × ${cnt} = ${fmt(r.pts*cnt)}，登記寫 ${fmt(claim)}`);
     D.items.push({seg,r,claim,give,st:claim!=null&&claim!==give||why.length?"fix":"ok",why:why.join("・")}); D.give+=give; });
   let inf=null; if(!start&&days[0]&&days[0].said!=null){ start=Math.max(0,days[0].said-days[0].claim); inf=start; }   /* 沒填起始分數：照他第一天寫的總分推回去 */
-  let run=start||0, runC=start||0, first=null; days.forEach(D=>{ run+=D.give; runC+=D.claim; D.run=run; D.runC=runC; if(first==null&&D.claim!==D.give) first=D; if(D.said!=null&&D.said!==run) D.saidBad=true; });
-  return {days,run,runC,first,DB,inf}; }
+  let run=start||0, runC=start||0, first=null; days.forEach(D=>{ run+=D.give; runC+=D.claim; D.run=run; D.runC=runC; if(first==null&&D.claim!==D.give) first=D; });
+  /* 檢查她自己的「總」：前一天的總＋今天的共＝今天的總；中間有沒貼到的日子就不判對錯，從她寫的數字接著算 */
+  const dd=(a,b)=>Math.round((new Date(b+"T12:00:00")-new Date(a+"T12:00:00"))/864e5), addD=(a,n)=>ymdK(new Date(a+"T12:00:00").getTime()+n*864e5);
+  let base=start||0, prevSaid=start||0, prevLast=null, alt=null; const iss=[];
+  days.forEach(D=>{ const f=D.ds[0], gap=prevLast&&dd(prevLast,f)>1?[addD(prevLast,1),addD(f,-1)]:null; D.exp=base+D.claim;
+    /* 前一天看起來是「中間沒貼到」，但今天是接著「不算那段」的數字加的 → 其實是前一天總分寫錯 */
+    if(alt&&D.said!=null&&D.said!==D.exp&&D.said===alt.v+D.claim){ const G=alt.D, i=iss.findIndex(x=>x.D===G); if(i>=0) iss.splice(i,1); G.gap=null; G.addBad=true; G.exp=alt.v; iss.push({t:"add",D:G,diff:G.said-alt.v}); D.exp=alt.v+D.claim; base=D.exp; alt=null; prevSaid=D.said; prevLast=D.ds[D.ds.length-1]; return; }
+    alt=null;
+    if(D.said!=null&&D.said!==D.exp){
+      if(gap){ D.gap=gap; iss.push({t:"gap",D,from:prevSaid,mid:D.said-D.claim-prevSaid}); alt={D,v:D.exp}; base=D.said; }
+      else if(D.said===prevSaid+D.claim){ D.carry=true; base=D.exp; }
+      else { D.addBad=true; iss.push({t:"add",D,diff:D.said-D.exp}); base=D.exp; } }
+    else base=D.exp;
+    if(D.said!=null) prevSaid=D.said; else prevSaid+=D.claim; prevLast=D.ds[D.ds.length-1]; });
+  iss.sort((x,y)=>days.indexOf(x.D)-days.indexOf(y.D)); const last=[...days].reverse().find(D=>D.said!=null);
+  return {days,run,runC,first,DB,inf,iss,last}; }
 function ptRecountHtml(email){ const P=ui.ptRc&&ui.ptRc.e===email?ui.ptRc:(ui.ptRc={e:email,text:"",start:""}), res=P.text.trim()?ptRecount(email,P.text,ptNum(P.start)||0):null;
   const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️"};
-  const body=res?`<div class="ptrc-sum"><div><b>${fmt(res.runC)}</b><span>照登記寫的加</span></div><div><b class="${res.runC!==res.run?"bad":""}">${fmt(res.run)}</b><span>照積分表算</span></div></div>
-    ${ptRcApp(email,res)}
-    ${res.inf!=null?`<p class="ptt-note">起始分數沒填，照他第一天寫的總分推回去：${fmt(res.inf)}</p>`:""}${res.first?`<p class="ptrc-first">⚠️ 從 <b>${ptDs(res.first.ds)}</b> 開始對不上：那天登記寫 +${fmt(res.first.claim)}，照積分表應該是 +${fmt(res.first.give)}</p>`:`<p class="ptrc-ok">✅ 每一天都算對了</p>`}
-    ${(()=>{ const DB=res.DB, dk=DB.ts!=null?ymdK(DB.ts):null; let put=false; const out=[]; res.days.forEach(D=>{ if(dk&&!put&&D.ds[0]>=dk){ put=true; out.push(`<div class="ptt-div">🎉 ${ptDs([dk])} 出道（${esc(DB.name||"藝人")}）・之後照「藝人」的項目算<small>積分原封不動帶過去，出道前後同一個數字</small></div>`); } out.push(D); }); return out.reverse(); })().map(D=>typeof D==="string"?D:`<details class="ptrc-d ${D.claim!==D.give||D.saidBad?"bad":""}"><summary><b>${ptDs(D.ds)}</b><span>登記 +${fmt(D.claim)}・應該 +${fmt(D.give)}</span><em>累計 ${fmt(D.run)}${D.said!=null?`<small class="${D.saidBad?"bad":""}">他寫 ${fmt(D.said)}</small>`:""}</em></summary>
+  const body=res?`${ptRcTop(email,res)}
+    ${res.inf?`<p class="ptt-note">起始分數沒填，照他第一天寫的總分推回去：${fmt(res.inf)}</p>`:""}${res.first?`<p class="ptrc-first">⚠️ 照積分表：從 <b>${ptDs(res.first.ds)}</b> 開始有項目分數不對，那天登記寫 +${fmt(res.first.claim)}，照積分表應該是 +${fmt(res.first.give)}</p>`:`<p class="ptrc-ok">✅ 每一項分數都照積分表</p>`}
+    ${(()=>{ const DB=res.DB, dk=DB.ts!=null?ymdK(DB.ts):null; let put=false; const out=[]; res.days.forEach(D=>{ if(dk&&!put&&D.ds[0]>=dk){ put=true; out.push(`<div class="ptt-div">🎉 ${ptDs([dk])} 出道（${esc(DB.name||"藝人")}）・之後照「藝人」的項目算<small>積分原封不動帶過去，出道前後同一個數字</small></div>`); } out.push(D); }); return out.reverse(); })().map(D=>typeof D==="string"?D:`<details class="ptrc-d ${D.claim!==D.give||D.addBad?"bad":""}"><summary><b>${ptDs(D.ds)}</b><span>登記 +${fmt(D.claim)}・應該 +${fmt(D.give)}</span><em>${D.said!=null?`總 ${fmt(D.said)}${D.addBad?`<small class="bad">應該 ${fmt(D.exp)}</small>`:D.gap?`<small>前面有日子沒貼到</small>`:""}`:`總 ${fmt(D.exp)}`}</em></summary>
       ${D.items.map(x=>`<div class="ptrc-r ${x.st}"><span>${ic[x.st]}</span><div><b>${x.r?esc(x.r.name):"？"}</b><small>${esc(x.seg)}</small>${x.why?`<em>${esc(x.why)}</em>`:""}</div><i>${x.give?"+"+fmt(x.give):"0"}${x.claim!=null&&x.claim!==x.give?`<s>+${fmt(x.claim)}</s>`:""}</i></div>`).join("")}
       ${D.total!=null&&D.total!==D.claim?`<p class="ptrc-note">他寫總共 +${fmt(D.total)}，但各項加起來是 +${fmt(D.claim)}</p>`:""}</details>`).join("")}
     ${res.runC!==res.run?`<button class="btn btn-main btn-block" data-a="ptRcFix" data-e="${esc(email)}" data-v="${res.run-res.runC}" style="margin-top:12px">${res.run<res.runC?`把多加的 ${fmt(res.runC-res.run)} 扣回來`:`把少加的 ${fmt(res.run-res.runC)} 補上`}</button><p class="ptt-note">只會加或扣差額，他現在的積分不會被清掉或蓋掉（前提是登記寫的分數當時都已經加進 App 了）</p>`:""}`:`<p class="prg-e">貼上之後，這裡會一天一天列出登記寫的和照積分表算的，標出從哪一天開始對不上</p>`;
@@ -14699,18 +14712,10 @@ function ptDebutOf(email){ const e=String(email||"").toLowerCase(), a=ACCOUNTS[e
   if(ts==null){ const u=ptGrants().find(g=>g.id==="ufm_"+e); if(u) ts=u.ts; }
   return {m,ts,name:m?MEMBERS[m].name:"",on:!!m||ts!=null}; }
 
-/* App 現在的分數拆開：LINE 那部分 vs App 自己的收入（粉絲消費分潤、活動、罰款…），只拿 LINE 那部分跟重算結果比 */
-function ptAppSplit(email){ const e=String(email||"").toLowerCase(), a=ACCOUNTS[e]||{}, m=a.member&&MEMBERS[a.member]?a.member:"", now=ptTraceNow(e,m); if(!m) return {now,m};
-  let sale=0; try{ sale=Math.round(Math.round((revenueOf(0).byMember||{})[m]||0)*revShare()/100); }catch(err){}
-  const isLine=g=>/^(lr|rev_|ufm_)/.test(g.id)||/^(LINE 登記|登記算錯|照 LINE|撤銷)/.test(g.why||"");
-  let app=0; ptGrants().forEach(g=>{ if(g.mid===m&&(String(g.id).startsWith("tqf2_")||g.art)&&!isLine(g)) app+=(g.n||0); });
-  return {now,m,sale,app,line:now==null?null:now-sale-app}; }
-function ptRcApp(email,res){ const A=ptAppSplit(email); if(A.now==null) return "";
-  if(!A.m){ const d=A.now-res.run; return `<div class="ptrc-app"><div class="r"><span>App 現在</span><b>${fmt(A.now)}</b></div><div class="r"><span>照積分表應該有</span><b>${fmt(res.run)}</b></div><p class="${d?"bad":"ok"}">${d?`App 比 LINE ${d>0?"多":"少"} ${fmt(Math.abs(d))}：粉絲在 App 裡打卡、活動賺的和買東西花掉的，不會寫在 LINE 上`:"✅ 一樣"}</p></div>`; }
-  const d=A.line-res.run;
-  return `<div class="ptrc-app"><div class="r"><span>App 現在</span><b>${fmt(A.now)}</b></div>
-    <div class="r m"><span>－ 粉絲在 App 消費給他的分潤</span><b>${fmt(A.sale)}</b></div>
-    <div class="r m"><span>－ App 裡活動加的／扣的</span><b>${A.app<0?"−":""}${fmt(Math.abs(A.app))}</b></div>
-    <div class="r t"><span>＝ 從 LINE 來的部分</span><b>${fmt(A.line)}</b></div>
-    <div class="r"><span>照積分表應該有</span><b>${fmt(res.run)}</b></div>
-    <p class="${d?"bad":"ok"}">${d?`⚠️ 從 LINE 來的部分${d>0?"多":"少"}了 ${fmt(Math.abs(d))}。可能是有幾天的登記沒貼進來、起始分數不對，或有人手動加錯了，看下面「全部紀錄」找那筆`:"✅ 對得上，差的都是 App 自己的收入"}</p></div>`; }
+/* 回溯最上面：她 LINE 最後寫的總分 vs App 現在，再列出「總」加錯的那幾天、沒貼到的日子 */
+function ptRcTop(email,res){ const e=String(email||"").toLowerCase(), a=ACCOUNTS[e]||{}, m=a.member&&MEMBERS[a.member]?a.member:"", now=ptTraceNow(e,m), L=res.last;
+  let v=""; if(L&&now!=null){ const d=L.said-now; v=!d?`<p class="ok">✅ 一樣</p>`:d===L.claim?`<p class="ok">差的 ${fmt(d)} 剛好是 ${ptDs(L.ds)} 那天登記的，那天的分數可能還沒加進 App</p>`:`<p class="bad">⚠️ 差 ${fmt(Math.abs(d))}：App ${d>0?"比 LINE 少":"比 LINE 多"}</p>`; }
+  const it=res.iss.map(x=>x.t==="add"?`<li class="bad"><b>${ptDs(x.D.ds)}</b> 總分加錯：寫 ${fmt(x.D.said)}，應該是 <b>${fmt(x.D.exp)}</b>（${x.diff>0?"多寫":"少算"} ${fmt(Math.abs(x.diff))}）</li>`
+    :`<li class="gap"><b>${ptDs([x.D.gap[0]])}～${ptDs([x.D.gap[1]])}</b> 沒有貼到：總分從 ${fmt(x.from)} 跳到 ${fmt(x.D.said-x.D.claim)}，中間多了 ${fmt(x.mid)}，沒辦法檢查。把這幾天也貼上就能檢查</li>`).join("");
+  return `<div class="ptrc-app">${L?`<div class="r"><span>LINE 最後寫的總分（${ptDs(L.ds)}）</span><b>${fmt(L.said)}</b></div>`:`<div class="r"><span>LINE 上沒有寫「總：」</span><b>—</b></div>`}<div class="r"><span>App 現在</span><b>${now==null?"—":fmt(now)}</b></div>${v}</div>
+    <div class="ptrc-iss"><b>每天的總分有沒有加對</b>${it?`<ul>${it}</ul>`:`<p class="ok">✅ 每天的總分都加對了</p>`}</div>`; }
