@@ -1077,7 +1077,7 @@ const PT_RULES_DEF=`#KISS
 
 ✦ 綜藝與活動
 ➞綜藝出演（藝人）+100｜一集（自動）
-➞綜藝冠軍（藝人）+500｜一集（自動）
+➞綜藝冠軍（藝人）再 +500｜一集，加上出演費共 600（自動）
 ➞綜藝押注猜中（粉絲）｜平分押注（自動）
 ➞綜藝留言應援（粉絲）+10｜一天最多 50 分（自動）
 ➞代言・雜誌（藝人）+？？｜看邀約（自動）
@@ -11025,7 +11025,7 @@ function vsPayAll(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[VS_KEY]==n
     /* 押注池抽 5%，管理員們平分當薪水 */
     { const cut=Math.floor(pool*VS_CUT), ads=Object.keys(ACCOUNTS).filter(e=>ACCOUNTS[e]&&ACCOUNTS[e].role==="admin"); if(cut>0&&ads.length){ const each=Math.floor(cut/ads.length); ads.forEach(e=>{ const id=`vsh_${ep.id}_${e}`; if(!have.has(id)&&each>0){ L.push({id,to:e,n:each,why:`${VSHOW[ep.show].name}・押注抽成（管理員薪水）`,by:"auto",ts:Date.now()}); have.add(id); add++; } }); } }
     ep.mids.forEach(m=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return; const id=`vsa_${ep.id}_${m}`; if(have.has(id)) return; const w=win.includes(m);
-      L.push({id,to:em,n:w?500:100,why:`${VSHOW[ep.show].name}・${w?"冠軍":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; });
+      L.push({id,to:em,n:w?600:100,why:`${VSHOW[ep.show].name}・${w?"冠軍（含出演費）":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; });
     ep.paid=Date.now(); vsPut(ep); dirty=true; });
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
 setInterval(vsPayAll,60e3); setTimeout(vsPayAll,12e3);
