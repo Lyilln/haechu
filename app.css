@@ -6689,6 +6689,40 @@ html:not([data-theme="dark"]) .wk-side button{background:rgba(255,255,255,.95);b
 .sn-vwt button,.sn-hlc{position:relative}.sn-vwt button>*,.sn-hlc>*{position:absolute!important;inset:0;width:100%!important;height:100%!important}
 .sn-vws{background:#fff}
 .sn-vwb.pri,.dk-keep-xv{background:#4A5DF9;color:#fff}
+.sn-rcbar{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#000;padding:8px 12px calc(env(safe-area-inset-bottom,0px) + 8px)}
+.sn-rcbar button{width:100%;height:40px;border-radius:20px;border:1px solid #363636;background:#121212;color:#A8A8A8;font:inherit;font-size:14px;text-align:left;padding:0 16px}
+.sn-reels.one .sn-rbg{border-radius:0 0 14px 14px;overflow:hidden}
+.sn-r1h .sn-rtab{margin-left:6px}
+/* 私訊設定 */
+.sn-dms{display:flex;flex-direction:column;overflow-y:auto;padding-top:env(safe-area-inset-top,0px);background:#fff}
+.sn-dms header{display:flex;align-items:center;justify-content:space-between;padding:10px 12px}.sn-dms header button{border:0;background:none;padding:6px;color:#111}.sn-dms header b{font-size:16px}.sn-dms header span{width:34px}
+.sn-dmsh{display:flex;flex-direction:column;align-items:center;gap:6px;padding:4px 0 14px}.sn-dmsh b{font-size:17px;font-weight:700;margin-top:6px}.sn-dmsh small{font-size:13px;color:#737373}
+.sn-dmsb{display:flex;justify-content:center;gap:22px;padding:4px 0 18px}.sn-dmsb button{border:0;background:none;display:flex;flex-direction:column;align-items:center;gap:6px;font:inherit;color:#111;min-width:62px}
+.sn-dmsb i{width:44px;height:44px;border-radius:50%;background:#EFEFEF;display:flex;align-items:center;justify-content:center}.sn-dmsb small{font-size:12px}
+.sn-dmsl button{display:flex;align-items:center;gap:14px;width:100%;border:0;background:none;font:inherit;color:#111;padding:12px 16px;text-align:left}.sn-dmsl button>b{flex:1;font-size:15px;font-weight:500;display:flex;flex-direction:column}.sn-dmsl b small{font-size:12.5px;color:#737373;font-weight:400}
+.sn-dmsl .si{width:24px;height:24px}.sn-dmsl button>.si:last-child{width:14px;height:14px;color:#999}
+.sn-dmsd{width:24px;height:24px;border-radius:50%;background:linear-gradient(135deg,#7B61FF,#4A5DF9);flex:none}
+.sn-dmsn{font-size:13px;color:#737373;padding:0 16px 8px;text-align:center}
+.sn-dmthw{background:#fff;padding:0 0 calc(env(safe-area-inset-bottom,0px) + 14px);max-height:80vh;overflow-y:auto}.sn-dmthw .sn-grab{display:block;width:38px;height:4px;border-radius:2px;background:#ccc;margin:8px auto 8px}.sn-dmthw>b{display:block;text-align:center;font-size:15px;padding-bottom:12px}
+.sn-dmthg{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;padding:0 14px}.sn-dmthg button{border:0;background:none;padding:0;font:inherit;color:#111;display:flex;flex-direction:column;gap:6px;align-items:center}
+.sn-dmthg span{display:flex;flex-direction:column;justify-content:flex-end;gap:5px;width:100%;aspect-ratio:3/4;border-radius:12px;padding:10px;border:2px solid transparent;background:#F2F2F2}.sn-dmthg .on span{border-color:#111}
+.sn-dmthg span i{display:block;height:12px;border-radius:6px;width:55%;background:#ddd}.sn-dmthg span i+i{align-self:flex-end;width:65%;background:var(--dmb,#4A5DF9)}.sn-dmthg small{font-size:12px}
+.sn-dmblk{text-align:center;font-size:13px;color:#737373;padding:10px 16px}.sn-dmblk button{margin-left:8px;border:0;background:none;color:#4A5DF9;font:inherit;font-weight:600}.sn-dmf.blk{display:none!important}
+/* 主題：聊天背景＋自己的泡泡顏色 */
+.dmth-lav{--dmb:#8B6CF6;background:linear-gradient(180deg,#F3EEFF,#E6DCFF)!important}
+.dmth-peach{--dmb:#FF8A65;background:linear-gradient(180deg,#FFF1EA,#FFE0D2)!important}
+.dmth-ocean{--dmb:#1E88E5;background:linear-gradient(180deg,#E6F4FF,#CFE8FF)!important}
+.dmth-matcha{--dmb:#4C9A5A;background:linear-gradient(180deg,#EEF7EA,#DCEFD4)!important}
+.dmth-night{--dmb:#5B5FEF;background:linear-gradient(180deg,#1B1E3C,#0E1022)!important}
+.dmth-sakura{--dmb:#EC6A9C;background:linear-gradient(180deg,#FFF0F5,#FFDDE9)!important}
+.dmth-lemon{--dmb:#E0A800;background:linear-gradient(180deg,#FFFBE5,#FFF2B8)!important}
+.dmth-berry{--dmb:#B0306A;background:linear-gradient(180deg,#FBE9F1,#F2CFE0)!important}
+.sn-dmsd.dmth-{background:linear-gradient(135deg,#7B61FF,#4A5DF9)!important}
+.sn-dmthg span.dmth-{--dmb:#4A5DF9}
+.sn-thread-b[class*="dmth-"] .sn-brow .sn-bub.me,.sn-thread-b[class*="dmth-"] .sn-bub.me{background:var(--dmb,#4A5DF9)!important;color:#fff!important}
+.dmth-night .sn-bub:not(.me){background:#2A2E52!important;color:#fff!important}.dmth-night .sn-dmhead b,.dmth-night .sn-dts{color:#fff!important}
+.sn-dmsl button>.si:last-child{transform:rotate(-90deg)}
+.sn-dmblk{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid #EFEFEF;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 14px)!important}
 
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}
