@@ -72,6 +72,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
 function ptRecountHtml(email){ const P=ui.ptRc&&ui.ptRc.e===email?ui.ptRc:(ui.ptRc={e:email,text:"",start:""}), res=P.text.trim()?ptRecount(email,P.text,ptNum(P.start)||0):null;
   const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️"};
   const body=res?`<div class="ptrc-sum"><div><b>${fmt(res.runC)}</b><span>照登記寫的加</span></div><div><b class="${res.runC!==res.run?"bad":""}">${fmt(res.run)}</b><span>照積分表算</span></div></div>
+    ${ptRcApp(email,res)}
     ${res.inf!=null?`<p class="ptt-note">起始分數沒填，照他第一天寫的總分推回去：${fmt(res.inf)}</p>`:""}${res.first?`<p class="ptrc-first">⚠️ 從 <b>${ptDs(res.first.ds)}</b> 開始對不上：那天登記寫 +${fmt(res.first.claim)}，照積分表應該是 +${fmt(res.first.give)}</p>`:`<p class="ptrc-ok">✅ 每一天都算對了</p>`}
     ${(()=>{ const DB=res.DB, dk=DB.ts!=null?ymdK(DB.ts):null; let put=false; const out=[]; res.days.forEach(D=>{ if(dk&&!put&&D.ds[0]>=dk){ put=true; out.push(`<div class="ptt-div">🎉 ${ptDs([dk])} 出道（${esc(DB.name||"藝人")}）・之後照「藝人」的項目算<small>積分原封不動帶過去，出道前後同一個數字</small></div>`); } out.push(D); }); return out.reverse(); })().map(D=>typeof D==="string"?D:`<details class="ptrc-d ${D.claim!==D.give||D.saidBad?"bad":""}"><summary><b>${ptDs(D.ds)}</b><span>登記 +${fmt(D.claim)}・應該 +${fmt(D.give)}</span><em>累計 ${fmt(D.run)}${D.said!=null?`<small class="${D.saidBad?"bad":""}">他寫 ${fmt(D.said)}</small>`:""}</em></summary>
       ${D.items.map(x=>`<div class="ptrc-r ${x.st}"><span>${ic[x.st]}</span><div><b>${x.r?esc(x.r.name):"？"}</b><small>${esc(x.seg)}</small>${x.why?`<em>${esc(x.why)}</em>`:""}</div><i>${x.give?"+"+fmt(x.give):"0"}${x.claim!=null&&x.claim!==x.give?`<s>+${fmt(x.claim)}</s>`:""}</i></div>`).join("")}
@@ -89,3 +90,19 @@ function ptDebutOf(email){ const e=String(email||"").toLowerCase(), a=ACCOUNTS[e
   let ts=null; try{ (S.get(K.debut,[])||[]).forEach(x=>{ if(!x||(x.status!=="ok"&&x.status!=="pre")) return; const mine=String(x.email||"").toLowerCase()===e||(x.mems||[]).some(mm=>String(mm.email||mm.acc||"").toLowerCase()===e); if(!mine||!x.day) return; const t=relTime(x.day,x.pr); if(ts==null||t<ts) ts=t; }); }catch(err){}
   if(ts==null){ const u=ptGrants().find(g=>g.id==="ufm_"+e); if(u) ts=u.ts; }
   return {m,ts,name:m?MEMBERS[m].name:"",on:!!m||ts!=null}; }
+
+/* App 現在的分數拆開：LINE 那部分 vs App 自己的收入（粉絲消費分潤、活動、罰款…），只拿 LINE 那部分跟重算結果比 */
+function ptAppSplit(email){ const e=String(email||"").toLowerCase(), a=ACCOUNTS[e]||{}, m=a.member&&MEMBERS[a.member]?a.member:"", now=ptTraceNow(e,m); if(!m) return {now,m};
+  let sale=0; try{ sale=Math.round(Math.round((revenueOf(0).byMember||{})[m]||0)*revShare()/100); }catch(err){}
+  const isLine=g=>/^(lr|rev_|ufm_)/.test(g.id)||/^(LINE 登記|登記算錯|照 LINE|撤銷)/.test(g.why||"");
+  let app=0; ptGrants().forEach(g=>{ if(g.mid===m&&(String(g.id).startsWith("tqf2_")||g.art)&&!isLine(g)) app+=(g.n||0); });
+  return {now,m,sale,app,line:now==null?null:now-sale-app}; }
+function ptRcApp(email,res){ const A=ptAppSplit(email); if(A.now==null) return "";
+  if(!A.m){ const d=A.now-res.run; return `<div class="ptrc-app"><div class="r"><span>App 現在</span><b>${fmt(A.now)}</b></div><div class="r"><span>照積分表應該有</span><b>${fmt(res.run)}</b></div><p class="${d?"bad":"ok"}">${d?`App 比 LINE ${d>0?"多":"少"} ${fmt(Math.abs(d))}：粉絲在 App 裡打卡、活動賺的和買東西花掉的，不會寫在 LINE 上`:"✅ 一樣"}</p></div>`; }
+  const d=A.line-res.run;
+  return `<div class="ptrc-app"><div class="r"><span>App 現在</span><b>${fmt(A.now)}</b></div>
+    <div class="r m"><span>－ 粉絲在 App 消費給他的分潤</span><b>${fmt(A.sale)}</b></div>
+    <div class="r m"><span>－ App 裡活動加的／扣的</span><b>${A.app<0?"−":""}${fmt(Math.abs(A.app))}</b></div>
+    <div class="r t"><span>＝ 從 LINE 來的部分</span><b>${fmt(A.line)}</b></div>
+    <div class="r"><span>照積分表應該有</span><b>${fmt(res.run)}</b></div>
+    <p class="${d?"bad":"ok"}">${d?`⚠️ 從 LINE 來的部分${d>0?"多":"少"}了 ${fmt(Math.abs(d))}。可能是有幾天的登記沒貼進來、起始分數不對，或有人手動加錯了，看下面「全部紀錄」找那筆`:"✅ 對得上，差的都是 App 自己的收入"}</p></div>`; }
