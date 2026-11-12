@@ -770,9 +770,21 @@ document.addEventListener("pointerdown",e=>{ const bg=e.target.closest(".sn-reel
 /* 長按放開後的那一下點擊不算（不然會變成開關聲音） */
 document.addEventListener("click",e=>{ if(snLp&&snLp.skip&&Date.now()-snLp.skip<400&&e.target.closest(".sn-reel1 .sn-rbg")){ e.stopPropagation(); e.preventDefault(); snLp=null; } },true);
 document.addEventListener("timeupdate",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")) return; const r=v.closest(".sn-reel1"); if(!r) return; const b=r.querySelector(".sn-prog i"); if(b&&v.duration) b.style.width=(v.currentTime/v.duration*100)+"%"; },true);
-document.addEventListener("pointerdown",e=>{ const pg=e.target.closest(".sn-prog"); if(!pg) return; const v=snReelVid(pg); if(!v||!v.duration) return; e.preventDefault(); pg.classList.add("drag");
-  const seek=ev=>{ const rc=pg.getBoundingClientRect(), u=Math.max(0,Math.min(1,(ev.clientX-rc.left)/rc.width)); v.currentTime=u*v.duration; const b=pg.querySelector("i"); if(b) b.style.width=(u*100)+"%"; };
-  seek(e); const up=()=>{ pg.classList.remove("drag"); window.removeEventListener("pointermove",seek); window.removeEventListener("pointerup",up); }; window.addEventListener("pointermove",seek); window.addEventListener("pointerup",up); });
+/* Reels 橫的影片（例如 MV Teaser）：不裁切，整支置中、上下留黑（照 IG） */
+document.addEventListener("loadedmetadata",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")||!v.closest(".sn-reel1")) return; v.classList.toggle("land",v.videoWidth>v.videoHeight*1.05); },true);
+/* Reels 進度條（照 IG）：手指按住拖 → 上面的按鈕、文字先藏起來，手指上方出現小預覽圖＋「0:08 / 0:30」；放開才跳到那裡 */
+const snMSS=t=>{ t=Math.max(0,Math.floor(t||0)); return Math.floor(t/60)+":"+String(t%60).padStart(2,"0"); };
+document.addEventListener("pointerdown",e=>{ const pg=e.target.closest(".sn-prog"); if(!pg) return; const v=snReelVid(pg); if(!v||!v.duration) return; e.preventDefault(); e.stopPropagation();
+  const sec=pg.closest(".sn-reel1"); pg.classList.add("drag"); sec.classList.add("scrub"); hap(6);
+  const box=document.createElement("div"); box.className="sn-scrub"; box.innerHTML=`<span class="sn-scv"><video muted playsinline webkit-playsinline preload="auto"></video></span><b></b>`; sec.appendChild(box);
+  const pv=box.querySelector("video"); try{ pv.src=v.currentSrc||v.src; pv.play().then(()=>pv.pause()).catch(()=>{}); }catch(x){}
+  let u=0, raf=0;
+  const seek=ev=>{ const rc=pg.getBoundingClientRect(), z=rc.width/pg.offsetWidth||1; u=Math.max(0,Math.min(1,(ev.clientX-rc.left)/rc.width)); const b=pg.querySelector("i"); if(b) b.style.width=(u*100)+"%";
+    const W=box.offsetWidth, x=Math.max(8,Math.min(pg.offsetWidth-W-8,u*pg.offsetWidth-W/2)); box.style.left=x+"px"; box.querySelector("b").textContent=snMSS(u*v.duration)+" / "+snMSS(v.duration);
+    if(!raf) raf=requestAnimationFrame(()=>{ raf=0; try{ if(pv.readyState) pv.currentTime=u*v.duration; }catch(x){} }); };
+  seek(e); const up=()=>{ window.removeEventListener("pointermove",seek); window.removeEventListener("pointerup",up); window.removeEventListener("pointercancel",up);
+    try{ v.currentTime=u*v.duration; if(v.paused) v.play().catch(()=>{}); }catch(x){} pg.classList.remove("drag"); sec.classList.remove("scrub"); box.remove(); };
+  window.addEventListener("pointermove",seek); window.addEventListener("pointerup",up); window.addEventListener("pointercancel",up); },true);
 
 
 /* 貼文底下的小點點（照 Instagram）
