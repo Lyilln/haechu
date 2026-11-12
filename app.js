@@ -13347,6 +13347,13 @@ function fyStage(F,it){ const sh=SHOWS.find(x=>x.id===F.show)||{}, c=FY_C[F.show
   const name=it?(mid?stageNm(mid):(it.name||g.name||"")):"";
   const sp=Array.from({length:14},(_,i)=>{ const h=strHash(F.show+i+name); return `<i style="left:${h%100}%;top:${(h>>>7)%100}%;animation-delay:${((h>>>3)%30)/10}s;--z:${.5+((h>>>11)%10)/10}"></i>`; }).join("");
   const wait=!it, when=wait&&F.wait?`${mdTxt(F.wait)}（${WDAY[new Date(F.wait).getDay()]}）${hm(F.wait)}`:"";
+  /* 11/12：SOLO（團裡只有一位）不用猜：還沒播也直接顯示她 */
+  const solo=wait&&gid?(()=>{ const L=grpMembers(gid).filter(x=>MEMBERS[x]&&!MEMBERS[x].official); return L.length===1?L[0]:""; })():"";
+  if(solo) return `<div class="fya ph wait solo" style="--c1:${c[0]};--c2:${c[1]}">
+    ${(()=>{ const p2=mPhoto(solo)||(artProf(solo)||{}).avatar||gPhoto(gid)||""; return p2?`<span class="fya-ph" style="background-image:url('${esc(p2)}')"></span>`:`<span class="fya-mono">${esc((stageNm(solo)||"?").slice(0,1).toUpperCase())}</span>`; })()}
+    <i class="fya-beam b1"></i><i class="fya-beam b2"></i><i class="fya-beam b3"></i><span class="fya-sp">${sp}</span><span class="fya-vg"></span>
+    <span class="fya-logo">${esc(sh.name||"")}</span>
+    <div class="fya-tag"><em>這週的結尾妖精</em><b>${esc(stageNm(solo))}</b><small>${when?esc(when)+" 播出・":""}結尾妖精畫面節目播出後就看得到 🧚</small></div></div>`;
   return `<div class="fya ${ph?"ph":"no"} ${wait?"wait":""}" style="--c1:${c[0]};--c2:${c[1]}">
     ${ph?`<span class="fya-ph" style="background-image:url('${esc(ph)}')"></span>`:`<span class="fya-mono">${esc(wait?"?":(name||"?").slice(0,1).toUpperCase())}</span>`}
     <i class="fya-beam b1"></i><i class="fya-beam b2"></i><i class="fya-beam b3"></i><span class="fya-sp">${sp}</span><span class="fya-vg"></span>
