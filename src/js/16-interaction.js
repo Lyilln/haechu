@@ -251,7 +251,10 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
     const L=layer.firstElementChild;
     if(L){ const b=vis(L.querySelector(BACK+',[data-a="tCloseLayer"].icon-btn,[aria-label="關閉"]')); return b?{el:L,go:()=>b.click(),under:null}:null; }
     const app=root.querySelector(":scope > .app"); if(!app) return null; const b=vis(app.querySelector(BACK)); if(!b) return null;
-    const prev=NAVSTK.length>1?SNAP.get(NAVSTK[NAVSTK.length-2]):null; return {el:app,go:()=>b.click(),under:prev}; }
+    const prevH=NAVSTK.length>1?NAVSTK[NAVSTK.length-2]:"", prev=prevH?SNAP.get(prevH):null;
+    /* 11/12：SNS 自己的個人頁左上是「離開 SNS」的 X。從 SNS 首頁點進來的，左滑要回 SNS 首頁，不是直接離開 SNS */
+    if(b.dataset.a==="snsExit"){ const r0=route(); if(r0.sub==="sns"&&r0.p&&r0.p!=="home"&&!r0.id){ const hh="#/"+r0.role+"/sns"; return {el:app,go:()=>{ navReplace(hh); window.scrollTo(0,0); },under:SNAP.get(hh)||prev}; } }
+    return {el:app,go:()=>b.click(),under:prev}; }
   function hScrollable(el){ for(let n=el;n&&n!==document.body;n=n.parentElement){ if(n.tagName==="CANVAS"||n.tagName==="INPUT"||n.tagName==="TEXTAREA"||n.dataset&&n.dataset.ls!=null) return true; const cs=getComputedStyle(n); if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft>0) return true; if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft===0&&false) return true; } return false; }
   function mkUnder(snap){ const u=document.createElement("div"); u.className="sb-under"; u.setAttribute("aria-hidden","true");
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }

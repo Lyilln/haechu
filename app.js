@@ -6805,7 +6805,10 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
     const L=layer.firstElementChild;
     if(L){ const b=vis(L.querySelector(BACK+',[data-a="tCloseLayer"].icon-btn,[aria-label="關閉"]')); return b?{el:L,go:()=>b.click(),under:null}:null; }
     const app=root.querySelector(":scope > .app"); if(!app) return null; const b=vis(app.querySelector(BACK)); if(!b) return null;
-    const prev=NAVSTK.length>1?SNAP.get(NAVSTK[NAVSTK.length-2]):null; return {el:app,go:()=>b.click(),under:prev}; }
+    const prevH=NAVSTK.length>1?NAVSTK[NAVSTK.length-2]:"", prev=prevH?SNAP.get(prevH):null;
+    /* 11/12：SNS 自己的個人頁左上是「離開 SNS」的 X。從 SNS 首頁點進來的，左滑要回 SNS 首頁，不是直接離開 SNS */
+    if(b.dataset.a==="snsExit"){ const r0=route(); if(r0.sub==="sns"&&r0.p&&r0.p!=="home"&&!r0.id){ const hh="#/"+r0.role+"/sns"; return {el:app,go:()=>{ navReplace(hh); window.scrollTo(0,0); },under:SNAP.get(hh)||prev}; } }
+    return {el:app,go:()=>b.click(),under:prev}; }
   function hScrollable(el){ for(let n=el;n&&n!==document.body;n=n.parentElement){ if(n.tagName==="CANVAS"||n.tagName==="INPUT"||n.tagName==="TEXTAREA"||n.dataset&&n.dataset.ls!=null) return true; const cs=getComputedStyle(n); if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft>0) return true; if((cs.overflowX==="auto"||cs.overflowX==="scroll")&&n.scrollWidth>n.clientWidth+2&&n.scrollLeft===0&&false) return true; } return false; }
   function mkUnder(snap){ const u=document.createElement("div"); u.className="sb-under"; u.setAttribute("aria-hidden","true");
     u.innerHTML=`<div class="sb-in" style="transform:translateY(${-snap.y}px)">${snap.html}</div><span class="sb-dim"></span>`; u.querySelectorAll("#cmSpot,#heartRain,canvas").forEach(n=>n.remove()); document.body.insertBefore(u,document.body.firstChild); return u; }
@@ -13154,8 +13157,13 @@ const grpSong=gid=>{ const m=getMShow(), on=m.songs.filter(s=>s.gid===gid).sort(
   return MUS_DEMO().find(s=>s.gid===gid)||null; };
 /* 這首歌在每個節目最後一次的名次（拿過一位就寫一位幾次） */
 function songLastRk(sid,show){ const m=getMShow(), w=Object.keys(m.wins||{}).filter(k=>(m.wins[k]||{})[show]===sid).length; if(w) return {cls:"win",t:w>1?`一位 ×${w}`:"一位"}; const ks=Object.keys(m.rk||{}).sort().reverse(); for(const k of ks){ const r=((m.rk[k]||{})[show]||{})[sid]; if(r) return {cls:"end",t:`第 ${r} 名`}; } return {cls:"end",t:"—"}; }
-function muCell(s,show,wk){ if(s._done) return songLastRk(s.id,show); const rk=musDemoOn()||ranked(wk), won=(getMShow().wins[wk]||{})[show], R0=showRank(show,wk), i0=R0.findIndex(x=>x.s.id===s.id), me0=R0[i0], nb=me0?npcRivals(show,wk).filter(n=>n.total>me0.sc.total).length:0, R=R0, i=i0<0?-1:i0+nb, ended=showEnded(show,wk);
-  if(!rk) return {cls:"off",t:"不排名"}; if(won===s.id) return {cls:"win",t:"一位"}; if(ended) return {cls:"end",t:i>=0?`第 ${i+1} 名`:"—"}; return {cls:"run",t:i>=0&&me0&&me0.sc.total>0?`第 ${i+1} 名`:"—"}; }
+/* 11/12：一首歌在某個節目排第幾＝粉絲看到的排行榜（真的歌＋虛擬對手、結束後用結算當下的分數）。
+   FOC 小卡和「本週戰況」都用這一個，不會一個說第 2 名、一個說第 1 名 */
+function songRankOf(sid,show,wk){ const ended=showEnded(show,wk), {R,N}=muRankShown(show,wk,ended);
+  const all=[...R.map(x=>({sid:x.s.id,t:x.sc.total,x})),...(N||[]).map(n=>({sid:null,t:n.total,name:n.name}))].sort((a,b)=>b.t-a.t), i=all.findIndex(z=>z.sid===sid);
+  return {all,i,me:i>=0?all[i].x:null,ended}; }
+function muCell(s,show,wk){ if(s._done) return songLastRk(s.id,show); const rk=musDemoOn()||ranked(wk), won=(getMShow().wins[wk]||{})[show], {i,me,ended}=songRankOf(s.id,show,wk);
+  if(!rk) return {cls:"off",t:"不排名"}; if(won===s.id) return {cls:"win",t:"一位"}; if(ended) return {cls:"end",t:i>=0?`第 ${i+1} 名`:"—"}; return {cls:"run",t:i>=0&&me&&me.sc.total>0?`第 ${i+1} 名`:"—"}; }
 function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), wt=musDemoOn()?"排名週":weekType(wk);
   if(!s){ const p=cbrPre(gid), w=cbrMine(gid), mn=cbrMin(gid), cool=mn-PRE_MIN>Date.now()+864e5;
     return `<button class="foc-now mu4-card" data-a="focGo" data-v="honor"><span class="foc-ic">${FIC.stage}</span><span class="t"><b>${p?`《${esc(p.title)}》${mdTxt(p.day)} 回歸`:w?"回歸申請審核中":cool?"冷卻中":"可以申請回歸了"}</b><small>${p?`D-${dLeft(p.day)}`:w?`《${esc(w.title)}》・${mdTxt(w.day)}`:cool?`${mdTxt(mn-PRE_MIN)} 之後可以申請回歸`:"ME → 申請回歸"}</small></span></button>`; }
@@ -13164,9 +13172,9 @@ function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=cur
 function artPromoPage(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), rk=musDemoOn()||ranked(wk), mcs=mcShows(mid), m=getMShow(), now=new Date(), y=String(now.getFullYear()), mon=`${y}-${pad(now.getMonth()+1)}`;
   const sec=(h,b)=>`<div class="section-h">${h}</div>${b}`;
   let battle="";
-  if(s&&rk){ const rows=SHOWS.map(x=>{ const R=showRank(x.id,wk), i=R.findIndex(r=>r.s.id===s.id); return {x,R,i,me:R[i],won:(m.wins[wk]||{})[x.id],ended:showEnded(x.id,wk)}; }), any=rows.find(r=>r.me);
+  if(s&&rk){ const rows=SHOWS.map(x=>{ const {all,i,me,ended}=songRankOf(s.id,x.id,wk); return {x,R:all,i,me,won:(m.wins[wk]||{})[x.id],ended}; }), any=rows.find(r=>r.me);
     battle=sec("本週戰況",`<section class="card mu4-bt2">${any?`<div class="mu4-sh"><span>專輯<b>${fmt(any.me.sc.album)}</b></span><span>MV 愛心<b>${fmt(any.me.sc.likes)}</b></span><span>播放<b>${fmt(any.me.sc.views)}</b></span></div>`:""}
-      ${rows.map(({x,R,i,me,won,ended})=>{ const gap=!me?"":i===0?(R[1]?`領先 ${fmt(me.sc.total-R[1].sc.total)}`:"領先"):`差 ${fmt(R[0].sc.total-me.sc.total)}`;
+      ${rows.map(({x,R,i,me,won,ended})=>{ const gap=!me?"":i===0?(R[1]?`領先 ${fmt(me.sc.total-R[1].t)}`:"領先"):`差 ${fmt(R[0].t-me.sc.total)}`;
         return `<div class="mu4-l"><b class="mu4-ln">${x.name}</b>${me?`<span class="mu4-lr ${i===0?"top":""}">${i+1}</span><span class="mu4-ls"><b>${fmt(me.sc.total)} 分</b><small>票 ${fmt(me.sc.votes)}${won&&won!==s.id?"":"・"+gap}</small></span>`:`<span class="mu4-ls"><small>—</small></span>`}<em>${won===s.id?`${MU_IC.cup}一位`:ended?"已結束":muLeft(showEndTs(x.id,wk)-Date.now())}</em></div>`; }).join("")}</section>`); }
   else if(s) battle=sec("本週戰況",`<section class="card"><p class="me-none">宣傳週不排名</p></section>`);
   let prog="";
