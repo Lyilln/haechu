@@ -27,7 +27,7 @@ function ptTraceOpen(email){ const T=ptTraceRows(email), now=ptTraceNow(T.e,T.m)
       <section class="card ptt-l">${rows.length?rows.map(row).join(""):`<p class="me-none">還沒有紀錄</p>`}</section>
       <p class="ptt-note">只保留最近 2,000 筆積分紀錄，更早的看不到</p></main></div>`,"ptt"); }
 function ptTraceHtml(){ const q=nz((ui.pttQ||"").trim()), L=Object.entries(ACCOUNTS).filter(([e])=>e!==DEMO_FAN).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e))).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).slice(0,q?30:8);
-  return `<div class="section-h">回溯</div><section class="card studio ptt-pick"><p class="prg-d">查一個人從粉絲時期到出道後的全部積分紀錄，打錯的可以撤銷，或直接改成 LINE 上的分數。</p>
+  return `<section class="card studio ptt-pick"><p class="prg-d">查一個人從粉絲時期到出道後的全部積分紀錄，打錯的可以撤銷，或直接改成 LINE 上的分數。</p>
     <label class="field">${I.search}<input id="pttQ" placeholder="輸入文字" value="${esc(ui.pttQ||"")}" autocomplete="off"></label>
     <div class="pta-list">${L.map(([e,a])=>`<button class="pta-r" data-a="ptTrOpen" data-v="${esc(e)}"><b>${esc(acctUser(e))}</b><small>${esc(a.name||"")}${a.member&&MEMBERS[a.member]?"・已出道":""}・${ROLE_ZH[a.role]||"粉絲"}</small><i>›</i></button>`).join("")||`<p class="me-none">找不到</p>`}</div></section>`; }
 document.addEventListener("input",e=>{ if(e.target&&e.target.id==="pttQ"){ ui.pttQ=e.target.value; const box=e.target.closest(".ptt-pick"); if(!box) return; const tmp=document.createElement("div"); tmp.innerHTML=ptTraceHtml(); const nl=tmp.querySelector(".pta-list"), ol=box.querySelector(".pta-list"); if(nl&&ol) ol.replaceWith(nl); } });

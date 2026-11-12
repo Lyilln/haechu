@@ -6814,3 +6814,8 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .ptrc-r{display:flex;gap:8px;align-items:flex-start;padding:8px 12px;border-top:1px dashed var(--line);font-size:12px}.ptrc-r>div{flex:1;min-width:0;display:flex;flex-direction:column}.ptrc-r b{font-size:12.5px}.ptrc-r small{color:var(--ink-3)}.ptrc-r em{font-style:normal;color:#E8590C;font-size:11.5px}.ptrc-r i{font-style:normal;font-weight:800;white-space:nowrap}.ptrc-r s{display:block;color:var(--ink-3);font-weight:500;font-size:11px}
 .ptrc-note{margin:0;padding:6px 12px 10px;font-size:11.5px;color:var(--red)}
 .ptt-fix>div .btn{flex:none;white-space:nowrap;padding:0 18px}
+/* 加積分的三個分頁（跟上面粉絲／藝人／管理那個切換同一種長相） */
+.pta-sw{position:sticky;top:calc(env(safe-area-inset-top,0px) + var(--unih,52px));z-index:30;padding:8px 16px 6px;background:var(--bg)}
+.pta-sw-in{position:relative;display:flex;max-width:340px;margin:0 auto;padding:3px;border-radius:999px;background:var(--s2);border:1px solid var(--line)}
+.pta-sw-ind{position:absolute;top:3px;bottom:3px;left:3px;width:calc((100% - 6px)/3);border-radius:999px;background:var(--s1);box-shadow:0 2px 8px -3px rgba(0,0,0,.25);transform:translateX(calc(var(--i)*100%));transition:transform .25s cubic-bezier(.3,.7,.3,1)}
+.pta-sw button{position:relative;z-index:1;flex:1;border:0;background:none;font:inherit;padding:7px 0;font-size:13.5px;font-weight:800;color:var(--ink-3)}.pta-sw button.on{color:var(--violet-ink)}

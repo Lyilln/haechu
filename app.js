@@ -996,8 +996,11 @@ function ptCollect(){ try{ ptArtCollect(); const s=session(); if(!s||s.role!=="f
 function viewPtAdd(){ const d=ui.ptD||(ui.ptD={to:[],n:"",why:"",q:"",sign:1}), q=nz(d.q.trim());
   const L=Object.entries(ACCOUNTS).filter(([e,a])=>e!==DEMO_FAN).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e)));
   const hist0=ptGrants().slice().sort((a,b)=>b.ts-a.ts), hist=calFilter("pt",hist0,g=>g.ts);
-  return `<main class="page pta">${ptRegCard()}${ptTraceHtml()}
-    <div class="section-h">手動加分</div>
+  const tab=ui.ptaTab||"line", T=[["line","LINE 登記"],["trace","回溯"],["hand","手動加分"]], ti=T.findIndex(x=>x[0]===tab);
+  const sw=`<div class="pta-sw"><div class="pta-sw-in" style="--i:${Math.max(0,ti)}"><i class="pta-sw-ind"></i>${T.map(([k,l])=>`<button class="${k===tab?"on":""}" data-a="ptaTab" data-v="${k}">${l}</button>`).join("")}</div></div>`;
+  if(tab==="line") return `${sw}<main class="page pta">${ptRegCard()}</main>`;
+  if(tab==="trace") return `${sw}<main class="page pta">${ptTraceHtml()}</main>`;
+  return `${sw}<main class="page pta">
     <section class="card studio">
       <span class="fld-lab">給誰（可以選很多個）</span>
       <label class="field">${I.search}<input id="ptQ" placeholder="輸入文字" value="${esc(d.q)}" autocomplete="off"></label>
@@ -14600,6 +14603,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     if(t.dataset.a==="pdCDel"){ const c=L.find(x=>x.id===t.dataset.c); if(!c||!pdMineC(c)) return; S.set(K.comments,L.filter(x=>x.id!==c.id)); }
     else { const c=L.find(x=>x.id===t.dataset.c), r=c&&(c.reps||[]).find(x=>x.id===t.dataset.r); if(!r||!pdMineC(r)) return; c.reps=c.reps.filter(x=>x.id!==r.id); S.set(K.comments,L); }
     try{ renderComments(); }catch(err){ render(); } toast("已刪除留言"); },{title:"刪除留言",ok:"刪除"}); },true);
+/* 加積分：LINE 登記／回溯／手動加分 三個分頁 */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="ptaTab"]'); if(!t) return; e.stopImmediatePropagation(); if(ui.ptaTab===t.dataset.v) return; ui.ptaTab=t.dataset.v; render(); window.scrollTo(0,0); },true);
 
 /* HAECHU｜積分回溯（管理員：加積分 → 回溯）
    點一個人 → 自動找出他的「粉絲時期」和「出道後的藝人時期」，把兩段每一筆加分、扣分、設定為照時間排在一起，旁邊是累計
@@ -14630,7 +14635,7 @@ function ptTraceOpen(email){ const T=ptTraceRows(email), now=ptTraceNow(T.e,T.m)
       <section class="card ptt-l">${rows.length?rows.map(row).join(""):`<p class="me-none">還沒有紀錄</p>`}</section>
       <p class="ptt-note">只保留最近 2,000 筆積分紀錄，更早的看不到</p></main></div>`,"ptt"); }
 function ptTraceHtml(){ const q=nz((ui.pttQ||"").trim()), L=Object.entries(ACCOUNTS).filter(([e])=>e!==DEMO_FAN).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e))).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).slice(0,q?30:8);
-  return `<div class="section-h">回溯</div><section class="card studio ptt-pick"><p class="prg-d">查一個人從粉絲時期到出道後的全部積分紀錄，打錯的可以撤銷，或直接改成 LINE 上的分數。</p>
+  return `<section class="card studio ptt-pick"><p class="prg-d">查一個人從粉絲時期到出道後的全部積分紀錄，打錯的可以撤銷，或直接改成 LINE 上的分數。</p>
     <label class="field">${I.search}<input id="pttQ" placeholder="輸入文字" value="${esc(ui.pttQ||"")}" autocomplete="off"></label>
     <div class="pta-list">${L.map(([e,a])=>`<button class="pta-r" data-a="ptTrOpen" data-v="${esc(e)}"><b>${esc(acctUser(e))}</b><small>${esc(a.name||"")}${a.member&&MEMBERS[a.member]?"・已出道":""}・${ROLE_ZH[a.role]||"粉絲"}</small><i>›</i></button>`).join("")||`<p class="me-none">找不到</p>`}</div></section>`; }
 document.addEventListener("input",e=>{ if(e.target&&e.target.id==="pttQ"){ ui.pttQ=e.target.value; const box=e.target.closest(".ptt-pick"); if(!box) return; const tmp=document.createElement("div"); tmp.innerHTML=ptTraceHtml(); const nl=tmp.querySelector(".pta-list"), ol=box.querySelector(".pta-list"); if(nl&&ol) ol.replaceWith(nl); } });

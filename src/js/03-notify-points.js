@@ -46,8 +46,11 @@ function ptCollect(){ try{ ptArtCollect(); const s=session(); if(!s||s.role!=="f
 function viewPtAdd(){ const d=ui.ptD||(ui.ptD={to:[],n:"",why:"",q:"",sign:1}), q=nz(d.q.trim());
   const L=Object.entries(ACCOUNTS).filter(([e,a])=>e!==DEMO_FAN).sort((a,b)=>acctUser(a[0]).localeCompare(acctUser(b[0]))).filter(([e,a])=>!q||hit(q,acctUser(e),a.name,realName(e)));
   const hist0=ptGrants().slice().sort((a,b)=>b.ts-a.ts), hist=calFilter("pt",hist0,g=>g.ts);
-  return `<main class="page pta">${ptRegCard()}${ptTraceHtml()}
-    <div class="section-h">手動加分</div>
+  const tab=ui.ptaTab||"line", T=[["line","LINE 登記"],["trace","回溯"],["hand","手動加分"]], ti=T.findIndex(x=>x[0]===tab);
+  const sw=`<div class="pta-sw"><div class="pta-sw-in" style="--i:${Math.max(0,ti)}"><i class="pta-sw-ind"></i>${T.map(([k,l])=>`<button class="${k===tab?"on":""}" data-a="ptaTab" data-v="${k}">${l}</button>`).join("")}</div></div>`;
+  if(tab==="line") return `${sw}<main class="page pta">${ptRegCard()}</main>`;
+  if(tab==="trace") return `${sw}<main class="page pta">${ptTraceHtml()}</main>`;
+  return `${sw}<main class="page pta">
     <section class="card studio">
       <span class="fld-lab">給誰（可以選很多個）</span>
       <label class="field">${I.search}<input id="ptQ" placeholder="輸入文字" value="${esc(d.q)}" autocomplete="off"></label>

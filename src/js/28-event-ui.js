@@ -72,3 +72,5 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     if(t.dataset.a==="pdCDel"){ const c=L.find(x=>x.id===t.dataset.c); if(!c||!pdMineC(c)) return; S.set(K.comments,L.filter(x=>x.id!==c.id)); }
     else { const c=L.find(x=>x.id===t.dataset.c), r=c&&(c.reps||[]).find(x=>x.id===t.dataset.r); if(!r||!pdMineC(r)) return; c.reps=c.reps.filter(x=>x.id!==r.id); S.set(K.comments,L); }
     try{ renderComments(); }catch(err){ render(); } toast("已刪除留言"); },{title:"刪除留言",ok:"刪除"}); },true);
+/* 加積分：LINE 登記／回溯／手動加分 三個分頁 */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="ptaTab"]'); if(!t) return; e.stopImmediatePropagation(); if(ui.ptaTab===t.dataset.v) return; ui.ptaTab=t.dataset.v; render(); window.scrollTo(0,0); },true);
