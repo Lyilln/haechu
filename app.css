@@ -6717,3 +6717,8 @@ main.foc.xv{padding-top:18px}
 .cc2 .cl-gs{margin:0 0 8px}.cc2-stick{margin:0;padding:10px}.cc2-stick .ls-stage{margin:0}
 .cc2 .lsp{background:var(--s1);border:1px solid var(--line);border-radius:16px;padding:14px}
 .cc2 .foc-demo{margin-top:10px}
+/* 綜藝（vs2-） */
+.vs2-hero .vs-cast{display:flex;gap:10px;margin-top:14px;overflow-x:auto}.vs2-hero .vs-cast span{display:flex;flex-direction:column;align-items:center;gap:4px;font-size:11px}
+.vs2-cap,.dk-keep{display:inline-block;margin-top:12px;background:#FFE066;color:#222;font-weight:900;padding:6px 12px;border-radius:6px;transform:rotate(-2deg);box-shadow:3px 3px 0 rgba(0,0,0,.6);font-size:15px}
+.vs2 .xv-row .xv-t b{display:block}.vs2 .xv-row .xv-bar{display:block}
+.vs2-file{display:flex;align-items:center;gap:10px;background:var(--s2);border-radius:12px;padding:12px;font-size:13px;color:var(--ink-2);position:relative}.vs2-file span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vs2-file b{background:var(--violet);color:#fff;border-radius:999px;padding:6px 12px;font-size:12px}.vs2-file input{position:absolute;inset:0;opacity:0}

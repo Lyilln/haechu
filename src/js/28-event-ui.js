@@ -53,3 +53,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(t.dataset.a==="fsFeat"){ ui.fsFeat=t.dataset.v; lsRerender(); window.scrollTo({top:0,behavior:"smooth"}); return; }
   const ev=fsGet(t.dataset.v); if(!ev) return; xvShare({small:`${fsName(ev)}・${fsTypeName(ev)}`,title:ev.title,big:"✍️ 💜",chips:[ev.toSign?`To. ${fsMyTo(ev)}`:"簽名專輯到手"],cap:`${fsName(ev)}〈${ev.title}〉${fsTypeName(ev)}\n拿到簽名專輯了 💜`}); },true);
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="fsAddOpen"]'); if(!t) return; e.stopImmediatePropagation(); ui.fsAddOpen=!ui.fsAddOpen; lsRerender(); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="vsAddOpen"],[data-a="vsShare"]'); if(!t) return; e.stopImmediatePropagation();
+  if(t.dataset.a==="vsAddOpen"){ ui.vsAddOpen=!ui.vsAddOpen; lsRerender(); return; }
+  const ep=vsGet(t.dataset.id); if(!ep) return; const S0=VSHOW[ep.show], my=(ep.bets||{})[myEmail()]||{};
+  xvShare({small:`${S0.name} ${ep.title}`,title:"我押中了！",big:"🎯",chips:[`冠軍 ${(ep.res&&ep.res.win||[]).map(vsName).join("、")}`],cap:`${S0.name} ${ep.title}\n押 ${vsName(my.mid||"")} 押中了！ 🎯`,c1:"#D6336C",c2:"#F783AC"}); },true);

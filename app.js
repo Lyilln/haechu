@@ -11011,12 +11011,29 @@ function vsCard(ep,base,mid){ const S0=VSHOW[ep.show], need=mid&&vsNeed(ep,mid);
   return `<button class="vs-card" data-a="uniGo" data-v="${base}&id=${ep.id}" style="--vg:${grad(S0.g)}"><span class="vs-logo"><b>${esc(S0.name)}</b><small>${esc(S0.ko)}</small></span>
     <span class="vs-ci"><b>${esc(ep.title)}</b><small>${esc(S0.seg)}・${esc(S0.tip)}</small><span class="vs-avs">${ep.mids.map(m=>vsAv(m,26)).join("")}</span></span>
     <em class="vs-st ${ep.st==="on"?"on":""}">${need?"輪到你":ep.st==="on"?`錄影中・${vsLeft(ep.end)}`:"已播出"}</em></button>`; }
-function vsListHtml(base,mid,eps){ const on=eps.filter(e=>e.st==="on"), done=eps.filter(e=>e.st!=="on");
-  const art=(session()||{}).role==="artist", go=p=>art?`#/artist?tab=foc&p=${p}`:`#/fan/core?p=${p}`, ic=isCur();
-  const sp=`<div class="vs-sp"><button class="vs-spc is" data-a="uniGo" data-v="${go("isac")}"><i>🏅</i><b>偶像運動會</b><small>${isTile()}</small>${ic&&ic.st==="on"?`<em>LIVE</em>`:""}</button></div>`;
-  return `<main class="page vs"><div class="section-h">特別節目</div>${sp}${eps.length?"":`<div class="section-h">綜藝節目</div><div class="ux-empty"><span>🎬</span><b>還沒有節目</b></div>`}${on.length?`<div class="section-h">錄影中</div>${on.map(e=>vsCard(e,base,mid)).join("")}`:""}${done.length?`<div class="section-h">已播出</div>${done.map(e=>vsCard(e,base,mid)).join("")}`:""}</main>`; }
-function vsHero(ep){ const S0=VSHOW[ep.show]; return `<section class="vs-hero ${S0.retro?"retro":""}" style="--vg:${grad(S0.g)}"><span class="vs-logo big"><b>${esc(S0.name)}</b><small>${esc(S0.ko)}</small></span><h2>${esc(ep.title)}</h2><p>${esc(S0.seg)}・${esc(S0.tip)}</p>
-  <span class="vs-st ${ep.st==="on"?"on":""}">${ep.st==="on"?`錄影中・${vsLeft(ep.end)}`:"已播出"}</span><div class="vs-cast">${ep.mids.map(m=>`<span>${vsAv(m,46)}<small>${esc(vsName(m))}</small></span>`).join("")}</div></section>`; }
+const VS_IC={nolto:"🎤",knowing:"❓",rm:"🏃",onetwo:"🍚"}, VS_CAP={nolto:"🎧 這句到底在唱什麼？！",knowing:"🤔 你真的認識我嗎？",rm:"🏃 名牌保住了嗎？！",onetwo:"🍚 今晚誰睡帳篷？"};
+const vsEpRow=(e,base,mid)=>{ const S0=VSHOW[e.show], need=mid&&vsNeed(e,mid), w=e.st!=="on"&&e.res&&e.res.win||[];
+  return xvRow({av:VS_IC[e.show]||"🎬",sq:1,avStyle:`background:${grad(S0.g)}`,title:`${esc(S0.name)}・${esc(e.title)}`,sub:`${e.mids.map(vsName).map(esc).join("・")}${e.st!=="on"&&w.length?`<br>冠軍 ${w.map(vsName).map(esc).join("、")}`:""}`,right:need?xvChip("輪到你","w"):e.st==="on"?xvChip(`錄影中・${vsLeft(e.end)}`,"ok"):xvChip("已播出"),attrs:`data-a="uniGo" data-v="${base}&id=${e.id}"`}); };
+function vsListHtml(base,mid,eps){ const on=eps.filter(e=>e.st==="on"), done=eps.filter(e=>e.st!=="on"), me=myEmail();
+  const feat=(mid&&eps.find(e=>vsNeed(e,mid)))||(mid&&on.find(e=>e.mids.includes(mid)))||on[0]||null;
+  let top;
+  if(feat){ const S0=VSHOW[feat.show], my=!mid&&(feat.bets||{})[me], B=Object.values(feat.bets||{}), pool=B.reduce((a,b)=>a+b.n,0), need=mid&&vsNeed(feat,mid);
+    top=xvHero({tone:"p",tag:need?"輪到你":mid&&feat.mids.includes(mid)?"你是來賓":"● 錄影中",small:`${esc(S0.name)}・${esc(feat.title)}`,title:esc(S0.tip),meta:`${feat.mids.map(vsName).map(esc).join(" vs ")}${mid&&feat.mids.includes(mid)?"・冠軍 +500":""}`,
+      cd:[...xvCd(feat.end),...(!mid?[[my?fmt(my.n):"—",my?`我押了 ${esc(vsName(my.mid))}`:`獎金池 ${fmt(pool)}`,2]]:[])],btns:[[mid&&feat.mids.includes(mid)?"進入錄影":"去看看",`data-a="uniGo" data-v="${base}&id=${feat.id}"`]]});
+    if(!mid&&feat.mids.length){ top+=xvSh("這集誰會贏",`押注總額 ${fmt(pool)}`)+feat.mids.map(m=>{ const n=B.filter(b=>b.mid===m).reduce((a,b)=>a+b.n,0), pc=pool?Math.round(n/pool*100):0; return xvRow({av:vsAv(m,40),avStyle:"background:none",title:`${esc(vsName(m))}<span class="xv-bar"><i style="width:${pc}%"></i></span>`,right:xvChip(`${pc}%`,my&&my.mid===m?"on":""),attrs:`data-a="uniGo" data-v="${base}&id=${feat.id}"`}); }).join(""); } }
+  else top=xvHero({tone:"p",small:"VARIETY",title:mid?"還沒有節目邀請":"目前沒有錄影中的節目",meta:mid?"公司開節目時會邀請你上，出演 +100、冠軍 +500":"藝人上綜藝時，可以押積分猜誰贏、留言應援"});
+  const stats=mid?(()=>{ const my=eps.filter(e=>e.mids.includes(mid)), w=my.filter(e=>e.st!=="on"&&e.res&&(e.res.win||[]).includes(mid)).length, fan=feat&&feat.mids.includes(mid)?Object.values(feat.bets||{}).filter(b=>b.mid===mid).length:0; return xvStats([[my.length,"出演"],[w,"冠軍"],[fan,"粉絲押你"]]); })():"";
+  const rest=on.filter(e=>e!==feat);
+  return `<main class="page vs xv vs2">${top}${stats}
+    ${xvSh("節目")}${xvHow(Object.entries(VSHOW).map(([k,v])=>[VS_IC[k],esc(v.name)]))}
+    ${rest.length?xvSh("錄影中",`${rest.length} 集`)+rest.map(e=>vsEpRow(e,base,mid)).join(""):""}
+    ${done.length?xvSh("已播出",`${done.length} 集`)+done.slice(0,12).map(e=>vsEpRow(e,base,mid)).join(""):""}</main>`; }
+function vsHero(ep){ const S0=VSHOW[ep.show]; return `<section class="xv-hero p vs2-hero" style="background:linear-gradient(160deg,${GRADS[S0.g%GRADS.length].join(",")})"><span class="xv-tag">${ep.st==="on"?`● 錄影中・${vsLeft(ep.end)}`:"已播出"}</span><small>${esc(S0.name)}・${esc(S0.ko)}</small><h2>${esc(ep.title)}</h2><p>${esc(S0.seg)}・${esc(S0.tip)}</p>
+  <span class="vs2-cap">${VS_CAP[ep.show]||""}</span><div class="vs-cast">${ep.mids.map(m=>`<span>${vsAv(m,46)}<small>${esc(vsName(m))}</small></span>`).join("")}</div></section>`; }
+/* 押注結果：看已播出的集數時跳一次結算卡（每台手機每集一次） */
+function vsBetPop(ep){ try{ const me=myEmail(), my=(ep.bets||{})[me]; if(ep.st==="on"||!my||!ep.res) return; const k="hc_vs_seen", seen=JSON.parse(localStorage.getItem(k)||"{}"); if(seen[ep.id]) return; seen[ep.id]=1; localStorage.setItem(k,JSON.stringify(seen));
+  const win=(ep.res.betWin||ep.res.win||[]).includes(my.mid), B=Object.values(ep.bets||{}), pool=B.reduce((a,b)=>a+b.n,0), wp=B.filter(b=>(ep.res.betWin||ep.res.win||[]).includes(b.mid)).reduce((a,b)=>a+b.n,0), back=win&&wp?Math.floor(pool*(1-VS_CUT)*my.n/wp):0, S0=VSHOW[ep.show];
+  setTimeout(()=>xvResult({tone:"p",small:`${S0.name} ${ep.title}・冠軍 ${(ep.res.win||[]).map(vsName).join("、")}`,title:win?"你押中了！":"這次沒猜中",big:win?`+${fmt(Math.max(0,back-my.n))}`:`−${fmt(my.n)}`,chips:[`押 ${fmt(my.n)} 在 ${vsName(my.mid)}`,...(win?[`拿回 ${fmt(back)}`]:[])],share:win?`data-a="vsShare" data-id="${ep.id}"`:""}),400); }catch(e){} }
 function vsResult(ep){ if(ep.st!=="done"||!ep.res) return ""; if(ep.show==="onetwo") return obResult(ep); const r=ep.res, unit=ep.show==="nolto"?"%":ep.show==="knowing"?" 題":"";
   return `<section class="card vs-res"><h3>結果</h3>${r.rank.map((m,i)=>`<div class="vs-rr ${r.win.includes(m)?"win":""}"><em>${r.win.includes(m)?"👑":i+1}</em>${vsAv(m,32)}<b>${esc(vsName(m))}</b><span>${ep.show==="rm"?(r.win.includes(m)?"存活":`第 ${r.sc[m]} 回合出局`):fmt(r.sc[m])+unit}</span></div>`).join("")}
     ${r.pun&&MEMBERS[r.pun.mid]?`<div class="vs-pun"><b>懲罰・${esc(vsName(r.pun.mid))}</b><p>${esc(r.pun.t)}</p></div>`:""}</section>`; }
@@ -11054,7 +11071,7 @@ function vsBetHtml(ep){ const me=myEmail(), my=(ep.bets||{})[me], B=Object.value
 function vsCmHtml(ep){ const L=ep.cm||[], me=myEmail(), mm=(session()||{}).role==="artist"?(session()||{}).member:"";
   return `<section class="card vs-sec"><h3>留言<small>${fmt(L.length)}</small></h3><form class="vs-cf" id="vsCmForm" data-id="${ep.id}"><textarea rows="1" class="ag" id="vsCmIn" maxlength="200" placeholder="輸入文字" autocomplete="off"></textarea><button type="submit">發佈</button></form>
     ${L.slice().reverse().slice(0,80).map(c=>`<div class="vs-cm">${c.mid?vsAv(c.mid,28):`<span class="vs-av" style="--s:28px;background:${grad(strHash(c.by)%6)}">${esc((c.name||"?")[0])}</span>`}<p><b>${esc(c.mid?vsName(c.mid):c.name)}</b>${c.by===me||c.mid&&c.mid===mm?esc(c.text):trT("vs:"+c.id,c.text,"","span")}<small>${snsAgo(c.ts)}</small></p>${c.by===me||isAdminAcct()?`<button data-a="vsCmDel" data-id="${ep.id}" data-v="${c.id}" aria-label="刪除">×</button>`:""}</div>`).join("")}</section>`; }
-function viewShowFan(id){ if(id){ const ep=vsCheck(vsGet(id)); if(!ep) return `<main class="page vs"><div class="vs-none"><b>這集已下架</b></div></main>`; return `<main class="page vs">${vsHero(ep)}${vsResult(ep)}${vsBetHtml(ep)}${vsBody(ep,null)}${vsCmHtml(ep)}</main>`; }
+function viewShowFan(id){ if(id){ const ep=vsCheck(vsGet(id)); if(!ep) return `<main class="page vs"><div class="vs-none"><b>這集已下架</b></div></main>`; vsBetPop(ep); return `<main class="page vs">${vsHero(ep)}${vsResult(ep)}${vsBetHtml(ep)}${vsBody(ep,null)}${vsCmHtml(ep)}</main>`; }
   const f=followed(); return vsListHtml("#/fan/core?p=show",null,vsAll().map(vsCheck).sort((a,b)=>(b.st==="on")-(a.st==="on")||b.ts-a.ts).sort((a,b)=>(b.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))-a.mids.some(m=>MEMBERS[m]&&f.includes(MEMBERS[m].group))))); }
 function viewShowArtist(mid,id){ if(id){ const ep=vsCheck(vsGet(id)); if(!ep) return `<main class="page vs"><div class="vs-none"><b>這集已下架</b></div></main>`; return `<main class="page vs">${vsHero(ep)}${vsResult(ep)}${vsBody(ep,mid)}${vsCmHtml(ep)}</main>`; }
   const E=vsAll().map(vsCheck), mine=E.filter(e=>e.mids.includes(mid)), other=E.filter(e=>!e.mids.includes(mid));
@@ -11066,20 +11083,26 @@ const vsFanSub=()=>{ const n=vsAll().filter(e=>e.st==="on").length; return n?`${
 /* ===== 管理員：開一集 ===== */
 function vsAdminHtml(){ const d=ui.vsD||(ui.vsD={show:"nolto",mids:[],days:3,plays:3}), S0=VSHOW[d.show], AM=Object.keys(MEMBERS).filter(m=>!MEMBERS[m].official&&groupOf(MEMBERS[m].group));
   const n=vsAll().filter(e=>e.show===d.show).length+1, E=vsAll();
-  return `<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>開一集綜藝</h3></div>
+  const O=E.filter(e=>e.st==="on"), D=E.filter(e=>e.st!=="on"), cur=xvSegCur("vs","on"), L=cur==="on"?O:D;
+  const rows=L.map(e=>`<section class="tr2-c">${xvRow({av:VS_IC[e.show]||"🎬",sq:1,avStyle:`background:${grad(VSHOW[e.show].g)}`,title:`${esc(VSHOW[e.show].name)}・${esc(e.title)}`,sub:`${e.mids.map(vsName).map(esc).join("・")}${e.st==="on"&&e.show==="rm"?`・第 ${e.rm.round} 回合`:""}`,right:e.st==="on"?xvChip(`錄影中・${vsLeft(e.end)}`,"ok"):xvChip("已播出")})}
+      <div class="tr2-b">${e.st==="on"?`${e.show==="rm"?`<button class="xv-bt g" data-a="vsRmForce" data-id="${e.id}">結算回合</button>`:""}<button class="xv-bt g" data-a="vsEnd" data-id="${e.id}">收工公布</button>`:""}<button class="xv-bt g" data-a="vsDel" data-id="${e.id}">刪除</button></div></section>`).join("");
+  return `<div class="xv vs2">${xvStats([[O.length,"錄影中"],[D.length,"已播出"],[E.reduce((a,e)=>a+Object.keys(e.bets||{}).length,0),"押注人次"]])}
+    <div style="margin-top:12px">${xvSeg("vs",[["on",`錄影中 ${O.length}`],["done",`已播出 ${D.length}`]],cur)}</div>
+    <div style="margin-top:12px">${rows||xvEmpty(cur==="on"?"沒有錄影中的節目":"還沒有播出的節目")}</div>
+    ${ui.vsAddOpen?"":xvAdd("開一集綜藝",`data-a="vsAddOpen"`)}
+    ${xvSh("四個節目")}${Object.entries(VSHOW).map(([k,v])=>xvRow({av:VS_IC[k],sq:1,avStyle:`background:${grad(v.g)}`,title:esc(v.name),sub:`${esc(v.seg)}・${esc(v.tip)}・${E.filter(e=>e.show===k).length} 集`})).join("")}</div>
+  ${ui.vsAddOpen?`<section class="card studio vs-adm"><div class="foc-cfg-h"><h3>開一集綜藝</h3><button class="xv-bt g" data-a="vsAddOpen">收起</button></div>
     <div class="chips wrap">${Object.entries(VSHOW).map(([k,v])=>`<button class="chip ${d.show===k?"on":""}" data-a="vsDShow" data-v="${k}">${esc(v.name)}</button>`).join("")}</div>
     <label class="foc-lab">標題</label><label class="field"><input id="vsDTitle" value="${esc(d.title||`EP.${n}`)}" placeholder="輸入文字"></label>
     <label class="foc-lab">來賓（已出道藝人）<span class="muted">${d.mids.length} 位</span></label>
     <div class="chips wrap">${AM.map(m=>`<button class="chip ${d.mids.includes(m)?"on":""}" data-a="vsDMid" data-v="${m}">${esc(vsName(m))}<small class="muted"> ${esc((groupOf(MEMBERS[m].group)||{}).name||"")}</small></button>`).join("")}</div>
     <label class="foc-lab">錄影時間</label><div class="chips">${[1,2,3,5,7].map(x=>`<button class="chip ${d.days===x?"on":""}" data-a="vsDDays" data-v="${x}">${x} 天</button>`).join("")}</div>
     ${d.show==="onetwo"?`<label class="foc-lab">PD 的開場台詞</label><label class="field"><input id="vsDPd" value="${esc(d.pd||"")}" placeholder="輸入文字"></label>`:""}
-    ${d.show==="nolto"?`<label class="foc-lab">題目音檔</label><label class="field">🎵<input type="file" accept="audio/*,video/*" id="vsAud"><span id="vsAudN" class="muted">${d.audN?esc(d.audN):""}</span></label>
+    ${d.show==="nolto"?`<label class="foc-lab">題目音檔</label><label class="vs2-file">🎵<span id="vsAudN">${d.audN?esc(d.audN):"選一段歌（音檔或影片）"}</span><b>選擇</b><input type="file" accept="audio/*,video/*" id="vsAud"></label>
       <label class="foc-lab">正確歌詞</label><textarea id="vsLyr" class="vs-ta" rows="4" placeholder="輸入文字">${esc(d.lyric||"")}</textarea>
       <label class="foc-lab">每人可以聽幾次</label><div class="chips">${[1,2,3,5].map(x=>`<button class="chip ${d.plays===x?"on":""}" data-a="vsDPlays" data-v="${x}">${x} 次</button>`).join("")}</div>`:""}
     <button class="btn btn-main btn-block" data-a="vsDGo">開錄（通知來賓）</button></section>
-    ${E.length?`<div class="section-h">節目</div><section class="card">${E.map(e=>`<div class="vd-r vs-ar"><span><b>${esc(VSHOW[e.show].name)}・${esc(e.title)}</b><small>${e.st==="on"?`錄影中・${vsLeft(e.end)}${e.show==="rm"?`・第 ${e.rm.round} 回合`:""}`:"已播出"}・${e.mids.map(vsName).join("、")}</small></span>
-      ${e.st==="on"?`${e.show==="rm"?`<button class="btn btn-soft btn-sm" data-a="vsRmForce" data-id="${e.id}">結算回合</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsEnd" data-id="${e.id}">收工</button>`:""}<button class="btn btn-soft btn-sm" data-a="vsDel" data-id="${e.id}">刪除</button></div>`).join("")}</section>`:""}`; }
-
+`:""}`; }
 /* ===== 點擊 ===== */
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^vs/.test(a)) return;
   const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); };
@@ -14489,3 +14512,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(t.dataset.a==="fsFeat"){ ui.fsFeat=t.dataset.v; lsRerender(); window.scrollTo({top:0,behavior:"smooth"}); return; }
   const ev=fsGet(t.dataset.v); if(!ev) return; xvShare({small:`${fsName(ev)}・${fsTypeName(ev)}`,title:ev.title,big:"✍️ 💜",chips:[ev.toSign?`To. ${fsMyTo(ev)}`:"簽名專輯到手"],cap:`${fsName(ev)}〈${ev.title}〉${fsTypeName(ev)}\n拿到簽名專輯了 💜`}); },true);
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="fsAddOpen"]'); if(!t) return; e.stopImmediatePropagation(); ui.fsAddOpen=!ui.fsAddOpen; lsRerender(); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="vsAddOpen"],[data-a="vsShare"]'); if(!t) return; e.stopImmediatePropagation();
+  if(t.dataset.a==="vsAddOpen"){ ui.vsAddOpen=!ui.vsAddOpen; lsRerender(); return; }
+  const ep=vsGet(t.dataset.id); if(!ep) return; const S0=VSHOW[ep.show], my=(ep.bets||{})[myEmail()]||{};
+  xvShare({small:`${S0.name} ${ep.title}`,title:"我押中了！",big:"🎯",chips:[`冠軍 ${(ep.res&&ep.res.win||[]).map(vsName).join("、")}`],cap:`${S0.name} ${ep.title}\n押 ${vsName(my.mid||"")} 押中了！ 🎯`,c1:"#D6336C",c2:"#F783AC"}); },true);
