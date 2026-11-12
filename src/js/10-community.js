@@ -483,7 +483,7 @@ function viewArtist(tab){
       <section class="card">
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
-        <button class="list-btn" data-a="tab" data-v="points">${I.star}積分收入</button>
+        <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=points">${I.star}積分收入</button>
       </section>
       <div class="section-h">團體</div>
       <section class="card">

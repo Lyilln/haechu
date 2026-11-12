@@ -79,7 +79,8 @@ function snSuggest(d){ const me=snMeId(), fol=snFol(d,me); let dis=[]; try{ dis=
 /* 粉絲轉成藝人：以前的一般 SNS 帳號一律是私人帳號（不能改成公開，也不會出現在別人的推薦裡） */
 const snForcePriv=uid=>{ if(!String(uid||"").startsWith("u:")) return false; const a=ACCOUNTS[uid.slice(2)]; return !!(a&&a.member&&MEMBERS[a.member]); };
 const snPriv=(d,uid)=>snForcePriv(uid)||!!((d.prof[uid]||{}).priv);
-const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid)||isAdminAcct(); };
+/* 私人帳號：只有追蹤他的人看得到（11/12：管理員也一樣，不再例外；出道後的舊帳號也照這個規則藏起來） */
+const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid); };
 const snReqd=(d,uid)=>((d.req||{})[uid]||[]).includes(snMeId());
 const snFollowers=(d,uid)=>Object.keys(d.fol).filter(k=>(d.fol[k]||[]).includes(uid)).length;
 const snLikes=(d,p)=>(d.likes[p.id]||[]).length;
@@ -123,7 +124,7 @@ function snMentNotify(ids,what){ const me=snMeId(), u=snUser(me)||{}, who=u.u||u
 const snStDel=s=>({id:s.id,uid:s.uid,ts:0,del:Date.now()});
 /* 刪貼文：拿掉，同時留一個「已刪除」記號（別支手機才不會又合併回來） */
 const snPDel=(d,pred)=>{ const gone=d.posts.filter(pred); d.posts=[...d.posts.filter(x=>!pred(x)),...gone.map(p=>({id:p.id,uid:p.uid,ts:0,del:Date.now()}))]; return gone.length; };   /* 刪掉的限動：留一個記號，別支手機才不會又把它合併回來 */
-function snActiveStories(d){ const lim=Date.now()-864e5, me=snMeId(); return d.stories.filter(s=>!s.del&&s.ts>lim&&(!s.cf||s.uid===me||((d.cf||{})[s.uid]||[]).includes(me))); }
+function snActiveStories(d){ const lim=Date.now()-864e5, me=snMeId(); return d.stories.filter(s=>!s.del&&s.ts>lim&&snCanSee(d,s.uid)&&(!s.cf||s.uid===me||((d.cf||{})[s.uid]||[]).includes(me))); }
 const snStoryCf=(d,uid)=>snActiveStories(d).some(s=>s.uid===uid&&s.cf);
 function snHasStory(d,uid){ return snActiveStories(d).some(s=>s.uid===uid); }
 function snStorySeen(d,uid){ const me=snMeId(), st=snActiveStories(d).filter(s=>s.uid===uid); return st.length&&st.every(s=>((d.seen[me]||{})[s.id])); }
@@ -190,7 +191,7 @@ function snRfSync(){ document.querySelectorAll(".sn-reel1").forEach(sec=>{ const
   const d=snDB(), me=snMeId(), fo=snFol(d,me).includes(uid), h=snRfBtn(uid,pid,fo,me); if(b) b.remove(); if(h) hu.insertAdjacentHTML("afterend",h); }); }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="snRfFo"]'); if(!t) return; e.stopImmediatePropagation(); e.preventDefault();
   const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, pid=t.dataset.p, i=L.indexOf(v); d.req=d.req||{};
-  if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); t.textContent=j>=0?"追蹤":"已要求"; return; }
+  if(i<0&&snPriv(d,v)){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); t.textContent=j>=0?"追蹤":"已要求"; return; }
   if(i>=0){ L.splice(i,1); delete SN_RFJ[pid]; } else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); SN_RFJ[pid]=1; }
   (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); snRfSync(); },true);   /* 不整頁重畫：Reels 不會跳回第一支 */
 /* 滑到別支影片：剛剛按的「追蹤中」收起來，回來就跟 IG 一樣只剩頭貼和名字 */
@@ -340,7 +341,7 @@ let SN_FINGER=0; ["touchstart","touchmove","wheel"].forEach(ev=>document.addEven
   document.addEventListener("scroll",e=>{ if(Date.now()-navAt<400||!isSn(location.hash)) return; const t=e.target; if(t===document||(t.classList&&t.classList.contains("sn"))) SNPOS[location.hash]=(t===document?document.scrollingElement:t).scrollTop; },{passive:true,capture:true});
   /* 貼文頁第一次進來：停在點的那一則（上面還有他比較新的貼文，往上滑就看得到，跟 IG 一樣） */
   const postY=()=>{ const m=/[?&]p=post&id=([^&]+)/.exec(location.hash), el=sc(); if(!m||!el) return 0; const a=document.getElementById("snp-"+decodeURIComponent(m[1])), hd=document.querySelector(".sn-pvh"); if(!a) return 0; return Math.max(0,Math.round(el.scrollTop+a.getBoundingClientRect().top-(hd?hd.getBoundingClientRect().bottom:0))); };
-  addEventListener("hashchange",()=>{ if(!isSn(location.hash)) return; navAt=Date.now(); const t0=navAt, saved=SNPOS[location.hash], go=()=>{ if(SN_FINGER>t0) return; const el=sc(), y=saved!=null?saved:postY(); if(el&&Math.abs(el.scrollTop-y)>2) el.scrollTop=y; }; go(); requestAnimationFrame(go); setTimeout(go,60); setTimeout(go,200); setTimeout(go,380); }); }
+  addEventListener("hashchange",()=>{ if(!isSn(location.hash)) return; navAt=Date.now(); const fwd=performance.now()-(ui.navFwd||0)<300; if(fwd) delete SNPOS[location.hash]; const t0=navAt, saved=fwd?null:SNPOS[location.hash], go=()=>{ if(SN_FINGER>t0) return; const el=sc(), y=saved!=null?saved:postY(); if(el&&Math.abs(el.scrollTop-y)>2) el.scrollTop=y; }; go(); requestAnimationFrame(go); setTimeout(go,60); setTimeout(go,200); setTimeout(go,380); }); }
 function snHeartPop(id){ ui.snPop={id,ts:Date.now()}; const el=document.querySelector(`#snp-${CSS.escape(id)} .sn-heart`)||[...document.querySelectorAll(".sn-reel1")].find(r=>r.querySelector(`[data-id="${id}"]`))?.querySelector(".sn-heart"); if(!el) return; el.classList.remove("pop"); void el.offsetWidth; el.classList.add("pop"); }
 /* 按讚後只改畫面上需要改的地方（愛心、數字、誰說讚那行），不重畫整頁（重畫會閃、會跳） */
 function snLikeUI(id){ const d=snDB(), me=snMeId(), p=(d.posts||[]).find(x=>x.id===id); if(!p) return false; const on=(d.likes[id]||[]).includes(me), n=snN(snLikes(d,p));
@@ -535,7 +536,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snColF": ui.snColF=ui.snColF===t.dataset.v?null:t.dataset.v; render(); break;
     case "snDelP": { const id=t.dataset.id; ask("要刪除這則貼文嗎？",()=>{ const d=snDB(); snPDel(d,x=>x.id===id); delete d.likes[id]; delete d.cms[id]; Object.values(d.saved).forEach(L=>{ const i=L.indexOf(id); if(i>=0) L.splice(i,1); }); snSave(d); layer.innerHTML=""; if(route().p==="post") navBack(); else render(); toast("已刪除"); }); break; }
     case "snFollow": { hap(8); const d=snDB(), me=snMeId(), L=snFol(d,me), v=t.dataset.v, i=L.indexOf(v); d.req=d.req||{};
-      if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
+      if(i<0&&snPriv(d,v)){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); snSave(d); const y=window.scrollY; render(); window.scrollTo(0,y); break; }
       if(i>=0) L.splice(i,1); else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); } (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); break; }
     case "snShareMe": { const u=snUser(snMeId()); try{ navigator.clipboard.writeText("@"+u.u).then(()=>toast("已複製你的用戶名稱"),()=>toast("@"+u.u)); }catch(e){ toast("@"+u.u); } break; }
     case "snEditOk": { const d=snDB(), me=snMeId(), pr=d.prof[me]=d.prof[me]||{}; const u=((document.getElementById("snUIn")||{}).value||"").trim().toLowerCase().replace(/[^a-z0-9._]/g,""), b=((document.getElementById("snBioIn")||{}).value||"").trim();
@@ -574,7 +575,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }
     case "snLkX": { layer.innerHTML=""; if(ui.snLkDirty){ ui.snLkDirty=0; render(); } break; }
     case "snLkFol": { const d=snDB(), me=snMeId(), v=t.dataset.v, L=snFol(d,me), i=L.indexOf(v); d.req=d.req||{};
-      if(i<0&&snPriv(d,v)&&!isAdminAcct()){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); }
+      if(i<0&&snPriv(d,v)){ const R=d.req[v]=d.req[v]||[], j=R.indexOf(me); if(j>=0) R.splice(j,1); else R.push(me); }
       else if(i>=0) L.splice(i,1); else { L.push(v); ((d.folAt=d.folAt||{})[me]=d.folAt[me]||{})[v]=Date.now(); }
       (d.folTs=d.folTs||{})[me]=Date.now(); snSave(d); ui.snLkDirty=1; const n=document.createElement("div"); n.innerHTML=snLkBtn(snDB(),v); t.replaceWith(n.firstElementChild); break; }
     case "snStHeart": { const d=snDB(), me=snMeId(), id=t.dataset.id, L=(d.slk=d.slk||{})[id]=d.slk[id]||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else { L.push(me); dmAppend(me,t.dataset.u,{text:"❤️",story:id,ts:Date.now()}); snFlyHearts(t); } snSave(d); t.classList.toggle("on",i<0); break; }

@@ -685,6 +685,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "uniAnnOk": { const d=ui.annDraft; if(d.to==="all") publishAnnounce(d.body.trim()); else S.set(K.gNotices,[{id:"gn"+Date.now(),group:d.to,title:d.title.trim(),body:d.body.trim(),ts:Date.now()},...S.get(K.gNotices,[])]);
       ui.annDraft=null; layer.innerHTML=""; render(); toast("已用HAECHU官方發布"); break; }
     case "focFold": { const o=focFoldGet(); o[t.dataset.v]=o[t.dataset.v]?0:1; try{ localStorage.setItem(FOC_FOLD_K,JSON.stringify(o)); }catch(e){} hap(8); lsRerender(); break; }
+    case "ptFold": ui.ptOpen=!ui.ptOpen; hap(8); lsRerender(); break;
     case "uniLives": { const L=getLives().filter(l=>!l.endTs&&l.member!==uniMe()); if(!L.length){ toast("現在沒有人在直播"); break; } iosSheet(L.map(l=>[`強制結束・${esc(artName(l.member,"feed"))}「${esc(l.title)}」`,"admEndLive",`data-id="${l.id}"`])); break; }
     case "ptP": ui.ptP=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "ptShare": iosAlert("藝人分得比例","藝人收到的積分裡，有幾 % 歸藝人（其餘是扣除的部分）",`<button data-a="tCloseLayer">取消</button><button data-a="ptShareOk">儲存</button>`,`<label class="pt-in"><input id="ptShareIn" type="number" inputmode="numeric" min="0" max="100" value="${revShare()}"><span>%</span></label>`); break;

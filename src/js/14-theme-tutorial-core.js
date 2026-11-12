@@ -63,8 +63,9 @@ function coachWelcome(){
 function coachMount(html){ let c=document.getElementById("coach"); if(!c){ c=document.createElement("div"); c.id="coach"; c.className="coach"; document.body.appendChild(c); } c.innerHTML=html; document.documentElement.classList.add("coach-lock"); coachWatch(); }
 /* 新手教學進行中：畫面不能滑；點亮起來的地方＝下一步（照著指引操作） */
 function coachWatch(){ clearInterval(coachWatch.t); coachWatch.t=setInterval(()=>{ if(!document.getElementById("coach")){ clearInterval(coachWatch.t); document.documentElement.classList.remove("coach-lock"); } },300); }
-window.addEventListener("touchmove",e=>{ if((document.getElementById("coach")||ui.coach)&&e.cancelable) e.preventDefault(); },{passive:false,capture:true});
-window.addEventListener("wheel",e=>{ if(document.getElementById("coach")||ui.coach) e.preventDefault(); },{passive:false,capture:true});
+/* 11/12：只看畫面上真的有教學層才擋（以前 ui.coach 沒清乾淨時，整個 App 會滑不動） */
+window.addEventListener("touchmove",e=>{ if(document.getElementById("coach")&&e.cancelable) e.preventDefault(); },{passive:false,capture:true});
+window.addEventListener("wheel",e=>{ if(document.getElementById("coach")) e.preventDefault(); },{passive:false,capture:true});
 document.addEventListener("click",e=>{ const c=document.getElementById("coach"); if(!c||!c.contains(e.target)||e.target.closest("button")) return; const h=c.querySelector(".coach-hole"); if(!h) return; const r=h.getBoundingClientRect();
   if(e.clientX>=r.left&&e.clientX<=r.right&&e.clientY>=r.top&&e.clientY<=r.bottom){ const b=c.querySelector('[data-a="coachNext"]'); if(b) b.click(); } });
 function coachShow(){

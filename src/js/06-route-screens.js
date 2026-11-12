@@ -28,13 +28,13 @@ const NAV_SAVED=(()=>{ try{ const a=JSON.parse(sessionStorage.getItem("hc_nav")|
 function navSave(){ try{ sessionStorage.setItem("hc_nav",JSON.stringify(NAV_STK)); }catch(e){} }
 function navSet(){ NAV_STK.length=NAV_BASE+NAV_D+1; NAV_STK[NAV_BASE+NAV_D]=location.hash; if(NAV_STK.length>40){ const cut=NAV_STK.length-40; NAV_STK=NAV_STK.slice(cut); NAV_BASE=Math.max(0,NAV_BASE-cut); } navSave(); }
 function navStamp(){ const st=history.state; if(st&&st.hc===NAV_BOOT&&typeof st.d==="number") NAV_D=st.d; else { NAV_D++; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},""); }catch(e){} } navSet(); }
-function navReplace(h){ ui.navUi=performance.now(); if(location.hash!==h){ try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h); }catch(e){} } navSet(); render(); }
+function navReplace(h){ ui.navUi=performance.now(); ui.navFwd=performance.now(); if(location.hash!==h){ try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h); }catch(e){} } navSet(); render(); }
 /* 換頁不經過瀏覽器的上一頁／下一頁（11/11）：iPhone 的瀏覽器和主畫面 App 都有自己的左右滑（右滑上一頁、左滑下一頁），
    會跟 App 自己的返回手勢打架、左滑還會跑到別頁。所以頁面紀錄全部由 App 自己記（NAV_STK），瀏覽器的紀錄永遠只有一筆 → 系統的左右滑沒地方去。
    ・navTo(h)：進到下一頁（取代原本的 location.hash=h）
    ・navFire(h)：換到那頁，並照常發出 hashchange（各頁的收尾都靠它） */
 function navFire(h){ ui.navUi=performance.now(); h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h){ navSet(); render(); return; } const o=location.href; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h||location.pathname+location.search); }catch(e){ location.hash=h; return; } window.dispatchEvent(new HashChangeEvent("hashchange",{oldURL:o,newURL:location.href})); }
-function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h) return; NAV_BASE++; navFire(h); }
+function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h) return; NAV_BASE++; ui.navFwd=performance.now(); navFire(h); }   /* navFwd：往前走的新頁，不要放回以前在這頁滑到的位置 */
 function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
 function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
   if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去

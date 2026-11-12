@@ -62,12 +62,15 @@ function viewPointsOne(mid){ const since=ptSince(), p=pointsOf(mid,since), m=MEM
   const G=ptGrants().filter(g=>g.mid===mid&&(String(g.id).startsWith("tqf2_")||g.art)&&(!since||g.ts>=since)), gp=G.reduce((s,g)=>s+Math.max(0,g.n||0),0), gm=G.reduce((s,g)=>s+Math.max(0,-(g.n||0)),0);
   const gT=g=>/^uf/.test(g.id)?"粉絲":/^tka_/.test(g.id)?"餐車":/^tqf2_/.test(g.id)?"罰款":"調整";
   const rows=[...L.map(x=>({ts:x.ts,h:`<div class="pt-d"><span class="rev-t t-${x.type}">${PT_T[x.type]||x.type}</span><p>${esc(saleLbl(x))}<small>${ago(x.ts)}</small></p><b>+${fmt(Math.round(share(x)))}</b></div>`})),
-    ...G.map(g=>({ts:g.ts,h:`<div class="pt-d"><span class="rev-t t-grant">${gT(g)}</span><p>${esc(g.why||"")}<small>${ago(g.ts)}</small></p><b class="${g.n<0?"neg":""}">${g.n<0?"−":"+"}${fmt(Math.abs(g.n||0))}</b></div>`}))].sort((a,b)=>b.ts-a.ts).slice(0,60);
+    /* 同一天、同一個原因的調整併成一行（例：「重複計算的積分更正」×7），點開才看每一筆 */
+    ...Object.values(G.reduce((A,g)=>{ const k=gT(g)+"|"+(g.why||"")+"|"+new Date(g.ts).toDateString(); (A[k]=A[k]||[]).push(g); return A; },{})).map(gs=>{ const g=gs[0], n=gs.reduce((t,x)=>t+(x.n||0),0), ts=Math.max(...gs.map(x=>x.ts));
+      const one=x=>`<div class="pt-d"><span class="rev-t t-grant">${gT(x)}</span><p>${esc(x.why||"")}<small>${ago(x.ts)}</small></p><b class="${x.n<0?"neg":""}">${x.n<0?"−":"+"}${fmt(Math.abs(x.n||0))}</b></div>`;
+      return {ts,h:gs.length<2?one(g):`<details class="pt-grp"><summary class="pt-d"><span class="rev-t t-grant">${gT(g)}</span><p><span>${esc(g.why||"")}<em class="pt-x">×${gs.length}</em></span><small>${ago(ts)}</small></p><b class="${n<0?"neg":""}">${n<0?"−":"+"}${fmt(Math.abs(n))}</b><i class="pt-chev"></i></summary>${gs.map(one).join("")}</details>`}; })].sort((a,b)=>b.ts-a.ts).slice(0,60);
+  const mine=mid===(session()||{}).member||mid===uniMe(), solo=(groupOf(m.group)||{}).solo, who=mine?"你":"他", open=!!ui.ptOpen;
   return `<main class="page pt">${ptPeriodChips()}
     <section class="card pt-sum"><div><span>收到</span><b>${fmt(p.got+gp)}</b></div><div><span>扣除</span><b class="neg">−${fmt(p.cut+gm)}</b></div><div><span>實得</span><b class="pos">${fmt(p.net)}</b></div></section>
-    <p class="pt-rule">${WHISPER_NAME} 券全部算給這位藝人；Membership、周邊、主題等算給整個團，再平均分給團裡的藝人。實得是收到的 ${sh}%。</p>
-    <div class="section-h">明細<span class="muted">${rows.length} 筆</span></div>
-    ${rows.length?`<section class="card pt-list">${rows.map(r=>r.h).join("")}</section>`:`<p class="me-none">這段時間還沒有積分</p>`}
+    <p class="pt-rule">${solo?`粉絲買${who}的 ${WHISPER_NAME} 券、Membership、周邊、主題，積分都算${who}的。`:`粉絲買${who}的 ${WHISPER_NAME} 券，積分全部算${who}的；買 Membership、周邊、主題這些，會先算給整個團，再平均分給團裡每一位。`}${who}實際拿到的是收到的 ${sh}%，就是右邊的「實得」。</p>
+    ${rows.length?`<button class="section-h pt-fold ${open?"open":""}" data-a="ptFold" aria-expanded="${open}">明細<span class="muted">${rows.length} 筆</span><span class="foc-fold-r">${open?"收起":"展開"}<svg viewBox="0 0 24 24"><path d="m7 10 5 5 5-5"/></svg></span></button>${open?`<section class="card pt-list">${rows.map(r=>r.h).join("")}</section>`:""}`:`<div class="section-h">明細</div><p class="me-none">這段時間還沒有積分</p>`}
   </main>`; }
 /* 還沒有任何團：要團才能做的設定，先帶去新增團 */
 const NOG_HTML=()=>`<div class="t-empty"><span class="t-empty-ico">${I.user}</span><p>還沒有藝人</p><button class="t-pill" data-a="uniGo" data-v="#/admin?tab=roster&p=new">新增藝人</button></div>`;
@@ -82,7 +85,11 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
       <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="acPw" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).pw||"")}"></label>
       <button class="btn btn-main btn-block" data-a="acCreate" ${ui.acBusy?"disabled":""}>${ui.acBusy?"建立中…":"建立帳號"}</button></section>
     <div class="section-h">全部帳號<span class="muted">${L.length} 個</span>${calPick("ac")}</div>
-    <section class="card ac-list">${(()=>{ const L2=calFilter("ac",L,([k,a])=>a.cts||0); return L2.length?"":`<p class="me-none">${calF("ac")?"這天沒有新增帳號":""}</p>`; })()}${calFilter("ac",L,([k,a])=>a.cts||0).slice(0,calMore("ac")).map(([k,a])=>`<div class="rs-m ac-row" data-a="acEdit" data-v="${esc(k)}" role="button"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><span class="ac-nm"><b>${esc(realName(k)||a.name||k)}</b><small>${esc(acctUser(k))}・${esc(a.name||"")}・${ROLE_ZH[a.role]||"粉絲"}</small></span><span class="ac-go">${UI_S.chev}</span></div>`).join("")}${calMoreBtn("ac",calFilter("ac",L,([k,a])=>a.cts||0).length)}</section>
+    ${(()=>{ const L2=calFilter("ac",L,([k,a])=>a.cts||0); if(!L2.length) return `<section class="card ac-list"><p class="me-none">${calF("ac")?"這天沒有新增帳號":""}</p></section>`;
+      /* 11/12：管理員、藝人、粉絲分三塊 */
+      const row=([k,a])=>`<div class="rs-m ac-row" data-a="acEdit" data-v="${esc(k)}" role="button"><span class="av sm" style="background:${grad(a.role==="admin"?1:a.role==="artist"?0:3)}">${esc([...(a.name||k)][0]||"?")}</span><span class="ac-nm"><b>${esc(realName(k)||a.name||k)}</b><small>${esc(acctUser(k))}・${esc(a.name||"")}</small></span><span class="ac-go">${UI_S.chev}</span></div>`;
+      return [["admin","管理員"],["artist","藝人"],["fan","粉絲"]].map(([r,lb])=>{ const G=L2.filter(([k,a])=>(a.role==="admin"||a.role==="artist"?a.role:"fan")===r); if(!G.length) return "";
+        return `<div class="ac-gh">${lb}<span class="muted">${G.length}</span></div><section class="card ac-list">${(r==="fan"?G.slice(0,calMore("ac")):G).map(row).join("")}${r==="fan"?calMoreBtn("ac",G.length):""}</section>`; }).join(""); })()}
   </main>`; }
 async function acCall(body){ body={...body}; if(body.username) body.username=normAcct(body.username); if(body.password) body.password=normPw(body.password); if(!HB_ON) return {ok:true,local:true};
   try{ return await hbFetch("/functions/v1/admin-users",{method:"POST",body}); }

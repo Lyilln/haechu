@@ -4316,6 +4316,28 @@ html[data-theme="dark"] .sn-sh{--sn-b:#262626;--sn-t:#F5F5F5}
 html .t-rh,html .t-foot{background:#fff!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 html[data-theme="dark"] .t-rh,html[data-theme="dark"] .t-foot{background:#323137!important}
 
+/* 積分明細：可以收起來；同一天同原因的調整併成一行（11/12） */
+.pt-fold{display:flex;align-items:center;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.pt-fold .foc-fold-r{margin-left:auto;display:inline-flex;align-items:center;gap:6px;color:var(--ink-3);font-size:13px;font-weight:500}
+.pt-fold .foc-fold-r svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;transition:transform .25s}
+.pt-fold.open .foc-fold-r svg{transform:rotate(180deg)}
+.pt-grp{border-bottom:1px solid var(--line)}.pt-grp:last-child{border-bottom:0}
+.pt-grp>summary{list-style:none;cursor:pointer;border-bottom:0}.pt-grp>summary::-webkit-details-marker{display:none}
+.pt-grp[open]>summary{border-bottom:1px solid var(--line)}
+.pt-grp>.pt-d{padding-left:28px;opacity:.8}
+.pt-x{font-style:normal;font-size:12px;color:var(--ink-3);margin-left:6px}
+.pt-d p .pt-x{display:inline}
+.pt-chev{width:8px;height:8px;border-right:1.6px solid var(--ink-3);border-bottom:1.6px solid var(--ink-3);transform:rotate(45deg);margin:-4px 2px 0 2px;transition:transform .2s;flex:none}
+.pt-grp[open] .pt-chev{transform:rotate(225deg);margin-top:4px}
+
+/* 帳號分三塊（11/12） */
+.ac-gh{display:flex;align-items:baseline;gap:8px;margin:16px 6px 8px;font-size:13px;font-weight:700;color:var(--ink-2,var(--ink-3))}
+.ac-gh .muted{font-weight:500}
+/* 申請主題：空的時候說明放中間 */
+.th-mine-e{min-height:55vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:10px;padding:0 24px}
+.th-mine-e small{color:var(--ink-3);font-size:13px;line-height:1.6;max-width:300px}
+.th-mine-e .btn{margin-top:10px;min-width:180px}
+
 /* HAECHU｜TIE 氣泡、SHOP 首頁、直播間、SNS 新版 */
 /* ===== TIE 聊天氣泡：照 Bubble（白泡泡、虛線下面是翻譯）＋ LINE 語音膠囊 ===== */
 :is(.t-msgs,.t-page) .t-b,html[data-theme] :is(.t-msgs,.t-page) .t-b{background:#fff!important;color:#141414!important;border-radius:4px 20px 20px 20px;padding:11px 15px;font-size:15px;line-height:1.5;box-shadow:0 1px 3px rgba(20,10,40,.06)}

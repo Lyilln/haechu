@@ -286,9 +286,10 @@ function viewThAdmin(){ const L=getThemes().filter(t=>t.status!=="deleted"), pen
     ${rest.length?`<section class="card th-al">${rest.map(t=>thAdminRow(t,false)).join("")}</section>`:`<p class="me-none">還沒有主題</p>`}
   </main>`; }
 function viewThMine(){ const s=session(), L=getThemes().filter(t=>t.owner===s.email&&t.status!=="deleted");
-  return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">申請主題</div><span class="sh-sp"></span></div></header><main class="page">
-    <button class="btn btn-main btn-block" data-a="thNew">新的申請</button>
-    ${L.length?`<div class="section-h">我送出的<span class="muted">${L.length} 套</span></div><section class="card th-al">${L.map(t=>thAdminRow(t,true)).join("")}</section>`:""}
+  /* 11/12：按鈕不再頂在最上面；沒申請過就在畫面中間說明＋按鈕，申請過就右上角「＋」 */
+  return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">申請主題</div>${L.length?`<button class="icon-btn" data-a="thNew" aria-label="新的申請">＋</button>`:`<span class="sh-sp"></span>`}</div></header><main class="page">
+    ${L.length?`<div class="section-h">我送出的<span class="muted">${L.length} 套</span></div><section class="card th-al">${L.map(t=>thAdminRow(t,true)).join("")}</section>`
+      :`<div class="t-empty th-mine-e"><span class="t-empty-ico">${I.star}</span><p>做一套你的主題</p><small>選顏色、圖示和背景，送出後公司審核，通過就會上架到 SHOP 的 ${TH_STORE}，粉絲換上後整個 App 都是你的顏色。</small><button class="btn btn-main" data-a="thNew">新的申請</button></div>`}
   </main>`; }
 
 /* 圖片：圖示縮成 128px 方形 PNG（保留透明）；封面、插圖、花邊、圖案縮小後存 */
