@@ -83,7 +83,7 @@ document.addEventListener("submit",e=>{
       if(!hadRe&&!hadEmo&&tieMsgsPatch(mid)) return;
       ui.scrollChat=true; render(); const i=document.getElementById("win"); if(i) i.focus(); }
     else { const m2=route().m; if(meBlocked()) return; if(banBlock(text)) return; if(fanQuota(m2).left<=0){ quotaBar(); return; }
-      { const lim=charLimit(m2); if(text.length>lim){ toast(`現在最多 ${lim} 字，這則有 ${text.length} 字`); return; } }   /* 字數上限（照 Bubble）：輸入框擋打字，這裡再擋貼上表情、暱稱後超過的 */
+      if(text.length>charLimit(m2)) return;   /* 字數上限（照 Bubble）：輸入框和表情都擋住了，這裡只是保險，不跳提示 */
       const lastMine=[...fanRoom(m2)].reverse().find(w=>w.from==="me");
       if(lastMine&&lastMine.text.trim()===text){ toast("不要重複傳一樣的訊息喔"); return; }
       if(/^(.)\1{5,}$/u.test(text.replace(/\s/g,""))||/^[\p{P}\p{S}\s]+$/u.test(text)&&!/\p{Extended_Pictographic}/u.test(text)){ toast("這則訊息好像沒有內容，換句話說說看吧"); return; } const hadEmo=!!ui.tieEmoji; ui.wDraft=""; ui.scrollChat=true; fanReply(m2,text); ui.tieEmoji=false;

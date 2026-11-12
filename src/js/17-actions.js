@@ -903,7 +903,7 @@ function clickTie(a,t,e,r){ switch(a){
     case "tEmojiToggle": { const i=document.getElementById("win"); if(i) ui.wDraft=i.value; if(stkDockOn()){ stkDock(false); if(i) i.focus(); } else { if(i) i.blur(); stkDock(true); } break; }
     
     
-    case "tEmoji": { const i=document.getElementById("win"); ui.wDraft=(i?i.value:"")+t.dataset.v; i.value=ui.wDraft; document.getElementById("wsend").classList.add("on"); i.focus(); break; }
+    case "tEmoji": { const i=document.getElementById("win"); if(i&&i.maxLength>0&&(i.value+t.dataset.v).length>i.maxLength) break; ui.wDraft=(i?i.value:"")+t.dataset.v; i.value=ui.wDraft; document.getElementById("wsend").classList.add("on"); i.focus(); break; }
     case "tEditName": ui.tieEditVal=null; navTo("#/fan/chat?m="+t.dataset.m+"&p=name"); break;
     case "tEditNick": ui.tieEditVal=null; navTo("#/fan/chat?m="+t.dataset.m+"&p=nick"); break;
     case "tEditBack": { const st=tieSet(t.dataset.m), val=t.dataset.w==="name"?st.chatName:st.nickname;
