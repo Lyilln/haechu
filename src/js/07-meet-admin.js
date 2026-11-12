@@ -175,7 +175,7 @@ function blobDU(blob){ return new Promise(res=>{ const r=new FileReader(); r.onl
    ・Membership、周邊算給整個團，再平均分給團裡的成員（不含官方帳號）
    ・藝人分潤比例由管理員設定
    ========================================================= */
-const revShare=()=>S.get(K.revShare,15);   // 藝人分潤：粉絲花在藝人身上的積分 15%（她 10/27 定）
+const revShare=()=>S.get(K.revShare,10);   // 藝人分潤：粉絲花在藝人身上的積分 10%（她 11/12 從 15% 改）
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
@@ -353,6 +353,8 @@ function tieQ0Mark(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.whispers]==null))
 const REVB_RATE=1, REVB_CAP=Infinity, REVB_FIRST="2026-10";
 /* 舊的預設 50% 換成 15%（只換一次；之後管理員自己改的就照管理員的） */
 setTimeout(()=>{ try{ if(!isAdminAcct()||S.get("daisuki_rev15",0)) return; if(HB_ON&&HB.ver[K.revShare]===undefined&&!HB.pulled) return; const v=S.get(K.revShare,null); if(v==null||v===50) S.set(K.revShare,15); S.set("daisuki_rev15",1); }catch(e){} },20e3);
+/* 11/12：15% 換成 10%（只換一次；管理員之後自己改的照管理員的） */
+setTimeout(()=>{ try{ if(!isAdminAcct()||S.get("daisuki_rev10",0)) return; if(HB_ON&&HB.ver[K.revShare]===undefined&&!HB.pulled) return; const v=S.get(K.revShare,null); if(v==null||v===15||v===50) S.set(K.revShare,10); S.set("daisuki_rev10",1); }catch(e){} },25e3);
 const ymKey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
 function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) return;   /* 雲端資料還沒載入就先不結算 */ const now=new Date(), last=new Date(now.getFullYear(),now.getMonth()-1,1), key=ymKey(last); if(key<REVB_FIRST) return;
     const done=S.get(K.revB,{})||{}; if(done[key]) return;

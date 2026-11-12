@@ -96,8 +96,8 @@ function viewArtistFoc(mid,p){
   const now=new Date(), left=(7-now.getDay())%7, yearPts=groupMusicPts(gid,{year:String(now.getFullYear())})+tourPts(gid,{year:String(now.getFullYear())});
   if(p==="concert"){ const mon=new Date(), ym=`${mon.getFullYear()}-${mon.getMonth()}`, done=getConcerts().filter(c=>c.gid===gid&&(c.ended||c.endTs<=Date.now())), monN=done.filter(c=>{ const d=new Date(c.startTs); return `${d.getFullYear()}-${d.getMonth()}`===ym&&!c.tour; }).length;
     const hero=mine?xvHero({tone:"k",tag:"● 進行中",small:"演唱會現場",title:esc(ls.title),meta:`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`,btns:[["🎤 進入演唱會現場",`data-a="stOn" class="st-enter"`]]})
-      :nc?xvHero({tone:"k",tag:nc.tour?"世巡":"下一場",small:"下一場演唱會",title:esc(nc.title),meta:`${evWhen(nc.startTs)} 開始${monN?"":`・這個月第 1 場（+5,000）`}`,cd:xvCd(nc.startTs),btns:canCtl(nc,mid)?[["現在開始演唱會",`data-a="ccNow" data-id="${nc.id}" class="cc-ctl"`]]:[]})
-      :xvHero({tone:"k",small:"LIVE SYNC",title:"開一場演唱會",meta:`2 小時・選歌單、互動歌，粉絲進場變成燈海${monN?"":"・這個月第 1 場 +5,000"}`});
+      :nc?xvHero({tone:"k",tag:nc.tour?"世巡":"下一場",small:"下一場演唱會",title:esc(nc.title),meta:`${evWhen(nc.startTs)} 開始${monN?"":`・這個月第 1 場（+3,000）`}`,cd:xvCd(nc.startTs),btns:canCtl(nc,mid)?[["現在開始演唱會",`data-a="ccNow" data-id="${nc.id}" class="cc-ctl"`]]:[]})
+      :xvHero({tone:"k",small:"LIVE SYNC",title:"開一場演唱會",meta:`2 小時・選歌單、互動歌，粉絲進場變成燈海${monN?"":"・這個月第 1 場 +3,000"}`});
     return focHead("演唱會")+`<main class="page foc foc-conc xv cc2">${hero}${xvStats([[done.length,"辦過"],[monN,"這個月"],[getConcerts().filter(c=>c.gid===gid&&!c.ended&&c.startTs>Date.now()).length,"排好的"]])}
       ${mine||nc?"":xvSh("開一場")+acOpenCard(mid)}
       ${!mine&&demoOn()?`<button class="foc-demo" data-a="lsDemo">先看看燈控台長怎樣 ›</button>`:""}

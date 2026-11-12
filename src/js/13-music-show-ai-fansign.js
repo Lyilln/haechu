@@ -7,9 +7,9 @@
    ・排名週、打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
    ・一位得主由管理員在 FOC 公布
    ・同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選
-   ・積分：一位 +3000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
+   ・積分：一位 +2000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
           AK（同一週五個節目全拿）+10000／PAK（連續 4 個排名週都有一位，宣傳週不算中斷）+15000
-   ・MC：每月輪替，主持一個節目每週 +1,000（照積分表 MC 一次 +1,000）
+   ・MC：每月輪替，主持一個節目每週 +500（照積分表 MC 一次 +500）
    ========================================================= */
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"MUSIC BANK",day:5},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
@@ -30,7 +30,7 @@ function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length;
   return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
 const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
-const MSP={win:3000,five:5000,ak:10000,pak:15000};
+const MSP={win:2000,five:5000,ak:10000,pak:15000};
 function wkDate(wk){ const [y,m,d]=wk.split("-").map(Number); return new Date(y,m-1,d); }
 function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 const curWeek=()=>weekKey(Date.now());
@@ -71,7 +71,7 @@ function songStats(sid){
 function groupMusicPts(gid,{year=null}={}){ const m=getMShow(); return [...m.songs,...(m.ended||[])].filter(s=>s.gid===gid).reduce((n,s)=>{ const st=songStats(s.id); if(year==null) return n+st.pts;
   return n+st.wins.filter(x=>x.wk.startsWith(year)).length*MSP.win+(st.five?MSP.five:0)+st.aks.filter(k=>k.startsWith(year)).length*MSP.ak+(st.pak&&st.pak.startsWith(year)?MSP.pak:0); },0); }
 function mcShows(mid,mon){ const m=getMShow().mc[mon||monthKey(Date.now())]||{}; return SHOWS.filter(s=>(m[s.id]||[]).includes(mid)); }
-const mcWeekly=n=>n*1000; /* 積分表：MC 一次 +1,000（一週主持幾個節目就幾次） */
+const mcWeekly=n=>n*500; /* 積分表：MC 一次 +500（一週主持幾個節目就幾次） */
 /* 粉絲應援：投票（排名週／打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
    // 只算真的票
 
@@ -81,7 +81,7 @@ const mvLikes=gid=>(S.get(K.mvLike,{})[gid]?1:0);
 
 const albumSales=(gid,since=0)=>S.get(K.sales,[]).filter(x=>x.type==="merch"&&x.gid===gid&&x.ts>=since&&/專輯/.test(x.label)).length;
 
-const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +3,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
+const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +2,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
 /* 粉絲：CORE 打歌戰場頁 */
 
 

@@ -1064,14 +1064,14 @@ const PT_RULES_DEF=`#KISS
 ✦ 舞台與里程碑
 ➞出道 showcase +3,000
 ➞回歸 +2,000
-➞打歌一位 +3,000｜一個節目一次
+➞打歌一位 +2,000｜一個節目一次
 ➞5 台冠軍 +5,000｜同一首歌拿過五個節目的一位
 ➞AK +10,000｜同一週五個節目全拿
 ➞PAK +15,000｜連續 4 個排名週都有一位
-➞MC +1,000｜主持一個節目，一週一次
-➞見面會、簽售 +1,000｜一場
-➞演唱會 +5,000｜一個月一場（世巡的站另外算）
-➞世巡 +5,000｜一站，一年一次世巡、最多 5 站
+➞MC +500｜主持一個節目，一週一次
+➞見面會、簽售 +500｜一場
+➞演唱會 +3,000｜一個月一場（世巡的站另外算）
+➞世巡 +3,000｜一站，一年一次世巡、最多 5 站
 ➞年末大賞 +7,000
 ➞被選為結尾妖精（團體藝人）+200｜一個舞台一次（自動）
 
@@ -1097,7 +1097,7 @@ const PT_RULES_DEF=`#KISS
 ➞收到應援餐車（藝人）+100｜送到前每天，最多 30 天（自動）
 
 ✦ 營收
-➞粉絲花在你身上的積分，每月結算 15% 回到藝人（自動）
+➞粉絲花在你身上的積分，每月結算 10% 回到藝人（自動）
 
 ✦ 其他（加？減？）
 ➞星探
@@ -2108,7 +2108,7 @@ function blobDU(blob){ return new Promise(res=>{ const r=new FileReader(); r.onl
    ・Membership、周邊算給整個團，再平均分給團裡的成員（不含官方帳號）
    ・藝人分潤比例由管理員設定
    ========================================================= */
-const revShare=()=>S.get(K.revShare,15);   // 藝人分潤：粉絲花在藝人身上的積分 15%（她 10/27 定）
+const revShare=()=>S.get(K.revShare,10);   // 藝人分潤：粉絲花在藝人身上的積分 10%（她 11/12 從 15% 改）
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
@@ -2286,6 +2286,8 @@ function tieQ0Mark(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.whispers]==null))
 const REVB_RATE=1, REVB_CAP=Infinity, REVB_FIRST="2026-10";
 /* 舊的預設 50% 換成 15%（只換一次；之後管理員自己改的就照管理員的） */
 setTimeout(()=>{ try{ if(!isAdminAcct()||S.get("daisuki_rev15",0)) return; if(HB_ON&&HB.ver[K.revShare]===undefined&&!HB.pulled) return; const v=S.get(K.revShare,null); if(v==null||v===50) S.set(K.revShare,15); S.set("daisuki_rev15",1); }catch(e){} },20e3);
+/* 11/12：15% 換成 10%（只換一次；管理員之後自己改的照管理員的） */
+setTimeout(()=>{ try{ if(!isAdminAcct()||S.get("daisuki_rev10",0)) return; if(HB_ON&&HB.ver[K.revShare]===undefined&&!HB.pulled) return; const v=S.get(K.revShare,null); if(v==null||v===15||v===50) S.set(K.revShare,10); S.set("daisuki_rev10",1); }catch(e){} },25e3);
 const ymKey=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0");
 function revBSettle(){ try{ if(!isAdminAcct()||(HB_ON&&HB.ver[K.sales]==null)) return;   /* 雲端資料還沒載入就先不結算 */ const now=new Date(), last=new Date(now.getFullYear(),now.getMonth()-1,1), key=ymKey(last); if(key<REVB_FIRST) return;
     const done=S.get(K.revB,{})||{}; if(done[key]) return;
@@ -5291,9 +5293,9 @@ function dtDefault(){const t=new Date(Date.now()+864e5);t.setHours(20,0,0,0);ret
    ・排名週、打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
    ・一位得主由管理員在 FOC 公布
    ・同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選
-   ・積分：一位 +3000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
+   ・積分：一位 +2000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
           AK（同一週五個節目全拿）+10000／PAK（連續 4 個排名週都有一位，宣傳週不算中斷）+15000
-   ・MC：每月輪替，主持一個節目每週 +1,000（照積分表 MC 一次 +1,000）
+   ・MC：每月輪替，主持一個節目每週 +500（照積分表 MC 一次 +500）
    ========================================================= */
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"MUSIC BANK",day:5},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
@@ -5314,7 +5316,7 @@ function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length;
   return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
 const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
-const MSP={win:3000,five:5000,ak:10000,pak:15000};
+const MSP={win:2000,five:5000,ak:10000,pak:15000};
 function wkDate(wk){ const [y,m,d]=wk.split("-").map(Number); return new Date(y,m-1,d); }
 function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
 const curWeek=()=>weekKey(Date.now());
@@ -5355,7 +5357,7 @@ function songStats(sid){
 function groupMusicPts(gid,{year=null}={}){ const m=getMShow(); return [...m.songs,...(m.ended||[])].filter(s=>s.gid===gid).reduce((n,s)=>{ const st=songStats(s.id); if(year==null) return n+st.pts;
   return n+st.wins.filter(x=>x.wk.startsWith(year)).length*MSP.win+(st.five?MSP.five:0)+st.aks.filter(k=>k.startsWith(year)).length*MSP.ak+(st.pak&&st.pak.startsWith(year)?MSP.pak:0); },0); }
 function mcShows(mid,mon){ const m=getMShow().mc[mon||monthKey(Date.now())]||{}; return SHOWS.filter(s=>(m[s.id]||[]).includes(mid)); }
-const mcWeekly=n=>n*1000; /* 積分表：MC 一次 +1,000（一週主持幾個節目就幾次） */
+const mcWeekly=n=>n*500; /* 積分表：MC 一次 +500（一週主持幾個節目就幾次） */
 /* 粉絲應援：投票（排名週／打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
    // 只算真的票
 
@@ -5365,7 +5367,7 @@ const mvLikes=gid=>(S.get(K.mvLike,{})[gid]?1:0);
 
 const albumSales=(gid,since=0)=>S.get(K.sales,[]).filter(x=>x.type==="merch"&&x.gid===gid&&x.ts>=since&&/專輯/.test(x.label)).length;
 
-const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +3,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
+const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +2,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
 /* 粉絲：CORE 打歌戰場頁 */
 
 
@@ -6010,8 +6012,8 @@ function viewArtistFoc(mid,p){
   const now=new Date(), left=(7-now.getDay())%7, yearPts=groupMusicPts(gid,{year:String(now.getFullYear())})+tourPts(gid,{year:String(now.getFullYear())});
   if(p==="concert"){ const mon=new Date(), ym=`${mon.getFullYear()}-${mon.getMonth()}`, done=getConcerts().filter(c=>c.gid===gid&&(c.ended||c.endTs<=Date.now())), monN=done.filter(c=>{ const d=new Date(c.startTs); return `${d.getFullYear()}-${d.getMonth()}`===ym&&!c.tour; }).length;
     const hero=mine?xvHero({tone:"k",tag:"● 進行中",small:"演唱會現場",title:esc(ls.title),meta:`到 ${fsWhen(ls.endTs).split(" ")[1]} 結束`,btns:[["🎤 進入演唱會現場",`data-a="stOn" class="st-enter"`]]})
-      :nc?xvHero({tone:"k",tag:nc.tour?"世巡":"下一場",small:"下一場演唱會",title:esc(nc.title),meta:`${evWhen(nc.startTs)} 開始${monN?"":`・這個月第 1 場（+5,000）`}`,cd:xvCd(nc.startTs),btns:canCtl(nc,mid)?[["現在開始演唱會",`data-a="ccNow" data-id="${nc.id}" class="cc-ctl"`]]:[]})
-      :xvHero({tone:"k",small:"LIVE SYNC",title:"開一場演唱會",meta:`2 小時・選歌單、互動歌，粉絲進場變成燈海${monN?"":"・這個月第 1 場 +5,000"}`});
+      :nc?xvHero({tone:"k",tag:nc.tour?"世巡":"下一場",small:"下一場演唱會",title:esc(nc.title),meta:`${evWhen(nc.startTs)} 開始${monN?"":`・這個月第 1 場（+3,000）`}`,cd:xvCd(nc.startTs),btns:canCtl(nc,mid)?[["現在開始演唱會",`data-a="ccNow" data-id="${nc.id}" class="cc-ctl"`]]:[]})
+      :xvHero({tone:"k",small:"LIVE SYNC",title:"開一場演唱會",meta:`2 小時・選歌單、互動歌，粉絲進場變成燈海${monN?"":"・這個月第 1 場 +3,000"}`});
     return focHead("演唱會")+`<main class="page foc foc-conc xv cc2">${hero}${xvStats([[done.length,"辦過"],[monN,"這個月"],[getConcerts().filter(c=>c.gid===gid&&!c.ended&&c.startTs>Date.now()).length,"排好的"]])}
       ${mine||nc?"":xvSh("開一場")+acOpenCard(mid)}
       ${!mine&&demoOn()?`<button class="foc-demo" data-a="lsDemo">先看看燈控台長怎樣 ›</button>`:""}
@@ -6225,11 +6227,11 @@ const TOUR_LAND="M670 188l3 1 2 0 1-1 2-1 1-1 1-2 2-1 1-1 1 1 2 0 2 0 1 1 2-1 2-
    世巡＋地圖
    ・藝人在 FOC 申請（名稱＋站點），管理員在 FOC → 世巡 核准／退回
    ・核准後每一站自動排成一場「演唱會燈海」（2 小時）；粉絲用 3,500 積分買票才能進場，進場就在地圖上蓋章
-   ・照積分表：每一站算一場演唱會 +5,000；一年一次世巡、最多 5 站（算在「今年打歌積分」的顯示）
+   ・照積分表：每一站算一場演唱會 +3,000；一年一次世巡、最多 5 站（算在「今年打歌積分」的顯示）
    ・開場前藝人可以說一句話，推播給買票的粉絲
    ・核准、每站結束、全部結束都會自動出一則娛樂新聞
    ========================================================= */
-const TOUR_TIX=3500, TOUR_STOP_PTS=5000, TOUR_DONE_PTS=0, TOUR_MINS=120, TOUR_MAX_STOPS=5;
+const TOUR_TIX=3500, TOUR_STOP_PTS=3000, TOUR_DONE_PTS=0, TOUR_MINS=120, TOUR_MAX_STOPS=5;
 /* 一年一次：同一團、同一年（看第一站）已經有審核中或核准的世巡 */
 const tourYearTaken=(gid,y)=>getTours().some(t=>t.gid===gid&&(t.status==="pending"||t.status==="approved")&&t.stops&&t.stops.length&&new Date(Math.min(...t.stops.map(x=>x.startTs))).getFullYear()===y);
 const TOUR_CITIES=[["首爾",37.57,126.98],["釜山",35.18,129.08],["東京",35.68,139.69],["大阪",34.69,135.5],["名古屋",35.18,136.91],["福岡",33.59,130.4],["台北",25.03,121.56],["高雄",22.63,120.3],["香港",22.32,114.17],["澳門",22.2,113.54],["曼谷",13.76,100.5],["新加坡",1.35,103.82],["吉隆坡",3.14,101.69],["馬尼拉",14.6,120.98],["雅加達",-6.21,106.85],["胡志明市",10.82,106.63],["雪梨",-33.87,151.21],["墨爾本",-37.81,144.96],["奧克蘭",-36.85,174.76],["洛杉磯",34.05,-118.24],["舊金山",37.77,-122.42],["西雅圖",47.61,-122.33],["拉斯維加斯",36.17,-115.14],["達拉斯",32.78,-96.8],["芝加哥",41.88,-87.63],["紐約",40.71,-74.01],["亞特蘭大",33.75,-84.39],["多倫多",43.65,-79.38],["溫哥華",49.28,-123.12],["墨西哥城",19.43,-99.13],["聖保羅",-23.55,-46.63],["布宜諾斯艾利斯",-34.6,-58.38],["聖地牙哥",-33.45,-70.67],["倫敦",51.51,-0.13],["巴黎",48.86,2.35],["柏林",52.52,13.4],["阿姆斯特丹",52.37,4.9],["馬德里",40.42,-3.7],["米蘭",45.46,9.19],["杜拜",25.2,55.27]];
