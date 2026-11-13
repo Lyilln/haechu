@@ -6905,6 +6905,7 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .ptrc-iss li.bad b:last-of-type{color:#C2410C}.ptrc-iss p.ok{margin:6px 0 0;color:#15803D}
 
 /* 一位發表 */
+.mu4-rv{margin-left:auto;flex:none;display:inline-flex;align-items:center;gap:4px;border:0;border-radius:999px;padding:5px 10px;background:var(--s2,#F1EEF8);color:var(--ink-2);font:inherit;font-size:13px}.mu4-rv.win{background:var(--p50,#F1ECFF);color:var(--p,#7C3AED);font-weight:700}.mu4-rv svg{width:14px;height:14px}.mu4-rv i{font-style:normal;font-size:9px;opacity:.7}
 .mu3-rv{margin-left:8px;border:0;border-radius:999px;padding:4px 10px;background:var(--p50,#F1ECFF);color:var(--p,#7C3AED);font:inherit;font-size:12px;font-weight:700}
 
 .dk-keep-mrv{position:fixed;inset:0;z-index:9500;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;overflow:hidden;font-variant-numeric:tabular-nums;color:#fff;font-family:"Avenir Next","Helvetica Neue",system-ui,"PingFang TC","Noto Sans TC",sans-serif;line-height:1.2}
