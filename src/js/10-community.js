@@ -211,6 +211,13 @@ function grpSched(gid){ const now=Date.now(), D=864e5, it=[];
   getPlans().filter(p=>p.group===gid&&MEMBERS[p.member]).forEach(p=>it.push({ts:p.ts,ic:"📡",t:`${artName(p.member,"feed")}・${p.title}`,k:"直播"}));
   fsAll().filter(e=>e.group===gid&&e.id!=="fsshow"&&e.status!=="done").forEach(e=>it.push({ts:e.startTs||now,ic:"✍️",t:e.title,k:"簽售"}));
   getAlbums().filter(a=>a.gid===gid).forEach(a=>a.vers.forEach(v=>{ if(vPre(v)) it.push({ts:v.preEnd,ic:"💿",t:`《${a.title}》${v.name} 預購截止`,k:"專輯"}); }));
+  /* 照 Weverse 行事曆：生日・紀念日、發行、放送（打歌／綜藝）、公演、活動、LIVE（她說：跟藝人有關的工作都要放） */
+  const T=f=>{ try{ f(); }catch(e){} }, ms=getMShow(), mem=new Set(grpMembers(gid));
+  T(()=>{ const deb=[...ms.songs,...(ms.ended||[])].filter(x=>x.gid===gid&&x.debut&&x.rel).sort((a,b)=>a.rel-b.rel)[0]; if(deb){ const d0=new Date(deb.rel), y=new Date().getFullYear(); [y,y+1].forEach(yy=>{ const t=new Date(yy,d0.getMonth(),d0.getDate(),d0.getHours(),d0.getMinutes()).getTime(), n=yy-d0.getFullYear(); if(n>0) it.push({ts:t,ic:"🎉",t:`出道 ${n} 週年`,k:"紀念日"}); }); } });
+  T(()=>(ms.pre||[]).filter(p=>p.gid===gid).forEach(p=>it.push({ts:cbRelAt(p),ic:"💿",t:`《${p.title}》發行`,k:"發行"})));
+  T(()=>ms.songs.filter(x=>x.gid===gid).forEach(x=>SHOWS.forEach(sh=>[curWeek(),shiftWeek(curWeek(),1)].forEach(wk=>{ if(songActIn(x,sh.id,wk)) it.push({ts:showEndTs(sh.id,wk)-90*60e3,ic:"📺",t:`${sh.name}《${x.title}》`,k:"放送"}); }))));
+  T(()=>vsAll().filter(e=>!String(e.id).startsWith("demo")&&(e.mids||[]).some(m=>mem.has(m))&&e.ts).forEach(e=>it.push({ts:e.ts,ic:"📺",t:`《${VSHOW[e.show].name}》出演`,k:"放送"})));
+  T(()=>getTours().filter(t=>t.gid===gid).forEach(t=>(t.stops||[]).forEach(st=>st.startTs&&it.push({ts:st.startTs,ic:"🌍",t:`${t.title}・${st.city||""}`,k:"公演"}))));
   return it.filter(x=>x.ts>=now-D).sort((a,b)=>a.ts-b.ts); }
 function openCal(gid){ const g=groupOf(gid), base=new Date(), mo=ui.calMo||0, d0=new Date(base.getFullYear(),base.getMonth()+mo,1), days=new Date(d0.getFullYear(),d0.getMonth()+1,0).getDate(), it=grpSched(gid), sel=ui.calDay||null;
   const on=d=>it.filter(x=>{ const t=new Date(x.ts); return t.getFullYear()===d0.getFullYear()&&t.getMonth()===d0.getMonth()&&t.getDate()===d; });
