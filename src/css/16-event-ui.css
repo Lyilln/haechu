@@ -322,3 +322,31 @@ textarea.eds-in{min-height:120px}
 /* MC 的團拿一位：獎盃從字卡傳過去 */
 .dk-keep-mrv .mrv-pass{position:fixed;z-index:5;font-style:normal;font-size:34px;line-height:1;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
 .dk-keep-mrv .mrv-got{animation:mrvGot .6s cubic-bezier(.2,.9,.3,1.4)}@keyframes mrvGot{40%{transform:scale(1.08)}}
+/* 簽售通話（fs3-）：像視訊通話，成員照片鋪滿、深色玻璃 */
+.dk-keep-fs3.fs-room{background:#0B0712;color:#fff;overflow:hidden}
+.dk-keep-fs3 .fs3-bg{position:absolute;inset:0;background-size:cover;background-position:center 20%;display:grid;place-items:center;animation:fs3Zoom 14s ease-in-out infinite alternate}
+.dk-keep-fs3 .fs3-bg b{font-size:120px;font-weight:900;color:rgba(255,255,255,.85);margin-top:-30vh}
+@keyframes fs3Zoom{to{transform:scale(1.06)}}
+.dk-keep-fs3 .fs3-sh{position:absolute;inset:0;pointer-events:none;background:linear-gradient(180deg,rgba(8,4,16,.55) 0,rgba(8,4,16,0) 22%,rgba(8,4,16,0) 38%,rgba(8,4,16,.72) 62%,rgba(8,4,16,.92) 100%)}
+.dk-keep-fs3>*:not(.fs3-bg):not(.fs3-sh):not(.fs3-skip){position:relative;z-index:1}
+.dk-keep-fs3 .fs-top{color:#fff}.dk-keep-fs3 .fs-top .icon-btn{color:#fff;background:rgba(255,255,255,.16);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.dk-keep-fs3 .fs-top .fs-cnt{background:rgba(255,255,255,.18);color:#fff}
+.dk-keep-fs3 .fs3-hd{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:2px 18px 0}
+.dk-keep-fs3 .fs3-n{display:block;font-size:26px;font-weight:900;letter-spacing:-.01em;text-shadow:0 2px 12px rgba(0,0,0,.45)}
+.dk-keep-fs3 .fs3-st{display:flex;align-items:center;gap:6px;margin-top:2px;font-size:12.5px;font-weight:700;color:#A7F3D0;text-shadow:0 1px 6px rgba(0,0,0,.5)}.dk-keep-fs3 .fs3-st i{width:7px;height:7px;border-radius:50%;background:#34D399;animation:pulse 1.2s infinite}
+.dk-keep-fs3 .fs3-tm{position:relative;width:52px;height:52px;flex:none;display:grid;place-items:center;border-radius:50%;background:rgba(0,0,0,.28);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+.dk-keep-fs3 .fs3-ring{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg)}.dk-keep-fs3 .fs3-ring circle{fill:none;stroke-width:3.5}.dk-keep-fs3 .fs3-ring .bg{stroke:rgba(255,255,255,.22)}.dk-keep-fs3 .fs3-ring .fg{stroke:#F472B6;stroke-linecap:round;transition:stroke-dashoffset .5s linear}
+.dk-keep-fs3 .fs3-tm em{font-style:normal;font-size:15px;font-weight:900;font-variant-numeric:tabular-nums}
+.dk-keep-fs3 .fs-order{justify-content:flex-start;padding:0 18px;margin-top:10px}.dk-keep-fs3 .fs-order span{background:rgba(255,255,255,.16);color:rgba(255,255,255,.85);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}.dk-keep-fs3 .fs-order span.now{background:#fff;color:#7C3AED}.dk-keep-fs3 .fs-order span.done{color:#C4B5FD}.dk-keep-fs3 .fs-order i{color:rgba(255,255,255,.5)}
+.dk-keep-fs3>.fs3-skip{position:absolute;width:auto;z-index:3!important;right:16px;top:calc(env(safe-area-inset-top,0px) + 120px);border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:12px;font-weight:800;color:#fff;background:rgba(255,255,255,.18);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.dk-keep-fs3 .fs3-sp{flex:1;min-height:12px;pointer-events:none}
+.dk-keep-fs3 .fs-mynote{background:rgba(254,249,195,.92);color:#713F12;margin:0 14px 6px}
+.dk-keep-fs3 .fs-chat{flex:0 1 auto;max-height:34vh;padding:4px 14px;-webkit-mask-image:linear-gradient(180deg,transparent 0,#000 18px);mask-image:linear-gradient(180deg,transparent 0,#000 18px)}
+.dk-keep-fs3 .fs-m span{background:rgba(255,255,255,.16);color:#fff;box-shadow:none;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.dk-keep-fs3 .fs-m.me span{background:linear-gradient(135deg,#A855F7,#EC4899);color:#fff}
+.dk-keep-fs3 .fs-none{color:rgba(255,255,255,.6)}
+.dk-keep-fs3 .fs-albbar{background:rgba(255,255,255,.14);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);color:#fff}.dk-keep-fs3 .fs-albbar small{color:rgba(255,255,255,.7)}
+.dk-keep-fs3 .fs-foot{background:rgba(10,6,20,.55)}.dk-keep-fs3 .fs-foot textarea{background:rgba(255,255,255,.14);color:#fff}.dk-keep-fs3 .fs-foot textarea::placeholder{color:rgba(255,255,255,.55)}
+.dk-keep-fs3 .fs-foot .mr-send{color:#fff}
+.dk-keep-fs3 .fs-order span,.dk-keep-fs3 .fs-order span.now{display:inline-block;width:auto;flex:none;gap:0;overflow:visible}   /* 全域有 .now 樣式，會把名字撐成一整條 */
+body:has(.fs-room) #sbxPill{bottom:auto;top:calc(env(safe-area-inset-top,0px) + 52px);left:auto;right:12px;transform:none}   /* 簽售室：試玩標籤移到右上，不擋專輯和輸入框 */

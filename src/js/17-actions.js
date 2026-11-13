@@ -711,6 +711,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "themeSet": S.set(K.theme,t.dataset.v); applyTheme(); layer.innerHTML=""; render(); break;
     case "fsView": openSignedView(t.dataset.v); break;
     case "fsDemoFan": fsDemoLive(false); navTo("#/fan/core?p=fansign&id=fsshow"); window.scrollTo(0,0); break;
+    case "fsDemoSkip": { const ev=fsGet(t.dataset.v); if(!ev||!ev.demo||ev.status!=="live") break; const me=(ev.slots||[]).findIndex(x=>x.fk===FS_ME); if(ev.cur<me){ ev.cur=me; ev.mi=0; ev.curStart=Date.now(); } else ev.curStart=Date.now()-99e3; fsSave(ev); render(); break; }
     case "fsDemoDesk": fsDemoLive(true); navTo("#/artist?tab=foc&p=fansign&id=fsshow"); window.scrollTo(0,0); break;
     case "fsJoin": if(fsJoin(t.dataset.v,t.dataset.m)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`報名成功${t.dataset.m?"（"+artName(t.dataset.m,"feed")+"）":""}！目前 1 次機會 💜`); } break;
     case "fsBuy": { const ev=fsGet(t.dataset.v), mid=t.dataset.m; if(!ev) break; ask(`買一張 ${esc(fsName(ev))} 專輯（${fmt(MERCH.find(x=>x.k==="album").pts)} 積分），${mid?esc(artName(mid,"feed"))+" 的":""}抽籤機會多 1 次。`,()=>{ if(fsBuy(ev.id,mid)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`目前 ${fsEntries(fsGet(ev.id),mid)[FS_ME]} 次機會 💿`); } },{title:"買專輯增加機會",ok:"買專輯",danger:false}); break; }

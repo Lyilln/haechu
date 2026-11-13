@@ -5558,7 +5558,7 @@ function fsSave(ev){ const l=fsAll(), i=l.findIndex(e=>e.id===ev.id); if(i>=0) l
 const fsActiveGroup=gid=>getMShow().songs.some(s=>s.gid===gid);
 const fsMembersOf=gid=>Object.keys(MEMBERS).filter(id=>MEMBERS[id].group===gid&&!MEMBERS[id].official);
 const fsMyName=gid=>{ const sub=fsMembersOf(gid).find(id=>subs()[id]); return sub?tieSet(sub).nickname||ME.name:ME.name; };
-const fsSec=ev=>ev.type==="solo"?FS_SOLO_SEC:FS_ALL_SEC;
+const fsSec=ev=>ev.demo?((fsSlot(ev)||{}).fk===FS_ME?14:3):ev.type==="solo"?FS_SOLO_SEC:FS_ALL_SEC;   /* 示範：別人 3 秒、輪到你每位成員 14 秒 */
 const fsLeft=ev=>ev.status==="live"?Math.max(0,fsSec(ev)-Math.floor((Date.now()-ev.curStart)/1000)):fsSec(ev);
 const fsColor=ev=>{ const g=groupOf(ev.group); return GRADS[(g?g.g:0)%GRADS.length]; };
 const fsName=ev=>{ const g=groupOf(ev.group); return g?g.name:""; };
@@ -5624,6 +5624,7 @@ function fsTick(){
   let changed=false; fsAll().forEach(ev=>{
     if(ev.status==="open"&&Date.now()>=ev.closeTs){ fsDraw(ev); changed=true; return; }
     if(ev.status!=="live") return;
+    if(ev.demo){ const s0=fsSlot(ev), t0=Date.now()-ev.curStart; if(s0&&s0.fk===FS_ME) fsDemoTalk(ev,t0); if(t0>=fsSec(ev)*1000){ fsNext(ev.id,{wholeFan:!(s0&&s0.fk===FS_ME)}); changed=true; } return; }
     if(Date.now()-ev.curStart>=fsSec(ev)*1000){ fsNext(ev.id); changed=true; return; }
     const s=fsSlot(ev); if(s&&!s.fk.startsWith("demo:")&&!s.absent&&!(ev.mi>0)&&Date.now()-ev.curStart>20e3&&((ev.seen||{})[s.fk]||0)<ev.curStart){
       if(s.fk===FS_ME) fsNotify(`輪到你的時候沒有進簽售室，這次算缺席了 🥲`,ev.group); fsSkip(ev.id); changed=true; } });
@@ -5648,13 +5649,24 @@ function fsDemoSig(seed){ const c=document.createElement("canvas"); c.width=300;
   x.beginPath(); x.moveTo(60+seed*6,170-seed*20); x.bezierCurveTo(80,90,110,90,105,160-seed*15); x.bezierCurveTo(100,210,140,120,160,140); x.bezierCurveTo(180,160,175,200,200,150); x.bezierCurveTo(215,120,235,130,240,160); x.stroke();
   x.beginPath(); x.moveTo(90,200-seed*25); x.quadraticCurveTo(160,215,235,190-seed*25); x.stroke(); return c.toDataURL("image/png"); }
 function fsDemoLive(asArtist){
-  const now=Date.now(), members=fsMembersOf("lumina"), a=members[0], me=FS_ME;
-  const ev={id:"fsshow",group:"lumina",type:"all",toSign:true,title:"示範全體簽售",startTs:now,closeTs:now-5*864e5,quota:5,specials:2,members,entries:{},names:{},notes:{},status:"live",
-    slots:[{fk:"demo:s1",name:"晴天娃娃",note:"最近練習最開心的是哪一首？",special:true},{fk:me,name:fsMyName("lumina"),note:"可以幫我寫「加油」嗎？",special:true,toName:"Mallow",greet:["加油 화이팅"]},{fk:"demo:s2",name:"布丁",note:"最喜歡的零食是什麼？"},{fk:"demo:s3",name:"月亮汽水",note:"可以叫我的名字嗎"}],
-    wait:{all:[{fk:"demo:s5",name:"果凍",note:""}]},cur:1,mi:asArtist?0:Math.min(1,members.length-1),curStart:now,signed:{},seen:{[me]:now},
-    chats:{[me]:[{from:"artist",mid:a,text:"你好呀！謝謝你來 💜",ts:now-70e3},{from:"fan",text:"啊啊啊我好緊張",ts:now-60e3},{from:"artist",mid:a,text:"不要緊張～加油喔！",ts:now-55e3}]}};
-  fsSave(ev); if(!asArtist) fsSign("fsshow",me,a,{sig:fsDemoSig(0),msg:"화이팅!"}); return ev;
+  const now=Date.now(), me=FS_ME, mm=MEMBERS[demoMid()], f=(typeof followed==="function"?followed():[])||[];
+  const gid=(mm&&mm.group)||f.find(g=>groupOf(g)&&fsMembersOf(g).length)||(GROUPS.find(g=>fsMembersOf(g.id).length)||{}).id||"lumina", members=fsMembersOf(gid), a=members[0];
+  if(asArtist){   /* 藝人端：直接看簽售台 */
+    const ev={id:"fsshow",group:gid,type:"all",toSign:true,title:"示範全體簽售",startTs:now,closeTs:now-5*864e5,quota:5,specials:2,members,entries:{},names:{},notes:{},status:"live",
+      slots:[{fk:"demo:s1",name:"晴天娃娃",note:"最近練習最開心的是哪一首？",special:true},{fk:"demo:s0",name:"小湯圓",note:"可以幫我寫「加油」嗎？",special:true,toName:"Mallow",greet:["加油 화이팅"]},{fk:"demo:s2",name:"布丁",note:"最喜歡的零食是什麼？"}],
+      wait:{all:[{fk:"demo:s5",name:"果凍",note:""}]},cur:1,mi:0,curStart:now,signed:{},seen:{},chats:{"demo:s0":[{from:"fan",text:"啊啊啊我好緊張",ts:now-6e3}]}};
+    fsSave(ev); return ev; }
+  /* 粉絲端：從等候室開始走完整個流程（前面 3 位、輪到你、通話、簽名專輯） */
+  const ev={id:"fsshow",demo:1,group:gid,type:"all",toSign:true,title:"示範全體簽售",startTs:now,closeTs:now-5*864e5,quota:5,specials:2,members,entries:{},names:{},notes:{},status:"live",
+    slots:[{fk:"demo:s1",name:"晴天娃娃",note:""},{fk:"demo:s2",name:"布丁",note:""},{fk:"demo:s3",name:"月亮汽水",note:""},{fk:me,name:fsMyName(gid),note:"最近練習最開心的是哪一首？",special:true,toName:"Mallow",greet:["加油 화이팅"]},{fk:"demo:s4",name:"果凍",note:""}],
+    wait:{},cur:0,mi:0,curStart:now,signed:{},seen:{[me]:now},chats:{[me]:[]},dt:{}};
+  S.set(K.signedAlbums,(S.get(K.signedAlbums,[])||[]).filter(x=>x.ev!=="fsshow")); fsSave(ev); return ev;
 }
+/* 示範通話：成員自己會打招呼、回話、簽名 */
+function fsDemoTalk(ev,t){ const mid=fsTalking(ev), k=(ev.mi||0)+":", d=ev.dt||(ev.dt={}), nm=fsMyName(ev.group), say=(n,ms,txt)=>{ if(t>=ms&&!d[k+n]){ d[k+n]=1; fsSave(ev); fsSay(ev.id,FS_ME,"artist",txt,mid); } };
+  const L=[[`${nm}～你來了！我等你好久了 💜`,`嗨嗨 ${nm}！今天好可愛 🥹`,`${nm} 你好～謝謝你來看我們！`],["最近練習最開心的是這次的主打！你喜歡嗎？","我都有看到你的留言喔，謝謝你 💜","打歌期間要多喝水喔～"]], j=(ev.mi||0)%3;
+  say("a",800,L[0][j]); say("b",5500,L[1][j]);
+  if(t>=8500&&!d[k+"s"]){ d[k+"s"]=1; fsSave(ev); fsSign(ev.id,FS_ME,mid,{sig:fsDemoSig(ev.mi||0),msg:["화이팅!","항상 고마워 💜","사랑해 🫶"][j]}); } }
 /* ---------- 共用畫面 ---------- */
 /* 專輯上的簽名：每位成員一個位置，簽名縮小排開，不會疊在一起；To 簽的場次在簽名下寫「To. 粉絲名字」 */
 const FS_GREETS=["加油 화이팅","天天開心 행복해","保重身體 건강해","謝謝你 고마워","愛你 사랑해","生日快樂 생일 축하해"];
@@ -5735,9 +5747,10 @@ function viewFsFanRoom(id){
     const s=fsSlot(ev), mid=fsTalking(ev), m=MEMBERS[mid], key=fsSignKey(ev,s), sign=ev.signed[key], total=fsSec(ev), note=s.note;
     const order=ev.type==="solo"?"":`<div class="fs-order">${ev.members.map((x,i)=>`<span class="${i<ev.mi?"done":i===ev.mi?"now":""}">${i<ev.mi?"✔ ":""}${esc(artName(x,"feed"))}</span>`).join('<i>›</i>')}</div>`;
     const nsig=sign&&sign.sigs?Object.keys(sign.sigs).length:0, need=ev.type==="solo"?1:ev.members.length;
-    return `<div class="fs-room live" data-fs="${ev.id}">${top}
-      <section class="fs-call"><div class="fs-call-av" id="fsTimer">${fsCallRing(ev,mid)}</div>
-        <b class="fs-call-n">${esc(m?artName(mid,"feed"):"")}</b><span class="fs-call-st"><i></i>通話中${s.special?"・⭐ 特別粉絲":""}</span>${order}</section>
+    const ph=fsFace(mid);   /* 像視訊通話：成員照片鋪滿當背景，倒數變右上角小圓環 */
+    return `<div class="fs-room live fs3 dk-keep-fs3" data-fs="${ev.id}"><div class="fs3-bg" style="${ph?`background-image:url('${esc(ph)}')`:`background:${grad(m?m.g:0)}`}">${ph?"":`<b>${esc(m?ini(m.name):"")}</b>`}</div><i class="fs3-sh"></i>${top}
+      <section class="fs3-hd"><div><b class="fs3-n">${esc(m?artName(mid,"feed"):"")}</b><span class="fs3-st"><i></i>通話中${s.special?"・⭐ 特別粉絲":""}</span></div><div class="fs3-tm" id="fsTimer">${fsCallRing(ev,mid)}</div></section>${order}${ev.demo?`<button class="fs3-skip" data-a="fsDemoSkip" data-v="${ev.id}">跳過 ⏭</button>`:""}
+      <div class="fs3-sp"></div>
       ${note?`<div class="fs-mynote">📝 你想問：${esc(note)}</div>`:""}
       <main class="fs-chat" id="fsChat">${fsChatHtml(ev.chats[FS_ME],"fan")}</main>
       <div class="fs-albbar" id="fsAlbBar">${fsAlbBar(ev,sign,need)}</div>
@@ -5751,11 +5764,11 @@ function viewFsFanRoom(id){
     <div class="fs2-n">${ev.status==="live"?`${n}<em>位</em>`:`<span>${fsWhen(ev.startTs)}</span>`}</div><small>${ev.status==="live"?`大約 ${Math.max(1,Math.round(n*fsSec(ev)*(ev.type==="solo"?1:ev.members.length)/60))} 分鐘後輪到你・輪到時會自動接通`:`你是第 ${nx+1} 位`}</small>
     <div class="fs2-q">${q.map((x,k)=>{ const i=from+k; return `${k?"<s></s>":""}<i class="${i<cur?"done":i===cur?"now":""} ${x.fk===FS_ME?"me":""}">${x.fk===FS_ME?"你":i+1}</i>`; }).join("")}</div>
     <div class="fs2-note"><b>先想好要說什麼</b>${me0.note?`<p>📝 ${esc(me0.note)}</p>`:""}${ev.toSign?`<p>✍️ To 簽：${esc(fsToOf(me0))}</p>`:""}${!me0.note&&!ev.toSign?`<p>還沒寫想問的話</p>`:""}${ev.status!=="live"?`<button class="xv-bt g" data-a="fsNote" data-v="${ev.id}">改</button>`:""}</div>
-    <p class="fs2-tip">輪到你時 20 秒內沒進來，會換候補的人</p></main></div>`;
+    <p class="fs2-tip">${ev.demo?"示範：前面每位只算 3 秒":"輪到你時 20 秒內沒進來，會換候補的人"}</p>${ev.demo?`<button class="xv-bt g" data-a="fsDemoSkip" data-v="${ev.id}">跳過，直接輪到我 ⏭</button>`:""}</main></div>`;
 }
-function fsCallRing(ev,mid){ const m=MEMBERS[mid], left=fsLeft(ev), total=fsSec(ev), r=56, C=2*Math.PI*r;
-  return `<svg class="fs-cring" viewBox="0 0 128 128"><circle cx="64" cy="64" r="${r}" class="bg"/><circle cx="64" cy="64" r="${r}" class="fg" style="stroke-dasharray:${C};stroke-dashoffset:${C*(1-left/total)}"/></svg>
-    <span class="fs-call-face" style="background:${grad(m?m.g:0)}">${esc(m?ini(m.name):"?")}</span><em>${left}s</em>`; }
+function fsCallRing(ev,mid){ const left=fsLeft(ev), total=fsSec(ev), r=21, C=2*Math.PI*r;
+  return `<svg class="fs3-ring" viewBox="0 0 48 48"><circle cx="24" cy="24" r="${r}" class="bg"/><circle cx="24" cy="24" r="${r}" class="fg" style="stroke-dasharray:${C};stroke-dashoffset:${C*(1-left/total)}"/></svg><em>${left}</em>`; }
+const fsFace=mid=>{ try{ return (artProf(mid)||{}).avatar||mPhoto(mid)||""; }catch(e){ return ""; } };
 function fsAlbBar(ev,sign,need){ const n=sign&&sign.sigs?Object.keys(sign.sigs).length:0;
   return `${fsAlbum(ev,sign,{sm:true,fan:true})}<div><b>簽名專輯</b><small>${n?`已經有 ${n}／${need} 位簽名了 ✨`:"成員簽名後會出現在這裡"}</small></div>`; }
 function viewSigned(){
@@ -7769,6 +7782,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "themeSet": S.set(K.theme,t.dataset.v); applyTheme(); layer.innerHTML=""; render(); break;
     case "fsView": openSignedView(t.dataset.v); break;
     case "fsDemoFan": fsDemoLive(false); navTo("#/fan/core?p=fansign&id=fsshow"); window.scrollTo(0,0); break;
+    case "fsDemoSkip": { const ev=fsGet(t.dataset.v); if(!ev||!ev.demo||ev.status!=="live") break; const me=(ev.slots||[]).findIndex(x=>x.fk===FS_ME); if(ev.cur<me){ ev.cur=me; ev.mi=0; ev.curStart=Date.now(); } else ev.curStart=Date.now()-99e3; fsSave(ev); render(); break; }
     case "fsDemoDesk": fsDemoLive(true); navTo("#/artist?tab=foc&p=fansign&id=fsshow"); window.scrollTo(0,0); break;
     case "fsJoin": if(fsJoin(t.dataset.v,t.dataset.m)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`報名成功${t.dataset.m?"（"+artName(t.dataset.m,"feed")+"）":""}！目前 1 次機會 💜`); } break;
     case "fsBuy": { const ev=fsGet(t.dataset.v), mid=t.dataset.m; if(!ev) break; ask(`買一張 ${esc(fsName(ev))} 專輯（${fmt(MERCH.find(x=>x.k==="album").pts)} 積分），${mid?esc(artName(mid,"feed"))+" 的":""}抽籤機會多 1 次。`,()=>{ if(fsBuy(ev.id,mid)){ const y=window.scrollY; render(); window.scrollTo(0,y); toast(`目前 ${fsEntries(fsGet(ev.id),mid)[FS_ME]} 次機會 💿`); } },{title:"買專輯增加機會",ok:"買專輯",danger:false}); break; }
