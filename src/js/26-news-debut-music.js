@@ -712,7 +712,7 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   const finRow=i=>w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>{ e.dataset.fin=1; e.classList.add("on"); set(e,+e.dataset.to); });
   let iv=null; const S=()=>[...w.querySelectorAll("strong")];
   /* 流程：每一步有自己的停留時間；點字卡就直接跳下一步（前一步的數字立刻跑完） */
-  /* 流程照真的節目：開場 → TOP5（Show Champion）→ 一組一組介紹候補 → 一項一項公布分數 → 直播投票結束 → 揭曉 → 恭喜 → 得獎感言 → 安可 → 下週見
+  /* 流程照真的節目：開場 → TOP5（Show Champion）→ 一組一組介紹候補 → 一項一項公布分數 → 加總 → 揭曉 → 恭喜 → 得獎感言 → 下週見
      兩位 MC 輪流講（只有一位就一個人講完） */
   const steps=[]; let sp=0; const st=(ms,line,fn)=>steps.push({ms,fn:fn||(()=>{}),line,who:mcs[(sp++)%mcs.length]});
   const hl=c=>{ w.querySelectorAll(".mrv-hl").forEach(e=>e.classList.remove("mrv-hl")); if(c==null) return; const k=ord.indexOf(c); const cols=w.querySelectorAll(".mrv-g3>.mrv-tl,.mrv-mcf>.mrv-tl,.mrv-ik>.mrv-tl,.mrv-g3>.mrv-cd,.mrv-sc2>.mrv-tl"); if(cols[k]) cols[k].classList.add("mrv-hl"); };
@@ -722,12 +722,10 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   ord.forEach((c,k)=>st(2600,`${k===0?"第一組":k===1?"第二組":"第三組"}是 ${wn2(c)}！`,()=>hl(c)));
   st(2400,`那我們來看看分數吧！`,()=>hl(null));
   R.forEach(([l],i)=>st(2800,i?`接著是${rl(l)}！`:`首先是${rl(l)}！`,()=>{ for(let k=0;k<i;k++) finRow(k); w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,900)); }));
-  st(2600,`直播投票現在結束了！`,()=>{ R.forEach((r,k)=>finRow(k)); });
-  st(2400,`加上所有分數之後…`);
+  st(2600,`加上所有分數之後…`,()=>{ R.forEach((r,k)=>finRow(k)); });
   st(3400,`本週 ${shn} 的一位是——`,()=>{ w.classList.add("sus"); S().forEach(e=>e.classList.add("on")); clearInterval(iv); iv=setInterval(()=>{ if(!ok()){ clearInterval(iv); return; } S().forEach(e=>set(e,Math.round(+e.dataset.to*(.55+Math.random()*.6)))); },70); });
   st(3200,`${wn2(wc)}！恭喜！💜`,()=>{ clearInterval(iv); S().forEach(e=>{ e.classList.add("on"); set(e,+e.dataset.to); }); w.classList.remove("sus"); w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:70},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%14)*.07}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); });
   st(3000,`請 ${wc.art} 跟粉絲們說幾句得獎感言吧！`);
-  st(3000,`那我們一起來看 ${wc.art} 的安可舞台！`);
   st(0,`我們下週見～ 👋`,()=>{ const h=w.querySelector(".mrv-mch"); if(h) h.textContent="點任何地方關閉"; });
   let cur=-1, tm=null; const go=()=>{ clearTimeout(tm); if(!ok()||cur>=steps.length-1) return; cur++; const x=steps[cur]; x.fn(); if(x.line) say(x.line); { const n=w.querySelector(".mrv-mcnm"); if(n&&x.who) n.textContent="MC "+x.who; } if(cur<steps.length-1) tm=setTimeout(go,x.ms); };
   w._next=go; w._done=()=>cur>=steps.length-1; go();
