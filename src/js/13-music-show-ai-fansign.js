@@ -101,19 +101,19 @@ function openVote(sid){
 
 /* 藝人工作上的事（一位、回歸、演唱會、世巡、簽售、綜藝、代言、運動會…）一律自動發社群公告。
    編號用事件本身決定（同一件事在每支管理員手機上都是同一個編號），所以不會重複發 */
-function gnAuto(gid,title,body,key){ try{ if(!gid||!groupOf(gid)) return; const id="gna_"+strHash(String(key||title)).toString(36), GN=S.get(K.gNotices,[])||[]; if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
-  GN.unshift({id,group:gid,auto:1,title:String(title).replace(/^\s+/,""),body:body||String(title),ts:Date.now()}); S.set(K.gNotices,GN.slice(0,400)); }catch(e){} }
+function gnAuto(gid,title,body,key,ts){ try{ if(!gid||!groupOf(gid)) return; const id="gna_"+strHash(String(key||title)).toString(36), GN=S.get(K.gNotices,[])||[]; if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
+  GN.push({id,group:gid,auto:1,title:String(title).replace(/^\s+/,""),body:body||String(title),ts:ts||Date.now()}); GN.sort((a,b)=>(b.ts||0)-(a.ts||0)); S.set(K.gNotices,GN.slice(0,400)); }catch(e){} }
 const gnOfMid=mid=>(MEMBERS[mid]||{}).group||"";
-function muNotify(text,gid){ gnAuto(gid,text,"",weekKey(Date.now())+"|"+text);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
+function muNotify(text,gid){ gnAuto(gid,text,"",(ui.gnWk||weekKey(Date.now()))+"|"+text,ui.gnTs);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
 function setWinner(show,sid,wk0,manual){
   const ms=getMShow(), wk=wk0||ui.muWk||curWeek(); const before=sid?songStats(sid):null; if(manual){ ms.manual={...(ms.manual||{})}; ms.manual[wk]={...(ms.manual[wk]||{}),[show]:1}; }   /* 管理員手動改過：自動結算不再動它 */
   ms.wins[wk]={...(ms.wins[wk]||{})}; if(sid) ms.wins[wk][show]=sid; else delete ms.wins[wk][show]; ms.wtype[wk]=weekType(wk); S.set(K.mshow,ms);
-  if(!sid) return; const s=songOf(sid), sh=SHOWS.find(x=>x.id===show), after=songStats(sid);
+  if(!sid) return; const s=songOf(sid), sh=SHOWS.find(x=>x.id===show), after=songStats(sid); ui.gnWk=wk; ui.gnTs=Math.min(Date.now(),showEndTs(show,wk)); try{
   muNotify(`🏆 ${sh.name} 一位：${songName(s)}！`,s.gid);
   if(!before.five&&after.five) muNotify(`✨ ${songName(s)} 拿下 5台冠軍！`,s.gid);
   if(after.aks.length>before.aks.length) muNotify(`👑 ${songName(s)} ALL-KILL！五個節目全拿！`,s.gid);
   if(!before.pak&&after.pak) muNotify(`💎 ${songName(s)} 達成 PAK！`,s.gid);
-  if(after.crowns.length>before.crowns.length) muNotify(`👑 ${songName(s)} 成為 ${sh.name} 三冠王`,s.gid);
+  if(after.crowns.length>before.crowns.length) muNotify(`👑 ${songName(s)} 成為 ${sh.name} 三冠王`,s.gid); }finally{ ui.gnWk=null; ui.gnTs=null; }
 }
 
 /* 翻譯用的 Claude 連線（AI 粉絲 11/11 整段刪掉，只留翻譯會用到的這幾行） */
@@ -631,4 +631,7 @@ function rpBgm(id){ if(!RPB.a){ const a=new Audio(); a.setAttribute("playsinline
 const rpBgmStop=()=>{ RPB.on=false; if(RPB.a) RPB.a.pause(); document.querySelectorAll(".rp-bgm").forEach(b=>b.classList.remove("on")); };
 window.addEventListener("hashchange",()=>{ if(RPB.on&&!/\/replay/.test(location.hash)) rpBgmStop(); });   /* 離開重播就停 */
 document.addEventListener("visibilitychange",()=>{ if(document.hidden){ if(RPB.on) rpBgmStop(); if(BG.a&&!BG.a.paused) BG.a.pause(); } else if(BG.on) setTimeout(bgmSync,300); });   /* 跳出 App 就停；回來直播音樂再對時間 */
-
+/* 補發：功能上線前就拿到的一位也要有公告（時間照當週節目結束的時間，排在對的位置，不會變成「新公告」） */
+function gnBackfill(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.gNotices]==null)) return; const W=getMShow().wins||{};
+  Object.keys(W).forEach(wk=>Object.keys(W[wk]||{}).forEach(show=>{ const sid=W[wk][show], s=songOf(sid), sh=SHOWS.find(x=>x.id===show); if(!s||!sh) return; const text=`🏆 ${sh.name} 一位：${songName(s)}！`; gnAuto(s.gid,text,"",wk+"|"+text,Math.min(Date.now(),showEndTs(show,wk))); })); }catch(e){} }
+setTimeout(gnBackfill,16e3); setInterval(gnBackfill,5*60e3);
