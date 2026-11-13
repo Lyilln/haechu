@@ -625,7 +625,7 @@ function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PE
 const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts","daisuki_sn_stories","daisuki_sn_hl",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
 /* 限時動態只會越來越多：刪掉的換成「已刪除」記號（ts=0，舊版 App 也會當成過期不顯示）。
    合併時任何一邊有的都留著，除非有「已刪除」記號 → 別支手機版本舊、慢一步，都不會再把限動吃掉 */
-const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts"]);   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
+const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
 function hbKeep(k,out,...src){ if(!HB_KEEP.has(k)||!Array.isArray(out)) return out; const m=new Map(), ord=[], raw=[];
   [out,...src].forEach(a=>{ if(!Array.isArray(a)) return; a.forEach(x=>{ if(!x||typeof x!=="object"||x.id==null){ if(a===out) raw.push(x); return; } const p=m.get(x.id); if(!p){ m.set(x.id,x); ord.push(x.id); } else if(x.del&&!p.del) m.set(x.id,x); }); });
   const lim=Date.now()-14*864e5; return [...raw,...ord.map(id=>m.get(id)).filter(x=>!(x.del&&x.del<lim))]; }
@@ -13453,7 +13453,7 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
     else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
-    else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}<button class="mu3-rv" data-a="muReveal" data-v="${id}" data-w="${wk}">▶ 一位發表</button>`;
+    else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
     else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-st">${esc(nw.name)}</span>`; }
     else if(!ended&&NPCS[0]&&(!R[0]||NPCS[0].total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(NPCS[0].name)}</span>`;
     else if(ended) head=`<span class="mu3-st muted">本週沒有一位</span>`;
@@ -13466,7 +13466,7 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
       .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
-      <div class="mu3-bd">${voted&&rk&&!ended?`<p class="mu3-vt">今天投給了《${esc((songOf(voted)||{}).title||"")}》</p>`:""}${songs.length?rows:`<p class="me-none">目前沒有打歌中的歌</p>`}</div></section>`; };
+      <div class="mu3-bd">${won||(ended&&npcWon(id,wk))?`<button class="mu3-rv" data-a="muReveal" data-v="${id}" data-w="${wk}">▶ 看一位發表</button>`:""}${voted&&rk&&!ended?`<p class="mu3-vt">今天投給了《${esc((songOf(voted)||{}).title||"")}》</p>`:""}${songs.length?rows:`<p class="me-none">目前沒有打歌中的歌</p>`}</div></section>`; };
   return coreHead("")+`<main class="page mu3">
     <section class="mu2-wk mu3-wk t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"}"><span class="mu2-chip">${esc(t)}</span><span class="mu2-wt"><b>${rk?(songs.length?"每個節目每天可以投 1 票":"目前沒有打歌中的歌"):"宣傳週不排名、不開放投票"}</b>${pro.length?`<small>${pro.map(x=>`${esc(songName(x))} ${Math.max(1,Math.ceil((songRel(x)+MSA.PROMO*MDAY-Date.now())/MDAY))} 天後開始排名`).join("・")}</small>`:""}</span>${(session()||{}).role!=="fan"?`<button class="mu3-i" data-a="coreTip" aria-label="規則">${MU_IC.i}</button>`:""}</section>
     ${muThrones()}

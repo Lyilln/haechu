@@ -8,7 +8,7 @@ declare
   lim bigint := (extract(epoch from now()) * 1000)::bigint - 14 * 86400000;
   extra jsonb;
 begin
-  if new.k in ('daisuki_sn_stories', 'daisuki_sn_posts')
+  if new.k in ('daisuki_sn_stories', 'daisuki_sn_posts', 'daisuki_group_notices')
      and old.v is not null and jsonb_typeof(old.v::jsonb) = 'array'
      and new.v is not null and jsonb_typeof(new.v::jsonb) = 'array' then
     select coalesce(jsonb_agg(o.e), '[]'::jsonb) into extra
