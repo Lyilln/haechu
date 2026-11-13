@@ -718,7 +718,7 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   const hl=c=>{ w.querySelectorAll(".mrv-hl").forEach(e=>e.classList.remove("mrv-hl")); if(c==null) return; const k=ord.indexOf(c); const cols=w.querySelectorAll(".mrv-g3>.mrv-tl,.mrv-mcf>.mrv-tl,.mrv-ik>.mrv-tl,.mrv-g3>.mrv-cd,.mrv-sc2>.mrv-tl"); if(cols[k]) cols[k].classList.add("mrv-hl"); };
   st(2800,`大家好～這裡是 ${shn}！`); st(2800,`今天的舞台也全部結束了，現在是公布本週一位的時間！`);
   if(cf.top5){ st(3400,`先來看看這週的 TOP ${Math.min(5,pool.length)}！`); st(2800,`那麼…誰會是這週的 Champion 呢？`,()=>w.classList.add("who")); }
-  st(2600,`這週的一位候補有 ${ord.length} 組！`,()=>{ w.classList.remove("pre"); w.classList.remove("who"); });
+  st(2600,`這週的一位候補有 ${ord.length} 組！`,()=>{ w.classList.remove("pre"); });
   ord.forEach((c,k)=>st(2600,`${k===0?"第一組":k===1?"第二組":"第三組"}是 ${wn2(c)}！`,()=>hl(c)));
   st(2400,`那我們來看看分數吧！`,()=>hl(null));
   R.forEach(([l],i)=>st(2800,i?`接著是${rl(l)}！`:`首先是${rl(l)}！`,()=>{ for(let k=0;k<i;k++) finRow(k); w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,900)); }));
