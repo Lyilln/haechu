@@ -5941,31 +5941,31 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .mu3-fly svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px rgba(136,67,251,.35))}
 @keyframes mu3Fly{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(-60px,-90px) rotate(-35deg) scale(.6);opacity:0}}
 /* 1. THE SHOW：霓虹、銳利 */
-.mu3-sh.s-ts,.dk-keep-mu3 .q{background:#1E1E20;color:#fff;border-radius:6px;border-top:9px solid #B6F500}
-.mu3-sh.s-ts::before,.dk-keep-mu3 .q{content:"YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION";position:absolute;left:0;right:0;top:-9px;height:9px;font-size:6px;line-height:9px;font-weight:900;letter-spacing:.12em;color:#111;white-space:nowrap;overflow:hidden;pointer-events:none}
+.mu3-sh.s-ts,.dk-keep-mu3 .q{background:#1E1E20;color:#fff;border-radius:6px;padding-top:11px}
+.mu3-sh.s-ts::before,.dk-keep-mu3 .q{content:"YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ YOUR MOMENT. SET IN MOTION ✦ ";position:absolute;left:0;right:0;top:0;height:11px;background:#B6F500;font-size:6.5px;line-height:11px;font-weight:900;letter-spacing:.12em;color:#111;white-space:nowrap;overflow:hidden;pointer-events:none}
 .s-ts .mu3-nm,.dk-keep-mu3 .q{color:#B6F500}.s-ts .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:11px;letter-spacing:.02em;color:#111;background:#B6F500;border-radius:50%;width:38px;height:38px;display:flex;align-items:center;justify-content:center;line-height:.9;text-align:center}.s-ts .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:24px;font-weight:900;letter-spacing:-.03em;color:#B6F500;margin-top:4px}.s-ts .mu3-lb,.s-ts .mu3-end,.s-ts small,.dk-keep-mu3 .q{color:#BDBDBD!important}.s-ts .mu3-cup,.dk-keep-mu3 .q{color:#B6F500}
-.s-ts .mu3-r,.dk-keep-mu3 .q{background:#2A2A2D;border-radius:2px}.s-ts .mu3-vote,.dk-keep-mu3 .q{background:#B6F500;color:#111;border-radius:2px}.s-ts .mu3-chev,.dk-keep-mu3 .q{color:#B6F500}
+.mu3-sh.s-ts .mu3-r,.dk-keep-mu3 .q{background:#2A2A2D;border-radius:2px}.mu3-sh.s-ts .mu3-vote,.dk-keep-mu3 .q{background:#B6F500;color:#111;border-radius:2px}.s-ts .mu3-chev,.dk-keep-mu3 .q{color:#B6F500}
 /* 2. Show Champion：明亮、運動感斜紋 */
 .mu3-sh.s-sc,.dk-keep-mu3 .q{background:radial-gradient(ellipse 90% 60% at 50% 0,#BFEAFF 0,#58B4FF 35%,transparent 70%),linear-gradient(180deg,#3C8DFF,#1B45E0 60%,#1029A8);color:#fff;border-radius:18px;border:2px solid #ffffffcc;box-shadow:0 0 18px #4FD8FF66}
 .mu3-sh.s-sc::before,.dk-keep-mu3 .q{content:"";position:absolute;inset:0;border-radius:16px;background:repeating-radial-gradient(circle at 50% 120%,transparent 0 22px,#ffffff12 22px 24px);pointer-events:none}
-.s-sc .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:12px;font-weight:900;font-style:italic;color:#fff;-webkit-text-stroke:.4px #7CF0FF;text-shadow:0 0 8px #4FD8FF}.s-sc .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:19px;font-weight:900;font-style:italic;color:#fff;-webkit-text-stroke:.5px #7CF0FF;text-shadow:0 0 12px #4FD8FF,0 2px 0 #1029A8}.s-sc .mu3-lb,.s-sc .mu3-end,.s-sc small,.s-sc .mu3-st,.dk-keep-mu3 .q{color:#E3F6FF!important}
-.s-sc .mu3-r,.dk-keep-mu3 .q{background:#ffffff2e;border:1px solid #ffffff66;border-radius:10px}.s-sc .mu3-vote,.dk-keep-mu3 .q{background:#fff;color:#1B4FE8}.s-sc .mu3-cup,.s-sc .mu3-cr,.dk-keep-mu3 .q{color:#FFF27A}.s-sc .mu3-chev,.dk-keep-mu3 .q{color:#fff}
+.s-sc .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:11px;font-weight:900;font-style:italic;color:#fff;-webkit-text-stroke:.4px #7CF0FF;text-shadow:0 0 8px #4FD8FF}.s-sc .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:16px;font-weight:900;font-style:italic;color:#fff;-webkit-text-stroke:.5px #7CF0FF;text-shadow:0 0 12px #4FD8FF,0 2px 0 #1029A8}.s-sc .mu3-lb,.s-sc .mu3-end,.s-sc small,.s-sc .mu3-st,.dk-keep-mu3 .q{color:#E3F6FF!important}
+.mu3-sh.s-sc .mu3-r,.dk-keep-mu3 .q{background:#ffffff2e;border:1px solid #ffffff66;border-radius:10px}.mu3-sh.s-sc .mu3-vote,.dk-keep-mu3 .q{background:#fff;color:#1B4FE8}.s-sc .mu3-cup,.s-sc .mu3-cr,.dk-keep-mu3 .q{color:#FFF27A}.s-sc .mu3-chev,.dk-keep-mu3 .q{color:#fff}
 /* 3. M COUNTDOWN：深藍、數位倒數 */
 .mu3-sh.s-mcd,.dk-keep-mu3 .q{background:radial-gradient(120% 140% at 100% 0,#2B5BFF 0,#0B1A4A 55%,#060D26 100%);border-radius:18px}
 .mu3-sh.s-mcd::before,.dk-keep-mu3 .q{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(120,170,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.08) 1px,transparent 1px);background-size:18px 18px;pointer-events:none}
 .s-mcd .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:26px;font-weight:900;color:#6FE3FF;line-height:.9}.s-mcd .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:11px;letter-spacing:.22em;color:#B9D2FF}
 .s-mcd .mu3-end,.dk-keep-mu3 .q{font-family:ui-monospace,Menlo,monospace;color:#6FE3FF;opacity:1}
-.s-mcd .mu3-r,.dk-keep-mu3 .q{background:rgba(111,227,255,.08);border:1px solid rgba(111,227,255,.18)}.s-mcd .mu3-vote,.dk-keep-mu3 .q{background:#6FE3FF;color:#06153F}
+.mu3-sh.s-mcd .mu3-r,.dk-keep-mu3 .q{background:rgba(111,227,255,.08);border:1px solid rgba(111,227,255,.18)}.mu3-sh.s-mcd .mu3-vote,.dk-keep-mu3 .q{background:#6FE3FF;color:#06153F}
 /* 4. MUSIC BANK：金色、古典雙框 */
 .mu3-sh.s-mb,.dk-keep-mu3.s-mb{background:#fff;color:#1E2340;border:2px solid #1E2340;border-radius:18px;box-shadow:4px 4px 0 #5FE0D0}
 .mu3-sh.s-mb::before,.dk-keep-mu3.s-mb::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;background:radial-gradient(circle at 97% 8%,#FFD3E3 0 22px,transparent 23px),radial-gradient(circle at 99% 96%,#C9F5EF 0 30px,transparent 31px)}
 .s-mb .mu3-nm b,.dk-keep-mu3 .s-mb .mu3-nm b{font-weight:900;font-style:normal;font-family:inherit}.s-mb .mu3-nm b:first-child,.dk-keep-mu3 .x{font-size:13px;letter-spacing:.08em;color:#16B7A6}.s-mb .mu3-nm b:last-child,.dk-keep-mu3 .y{font-size:15px;color:#FF6FA5;letter-spacing:.01em;line-height:1.05;white-space:nowrap}
-.s-mb .mu3-r,.dk-keep-mu3 .z{background:#F3FFFD;border:1.5px solid #1E2340}.s-mb .mu3-vote,.dk-keep-mu3 .w{background:#5FE0D0;color:#1E2340}.s-mb .mu3-cup,.s-mb .mu3-cr,.dk-keep-mu3 .v{color:#FF6FA5}.s-mb .mu3-lb,.s-mb .mu3-end,.s-mb small,.dk-keep-mu3 .u{color:#5B6180!important}.s-mb .mu3-chev,.dk-keep-mu3 .t{color:#1E2340}
+.mu3-sh.s-mb .mu3-r,.dk-keep-mu3 .z{background:#F3FFFD;border:1.5px solid #1E2340}.mu3-sh.s-mb .mu3-vote,.dk-keep-mu3 .w{background:#5FE0D0;color:#1E2340}.s-mb .mu3-cup,.s-mb .mu3-cr,.dk-keep-mu3 .v{color:#FF6FA5}.s-mb .mu3-lb,.s-mb .mu3-end,.s-mb small,.dk-keep-mu3 .u{color:#5B6180!important}.s-mb .mu3-chev,.dk-keep-mu3 .t{color:#1E2340}
 /* 5. INKIGAYO：粉彩天空、圓潤 */
 .mu3-sh.s-ink,.dk-keep-mu3 .q{background:linear-gradient(118deg,transparent 52%,#FF4FB033 52.5%,transparent 53.5%),linear-gradient(62deg,transparent 70%,#3AA0FF44 70.4%,transparent 71.2%),linear-gradient(180deg,#221683,#2B1FAF 55%,#150E55);color:#fff;border-radius:14px;border:3px solid #FF4FB0;box-shadow:0 0 16px #FF4FB066}
 .mu3-sh.s-ink::before,.dk-keep-mu3 .q{content:"";position:absolute;left:66px;top:14px;width:16px;height:16px;border-radius:5px;background:linear-gradient(140deg,#FF8FD0,#F23AA5);border:2px solid #FFD1EC;transform:rotate(-8deg);opacity:.9;pointer-events:none}
 .s-ink .mu3-nm b,.dk-keep-mu3 .q{font-weight:900;letter-spacing:-.01em}.s-ink .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:20px;color:#FFE83A;text-shadow:0 2px 0 #C2187F}.s-ink .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:20px;color:#fff;text-shadow:0 2px 0 #C2187F}.s-ink .mu3-lb,.s-ink .mu3-end,.s-ink small,.s-ink .mu3-st,.dk-keep-mu3 .q{color:#D9D2FF!important}
-.s-ink .mu3-r,.dk-keep-mu3 .q{background:#ffffff;color:#111;border-left:3px solid #FF4FB0;border-radius:6px}.s-ink .mu3-r small,.dk-keep-mu3 .q{color:#6B5A9A!important}.s-ink .mu3-vote,.dk-keep-mu3 .q{background:linear-gradient(#FF62B8,#EF2C8C);color:#fff}.s-ink .mu3-cup,.s-ink .mu3-cr,.dk-keep-mu3 .q{color:#FFE83A}.s-ink .mu3-chev,.dk-keep-mu3 .q{color:#FFE83A}
+.mu3-sh.s-ink .mu3-r,.dk-keep-mu3 .q{background:#ffffff;color:#111;border-left:3px solid #FF4FB0;border-radius:6px}.mu3-sh.s-ink .mu3-r small,.dk-keep-mu3 .q{color:#6B5A9A!important}.mu3-sh.s-ink .mu3-vote,.dk-keep-mu3 .q{background:linear-gradient(#FF62B8,#EF2C8C);color:#fff}.s-ink .mu3-cup,.s-ink .mu3-cr,.dk-keep-mu3 .q{color:#FFE83A}.s-ink .mu3-chev,.dk-keep-mu3 .q{color:#FFE83A}
 /* 應援選單：兩顆 */
 .mu2-act.two{grid-template-columns:repeat(2,1fr)}.mu2-act button.done{opacity:.55}
 /* 規則：三張卡 */
@@ -6053,12 +6053,20 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 @keyframes muGrid{to{background-position:18px 18px,18px 18px}}
 @keyframes muShine{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}
 @keyframes muFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,10px)}}
+@keyframes muTick{to{text-indent:-18.15em}}
+@keyframes muRing{to{transform:scale(1.16)}}
+@keyframes muBob{0%,100%{transform:rotate(-8deg) translateY(0)}50%{transform:rotate(6deg) translateY(-3px)}}
+@keyframes muBeam{0%{background-position:-70px 0,50px 0,0 0}100%{background-position:70px 0,-50px 0,0 0}}
 @keyframes muNeon{0%,100%{box-shadow:0 0 0 1px rgba(255,62,165,.25) inset,0 8px 24px -14px #FF3EA5}50%{box-shadow:0 0 0 1px rgba(255,62,165,.5) inset,0 8px 30px -10px #FF3EA5}}
 .mu3-sh.s-ts,.dk-keep-mu3 .q{animation:none}
-.mu3-sh.s-sc::before,.dk-keep-mu3 .q{animation:none}
+.mu3-sh.s-ts::before,.dk-keep-mu3 .q{animation:muTick 5s linear infinite}
+.mu3-sh.s-sc::before,.dk-keep-mu3 .q{animation:muRing 3.2s ease-in-out infinite alternate}
+.mu3-sh.s-sc::after,.dk-keep-mu3 .q{content:"";position:absolute;top:0;bottom:0;left:0;width:34%;background:linear-gradient(90deg,transparent,#ffffff2e,transparent);animation:muShine 4.5s ease-in-out infinite;pointer-events:none}
+.mu3-sh.s-mb::before,.dk-keep-mu3 .s{animation:muFloat 6s ease-in-out infinite}
 .mu3-sh.s-mcd::before,.dk-keep-mu3 .q{animation:muGrid 4s linear infinite}
 .mu3-sh.s-mb::after,.dk-keep-mu3 .s{content:none}
-.mu3-sh.s-ink::before,.dk-keep-mu3 .q{animation:none}
+.mu3-sh.s-ink::before,.dk-keep-mu3 .q{animation:muBob 2.4s ease-in-out infinite}
+.mu3-sh.s-ink,.dk-keep-mu3 .q{animation:muBeam 5s ease-in-out infinite alternate}
 @media (prefers-reduced-motion:reduce){.mu3-sh,.mu3-sh::before,.mu3-sh::after{animation:none!important}}
 /* 結尾妖精：全螢幕播放 */
 .fv{position:fixed;inset:0;z-index:320;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
