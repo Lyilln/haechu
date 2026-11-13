@@ -26,14 +26,15 @@ document.addEventListener("visibilitychange",()=>{ if(document.hidden&&snMusCur)
 /* 音樂那一行：跟 IG 一樣「♫ 歌手・歌名」，點了從下面拉出音樂資訊 */
 const SN_MUSK={};
 const snMusArt=m=>{ if(!m) return ""; if(m.src==="orig"){ const u=m.uid&&snUser(m.uid); return (u&&u.u)||m.artist||""; } return m.artist||""; };
-const snMusLabel=m=>{ const a=snMusArt(m); return a?`${a}・${m.title||"音樂"}`:(m.title||"音樂"); };
+const snMusTitle=m=>{ try{ if(m&&m.src==="app"&&m.sid){ const x=songOf(m.sid); if(x&&x.title) return x.title; } }catch(e){} return (m&&m.title)||""; };   /* 用 App 裡的歌：歌名改了，舊貼文／限動一起跟著變 */
+const snMusLabel=m=>{ const a=snMusArt(m), t=snMusTitle(m)||"音樂"; return a?`${a}・${t}`:t; };
 const snMusTag=(m,k,who)=>{ if(!(m&&m.mid)) return ""; if(k) SN_MUSK[k]={m,who}; return `<span class="sn-mus-t"${k?` data-a="snMusInfo" data-k="${esc(k)}" role="button"`:""}>${si("note","sm")}<span>${esc(snMusLabel(m))}</span></span>`; };
 function snMusInfo(k){ const o=SN_MUSK[k]; if(!o) return; const m=o.m, ou=m.src==="orig"&&m.uid?snUser(m.uid):null, art=snMusArt(m);
-  const cov=m.src==="app"&&m.gid?songCover(m.gid,m.title):ou?snAv(ou,44):`<i class="snmi-ph">${si("music")}</i>`;
+  const cov=m.src==="app"&&m.gid?songCover(m.gid,snMusTitle(m)):ou?snAv(ou,44):`<i class="snmi-ph">${si("music")}</i>`;
   if(ui.snStory) clearTimeout(ui.snStT);   /* 看限動時打開：先停住，不要自己跳下一則 */
   let w=document.getElementById("snMI"); if(!w){ w=document.createElement("div"); w.id="snMI"; document.body.appendChild(w); }
   w.innerHTML=`<div class="snmi-w" data-a="snMiX"><div class="snmi" data-a="snMiNo" role="dialog" aria-label="音樂"><i class="snmi-gr"></i>
-    <button class="snmi-r" data-a="snMiGo" data-k="${esc(k)}"><span class="snmi-c">${cov}</span><span class="snmi-t"><b>${esc(m.title||"音樂")}${art?` • ${esc(art)}`:""}</b><small>音訊</small></span></button>
+    <button class="snmi-r" data-a="snMiGo" data-k="${esc(k)}"><span class="snmi-c">${cov}</span><span class="snmi-t"><b>${esc(snMusTitle(m)||"音樂")}${art?` • ${esc(art)}`:""}</b><small>音訊</small></span></button>
     <button class="snmi-r snmi-red dk-keep" data-a="snMiRep" data-k="${esc(k)}"><span class="snmi-ic">${si("flag")}</span><b>檢舉</b></button></div></div>`;
   requestAnimationFrame(()=>w.firstElementChild&&w.firstElementChild.classList.add("open")); }
 function snMiClose(resume){ const w=document.getElementById("snMI"); if(w) w.innerHTML=""; const st=ui.snStory; if(resume&&st){ clearTimeout(ui.snStT); ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },3000); } }

@@ -4736,6 +4736,16 @@ function tieModal(title,text,buttons,cls=""){ cls=String(cls).replace(/\brow\b/,
   setLayer(`<div class="t-modal-w" data-a="tCloseLayer"><div class="t-modal ${cls}" role="dialog" aria-label="${esc(title||"提示")}">
     ${title?`<h3>${title}</h3>`:""}${text?`<p>${text}</p>`:""}<div class="t-mb">${buttons}</div></div></div>`,"modal");
 }
+/* 編輯文字的小視窗（說明、影片標題、分區名稱共用）：上面一排「取消｜標題｜完成」、下面輸入框＋字數 */
+function edSheet(title,{id,val="",max=60,multi=false,ph="輸入文字",ok="",del=""}){
+  const f=multi?`<textarea id="${id}" class="eds-in" maxlength="${max}" rows="4" placeholder="${esc(ph)}">${esc(val)}</textarea>`:`<input id="${id}" class="eds-in" maxlength="${max}" placeholder="${esc(ph)}" value="${esc(val)}" enterkeyhint="done">`;
+  setLayer(`<div class="eds-w" data-a="tCloseLayer"><div class="eds" role="dialog" aria-label="${esc(title)}">
+    <header><button class="eds-x" data-a="tCloseLayer">取消</button><b>${esc(title)}</b><button class="eds-ok" ${ok}>完成</button></header>
+    <label class="eds-bd">${f}<small class="eds-ct"><i>${String(val).length}</i>/${max}</small></label>${del?`<button class="eds-del" ${del}>${del.includes("vsDel")?"刪除分區":"刪除"}</button>`:""}</div></div>`,"modal");
+  const el=document.getElementById(id); if(!el) return; const ct=layer.querySelector(".eds-ct i");
+  el.addEventListener("input",()=>{ if(ct) ct.textContent=el.value.length; });
+  if(!multi) el.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); layer.querySelector(".eds-ok")?.click(); } });
+  setTimeout(()=>{ try{ el.focus(); const n=el.value.length; el.setSelectionRange(n,n); }catch(e){} },60); }
 /* ===== TIE 照 Bubble 對標：紀念日全螢幕、第一次傳訊息要同意、系統樣式的選單 ===== */
 /* 粉絲名（每團不一樣，管理員在「藝人與團管理」改）；沒填就顯示 my */
    /* 粉絲名還沒設定：顯示 𝐹𝑎𝑛 */
@@ -7577,7 +7587,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "focGo": navTo("#/artist?tab=foc&p="+t.dataset.v); window.scrollTo(0,0); break;
     case "vPlay": { setTimeout(()=>{ try{ const v1=vodOf(t.dataset.v), pv=layer.querySelector(".ph-view"); if(v1&&v1.mid&&vodIsMV(v1)&&pv&&!pv.querySelector(".pv-like")){ const on=mvLikedV(v1.id); pv.insertAdjacentHTML("beforeend",`<button class="pv-like ${on?"on":""}" data-a="mvLikeV" data-v="${v1.id}">${on?"♥":"♡"} ${fmt(mvLikesV(v1.id))}</button>`); } }catch(e){} },30); const v0=vodOf(t.dataset.v); if(v0&&v0.mid){ playVideo(v0.mid); vodViewWatch(v0.id); break; } openVodPlayer(t.dataset.v,t.dataset.pl); break; }
     case "vsAdd": case "vsEd": { const gid=t.dataset.g, sid=t.dataset.v||"", cur=sid?(getSecs(gid).find(x=>x.id===sid)||{}).title||"":""; ui.vsFor={gid,sid};
-      tieModal(sid?"分區名稱":"新增分區","",`<input id="vsTi" class="a-nick-in" maxlength="20" placeholder="輸入文字" value="${esc(cur)}"><button class="t-mbtn main" data-a="vsSave">儲存</button>${sid?`<button class="t-mbtn danger" data-a="vsDel">刪除分區</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+      edSheet(sid?"分區名稱":"新增分區",{id:"vsTi",val:cur,max:20,ph:"例：M/V",ok:`data-a="vsSave"`,del:sid?`data-a="vsDel"`:""}); break; }
     case "vsSave": { const f=ui.vsFor, v=((document.getElementById("vsTi")||{}).value||"").trim(); if(!f) break; if(!v){ toast("名稱不能空白"); break; } if(nameBlock&&nameBlock(v)) break;
       const M=S.get(K.vsec,{})||{}, L=[...(M[f.gid]||[])]; if(f.sid){ const x=L.find(y=>y.id===f.sid); if(x) x.title=v; } else L.push({id:uid("s"),title:v}); M[f.gid]=L; S.set(K.vsec,M); layer.innerHTML=""; lsRerender(); break; }
     case "vsDel": { const f=ui.vsFor; if(!f||!f.sid) break; const has=getVods(f.gid).some(v=>v.sec===f.sid); if(has){ toast("先把這個分區裡的影片刪掉"); break; } const M=S.get(K.vsec,{})||{}; M[f.gid]=(M[f.gid]||[]).filter(x=>x.id!==f.sid); S.set(K.vsec,M); layer.innerHTML=""; lsRerender(); break; }
@@ -7595,7 +7605,8 @@ function clickAdm(a,t,e,r){ switch(a){
           memBlobs[id]=u.file; const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:u.dur||0,ts:Date.now(),views:0,by:session().member||uniMe(),...(u.fy&&Object.keys(u.fy).length?{fy:Object.fromEntries(Object.entries(u.fy).map(([k,r])=>{ const o={...r}; delete o._pv; return [k,o]; }))}:{})}); S.set(K.vods,L);
           ui.vsUp=null; layer.innerHTML=""; try{ mvSongTick(); }catch(e){} lsRerender(); toast("影片上傳好了");
           { const vf=u.file, vid0=L[L.length-1].id; if(isMvLabel((getSecs(f.gid).find(x=>x.id===f.sid)||{}).title)||vodIsMV(L[L.length-1])) mvAudioUpload(vf).then(aid=>{ if(!aid) return; const V=S.get(K.vods,[])||[], v=V.find(y=>y.id===vid0); if(v){ v.au=aid; S.set(K.vods,V); } const m=getMShow(), so=[...m.songs,...(m.ended||[])].find(y=>y.mv===vid0); if(so) songAuSet(so.id,aid); }).catch(()=>{}); } }catch(e){ hbUploadBig.on=null; u.busy=""; vsUpPage(); toast("這部影片讀不出來，換一部試試"); } })(); break; }
-    case "vsVEd": { const id=t.dataset.v, V=S.get(K.vods,[])||[], v=V.find(x=>x.id===id); if(!v) break; const nt=prompt("影片標題",v.title||""); if(nt==null) break; const tt=nt.trim(); if(!tt||tt===v.title) break;
+    case "vsVEd": { const v=(S.get(K.vods,[])||[]).find(x=>x.id===t.dataset.v); if(!v) break; edSheet("影片標題",{id:"vsVEt",val:v.title||"",max:60,ok:`data-a="vsVEdOk" data-v="${v.id}"`}); break; }
+    case "vsVEdOk": { const id=t.dataset.v, V=S.get(K.vods,[])||[], v=V.find(x=>x.id===id); if(!v) break; const tt=((document.getElementById("vsVEt")||{}).value||"").trim(); if(!tt){ toast("標題不能空白"); break; } layer.innerHTML=""; if(tt===v.title) break;
       /* 只改文字、影片不動；打歌、通知、新聞這些用到這支 MV 的地方一起換成新歌名 */
       const oldSong=mvTitleOf(v.title), newSong=mvTitleOf(tt); S.set(K.vods,V.map(x=>x.id===id?{...x,title:tt}:x));
       if(newSong){ const m=getMShow(), olds=new Set([oldSong].filter(Boolean)); let ch=false; [...m.songs,...(m.ended||[])].forEach(x=>{ if(x.mv===id||(x.gid===v.gid&&x.title===oldSong)){ if(x.title&&x.title!==newSong) olds.add(x.title); if(x.title!==newSong){ x.title=newSong; ch=true; } } }); if(ch) S.set(K.mshow,m); olds.delete(newSong);
@@ -10724,7 +10735,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snCmRe": { ui.snRe={p:t.dataset.id,c:t.dataset.v,u:t.dataset.u}; const i0=document.getElementById("snCmIn"); if(i0) i0.value="@"+t.dataset.u+" "; } snOpenCm(t.dataset.id); setTimeout(()=>{ const i=document.getElementById("snCmIn"); if(i){ i.focus(); const n=i.value.length; try{ i.setSelectionRange(n,n); }catch(e){} } },60); break;
     case "snCmReX": ui.snRe=null; snOpenCm(t.dataset.id); break;
     case "snCmLk": { const d=snDB(), me=snMeId(), c=(d.cms[t.dataset.id]||[]).find(x=>x.id===t.dataset.v); if(!c) break; const L=c.lk=c.lk||[], i=L.indexOf(me); if(i>=0) L.splice(i,1); else L.push(me); snSave(d); t.classList.toggle("on",i<0); const sm=t.previousElementSibling&&t.previousElementSibling.querySelector("small"); snOpenCm(t.dataset.id); break; }
-    case "snEditCap": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; layer.innerHTML=""; tieModal("編輯說明",`<textarea id="snCapEd" class="a-nick-in sn-caped" rows="4" placeholder="輸入文字">${esc(p.cap||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="snEditCapOk" data-id="${p.id}">完成</button>`,"row"); break; }
+    case "snEditCap": { const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; layer.innerHTML=""; edSheet("編輯說明",{id:"snCapEd",val:p.cap||"",max:2200,multi:true,ph:"寫點說明…",ok:`data-a="snEditCapOk" data-id="${p.id}"`}); break; }
     case "snEditCapOk": { const v=((document.getElementById("snCapEd")||{}).value||"").trim(); if(v&&!isAdminAcct()&&banBlock(v)) break; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; p.cap=v; p.ed=Date.now(); snSave(d); layer.innerHTML=""; render(); toast("已更新"); break; }
     case "snTagGo": layer.innerHTML=""; navTo("#/"+session().role+"/sns?p=tag&id="+encodeURIComponent(t.dataset.v)); break;
     case "snAtGo": { const u=snAllUsers().find(x=>(x.u||"").toLowerCase()===t.dataset.v); if(!u){ toast("找不到這個帳號"); break; } layer.innerHTML=""; navTo("#/"+session().role+"/sns?p=profile&id="+encodeURIComponent(u.id)); break; }
@@ -12751,14 +12762,15 @@ document.addEventListener("visibilitychange",()=>{ if(document.hidden&&snMusCur)
 /* 音樂那一行：跟 IG 一樣「♫ 歌手・歌名」，點了從下面拉出音樂資訊 */
 const SN_MUSK={};
 const snMusArt=m=>{ if(!m) return ""; if(m.src==="orig"){ const u=m.uid&&snUser(m.uid); return (u&&u.u)||m.artist||""; } return m.artist||""; };
-const snMusLabel=m=>{ const a=snMusArt(m); return a?`${a}・${m.title||"音樂"}`:(m.title||"音樂"); };
+const snMusTitle=m=>{ try{ if(m&&m.src==="app"&&m.sid){ const x=songOf(m.sid); if(x&&x.title) return x.title; } }catch(e){} return (m&&m.title)||""; };   /* 用 App 裡的歌：歌名改了，舊貼文／限動一起跟著變 */
+const snMusLabel=m=>{ const a=snMusArt(m), t=snMusTitle(m)||"音樂"; return a?`${a}・${t}`:t; };
 const snMusTag=(m,k,who)=>{ if(!(m&&m.mid)) return ""; if(k) SN_MUSK[k]={m,who}; return `<span class="sn-mus-t"${k?` data-a="snMusInfo" data-k="${esc(k)}" role="button"`:""}>${si("note","sm")}<span>${esc(snMusLabel(m))}</span></span>`; };
 function snMusInfo(k){ const o=SN_MUSK[k]; if(!o) return; const m=o.m, ou=m.src==="orig"&&m.uid?snUser(m.uid):null, art=snMusArt(m);
-  const cov=m.src==="app"&&m.gid?songCover(m.gid,m.title):ou?snAv(ou,44):`<i class="snmi-ph">${si("music")}</i>`;
+  const cov=m.src==="app"&&m.gid?songCover(m.gid,snMusTitle(m)):ou?snAv(ou,44):`<i class="snmi-ph">${si("music")}</i>`;
   if(ui.snStory) clearTimeout(ui.snStT);   /* 看限動時打開：先停住，不要自己跳下一則 */
   let w=document.getElementById("snMI"); if(!w){ w=document.createElement("div"); w.id="snMI"; document.body.appendChild(w); }
   w.innerHTML=`<div class="snmi-w" data-a="snMiX"><div class="snmi" data-a="snMiNo" role="dialog" aria-label="音樂"><i class="snmi-gr"></i>
-    <button class="snmi-r" data-a="snMiGo" data-k="${esc(k)}"><span class="snmi-c">${cov}</span><span class="snmi-t"><b>${esc(m.title||"音樂")}${art?` • ${esc(art)}`:""}</b><small>音訊</small></span></button>
+    <button class="snmi-r" data-a="snMiGo" data-k="${esc(k)}"><span class="snmi-c">${cov}</span><span class="snmi-t"><b>${esc(snMusTitle(m)||"音樂")}${art?` • ${esc(art)}`:""}</b><small>音訊</small></span></button>
     <button class="snmi-r snmi-red dk-keep" data-a="snMiRep" data-k="${esc(k)}"><span class="snmi-ic">${si("flag")}</span><b>檢舉</b></button></div></div>`;
   requestAnimationFrame(()=>w.firstElementChild&&w.firstElementChild.classList.add("open")); }
 function snMiClose(resume){ const w=document.getElementById("snMI"); if(w) w.innerHTML=""; const st=ui.snStory; if(resume&&st){ clearTimeout(ui.snStT); ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },3000); } }

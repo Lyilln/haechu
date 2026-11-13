@@ -122,6 +122,16 @@ function tieModal(title,text,buttons,cls=""){ cls=String(cls).replace(/\brow\b/,
   setLayer(`<div class="t-modal-w" data-a="tCloseLayer"><div class="t-modal ${cls}" role="dialog" aria-label="${esc(title||"提示")}">
     ${title?`<h3>${title}</h3>`:""}${text?`<p>${text}</p>`:""}<div class="t-mb">${buttons}</div></div></div>`,"modal");
 }
+/* 編輯文字的小視窗（說明、影片標題、分區名稱共用）：上面一排「取消｜標題｜完成」、下面輸入框＋字數 */
+function edSheet(title,{id,val="",max=60,multi=false,ph="輸入文字",ok="",del=""}){
+  const f=multi?`<textarea id="${id}" class="eds-in" maxlength="${max}" rows="4" placeholder="${esc(ph)}">${esc(val)}</textarea>`:`<input id="${id}" class="eds-in" maxlength="${max}" placeholder="${esc(ph)}" value="${esc(val)}" enterkeyhint="done">`;
+  setLayer(`<div class="eds-w" data-a="tCloseLayer"><div class="eds" role="dialog" aria-label="${esc(title)}">
+    <header><button class="eds-x" data-a="tCloseLayer">取消</button><b>${esc(title)}</b><button class="eds-ok" ${ok}>完成</button></header>
+    <label class="eds-bd">${f}<small class="eds-ct"><i>${String(val).length}</i>/${max}</small></label>${del?`<button class="eds-del" ${del}>${del.includes("vsDel")?"刪除分區":"刪除"}</button>`:""}</div></div>`,"modal");
+  const el=document.getElementById(id); if(!el) return; const ct=layer.querySelector(".eds-ct i");
+  el.addEventListener("input",()=>{ if(ct) ct.textContent=el.value.length; });
+  if(!multi) el.addEventListener("keydown",e=>{ if(e.key==="Enter"){ e.preventDefault(); layer.querySelector(".eds-ok")?.click(); } });
+  setTimeout(()=>{ try{ el.focus(); const n=el.value.length; el.setSelectionRange(n,n); }catch(e){} },60); }
 /* ===== TIE 照 Bubble 對標：紀念日全螢幕、第一次傳訊息要同意、系統樣式的選單 ===== */
 /* 粉絲名（每團不一樣，管理員在「藝人與團管理」改）；沒填就顯示 my */
    /* 粉絲名還沒設定：顯示 𝐹𝑎𝑛 */

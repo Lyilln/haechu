@@ -7048,3 +7048,17 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 @keyframes mrvMcPop{from{transform:scale(.9);opacity:.2}}
 
 .dk-keep-mrv .mrv-hl{transform:translateY(-6px) scale(1.04);box-shadow:0 0 0 3px #fff,0 0 26px #ffffffaa;transition:transform .35s,box-shadow .35s;z-index:2}.dk-keep-mrv.s-mb .mrv-hl{box-shadow:0 0 0 3px #5FE0D0,4px 4px 0 #FF9DBE}
+/* 編輯文字小視窗（說明／影片標題／分區名稱） */
+.eds-w{position:fixed;inset:0;z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:calc(env(safe-area-inset-top,0px) + 12vh) 16px 16px;background:rgba(20,14,40,.32);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);animation:fade .2s}
+.eds{width:100%;max-width:400px;background:var(--card-solid,#fff);border-radius:22px;box-shadow:0 24px 60px -18px rgba(60,30,120,.45);overflow:hidden;animation:tPop .22s ease-out}
+.eds header{display:grid;grid-template-columns:64px 1fr 64px;align-items:center;padding:12px 10px;border-bottom:1px solid var(--line)}
+.eds header b{text-align:center;font-size:15.5px;font-weight:800;color:var(--ink)}
+.eds-x,.eds-ok{border:0;background:none;font:inherit;font-size:15px;padding:6px 4px;cursor:pointer}
+.eds-x{color:var(--ink-2);text-align:left}.eds-ok{color:var(--violet,#8843FB);font-weight:800;text-align:right}
+.eds-bd{display:block;position:relative;margin:14px;border-radius:14px;background:var(--violet-soft,#F3EDFF);border:1.5px solid transparent;transition:border-color .15s}
+.eds-bd:focus-within{border-color:var(--violet,#8843FB)}
+.eds-in{display:block;width:100%;box-sizing:border-box;border:0;background:none;outline:none;resize:none;font:inherit;font-size:16px;line-height:1.5;color:var(--ink);padding:13px 14px 24px}
+textarea.eds-in{min-height:120px}
+.eds-ct{position:absolute;right:12px;bottom:7px;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}.eds-ct i{font-style:normal}
+.eds-del{display:block;width:calc(100% - 28px);margin:0 14px 14px;padding:12px;border:0;border-radius:12px;background:none;color:var(--red,#E5484D);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
+.eds-del:active{background:rgba(229,72,77,.08)}
