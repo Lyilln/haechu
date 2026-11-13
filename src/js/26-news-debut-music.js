@@ -201,9 +201,9 @@ function cbrMvPublish(p){ try{ const g=groupOf(p.gid); if(!g) return; [[p.mv,"MV
 const MSV2="daisuki_ms_votes2", MVL2="daisuki_mv_likes2";
 const MS_W={vote:100,album:200,like:20,view:2};
 /* 每個節目的比重不一樣（照真實節目：音源／專輯／投票／SNS 的百分比），除以五個節目的平均變成倍數 → 同一週不同節目可能是不同人拿一位 */
-const MS_SP={ts:{view:40,album:10,vote:15,like:20},sc:{view:35,album:15,vote:20,like:10},mcd:{view:50,album:15,vote:15,like:10},mb:{view:60,album:5,vote:10,like:5},ink:{view:55,album:10,vote:15,like:20}};
+const MS_SP={ts:{view:40,album:10,vote:15,like:20},sc:{view:35,album:15,vote:20,like:10},mcd:{view:50,album:15,vote:15,like:10},mb:{view:40,album:20,vote:20,like:10},ink:{view:55,album:10,vote:15,like:20}};
 const msW=show=>{ const P=MS_SP[show]; if(!P) return MS_W; const o={}; ["vote","album","like","view"].forEach(k=>{ const avg=Object.values(MS_SP).reduce((n,x)=>n+x[k],0)/5; o[k]=MS_W[k]*P[k]/avg; }); return o; };
-const SHOW_END={ts:[2,18,0],sc:[3,18,0],mcd:[4,18,0],mb:[5,17,0],ink:[0,15,20]};   /* [星期, 時, 分] 照真實節目的播出時間 */
+const SHOW_END={ts:[2,18,0],sc:[3,18,0],mcd:[4,18,0],mb:[6,16,30],ink:[0,15,20]};   /* [星期, 時, 分] 照真實節目的播出時間 */
 const showEndTs=(show,wk)=>{ const [d,h,m]=SHOW_END[show]||[0,20,0], t=wkDate(wk||curWeek()); t.setDate(t.getDate()+((d+6)%7)); t.setHours(h,m,0,0); return t.getTime(); };
 const showEnded=(show,wk)=>Date.now()>=showEndTs(show,wk);
 const showEndTxt=show=>{ const [d,h,m]=SHOW_END[show]||[0,20,0]; return `星期${WDAY[d]} ${pad(h)}:${pad(m)}`; };
@@ -288,7 +288,7 @@ const MU_IC={
   cup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/></svg>',
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
   tk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>'};
-const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["MUSIC","BANK"],ink:["INKI","GAYO"]};
+const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["SHOW!","音樂中心"],ink:["INKI","GAYO"]};
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
 function viewPromo(){ setTimeout(muRevealAuto,700);
   const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=[];
@@ -332,7 +332,7 @@ function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf
 function muRules(){ const wk0=curWeek(), d0=new Date(); d0.setDate(1); const W=[]; let k=weekKey(d0.getTime()); for(let i=0;i<6;i++){ const ms=wkDate(k); if(ms.getMonth()!==d0.getMonth()&&i>0&&monthKey(ms.getTime()+3*864e5)!==monthKey(d0.getTime())) break; W.push(k); k=shiftWeek(k,1); }
   const WS=W.filter(x=>monthKey(wkDate(x).getTime()+3*864e5)===monthKey(Date.now())), band=WS.map(x=>{ const t=weekType(x); return `<span class="t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"} ${x===wk0?"now":""}">${t.slice(0,2)}</span>`; }).join(""), here=WS.map(x=>`<span>${x===wk0?"▲ 你在這裡":""}</span>`).join("");
   const c1=`<div class="mur-c"><h4>週期</h4><div class="mur-band">${band.replace(/>(宣傳|排名|打歌)</g,(m0,x)=>`><b>${x}</b><`)}</div><div class="mur-here">${here}</div><p>每個月第一週是宣傳週，不排名；中間是排名週；最後一週是打歌週（月底決戰）。新歌 MV 公開就加入，打滿 4 週下檔，回歸時換成新歌。同一個節目參賽的歌不到 3 首時會有虛擬對手，分數要超過它們才拿得到一位。</p></div>`;
-  const c2=`<div class="mur-c"><h4>怎麼幫偶像</h4><ul class="mur-w"><li><b>${MU_IC.tk}</b><span>投票</span><em>1 票 ≈ ${MS_W.vote} 分</em></li><li><b>💿</b><span>買專輯</span><em>1 張 ≈ ${MS_W.album} 分</em></li><li><b>♡</b><span>MV 愛心</span><em>1 顆 ≈ ${MS_W.like} 分</em></li><li><b>▶</b><span>看 MV</span><em>1 次 ≈ ${MS_W.view} 分</em></li></ul><p>每個節目比重不一樣：Show Champion 最看投票，MUSIC BANK、人氣歌謠最看 MV 觀看，THE SHOW、人氣歌謠的 MV 愛心也很重要。每個節目每天可以投 1 票。節目播出時間一到就結束，分數最高的拿下一位。</p></div>`;
+  const c2=`<div class="mur-c"><h4>怎麼幫偶像</h4><ul class="mur-w"><li><b>${MU_IC.tk}</b><span>投票</span><em>1 票 ≈ ${MS_W.vote} 分</em></li><li><b>💿</b><span>買專輯</span><em>1 張 ≈ ${MS_W.album} 分</em></li><li><b>♡</b><span>MV 愛心</span><em>1 顆 ≈ ${MS_W.like} 分</em></li><li><b>▶</b><span>看 MV</span><em>1 次 ≈ ${MS_W.view} 分</em></li></ul><p>每個節目比重不一樣：Show Champion 最看投票，人氣歌謠最看 MV 觀看，音樂中心專輯和投票也很重要，THE SHOW、人氣歌謠的 MV 愛心也很重要。每個節目每天可以投 1 票。節目播出時間一到就結束，分數最高的拿下一位。</p></div>`;
   const c3=`<div class="mur-c"><h4>獎勵</h4><ul class="mur-w"><li><b>${MU_IC.cup}</b><span>一位</span><em>+${fmt(MSP.win)}</em></li><li><b>${MU_IC.five}</b><span>五台冠軍</span><em>+${fmt(MSP.five)}</em></li><li><b>${MU_IC.ak}</b><span>AK</span><em>+${fmt(MSP.ak)}</em></li><li><b>${MU_IC.pak}</b><span>PAK</span><em>+${fmt(MSP.pak)}</em></li></ul><p>同一首歌在同一個節目連續三週一位＝三冠王，之後這個節目就不再列入一位候選。</p></div>`;
   tieModal("打歌規則",`<div class="mur" id="murS">${c1}${c2}${c3}</div><div class="mur-dots"><button class="on" data-a="murGo" data-v="0" aria-label="第 1 張"></button><button data-a="murGo" data-v="1" aria-label="第 2 張"></button><button data-a="murGo" data-v="2" aria-label="第 3 張"></button></div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`,"mur-m");
   const sc=document.getElementById("murS"); if(!sc) return; const dots=()=>{ const i=Math.round(sc.scrollLeft/sc.clientWidth); document.querySelectorAll(".mur-dots button").forEach((d,j)=>d.classList.toggle("on",i===j)); };
@@ -414,7 +414,7 @@ function adminMusicHtml(){
         <div class="mu5-rk">${R.slice(0,5).map((x,i)=>`<div class="mu5-r"><span>${i+1}</span><b>${esc(songName(x.s))}${x.cr?" 👑":""}</b><em>${fmt(x.sc.total)}</em><small>票 ${fmt(x.sc.votes)}・專輯 ${fmt(x.sc.album)}・♡ ${fmt(x.sc.likes)}・▶ ${fmt(x.sc.views)}</small></div>`).join("")||`<p class="me-none">沒有打歌中的歌</p>`}</div>
         <button class="mu5-fix" data-a="muAdmFix" data-v="${s.id}">${op[s.id]?"收起":"改一位"}</button>
         ${op[s.id]?`<div class="chips mu-ch"><button class="chip ${ws[s.id]?"":"on"}" data-a="muWin" data-s="${s.id}" data-v="">未公布</button>${ms.songs.map(sg=>{ const cr=crowned(sg.id,s.id,wk); return `<button class="chip ${ws[s.id]===sg.id?"on":""}" data-a="muWin" data-s="${s.id}" data-v="${sg.id}" ${cr?"disabled":""}>${esc(groupOf(sg.gid)?groupOf(sg.gid).name:"")}${cr?" 👑":""}</button>`; }).join("")}</div>`:""}</div>`; }).join("");
-  const rule=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>計分方式</h3><span class="badge">固定</span></div><div class="mu5-rule"><span>投票 1 票 <b>${MS_W.vote}</b></span><span>專輯 1 張 <b>${MS_W.album}</b></span><span>MV 愛心 1 顆 <b>${MS_W.like}</b></span><span>MV 播放 1 次 <b>${MS_W.view}</b></span></div><p class="reach">每個節目比重不同（上面是平均值）：THE SHOW 音源40／專輯10／投票15／SNS20、Show Champion 35／15／20／10、M COUNTDOWN 50／15／15／10、MUSIC BANK 60／5／10／5、人氣歌謠 55／10／15／20。每個節目播出時間一到自動結算，分數最高（不是三冠王）的拿一位。管理員改過的就不會再自動改。</p></section>`;
+  const rule=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>計分方式</h3><span class="badge">固定</span></div><div class="mu5-rule"><span>投票 1 票 <b>${MS_W.vote}</b></span><span>專輯 1 張 <b>${MS_W.album}</b></span><span>MV 愛心 1 顆 <b>${MS_W.like}</b></span><span>MV 播放 1 次 <b>${MS_W.view}</b></span></div><p class="reach">每個節目比重不同（上面是平均值）：THE SHOW 音源40／專輯10／投票15／SNS20、Show Champion 35／15／20／10、M COUNTDOWN 50／15／15／10、Show! 音樂中心 40／20／20／10、人氣歌謠 55／10／15／20。每個節目播出時間一到自動結算，分數最高（不是三冠王）的拿一位。管理員改過的就不會再自動改。</p></section>`;
   const mct=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>${mon.replace("-"," 年 ")} 月 MC</h3><span class="badge">每月輪替</span></div><div class="mu5-mc">${SHOWS.map(s=>`<button class="mu5-mcr" data-a="muMcEd" data-s="${s.id}" data-mon="${mon}"><b>${s.name}</b><span>${(mc[s.id]||[]).map(id=>esc(stageNm(id))).join("、")||"還沒排"}</span><i>›</i></button>`).join("")}</div></section>`;
   const songs=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>打歌中的歌曲</h3><span class="badge">${ms.songs.length} 首</span></div>
     ${ms.songs.map(sg=>{ const t0=idTs(sg.id,/^s/), n=t0?Math.max(1,Math.floor((Date.now()-t0)/(7*864e5))+1):0, st=songStats(sg.id); return `<div class="mu-rr row"><span><b>${esc(songName(sg))}</b><small>${sg.debut?"出道曲・":""}${sg.rtype?esc(sg.rtype)+"・":""}${n?`第 ${n} 週・`:""}一位 ×${st.wins.length}・${fmt(st.pts)} 積分</small></span><button class="del" data-a="muSongDel" data-v="${sg.id}">結束打歌</button></div>`; }).join("")||`<p class="me-none">沒有打歌中的歌</p>`}
@@ -651,23 +651,42 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     sel.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,pl.days,planPts(id,pl)); });
     const g=groupOf(T.gid); ui.tg=null; layer.innerHTML=""; render(); toast(`已訂閱 ${g?g.name:""} ${sel.length} 位成員的 TIE（${pl.name}）💜`); return; }
 },true);
-/* ===== 一位發表動畫（照各節目結算畫面）：候選 2～3 組，一項一項跳分數，最後總分揭曉、一位亮皇冠 ===== */
-const MUR={ts:{n:2,max:10000,c:"#C6F432",bg:"#0B0B0B",t:"THE SHOW CHOICE"},sc:{n:2,max:10000,c:"#7C8CFF",bg:"#0E1440",t:"SHOW CHAMPION"},mcd:{n:2,max:11000,c:"#FF4FA3",bg:"#120B3A",t:"M COUNTDOWN"},mb:{n:2,max:200000,c:"#1E3A8A",bg:"#F4F6FA",t:"MUSIC BANK K-CHART",lt:1},ink:{n:3,max:11000,c:"#FF7A1A",bg:"#1A0F2E",t:"INKIGAYO"}};
-function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWeek(); const {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show];
-  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s),art:g.name||"",cov:songCover(s.gid,s.title),total:x.sc.total,p:(W=>[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like])(msW(show)),win:s.id===wid}; }).concat((N||[]).map((x,k)=>({name:x.title,art:x.name,cov:"",total:x.total,p:[.5,.15,.2,.15].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
-  C.sort((a,b)=>(b.win-a.win)||(b.total-a.total)); C=C.slice(0,cf.n); if(!C.length) return; const top=Math.max(1,...C.map(c=>c.total));
-  C.forEach((c,k)=>{ const T=Math.round(c.total/top*cf.max*(cf.lt?.06:.86)*(c.win?1:1))||Math.round(cf.max*.3/(k+2)), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.T=c.v.reduce((a,b)=>a+b,0); });
-  const W=C.reduce((a,c)=>c.T>a.T?c:a,C[0]); if(C.some(c=>c.win)&&!W.win){ const w=C.find(c=>c.win); w.v[0]+=W.T-w.T+Math.round(cf.max*.01); w.T=w.v.reduce((a,b)=>a+b,0); }
-  const rows=["音源","專輯","投票","SNS"], order=[...C].sort(()=>0); /* 依原順序左右排：一位不一定在左邊 */ order.sort((a,b)=>strHash(a.name)-strHash(b.name));
-  const col=c=>`<div class="mrv-c${c.T===Math.max(...C.map(x=>x.T))?" win":""}"><div class="mrv-cv">${c.cov||`<span>${esc((c.art||"?").slice(0,1))}</span>`}</div><b>${esc(c.name)}</b><small>${esc(c.art)}</small>${rows.map((r,i)=>`<em data-to="${c.v[i]}" data-r="${i}">0</em>`).join("")}<strong data-to="${c.T}">0</strong><i class="mrv-crown">👑</i></div>`;
-  const w=document.createElement("div"); w.className="mrv"+(cf.lt?" lt":""); w.style.cssText=`--mc:${cf.c};--mbg:${cf.bg}`;
-  w.innerHTML=`<div class="mrv-in"><div class="mrv-h"><small>${esc(wk)}</small><b>${cf.t}</b></div><div class="mrv-g" style="--n:${order.length}"><div class="mrv-l"><div class="mrv-cv0"></div>${rows.map(r=>`<span>${r}</span>`).join("")}<span class="tot">總分</span></div>${order.map(col).join("")}</div><button class="mrv-x" data-a="muRevealX">點一下關閉</button></div><div class="mrv-cf"></div>`;
-  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in"));
-  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); const f=t=>{ const k=Math.min(1,(t-t0)/ms); el.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&w.isConnected) requestAnimationFrame(f); }; requestAnimationFrame(f); el.classList.add("on"); };
-  rows.forEach((r,i)=>setTimeout(()=>{ if(w.isConnected) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,700)); },900+i*900));
-  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("sus"); },900+rows.length*900);
-  setTimeout(()=>{ if(!w.isConnected) return; w.querySelectorAll("strong").forEach(e=>cnt(e,1400)); },1700+rows.length*900);
-  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("done"); const cfw=w.querySelector(".mrv-cf"); cfw.innerHTML=Array.from({length:60},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%12)*.08}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff",cf.c][k%5]}"></i>`).join(""); },3300+rows.length*900);
+/* ===== 一位發表動畫：照各節目真的結算畫面（她給的影片）
+   ・THE SHOW：黑底螢光綠，三組照片＋彩色名條，下面一行一行跳分數
+   ・Show Champion：先 TOP 5，再「WHO'S CHAMPION」，兩組對決
+   ・M COUNTDOWN：兩組照片中間大 VS，黃色名條，分數在中間
+   ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
+   ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
+   分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
+const MUR={ts:{n:3,max:10000,lay:"tbl",t:"THE SHOW. CHOICE",rows:[["音源＋專輯",[0,1]],["SNS",[3]],["投票",[2]]]},
+  sc:{n:2,max:10000,lay:"tbl",top5:1,t:"SHOW CHAMPION",rows:[["音源",[0]],["專輯",[1]],["投票",[2]],["SNS",[3]]]},
+  mcd:{n:2,max:11000,lay:"vs",t:"M COUNTDOWN",rows:[["音源",[0]],["專輯",[1]],["SNS",[3]],["投票",[2]]]},
+  mb:{n:3,max:10000,lay:"card",t:"SHOW! 音樂中心",rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["投票",[2]]]},
+  ink:{n:3,max:11000,lay:"tbl",win1:1,t:"INKIGAYO",rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+function muRevealCands(show,wk){ const cf=MUR[show], {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show], W=msW(show), SP=MS_SP[show]||{view:1,album:1,vote:1,like:1};
+  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s).replace(/^.*《(.*)》$/,"$1"),art:g.name||"",cov:songCover(s.gid,s.title),total:x.sc.total,p:[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like],win:s.id===wid}; })
+    .concat((N||[]).map(x=>({name:x.title,art:x.name,cov:"",total:x.total,p:[SP.view,SP.album,SP.vote,SP.like].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
+  C.sort((a,b)=>(b.win-a.win)||(b.total-a.total)); const pool=C.slice(0,Math.max(5,cf.n)); C=C.slice(0,cf.n); const top=Math.max(1,...C.map(c=>c.total));
+  C.forEach(c=>{ const T=Math.round(c.total/top*cf.max*.9), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.rv=cf.rows.map(([,ix])=>ix.reduce((n,i)=>n+c.v[i],0)); c.T=c.rv.reduce((a,b)=>a+b,0); });
+  return {C,pool}; }
+function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWeek(); const {C,pool}=muRevealCands(show,wk); if(!C.length) return;
+  const best=Math.max(...C.map(c=>c.T)), cov=c=>`<div class="mrv-cv">${c.cov||`<span>${esc((c.art||"?").slice(0,1))}</span>`}</div>`, nm=c=>`<div class="mrv-nm"><b>${esc(c.art)}</b><small>${esc(c.name)}</small></div>`;
+  const ord=[...C].sort((a,b)=>strHash(a.name)-strHash(b.name)), win=c=>c.T===best?" win":"";
+  let body="";
+  if(cf.lay==="card") body=`<div class="mrv-cards">${ord.map(c=>`<div class="mrv-card${win(c)}">${cov(c)}${nm(c)}${cf.rows.map(([l],i)=>`<div class="mrv-r"><span>${l}</span><em data-to="${c.rv[i]}" data-r="${i}">0</em></div>`).join("")}<div class="mrv-r t"><span>總分</span><strong data-to="${c.T}">0</strong></div><i class="mrv-crown">👑</i></div>`).join("")}</div>`;
+  else if(cf.lay==="vs"){ const [a,b]=ord; body=`<div class="mrv-vs"><div class="mrv-side${win(a)}">${cov(a)}${nm(a)}<i class="mrv-crown">👑</i></div><b class="mrv-vsb">VS</b><div class="mrv-side${win(b)}">${cov(b)}${nm(b)}<i class="mrv-crown">👑</i></div></div>
+    <div class="mrv-vt">${cf.rows.map(([l],i)=>`<div class="mrv-r"><em data-to="${a.rv[i]}" data-r="${i}">0</em><span>${l}</span><em data-to="${b.rv[i]}" data-r="${i}">0</em></div>`).join("")}<div class="mrv-r t"><strong data-to="${a.T}" class="${win(a)}">0</strong><span>總分</span><strong data-to="${b.T}" class="${win(b)}">0</strong></div></div>`; }
+  else body=`<div class="mrv-tb" style="--n:${ord.length}"><div class="mrv-hd"><span></span>${ord.map(c=>`<div class="mrv-col${win(c)}">${cov(c)}${nm(c)}<i class="mrv-crown">👑</i></div>`).join("")}</div>
+    ${cf.rows.map(([l],i)=>`<div class="mrv-r"><span>${l}</span>${ord.map(c=>`<em data-to="${c.rv[i]}" data-r="${i}" class="${win(c)}">0</em>`).join("")}</div>`).join("")}<div class="mrv-r t"><span>總分</span>${ord.map(c=>`<strong data-to="${c.T}" class="${win(c)}">0</strong>`).join("")}</div></div>`;
+  const intro=cf.top5?`<div class="mrv-top5"><b>TOP 5</b><div>${pool.slice(0,5).map(c=>`<div>${cov(c)}<small>${esc(c.name)}</small></div>`).join("")}</div><b class="mrv-who">WHO'S CHAMPION</b></div>`:"";
+  const w=document.createElement("div"); w.className=`mrv s-${show}${cf.top5?" pre":""}`;
+  w.innerHTML=`${intro}<div class="mrv-in"><div class="mrv-h"><small>${esc(wk)}</small><b>${cf.t}</b></div>${body}${cf.win1?`<div class="mrv-1">1<small>位</small></div>`:""}<button class="mrv-x" data-a="muRevealX">點一下關閉</button></div><div class="mrv-cf"></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); const D=cf.top5?3200:0; if(cf.top5) setTimeout(()=>w.isConnected&&w.classList.remove("pre"),D);
+  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); el.classList.add("on"); const f=t=>{ const k=Math.min(1,(t-t0)/ms); el.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&w.isConnected) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const nR=cf.rows.length; cf.rows.forEach((r,i)=>setTimeout(()=>{ if(w.isConnected) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,700)); },D+900+i*900));
+  setTimeout(()=>w.isConnected&&w.classList.add("sus"),D+900+nR*900);
+  setTimeout(()=>{ if(w.isConnected) w.querySelectorAll("strong").forEach(e=>cnt(e,1400)); },D+1700+nR*900);
+  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:60},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%12)*.08}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); },D+3300+nR*900);
   try{ localStorage.setItem("hc_mur_"+wk+"_"+show,"1"); }catch(e){} }
 /* 一位剛公布、這支手機還沒看過 → 打開打歌頁時自動播一次 */
 function muRevealAuto(){ try{ if(document.querySelector(".mrv")) return; for(const wk of [curWeek(),shiftWeek(curWeek(),-1)]){ const W=getMShow().wins[wk]||{}; for(const sh of SHOWS){ if(W[sh.id]&&showEnded(sh.id,wk)&&!localStorage.getItem("hc_mur_"+wk+"_"+sh.id)&&Date.now()-showEndTs(sh.id,wk)<3*864e5){ muRevealOpen(sh.id,wk); return; } } } }catch(e){} }

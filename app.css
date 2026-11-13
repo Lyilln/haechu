@@ -6906,24 +6906,51 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 
 /* 一位發表 */
 .mu3-rv{margin-left:8px;border:0;border-radius:999px;padding:4px 10px;background:var(--p50,#F1ECFF);color:var(--p,#7C3AED);font:inherit;font-size:12px;font-weight:700}
-.mrv{position:fixed;inset:0;z-index:9500;background:var(--mbg);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;overflow:hidden}.mrv.in{opacity:1}.mrv.lt{color:#111}
-.mrv-in{width:100%;max-width:520px;padding:calc(env(safe-area-inset-top,0px) + 20px) 14px 20px}
-.mrv-h{text-align:center;margin-bottom:16px;animation:mrvDrop .6s cubic-bezier(.2,.9,.3,1.3) both}.mrv-h small{display:block;font-size:11px;opacity:.6;letter-spacing:.1em}.mrv-h b{display:inline-block;margin-top:4px;font-size:22px;font-weight:900;letter-spacing:.04em;color:var(--mc);font-style:italic}
-.mrv-g{display:grid;grid-template-columns:52px repeat(var(--n),1fr);gap:8px}
-.mrv-l,.mrv-c{display:flex;flex-direction:column;align-items:stretch;gap:6px}.mrv-l span,.mrv-c em,.mrv-c strong{height:34px;display:flex;align-items:center}
-.mrv-l span{font-size:11.5px;opacity:.7}.mrv-l .tot{font-weight:800;opacity:1}.mrv-cv0{height:calc(var(--cvh,96px) + 46px)}
-.mrv-c{position:relative;border-radius:14px;background:rgba(255,255,255,.07);padding:8px;animation:mrvUp .5s cubic-bezier(.2,.9,.3,1.2) both}.mrv.lt .mrv-c{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
-.mrv-c:nth-child(3){animation-delay:.12s}.mrv-c:nth-child(4){animation-delay:.24s}
-.mrv-cv{height:96px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,var(--mc),#fff3);display:flex;align-items:center;justify-content:center}.mrv-cv>*{width:100%;height:100%;object-fit:cover}.mrv-cv span{font-size:30px;font-weight:900;color:#fff}
-.mrv-c>b{font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.mrv-c>small{font-size:11px;opacity:.65;margin-top:-4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mrv-c em{justify-content:center;font-style:normal;font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;opacity:.25;border-bottom:1px solid rgba(255,255,255,.08)}.mrv-c em.on{opacity:1}.mrv.lt .mrv-c em{border-color:#eee}
-.mrv-c strong{justify-content:center;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;opacity:.2;border-radius:8px}.mrv-c strong.on{opacity:1}
-.mrv.sus .mrv-c strong{animation:mrvPulse .5s ease-in-out infinite alternate}.mrv.done .mrv-c strong{animation:none}
-.mrv.done .mrv-c.win{background:var(--mc);color:#111;transform:scale(1.04);box-shadow:0 0 0 2px #fff,0 0 40px var(--mc);transition:all .5s cubic-bezier(.2,.9,.3,1.3)}.mrv.lt.done .mrv-c.win{color:#fff}
-.mrv.done .mrv-c:not(.win){opacity:.45;transition:opacity .5s}
-.mrv-crown{position:absolute;left:50%;top:-22px;font-style:normal;font-size:34px;transform:translate(-50%,-30px) scale(.3);opacity:0}.mrv.done .win .mrv-crown{animation:mrvCrown .7s cubic-bezier(.2,.9,.3,1.4) .1s forwards}
-.mrv-x{display:block;margin:22px auto 0;border:0;background:none;color:inherit;opacity:.55;font:inherit;font-size:12.5px}
+
+.mrv{position:fixed;inset:0;z-index:9500;color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;overflow:hidden;font-variant-numeric:tabular-nums}.mrv.in{opacity:1}
+.mrv-in{width:100%;max-width:520px;padding:calc(env(safe-area-inset-top,0px) + 16px) 12px 18px;transition:opacity .5s,transform .5s}
+.mrv.pre .mrv-in{opacity:0;transform:scale(.92);pointer-events:none}
+.mrv-h{text-align:center;margin-bottom:14px;animation:mrvDrop .6s cubic-bezier(.2,.9,.3,1.3) both}.mrv-h small{display:block;font-size:10.5px;opacity:.6;letter-spacing:.12em}.mrv-h b{display:inline-block;margin-top:4px;font-size:22px;font-weight:900;font-style:italic;letter-spacing:.03em}
+.mrv-cv{aspect-ratio:1;border-radius:6px;overflow:hidden;background:linear-gradient(135deg,#ffffff33,#ffffff0d);display:flex;align-items:center;justify-content:center}.mrv-cv>*{width:100%;height:100%;object-fit:cover}.mrv-cv span{font-size:26px;font-weight:900}
+.mrv-nm{display:flex;flex-direction:column;align-items:center;text-align:center;padding:5px 4px;min-width:0}.mrv-nm b{font-size:12px;font-weight:800;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mrv-nm small{font-size:10.5px;opacity:.75;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mrv em,.mrv strong{font-style:normal;opacity:.18;transition:opacity .2s}.mrv em.on,.mrv strong.on{opacity:1}
+.mrv.sus strong{animation:mrvPulse .45s ease-in-out infinite alternate}.mrv.done strong{animation:none}
+.mrv-crown{position:absolute;left:50%;top:-20px;font-style:normal;font-size:30px;transform:translate(-50%,-30px) scale(.3);opacity:0;z-index:2}.mrv.done .win>.mrv-crown{animation:mrvCrown .7s cubic-bezier(.2,.9,.3,1.4) .1s forwards}
+.mrv-x{display:block;margin:20px auto 0;border:0;background:none;color:inherit;opacity:.55;font:inherit;font-size:12.5px}
 .mrv-cf{position:absolute;inset:0;pointer-events:none}.mrv-cf i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;animation:mrvFall 2.6s linear forwards}
+/* 表格型（THE SHOW／Show Champion／人氣歌謠） */
+.mrv-tb{display:grid;gap:0}.mrv-hd,.mrv-tb .mrv-r{display:grid;grid-template-columns:62px repeat(var(--n),1fr);gap:6px;align-items:center}
+.mrv-col{position:relative;animation:mrvUp .5s cubic-bezier(.2,.9,.3,1.2) both}.mrv-col:nth-child(3){animation-delay:.12s}.mrv-col:nth-child(4){animation-delay:.24s}
+.mrv-tb .mrv-r{min-height:36px;border-bottom:1px solid #ffffff1f}.mrv-tb .mrv-r>span{font-size:11px;opacity:.75;line-height:1.2}.mrv-tb .mrv-r em,.mrv-tb .mrv-r strong{text-align:center;font-size:15px;font-weight:700}
+.mrv-tb .mrv-r.t{border:0;min-height:46px}.mrv-tb .mrv-r.t>span{font-weight:800;opacity:1}.mrv-tb .mrv-r.t strong{font-size:20px;font-weight:900}
+/* THE SHOW：黑底螢光綠、彩色名條 */
+.mrv.s-ts{background:#0A0A0A}.s-ts .mrv-h b{color:#C6F432;font-style:normal}.s-ts .mrv-col .mrv-nm{color:#111}
+.s-ts .mrv-col:nth-child(2) .mrv-nm{background:#5CE1FF}.s-ts .mrv-col:nth-child(3) .mrv-nm{background:#7CF5B6}.s-ts .mrv-col:nth-child(4) .mrv-nm{background:#FF4FA3}
+.s-ts .mrv-cv{border-radius:0}.mrv.done.s-ts .win{color:#C6F432}.mrv.done.s-ts .mrv-col.win{box-shadow:0 0 0 2px #C6F432,0 0 30px #C6F43299}
+/* Show Champion：深藍霓虹、先 TOP 5 */
+.mrv.s-sc{background:radial-gradient(circle at 50% 30%,#2A3BFF,#0A0F45 70%)}.s-sc .mrv-h b{color:#8FE9FF;text-shadow:0 0 14px #4FD8FF}.s-sc .mrv-col{border:1.5px solid #6FE0FF;border-radius:10px;padding:5px;background:#0B1460aa}
+.mrv-top5{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity .5s,transform .5s}.mrv:not(.pre) .mrv-top5{opacity:0;transform:scale(1.1);pointer-events:none}
+.mrv-top5>b{font-size:30px;font-weight:900;color:#fff;padding:4px 20px;border:2px solid #8FE9FF;border-radius:999px;box-shadow:0 0 18px #4FD8FF;animation:mrvDrop .5s both}
+.mrv-top5>div{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;max-width:360px}.mrv-top5>div>div{width:100px;text-align:center;animation:mrvUp .4s both}.mrv-top5>div>div:nth-child(2){animation-delay:.15s}.mrv-top5>div>div:nth-child(3){animation-delay:.3s}.mrv-top5>div>div:nth-child(4){animation-delay:.45s}.mrv-top5>div>div:nth-child(5){animation-delay:.6s}
+.mrv-top5 small{display:block;font-size:11px;margin-top:3px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mrv-who{font-size:22px;letter-spacing:.08em;color:#8FE9FF;animation:mrvDrop .5s 1.6s both}
+.mrv.done.s-sc .mrv-col.win{box-shadow:0 0 0 2px #fff,0 0 30px #4FD8FF;background:#2A3BFF}.mrv.done.s-sc .win{color:#8FE9FF}
+/* 人氣歌謠：粉紫上框、藍色表格、最後 1位 */
+.mrv.s-ink{background:linear-gradient(160deg,#FF6FD8,#7B5CFF 55%,#2E7BFF)}.s-ink .mrv-h b{color:#FFF36B;text-shadow:0 2px 0 #E0368C}
+.s-ink .mrv-hd{background:#FFE3F5;border-radius:10px 10px 0 0;padding:6px 0;color:#5B1D8C}.s-ink .mrv-tb .mrv-r{background:#2442C9;border-color:#ffffff2a;padding:0 0}.s-ink .mrv-tb .mrv-r>span{padding-left:6px}.s-ink .mrv-tb .mrv-r.t{background:#1A2E9A;border-radius:0 0 10px 10px}
+.mrv-1{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.2);opacity:0;font-size:120px;font-weight:900;color:#FFF36B;text-shadow:0 6px 0 #E0368C,0 0 40px #fff;pointer-events:none}.mrv-1 small{font-size:48px}
+.mrv.done .mrv-1{animation:mrv1 1.6s cubic-bezier(.2,.9,.3,1.3) forwards}.mrv.done.s-ink .mrv-col.win{background:#FFF36B;border-radius:8px}.mrv.done.s-ink .mrv-tb em.win,.mrv.done.s-ink .mrv-tb strong.win{color:#FFF36B}
+/* M COUNTDOWN：兩組照片、中間大 VS、黃色名條、分數在中間 */
+.mrv.s-mcd{background:linear-gradient(135deg,#FF4FA3,#5B2CFF 45%,#1BB3FF)}.s-mcd .mrv-h b{color:#fff;text-shadow:0 3px 0 #2A0E7A;font-style:normal;font-size:24px}
+.mrv-vs{display:grid;grid-template-columns:1fr 44px 1fr;align-items:center;gap:6px}.mrv-side{position:relative;animation:mrvUp .5s both}.mrv-side .mrv-cv{border-radius:10px;border:3px solid #fff}
+.s-mcd .mrv-nm{background:#FFE14D;color:#111;border-radius:0 0 8px 8px;margin-top:-4px}.mrv-vsb{font-size:30px;font-weight:900;font-style:italic;color:#FFE14D;text-shadow:0 3px 0 #E0368C;text-align:center;animation:mrvPulse .6s ease-in-out infinite alternate}
+.mrv-vt{margin:14px auto 0;max-width:340px;background:#ffffffee;color:#1A1A4A;border-radius:12px;padding:6px 10px}.mrv-vt .mrv-r{display:grid;grid-template-columns:1fr 70px 1fr;align-items:center;min-height:32px;border-bottom:1px solid #0001}.mrv-vt .mrv-r span{text-align:center;font-size:11.5px;color:#6B6890}
+.mrv-vt em,.mrv-vt strong{text-align:center;font-weight:800;font-size:15px}.mrv-vt .mrv-r.t{border:0}.mrv-vt strong{font-size:20px}.mrv.done.s-mcd .mrv-vt .win{color:#E0368C}.mrv.done.s-mcd .mrv-side.win .mrv-cv{border-color:#FFE14D;box-shadow:0 0 30px #FFE14D}
+/* Show! 音樂中心：白底三張卡 */
+.mrv.s-mb{background:linear-gradient(180deg,#F3FFFD,#E9F1FF);color:#1E2340}.s-mb .mrv-h b{color:#16B7A6;font-style:normal}
+.mrv-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.mrv-card{position:relative;background:#fff;border-radius:10px;border:1.5px solid #7EE3D6;padding:5px;box-shadow:0 3px 12px #0001;animation:mrvUp .5s both}.mrv-card:nth-child(2){animation-delay:.12s}.mrv-card:nth-child(3){animation-delay:.24s}
+.mrv-card .mrv-nm{background:#CFF7F1;border-radius:6px;margin:4px 0}.mrv-card .mrv-r{display:flex;justify-content:space-between;align-items:center;gap:4px;padding:5px 2px;border-bottom:1px dashed #0001}.mrv-card .mrv-r span{font-size:9.5px;color:#7A7F9A;line-height:1.2}.mrv-card .mrv-r em{font-size:13px;font-weight:700}
+.mrv-card .mrv-r.t{border:0}.mrv-card .mrv-r.t span{font-weight:800;color:#1E2340}.mrv-card strong{font-size:16px;font-weight:900}.mrv.done .mrv-card.win{border-color:#16B7A6;box-shadow:0 0 0 2px #16B7A6,0 6px 24px #16B7A655}.mrv.done .mrv-card.win strong{color:#16B7A6}
+.mrv.done .mrv-card:not(.win),.mrv.done .mrv-col:not(.win),.mrv.done .mrv-side:not(.win){opacity:.55;transition:opacity .5s}
 @keyframes mrvDrop{from{transform:translateY(-30px);opacity:0}}@keyframes mrvUp{from{transform:translateY(30px);opacity:0}}
 @keyframes mrvPulse{to{opacity:.6;transform:scale(1.04)}}@keyframes mrvCrown{to{transform:translate(-50%,0) scale(1) rotate(-8deg);opacity:1}}
-@keyframes mrvFall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}
+@keyframes mrvFall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}@keyframes mrv1{40%{transform:translate(-50%,-50%) scale(1.15);opacity:1}70%{transform:translate(-50%,-50%) scale(1);opacity:1}100%{transform:translate(-50%,-50%) scale(1);opacity:0}}
