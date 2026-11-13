@@ -1,7 +1,7 @@
 /* HAECHU｜打歌、翻譯、簽售、開播音樂 */
 /* =========================================================
    音樂節目（打歌）：照群組規則
-   ・五個節目：THE SHOW（二）、Show Champion（三）、M COUNTDOWN（四）、Show! 音樂中心（六）、INKIGAYO（日）
+   ・五個節目：THE SHOW（二）、Show Champion（三）、M COUNTDOWN（四）、Show! Music Core（六）、INKIGAYO（日）
    ・每月：第一週＝宣傳週（不排名、不投票）、中間＝排名週、最後一週＝打歌週（月底決戰）
      → 一週算在「週一」所在的月份；管理員也可以在 FOC 手動改本週階段
    ・排名週、打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
@@ -11,7 +11,7 @@
           AK（同一週五個節目全拿）+10000／PAK（連續 4 個排名週都有一位，宣傳週不算中斷）+15000
    ・MC：每月輪替，主持一個節目每週 +500（照積分表 MC 一次 +500）
    ========================================================= */
-const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"Show! 音樂中心",day:6},{id:"ink",name:"INKIGAYO",day:0}];
+const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"Show! Music Core",day:6},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
 /* ===== 打歌：全群同一個月曆（每月第一週宣傳、中間排名、最後一週打歌）＋虛擬對手 =====
    ・新歌 MV 一公開就加入打歌，打滿 4 週（28 天）自動下檔；同一團有新歌（回歸）時，舊歌直接下檔換新的

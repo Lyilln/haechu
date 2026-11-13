@@ -5941,31 +5941,31 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .mu3-fly svg{width:100%;height:100%;filter:drop-shadow(0 4px 8px rgba(136,67,251,.35))}
 @keyframes mu3Fly{0%{transform:translate(0,0) rotate(0) scale(1);opacity:1}100%{transform:translate(-60px,-90px) rotate(-35deg) scale(.6);opacity:0}}
 /* 1. THE SHOW：霓虹、銳利 */
-.mu3-sh.s-ts{background:#140B1F;border:1px solid #FF3EA5;box-shadow:0 0 0 1px rgba(255,62,165,.25) inset,0 8px 24px -14px #FF3EA5;border-radius:6px}
-.mu3-sh.s-ts::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px);pointer-events:none}
-.s-ts .mu3-nm b:first-child{font-size:11px;letter-spacing:.3em;color:#FF7AC6}.s-ts .mu3-nm b:last-child{font-size:22px;font-weight:900;letter-spacing:.06em;color:#fff;text-shadow:0 0 10px #FF3EA5}
-.s-ts .mu3-r{background:rgba(255,62,165,.1);border-radius:4px}.s-ts .mu3-vote{background:#FF3EA5;color:#fff;border-radius:4px}
+.mu3-sh.s-ts,.dk-keep-mu3 .q{background:#140B1F;border:1px solid #FF3EA5;box-shadow:0 0 0 1px rgba(255,62,165,.25) inset,0 8px 24px -14px #FF3EA5;border-radius:6px}
+.mu3-sh.s-ts::before,.dk-keep-mu3 .q{content:"";position:absolute;inset:0;background:repeating-linear-gradient(0deg,rgba(255,255,255,.035) 0 1px,transparent 1px 4px);pointer-events:none}
+.s-ts .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:11px;letter-spacing:.3em;color:#FF7AC6}.s-ts .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:22px;font-weight:900;letter-spacing:.06em;color:#fff;text-shadow:0 0 10px #FF3EA5}
+.s-ts .mu3-r,.dk-keep-mu3 .q{background:rgba(255,62,165,.1);border-radius:4px}.s-ts .mu3-vote,.dk-keep-mu3 .q{background:#FF3EA5;color:#fff;border-radius:4px}
 /* 2. Show Champion：明亮、運動感斜紋 */
-.mu3-sh.s-sc{background:linear-gradient(115deg,#FFB21A,#FF6A1A);color:#2A1300;border-radius:24px 6px 24px 6px}
-.mu3-sh.s-sc::before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.14) 0 12px,transparent 12px 30px);pointer-events:none}
-.s-sc .mu3-nm b:first-child{font-size:12px;font-weight:900;font-style:italic}.s-sc .mu3-nm b:last-child{font-size:17px;font-weight:900;font-style:italic;letter-spacing:-.02em}
-.s-sc .mu3-r{background:rgba(255,255,255,.35)}.s-sc .mu3-vote{background:#2A1300;color:#FFC24A}.s-sc .mu3-cup,.s-sc .mu3-cr{color:#7A2E00}
+.mu3-sh.s-sc,.dk-keep-mu3 .q{background:linear-gradient(115deg,#FFB21A,#FF6A1A);color:#2A1300;border-radius:24px 6px 24px 6px}
+.mu3-sh.s-sc::before,.dk-keep-mu3 .q{content:"";position:absolute;inset:0;background:repeating-linear-gradient(115deg,rgba(255,255,255,.14) 0 12px,transparent 12px 30px);pointer-events:none}
+.s-sc .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:12px;font-weight:900;font-style:italic}.s-sc .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:17px;font-weight:900;font-style:italic;letter-spacing:-.02em}
+.s-sc .mu3-r,.dk-keep-mu3 .q{background:rgba(255,255,255,.35)}.s-sc .mu3-vote,.dk-keep-mu3 .q{background:#2A1300;color:#FFC24A}.s-sc .mu3-cup,.s-sc .mu3-cr,.dk-keep-mu3 .q{color:#7A2E00}
 /* 3. M COUNTDOWN：深藍、數位倒數 */
-.mu3-sh.s-mcd{background:radial-gradient(120% 140% at 100% 0,#2B5BFF 0,#0B1A4A 55%,#060D26 100%);border-radius:18px}
-.mu3-sh.s-mcd::before{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(120,170,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.08) 1px,transparent 1px);background-size:18px 18px;pointer-events:none}
-.s-mcd .mu3-nm b:first-child{font-size:26px;font-weight:900;color:#6FE3FF;line-height:.9}.s-mcd .mu3-nm b:last-child{font-size:11px;letter-spacing:.22em;color:#B9D2FF}
-.s-mcd .mu3-end{font-family:ui-monospace,Menlo,monospace;color:#6FE3FF;opacity:1}
-.s-mcd .mu3-r{background:rgba(111,227,255,.08);border:1px solid rgba(111,227,255,.18)}.s-mcd .mu3-vote{background:#6FE3FF;color:#06153F}
+.mu3-sh.s-mcd,.dk-keep-mu3 .q{background:radial-gradient(120% 140% at 100% 0,#2B5BFF 0,#0B1A4A 55%,#060D26 100%);border-radius:18px}
+.mu3-sh.s-mcd::before,.dk-keep-mu3 .q{content:"";position:absolute;inset:0;background-image:linear-gradient(rgba(120,170,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(120,170,255,.08) 1px,transparent 1px);background-size:18px 18px;pointer-events:none}
+.s-mcd .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:26px;font-weight:900;color:#6FE3FF;line-height:.9}.s-mcd .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:11px;letter-spacing:.22em;color:#B9D2FF}
+.s-mcd .mu3-end,.dk-keep-mu3 .q{font-family:ui-monospace,Menlo,monospace;color:#6FE3FF;opacity:1}
+.s-mcd .mu3-r,.dk-keep-mu3 .q{background:rgba(111,227,255,.08);border:1px solid rgba(111,227,255,.18)}.s-mcd .mu3-vote,.dk-keep-mu3 .q{background:#6FE3FF;color:#06153F}
 /* 4. MUSIC BANK：金色、古典雙框 */
-.mu3-sh.s-mb{background:linear-gradient(160deg,#FFF8E6,#F3E2B8);color:#3B2A0A;border:1px solid #CFA84E;border-radius:16px}
-.mu3-sh.s-mb::before{content:"";position:absolute;inset:5px;border:1px solid rgba(178,134,40,.45);border-radius:12px;pointer-events:none}
-.s-mb .mu3-nm b{font-family:Georgia,"Times New Roman",serif;font-weight:700}.s-mb .mu3-nm b:first-child{font-size:13px;letter-spacing:.18em}.s-mb .mu3-nm b:last-child{font-size:20px;font-style:italic;color:#9A6B12}
-.s-mb .mu3-r{background:rgba(255,255,255,.6)}.s-mb .mu3-vote{background:linear-gradient(135deg,#D9A93E,#A87313);color:#fff}.s-mb .mu3-cup,.s-mb .mu3-cr{color:#B07D12}
+.mu3-sh.s-mb,.dk-keep-mu3.s-mb{background:#fff;color:#1E2340;border:2px solid #1E2340;border-radius:18px;box-shadow:4px 4px 0 #5FE0D0}
+.mu3-sh.s-mb::before,.dk-keep-mu3.s-mb::before{content:"";position:absolute;inset:0;border-radius:16px;pointer-events:none;background:radial-gradient(circle at 97% 8%,#FFD3E3 0 22px,transparent 23px),radial-gradient(circle at 99% 96%,#C9F5EF 0 30px,transparent 31px)}
+.s-mb .mu3-nm b,.dk-keep-mu3 .s-mb .mu3-nm b{font-weight:900;font-style:normal;font-family:inherit}.s-mb .mu3-nm b:first-child,.dk-keep-mu3 .x{font-size:13px;letter-spacing:.08em;color:#16B7A6}.s-mb .mu3-nm b:last-child,.dk-keep-mu3 .y{font-size:15px;color:#FF6FA5;letter-spacing:.01em;line-height:1.05;white-space:nowrap}
+.s-mb .mu3-r,.dk-keep-mu3 .z{background:#F3FFFD;border:1.5px solid #1E2340}.s-mb .mu3-vote,.dk-keep-mu3 .w{background:#5FE0D0;color:#1E2340}.s-mb .mu3-cup,.s-mb .mu3-cr,.dk-keep-mu3 .v{color:#FF6FA5}.s-mb .mu3-lb,.s-mb .mu3-end,.s-mb small,.dk-keep-mu3 .u{color:#5B6180!important}.s-mb .mu3-chev,.dk-keep-mu3 .t{color:#1E2340}
 /* 5. INKIGAYO：粉彩天空、圓潤 */
-.mu3-sh.s-ink{background:linear-gradient(135deg,#A8D8FF,#C9B8FF 55%,#FFC6E5);color:#2B2350;border-radius:28px}
-.mu3-sh.s-ink::before{content:"";position:absolute;right:-20px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.35);pointer-events:none}
-.s-ink .mu3-nm b{font-weight:900;letter-spacing:-.01em}.s-ink .mu3-nm b:first-child{font-size:20px;color:#fff;text-shadow:0 2px 0 rgba(90,70,170,.35)}.s-ink .mu3-nm b:last-child{font-size:20px;color:#5A46AA}
-.s-ink .mu3-r{background:rgba(255,255,255,.55);border-radius:18px}.s-ink .mu3-vote{background:#5A46AA;color:#fff}.s-ink .mu3-cup,.s-ink .mu3-cr{color:#E0A400}
+.mu3-sh.s-ink,.dk-keep-mu3 .q{background:linear-gradient(135deg,#A8D8FF,#C9B8FF 55%,#FFC6E5);color:#2B2350;border-radius:28px}
+.mu3-sh.s-ink::before,.dk-keep-mu3 .q{content:"";position:absolute;right:-20px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.35);pointer-events:none}
+.s-ink .mu3-nm b,.dk-keep-mu3 .q{font-weight:900;letter-spacing:-.01em}.s-ink .mu3-nm b:first-child,.dk-keep-mu3 .q{font-size:20px;color:#fff;text-shadow:0 2px 0 rgba(90,70,170,.35)}.s-ink .mu3-nm b:last-child,.dk-keep-mu3 .q{font-size:20px;color:#5A46AA}
+.s-ink .mu3-r,.dk-keep-mu3 .q{background:rgba(255,255,255,.55);border-radius:18px}.s-ink .mu3-vote,.dk-keep-mu3 .q{background:#5A46AA;color:#fff}.s-ink .mu3-cup,.s-ink .mu3-cr,.dk-keep-mu3 .q{color:#E0A400}
 /* 應援選單：兩顆 */
 .mu2-act.two{grid-template-columns:repeat(2,1fr)}.mu2-act button.done{opacity:.55}
 /* 規則：三張卡 */
@@ -5990,7 +5990,7 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .mu3-cf{width:140px;perspective:600px}.mu3-cf>*{display:block;animation:mu3Flip .7s cubic-bezier(.2,.8,.3,1)}
 @keyframes mu3Flip{0%{transform:rotateY(180deg) scale(.6);opacity:0}100%{transform:none;opacity:1}}
 .mu3-cdemo{aspect-ratio:5.5/8.5;border-radius:12px;display:flex!important;flex-direction:column;justify-content:flex-end;padding:12px;color:#fff;background:#8843FB;box-shadow:0 10px 30px -12px rgba(0,0,0,.4)}
-.mu3-cdemo.s-ts{background:#140B1F;border:1px solid #FF3EA5}.mu3-cdemo.s-sc{background:linear-gradient(115deg,#FFB21A,#FF6A1A)}.mu3-cdemo.s-mcd{background:linear-gradient(160deg,#2B5BFF,#060D26)}.mu3-cdemo.s-mb{background:linear-gradient(160deg,#F3E2B8,#B88A2B)}.mu3-cdemo.s-ink{background:linear-gradient(135deg,#A8D8FF,#FFC6E5)}
+.mu3-cdemo.s-ts,.dk-keep-mu3 .q{background:#140B1F;border:1px solid #FF3EA5}.mu3-cdemo.s-sc,.dk-keep-mu3 .q{background:linear-gradient(115deg,#FFB21A,#FF6A1A)}.mu3-cdemo.s-mcd,.dk-keep-mu3 .q{background:linear-gradient(160deg,#2B5BFF,#060D26)}.mu3-cdemo.s-mb,.dk-keep-mu3 .q{background:linear-gradient(160deg,#F3E2B8,#B88A2B)}.mu3-cdemo.s-ink,.dk-keep-mu3 .q{background:linear-gradient(135deg,#A8D8FF,#FFC6E5)}
 .mu3-cdemo b{font-size:13px}.mu3-cdemo small{font-size:11px;opacity:.85}
 .mu3-cp>b{font-size:15px}.mu3-cp .t-mbtn{width:100%}
 .mu3-st.muted{color:inherit!important;opacity:.7}
@@ -6054,11 +6054,11 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 @keyframes muShine{0%{transform:translateX(-120%) skewX(-20deg)}60%,100%{transform:translateX(320%) skewX(-20deg)}}
 @keyframes muFloat{0%,100%{transform:translate(0,0)}50%{transform:translate(-14px,10px)}}
 @keyframes muNeon{0%,100%{box-shadow:0 0 0 1px rgba(255,62,165,.25) inset,0 8px 24px -14px #FF3EA5}50%{box-shadow:0 0 0 1px rgba(255,62,165,.5) inset,0 8px 30px -10px #FF3EA5}}
-.mu3-sh.s-ts{animation:muNeon 3.2s ease-in-out infinite}.mu3-sh.s-ts::before{animation:muScan 3s linear infinite}
-.mu3-sh.s-sc::before{background-size:84px 100%!important;background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.16) 0 12px,transparent 12px 30px)!important;animation:muStripe 2.4s linear infinite}
-.mu3-sh.s-mcd::before{animation:muGrid 4s linear infinite}
-.mu3-sh.s-mb::after{content:"";position:absolute;top:0;bottom:0;left:0;width:30%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);animation:muShine 4.5s ease-in-out infinite;pointer-events:none}
-.mu3-sh.s-ink::before{animation:muFloat 6s ease-in-out infinite}
+.mu3-sh.s-ts,.dk-keep-mu3 .q{animation:muNeon 3.2s ease-in-out infinite}.mu3-sh.s-ts::before,.dk-keep-mu3 .q{animation:muScan 3s linear infinite}
+.mu3-sh.s-sc::before,.dk-keep-mu3 .q{background-size:84px 100%!important;background-image:repeating-linear-gradient(115deg,rgba(255,255,255,.16) 0 12px,transparent 12px 30px)!important;animation:muStripe 2.4s linear infinite}
+.mu3-sh.s-mcd::before,.dk-keep-mu3 .q{animation:muGrid 4s linear infinite}
+.mu3-sh.s-mb::after,.dk-keep-mu3 .s{content:none}
+.mu3-sh.s-ink::before,.dk-keep-mu3 .q{animation:muFloat 6s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){.mu3-sh,.mu3-sh::before,.mu3-sh::after{animation:none!important}}
 /* 結尾妖精：全螢幕播放 */
 .fv{position:fixed;inset:0;z-index:320;background:#000;display:flex;flex-direction:column;padding-top:env(safe-area-inset-top,0px)}
@@ -7019,3 +7019,9 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .dk-keep-mrv .mrv-t5p .mrv-npc b{font-size:12px!important}
 
 .vs-c .vs-ed{right:auto!important;left:6px}.vs-c .vs-ed svg{width:14px;height:14px}
+
+/* 虛擬歌手封面放在打歌頁的小方塊裡 */
+.mu2-cv .mrv-npc{position:relative;width:100%;height:100%;box-sizing:border-box;background:var(--bg);color:var(--fg);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:10%;font-family:"Didot","Bodoni 72","Noto Serif TC",serif}
+.mu2-cv .mrv-npc b{position:relative;font-size:7px;line-height:1;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.mu2-cv .mrv-npc small{display:none}
+.mu2-cv .mrv-npc i{position:absolute;inset:0}.mu2-cv .mrv-npc.v0 i{background:radial-gradient(circle at 70% 32%,var(--ac) 0 24%,transparent 25%)}.mu2-cv .mrv-npc.v1 i{inset:12%;border:1px solid var(--fg);opacity:.5}
+.mu2-cv .mrv-npc.v2 i{background:linear-gradient(90deg,transparent 58%,var(--ac) 58% 62%,transparent 62%),linear-gradient(0deg,transparent 64%,var(--ac) 64% 67%,transparent 67%)}.mu2-cv .mrv-npc.v3 i{background:radial-gradient(120% 90% at 100% 0,var(--ac),transparent 60%)}

@@ -288,7 +288,7 @@ const MU_IC={
   cup:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0zM8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M9 20h6"/></svg>',
   chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
   tk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>'};
-const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["SHOW!","音樂中心"],ink:["INKI","GAYO"]};
+const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["SHOW!","MUSIC CORE"],ink:["INKI","GAYO"]};
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
 function viewPromo(){ setTimeout(muRevealAuto,700);
   const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=[];
@@ -297,7 +297,7 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
     else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
     else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
-    else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-st">${esc(nw.name)}</span>`; }
+    else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-who win"><span class="mu2-cv sm">${muNpcCover(nw.name,nw.title||"")}</span><span><b>${esc(nw.title||nw.name)}</b><small>${esc(nw.title?nw.name:"")}</small></span><span class="mu3-cup">${MU_IC.cup}</span></span>`; }   /* 虛擬歌手拿一位也一樣有封面和獎盃 */
     else if(!ended&&NPCS[0]&&(!R[0]||NPCS[0].total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(NPCS[0].name)}</span>`;
     else if(ended) head=`<span class="mu3-st muted">本週沒有一位</span>`;
     else head=R[0]&&R[0].sc.total>0?`<span class="mu3-lb">目前第一名</span>${muWho(R[0].s,false)}`:`<span class="mu3-st muted">還沒有人投票</span>`;
@@ -693,7 +693,7 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
     <div class="mrv-mct">${R.map(([l],i)=>`<div class="mrv-r">${em(a,i)}<span>${l}</span>${em(b,i)}</div>`).join("")}<div class="mrv-r t">${tot(a)}<span>最終合計</span>${tot(b)}</div></div>`; }
   else if(show==="ink") body=`<div class="mrv-ik"><div class="mrv-iklogo"><b>人氣<br>歌謠</b><u>1</u></div>${ord.map(c=>`<div class="mrv-tl${wn(c)}">${ph(c)}<p><b>${esc(c.art)}</b><small>${esc(c.name)}</small></p>${cw}</div>`).join("")}
     ${R.map(([l],i)=>`<span class="mrv-pill${i?"":" f"}">${l}</span>${ord.map(c=>em(c,i)).join("")}`).join("")}<span class="mrv-pill t">總分</span>${ord.map(tot).join("")}</div>`;
-  else if(show==="mb") body=`<i class="mrv-d m1">♡</i><i class="mrv-d m2">♪</i><i class="mrv-d m3">☁</i><i class="mrv-d m4">♡</i><div class="mrv-mblogo">SHOW!<b>音樂中心</b></div>
+  else if(show==="mb") body=`<i class="mrv-d m1">♡</i><i class="mrv-d m2">♪</i><i class="mrv-d m3">☁</i><i class="mrv-d m4">♡</i><div class="mrv-mblogo">SHOW!<b>MUSIC CORE</b></div>
     <div class="mrv-g3">${ord.map(c=>`<div class="mrv-cd${wn(c)}">${ph(c)}<div class="mrv-cdn"><i>♪</i><p><b>${esc(c.name)}</b><small>${esc(c.art)}</small></p></div><div class="mrv-cdb">${R.map(([l],i)=>`<div><span>${l}</span>${em(c,i)}</div>`).join("")}</div><div class="mrv-cdb t"><div><span>最終合計</span>${tot(c)}</div></div>${cw}</div>`).join("")}</div>`;
   else { const [a,b]=ord; body=`<div class="mrv-sclogo">SHOW<br>CHAMPION</div><div class="mrv-sc2">${[a,b].map(c=>`<div class="mrv-tl${wn(c)}">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small>${cw}</div>`).join("")}<b class="mrv-vsb">VS</b></div>
     <div class="mrv-sct">${R.map(([l],i)=>`<div class="mrv-r">${em(a,i)}<span>${l}</span>${em(b,i)}</div>`).join("")}<div class="mrv-r t">${tot(a)}<span>TOTAL</span>${tot(b)}</div></div>`; }

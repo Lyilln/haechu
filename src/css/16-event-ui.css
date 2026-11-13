@@ -286,3 +286,9 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .dk-keep-mrv .mrv-t5p .mrv-npc b{font-size:12px!important}
 
 .vs-c .vs-ed{right:auto!important;left:6px}.vs-c .vs-ed svg{width:14px;height:14px}
+
+/* 虛擬歌手封面放在打歌頁的小方塊裡 */
+.mu2-cv .mrv-npc{position:relative;width:100%;height:100%;box-sizing:border-box;background:var(--bg);color:var(--fg);overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:10%;font-family:"Didot","Bodoni 72","Noto Serif TC",serif}
+.mu2-cv .mrv-npc b{position:relative;font-size:7px;line-height:1;font-weight:600;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.mu2-cv .mrv-npc small{display:none}
+.mu2-cv .mrv-npc i{position:absolute;inset:0}.mu2-cv .mrv-npc.v0 i{background:radial-gradient(circle at 70% 32%,var(--ac) 0 24%,transparent 25%)}.mu2-cv .mrv-npc.v1 i{inset:12%;border:1px solid var(--fg);opacity:.5}
+.mu2-cv .mrv-npc.v2 i{background:linear-gradient(90deg,transparent 58%,var(--ac) 58% 62%,transparent 62%),linear-gradient(0deg,transparent 64%,var(--ac) 64% 67%,transparent 67%)}.mu2-cv .mrv-npc.v3 i{background:radial-gradient(120% 90% at 100% 0,var(--ac),transparent 60%)}
