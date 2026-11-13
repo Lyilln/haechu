@@ -97,7 +97,7 @@ function viewTieRoom(member){
         <div class="t-rh-r"><button class="t-ib" data-a="shOpen" data-k="tieroom" aria-label="搜尋訊息">${TI.search}</button><button class="t-ib t-dots" data-a="tDrawer" aria-label="選單"><i></i><i></i></button></div></div>`}
       ${isActive(member)?`<div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tieHeart()}<span>+${days||1}</span></div>`:`<button class="t-sub t-again" data-a="goSubs">💜 我們是不是可以再見呢？</button>`}
     </header>
-    <main class="t-msgs" style="--trc:${artColor(midOf(member))}">${q?srchLabel("tieroom"):""}${body||(q?srchEmpty("訊息"):`<p class="t-none">還沒有訊息，等等${esc(st.chatName)}吧</p>`)}<div id="chat-end"></div></main>
+    <main class="t-msgs" style="--trc:${artColor(member)}">${q?srchLabel("tieroom"):""}${body||(q?srchEmpty("訊息"):`<p class="t-none">還沒有訊息，等等${esc(st.chatName)}吧</p>`)}<div id="chat-end"></div></main>
     
     ${isActive(member)?(()=>{const q0=fanQuota(member).left===0;return `<form class="t-foot" id="wform"><div class="t-inp ${q0?"locked":""}" ${q0?'data-a="tQuota"':""}><textarea rows="1" class="ag" id="win" maxlength="${charLimit(member)}" autocomplete="off" ${q0?'readonly placeholder="輸入次數已用完"':'placeholder=""'} aria-label="輸入訊息">${q0?"":esc(draft)}</textarea><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
       <button class="t-send ${draft.trim()?"on":""}" id="wsend" type="submit" aria-label="送出">${TI.send}</button></form>`})()
