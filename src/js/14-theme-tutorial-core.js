@@ -187,7 +187,7 @@ const getSecs=gid=>((S.get(K.vsec,{})||{})[gid]||[]);
 function vsecHtml(gid,edit){ const secs=getSecs(gid), vs=getVods(gid);
   return `${edit?`<button class="vs-add" data-a="vsAdd" data-g="${gid}">＋ 新增分區</button>`:""}${secs.map(sc=>{ const L=vs.filter(v=>v.sec===sc.id); if(!edit&&!L.length) return "";
     return `<div class="cm-sh"><h3>${esc(sc.title)}</h3>${edit?`<span class="vs-tools"><button data-a="vsEd" data-g="${gid}" data-v="${sc.id}" aria-label="改名稱">${UI_S.pen}</button><button data-a="vsUp" data-g="${gid}" data-v="${sc.id}" aria-label="上傳影片">＋</button></span>`:""}</div>
-      ${L.length?`<div class="cm-lv">${L.map(v=>`<span class="vs-c">${vodCard(v)}${edit?`<button class="vs-x" data-a="vsVDel" data-v="${v.id}" aria-label="刪除">${XI}</button>`:""}</span>`).join("")}</div>`:`<p class="me-none">還沒有影片</p>`}`; }).join("")}`; }
+      ${L.length?`<div class="cm-lv">${L.map(v=>`<span class="vs-c">${vodCard(v)}${edit?`<button class="vs-x" data-a="vsVDel" data-v="${v.id}" aria-label="刪除">${XI}</button><button class="vs-x vs-ed" data-a="vsVEd" data-v="${v.id}" aria-label="改標題">${UI_S.pen}</button>`:""}</span>`).join("")}</div>`:`<p class="me-none">還沒有影片</p>`}`; }).join("")}`; }
 /* 社群 MEDIA 上傳影片：獨立一頁（預覽、標題、分區），MV 分區會自動接上打歌 */
 function vsUpPage(){ const u=ui.vsUp, f=ui.vsFor; if(!u||!f) return; const secs=getSecs(f.gid), sec=secs.find(x=>x.id===f.sid)||{}, isMv=isMvLabel(sec.title), old=layer.querySelector("#vsVt"), ti=old?old.value:u.ti, g=groupOf(f.gid)||{};
   const guess=mvTitleOf(ti), mm=u.dur?`${Math.floor(u.dur/60)}:${String(Math.round(u.dur%60)).padStart(2,"0")}`:"";

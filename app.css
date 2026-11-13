@@ -7017,3 +7017,5 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .dk-keep-mrv .mrv-ph .mrv-npc b{font-size:clamp(11px,4.2vw,17px)!important;font-weight:600!important;line-height:1.05!important;white-space:normal!important}
 .dk-keep-mrv .mrv-ph .mrv-npc small{font-size:7.5px!important;font-weight:700!important;line-height:1.2!important}
 .dk-keep-mrv .mrv-t5p .mrv-npc b{font-size:12px!important}
+
+.vs-c .vs-ed{right:auto!important;left:6px}.vs-c .vs-ed svg{width:14px;height:14px}

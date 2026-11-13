@@ -6114,7 +6114,7 @@ const getSecs=gid=>((S.get(K.vsec,{})||{})[gid]||[]);
 function vsecHtml(gid,edit){ const secs=getSecs(gid), vs=getVods(gid);
   return `${edit?`<button class="vs-add" data-a="vsAdd" data-g="${gid}">＋ 新增分區</button>`:""}${secs.map(sc=>{ const L=vs.filter(v=>v.sec===sc.id); if(!edit&&!L.length) return "";
     return `<div class="cm-sh"><h3>${esc(sc.title)}</h3>${edit?`<span class="vs-tools"><button data-a="vsEd" data-g="${gid}" data-v="${sc.id}" aria-label="改名稱">${UI_S.pen}</button><button data-a="vsUp" data-g="${gid}" data-v="${sc.id}" aria-label="上傳影片">＋</button></span>`:""}</div>
-      ${L.length?`<div class="cm-lv">${L.map(v=>`<span class="vs-c">${vodCard(v)}${edit?`<button class="vs-x" data-a="vsVDel" data-v="${v.id}" aria-label="刪除">${XI}</button>`:""}</span>`).join("")}</div>`:`<p class="me-none">還沒有影片</p>`}`; }).join("")}`; }
+      ${L.length?`<div class="cm-lv">${L.map(v=>`<span class="vs-c">${vodCard(v)}${edit?`<button class="vs-x" data-a="vsVDel" data-v="${v.id}" aria-label="刪除">${XI}</button><button class="vs-x vs-ed" data-a="vsVEd" data-v="${v.id}" aria-label="改標題">${UI_S.pen}</button>`:""}</span>`).join("")}</div>`:`<p class="me-none">還沒有影片</p>`}`; }).join("")}`; }
 /* 社群 MEDIA 上傳影片：獨立一頁（預覽、標題、分區），MV 分區會自動接上打歌 */
 function vsUpPage(){ const u=ui.vsUp, f=ui.vsFor; if(!u||!f) return; const secs=getSecs(f.gid), sec=secs.find(x=>x.id===f.sid)||{}, isMv=isMvLabel(sec.title), old=layer.querySelector("#vsVt"), ti=old?old.value:u.ti, g=groupOf(f.gid)||{};
   const guess=mvTitleOf(ti), mm=u.dur?`${Math.floor(u.dur/60)}:${String(Math.round(u.dur%60)).padStart(2,"0")}`:"";
@@ -7580,6 +7580,13 @@ function clickAdm(a,t,e,r){ switch(a){
           memBlobs[id]=u.file; const L=S.get(K.vods,[]); L.push({id:uid("v"),gid:f.gid,sec:f.sid,title:ti,mid:id,thumb,dur:u.dur||0,ts:Date.now(),views:0,by:session().member||uniMe(),...(u.fy&&Object.keys(u.fy).length?{fy:Object.fromEntries(Object.entries(u.fy).map(([k,r])=>{ const o={...r}; delete o._pv; return [k,o]; }))}:{})}); S.set(K.vods,L);
           ui.vsUp=null; layer.innerHTML=""; try{ mvSongTick(); }catch(e){} lsRerender(); toast("影片上傳好了");
           { const vf=u.file, vid0=L[L.length-1].id; if(isMvLabel((getSecs(f.gid).find(x=>x.id===f.sid)||{}).title)||vodIsMV(L[L.length-1])) mvAudioUpload(vf).then(aid=>{ if(!aid) return; const V=S.get(K.vods,[])||[], v=V.find(y=>y.id===vid0); if(v){ v.au=aid; S.set(K.vods,V); } const m=getMShow(), so=[...m.songs,...(m.ended||[])].find(y=>y.mv===vid0); if(so) songAuSet(so.id,aid); }).catch(()=>{}); } }catch(e){ hbUploadBig.on=null; u.busy=""; vsUpPage(); toast("這部影片讀不出來，換一部試試"); } })(); break; }
+    case "vsVEd": { const id=t.dataset.v, V=S.get(K.vods,[])||[], v=V.find(x=>x.id===id); if(!v) break; const nt=prompt("影片標題",v.title||""); if(nt==null) break; const tt=nt.trim(); if(!tt||tt===v.title) break;
+      /* 只改文字、影片不動；打歌、通知、新聞這些用到這支 MV 的地方一起換成新歌名 */
+      const oldSong=mvTitleOf(v.title), newSong=mvTitleOf(tt); S.set(K.vods,V.map(x=>x.id===id?{...x,title:tt}:x));
+      if(newSong){ const m=getMShow(), olds=new Set([oldSong].filter(Boolean)); let ch=false; [...m.songs,...(m.ended||[])].forEach(x=>{ if(x.mv===id||(x.gid===v.gid&&x.title===oldSong)){ if(x.title&&x.title!==newSong) olds.add(x.title); if(x.title!==newSong){ x.title=newSong; ch=true; } } }); if(ch) S.set(K.mshow,m); olds.delete(newSong);
+        const rp=o=>{ let c=false; const f=x=>{ if(x&&typeof x==="object"){ ["title","body","text"].forEach(k=>{ olds.forEach(od=>{ if(typeof x[k]==="string"&&x[k].includes("《"+od+"》")){ x[k]=x[k].split("《"+od+"》").join("《"+newSong+"》"); c=true; } }); }); } }; (o||[]).forEach(f); return c; };
+        [K.gNotices,K.notifs,K.news].forEach(k=>{ if(!k) return; const L=S.get(k,[]); if(Array.isArray(L)&&rp(L)) S.set(k,L); }); }
+      render(); toast("已改標題"); break; }
     case "vsVDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); lsRerender(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
     case "vodG": ui.vodG=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;
     case "vodNewCat": ui.vodNewCat=t.dataset.v; { const y=window.scrollY, ti=(document.getElementById("vdTitle")||{}).value, li=(document.getElementById("vdLink")||{}).value; render(); window.scrollTo(0,y); const a=document.getElementById("vdTitle"), b=document.getElementById("vdLink"); if(a&&ti) a.value=ti; if(b&&li) b.value=li; } break;
