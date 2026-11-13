@@ -677,6 +677,8 @@ function clickTheme(a,t,e,r){ switch(a){
     case "tLeave": openLeaveRoom(t.dataset.m); break;
     case "tLeaveOk": { const m0=t.dataset.m, L=tieLeft(); L[m0]=tiePeriod(m0); S.set(K.tieLeft,L); layer.innerHTML=""; go("fan",null,"whisper"); toast("已離開聊天室"); break; }
     case "tExpired": iosAlert("TIE 券已到期","續訂後就能再傳訊息、收到新訊息。",`<button data-a="tCloseLayer">取消</button><button data-a="goSubs">前往續訂</button>`); break;
+    case "muReveal": muRevealOpen(t.dataset.v,t.dataset.w); break;
+    case "muRevealX": document.querySelectorAll(".mur").forEach(x=>x.remove()); break;
     case "uniGo": layer.innerHTML=""; ui.sheet=null; navTo(t.dataset.v); break;
     case "uniSeg": navRoot(t.dataset.v); break;
     case "uniAnn": uniAnnOpen(); break;

@@ -1730,7 +1730,7 @@ function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash=
 function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
 function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
   if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去
-  const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.uni?"fan":s.role); if(location.hash!==home) navRoot(home); }
+  const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.role==="artist"?"artist":s.uni?"fan":s.role);   /* 管理員切在藝人端時，回藝人首頁（不是粉絲端） */ if(location.hash!==home) navRoot(home); }
 /* 回到指定的那一頁（例如離開 SNS 回到進來前的頁面）：在記錄裡就一路退回去，不在就當作最上層打開 */
 function navBackTo(h){ ui.navUi=performance.now(); const cur=NAV_BASE+NAV_D; let k=-1; if(h) for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]===h){ k=i; break; } }
   if(k<0){ if(h) navRoot(h); else navBack(); return; }
@@ -4704,7 +4704,7 @@ function viewTieRoom(member){
         <div class="t-rh-r"><button class="t-ib" data-a="shOpen" data-k="tieroom" aria-label="搜尋訊息">${TI.search}</button><button class="t-ib t-dots" data-a="tDrawer" aria-label="選單"><i></i><i></i></button></div></div>`}
       ${isActive(member)?`<div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tieHeart()}<span>+${days||1}</span></div>`:`<button class="t-sub t-again" data-a="goSubs">💜 我們是不是可以再見呢？</button>`}
     </header>
-    <main class="t-msgs">${q?srchLabel("tieroom"):""}${body||(q?srchEmpty("訊息"):`<p class="t-none">還沒有訊息，等等${esc(st.chatName)}吧</p>`)}<div id="chat-end"></div></main>
+    <main class="t-msgs" style="--trc:${artColor(midOf(member))}">${q?srchLabel("tieroom"):""}${body||(q?srchEmpty("訊息"):`<p class="t-none">還沒有訊息，等等${esc(st.chatName)}吧</p>`)}<div id="chat-end"></div></main>
     
     ${isActive(member)?(()=>{const q0=fanQuota(member).left===0;return `<form class="t-foot" id="wform"><div class="t-inp ${q0?"locked":""}" ${q0?'data-a="tQuota"':""}><textarea rows="1" class="ag" id="win" maxlength="${charLimit(member)}" autocomplete="off" ${q0?'readonly placeholder="輸入次數已用完"':'placeholder=""'} aria-label="輸入訊息">${q0?"":esc(draft)}</textarea><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
       <button class="t-send ${draft.trim()?"on":""}" id="wsend" type="submit" aria-label="送出">${TI.send}</button></form>`})()
@@ -4943,7 +4943,7 @@ function viewTieArtist(mid){
   return `${artTieBg(mid)?tieBgLayer(artTieBg(mid)):(thChatBg("t-bgl")||`<div class="t-bgl t-default"></div>`)}<header class="t-rh t-rh-art">
       <div class="t-rh-row"><button class="t-ib" data-a="tab" data-v="home" aria-label="返回">${TI.back}</button><h3>${esc(artName(mid,"tie"))}</h3><div class="t-rh-r"><button class="t-ib t-dots" data-a="tArtDrawer" data-m="${mid}" aria-label="更多"><i></i><i></i><i></i></button></div></div>
     </header>
-    <main class="t-msgs">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}${qHtml}${Q.length?`<div class="t-qrow"><button type="button" class="t-qgo" data-a="tqPreview">傳送待發訊息<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l2.2 7.2L15 12l-9.4 1.2z"/></svg></button><small>${Q.length}／${TQ_MAX}</small></div>`:""}<p class="t-wait">粉絲們正在等你的訊息</p><div id="chat-end"></div></main>
+    <main class="t-msgs" style="--trc:${artColor(mid)}">${body||`<p class="t-none">還沒有訊息，傳第一則 ${WHISPER_NAME} 給粉絲吧</p>`}${qHtml}${Q.length?`<div class="t-qrow"><button type="button" class="t-qgo" data-a="tqPreview">傳送待發訊息<svg viewBox="0 0 24 24" fill="currentColor"><path d="M3.4 20.4 21 12 3.4 3.6l2.2 7.2L15 12l-9.4 1.2z"/></svg></button><small>${Q.length}／${TQ_MAX}</small></div>`:""}<p class="t-wait">粉絲們正在等你的訊息</p><div id="chat-end"></div></main>
     
     <form class="t-foot" id="wform">${(()=>{ const rw=ui.tReply&&getWhispers().find(x=>x.id===ui.tReply); return rw?`<div class="t-rq"><span class="t-rq-i">${TI_REPLY}</span><div class="t-rq-b"><b>回覆粉絲的訊息</b><p>${esc(rw.text)}</p></div><button type="button" data-a="tReplyX" aria-label="取消回覆">${I3.x}</button></div>`:""; })()}<button type="button" class="t-plus" data-a="tAttach" aria-label="傳照片或語音">＋</button><button type="button" class="t-nick" data-a="tNickTk" aria-label="插入 @@@（粉絲的愛稱）">@@@</button><div class="t-inp"><textarea rows="1" class="ag" id="win" maxlength="300" autocomplete="off" placeholder="叫叫粉絲的愛稱 @@@ 吧 :)" aria-label="輸入訊息">${esc(draft)}</textarea><button type="button" class="t-smile ${ui.tieEmoji?"on":""}" data-a="tEmojiToggle" aria-label="表情符號">${TI.smile}</button></div>
       <button class="t-send ${draft.trim()?"on":""}" id="wsend" type="submit" aria-label="送出">${TI.send}</button></form>`;
@@ -7707,6 +7707,8 @@ function clickTheme(a,t,e,r){ switch(a){
     case "tLeave": openLeaveRoom(t.dataset.m); break;
     case "tLeaveOk": { const m0=t.dataset.m, L=tieLeft(); L[m0]=tiePeriod(m0); S.set(K.tieLeft,L); layer.innerHTML=""; go("fan",null,"whisper"); toast("已離開聊天室"); break; }
     case "tExpired": iosAlert("TIE 券已到期","續訂後就能再傳訊息、收到新訊息。",`<button data-a="tCloseLayer">取消</button><button data-a="goSubs">前往續訂</button>`); break;
+    case "muReveal": muRevealOpen(t.dataset.v,t.dataset.w); break;
+    case "muRevealX": document.querySelectorAll(".mur").forEach(x=>x.remove()); break;
     case "uniGo": layer.innerHTML=""; ui.sheet=null; navTo(t.dataset.v); break;
     case "uniSeg": navRoot(t.dataset.v); break;
     case "uniAnn": uniAnnOpen(); break;
@@ -13435,13 +13437,13 @@ const MU_IC={
   tk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>'};
 const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["MUSIC","BANK"],ink:["INKI","GAYO"]};
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
-function viewPromo(){
+function viewPromo(){ setTimeout(muRevealAuto,700);
   const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=[];
   const mod=sh=>{ const id=sh.id, ended=rk&&showEnded(id,wk), {R,N:NPCS}=muRankShown(id,wk,ended), won=songOf((getMShow().wins[wk]||{})[id]), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
     else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
-    else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
+    else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}<button class="mu3-rv" data-a="muReveal" data-v="${id}" data-w="${wk}">▶ 一位發表</button>`;
     else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-st">${esc(nw.name)}</span>`; }
     else if(!ended&&NPCS[0]&&(!R[0]||NPCS[0].total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(NPCS[0].name)}</span>`;
     else if(ended) head=`<span class="mu3-st muted">本週沒有一位</span>`;
@@ -13521,7 +13523,7 @@ function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=cur
     return `<button class="foc-now mu4-card" data-a="focGo" data-v="honor"><span class="foc-ic">${FIC.stage}</span><span class="t"><b>${p?`《${esc(p.title)}》${mdTxt(p.day)} 回歸`:w?"回歸申請審核中":cool?"冷卻中":"可以申請回歸了"}</b><small>${p?`D-${dLeft(p.day)}`:w?`《${esc(w.title)}》・${mdTxt(w.day)}`:cool?`${mdTxt(mn-PRE_MIN)} 之後可以申請回歸`:"ME → 申請回歸"}</small></span></button>`; }
   return `<button class="mu4-card card" data-a="focGo" data-v="honor"><span class="mu4-top"><span class="mu2-cv">${songCover(gid)}</span><span class="mu4-ti"><b>《${esc(s.title)}》</b><small>${s._done?"打歌已結束・最後的成績":esc(wt)}${s.rtype?"・"+esc(s.rtype):""}</small></span><span class="mu4-go">›</span></span>
     <span class="mu4-strip">${SHOWS.map(x=>{ const c=muCell(s,x.id,wk); return `<span class="mu4-c ${c.cls}"><i>${(MU_SHN[x.id]||[x.name])[1]||x.name}</i><b>${c.cls==="win"?MU_IC.cup:""}${c.t}</b></span>`; }).join("")}</span></button>`; }
-function artPromoPage(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), rk=musDemoOn()||ranked(wk), mcs=mcShows(mid), m=getMShow(), now=new Date(), y=String(now.getFullYear()), mon=`${y}-${pad(now.getMonth()+1)}`;
+function artPromoPage(mid){ setTimeout(muRevealAuto,700); const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), rk=musDemoOn()||ranked(wk), mcs=mcShows(mid), m=getMShow(), now=new Date(), y=String(now.getFullYear()), mon=`${y}-${pad(now.getMonth()+1)}`;
   const sec=(h,b)=>`<div class="section-h">${h}</div>${b}`;
   let battle="";
   if(s&&rk){ const rows=SHOWS.map(x=>{ const {all,i,me,ended}=songRankOf(s.id,x.id,wk); return {x,R:all,i,me,won:(m.wins[wk]||{})[x.id],ended}; }), any=rows.find(r=>r.me);
@@ -13796,7 +13798,26 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     sel.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,pl.days,planPts(id,pl)); });
     const g=groupOf(T.gid); ui.tg=null; layer.innerHTML=""; render(); toast(`已訂閱 ${g?g.name:""} ${sel.length} 位成員的 TIE（${pl.name}）💜`); return; }
 },true);
-
+/* ===== 一位發表動畫（照各節目結算畫面）：候選 2～3 組，一項一項跳分數，最後總分揭曉、一位亮皇冠 ===== */
+const MUR={ts:{n:2,max:10000,c:"#C6F432",bg:"#0B0B0B",t:"THE SHOW CHOICE"},sc:{n:2,max:10000,c:"#7C8CFF",bg:"#0E1440",t:"SHOW CHAMPION"},mcd:{n:2,max:11000,c:"#FF4FA3",bg:"#120B3A",t:"M COUNTDOWN"},mb:{n:2,max:200000,c:"#1E3A8A",bg:"#F4F6FA",t:"MUSIC BANK K-CHART",lt:1},ink:{n:3,max:11000,c:"#FF7A1A",bg:"#1A0F2E",t:"INKIGAYO"}};
+function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWeek(); const {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show];
+  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s),art:g.name||"",cov:songCover(s.gid,s.title),total:x.sc.total,p:[x.sc.views*MS_W.view,x.sc.album*MS_W.album,x.sc.votes*MS_W.vote,x.sc.likes*MS_W.like],win:s.id===wid}; }).concat((N||[]).map((x,k)=>({name:x.title,art:x.name,cov:"",total:x.total,p:[.5,.15,.2,.15].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
+  C.sort((a,b)=>(b.win-a.win)||(b.total-a.total)); C=C.slice(0,cf.n); if(!C.length) return; const top=Math.max(1,...C.map(c=>c.total));
+  C.forEach((c,k)=>{ const T=Math.round(c.total/top*cf.max*(cf.lt?.06:.86)*(c.win?1:1))||Math.round(cf.max*.3/(k+2)), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.T=c.v.reduce((a,b)=>a+b,0); });
+  const W=C.reduce((a,c)=>c.T>a.T?c:a,C[0]); if(C.some(c=>c.win)&&!W.win){ const w=C.find(c=>c.win); w.v[0]+=W.T-w.T+Math.round(cf.max*.01); w.T=w.v.reduce((a,b)=>a+b,0); }
+  const rows=["音源","專輯","投票","SNS"], order=[...C].sort(()=>0); /* 依原順序左右排：一位不一定在左邊 */ order.sort((a,b)=>strHash(a.name)-strHash(b.name));
+  const col=c=>`<div class="mur-c${c.T===Math.max(...C.map(x=>x.T))?" win":""}"><div class="mur-cv">${c.cov||`<span>${esc((c.art||"?").slice(0,1))}</span>`}</div><b>${esc(c.name)}</b><small>${esc(c.art)}</small>${rows.map((r,i)=>`<em data-to="${c.v[i]}" data-r="${i}">0</em>`).join("")}<strong data-to="${c.T}">0</strong><i class="mur-crown">👑</i></div>`;
+  const w=document.createElement("div"); w.className="mur"+(cf.lt?" lt":""); w.style.cssText=`--mc:${cf.c};--mbg:${cf.bg}`;
+  w.innerHTML=`<div class="mur-in"><div class="mur-h"><small>${esc(wk)}</small><b>${cf.t}</b></div><div class="mur-g" style="--n:${order.length}"><div class="mur-l"><div class="mur-cv0"></div>${rows.map(r=>`<span>${r}</span>`).join("")}<span class="tot">總分</span></div>${order.map(col).join("")}</div><button class="mur-x" data-a="muRevealX">點一下關閉</button></div><div class="mur-cf"></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in"));
+  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); const f=t=>{ const k=Math.min(1,(t-t0)/ms); el.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&w.isConnected) requestAnimationFrame(f); }; requestAnimationFrame(f); el.classList.add("on"); };
+  rows.forEach((r,i)=>setTimeout(()=>{ if(w.isConnected) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,700)); },900+i*900));
+  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("sus"); },900+rows.length*900);
+  setTimeout(()=>{ if(!w.isConnected) return; w.querySelectorAll("strong").forEach(e=>cnt(e,1400)); },1700+rows.length*900);
+  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("done"); const cfw=w.querySelector(".mur-cf"); cfw.innerHTML=Array.from({length:60},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%12)*.08}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff",cf.c][k%5]}"></i>`).join(""); },3300+rows.length*900);
+  try{ localStorage.setItem("hc_mur_"+wk+"_"+show,"1"); }catch(e){} }
+/* 一位剛公布、這支手機還沒看過 → 打開打歌頁時自動播一次 */
+function muRevealAuto(){ try{ if(document.querySelector(".mur")) return; for(const wk of [curWeek(),shiftWeek(curWeek(),-1)]){ const W=getMShow().wins[wk]||{}; for(const sh of SHOWS){ if(W[sh.id]&&showEnded(sh.id,wk)&&!localStorage.getItem("hc_mur_"+wk+"_"+sh.id)&&Date.now()-showEndTs(sh.id,wk)<3*864e5){ muRevealOpen(sh.id,wk); return; } } } }catch(e){} }
 
 /* HAECHU｜新手教學內容、宣傳排程、試玩訊息、人事異動、官方文案 */
 /* =========================================================

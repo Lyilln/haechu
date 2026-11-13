@@ -38,7 +38,7 @@ function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash=
 function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
 function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
   if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去
-  const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.uni?"fan":s.role); if(location.hash!==home) navRoot(home); }
+  const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.role==="artist"?"artist":s.uni?"fan":s.role);   /* 管理員切在藝人端時，回藝人首頁（不是粉絲端） */ if(location.hash!==home) navRoot(home); }
 /* 回到指定的那一頁（例如離開 SNS 回到進來前的頁面）：在記錄裡就一路退回去，不在就當作最上層打開 */
 function navBackTo(h){ ui.navUi=performance.now(); const cur=NAV_BASE+NAV_D; let k=-1; if(h) for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]===h){ k=i; break; } }
   if(k<0){ if(h) navRoot(h); else navBack(); return; }

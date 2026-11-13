@@ -4635,6 +4635,8 @@ html[data-theme="dark"] .fg-blob{opacity:.35}
 .apf-bio:empty{display:none}
 .apf-pill{margin-top:14px;padding:4px 14px;border:1px solid rgba(255,255,255,.55);border-radius:999px;font-size:13px;font-weight:700;color:#fff;white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 
+:is(.t-msgs,.t-page) .t-tr,html[data-theme] :is(.t-msgs,.t-page) .t-tr{color:var(--trc,#8B5CF6)!important}   /* 翻譯文字跟藝人設定的顏色走（照 Bubble） */
+
 /* HAECHU｜修正、餐車、SNS 影片、Reels */
 /* ---- fix pass: X glyph, profile sheet, flip bleed, TIE room ---- */
 .me-center{text-align:center;padding:28px 16px}
@@ -6901,3 +6903,27 @@ html[data-theme="dark"] .ptt-i b:not(.neg):not(.set){color:#8CE99A}
 .ptrc-iss ul{margin:6px 0 0;padding:0;list-style:none}.ptrc-iss li{padding:7px 0 7px 22px;position:relative;line-height:1.5;border-top:1px dashed var(--line)}
 .ptrc-iss li:first-child{border-top:0}.ptrc-iss li:before{content:"🔴";position:absolute;left:0;top:7px;font-size:11px}.ptrc-iss li.gap:before{content:"🟡"}
 .ptrc-iss li.bad b:last-of-type{color:#C2410C}.ptrc-iss p.ok{margin:6px 0 0;color:#15803D}
+
+/* 一位發表 */
+.mu3-rv{margin-left:8px;border:0;border-radius:999px;padding:4px 10px;background:var(--p50,#F1ECFF);color:var(--p,#7C3AED);font:inherit;font-size:12px;font-weight:700}
+.mur{position:fixed;inset:0;z-index:9500;background:var(--mbg);color:#fff;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity .35s;overflow:hidden}.mur.in{opacity:1}.mur.lt{color:#111}
+.mur-in{width:100%;max-width:520px;padding:calc(env(safe-area-inset-top,0px) + 20px) 14px 20px}
+.mur-h{text-align:center;margin-bottom:16px;animation:murDrop .6s cubic-bezier(.2,.9,.3,1.3) both}.mur-h small{display:block;font-size:11px;opacity:.6;letter-spacing:.1em}.mur-h b{display:inline-block;margin-top:4px;font-size:22px;font-weight:900;letter-spacing:.04em;color:var(--mc);font-style:italic}
+.mur-g{display:grid;grid-template-columns:52px repeat(var(--n),1fr);gap:8px}
+.mur-l,.mur-c{display:flex;flex-direction:column;align-items:stretch;gap:6px}.mur-l span,.mur-c em,.mur-c strong{height:34px;display:flex;align-items:center}
+.mur-l span{font-size:11.5px;opacity:.7}.mur-l .tot{font-weight:800;opacity:1}.mur-cv0{height:calc(var(--cvh,96px) + 46px)}
+.mur-c{position:relative;border-radius:14px;background:rgba(255,255,255,.07);padding:8px;animation:murUp .5s cubic-bezier(.2,.9,.3,1.2) both}.mur.lt .mur-c{background:#fff;box-shadow:0 2px 10px rgba(0,0,0,.08)}
+.mur-c:nth-child(3){animation-delay:.12s}.mur-c:nth-child(4){animation-delay:.24s}
+.mur-cv{height:96px;border-radius:10px;overflow:hidden;background:linear-gradient(135deg,var(--mc),#fff3);display:flex;align-items:center;justify-content:center}.mur-cv>*{width:100%;height:100%;object-fit:cover}.mur-cv span{font-size:30px;font-weight:900;color:#fff}
+.mur-c>b{font-size:13px;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px}.mur-c>small{font-size:11px;opacity:.65;margin-top:-4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mur-c em{justify-content:center;font-style:normal;font-variant-numeric:tabular-nums;font-size:15px;font-weight:700;opacity:.25;border-bottom:1px solid rgba(255,255,255,.08)}.mur-c em.on{opacity:1}.mur.lt .mur-c em{border-color:#eee}
+.mur-c strong{justify-content:center;font-size:20px;font-weight:900;font-variant-numeric:tabular-nums;opacity:.2;border-radius:8px}.mur-c strong.on{opacity:1}
+.mur.sus .mur-c strong{animation:murPulse .5s ease-in-out infinite alternate}.mur.done .mur-c strong{animation:none}
+.mur.done .mur-c.win{background:var(--mc);color:#111;transform:scale(1.04);box-shadow:0 0 0 2px #fff,0 0 40px var(--mc);transition:all .5s cubic-bezier(.2,.9,.3,1.3)}.mur.lt.done .mur-c.win{color:#fff}
+.mur.done .mur-c:not(.win){opacity:.45;transition:opacity .5s}
+.mur-crown{position:absolute;left:50%;top:-22px;font-style:normal;font-size:34px;transform:translate(-50%,-30px) scale(.3);opacity:0}.mur.done .win .mur-crown{animation:murCrown .7s cubic-bezier(.2,.9,.3,1.4) .1s forwards}
+.mur-x{display:block;margin:22px auto 0;border:0;background:none;color:inherit;opacity:.55;font:inherit;font-size:12.5px}
+.mur-cf{position:absolute;inset:0;pointer-events:none}.mur-cf i{position:absolute;top:-12px;width:8px;height:14px;border-radius:2px;animation:murFall 2.6s linear forwards}
+@keyframes murDrop{from{transform:translateY(-30px);opacity:0}}@keyframes murUp{from{transform:translateY(30px);opacity:0}}
+@keyframes murPulse{to{opacity:.6;transform:scale(1.04)}}@keyframes murCrown{to{transform:translate(-50%,0) scale(1) rotate(-8deg);opacity:1}}
+@keyframes murFall{to{transform:translateY(110vh) rotate(540deg);opacity:.9}}

@@ -287,13 +287,13 @@ const MU_IC={
   tk:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v12" stroke-dasharray="2 2"/></svg>'};
 const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["MUSIC","BANK"],ink:["INKI","GAYO"]};
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
-function viewPromo(){
+function viewPromo(){ setTimeout(muRevealAuto,700);
   const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=[];
   const mod=sh=>{ const id=sh.id, ended=rk&&showEnded(id,wk), {R,N:NPCS}=muRankShown(id,wk,ended), won=songOf((getMShow().wins[wk]||{})[id]), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
     else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
-    else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
+    else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}<button class="mu3-rv" data-a="muReveal" data-v="${id}" data-w="${wk}">▶ 一位發表</button>`;
     else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-st">${esc(nw.name)}</span>`; }
     else if(!ended&&NPCS[0]&&(!R[0]||NPCS[0].total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(NPCS[0].name)}</span>`;
     else if(ended) head=`<span class="mu3-st muted">本週沒有一位</span>`;
@@ -373,7 +373,7 @@ function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=cur
     return `<button class="foc-now mu4-card" data-a="focGo" data-v="honor"><span class="foc-ic">${FIC.stage}</span><span class="t"><b>${p?`《${esc(p.title)}》${mdTxt(p.day)} 回歸`:w?"回歸申請審核中":cool?"冷卻中":"可以申請回歸了"}</b><small>${p?`D-${dLeft(p.day)}`:w?`《${esc(w.title)}》・${mdTxt(w.day)}`:cool?`${mdTxt(mn-PRE_MIN)} 之後可以申請回歸`:"ME → 申請回歸"}</small></span></button>`; }
   return `<button class="mu4-card card" data-a="focGo" data-v="honor"><span class="mu4-top"><span class="mu2-cv">${songCover(gid)}</span><span class="mu4-ti"><b>《${esc(s.title)}》</b><small>${s._done?"打歌已結束・最後的成績":esc(wt)}${s.rtype?"・"+esc(s.rtype):""}</small></span><span class="mu4-go">›</span></span>
     <span class="mu4-strip">${SHOWS.map(x=>{ const c=muCell(s,x.id,wk); return `<span class="mu4-c ${c.cls}"><i>${(MU_SHN[x.id]||[x.name])[1]||x.name}</i><b>${c.cls==="win"?MU_IC.cup:""}${c.t}</b></span>`; }).join("")}</span></button>`; }
-function artPromoPage(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), rk=musDemoOn()||ranked(wk), mcs=mcShows(mid), m=getMShow(), now=new Date(), y=String(now.getFullYear()), mon=`${y}-${pad(now.getMonth()+1)}`;
+function artPromoPage(mid){ setTimeout(muRevealAuto,700); const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), rk=musDemoOn()||ranked(wk), mcs=mcShows(mid), m=getMShow(), now=new Date(), y=String(now.getFullYear()), mon=`${y}-${pad(now.getMonth()+1)}`;
   const sec=(h,b)=>`<div class="section-h">${h}</div>${b}`;
   let battle="";
   if(s&&rk){ const rows=SHOWS.map(x=>{ const {all,i,me,ended}=songRankOf(s.id,x.id,wk); return {x,R:all,i,me,won:(m.wins[wk]||{})[x.id],ended}; }), any=rows.find(r=>r.me);
@@ -648,4 +648,23 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     sel.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,pl.days,planPts(id,pl)); });
     const g=groupOf(T.gid); ui.tg=null; layer.innerHTML=""; render(); toast(`已訂閱 ${g?g.name:""} ${sel.length} 位成員的 TIE（${pl.name}）💜`); return; }
 },true);
-
+/* ===== 一位發表動畫（照各節目結算畫面）：候選 2～3 組，一項一項跳分數，最後總分揭曉、一位亮皇冠 ===== */
+const MUR={ts:{n:2,max:10000,c:"#C6F432",bg:"#0B0B0B",t:"THE SHOW CHOICE"},sc:{n:2,max:10000,c:"#7C8CFF",bg:"#0E1440",t:"SHOW CHAMPION"},mcd:{n:2,max:11000,c:"#FF4FA3",bg:"#120B3A",t:"M COUNTDOWN"},mb:{n:2,max:200000,c:"#1E3A8A",bg:"#F4F6FA",t:"MUSIC BANK K-CHART",lt:1},ink:{n:3,max:11000,c:"#FF7A1A",bg:"#1A0F2E",t:"INKIGAYO"}};
+function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWeek(); const {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show];
+  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s),art:g.name||"",cov:songCover(s.gid,s.title),total:x.sc.total,p:[x.sc.views*MS_W.view,x.sc.album*MS_W.album,x.sc.votes*MS_W.vote,x.sc.likes*MS_W.like],win:s.id===wid}; }).concat((N||[]).map((x,k)=>({name:x.title,art:x.name,cov:"",total:x.total,p:[.5,.15,.2,.15].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
+  C.sort((a,b)=>(b.win-a.win)||(b.total-a.total)); C=C.slice(0,cf.n); if(!C.length) return; const top=Math.max(1,...C.map(c=>c.total));
+  C.forEach((c,k)=>{ const T=Math.round(c.total/top*cf.max*(cf.lt?.06:.86)*(c.win?1:1))||Math.round(cf.max*.3/(k+2)), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.T=c.v.reduce((a,b)=>a+b,0); });
+  const W=C.reduce((a,c)=>c.T>a.T?c:a,C[0]); if(C.some(c=>c.win)&&!W.win){ const w=C.find(c=>c.win); w.v[0]+=W.T-w.T+Math.round(cf.max*.01); w.T=w.v.reduce((a,b)=>a+b,0); }
+  const rows=["音源","專輯","投票","SNS"], order=[...C].sort(()=>0); /* 依原順序左右排：一位不一定在左邊 */ order.sort((a,b)=>strHash(a.name)-strHash(b.name));
+  const col=c=>`<div class="mur-c${c.T===Math.max(...C.map(x=>x.T))?" win":""}"><div class="mur-cv">${c.cov||`<span>${esc((c.art||"?").slice(0,1))}</span>`}</div><b>${esc(c.name)}</b><small>${esc(c.art)}</small>${rows.map((r,i)=>`<em data-to="${c.v[i]}" data-r="${i}">0</em>`).join("")}<strong data-to="${c.T}">0</strong><i class="mur-crown">👑</i></div>`;
+  const w=document.createElement("div"); w.className="mur"+(cf.lt?" lt":""); w.style.cssText=`--mc:${cf.c};--mbg:${cf.bg}`;
+  w.innerHTML=`<div class="mur-in"><div class="mur-h"><small>${esc(wk)}</small><b>${cf.t}</b></div><div class="mur-g" style="--n:${order.length}"><div class="mur-l"><div class="mur-cv0"></div>${rows.map(r=>`<span>${r}</span>`).join("")}<span class="tot">總分</span></div>${order.map(col).join("")}</div><button class="mur-x" data-a="muRevealX">點一下關閉</button></div><div class="mur-cf"></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in"));
+  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); const f=t=>{ const k=Math.min(1,(t-t0)/ms); el.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&w.isConnected) requestAnimationFrame(f); }; requestAnimationFrame(f); el.classList.add("on"); };
+  rows.forEach((r,i)=>setTimeout(()=>{ if(w.isConnected) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,700)); },900+i*900));
+  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("sus"); },900+rows.length*900);
+  setTimeout(()=>{ if(!w.isConnected) return; w.querySelectorAll("strong").forEach(e=>cnt(e,1400)); },1700+rows.length*900);
+  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("done"); const cfw=w.querySelector(".mur-cf"); cfw.innerHTML=Array.from({length:60},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%12)*.08}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff",cf.c][k%5]}"></i>`).join(""); },3300+rows.length*900);
+  try{ localStorage.setItem("hc_mur_"+wk+"_"+show,"1"); }catch(e){} }
+/* 一位剛公布、這支手機還沒看過 → 打開打歌頁時自動播一次 */
+function muRevealAuto(){ try{ if(document.querySelector(".mur")) return; for(const wk of [curWeek(),shiftWeek(curWeek(),-1)]){ const W=getMShow().wins[wk]||{}; for(const sh of SHOWS){ if(W[sh.id]&&showEnded(sh.id,wk)&&!localStorage.getItem("hc_mur_"+wk+"_"+sh.id)&&Date.now()-showEndTs(sh.id,wk)<3*864e5){ muRevealOpen(sh.id,wk); return; } } } }catch(e){} }
