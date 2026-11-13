@@ -5086,6 +5086,9 @@ html body .snmi-red:not(.x-x){color:rgb(237,73,86)!important}.snmi-red b{font-we
 .sn-reel1 .sn-rbg video.fit{transition:left .25s,top .25s,width .25s,height .25s,border-radius .25s}
 /* 打開留言時：上面的返回、＋先藏起來（照 IG） */
 html.sn-vshrink .sn-top.clear{opacity:0;pointer-events:none;transition:opacity .2s}
+/* 限動影片：開始播之前先顯示封面，不黑屏 */
+.sn-simg .sn-spo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
+.sn-simg .sn-svid{position:relative;z-index:1;opacity:0;background:transparent}.sn-simg .sn-svid.on{opacity:1}
 
 /* HAECHU｜留言框、TIE 外殼、限動編輯、綜藝、星探 */
 /* ===== 多行留言框（textarea.ag）：外觀跟原本的單行框一樣，只是會長高 ===== */

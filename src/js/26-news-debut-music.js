@@ -735,5 +735,8 @@ function muRevealAuto(){ try{ if(document.querySelector(".mrv")) return; for(con
 /* 發表完以後，點畫面任何地方都能關掉（還沒發表完就點字卡推進） */
 document.addEventListener("click",e=>{ const w=e.target.closest&&e.target.closest(".mrv"); if(!w||e.target.closest('[data-a="mrvNext"]')) return; if(w._done&&w._done()) w.remove(); },true);
 /* 跳出 App 再回來：iPhone 會把靜音循環的影片（結尾妖精等）停住，回來時重新播放 */
-{ const wake=()=>{ if(document.hidden) return; [0,400,1200].forEach(ms=>setTimeout(()=>document.querySelectorAll("video[autoplay][loop]:not(.sn-vid)").forEach(v=>{ if(v.paused&&v.isConnected){ v.muted=true; if(v.readyState===0&&v.src) v.load(); v.play().catch(()=>{}); } }),ms)); };
+{ const wake=()=>{ if(document.hidden) return; [0,400,1200].forEach(ms=>setTimeout(()=>{
+    document.querySelectorAll("video[autoplay][loop]:not(.sn-vid)").forEach(v=>{ if(v.paused&&v.isConnected){ v.muted=true; if(v.readyState===0&&v.src) v.load(); v.play().catch(()=>{}); } });
+    const v=document.querySelector(".sn-svid"); if(v&&v.paused&&!v.ended&&v.src&&!document.querySelector(".sn-stpop")) v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); });   /* 限時動態影片也一樣 */
+  },ms)); };
   document.addEventListener("visibilitychange",wake); window.addEventListener("pageshow",wake); window.addEventListener("focus",wake); }
