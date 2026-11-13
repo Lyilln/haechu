@@ -543,7 +543,7 @@ const prVidF=f=>{ const pr=prOf(f); return `<div class="chips"><button class="ch
 
 function promoKeep(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const v=id=>{ const e=document.getElementById(id); return e?e.value:null; }; const tm=v("prTime"), tk=v("prTrk"); if(tm!=null) pr.time=tm||"18:00"; if(tk!=null) pr.trk=tk; PR_EX.forEach(k=>{ const x=v("prX_"+k); if(x!=null) pr[k]=x; }); (pr.cv||[]).forEach((c,i)=>{ const n=v("prCv"+i); if(n!=null) c.n=n; }); }
 /* 存進申請：預覽用的 blob 網址不存 */
-const PR_EX=["album","desc","credit","lyr","sc","fan","intro","t2"];
+const PR_EX=["album","desc","credit","lyr","sc","fan","intro","t2","spk"];
 const promoClean=pr=>pr?{...(pr.fy&&Object.keys(pr.fy).length?{fy:Object.fromEntries(Object.entries(pr.fy).filter(([k,v])=>v&&v.m).map(([k,v])=>{ const r={...v}; delete r._pv; return [k,r]; }))}:{}),...(pr.mv2&&pr.mv2.mid&&String(pr.t2||"").trim()?{mv2:pr.mv2}:{}),...Object.fromEntries(PR_EX.filter(k=>String(pr[k]||"").trim()).map(k=>[k,String(pr[k]).trim()])),time:pr.time||"18:00",sched:pr.sched||"",...(pr.cov?{cov:pr.cov}:{}),trk:pr.trk||"",trkImg:pr.trkImg||"",cv:(pr.cv||[]).map(c=>({n:c.n||"",ph:(c.ph||[]).filter(Boolean)})).filter(c=>c.ph.length||c.n),vk:pr.vid?pr.vk:"",vid:pr.vk&&pr.vid?pr.vid:null}:null;
 const promoLoad=pr=>pr?{...JSON.parse(JSON.stringify(pr)),cv:(pr.cv||[]).map(c=>({n:c.n,ph:[...(c.ph||[])]}))}:{time:"18:00",cv:[],vk:"",trk:""};
 async function prImgUp(file){ const b=await shrinkImg(file,1600), prev=URL.createObjectURL(b);

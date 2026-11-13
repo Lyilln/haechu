@@ -2380,8 +2380,10 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
     ["作品","出道專輯和主打歌",dbWorkF(f,"dbSong","出道曲（主打歌）")],
     ["宣傳排程","核准後會照日期自動發；出道前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">出道日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(dMin)}" value="${esc(f.date||ymdIn(dMin))}">`)],
     ["結尾妖精","打歌時每週每個節目會揭曉一位",dbFairyF(f)],
+    ["一位感言","",dbSpkF(f)],
     ["出道當天","",dbDayF(f,"出道")]]); }
 /* ---------- 出道／回歸申請：獨立一頁（照真實 K-POP 宣傳會有的東西分區） ---------- */
+function dbSpkF(f){ const v=esc((prOf(f)||{}).spk||""); return `<span class="fs-f-lab">拿到一位時想對粉絲說的話 <em>選填</em></span><textarea id="prX_spk" class="a-nick-in dbx-ta" rows="4" maxlength="120" placeholder="例：謝謝一直陪在我們身邊的你們，這個一位是大家一起拿到的💜">${v}</textarea><p class="dbx-d">這首歌拿到一位時，會在一位發表的「得獎感言」出現。之後回歸可以再寫新的。</p>`; }
 function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||"");
   return `<span class="fs-f-lab">專輯名稱 <em>選填</em></span><input id="prX_album" class="a-nick-in" maxlength="40" placeholder="例：The 1st Mini Album『Sequence 01』" value="${X("album")}">
     <span class="fs-f-lab">專輯封面 <em>選填</em></span><div class="db-up4 one">${prImgSlot(pr.covP||pr.cov,'data-k="cov"',"")}</div><p class="dbx-d">會用在打歌排行、SNS 加入音樂、出道／回歸當天的官方貼文和 MEET 相簿。</p>
@@ -13314,6 +13316,7 @@ function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&
     ["作品","出道專輯和出道曲",dbWorkF(f,"cbTitle","出道曲")],
     ["宣傳素材",`會當作出道那時候發的：照出道日 ${f.day?mdTxt(f.day):""} 往前排，不會出現在動態最上面`,dbPromoF(f,"")],
     ["結尾妖精",(groupOf(gid)||{}).solo?"放一段本人的結尾妖精，每個打歌節目都會播":"每位成員放一段，打歌時每個節目會揭曉",dbFairyF(f)],
+    ["一位感言","",dbSpkF(f)],
     ["出道當天","",dbDayF(f,"出道")]]); }
 function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfForm(); const gid=f.gid, min=cbrMin(gid); f.tx=f.tx||[]; f.txP=f.txP||[];
   const tp=f.tPrev||f.teaser, t=tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`, vid=(v,pv)=>v?(pv?`<img src="${esc(pv)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
@@ -13324,6 +13327,7 @@ function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfFo
     ["作品","這次回歸的專輯和主打歌",dbWorkF(f,"cbTitle","主打歌")],
     ["宣傳排程",f.adm?"儲存後照日期自動發；只有歌名是必填，其他有放才會發":"核准後會照日期自動發；回歸前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">回歸日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(f.adm?amin:min)}" value="${esc(f.date&&ymdTs(f.date)>=(f.adm?amin:min)?f.date:ymdIn(f.adm?amin:min))}">`)],
     ["結尾妖精","打歌時每週每個節目會揭曉一位",dbFairyF(f)],
+    ["一位感言","",dbSpkF(f)],
     ["回歸當天","",dbDayF(f,"回歸")]]); }
 const cbrMedia=x=>dbMedia({...x,id:"cbr_"+x.id});
 /* 管理員：回歸申請 */
@@ -13849,7 +13853,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["即時投票",[2]]]},
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
   sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
   mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
   mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
@@ -13864,8 +13868,12 @@ function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.m
 const MU_NPC_PAL=[["#EDE6DA","#2A2622","#B5452F"],["#1F2A44","#E9D9B8","#E9B872"],["#F2D4D7","#4A2E36","#C26B7A"],["#D7E6DF","#1E3D36","#5E8C7D"],["#121214","#D8D6F2","#8D86E8"],["#F4EFE6","#1A1A1A","#2E5BFF"],["#2B1D2F","#F3D9E6","#E07AA8"],["#E4E9EE","#20262E","#7D93A8"]];
 function muNpcCover(art,title){ const h=strHash(art+"|"+title), [bg,fg,ac]=MU_NPC_PAL[h%MU_NPC_PAL.length], v=(h>>>4)%4, t=esc(title||""), a=esc(art||"");
   return `<div class="mrv-npc v${v}" style="--bg:${bg};--fg:${fg};--ac:${ac}"><i></i><small>${a}</small><b>${t}</b></div>`; }
+/* 一位感言：出道／回歸申請表裡填的（照歌名對；對不到就用這組最近一次填的） */
+function muSpeech(s){ try{ const t=String(s.title||"").trim().toLowerCase(), eq=x=>String(x||"").trim().toLowerCase()===t;
+  const L=[...getDebut().filter(x=>x.gid===s.gid).map(x=>({ok:eq(x.song)||eq((x.pr||{}).t2),at:x.day||0,v:(x.pr||{}).spk})),...getCbr().filter(x=>x.gid===s.gid).map(x=>({ok:eq(x.title)||eq((x.pr||{}).t2),at:x.day||0,v:(x.pr||{}).spk}))].filter(x=>String(x.v||"").trim());
+  const h=L.find(x=>x.ok)||L.sort((a,b)=>b.at-a.at)[0]; return h?String(h.v).trim():""; }catch(e){ return ""; } }
 function muRevealCands(show,wk){ const cf=MUR[show], {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show], W=msW(show), SP=MS_SP[show]||{view:1,album:1,vote:1,like:1};
-  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s).replace(/^.*《(.*)》$/,"$1"),art:g.name||"",cov:muRevealPic(s,show,wk),total:x.sc.total,p:[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like],win:s.id===wid}; })
+  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s).replace(/^.*《(.*)》$/,"$1"),art:g.name||"",cov:muRevealPic(s,show,wk),spk:muSpeech(s),total:x.sc.total,p:[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like],win:s.id===wid}; })
     .concat((N||[]).map(x=>({name:x.title,art:x.name,cov:muNpcCover(x.name,x.title),total:x.total,p:[SP.view,SP.album,SP.vote,SP.like].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
   C.sort((a,b)=>(b.win-a.win)||(b.total-a.total)); const pool=C.slice(0,Math.max(5,cf.n)); C=C.slice(0,cf.n); const top=Math.max(1,...C.map(c=>c.total));
   C.forEach(c=>{ const T=Math.round(c.total/top*cf.max*.9), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.rv=cf.rows.map(([,ix])=>ix.reduce((n,i)=>n+c.v[i],0)); c.T=c.rv.reduce((a,b)=>a+b,0); });
@@ -13917,6 +13925,8 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   st(3400,`本週 ${shn} 的一位是——`,()=>{ w.classList.add("sus"); S().forEach(e=>e.classList.add("on")); clearInterval(iv); iv=setInterval(()=>{ if(!ok()){ clearInterval(iv); return; } S().forEach(e=>set(e,Math.round(+e.dataset.to*(.55+Math.random()*.6)))); },70); });
   st(3200,`${wn2(wc)}！恭喜！💜`,()=>{ clearInterval(iv); S().forEach(e=>{ e.classList.add("on"); set(e,+e.dataset.to); }); w.classList.remove("sus"); w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:70},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%14)*.07}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); });
   st(3000,`請 ${wc.art} 跟粉絲們說幾句得獎感言吧！`);
+  if(wc.spk){ st(Math.min(9000,2600+wc.spk.length*90),`「${wc.spk}」`,()=>{ const n=w.querySelector(".mrv-mcnm"), c=w.querySelector(".mrv-mc"); if(n) n.textContent=`🏆 ${wc.art}`; if(c) c.classList.add("spk"); }); steps[steps.length-1].who=null;
+    st(2400,`謝謝 ${wc.art}！再次恭喜！`,()=>{ const c=w.querySelector(".mrv-mc"); if(c) c.classList.remove("spk"); }); }
   st(0,`我們下週見～ 👋`,()=>{ const h=w.querySelector(".mrv-mch"); if(h) h.textContent="點任何地方關閉"; });
   let cur=-1, tm=null; const go=()=>{ clearTimeout(tm); if(!ok()||cur>=steps.length-1) return; cur++; const x=steps[cur]; x.fn(); if(x.line) say(x.line); { const n=w.querySelector(".mrv-mcnm"); if(n&&x.who) n.textContent="MC "+x.who; } if(cur<steps.length-1) tm=setTimeout(go,x.ms); };
   w._next=go; w._done=()=>cur>=steps.length-1; go();
@@ -14477,7 +14487,7 @@ const prVidF=f=>{ const pr=prOf(f); return `<div class="chips"><button class="ch
 
 function promoKeep(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const v=id=>{ const e=document.getElementById(id); return e?e.value:null; }; const tm=v("prTime"), tk=v("prTrk"); if(tm!=null) pr.time=tm||"18:00"; if(tk!=null) pr.trk=tk; PR_EX.forEach(k=>{ const x=v("prX_"+k); if(x!=null) pr[k]=x; }); (pr.cv||[]).forEach((c,i)=>{ const n=v("prCv"+i); if(n!=null) c.n=n; }); }
 /* 存進申請：預覽用的 blob 網址不存 */
-const PR_EX=["album","desc","credit","lyr","sc","fan","intro","t2"];
+const PR_EX=["album","desc","credit","lyr","sc","fan","intro","t2","spk"];
 const promoClean=pr=>pr?{...(pr.fy&&Object.keys(pr.fy).length?{fy:Object.fromEntries(Object.entries(pr.fy).filter(([k,v])=>v&&v.m).map(([k,v])=>{ const r={...v}; delete r._pv; return [k,r]; }))}:{}),...(pr.mv2&&pr.mv2.mid&&String(pr.t2||"").trim()?{mv2:pr.mv2}:{}),...Object.fromEntries(PR_EX.filter(k=>String(pr[k]||"").trim()).map(k=>[k,String(pr[k]).trim()])),time:pr.time||"18:00",sched:pr.sched||"",...(pr.cov?{cov:pr.cov}:{}),trk:pr.trk||"",trkImg:pr.trkImg||"",cv:(pr.cv||[]).map(c=>({n:c.n||"",ph:(c.ph||[]).filter(Boolean)})).filter(c=>c.ph.length||c.n),vk:pr.vid?pr.vk:"",vid:pr.vk&&pr.vid?pr.vid:null}:null;
 const promoLoad=pr=>pr?{...JSON.parse(JSON.stringify(pr)),cv:(pr.cv||[]).map(c=>({n:c.n,ph:[...(c.ph||[])]}))}:{time:"18:00",cv:[],vk:"",trk:""};
 async function prImgUp(file){ const b=await shrinkImg(file,1600), prev=URL.createObjectURL(b);

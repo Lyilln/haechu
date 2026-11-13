@@ -53,8 +53,10 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
     ["作品","出道專輯和主打歌",dbWorkF(f,"dbSong","出道曲（主打歌）")],
     ["宣傳排程","核准後會照日期自動發；出道前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">出道日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(dMin)}" value="${esc(f.date||ymdIn(dMin))}">`)],
     ["結尾妖精","打歌時每週每個節目會揭曉一位",dbFairyF(f)],
+    ["一位感言","",dbSpkF(f)],
     ["出道當天","",dbDayF(f,"出道")]]); }
 /* ---------- 出道／回歸申請：獨立一頁（照真實 K-POP 宣傳會有的東西分區） ---------- */
+function dbSpkF(f){ const v=esc((prOf(f)||{}).spk||""); return `<span class="fs-f-lab">拿到一位時想對粉絲說的話 <em>選填</em></span><textarea id="prX_spk" class="a-nick-in dbx-ta" rows="4" maxlength="120" placeholder="例：謝謝一直陪在我們身邊的你們，這個一位是大家一起拿到的💜">${v}</textarea><p class="dbx-d">這首歌拿到一位時，會在一位發表的「得獎感言」出現。之後回歸可以再寫新的。</p>`; }
 function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||"");
   return `<span class="fs-f-lab">專輯名稱 <em>選填</em></span><input id="prX_album" class="a-nick-in" maxlength="40" placeholder="例：The 1st Mini Album『Sequence 01』" value="${X("album")}">
     <span class="fs-f-lab">專輯封面 <em>選填</em></span><div class="db-up4 one">${prImgSlot(pr.covP||pr.cov,'data-k="cov"',"")}</div><p class="dbx-d">會用在打歌排行、SNS 加入音樂、出道／回歸當天的官方貼文和 MEET 相簿。</p>

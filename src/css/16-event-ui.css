@@ -318,3 +318,4 @@ textarea.eds-in{min-height:120px}
 .eds-ct{position:absolute;right:12px;bottom:7px;font-size:11px;color:var(--ink-3);font-variant-numeric:tabular-nums}.eds-ct i{font-style:normal}
 .eds-del{display:block;width:calc(100% - 28px);margin:0 14px 14px;padding:12px;border:0;border-radius:12px;background:none;color:var(--red,#E5484D);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .eds-del:active{background:rgba(229,72,77,.08)}
+.dk-keep-mrv .mrv-mc.spk .mrv-mct2{font-weight:700;font-size:14.5px;line-height:1.55}.dk-keep-mrv .mrv-mc.spk .mrv-mcnm{opacity:1}
