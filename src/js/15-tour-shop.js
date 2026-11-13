@@ -403,7 +403,8 @@ function viewAdmin(tab){
         <div class="chips wrap">${STAGE_PRESETS.map(p=>`<button class="chip ${st===p?"on":""}" data-a="focPreset" data-v="${p}">${p}</button>`).join("")}</div>
         <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
         ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}
-        <p class="reach" style="margin:12px 0 10px">打歌中的歌（MV 公開就加入、打滿 4 週下檔；參賽不到 3 首自動補虛擬對手）</p>
+        <p class="reach" style="margin:8px 0 0">每週會自動判斷：每月第一週＝宣傳週（不排名、不能投票）、中間＝排名週、最後一週＝打歌週。這裡手動改的只算本週，下週回到自動。</p>
+        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>打滿 4 週，或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
         ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="act"?`打歌第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>
