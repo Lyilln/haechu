@@ -12343,6 +12343,8 @@ setInterval(preTick,60e3); setTimeout(preTick,9e3);
 function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.ended||[])].filter(x=>x.gid===v.gid&&x.mv!==v.id); if(mine.some(x=>!x.debut||songRel(x)<v.ts)) return false;
   if((S.get(K.vods,[])||[]).some(o=>o.gid===v.gid&&o.id!==v.id&&vodIsMV(o)&&(o.ts||0)<(v.ts||0))) return false; if(getCbr().some(c=>c.gid===v.gid&&c.status==="ok"&&c.day<(v.ts||0))) return false; return true; }catch(e){ return false; } }
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
+    /* HUSSEY 10/20 出道、11/8 才補傳 MV：打歌期照出道日算（只改這一次；其他人照 MV 公開日） */
+    { const x=(m.songs||[]).find(y=>{ const g=groupOf(y.gid); return g&&/^HUSSEY$/i.test(String(g.name).trim())&&/SUPA\s*DUPA\s*LUV/i.test(String(y.title||"")); }), d=new Date(2026,9,20,18,0).getTime(); if(x&&songRel(x)>d+3*MDAY){ x.rel=d; ch=true; } }
     (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
       const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v); if(/^\s*出道\s*$/.test(title)&&all.some(x=>x.gid===v.gid&&x.debut)) return;   /* 已經有出道曲：不要再建一首叫「出道」的 */
