@@ -319,3 +319,6 @@ textarea.eds-in{min-height:120px}
 .eds-del{display:block;width:calc(100% - 28px);margin:0 14px 14px;padding:12px;border:0;border-radius:12px;background:none;color:var(--red,#E5484D);font:inherit;font-size:14px;font-weight:700;cursor:pointer}
 .eds-del:active{background:rgba(229,72,77,.08)}
 .dk-keep-mrv .mrv-mc.spk .mrv-mct2{font-weight:700;font-size:14.5px;line-height:1.55}.dk-keep-mrv .mrv-mc.spk .mrv-mcnm{opacity:1}
+/* MC 的團拿一位：獎盃從字卡傳過去 */
+.dk-keep-mrv .mrv-pass{position:fixed;z-index:5;font-style:normal;font-size:34px;line-height:1;pointer-events:none;filter:drop-shadow(0 4px 10px rgba(0,0,0,.35))}
+.dk-keep-mrv .mrv-got{animation:mrvGot .6s cubic-bezier(.2,.9,.3,1.4)}@keyframes mrvGot{40%{transform:scale(1.08)}}
