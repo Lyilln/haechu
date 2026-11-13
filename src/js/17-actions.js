@@ -686,6 +686,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "tExpired": iosAlert("TIE 券已到期","續訂後就能再傳訊息、收到新訊息。",`<button data-a="tCloseLayer">取消</button><button data-a="goSubs">前往續訂</button>`); break;
     case "muReveal": muRevealOpen(t.dataset.v,t.dataset.w); break;
     case "muRevealX": document.querySelectorAll(".mrv").forEach(x=>x.remove()); break;
+    case "mrvNext": { const w=t.closest(".mrv"); if(w&&w._done&&w._done()) w.remove(); else if(w&&w._next) w._next(); break; }
     case "uniGo": layer.innerHTML=""; ui.sheet=null; navTo(t.dataset.v); break;
     case "uniSeg": navRoot(t.dataset.v); break;
     case "uniAnn": uniAnnOpen(); break;

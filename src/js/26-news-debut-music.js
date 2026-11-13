@@ -698,15 +698,31 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   else { const [a,b]=ord; body=`<div class="mrv-sclogo">SHOW<br>CHAMPION</div><div class="mrv-sc2">${[a,b].map(c=>`<div class="mrv-tl${wn(c)}">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small>${cw}</div>`).join("")}<b class="mrv-vsb">VS</b></div>
     <div class="mrv-sct">${R.map(([l],i)=>`<div class="mrv-r">${em(a,i)}<span>${l}</span>${em(b,i)}</div>`).join("")}<div class="mrv-r t">${tot(a)}<span>TOTAL</span>${tot(b)}</div></div>`; }
   const intro=cf.top5?`<div class="mrv-top5"><div class="mrv-t5p"><h3>TOP ${Math.min(5,pool.length)}</h3><div>${pool.slice(0,5).map(c=>`<div class="mrv-tl">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small></div>`).join("")}</div></div><b class="mrv-who">WHO'S<br>CHAMPION?</b></div>`:"";
+  /* MC 字卡：本月被選上的 MC（藝人名字）；沒有就請虛擬團體的成員或 SOLOIST 主持。點字卡＝推進下一步 */
+  const mon=monthKey(showEndTs(show,wk)), MCI=((getMShow().mc||{})[mon]||{})[show]||[], NPN=["Jiwoo","Hana","Yuna","Seri","Rina","Doyun","Minseo","Haeun"], h0=strHash(show+mon);
+  const mcs=MCI.filter(m=>MEMBERS[m]).map(m=>artName(m,"feed")); if(!mcs.length){ const [g1]=NPC_SONGS[h0%NPC_SONGS.length], [g2]=NPC_SONGS[(h0>>>3)%NPC_SONGS.length]; mcs.push(`${g1} ${NPN[h0%NPN.length]}`); if(g2!==g1) mcs.push(`${g2} ${NPN[(h0>>>5)%NPN.length]}`); }
+  const wc=C.find(c=>(C.some(x=>x.win)?c.win:c.T===best))||C[0], shn=(SHOWS.find(x=>x.id===show)||{}).name||cf.t||"";
+  const LINES=[...(cf.top5?[`這週 ${shn} 的 TOP ${Math.min(5,pool.length)} 是這幾首歌！`,"那麼…這週的冠軍會是誰呢？"]:[]),`這週 ${shn} 的一位候補是——${ord.map(c=>c.art).join("、")}！`,...R.map(([l],i)=>i?`接著是${l.replace(/\s*\d+%$/,"")}！`:`先來看${l.replace(/\s*\d+%$/,"")}！`),"最後加上所有分數…","這週的一位是——",`恭喜 ${wc.art}《${wc.name}》！💜`];
+  const mcCard=`<button class="mrv-mc" data-a="mrvNext" aria-label="下一步"><span class="mrv-mcnm">MC ${mcs.map(esc).join("・")}</span><b class="mrv-mct2">${esc(LINES[0])}</b><small class="mrv-mch">點字卡繼續 ▸</small></button>`;
   const w=document.createElement("div"); w.className=`mrv dk-keep-mrv s-${show}${cf.top5?" pre":""}`;
-  w.innerHTML=`${intro}<div class="mrv-in">${body}${cf.win1?`<div class="mrv-1">1<small>位</small></div>`:""}<button class="mrv-x" data-a="muRevealX">點一下關閉</button></div><div class="mrv-cf"></div>`;
-  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); w.querySelectorAll("video[data-fy]").forEach(v=>{ const m=v.dataset.fy, put=u=>{ if(u&&v.isConnected){ v.src=u; v.play().catch(()=>{}); } }; if(typeof memBlobs!=="undefined"&&memBlobs[m]) put(URL.createObjectURL(memBlobs[m])); else mediaSrc(m).then(put).catch(()=>{}); }); const D=cf.top5?4200:0; if(cf.top5){ setTimeout(()=>w.isConnected&&w.classList.add("who"),2300); setTimeout(()=>w.isConnected&&w.classList.remove("pre"),D-300); }
-  const ok=()=>w.isConnected, set=(el,n)=>{ el.textContent=fmt(n); };
-  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); el.classList.add("on"); const f=t=>{ const k=Math.min(1,(t-t0)/ms); set(el,Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&ok()) requestAnimationFrame(f); }; requestAnimationFrame(f); };
-  const nR=R.length, T0=D+900, GAP=780; R.forEach((r,i)=>setTimeout(()=>{ if(ok()) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,520)); },T0+i*GAP));
-  /* 總分：先亂數滾動吊胃口，再停在真正的分數 */
-  const T1=T0+nR*GAP+250, ROLL=2000; setTimeout(()=>{ if(!ok()) return; w.classList.add("sus"); const S=[...w.querySelectorAll("strong")]; S.forEach(e=>e.classList.add("on")); const iv=setInterval(()=>{ if(!ok()){ clearInterval(iv); return; } S.forEach(e=>set(e,Math.round(+e.dataset.to*(.55+Math.random()*.6)))); },70);
-    setTimeout(()=>{ clearInterval(iv); if(!ok()) return; S.forEach(e=>set(e,+e.dataset.to)); w.classList.remove("sus"); w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:70},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%14)*.07}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); },ROLL); },T1);
+  w.innerHTML=`${intro}<div class="mrv-in">${body}${cf.win1?`<div class="mrv-1">1<small>位</small></div>`:""}${mcCard}</div><div class="mrv-cf"></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); w.querySelectorAll("video[data-fy]").forEach(v=>{ const m=v.dataset.fy, put=u=>{ if(u&&v.isConnected){ v.src=u; v.play().catch(()=>{}); } }; if(typeof memBlobs!=="undefined"&&memBlobs[m]) put(URL.createObjectURL(memBlobs[m])); else mediaSrc(m).then(put).catch(()=>{}); });
+  const ok=()=>w.isConnected, set=(el,n)=>{ el.textContent=fmt(n); }, say=t=>{ const e=w.querySelector(".mrv-mct2"); if(e){ e.textContent=t; e.classList.remove("pop"); void e.offsetWidth; e.classList.add("pop"); } };
+  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); el.classList.add("on"); const f=t=>{ if(el.dataset.fin){ set(el,to); return; } const k=Math.min(1,(t-t0)/ms); set(el,Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&ok()) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const finRow=i=>w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>{ e.dataset.fin=1; e.classList.add("on"); set(e,+e.dataset.to); });
+  let iv=null; const S=()=>[...w.querySelectorAll("strong")];
+  /* 流程：每一步有自己的停留時間；點字卡就直接跳下一步（前一步的數字立刻跑完） */
+  const steps=[]; let li=0; const st=(ms,fn)=>steps.push({ms,fn,line:LINES[li++]});
+  if(cf.top5){ st(2300,()=>{}); st(1900,()=>w.classList.add("who")); }
+  st(cf.top5?700:900,()=>{ w.classList.remove("pre"); w.classList.remove("who"); });
+  R.forEach((r,i)=>st(i===R.length-1?1100:780,()=>{ for(let k=0;k<i;k++) finRow(k); w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,520)); }));
+  st(900,()=>{ R.forEach((r,k)=>finRow(k)); });
+  st(2000,()=>{ w.classList.add("sus"); S().forEach(e=>e.classList.add("on")); clearInterval(iv); iv=setInterval(()=>{ if(!ok()){ clearInterval(iv); return; } S().forEach(e=>set(e,Math.round(+e.dataset.to*(.55+Math.random()*.6)))); },70); });
+  st(0,()=>{ clearInterval(iv); S().forEach(e=>{ e.classList.add("on"); set(e,+e.dataset.to); }); w.classList.remove("sus"); w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:70},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%14)*.07}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); const h=w.querySelector(".mrv-mch"); if(h) h.textContent="點任何地方關閉"; });
+  let cur=-1, tm=null; const go=()=>{ clearTimeout(tm); if(!ok()||cur>=steps.length-1) return; cur++; const x=steps[cur]; x.fn(); if(x.line) say(x.line); if(cur<steps.length-1) tm=setTimeout(go,x.ms); };
+  w._next=go; w._done=()=>cur>=steps.length-1; go();
   try{ localStorage.setItem("hc_mur_"+wk+"_"+show,"1"); }catch(e){} }
 /* 一位剛公布、這支手機還沒看過 → 打開打歌頁時自動播一次 */
 function muRevealAuto(){ try{ if(document.querySelector(".mrv")) return; for(const wk of [curWeek(),shiftWeek(curWeek(),-1)]){ const W=getMShow().wins[wk]||{}; for(const sh of SHOWS){ if(W[sh.id]&&showEnded(sh.id,wk)&&!localStorage.getItem("hc_mur_"+wk+"_"+sh.id)&&Date.now()-showEndTs(sh.id,wk)<3*864e5){ muRevealOpen(sh.id,wk); return; } } } }catch(e){} }
+/* 發表完以後，點畫面任何地方都能關掉（還沒發表完就點字卡推進） */
+document.addEventListener("click",e=>{ const w=e.target.closest&&e.target.closest(".mrv"); if(!w||e.target.closest('[data-a="mrvNext"]')) return; if(w._done&&w._done()) w.remove(); },true);
