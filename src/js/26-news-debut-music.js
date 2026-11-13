@@ -663,9 +663,19 @@ const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數"
   mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
   mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
   ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+/* 照片格放什麼：音樂中心、人氣歌謠 → 專輯封面（沒有就 MV 縮圖）；THE SHOW、M COUNTDOWN、Show Champion → 結尾妖精（靜音循環）→ MV 縮圖 → 封面 */
+function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.mv.thumb)||"", img=u=>`<img src="${esc(u)}" alt="">`, cov=()=>{ const h=songCover(s.gid,s.title); return /<img/.test(h)?h:""; };
+  const gen=()=>muNpcCover((groupOf(s.gid)||{}).name||"",String(songName(s)).replace(/^.*《(.*)》$/,"$1"));   /* 什麼圖都還沒上傳：跟虛擬歌手一樣生成一張封面，不放字母色塊 */
+  if(show==="mb"||show==="ink") return own?img(own):cov()||(mvT?img(mvT):gen());
+  try{ const F=(S.get(FAIRY_KEY,{})||{})["clip|"+s.id]||{}, who=fairyWhoL(s.id,show,wk,true), k=who.find(m=>F[m]&&F[m].m)||Object.keys(F).find(m=>F[m]&&F[m].m); if(k){ const c=F[k]; return `<video class="mrv-fy" data-fy="${esc(c.m)}" ${c.th?`poster="${esc(c.th)}"`:""} muted loop playsinline webkit-playsinline autoplay></video>`; } }catch(e){}
+  return mvT?img(mvT):own?img(own):cov()||gen(); }
+/* 虛擬歌手的專輯封面：用名字決定固定的配色和版型，排得像真的封面（不要彩虹、不要大字母） */
+const MU_NPC_PAL=[["#EDE6DA","#2A2622","#B5452F"],["#1F2A44","#E9D9B8","#E9B872"],["#F2D4D7","#4A2E36","#C26B7A"],["#D7E6DF","#1E3D36","#5E8C7D"],["#121214","#D8D6F2","#8D86E8"],["#F4EFE6","#1A1A1A","#2E5BFF"],["#2B1D2F","#F3D9E6","#E07AA8"],["#E4E9EE","#20262E","#7D93A8"]];
+function muNpcCover(art,title){ const h=strHash(art+"|"+title), [bg,fg,ac]=MU_NPC_PAL[h%MU_NPC_PAL.length], v=(h>>>4)%4, t=esc(title||""), a=esc(art||"");
+  return `<div class="mrv-npc v${v}" style="--bg:${bg};--fg:${fg};--ac:${ac}"><i></i><small>${a}</small><b>${t}</b></div>`; }
 function muRevealCands(show,wk){ const cf=MUR[show], {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show], W=msW(show), SP=MS_SP[show]||{view:1,album:1,vote:1,like:1};
-  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s).replace(/^.*《(.*)》$/,"$1"),art:g.name||"",cov:songCover(s.gid,s.title),total:x.sc.total,p:[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like],win:s.id===wid}; })
-    .concat((N||[]).map(x=>({name:x.title,art:x.name,cov:"",total:x.total,p:[SP.view,SP.album,SP.vote,SP.like].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
+  let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s).replace(/^.*《(.*)》$/,"$1"),art:g.name||"",cov:muRevealPic(s,show,wk),total:x.sc.total,p:[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like],win:s.id===wid}; })
+    .concat((N||[]).map(x=>({name:x.title,art:x.name,cov:muNpcCover(x.name,x.title),total:x.total,p:[SP.view,SP.album,SP.vote,SP.like].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
   C.sort((a,b)=>(b.win-a.win)||(b.total-a.total)); const pool=C.slice(0,Math.max(5,cf.n)); C=C.slice(0,cf.n); const top=Math.max(1,...C.map(c=>c.total));
   C.forEach(c=>{ const T=Math.round(c.total/top*cf.max*.9), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.rv=cf.rows.map(([,ix])=>ix.reduce((n,i)=>n+c.v[i],0)); c.T=c.rv.reduce((a,b)=>a+b,0); });
   return {C,pool}; }
@@ -690,7 +700,7 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   const intro=cf.top5?`<div class="mrv-top5"><div class="mrv-t5p"><h3>TOP ${Math.min(5,pool.length)}</h3><div>${pool.slice(0,5).map(c=>`<div class="mrv-tl">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small></div>`).join("")}</div></div><b class="mrv-who">WHO'S<br>CHAMPION?</b></div>`:"";
   const w=document.createElement("div"); w.className=`mrv dk-keep-mrv s-${show}${cf.top5?" pre":""}`;
   w.innerHTML=`${intro}<div class="mrv-in">${body}${cf.win1?`<div class="mrv-1">1<small>位</small></div>`:""}<button class="mrv-x" data-a="muRevealX">點一下關閉</button></div><div class="mrv-cf"></div>`;
-  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); const D=cf.top5?4200:0; if(cf.top5){ setTimeout(()=>w.isConnected&&w.classList.add("who"),2300); setTimeout(()=>w.isConnected&&w.classList.remove("pre"),D-300); }
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); w.querySelectorAll("video[data-fy]").forEach(v=>{ const m=v.dataset.fy, put=u=>{ if(u&&v.isConnected){ v.src=u; v.play().catch(()=>{}); } }; if(typeof memBlobs!=="undefined"&&memBlobs[m]) put(URL.createObjectURL(memBlobs[m])); else mediaSrc(m).then(put).catch(()=>{}); }); const D=cf.top5?4200:0; if(cf.top5){ setTimeout(()=>w.isConnected&&w.classList.add("who"),2300); setTimeout(()=>w.isConnected&&w.classList.remove("pre"),D-300); }
   const ok=()=>w.isConnected, set=(el,n)=>{ el.textContent=fmt(n); };
   const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); el.classList.add("on"); const f=t=>{ const k=Math.min(1,(t-t0)/ms); set(el,Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&ok()) requestAnimationFrame(f); }; requestAnimationFrame(f); };
   const nR=R.length, T0=D+900, GAP=780; R.forEach((r,i)=>setTimeout(()=>{ if(ok()) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,520)); },T0+i*GAP));
