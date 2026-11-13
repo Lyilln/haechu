@@ -658,11 +658,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,lay:"tbl",t:"THE SHOW. CHOICE",rows:[["音源＋專輯",[0,1]],["SNS",[3]],["投票",[2]]]},
-  sc:{n:2,max:10000,lay:"tbl",top5:1,t:"SHOW CHAMPION",rows:[["音源",[0]],["專輯",[1]],["投票",[2]],["SNS",[3]]]},
-  mcd:{n:2,max:11000,lay:"vs",t:"M COUNTDOWN",rows:[["音源",[0]],["專輯",[1]],["SNS",[3]],["投票",[2]]]},
-  mb:{n:3,max:10000,lay:"card",t:"SHOW! 音樂中心",rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["投票",[2]]]},
-  ink:{n:3,max:11000,lay:"tbl",win1:1,t:"INKIGAYO",rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["即時投票",[2]]]},
+  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
+  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
+  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
+  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
 function muRevealCands(show,wk){ const cf=MUR[show], {R,N}=muRankShown(show,wk,true), wid=(getMShow().wins[wk]||{})[show], W=msW(show), SP=MS_SP[show]||{view:1,album:1,vote:1,like:1};
   let C=R.map(x=>{ const s=x.s, g=groupOf(s.gid)||{}; return {name:songName(s).replace(/^.*《(.*)》$/,"$1"),art:g.name||"",cov:songCover(s.gid,s.title),total:x.sc.total,p:[x.sc.views*W.view,x.sc.album*W.album,x.sc.votes*W.vote,x.sc.likes*W.like],win:s.id===wid}; })
     .concat((N||[]).map(x=>({name:x.title,art:x.name,cov:"",total:x.total,p:[SP.view,SP.album,SP.vote,SP.like].map((r,i)=>r*(1+((strHash(x.name+i)%30)-15)/100)),win:false})));
@@ -670,23 +670,33 @@ function muRevealCands(show,wk){ const cf=MUR[show], {R,N}=muRankShown(show,wk,t
   C.forEach(c=>{ const T=Math.round(c.total/top*cf.max*.9), ps=c.p.reduce((a,b)=>a+b,0)||1; c.v=c.p.map(x=>Math.round(x/ps*T)); c.rv=cf.rows.map(([,ix])=>ix.reduce((n,i)=>n+c.v[i],0)); c.T=c.rv.reduce((a,b)=>a+b,0); });
   return {C,pool}; }
 function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWeek(); const {C,pool}=muRevealCands(show,wk); if(!C.length) return;
-  const best=Math.max(...C.map(c=>c.T)), cov=c=>`<div class="mrv-cv">${c.cov||`<span>${esc((c.art||"?").slice(0,1))}</span>`}</div>`, nm=c=>`<div class="mrv-nm"><b>${esc(c.art)}</b><small>${esc(c.name)}</small></div>`;
-  const ord=[...C].sort((a,b)=>strHash(a.name)-strHash(b.name)), win=c=>c.T===best?" win":"";
+  const best=Math.max(...C.map(c=>c.T)), ord=[...C].sort((a,b)=>strHash(a.name)-strHash(b.name)), hasW=C.some(c=>c.win), wn=c=>(hasW?c.win:c.T===best)?" win":"", R=cf.rows;   /* 一位照正式結算的結果（管理員手動改過也照那個），沒有紀錄才看分數 */
+  const ph=c=>`<div class="mrv-ph" style="--hu:${strHash(c.art+c.name)%360}">${c.cov||`<span>${esc((c.art||"?").slice(0,1))}</span>`}</div>`;
+  const em=(c,i)=>`<em data-to="${c.rv[i]}" data-r="${i}" class="${wn(c)}">&nbsp;</em>`, tot=c=>`<strong data-to="${c.T}" class="${wn(c)}">&nbsp;</strong>`, cw=`<i class="mrv-crown">👑</i>`;
   let body="";
-  if(cf.lay==="card") body=`<div class="mrv-cards">${ord.map(c=>`<div class="mrv-card${win(c)}">${cov(c)}${nm(c)}${cf.rows.map(([l],i)=>`<div class="mrv-r"><span>${l}</span><em data-to="${c.rv[i]}" data-r="${i}">0</em></div>`).join("")}<div class="mrv-r t"><span>總分</span><strong data-to="${c.T}">0</strong></div><i class="mrv-crown">👑</i></div>`).join("")}</div>`;
-  else if(cf.lay==="vs"){ const [a,b]=ord; body=`<div class="mrv-vs"><div class="mrv-side${win(a)}">${cov(a)}${nm(a)}<i class="mrv-crown">👑</i></div><b class="mrv-vsb">VS</b><div class="mrv-side${win(b)}">${cov(b)}${nm(b)}<i class="mrv-crown">👑</i></div></div>
-    <div class="mrv-vt">${cf.rows.map(([l],i)=>`<div class="mrv-r"><em data-to="${a.rv[i]}" data-r="${i}">0</em><span>${l}</span><em data-to="${b.rv[i]}" data-r="${i}">0</em></div>`).join("")}<div class="mrv-r t"><strong data-to="${a.T}" class="${win(a)}">0</strong><span>總分</span><strong data-to="${b.T}" class="${win(b)}">0</strong></div></div>`; }
-  else body=`<div class="mrv-tb" style="--n:${ord.length}"><div class="mrv-hd"><span></span>${ord.map(c=>`<div class="mrv-col${win(c)}">${cov(c)}${nm(c)}<i class="mrv-crown">👑</i></div>`).join("")}</div>
-    ${cf.rows.map(([l],i)=>`<div class="mrv-r"><span>${l}</span>${ord.map(c=>`<em data-to="${c.rv[i]}" data-r="${i}" class="${win(c)}">0</em>`).join("")}</div>`).join("")}<div class="mrv-r t"><span>總分</span>${ord.map(c=>`<strong data-to="${c.T}" class="${win(c)}">0</strong>`).join("")}</div></div>`;
-  const intro=cf.top5?`<div class="mrv-top5"><b>TOP 5</b><div>${pool.slice(0,5).map(c=>`<div>${cov(c)}<small>${esc(c.name)}</small></div>`).join("")}</div><b class="mrv-who">WHO'S CHAMPION</b></div>`:"";
-  const w=document.createElement("div"); w.className=`mrv s-${show}${cf.top5?" pre":""}`;
-  w.innerHTML=`${intro}<div class="mrv-in"><div class="mrv-h"><small>${esc(wk)}</small><b>${cf.t}</b></div>${body}${cf.win1?`<div class="mrv-1">1<small>位</small></div>`:""}<button class="mrv-x" data-a="muRevealX">點一下關閉</button></div><div class="mrv-cf"></div>`;
-  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); const D=cf.top5?3200:0; if(cf.top5) setTimeout(()=>w.isConnected&&w.classList.remove("pre"),D);
-  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); el.classList.add("on"); const f=t=>{ const k=Math.min(1,(t-t0)/ms); el.textContent=fmt(Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&w.isConnected) requestAnimationFrame(f); }; requestAnimationFrame(f); };
-  const nR=cf.rows.length; cf.rows.forEach((r,i)=>setTimeout(()=>{ if(w.isConnected) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,700)); },D+900+i*900));
-  setTimeout(()=>w.isConnected&&w.classList.add("sus"),D+900+nR*900);
-  setTimeout(()=>{ if(w.isConnected) w.querySelectorAll("strong").forEach(e=>cnt(e,1400)); },D+1700+nR*900);
-  setTimeout(()=>{ if(!w.isConnected) return; w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:60},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%12)*.08}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); },D+3300+nR*900);
+  if(show==="ts") body=`<div class="mrv-mq"><span>${"YOUR MOMENT. SET IN MOTION ✦ ".repeat(8)}</span></div><div class="mrv-tslogo">THE<br>SHOW.</div><h2 class="mrv-tsh">THE SHOW. CHOICE</h2>
+    <div class="mrv-g3">${ord.map(c=>`<div class="mrv-tl${wn(c)}">${ph(c)}<b>${esc(c.art)}</b>${cw}</div>`).join("")}</div>
+    ${R.map(([l],i)=>`<div class="mrv-row"><span>${l}</span><div class="mrv-g3">${ord.map(c=>em(c,i)).join("")}</div></div>`).join("")}<div class="mrv-g3 mrv-tot">${ord.map(tot).join("")}</div>`;
+  else if(show==="mcd"){ const [a,b]=ord; body=`<i class="mrv-d d1"></i><i class="mrv-d d2"></i><i class="mrv-d d3"></i><i class="mrv-d d4">✕</i><div class="mrv-mclogo">M<br>COUNT<br>DOWN</div>
+    <div class="mrv-mcf"><div class="mrv-tl${wn(a)}">${ph(a)}${cw}</div><div class="mrv-tl${wn(b)}">${ph(b)}${cw}</div><b class="mrv-vsb">VS</b></div>
+    <div class="mrv-mcn">${[a,b].map(c=>`<div class="${wn(c)}"><b>${esc(c.art)}</b><small>${esc(c.name)}</small></div>`).join("")}</div>
+    <div class="mrv-mct">${R.map(([l],i)=>`<div class="mrv-r">${em(a,i)}<span>${l}</span>${em(b,i)}</div>`).join("")}<div class="mrv-r t">${tot(a)}<span>最終合計</span>${tot(b)}</div></div>`; }
+  else if(show==="ink") body=`<div class="mrv-ik"><div class="mrv-iklogo"><b>人氣<br>歌謠</b><u>1</u></div>${ord.map(c=>`<div class="mrv-tl${wn(c)}">${ph(c)}<p><b>${esc(c.art)}</b><small>${esc(c.name)}</small></p>${cw}</div>`).join("")}
+    ${R.map(([l],i)=>`<span class="mrv-pill${i?"":" f"}">${l}</span>${ord.map(c=>em(c,i)).join("")}`).join("")}<span class="mrv-pill t">總分</span>${ord.map(tot).join("")}</div>`;
+  else if(show==="mb") body=`<i class="mrv-d m1">♡</i><i class="mrv-d m2">♪</i><i class="mrv-d m3">☁</i><i class="mrv-d m4">♡</i><div class="mrv-mblogo">SHOW!<b>音樂中心</b></div>
+    <div class="mrv-g3">${ord.map(c=>`<div class="mrv-cd${wn(c)}">${ph(c)}<div class="mrv-cdn"><i>♪</i><p><b>${esc(c.name)}</b><small>${esc(c.art)}</small></p></div><div class="mrv-cdb">${R.map(([l],i)=>`<div><span>${l}</span>${em(c,i)}</div>`).join("")}</div><div class="mrv-cdb t"><div><span>最終合計</span>${tot(c)}</div></div>${cw}</div>`).join("")}</div>`;
+  else { const [a,b]=ord; body=`<div class="mrv-sclogo">SHOW<br>CHAMPION</div><div class="mrv-sc2">${[a,b].map(c=>`<div class="mrv-tl${wn(c)}">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small>${cw}</div>`).join("")}<b class="mrv-vsb">VS</b></div>
+    <div class="mrv-sct">${R.map(([l],i)=>`<div class="mrv-r">${em(a,i)}<span>${l}</span>${em(b,i)}</div>`).join("")}<div class="mrv-r t">${tot(a)}<span>TOTAL</span>${tot(b)}</div></div>`; }
+  const intro=cf.top5?`<div class="mrv-top5"><div class="mrv-t5p"><h3>TOP ${Math.min(5,pool.length)}</h3><div>${pool.slice(0,5).map(c=>`<div class="mrv-tl">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small></div>`).join("")}</div></div><b class="mrv-who">WHO'S<br>CHAMPION?</b></div>`:"";
+  const w=document.createElement("div"); w.className=`mrv dk-keep-mrv s-${show}${cf.top5?" pre":""}`;
+  w.innerHTML=`${intro}<div class="mrv-in">${body}${cf.win1?`<div class="mrv-1">1<small>位</small></div>`:""}<button class="mrv-x" data-a="muRevealX">點一下關閉</button></div><div class="mrv-cf"></div>`;
+  document.body.appendChild(w); requestAnimationFrame(()=>w.classList.add("in")); const D=cf.top5?4200:0; if(cf.top5){ setTimeout(()=>w.isConnected&&w.classList.add("who"),2300); setTimeout(()=>w.isConnected&&w.classList.remove("pre"),D-300); }
+  const ok=()=>w.isConnected, set=(el,n)=>{ el.textContent=fmt(n); };
+  const cnt=(el,ms)=>{ const to=+el.dataset.to, t0=performance.now(); el.classList.add("on"); const f=t=>{ const k=Math.min(1,(t-t0)/ms); set(el,Math.round(to*(1-Math.pow(1-k,3)))); if(k<1&&ok()) requestAnimationFrame(f); }; requestAnimationFrame(f); };
+  const nR=R.length, T0=D+900, GAP=780; R.forEach((r,i)=>setTimeout(()=>{ if(ok()) w.querySelectorAll(`em[data-r="${i}"]`).forEach(e=>cnt(e,520)); },T0+i*GAP));
+  /* 總分：先亂數滾動吊胃口，再停在真正的分數 */
+  const T1=T0+nR*GAP+250, ROLL=2000; setTimeout(()=>{ if(!ok()) return; w.classList.add("sus"); const S=[...w.querySelectorAll("strong")]; S.forEach(e=>e.classList.add("on")); const iv=setInterval(()=>{ if(!ok()){ clearInterval(iv); return; } S.forEach(e=>set(e,Math.round(+e.dataset.to*(.55+Math.random()*.6)))); },70);
+    setTimeout(()=>{ clearInterval(iv); if(!ok()) return; S.forEach(e=>set(e,+e.dataset.to)); w.classList.remove("sus"); w.classList.add("done"); w.querySelector(".mrv-cf").innerHTML=Array.from({length:70},(_,k)=>`<i style="left:${(k*37)%100}%;animation-delay:${(k%14)*.07}s;background:${["#FFD54A","#FF6FB1","#7C8CFF","#fff","#C6F432"][k%5]}"></i>`).join(""); },ROLL); },T1);
   try{ localStorage.setItem("hc_mur_"+wk+"_"+show,"1"); }catch(e){} }
 /* 一位剛公布、這支手機還沒看過 → 打開打歌頁時自動播一次 */
 function muRevealAuto(){ try{ if(document.querySelector(".mrv")) return; for(const wk of [curWeek(),shiftWeek(curWeek(),-1)]){ const W=getMShow().wins[wk]||{}; for(const sh of SHOWS){ if(W[sh.id]&&showEnded(sh.id,wk)&&!localStorage.getItem("hc_mur_"+wk+"_"+sh.id)&&Date.now()-showEndTs(sh.id,wk)<3*864e5){ muRevealOpen(sh.id,wk); return; } } } }catch(e){} }
