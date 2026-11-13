@@ -5396,7 +5396,12 @@ function openVote(sid){
 }
 /* 管理員：FOC 的音樂節目管理 */
 
-function muNotify(text,gid){ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
+/* 藝人工作上的事（一位、回歸、演唱會、世巡、簽售、綜藝、代言、運動會…）一律自動發社群公告。
+   編號用事件本身決定（同一件事在每支管理員手機上都是同一個編號），所以不會重複發 */
+function gnAuto(gid,title,body,key){ try{ if(!gid||!groupOf(gid)) return; const id="gna_"+strHash(String(key||title)).toString(36), GN=S.get(K.gNotices,[])||[]; if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
+  GN.unshift({id,group:gid,auto:1,title:String(title).replace(/^\s+/,""),body:body||String(title),ts:Date.now()}); S.set(K.gNotices,GN.slice(0,400)); }catch(e){} }
+const gnOfMid=mid=>(MEMBERS[mid]||{}).group||"";
+function muNotify(text,gid){ gnAuto(gid,text,"",weekKey(Date.now())+"|"+text);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
 function setWinner(show,sid,wk0,manual){
   const ms=getMShow(), wk=wk0||ui.muWk||curWeek(); const before=sid?songStats(sid):null; if(manual){ ms.manual={...(ms.manual||{})}; ms.manual[wk]={...(ms.manual[wk]||{}),[show]:1}; }   /* 管理員手動改過：自動結算不再動它 */
   ms.wins[wk]={...(ms.wins[wk]||{})}; if(sid) ms.wins[wk][show]=sid; else delete ms.wins[wk][show]; ms.wtype[wk]=weekType(wk); S.set(K.mshow,ms);
@@ -5549,7 +5554,7 @@ function fsNotify(text,gid){ const list=S.get(K.notifs,[]); list.unshift({id:"n"
 function fsCreate({gid,type,title,startTs,quota,specials,toSign}){
   const members=fsMembersOf(gid), ev={id:"fs"+Date.now(),group:gid,type,toSign:!!toSign,title,startTs,closeTs:startTs-5*864e5,quota,specials,members,entries:type==="solo"?Object.fromEntries(members.map(m=>[m,{}])):{},names:{},notes:{},
     status:"open",slots:[],wait:{},cur:-1,mi:0,curStart:0,chats:{},signed:{},seen:{}};
-  fsSave(ev); fsNotify(`✍️ ${fsName(ev)} ${fsTypeName(ev)}開放報名：${title}`,gid); return ev;
+  fsSave(ev); fsNotify(`✍️ ${fsName(ev)} ${fsTypeName(ev)}開放報名：${title}`,gid); gnAuto(gid,`✍️ ${fsName(ev)} ${fsTypeName(ev)}開放報名：${title}`,"","fs:"+ev.id); return ev;
 }
 function fsPick(pool){ const tot=pool.reduce((a,x)=>a+x.n,0); let r=Math.random()*tot; for(let i=0;i<pool.length;i++){ r-=pool[i].n; if(r<=0) return pool.splice(i,1)[0]; } return pool.pop(); }
 function fsLottery(ev,ent,mid){   // 一個名單：特別粉絲 → 其他中籤 → 候補
@@ -7632,7 +7637,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "trTest": { toast("翻譯中…"); translateMany(["今天的舞台好棒！@@@ 辛苦了 💜"],"ko").then(o=>{ toast(o&&o[0]?`${trEngine()}：${o[0]}`:(HB_ON?"DeepL 還沒接好（後台的 deepl 和 DEEPL_KEY）":useDeepL()?"連不到 DeepL 中繼站（在 claude.ai 裡會被擋，搬到自己的網站後才會通）":"翻譯服務還沒連上")); }); break; }
     case "muWk": { const n=+t.dataset.v, k=shiftWeek(ui.muWk||curWeek(),n); if(k>curWeek()) break; ui.muWk=k; lsRerender(); break; }
     case "muWin": { if(t.disabled) break; const sid=t.dataset.v||null, sh=t.dataset.s; setWinner(sh,sid,null,true); lsRerender(); if(sid) toast(`已公布 ${SHOWS.find(x=>x.id===sh).name} 一位，粉絲會收到通知`); break; }
-    case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); lsRerender(); break; }
+    case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); if(!l.includes(id)&&MEMBERS[id]){ const shn=(SHOWS.find(x=>x.id===sh)||{}).name||sh; gnAuto(gnOfMid(id),`🎤 ${artName(id,"feed")} 擔任 ${shn} ${mon.replace(/^\d+-0?/,"")} 月 MC`,"","mc:"+mon+":"+sh+":"+id); } lsRerender(); break; }
     
     case "muPreDel": { const ms=getMShow(); ms.pre=(ms.pre||[]).filter(p=>p.id!==t.dataset.v); S.set(K.mshow,ms); lsRerender(); break; }
     
@@ -11127,7 +11132,7 @@ function vsPayAll(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[VS_KEY]==n
     /* 押注池抽 5%，管理員們平分當薪水 */
     { const cut=Math.floor(pool*VS_CUT), ads=Object.keys(ACCOUNTS).filter(e=>ACCOUNTS[e]&&ACCOUNTS[e].role==="admin"); if(cut>0&&ads.length){ const each=Math.floor(cut/ads.length); ads.forEach(e=>{ const id=`vsh_${ep.id}_${e}`; if(!have.has(id)&&each>0){ L.push({id,to:e,n:each,why:`${VSHOW[ep.show].name}・押注抽成（管理員薪水）`,by:"auto",ts:Date.now()}); have.add(id); add++; } }); } }
     ep.mids.forEach(m=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return; const id=`vsa_${ep.id}_${m}`; if(have.has(id)) return; const w=win.includes(m);
-      L.push({id,to:em,n:w?600:100,why:`${VSHOW[ep.show].name}・${w?"冠軍（含出演費）":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; });
+      L.push({id,to:em,n:w?600:100,why:`${VSHOW[ep.show].name}・${w?"冠軍（含出演費）":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; gnAuto(gnOfMid(m),`📺 ${artName(m,"feed")} 出演《${VSHOW[ep.show].name}》${w?"，拿下冠軍！":""}`,"","vs:"+id); });
     ep.paid=Date.now(); vsPut(ep); dirty=true; });
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
 setInterval(vsPayAll,60e3); setTimeout(vsPayAll,12e3);
@@ -11360,7 +11365,7 @@ const bzFanSub=()=>{ const n=bzAll().filter(b=>b.type==="mag"&&bzOut(b)&&bzSubs(
 /* 交件就發酬勞、雜誌賣出的錢記進營收（管理員的手機發，不會重複） */
 function bzPay(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[BZ_KEY]==null) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)); let add=0;
   bzAll().forEach(b=>!String(b.id).startsWith("demo_")&&bzSubs(b).forEach(m=>{ const id=`bz_${b.id}_${m}`; if(have.has(id)) return; const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return;
-    L.push({id,to:em,n:b.reward||0,why:`${bzKind(b)}・${b.name}`,by:"auto",ts:Date.now()}); have.add(id); add++; }));
+    L.push({id,to:em,n:b.reward||0,why:`${bzKind(b)}・${b.name}`,by:"auto",ts:Date.now()}); have.add(id); add++; gnAuto(gnOfMid(m),`📸 ${artName(m,"feed")} ${bzKind(b)}「${b.name}」公開`,"","bz:"+id); }));
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
 setInterval(bzPay,60e3); setTimeout(bzPay,13e3);
 function bzPhoto(b,m,cls=""){ const a=(b.ans||{})[m]||{}; return a.img?`<img class="bz-img ${cls}" data-mid="${a.img}" alt="" style="aspect-ratio:${a.w||4}/${a.h||5}">`:`<span class="bz-img ph ${cls}" style="background:${grad((MEMBERS[m]||{}).g||0)}"></span>`; }
@@ -11740,7 +11745,7 @@ function isPast(){ const P=(isGet().past||[]).slice(-3).reverse(); return P.leng
 /* 閉幕結算：藝人獎牌積分、加油第一名的粉絲（管理員的手機發，每筆有固定編號） */
 function isPay(){ try{ if(!isAdminAcct()) return; const A=isGet(), c=A.cur; if(!c||c.paid) return; if(c.st==="on"&&Date.now()<c.end) return; c.st="done";
   const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), md=isMedals(c), push=(id,to,n,why)=>{ if(!to||have.has(id)) return; L.push({id,to,n,why,by:"auto",ts:Date.now()}); have.add(id); };
-  Object.entries(md.M).forEach(([m,a])=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); const n=a[0]*IS_MEDAL[0]+a[1]*IS_MEDAL[1]+a[2]*IS_MEDAL[2]; if(n) push(`isa_${c.id}_${m}`,em,n,`${c.name}・獎牌`); });
+  Object.entries(md.M).forEach(([m,a])=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); const n=a[0]*IS_MEDAL[0]+a[1]*IS_MEDAL[1]+a[2]*IS_MEDAL[2]; if(n){ push(`isa_${c.id}_${m}`,em,n,`${c.name}・獎牌`); gnAuto(gnOfMid(m),`🏅 ${artName(m,"feed")} 在${c.name}拿下${[["金牌",a[0]],["銀牌",a[1]],["銅牌",a[2]]].filter(x=>x[1]).map(x=>x[0]+(x[1]>1?" ×"+x[1]:"")).join("、")}`,"","is:"+c.id+":"+m); } });
   const top=isCheerTop(c)[0]; if(top) Object.keys((c.ch||{})[top[0]]||{}).forEach(em=>push(`isf_${c.id}_${em}`,em,IS_FAN_PRIZE,`${c.name}・加油第一名`));
   S.set(K.ptGrants,L.slice(-2000)); c.paid=Date.now(); A.past=(A.past||[]).concat([{id:c.id,name:c.name,top:md.GM.slice(0,3),at:Date.now()}]).slice(-10); A.cur=c; S.set(IS_KEY,A); }catch(e){} }
 setInterval(isPay,60e3); setTimeout(isPay,14e3);
@@ -12309,7 +12314,7 @@ function preTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.debut]==
     const L=getDebut(); let ch=false; L.forEach(x=>{ if(x.status==="pre"&&x.day&&x.day>now&&!x.annId&&x.day-now<=PRE_ANN){ dbAnn(x); ch=true; } if(x.status==="pre"&&x.day&&dbRelAt(x)<=now){ if(x.gid) dbReveal(x); else dbDebutNow(L,x); ch=true; } }); if(ch){ S.set(K.debut,L); applyRoster(); render(); }
     { const m0=getMShow(), due=(m0.pre||[]).filter(p=>p.day>now&&!p.annId&&p.day-now<=PRE_ANN); if(due.length){ due.forEach(cbAnn); S.set(K.mshow,m0); } }
     { const L2=getDebut(), todo=L2.filter(x=>x.status==="ok"&&x.song&&x.gid&&!x.songOn&&groupOf(x.gid)); if(todo.length){ const m1=getMShow(); todo.forEach(x=>{ x.songOn=1; const sid="s"+(x.day||Date.now()); if(m1.songs.some(s=>s.id===sid)) return; m1.songs.push({id:sid,gid:x.gid,title:x.song,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{}),...(x.au?{au:x.au}:{})}); cbrMvPublish({gid:x.gid,title:x.song,mv:x.mv,mvt:x.mvt}); try{ const fy=(x.pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ const mid=k==="me"?((x.mids||{})[x.email]||x.mid):((m=>m&&(x.mids||{})[m.email])((x.mems||[])[+k.slice(1)])); if(mid&&fy[k]&&fy[k].m) M[mid]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String((x.pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } m1.songs.filter(q=>q.id===sid||q.id===sid+"b").forEach(q=>fairyEnsurePlan(q)); }catch(e){} { const t2=String((x.pr||{}).t2||"").trim(); if(t2&&!m1.songs.some(s=>s.id===sid+"b")){ m1.songs.push({id:sid+"b",gid:x.gid,title:t2,debut:1,rel:dbRelAt(x),...(x.rtype?{rtype:x.rtype}:{})}); cbrMvPublish({gid:x.gid,title:t2,mv:x.pr.mv2}); } } }); S.set(K.mshow,m1); S.set(K.debut,L2); render(); } }   /* 出道當天：出道曲開始打歌 */
-    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); try{ const c1=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), fy=((c1||{}).pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ if(MEMBERS[k]&&fy[k]&&fy[k].m) M[k]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String(((c1||{}).pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } ms.songs.filter(q=>q.id===sid||q.id===sid+"b").forEach(q=>fairyEnsurePlan(q)); }catch(e){} { const c2=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), t2=String(((c2||{}).pr||{}).t2||"").trim(); if(t2&&!ms.songs.some(s=>s.id===sid+"b")){ ms.songs.push({id:sid+"b",gid:p.gid,title:t2,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{})}); cbrMvPublish({gid:p.gid,title:t2,mv:c2.pr.mv2}); } } const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
+    const ms=getMShow(); if((ms.pre||[]).some(p=>cbRelAt(p)<=now)){ ms.pre.filter(p=>cbRelAt(p)<=now).forEach(p=>{ const sid="s"+(p.day+[...String(p.id)].reduce((a,c)=>a+c.charCodeAt(0),0)%900); if(ms.songs.some(s=>s.id===sid)) return; ms.songs.push({id:sid,gid:p.gid,title:p.title,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{}),...(p.au?{au:p.au}:{})}); cbrMvPublish(p); { const g=groupOf(p.gid); if(g) gnAuto(p.gid,`💿 ${g.name}《${p.title}》正式回歸！`,`${g.name}《${p.title}》今天正式回歸！\nMV 已經公開，打歌也開始了，一起幫忙投票吧 💜`,"cb:"+p.id); } try{ const c1=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), fy=((c1||{}).pr||{}).fy||{}, M={}; Object.keys(fy).forEach(k=>{ if(MEMBERS[k]&&fy[k]&&fy[k].m) M[k]=fy[k]; }); if(Object.keys(M).length){ fairySetClips(sid,M); if(String(((c1||{}).pr||{}).t2||"").trim()) fairySetClips(sid+"b",M); } ms.songs.filter(q=>q.id===sid||q.id===sid+"b").forEach(q=>fairyEnsurePlan(q)); }catch(e){} { const c2=(typeof getCbr==="function"?getCbr():[]).find(y=>y.id===p.req), t2=String(((c2||{}).pr||{}).t2||"").trim(); if(t2&&!ms.songs.some(s=>s.id===sid+"b")){ ms.songs.push({id:sid+"b",gid:p.gid,title:t2,rel:cbRelAt(p),...(p.rtype?{rtype:p.rtype}:{})}); cbrMvPublish({gid:p.gid,title:t2,mv:c2.pr.mv2}); } } const g=groupOf(p.gid); if(g) muNotify(`🎤 ${g.name}《${p.title}》回歸了，開始打歌！`,p.gid); }); ms.pre=ms.pre.filter(p=>cbRelAt(p)>now); S.set(K.mshow,ms); render(); } }catch(e){} }
 setInterval(preTick,60e3); setTimeout(preTick,9e3);
 /* 出道 MV：這團之前沒有任何一首歌、也沒有更早的 MV（管理員們是先出道、之後才補傳 MV） */
 function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.ended||[])].filter(x=>x.gid===v.gid&&x.mv!==v.id); if(mine.some(x=>!x.debut||songRel(x)<v.ts)) return false;

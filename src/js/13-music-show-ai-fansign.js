@@ -99,7 +99,12 @@ function openVote(sid){
 }
 /* 管理員：FOC 的音樂節目管理 */
 
-function muNotify(text,gid){ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
+/* 藝人工作上的事（一位、回歸、演唱會、世巡、簽售、綜藝、代言、運動會…）一律自動發社群公告。
+   編號用事件本身決定（同一件事在每支管理員手機上都是同一個編號），所以不會重複發 */
+function gnAuto(gid,title,body,key){ try{ if(!gid||!groupOf(gid)) return; const id="gna_"+strHash(String(key||title)).toString(36), GN=S.get(K.gNotices,[])||[]; if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
+  GN.unshift({id,group:gid,auto:1,title:String(title).replace(/^\s+/,""),body:body||String(title),ts:Date.now()}); S.set(K.gNotices,GN.slice(0,400)); }catch(e){} }
+const gnOfMid=mid=>(MEMBERS[mid]||{}).group||"";
+function muNotify(text,gid){ gnAuto(gid,text,"",weekKey(Date.now())+"|"+text);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
 function setWinner(show,sid,wk0,manual){
   const ms=getMShow(), wk=wk0||ui.muWk||curWeek(); const before=sid?songStats(sid):null; if(manual){ ms.manual={...(ms.manual||{})}; ms.manual[wk]={...(ms.manual[wk]||{}),[show]:1}; }   /* 管理員手動改過：自動結算不再動它 */
   ms.wins[wk]={...(ms.wins[wk]||{})}; if(sid) ms.wins[wk][show]=sid; else delete ms.wins[wk][show]; ms.wtype[wk]=weekType(wk); S.set(K.mshow,ms);
@@ -252,7 +257,7 @@ function fsNotify(text,gid){ const list=S.get(K.notifs,[]); list.unshift({id:"n"
 function fsCreate({gid,type,title,startTs,quota,specials,toSign}){
   const members=fsMembersOf(gid), ev={id:"fs"+Date.now(),group:gid,type,toSign:!!toSign,title,startTs,closeTs:startTs-5*864e5,quota,specials,members,entries:type==="solo"?Object.fromEntries(members.map(m=>[m,{}])):{},names:{},notes:{},
     status:"open",slots:[],wait:{},cur:-1,mi:0,curStart:0,chats:{},signed:{},seen:{}};
-  fsSave(ev); fsNotify(`✍️ ${fsName(ev)} ${fsTypeName(ev)}開放報名：${title}`,gid); return ev;
+  fsSave(ev); fsNotify(`✍️ ${fsName(ev)} ${fsTypeName(ev)}開放報名：${title}`,gid); gnAuto(gid,`✍️ ${fsName(ev)} ${fsTypeName(ev)}開放報名：${title}`,"","fs:"+ev.id); return ev;
 }
 function fsPick(pool){ const tot=pool.reduce((a,x)=>a+x.n,0); let r=Math.random()*tot; for(let i=0;i<pool.length;i++){ r-=pool[i].n; if(r<=0) return pool.splice(i,1)[0]; } return pool.pop(); }
 function fsLottery(ev,ent,mid){   // 一個名單：特別粉絲 → 其他中籤 → 候補

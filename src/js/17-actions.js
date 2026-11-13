@@ -602,7 +602,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "trTest": { toast("翻譯中…"); translateMany(["今天的舞台好棒！@@@ 辛苦了 💜"],"ko").then(o=>{ toast(o&&o[0]?`${trEngine()}：${o[0]}`:(HB_ON?"DeepL 還沒接好（後台的 deepl 和 DEEPL_KEY）":useDeepL()?"連不到 DeepL 中繼站（在 claude.ai 裡會被擋，搬到自己的網站後才會通）":"翻譯服務還沒連上")); }); break; }
     case "muWk": { const n=+t.dataset.v, k=shiftWeek(ui.muWk||curWeek(),n); if(k>curWeek()) break; ui.muWk=k; lsRerender(); break; }
     case "muWin": { if(t.disabled) break; const sid=t.dataset.v||null, sh=t.dataset.s; setWinner(sh,sid,null,true); lsRerender(); if(sid) toast(`已公布 ${SHOWS.find(x=>x.id===sh).name} 一位，粉絲會收到通知`); break; }
-    case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); lsRerender(); break; }
+    case "muMc": { const ms=getMShow(), mon=t.dataset.mon, sh=t.dataset.s, id=t.dataset.v; ms.mc[mon]={...(ms.mc[mon]||{})}; const l=ms.mc[mon][sh]||[]; ms.mc[mon][sh]=l.includes(id)?l.filter(x=>x!==id):[...l,id]; S.set(K.mshow,ms); if(!l.includes(id)&&MEMBERS[id]){ const shn=(SHOWS.find(x=>x.id===sh)||{}).name||sh; gnAuto(gnOfMid(id),`🎤 ${artName(id,"feed")} 擔任 ${shn} ${mon.replace(/^\d+-0?/,"")} 月 MC`,"","mc:"+mon+":"+sh+":"+id); } lsRerender(); break; }
     
     case "muPreDel": { const ms=getMShow(); ms.pre=(ms.pre||[]).filter(p=>p.id!==t.dataset.v); S.set(K.mshow,ms); lsRerender(); break; }
     

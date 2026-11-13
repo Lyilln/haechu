@@ -85,7 +85,7 @@ function vsPayAll(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[VS_KEY]==n
     /* 押注池抽 5%，管理員們平分當薪水 */
     { const cut=Math.floor(pool*VS_CUT), ads=Object.keys(ACCOUNTS).filter(e=>ACCOUNTS[e]&&ACCOUNTS[e].role==="admin"); if(cut>0&&ads.length){ const each=Math.floor(cut/ads.length); ads.forEach(e=>{ const id=`vsh_${ep.id}_${e}`; if(!have.has(id)&&each>0){ L.push({id,to:e,n:each,why:`${VSHOW[ep.show].name}・押注抽成（管理員薪水）`,by:"auto",ts:Date.now()}); have.add(id); add++; } }); } }
     ep.mids.forEach(m=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return; const id=`vsa_${ep.id}_${m}`; if(have.has(id)) return; const w=win.includes(m);
-      L.push({id,to:em,n:w?600:100,why:`${VSHOW[ep.show].name}・${w?"冠軍（含出演費）":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; });
+      L.push({id,to:em,n:w?600:100,why:`${VSHOW[ep.show].name}・${w?"冠軍（含出演費）":"出演費"}`,by:"auto",ts:Date.now()}); have.add(id); add++; gnAuto(gnOfMid(m),`📺 ${artName(m,"feed")} 出演《${VSHOW[ep.show].name}》${w?"，拿下冠軍！":""}`,"","vs:"+id); });
     ep.paid=Date.now(); vsPut(ep); dirty=true; });
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
 setInterval(vsPayAll,60e3); setTimeout(vsPayAll,12e3);
@@ -318,7 +318,7 @@ const bzFanSub=()=>{ const n=bzAll().filter(b=>b.type==="mag"&&bzOut(b)&&bzSubs(
 /* 交件就發酬勞、雜誌賣出的錢記進營收（管理員的手機發，不會重複） */
 function bzPay(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[BZ_KEY]==null) return; const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)); let add=0;
   bzAll().forEach(b=>!String(b.id).startsWith("demo_")&&bzSubs(b).forEach(m=>{ const id=`bz_${b.id}_${m}`; if(have.has(id)) return; const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); if(!em) return;
-    L.push({id,to:em,n:b.reward||0,why:`${bzKind(b)}・${b.name}`,by:"auto",ts:Date.now()}); have.add(id); add++; }));
+    L.push({id,to:em,n:b.reward||0,why:`${bzKind(b)}・${b.name}`,by:"auto",ts:Date.now()}); have.add(id); add++; gnAuto(gnOfMid(m),`📸 ${artName(m,"feed")} ${bzKind(b)}「${b.name}」公開`,"","bz:"+id); }));
   if(add) S.set(K.ptGrants,L.slice(-2000)); }catch(e){} }
 setInterval(bzPay,60e3); setTimeout(bzPay,13e3);
 function bzPhoto(b,m,cls=""){ const a=(b.ans||{})[m]||{}; return a.img?`<img class="bz-img ${cls}" data-mid="${a.img}" alt="" style="aspect-ratio:${a.w||4}/${a.h||5}">`:`<span class="bz-img ph ${cls}" style="background:${grad((MEMBERS[m]||{}).g||0)}"></span>`; }
@@ -698,7 +698,7 @@ function isPast(){ const P=(isGet().past||[]).slice(-3).reverse(); return P.leng
 /* 閉幕結算：藝人獎牌積分、加油第一名的粉絲（管理員的手機發，每筆有固定編號） */
 function isPay(){ try{ if(!isAdminAcct()) return; const A=isGet(), c=A.cur; if(!c||c.paid) return; if(c.st==="on"&&Date.now()<c.end) return; c.st="done";
   const L=S.get(K.ptGrants,[])||[], have=new Set(L.map(g=>g.id)), md=isMedals(c), push=(id,to,n,why)=>{ if(!to||have.has(id)) return; L.push({id,to,n,why,by:"auto",ts:Date.now()}); have.add(id); };
-  Object.entries(md.M).forEach(([m,a])=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); const n=a[0]*IS_MEDAL[0]+a[1]*IS_MEDAL[1]+a[2]*IS_MEDAL[2]; if(n) push(`isa_${c.id}_${m}`,em,n,`${c.name}・獎牌`); });
+  Object.entries(md.M).forEach(([m,a])=>{ const em=Object.keys(ACCOUNTS).find(e=>ACCOUNTS[e]&&ACCOUNTS[e].member===m); const n=a[0]*IS_MEDAL[0]+a[1]*IS_MEDAL[1]+a[2]*IS_MEDAL[2]; if(n){ push(`isa_${c.id}_${m}`,em,n,`${c.name}・獎牌`); gnAuto(gnOfMid(m),`🏅 ${artName(m,"feed")} 在${c.name}拿下${[["金牌",a[0]],["銀牌",a[1]],["銅牌",a[2]]].filter(x=>x[1]).map(x=>x[0]+(x[1]>1?" ×"+x[1]:"")).join("、")}`,"","is:"+c.id+":"+m); } });
   const top=isCheerTop(c)[0]; if(top) Object.keys((c.ch||{})[top[0]]||{}).forEach(em=>push(`isf_${c.id}_${em}`,em,IS_FAN_PRIZE,`${c.name}・加油第一名`));
   S.set(K.ptGrants,L.slice(-2000)); c.paid=Date.now(); A.past=(A.past||[]).concat([{id:c.id,name:c.name,top:md.GM.slice(0,3),at:Date.now()}]).slice(-10); A.cur=c; S.set(IS_KEY,A); }catch(e){} }
 setInterval(isPay,60e3); setTimeout(isPay,14e3);
