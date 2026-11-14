@@ -65,6 +65,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     if(r.capN){ const gk=D.ds.join(",")+"#"+r.grp, prev=used[gk]||0, lim=r.capN*nd; if(cnt+prev>lim){ why.push(`${r.grp}${nd>1?`${nd} 天`:"一天"}最多 ${lim} 首`); cnt=Math.max(0,lim-prev); } used[gk]=prev+cnt; }
     let give=r.pts*cnt; const kk=D.ds.join(",")+"|"+r.name, got=used[kk]||0, cap=r.cap!=null?r.cap*nd:null;
     if(cap!=null&&give+got>cap){ why.push(`${nd>1?`${nd} 天`:"一天"}最多 ${fmt(cap)}`); give=Math.max(0,cap-got); } used[kk]=got+give;
+    if(r.capP){ const n2=D.ds.filter(x=>x>=PT_CAPP_FROM).length; if(n2){ const gk="P"+D.ds.join(",")+"#"+r.grp, prev=used[gk]||0, lim=r.capP*n2; if(give+prev>lim){ why.push(`${r.grp}${n2>1?`${n2} 天`:"一天"}合計最多 ${fmt(lim)} 分`); give=Math.max(0,lim-prev); } used[gk]=prev+give; } }
     if(claim!=null&&claim!==give&&!why.length) why.push(`${fmt(r.pts)} × ${cnt} = ${fmt(r.pts*cnt)}，登記寫 ${fmt(claim)}`);
     D.items.push({seg,r,claim,give,st:claim!=null&&claim!==give||why.length?"fix":"ok",why:why.join("・")}); D.give+=give; });
   let inf=null; if(!start&&days[0]&&days[0].said!=null){ start=Math.max(0,days[0].said-days[0].claim); inf=start; }   /* 沒填起始分數：照他第一天寫的總分推回去 */

@@ -1058,8 +1058,8 @@ const PT_RULES_DEF=`#KISS
 ➞挑戰自戲 +500｜兩人合寫一篇
 ➞粉絲信 +100｜一封，一天最多 300 分
 ➞填詞 +500｜至少到副歌一半
-➞自選曲翻唱 +500｜每首一次，30 秒以上，翻唱合計一天最多 20 首
-➞指定曲翻唱 +800｜每首一次，1 分鐘以上，翻唱合計一天最多 20 首
+➞自選曲翻唱 +500｜每首一次，30 秒以上，翻唱合計一天最多 2,000 分
+➞指定曲翻唱 +800｜每首一次，1 分鐘以上，翻唱合計一天最多 2,000 分
 
 ✦ 舞台與里程碑
 ➞出道 showcase +3,000
@@ -1129,7 +1129,7 @@ App 外流、情節嚴重者的處理方式請看 #NTK
 
 ≈ 每日請在留言區登記積分 ≈
 ≈ 管理員看心情更新積分與等級 ≈`;
-const ptRulesText=()=>((S.get(PT_RULES_K,null)||{}).text)||PT_RULES_DEF;
+const ptRulesText=()=>(((S.get(PT_RULES_K,null)||{}).text)||PT_RULES_DEF).replace(/翻唱合計一天最多\s*20\s*首/g,"翻唱合計一天最多 2,000 分");   /* 11/14 起翻唱改成一天 2,000 分上限（存過的舊積分表也跟著換） */
 const ptNz=v=>String(v||"").normalize("NFKC").toLowerCase().replace(/[\s·•・,、:;!?~\-—_|'"「」『』【】\[\]➞→➜*＊]/g,"");
 const ptNum=v=>+String(v||"").replace(/[,，\s]/g,"");
 function ptRulesParse(txt){ const out=[]; let sec="";
@@ -1138,9 +1138,9 @@ function ptRulesParse(txt){ const out=[]; let sec="";
     if(!/^[➞→➜]/.test(l)) return; const body=l.replace(/^[➞→➜]\s*/,""), cut=body.search(/[｜|]/), head=(cut<0?body:body.slice(0,cut)).trim(), desc=cut<0?"":body.slice(cut+1).trim();
     const m=head.match(/^(.*?)\s*([+＋−-])\s*([\d,，]+|[？?]+)?\s*$/); let name=head, pts=null, neg=sec==="扣";
     if(m){ name=m[1].trim(); if(m[3]&&/\d/.test(m[3])) pts=ptNum(m[3]); if(m[2]==="−"||m[2]==="-") neg=true; }
-    const auto=/自動/.test(desc+head), cm=desc.match(/一天最多\s*([\d,，]+)\s*分/), once=/一天一次/.test(desc);
+    const auto=/自動/.test(desc+head), cm=desc.replace(/[^\s，,、。]{1,6}合計一天最多\s*[\d,，]+\s*分/,"").match(/一天最多\s*([\d,，]+)\s*分/), once=/一天一次/.test(desc);
     const role=/[（(]粉絲[）)]/.test(name)?"fan":/[（(]藝人[）)]/.test(name)?"artist":"", base=name.replace(/[（(][^）)]*[）)]/g,"").trim();
-    out.push({name,base,key:ptNz(base),pts,ask:pts==null&&!auto,neg,auto,cap:cm?ptNum(cm[1]):once&&pts?pts:null,once,role,desc,per:/一分鐘/.test(desc)?"分鐘":"",...(()=>{ const g=desc.match(/([^\s，,、。]{1,6})合計一天最多\s*([\d,，]+)\s*首/); return g?{grp:g[1],capN:ptNum(g[2])}:{}; })()}); });
+    out.push({name,base,key:ptNz(base),pts,ask:pts==null&&!auto,neg,auto,cap:cm?ptNum(cm[1]):once&&pts?pts:null,once,role,desc,per:/一分鐘/.test(desc)?"分鐘":"",...(()=>{ const g=desc.match(/([^\s，,、。]{1,6})合計一天最多\s*([\d,，]+)\s*首/), gp=desc.match(/([^\s，,、。]{1,6})合計一天最多\s*([\d,，]+)\s*分/); return g?{grp:g[1],capN:ptNum(g[2])}:gp?{grp:gp[1],capP:ptNum(gp[2])}:{}; })()}); });
   return out; }
 /* 把一行登記對到積分表的哪一項：先找完整包含名字的，再用字元比對（「TIE訊息」也能對到「TIE 發訊息」） */
 function ptMatch(seg,R,role){ const k=ptNz(seg), want=/粉絲/.test(seg)?"fan":/藝人/.test(seg)?"artist":"";
@@ -1173,6 +1173,7 @@ function ptDateLine(seg,yr,curMo){ const t=seg.normalize("NFKC").trim(); if(/[+]
     if(!(mo>=1&&mo<=12&&dd>=1&&dd<=31)) return null; const now=new Date(); let yy=y||yr; if(!y&&mo>now.getMonth()+2) yy--; out.push(`${yy}-${String(mo).padStart(2,"0")}-${String(dd).padStart(2,"0")}`); }
   let [a,b]=[out[0],out[1]||out[0]]; if(b<a) [a,b]=[b,a]; const ds=[]; for(let t0=new Date(a+"T00:00:00").getTime(), t1=new Date(b+"T00:00:00").getTime(), x=t0; x<=t1&&ds.length<31; x+=864e5) ds.push(ymdK(x)); return ds; }
 const ptDs=ds=>ds.length>1?`${ds[0].slice(5).replace("-","/")}–${ds[ds.length-1].slice(5).replace("-","/")}`:ds[0].slice(5).replace("-","/");
+const PT_CAPP_FROM="2026-11-14";   /* 翻唱一天 2,000 分上限從這天開始算；之前登記的分數照舊 */
 function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=(ACCOUNTS[email]||{}).member?"artist":"fan", out=[], used={}, notes=[]; let ds=[day0], total=null;
   R.forEach(r=>{ r.alias=[]; PT_ALIAS.forEach(([re,al])=>{ if(re.test(r.key)) r.alias=al.map(ptNz); }); const bare=r.key.replace(/^[a-z]+/,""); if(bare!==r.key&&bare.length>=3&&!r.alias.includes(bare)) r.alias.push(bare); });   /* 「TIE 被翻牌」寫成「被翻牌」也對得到 */
   const now=new Date(), yr=now.getFullYear();
@@ -1195,6 +1196,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
     if(r.capN){ const gk=ds.join(",")+"#"+r.grp, prev=R.filter(x=>x.grp===r.grp&&x.pts).reduce((n,x)=>n+Math.floor(ptRegGot(email,ds,x.name)/x.pts),0)+(used[gk]||0), lim=r.capN*days; if(cnt+prev>lim){ it.why.push(`${r.grp}${days>1?`${days} 天`:"一天"}最多 ${lim} 首${prev?`，已經登記 ${prev} 首`:""}`); cnt=Math.max(0,lim-prev); } used[gk]=(used[gk]||0)+cnt; }
     it.cnt=cnt; let give=unit*cnt; const kk=ds.join(",")+"|"+r.name, got=ptRegGot(email,ds,r.name)+(used[kk]||0), cap=r.cap!=null?r.cap*days:null;
     if(cap!=null&&give+got>cap){ const left=Math.max(0,cap-got); it.why.push(r.once?(got?`一天只能一次，${days>1?"這幾天":"那天"}已經加過了`:"一天只能一次"):got?`${days>1?`${days} 天`:"一天"}最多 ${fmt(cap)}，已經加過 ${fmt(got)}`:`${days>1?`${days} 天`:"一天"}最多 ${fmt(cap)}`); give=left; }
+    if(r.capP){ const nd=ds.filter(x=>x>=PT_CAPP_FROM).length; if(nd){ const gk="P"+ds.join(",")+"#"+r.grp, prev=R.filter(x=>x.grp===r.grp).reduce((n,x)=>n+ptRegGot(email,ds,x.name),0)+(used[gk]||0), lim=r.capP*nd; if(give+prev>lim){ it.why.push(`${r.grp}${nd>1?`${nd} 天`:"一天"}合計最多 ${fmt(lim)} 分${prev?`，已經登記 ${fmt(prev)}`:""}`); give=Math.max(0,lim-prev); } used[gk]=(used[gk]||0)+give; } }
     used[kk]=(used[kk]||0)+give; it.give=give;
     if(claim!=null&&claim!==give&&!it.why.length) it.why.push(`${fmt(unit)} × ${cnt} = ${fmt(unit*cnt)}，登記寫 ${fmt(claim)}`);
     it.st=give===0?"no":(claim!=null&&claim!==give)||it.why.length?"fix":"ok"; out.push(it); });
@@ -14987,6 +14989,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     if(r.capN){ const gk=D.ds.join(",")+"#"+r.grp, prev=used[gk]||0, lim=r.capN*nd; if(cnt+prev>lim){ why.push(`${r.grp}${nd>1?`${nd} 天`:"一天"}最多 ${lim} 首`); cnt=Math.max(0,lim-prev); } used[gk]=prev+cnt; }
     let give=r.pts*cnt; const kk=D.ds.join(",")+"|"+r.name, got=used[kk]||0, cap=r.cap!=null?r.cap*nd:null;
     if(cap!=null&&give+got>cap){ why.push(`${nd>1?`${nd} 天`:"一天"}最多 ${fmt(cap)}`); give=Math.max(0,cap-got); } used[kk]=got+give;
+    if(r.capP){ const n2=D.ds.filter(x=>x>=PT_CAPP_FROM).length; if(n2){ const gk="P"+D.ds.join(",")+"#"+r.grp, prev=used[gk]||0, lim=r.capP*n2; if(give+prev>lim){ why.push(`${r.grp}${n2>1?`${n2} 天`:"一天"}合計最多 ${fmt(lim)} 分`); give=Math.max(0,lim-prev); } used[gk]=prev+give; } }
     if(claim!=null&&claim!==give&&!why.length) why.push(`${fmt(r.pts)} × ${cnt} = ${fmt(r.pts*cnt)}，登記寫 ${fmt(claim)}`);
     D.items.push({seg,r,claim,give,st:claim!=null&&claim!==give||why.length?"fix":"ok",why:why.join("・")}); D.give+=give; });
   let inf=null; if(!start&&days[0]&&days[0].said!=null){ start=Math.max(0,days[0].said-days[0].claim); inf=start; }   /* 沒填起始分數：照他第一天寫的總分推回去 */
