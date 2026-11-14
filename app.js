@@ -4377,7 +4377,7 @@ const NAV={
 };
 const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","FEST",NAV.core],["sns","SNS",NAV.sns],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
 NAV.foc=`<svg viewBox="0 0 24 24" ${NS}><path d="M7 4h5l-.6 5.2a3.5 3.5 0 0 1-7 0L4 4h3z"/><path d="M7.9 12.4V16c0 .8-.4 1.4-1.1 1.8L6 18.4h4M17 4h3l-.4 5.2a3.5 3.5 0 0 1-7 0L12 4h5z"/><path d="M16.1 12.4V16c0 .8.4 1.4 1.1 1.8l.8.6h-4"/><path d="M12 1.6v1.4"/></svg>`;
-const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)||liveGuestOf(session().member)||coInvites(session().member).length?"dot":0});
+const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["sns","SNS",NAV.sns],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)||liveGuestOf(session().member)||coInvites(session().member).length?"dot":0});
 
 /* ---------- 粉絲：通知頁 ---------- */
 const NK={tour:["TOUR","#10B981"],news:["NEWS","#0EA5E9"],core:["FEST","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
