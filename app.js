@@ -446,7 +446,7 @@ const K = {
   pcImgs:"daisuki_pc_imgs",
   albums:"daisuki_albums", seedAlb:"daisuki_seed_alb", albBuy:"daisuki_album_buys",
   grpSeen:"daisuki_group_seen",
-  gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", gPhoto:"daisuki_group_photo", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", lockCfg:"daisuki_lock", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
+  gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", gPhoto:"daisuki_group_photo", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", lockCfg:"daisuki_lock", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters",fanLettersAll:"daisuki_fan_letters_all", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
   gNotices:"daisuki_group_notices", seedGN:"daisuki_seed_gn",
   notifs:"daisuki_notifications", maint:"daisuki_maint", feed:"daisuki_feed", feedSeen:"daisuki_feed_seen", unread:"daisuki_notif_unread", fanArtists:"daisuki_fan_artists",
   posts:"daisuki_posts", session:"daisuki_session", settings:"daisuki_notif_settings",
@@ -625,7 +625,7 @@ function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PE
 const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts","daisuki_sn_stories","daisuki_sn_hl",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
 /* 限時動態只會越來越多：刪掉的換成「已刪除」記號（ts=0，舊版 App 也會當成過期不顯示）。
    合併時任何一邊有的都留著，除非有「已刪除」記號 → 別支手機版本舊、慢一步，都不會再把限動吃掉 */
-const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
+const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices","daisuki_fan_letters_all"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
 function hbKeep(k,out,...src){ if(!HB_KEEP.has(k)||!Array.isArray(out)) return out; const m=new Map(), ord=[], raw=[];
   [out,...src].forEach(a=>{ if(!Array.isArray(a)) return; a.forEach(x=>{ if(!x||typeof x!=="object"||x.id==null){ if(a===out) raw.push(x); return; } const p=m.get(x.id); if(!p){ m.set(x.id,x); ord.push(x.id); } else if(x.del&&!p.del) m.set(x.id,x); }); });
   const lim=Date.now()-14*864e5; return [...raw,...ord.map(id=>m.get(id)).filter(x=>!(x.del&&x.del<lim))]; }
@@ -4099,6 +4099,13 @@ function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid
 function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt);
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" ${ntAttr(n)}><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
+/* 粉絲信：以前只存在寫信的人手機裡，藝人收不到 → 改存共用的一份；舊信由寫信的人的 App 自動補上去 */
+function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(HB_ON&&HB.ver[K.fanLettersAll]==null) return; const mine=S.get(K.fanLetters,[])||[]; if(!mine.length) return; const all=S.get(K.fanLettersAll,[])||[], ids=new Set(all.map(x=>x.id)), add=mine.filter(x=>x&&x.id&&!ids.has(x.id)).map(x=>({...x,by:x.by||myEmail()})); if(add.length) S.set(K.fanLettersAll,[...all,...add]); }catch(e){} }
+setTimeout(ltSync,6000); setInterval(ltSync,90000);
+const ltSeen=()=>{ try{ return JSON.parse(localStorage.getItem("hc_lt_seen")||"{}")||{}; }catch(e){ return {}; } };   /* 已讀只記在藝人自己的手機 */
+const ltFor=mid=>{ const g=(MEMBERS[mid]||{}).group; return (S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===g&&(!MEMBERS[l.to]||l.to===mid)).sort((a,b)=>b.ts-a.ts); };
+function viewArtLetters(mid){ const L=ltFor(mid), R=ltSeen(), g=groupOf((MEMBERS[mid]||{}).group)||{};
+  return `<main class="page">${L.length?L.map(l=>{ const fn=(ACCOUNTS[l.by]||{}).name||"粉絲"; return `<section class="card fp lt-card ${R[l.id]?"":"new"}" data-a="aLtRead" data-v="${l.id}" style="background:${(LT_TPL[l.tpl]||LT_TPL[0])[0]};color:${(LT_TPL[l.tpl]||LT_TPL[0])[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name)}</b><p>${esc(l.text)}</p><small class="fp-sm">From. ${esc(fn)}・${ymd(l.ts)}</small></section>`; }).join(""):`<p class="cmx-empty">還沒有收到粉絲信 💌</p>`}</main>`; }
 /* 右下「＋」：粉絲信、貼文 */
 function fabMenu(items,cls){ const n=items.length; return `<div class="cmx-fabw ${cls||""}" data-a="fabClose"><div class="cmx-fabm">${items.map(([a,v,l,ic],k)=>`<button data-a="${a}" data-v="${v}" style="--k:${n-1-k}"><span>${l}</span><i>${ic}</i></button>`).join("")}<button class="x" data-a="fabClose" aria-label="關閉">${I3.x}</button></div></div>`; }
 function openCmFab(gid){ setLayer(fabMenu([["cmLetterTo",gid,"粉絲信",I3.letter],["cmGo","write","貼文",I3.pen]]),"fab"); }
@@ -4473,6 +4480,7 @@ function viewArtist(tab){
   if(isUni()){
     if(tab==="points"){ const pm=route().id&&MEMBERS[route().id]?route().id:mid; return uniHead(pm===mid?"我的積分收入":esc(artName(pm,"feed"))+" 的積分")+viewPointsOne(pm); } }
   if(tab==="points") return head+viewPointsOne(mid);
+  if(tab==="letters") return (isUni()?uniHead("收到的粉絲信"):head)+viewArtLetters(mid);
   if(tab==="foc"){ const fp=route().p; return FOC_PAGES[fp]?viewArtistFoc(mid,fp):head+viewArtistFoc(mid); }
   if(tab==="home"){ setTimeout(apBarSync,0);
     return `<div class="ap2 own">${artProfileHtml(mid,true)}</div><button class="cmx-fab art-fab" data-a="aFab" aria-label="發表">${I3.plus}</button>`;
@@ -4486,6 +4494,7 @@ function viewArtist(tab){
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=points">${I.star}積分收入</button>
+        <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=letters">${I.star}收到的粉絲信<span class="r">${(()=>{ const R=ltSeen(), L=ltFor(mid), n=L.filter(l=>!R[l.id]).length; return n?`<b class="lt-new">${n} 封新信</b>`:`${L.length} 封`; })()}</span></button>
       </section>
       <div class="section-h">團體</div>
       <section class="card">
@@ -7426,13 +7435,14 @@ function clickCm(a,t,e,r){ switch(a){
     case "pollVote": { const V=S.get(K.pollVotes,{}), p=getPosts().find(x=>x.id===t.dataset.id); if(!p||!p.poll||V[p.id]!=null) break; if(Date.now()>=p.poll.end){ toast("票選已經結束了"); break; } V[p.id]=+t.dataset.i; S.set(K.pollVotes,V); { const PL=S.get(K.posts,[]), q=PL.find(x=>x.id===p.id); if(q&&q.poll){ q.poll.base=q.poll.opts.map((o,i)=>((q.poll.base&&q.poll.base[i])||0)+(i===+t.dataset.i?1:0)); S.set(K.posts,PL); } } { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "fabClose": if(e.target===t||t.tagName==="BUTTON") closeFab(); break;
     case "aWrite": { const v=ART_W[t.dataset.v]?t.dataset.v:"all"; ui.composeVis=v; ui.composeText=""; ui.composeMedia=[]; ui.composePw=""; ui.composeColor=null; layer.innerHTML=""; navTo("#/artist/write?p="+v); window.scrollTo(0,0); break; }
+    case "aLtRead": { const R=ltSeen(); R[t.dataset.v]=1; try{ localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
     case "cmLetterTo": openLetterTo(t.dataset.v); break;
     case "cmLetter": { const r=route(); layer.innerHTML=""; ui.ltTpl=null; navTo(grpHash(r.id,"letter",t.dataset.v)); window.scrollTo(0,0); break; }
     case "ltTpl": { ui.ltTpl=+t.dataset.v; const tx=document.getElementById("ltTxt"), keep=tx?tx.value:""; render(); const n=document.getElementById("ltTxt"); if(n) n.value=keep; break; }
     case "ltX": { const tx=(document.getElementById("ltTxt")||{}).value||""; if(!tx.trim()){ navBack(); break; } ui.ltHold=tx; tieModal("確定要取消撰寫嗎？","取消時，截至目前撰寫的內容不會儲存。",`<button class="t-mbtn" data-a="ltDiscard">取消撰寫</button><button class="t-mbtn main" data-a="ltSave">臨時儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "ltDiscard": { const r=route(), D=S.get(K.ltDraft,{}); delete D[ltKey(r.id,r.m)]; S.set(K.ltDraft,D); layer.innerHTML=""; navBack(); break; }
     case "ltSave": { const r=route(), D=S.get(K.ltDraft,{}); D[ltKey(r.id,r.m)]={text:ui.ltHold||"",tpl:ui.ltTpl||0}; S.set(K.ltDraft,D); layer.innerHTML=""; toast("已臨時儲存"); navBack(); break; }
-    case "ltDone": { const tx=((document.getElementById("ltTxt")||{}).value||"").trim(); if(!tx){ toast("先寫點什麼吧"); break; } const gid=t.dataset.g, to=t.dataset.v, L=S.get(K.fanLetters,[]); L.push({id:"lt"+Date.now(),gid,to,text:tx,tpl:ui.ltTpl||0,ts:Date.now()}); S.set(K.fanLetters,L); const D=S.get(K.ltDraft,{}); delete D[ltKey(gid,to)]; S.set(K.ltDraft,D); toast(`粉絲信已送給 ${MEMBERS[to]?artName(to,"feed"):groupOf(gid).name} 💌`); navBack(); break; }
+    case "ltDone": { const tx=((document.getElementById("ltTxt")||{}).value||"").trim(); if(!tx){ toast("先寫點什麼吧"); break; } const gid=t.dataset.g, to=t.dataset.v, L=S.get(K.fanLetters,[]); const lt={id:"lt"+Date.now(),gid,to,text:tx,tpl:ui.ltTpl||0,ts:Date.now(),by:myEmail()}; L.push(lt); S.set(K.fanLetters,L); S.set(K.fanLettersAll,[...(S.get(K.fanLettersAll,[])||[]),lt]);   /* 共用一份：藝人才收得到 */ const D=S.get(K.ltDraft,{}); delete D[ltKey(gid,to)]; S.set(K.ltDraft,D); toast(`粉絲信已送給 ${MEMBERS[to]?artName(to,"feed"):groupOf(gid).name} 💌`); navBack(); break; }
     case "cwHide": t.classList.toggle("on"); ui.cwHide=t.classList.contains("on"); t.setAttribute("aria-checked",ui.cwHide); break;
     case "cwPost": { const tx=((document.getElementById("cwTxt")||{}).value||"").trim(); if(!tx&&!(ui.cwImgs||[]).length) break; const gid=t.dataset.v, L=S.get(K.fanPosts,[]); L.push({id:"fp"+Date.now(),gid,text:tx,ts:Date.now(),name:cmProf(gid).nick,g:3,mine:true,by:myEmail(),hideArt:!!ui.cwHide,...((ui.cwImgs||[]).length?{imgs:ui.cwImgs.slice()}:{})}); S.set(K.fanPosts,L); ui.cwImgs=[]; ui.cmFeed="fan"; toast("已發布 💜"); navBack(); break; }   /* 發完回到原本的社群，不留下「撰寫貼文」那一頁 */
     case "cmMeTab": ui.cmMeTab=t.dataset.v; { const y=window.scrollY; render(); window.scrollTo(0,y); } break;

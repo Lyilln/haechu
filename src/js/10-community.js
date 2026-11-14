@@ -105,6 +105,13 @@ function grpHome(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid
 function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNoticesOf(gid,nt);
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" ${ntAttr(n)}><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
+/* 粉絲信：以前只存在寫信的人手機裡，藝人收不到 → 改存共用的一份；舊信由寫信的人的 App 自動補上去 */
+function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(HB_ON&&HB.ver[K.fanLettersAll]==null) return; const mine=S.get(K.fanLetters,[])||[]; if(!mine.length) return; const all=S.get(K.fanLettersAll,[])||[], ids=new Set(all.map(x=>x.id)), add=mine.filter(x=>x&&x.id&&!ids.has(x.id)).map(x=>({...x,by:x.by||myEmail()})); if(add.length) S.set(K.fanLettersAll,[...all,...add]); }catch(e){} }
+setTimeout(ltSync,6000); setInterval(ltSync,90000);
+const ltSeen=()=>{ try{ return JSON.parse(localStorage.getItem("hc_lt_seen")||"{}")||{}; }catch(e){ return {}; } };   /* 已讀只記在藝人自己的手機 */
+const ltFor=mid=>{ const g=(MEMBERS[mid]||{}).group; return (S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===g&&(!MEMBERS[l.to]||l.to===mid)).sort((a,b)=>b.ts-a.ts); };
+function viewArtLetters(mid){ const L=ltFor(mid), R=ltSeen(), g=groupOf((MEMBERS[mid]||{}).group)||{};
+  return `<main class="page">${L.length?L.map(l=>{ const fn=(ACCOUNTS[l.by]||{}).name||"粉絲"; return `<section class="card fp lt-card ${R[l.id]?"":"new"}" data-a="aLtRead" data-v="${l.id}" style="background:${(LT_TPL[l.tpl]||LT_TPL[0])[0]};color:${(LT_TPL[l.tpl]||LT_TPL[0])[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name)}</b><p>${esc(l.text)}</p><small class="fp-sm">From. ${esc(fn)}・${ymd(l.ts)}</small></section>`; }).join(""):`<p class="cmx-empty">還沒有收到粉絲信 💌</p>`}</main>`; }
 /* 右下「＋」：粉絲信、貼文 */
 function fabMenu(items,cls){ const n=items.length; return `<div class="cmx-fabw ${cls||""}" data-a="fabClose"><div class="cmx-fabm">${items.map(([a,v,l,ic],k)=>`<button data-a="${a}" data-v="${v}" style="--k:${n-1-k}"><span>${l}</span><i>${ic}</i></button>`).join("")}<button class="x" data-a="fabClose" aria-label="關閉">${I3.x}</button></div></div>`; }
 function openCmFab(gid){ setLayer(fabMenu([["cmLetterTo",gid,"粉絲信",I3.letter],["cmGo","write","貼文",I3.pen]]),"fab"); }
@@ -479,6 +486,7 @@ function viewArtist(tab){
   if(isUni()){
     if(tab==="points"){ const pm=route().id&&MEMBERS[route().id]?route().id:mid; return uniHead(pm===mid?"我的積分收入":esc(artName(pm,"feed"))+" 的積分")+viewPointsOne(pm); } }
   if(tab==="points") return head+viewPointsOne(mid);
+  if(tab==="letters") return (isUni()?uniHead("收到的粉絲信"):head)+viewArtLetters(mid);
   if(tab==="foc"){ const fp=route().p; return FOC_PAGES[fp]?viewArtistFoc(mid,fp):head+viewArtistFoc(mid); }
   if(tab==="home"){ setTimeout(apBarSync,0);
     return `<div class="ap2 own">${artProfileHtml(mid,true)}</div><button class="cmx-fab art-fab" data-a="aFab" aria-label="發表">${I3.plus}</button>`;
@@ -492,6 +500,7 @@ function viewArtist(tab){
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=points">${I.star}積分收入</button>
+        <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=letters">${I.star}收到的粉絲信<span class="r">${(()=>{ const R=ltSeen(), L=ltFor(mid), n=L.filter(l=>!R[l.id]).length; return n?`<b class="lt-new">${n} 封新信</b>`:`${L.length} 封`; })()}</span></button>
       </section>
       <div class="section-h">團體</div>
       <section class="card">

@@ -103,7 +103,7 @@ function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PE
 const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts","daisuki_sn_stories","daisuki_sn_hl",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
 /* 限時動態只會越來越多：刪掉的換成「已刪除」記號（ts=0，舊版 App 也會當成過期不顯示）。
    合併時任何一邊有的都留著，除非有「已刪除」記號 → 別支手機版本舊、慢一步，都不會再把限動吃掉 */
-const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
+const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices","daisuki_fan_letters_all"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
 function hbKeep(k,out,...src){ if(!HB_KEEP.has(k)||!Array.isArray(out)) return out; const m=new Map(), ord=[], raw=[];
   [out,...src].forEach(a=>{ if(!Array.isArray(a)) return; a.forEach(x=>{ if(!x||typeof x!=="object"||x.id==null){ if(a===out) raw.push(x); return; } const p=m.get(x.id); if(!p){ m.set(x.id,x); ord.push(x.id); } else if(x.del&&!p.del) m.set(x.id,x); }); });
   const lim=Date.now()-14*864e5; return [...raw,...ord.map(id=>m.get(id)).filter(x=>!(x.del&&x.del<lim))]; }

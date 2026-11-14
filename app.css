@@ -7127,3 +7127,4 @@ html[data-theme="dark"] .fz-tag{background:rgba(167,139,250,.18);color:#C4B5FD}h
 .fz-sv>span{font-size:26px;line-height:1}.fz-sv b{font-size:15px}.fz-sv small{flex:1;min-width:0;font-size:12px;color:var(--ink-3)}.fz-sv i{font-style:normal;font-size:20px;color:var(--ink-3)}.fz-sv.lock{opacity:.6}
 html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-theme="dark"] .fv2-ti small{color:#fff}
 .fv2-ti small{text-shadow:0 1px 4px rgba(0,0,0,.45)}
+.lt-card.new{box-shadow:0 0 0 2px #F472B6}.lt-new{color:#E11D63}
