@@ -18,7 +18,7 @@ const dbEms=x=>[x.email,...(x.mems||[]).map(m=>m.email)].filter(Boolean);
 const dbMids=x=>x.mids?Object.values(x.mids):(x.mid?[x.mid]:[]);
 const myDebut=()=>{ const em=myEmail(); return em?getDebut().filter(x=>dbEms(x).includes(em)&&x.status!=="gone").sort((a,b)=>b.ts-a.ts)[0]||null:null; };
 function debutSync(){ try{ const s=session(), d=myDebut(); const mid=d&&((d.mids||{})[s&&s.email]||d.mid); if(!s||s.home||!d||d.status!=="ok"||!mid||!MEMBERS[mid]) return; const a=ACCOUNTS[s.email]; if(a&&!a.member) ACCOUNTS[s.email]={...a,role:a.role==="admin"?"admin":"artist",member:mid}; SS.set({...s,home:mid}); }catch(e){} }
-function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="pre"?`預告中・D-${dLeft(d.day)}`:d&&d.status==="no"?"未通過":"";
+function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="pre"?`預告中・D-${dLeft(d.day)}`:d&&d.status==="no"?"未通過":points()<LV_TBL[1][1][0]?"到 R1 才能申請":"";
   return `<div class="section-h">出道</div><section class="card"><button class="list-btn" data-a="debutAsk">${I.star}申請出道<span class="r">${st}</span></button></section>`; }
 function debutAdmHtml(){ const L=getDebut().filter(x=>x.status!=="gone").sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
   const row=x=>{ const st=x.status==="ok"?["ok","已出道"]:x.status==="pre"?["pre",`預告中・${mdTxt(x.day)} 出道`]:x.status==="no"?["no","未通過"]:["wait",`審核中・想在 ${mdTxt(x.day)} 出道`], pr=x.pr||{};
