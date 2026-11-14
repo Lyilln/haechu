@@ -4371,10 +4371,11 @@ const NAV={
   meet:`<svg viewBox="0 0 24 24" ${NS}><path d="M4.6 6.8h14.8a1.1 1.1 0 0 1 1.1 1.1v2.6a1.6 1.6 0 0 0 0 3.1v2.6a1.1 1.1 0 0 1-1.1 1.1H4.6a1.1 1.1 0 0 1-1.1-1.1v-2.6a1.6 1.6 0 0 0 0-3.1V7.9a1.1 1.1 0 0 1 1.1-1.1z"/><path d="M15.4 8.6v.9M15.4 11.6v.9M15.4 14.6v.9"/><path d="M9.6 14.4s-2.4-1.4-2.4-2.9a1.2 1.2 0 0 1 2.4-.4 1.2 1.2 0 0 1 2.4.4c0 1.5-2.4 2.9-2.4 2.9z"/></svg>`,
   tie:`<svg viewBox="0 0 24 24" ${NS}><path d="M12 10.8C10.2 7.6 6.4 5.9 4.8 7.3s-.4 5.6 2.4 5.8c2 .1 3.6-.9 4.8-2.3z"/><path d="M12 10.8c1.8-3.2 5.6-4.9 7.2-3.5s.4 5.6-2.4 5.8c-2 .1-3.6-.9-4.8-2.3z"/><circle cx="12" cy="11.2" r="1.4"/><path d="M11.1 12.5 8.6 18.6M12.9 12.5l2.5 6.1"/></svg>`,
   core:`<svg viewBox="0 0 24 24" ${NS}><path d="M9.4 17.4V6.6l9-2.2v10.4"/><path d="M9.4 9.6l9-2.2"/><ellipse cx="7.2" cy="17.6" rx="2.3" ry="1.9"/><ellipse cx="16.2" cy="15" rx="2.3" ry="1.9"/><path d="M4.6 4.2c.15 1 .55 1.4 1.5 1.5-.95.15-1.35.55-1.5 1.5-.15-.95-.55-1.35-1.5-1.5.95-.1 1.35-.5 1.5-1.5z"/></svg>`,
+  sns:`<svg viewBox="0 0 24 24" ${NS}><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.6" cy="7.4" r=".6"/></svg>`,
   shop:`<svg viewBox="0 0 24 24" ${NS}><path d="M7.2 4.6h9.6L20.4 9 12 19.8 3.6 9z"/><path d="M3.6 9h16.8M9.8 4.6 8.4 9 12 19.8 15.6 9l-1.4-4.4"/></svg>`,
   me:`<svg viewBox="0 0 24 24" ${NS}><path d="M5 17.4 4 8.2l4.4 3.4L12 5.6l3.6 6 4.4-3.4-1 9.2z"/><path d="M5.2 20.2h13.6"/><circle cx="12" cy="3.4" r=".6" fill="currentColor"/></svg>`,
 };
-const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","FEST",NAV.core],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
+const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","FEST",NAV.core],["sns","SNS",NAV.sns],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
 NAV.foc=`<svg viewBox="0 0 24 24" ${NS}><path d="M7 4h5l-.6 5.2a3.5 3.5 0 0 1-7 0L4 4h3z"/><path d="M7.9 12.4V16c0 .8-.4 1.4-1.1 1.8L6 18.4h4M17 4h3l-.4 5.2a3.5 3.5 0 0 1-7 0L12 4h5z"/><path d="M16.1 12.4V16c0 .8.4 1.4 1.1 1.8l.8.6h-4"/><path d="M12 1.6v1.4"/></svg>`;
 const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)||liveGuestOf(session().member)||coInvites(session().member).length?"dot":0});
 
@@ -6148,7 +6149,7 @@ function viewCore(){
 }
 /* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
    新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
-const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
 const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
 const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
 function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }
@@ -7124,6 +7125,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "back": navBack(); break;
     case "tab": if(isUni()&&t.classList.contains("nav-btn")&&session().role==="admin"){ const h=UNI_ATABGO[t.dataset.v]||"#/admin"; navRoot(h); window.scrollTo(0,0); break; }
       if(isUni()&&t.classList.contains("nav-btn")&&session().role==="fan"){ ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.srch=null; const h=UNI_ROUTE[t.dataset.v]||"#/fan"; navRoot(h); window.scrollTo(0,0); break; }
+      if(t.dataset.v==="sns"){ ui.srch=null; navTo("#/"+(session().role==="artist"?"artist":"fan")+"/sns"); window.scrollTo(0,0); break; }   /* SNS：自己一頁（自己的分頁列），從導覽列直接跳過去 */
       ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.srch=null; if((t.dataset.v==="whisper"||t.dataset.v==="live")&&session().role==="artist") ui.scrollChat=true; go(session().role,null,t.dataset.v==="home"?null:t.dataset.v); window.scrollTo(0,0); break;
     case "ft": ui.feedTab=t.dataset.v; render(); window.scrollTo(0,0); break;
     case "sf": ui.selectFilter=t.dataset.v; render(); break;
@@ -8757,7 +8759,7 @@ function openThGuide(){ const t=thById("th_ms_cat")||thDraft(route().id); const 
    // 管理員的藝人身分＝在「藝人與團」把自己加進團的那位成員；還沒加就沒有
 const isUni=()=>{ const s=session(); return !!(s&&s.uni); };
 const uniMe=()=>{ const s=session(); if(!s) return ""; const a=ACCOUNTS[s.email], m=(a&&a.member)||s.home; return m&&MEMBERS[m]?m:""; };
-const UNI_ROUTE={home:"#/fan",live:"#/fan?tab=live",whisper:"#/fan?tab=whisper",core:"#/fan?tab=core",shop:"#/fan?tab=shop",me:"#/fan?tab=me"};
+const UNI_ROUTE={home:"#/fan",live:"#/fan?tab=live",whisper:"#/fan?tab=whisper",core:"#/fan?tab=core",sns:"#/fan/sns",shop:"#/fan?tab=shop",me:"#/fan?tab=me"};
 function uniActive(){ const r=route();
   if(r.role==="fan") return r.tab||"home";
   if(r.role==="artist") return ({home:"home",live:"live",whisper:"whisper",foc:"core",points:"me"})[r.tab||"home"]||"home";
@@ -8772,7 +8774,7 @@ const UNI_IC={
   core:UNI_SV(`<path d="M12 3.6l1.9 5.1 5.4.3-4.2 3.4 1.4 5.2L12 14.7l-4.5 2.9 1.4-5.2-4.2-3.4 5.4-.3z"/><path d="M19.4 16.6v3.2M17.8 18.2H21M4.6 17.2v2.4M3.4 18.4h2.4"/>`,`<path d="M12 3.6l1.9 5.1 5.4.3-4.2 3.4 1.4 5.2L12 14.7l-4.5 2.9 1.4-5.2-4.2-3.4 5.4-.3z"/><path d="M19.4 16.6v3.2M17.8 18.2H21M4.6 17.2v2.4M3.4 18.4h2.4" fill="none"/>`),
   shop:UNI_SV(`<path d="M5.6 8.4h12.8l-1.1 11.2a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 10.6V7.6a3 3 0 0 1 6 0v3"/>`,`<path d="M5.6 8.4h12.8l-1.1 11.2a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 8.4V7.6a3 3 0 0 1 6 0v.8" fill="none"/>`),
   me:UNI_SV(`<circle cx="12" cy="8.4" r="3.6"/><path d="M4.8 20c.8-3.8 3.6-5.6 7.2-5.6s6.4 1.8 7.2 5.6"/>`,`<circle cx="12" cy="8.4" r="3.6"/><path d="M4.8 20c.8-3.8 3.6-5.6 7.2-5.6s6.4 1.8 7.2 5.6z"/>`)};
-function uniNav(a){ return navBar([["home","LOVE",UNI_IC.home],["whisper",WHISPER_NAME,UNI_IC.whisper],["core","FEST",UNI_IC.core],["shop","SHOP",UNI_IC.shop],["me","ME",UNI_IC.me]],a,{whisper:fanWhisperUnread()?"moon":0}); }
+function uniNav(a){ return navBar([["home","LOVE",UNI_IC.home],["whisper",WHISPER_NAME,UNI_IC.whisper],["core","FEST",UNI_IC.core],["sns","SNS",NAV.sns],["shop","SHOP",UNI_IC.shop],["me","ME",UNI_IC.me]],a,{whisper:fanWhisperUnread()?"moon":0}); }
 /* 頁首：返回＋置中標題 */
 const uniHead=(title,right="")=>`<header class="top uni-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${title}</div>${right||'<span class="sh-sp"></span>'}</div></header>`;
 /* FEST：活動（粉絲）／我的舞台（藝人）／管理（管理員），三段切換 */

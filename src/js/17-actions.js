@@ -16,6 +16,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "back": navBack(); break;
     case "tab": if(isUni()&&t.classList.contains("nav-btn")&&session().role==="admin"){ const h=UNI_ATABGO[t.dataset.v]||"#/admin"; navRoot(h); window.scrollTo(0,0); break; }
       if(isUni()&&t.classList.contains("nav-btn")&&session().role==="fan"){ ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.srch=null; const h=UNI_ROUTE[t.dataset.v]||"#/fan"; navRoot(h); window.scrollTo(0,0); break; }
+      if(t.dataset.v==="sns"){ ui.srch=null; navTo("#/"+(session().role==="artist"?"artist":"fan")+"/sns"); window.scrollTo(0,0); break; }   /* SNS：自己一頁（自己的分頁列），從導覽列直接跳過去 */
       ui.feedTab="feed"; ui.meSec=null; ui.shopG=null; ui.srch=null; if((t.dataset.v==="whisper"||t.dataset.v==="live")&&session().role==="artist") ui.scrollChat=true; go(session().role,null,t.dataset.v==="home"?null:t.dataset.v); window.scrollTo(0,0); break;
     case "ft": ui.feedTab=t.dataset.v; render(); window.scrollTo(0,0); break;
     case "sf": ui.selectFilter=t.dataset.v; render(); break;

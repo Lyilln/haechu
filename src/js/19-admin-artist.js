@@ -9,7 +9,7 @@
    // 管理員的藝人身分＝在「藝人與團」把自己加進團的那位成員；還沒加就沒有
 const isUni=()=>{ const s=session(); return !!(s&&s.uni); };
 const uniMe=()=>{ const s=session(); if(!s) return ""; const a=ACCOUNTS[s.email], m=(a&&a.member)||s.home; return m&&MEMBERS[m]?m:""; };
-const UNI_ROUTE={home:"#/fan",live:"#/fan?tab=live",whisper:"#/fan?tab=whisper",core:"#/fan?tab=core",shop:"#/fan?tab=shop",me:"#/fan?tab=me"};
+const UNI_ROUTE={home:"#/fan",live:"#/fan?tab=live",whisper:"#/fan?tab=whisper",core:"#/fan?tab=core",sns:"#/fan/sns",shop:"#/fan?tab=shop",me:"#/fan?tab=me"};
 function uniActive(){ const r=route();
   if(r.role==="fan") return r.tab||"home";
   if(r.role==="artist") return ({home:"home",live:"live",whisper:"whisper",foc:"core",points:"me"})[r.tab||"home"]||"home";
@@ -24,7 +24,7 @@ const UNI_IC={
   core:UNI_SV(`<path d="M12 3.6l1.9 5.1 5.4.3-4.2 3.4 1.4 5.2L12 14.7l-4.5 2.9 1.4-5.2-4.2-3.4 5.4-.3z"/><path d="M19.4 16.6v3.2M17.8 18.2H21M4.6 17.2v2.4M3.4 18.4h2.4"/>`,`<path d="M12 3.6l1.9 5.1 5.4.3-4.2 3.4 1.4 5.2L12 14.7l-4.5 2.9 1.4-5.2-4.2-3.4 5.4-.3z"/><path d="M19.4 16.6v3.2M17.8 18.2H21M4.6 17.2v2.4M3.4 18.4h2.4" fill="none"/>`),
   shop:UNI_SV(`<path d="M5.6 8.4h12.8l-1.1 11.2a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 10.6V7.6a3 3 0 0 1 6 0v3"/>`,`<path d="M5.6 8.4h12.8l-1.1 11.2a1.6 1.6 0 0 1-1.6 1.4H8.3a1.6 1.6 0 0 1-1.6-1.4z"/><path d="M9 8.4V7.6a3 3 0 0 1 6 0v.8" fill="none"/>`),
   me:UNI_SV(`<circle cx="12" cy="8.4" r="3.6"/><path d="M4.8 20c.8-3.8 3.6-5.6 7.2-5.6s6.4 1.8 7.2 5.6"/>`,`<circle cx="12" cy="8.4" r="3.6"/><path d="M4.8 20c.8-3.8 3.6-5.6 7.2-5.6s6.4 1.8 7.2 5.6z"/>`)};
-function uniNav(a){ return navBar([["home","LOVE",UNI_IC.home],["whisper",WHISPER_NAME,UNI_IC.whisper],["core","FEST",UNI_IC.core],["shop","SHOP",UNI_IC.shop],["me","ME",UNI_IC.me]],a,{whisper:fanWhisperUnread()?"moon":0}); }
+function uniNav(a){ return navBar([["home","LOVE",UNI_IC.home],["whisper",WHISPER_NAME,UNI_IC.whisper],["core","FEST",UNI_IC.core],["sns","SNS",NAV.sns],["shop","SHOP",UNI_IC.shop],["me","ME",UNI_IC.me]],a,{whisper:fanWhisperUnread()?"moon":0}); }
 /* 頁首：返回＋置中標題 */
 const uniHead=(title,right="")=>`<header class="top uni-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">${title}</div>${right||'<span class="sh-sp"></span>'}</div></header>`;
 /* FEST：活動（粉絲）／我的舞台（藝人）／管理（管理員），三段切換 */

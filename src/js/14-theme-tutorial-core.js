@@ -180,7 +180,7 @@ function viewCore(){
 }
 /* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
    新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
-const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
 const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
 const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
 function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }

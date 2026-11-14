@@ -379,10 +379,11 @@ const NAV={
   meet:`<svg viewBox="0 0 24 24" ${NS}><path d="M4.6 6.8h14.8a1.1 1.1 0 0 1 1.1 1.1v2.6a1.6 1.6 0 0 0 0 3.1v2.6a1.1 1.1 0 0 1-1.1 1.1H4.6a1.1 1.1 0 0 1-1.1-1.1v-2.6a1.6 1.6 0 0 0 0-3.1V7.9a1.1 1.1 0 0 1 1.1-1.1z"/><path d="M15.4 8.6v.9M15.4 11.6v.9M15.4 14.6v.9"/><path d="M9.6 14.4s-2.4-1.4-2.4-2.9a1.2 1.2 0 0 1 2.4-.4 1.2 1.2 0 0 1 2.4.4c0 1.5-2.4 2.9-2.4 2.9z"/></svg>`,
   tie:`<svg viewBox="0 0 24 24" ${NS}><path d="M12 10.8C10.2 7.6 6.4 5.9 4.8 7.3s-.4 5.6 2.4 5.8c2 .1 3.6-.9 4.8-2.3z"/><path d="M12 10.8c1.8-3.2 5.6-4.9 7.2-3.5s.4 5.6-2.4 5.8c-2 .1-3.6-.9-4.8-2.3z"/><circle cx="12" cy="11.2" r="1.4"/><path d="M11.1 12.5 8.6 18.6M12.9 12.5l2.5 6.1"/></svg>`,
   core:`<svg viewBox="0 0 24 24" ${NS}><path d="M9.4 17.4V6.6l9-2.2v10.4"/><path d="M9.4 9.6l9-2.2"/><ellipse cx="7.2" cy="17.6" rx="2.3" ry="1.9"/><ellipse cx="16.2" cy="15" rx="2.3" ry="1.9"/><path d="M4.6 4.2c.15 1 .55 1.4 1.5 1.5-.95.15-1.35.55-1.5 1.5-.15-.95-.55-1.35-1.5-1.5.95-.1 1.35-.5 1.5-1.5z"/></svg>`,
+  sns:`<svg viewBox="0 0 24 24" ${NS}><rect x="4" y="4" width="16" height="16" rx="5"/><circle cx="12" cy="12" r="3.6"/><circle cx="16.6" cy="7.4" r=".6"/></svg>`,
   shop:`<svg viewBox="0 0 24 24" ${NS}><path d="M7.2 4.6h9.6L20.4 9 12 19.8 3.6 9z"/><path d="M3.6 9h16.8M9.8 4.6 8.4 9 12 19.8 15.6 9l-1.4-4.4"/></svg>`,
   me:`<svg viewBox="0 0 24 24" ${NS}><path d="M5 17.4 4 8.2l4.4 3.4L12 5.6l3.6 6 4.4-3.4-1 9.2z"/><path d="M5.2 20.2h13.6"/><circle cx="12" cy="3.4" r=".6" fill="currentColor"/></svg>`,
 };
-const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","FEST",NAV.core],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
+const fanNav=a=>navBar([["home","LOVE",NAV.love],["whisper",WHISPER_NAME,NAV.tie],["core","FEST",NAV.core],["sns","SNS",NAV.sns],["shop","SHOP",NAV.shop],["me","ME",NAV.me]],a,{whisper:fanWhisperUnread()?"moon":0});
 NAV.foc=`<svg viewBox="0 0 24 24" ${NS}><path d="M7 4h5l-.6 5.2a3.5 3.5 0 0 1-7 0L4 4h3z"/><path d="M7.9 12.4V16c0 .8-.4 1.4-1.1 1.8L6 18.4h4M17 4h3l-.4 5.2a3.5 3.5 0 0 1-7 0L12 4h5z"/><path d="M16.1 12.4V16c0 .8.4 1.4 1.1 1.8l.8.6h-4"/><path d="M12 1.6v1.4"/></svg>`;
 const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["whisper",WHISPER_NAME,NAV.tie],["foc","FOC",NAV.foc],["me","ME",NAV.me]],a,{whisper:artistWhisperUnread(session().member),live:liveNow(session().member)||liveGuestOf(session().member)||coInvites(session().member).length?"dot":0});
 
