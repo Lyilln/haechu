@@ -527,7 +527,10 @@ function clickAdm(a,t,e,r){ switch(a){
     case "muOpen": case "muSheet": openSongSheet(t.dataset.v); break;
     case "goExplore": ui.feedTab="discover"; go("fan",null,"home"); window.scrollTo(0,0); break;
     case "coreLocked": toast("選秀暫未開啟，請隨時關注社群公告"); break;
-    case "coreGo": ui.srch=null; navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
+    case "coreGo": ui.srch=null; if(t.dataset.v==="signed"){ navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break; } navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
+    case "festG": ui.festG=t.dataset.v||""; try{ localStorage.setItem("hc_festG",ui.festG); }catch(e){} render(); break;
+    case "festGrp": navTo("#/fan/grp?id="+encodeURIComponent(t.dataset.v)); window.scrollTo(0,0); break;
+    case "festDr": navTo("#/fan/core?p=dr&id="+t.dataset.v); window.scrollTo(0,0); break;
     case "openSns": ui.snsFrom=location.hash; navTo("#/"+(route().role||session().role)+"/sns"); window.scrollTo(0,0); break;
     case "focGo": navTo("#/artist?tab=foc&p="+t.dataset.v); window.scrollTo(0,0); break;
     case "vPlay": { setTimeout(()=>{ try{ const v1=vodOf(t.dataset.v), pv=layer.querySelector(".ph-view"); if(v1&&v1.mid&&vodIsMV(v1)&&pv&&!pv.querySelector(".pv-like")){ const on=mvLikedV(v1.id); pv.insertAdjacentHTML("beforeend",`<button class="pv-like ${on?"on":""}" data-a="mvLikeV" data-v="${v1.id}">${on?"♥":"♡"} ${fmt(mvLikesV(v1.id))}</button>`); } }catch(e){} },30); const v0=vodOf(t.dataset.v); if(v0&&v0.mid){ playVideo(v0.mid); vodViewWatch(v0.id); break; } openVodPlayer(t.dataset.v,t.dataset.pl); break; }

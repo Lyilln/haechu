@@ -145,6 +145,7 @@ function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===
 /* 世巡還沒買、還沒結束的站（一次全買打 9 折） */
 const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id]&&(s.startTs||0)+120*60e3>Date.now()); };
 function viewCoreSub(page,id){
+  if(page==="dr") return viewFestDr(id);
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return viewTruckFan();
   if(page==="biz") return coreHead("代言・雜誌")+viewBizFan(id);

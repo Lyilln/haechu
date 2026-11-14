@@ -6139,11 +6139,46 @@ function viewCore(){
     ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()],["wiki","news","SKpedia","藝人百科"]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
+  if(!q){ ui.festT=T; return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core fz">${preBanner()}${festHome(f)}</main>`; }   /* 不搜尋：今天＋四個抽屜（上面一排可以只看某位藝人） */
   return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core">${srchLabel("core")}
     ${q?"":preBanner()}${!q&&now.length?`${secH("live","正在發生")}<div class="now-list">${now.join("")}</div>`:""}
     ${tiles.length?(()=>{ const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`; if(q) return `<div class="tiles">${tiles.map(tb).join("")}</div>`; return [["每天",["promo","cards","sns","news","wiki"]],["檔期",["cafe","show","biz","fsl","truck"]],["大型活動",["concert","tour","survival"]]].map(([h,ks])=>{ const ts=ks.map(k=>tiles.find(t=>t[0]===k)).filter(Boolean); return ts.length?`${secH("star",h)}<div class="tiles">${ts.map(tb).join("")}</div>`:""; }).join(""); })():srchEmpty("內容")}
   </main>`;
 }
+/* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
+   新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour","survival"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
+const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
+function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }
+function festToday(gids,one){ const L=[], now=Date.now(), inG=g=>gids.includes(g), gn=g=>(groupOf(g)||{}).name||"";
+  try{ const ls=lightsea(); if(ls&&inG(ls.gid)) L.push({k:"concert",t:"LIVE",c:"r",b:`${gn(ls.gid)}・${ls.title}`,s:`演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}`,a:"concertOn",o:0}); }catch(e){}
+  try{ fsAll().filter(e=>inG(e.group)&&groupOf(e.group)&&e.id!=="fsshow").forEach(e=>{ if(e.status==="live") L.push({k:"fsl",t:"進行中",c:"r",b:e.title,s:`${gn(e.group)}・簽售室開著`,v:"fsl",o:1}); else if(e.status==="open"&&e.closeTs>now) L.push({k:"fsl",t:"報名中",c:"y",b:e.title,s:`${gn(e.group)}・報名到 ${fsWhen(e.closeTs).split(" ")[0]}`,v:"fsl",o:4,end:e.closeTs}); }); }catch(e){}
+  try{ const wk=curWeek(); if(ranked(wk)){ const nx=SHOWS.filter(x=>!showEnded(x.id)).sort((a,b)=>showEndTs(a.id)-showEndTs(b.id))[0];
+    if(nx){ const R=showRank(nx.id,wk), mine=R.map((x,i)=>({x,i})).filter(o=>inG(o.x.s.gid)); if(mine.length||!one){ const left=showEndTs(nx.id)-now;
+      L.push({k:"promo",t:muLeft(left).replace(/ \\d+ 分$/,""),c:left<6*36e5?"r":"",b:`${nx.name} 投票`,s:mine.length?mine.slice(0,2).map(o=>`${gn(o.x.s.gid)} 第 ${o.i+1}`).join("、")+(mine[0].i>0&&R[0]?`・差第 1 名 ${fmt(Math.max(0,Math.round(R[0].sc.total-mine[0].x.sc.total)))} 分`:"・目前領先"):"看看這週誰領先",v:"promo",o:2,end:showEndTs(nx.id)}); } } } }catch(e){}
+  try{ getConcerts().filter(c=>!c.ended&&inG(c.gid)&&c.startTs>now&&c.startTs-now<3*864e5).slice(0,2).forEach(c=>L.push({k:"concert",t:evWhen(c.startTs),c:"",b:String(c.title||"").includes(gn(c.gid))?c.title:`${gn(c.gid)} ${c.title||"演唱會"}`,s:"開場前可以先進場",v:"concert",o:3,end:c.startTs})); }catch(e){}
+  try{ cfOpenNow().filter(x=>inG(MEMBERS[x.m].group)).slice(0,3).forEach(x=>L.push({k:"cafe",t:"營業中",c:"g",b:`${MEMBERS[x.m].name} 生日咖啡廳`,s:gn(MEMBERS[x.m].group),v:"cafe",o:5})); }catch(e){}
+  try{ const n=getTrucks().filter(t=>!tkFunded(t)&&MEMBERS[t.mid]&&inG(MEMBERS[t.mid].group)).length; if(n) L.push({k:"truck",t:"集資中",c:"y",b:"應援餐車",s:`${n} 台在集資`,v:"truck",o:6}); }catch(e){}
+  try{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)&&inG(x.gid)); if(t&&tourStops(t).some(st=>stopState(st)==="live")) L.push({k:"tour",t:"進行中",c:"r",b:`${gn(t.gid)}・${t.title}`,s:"世巡這一站開演了",v:"tour",o:1}); }catch(e){}
+  try{ if(!one&&svOpen()&&svToday()<3) L.push({k:"survival",t:`還有 ${3-svToday()} 票`,c:"",b:"選秀投票",s:"每天 3 票",v:"survival",o:7}); }catch(e){}
+  return L.sort((a,b)=>a.o-b.o||(a.end||9e15)-(b.end||9e15)); }
+function festHead(gid){ const g=groupOf(gid); if(!g) return ""; const av=xvGAv(gid);
+  let sub=""; try{ const s=promoSongs().filter(x=>x.gid===gid&&!x.demo).sort((a,b)=>songRel(b)-songRel(a))[0]; if(s&&songPhase(s)!=="off"){ const w=songWeekNo(s); sub=`《${esc(s.title)}》打歌第 ${w} 週・${(()=>{ const d=new Date(songRel(s)+MSA.END*MDAY); return `${d.getMonth()+1}/${d.getDate()} 下檔`; })()}`; } }catch(e){}
+  return `<button class="fz-hd" data-a="festGrp" data-v="${gid}" style="--gt:${gTheme(gid)}"><span class="fz-hdav" style="${av.avStyle||""}">${av.av||""}</span><span><b>${esc(g.name)}</b><small>${sub||"點這裡看她的社群"}</small></span><i>›</i></button>`; }
+function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>k==="signed"?["signed","pen","簽名專輯",""]:T.find(x=>x[0]===k), today=festToday(gids,!!g);
+  const chips=f.length>1||g?`<div class="fz-ch" role="tablist">${[["","全部"],...f.map(x=>[x,(groupOf(x)||{}).name||""])].map(([v,n])=>{ const av=v?xvGAv(v):null; return `<button role="tab" class="${g===v?"on":""}" aria-selected="${g===v}" data-a="festG" data-v="${v}">${av?`<i style="${av.avStyle||""}">${av.av||""}</i>`:""}${esc(n)}</button>`; }).join("")}</div>`:"";
+  const tc=x=>`<button class="fz-t" ${x.a?`data-a="${x.a}"`:`data-a="coreGo" data-v="${x.v}"`}><span class="fz-tag ${x.c}">${esc(x.t)}</span><b>${esc(x.b)}</b><small>${esc(x.s)}</small></button>`;
+  const d=new Date(), wd="日一二三四五六"[d.getDay()];
+  const dr=FEST_DR.map(([k,ic,n,ks])=>{ const n1=today.filter(x=>festDrOf(x.k)===k).length, on=ks.map(tile).filter(t=>t&&!festOff(t[3])).map(t=>t[2]); return `<button class="fz-dr" data-a="festDr" data-v="${k}"><span class="fz-dri">${ic}</span><b>${n}${n1?`<em>${n1}</em>`:""}</b><small>${esc((on.length?on:ks.map(tile).filter(Boolean).map(t=>t[2])).join("・")||"簽名專輯")}</small></button>`; }).join("");
+  return `${chips}${g?festHead(g):""}
+    <div class="fz-sh"><b>今天</b><span>${d.getMonth()+1}/${d.getDate()}（${wd}）</span></div>
+    ${today.length?`<div class="fz-today">${today.map(tc).join("")}</div>`:`<p class="fz-none">今天沒有要趕的事 🌙 去抽屜逛逛吧</p>`}
+    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>`; }
+function viewFestDr(k){ const d=FEST_DR.find(x=>x[0]===k); if(!d) return coreHead("FEST")+`<main class="page"><p class="me-none">找不到</p></main>`; viewCore(); const T=ui.festT||[];
+  const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
+  const L=d[3].map(x=>x==="signed"?["signed","pen","簽名專輯",(()=>{ const n=(S.get(K.signedAlbums,[])||[]).length; return n?`收藏 ${n} 張`:"還沒有簽名專輯"; })()]:T.find(t=>t[0]===x)).filter(Boolean), on=L.filter(t=>!festOff(t[3])), off=L.filter(t=>festOff(t[3]));
+  return coreHead(d[2])+`<main class="page core fz">${on.length?`<div class="fz-sh"><b>現在可以玩</b></div><div class="tiles">${on.map(tb).join("")}</div>`:""}${off.length?`<div class="fz-sh"><b>還沒開始</b></div><div class="tiles fz-off">${off.map(tb).join("")}</div>`:""}</main>`; }
 function vodList(gid){ return getVods(gid).filter(v=>!v.sec).map(v=>({id:v.id,type:vcatName(v.cat),title:v.title,ts:v.ts,v})); }
 /* ===== SHOW / VOD：每團一個「頻道」（參考 YouTube 音樂頻道）。影片由管理員在 FOC → 打歌 新增 ===== */
 const VCAT=[["MV","MV"],["PERF","表演影片"],["SHOW","綜藝"],["BEHIND","幕後花絮"]];
@@ -6420,6 +6455,7 @@ function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===
 /* 世巡還沒買、還沒結束的站（一次全買打 9 折） */
 const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id]&&(s.startTs||0)+120*60e3>Date.now()); };
 function viewCoreSub(page,id){
+  if(page==="dr") return viewFestDr(id);
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return viewTruckFan();
   if(page==="biz") return coreHead("代言・雜誌")+viewBizFan(id);
@@ -7598,7 +7634,10 @@ function clickAdm(a,t,e,r){ switch(a){
     case "muOpen": case "muSheet": openSongSheet(t.dataset.v); break;
     case "goExplore": ui.feedTab="discover"; go("fan",null,"home"); window.scrollTo(0,0); break;
     case "coreLocked": toast("選秀暫未開啟，請隨時關注社群公告"); break;
-    case "coreGo": ui.srch=null; navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
+    case "coreGo": ui.srch=null; if(t.dataset.v==="signed"){ navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break; } navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
+    case "festG": ui.festG=t.dataset.v||""; try{ localStorage.setItem("hc_festG",ui.festG); }catch(e){} render(); break;
+    case "festGrp": navTo("#/fan/grp?id="+encodeURIComponent(t.dataset.v)); window.scrollTo(0,0); break;
+    case "festDr": navTo("#/fan/core?p=dr&id="+t.dataset.v); window.scrollTo(0,0); break;
     case "openSns": ui.snsFrom=location.hash; navTo("#/"+(route().role||session().role)+"/sns"); window.scrollTo(0,0); break;
     case "focGo": navTo("#/artist?tab=foc&p="+t.dataset.v); window.scrollTo(0,0); break;
     case "vPlay": { setTimeout(()=>{ try{ const v1=vodOf(t.dataset.v), pv=layer.querySelector(".ph-view"); if(v1&&v1.mid&&vodIsMV(v1)&&pv&&!pv.querySelector(".pv-like")){ const on=mvLikedV(v1.id); pv.insertAdjacentHTML("beforeend",`<button class="pv-like ${on?"on":""}" data-a="mvLikeV" data-v="${v1.id}">${on?"♥":"♡"} ${fmt(mvLikesV(v1.id))}</button>`); } }catch(e){} },30); const v0=vodOf(t.dataset.v); if(v0&&v0.mid){ playVideo(v0.mid); vodViewWatch(v0.id); break; } openVodPlayer(t.dataset.v,t.dataset.pl); break; }
@@ -13974,7 +14013,7 @@ const COACH_INTRO={
 const COACH={
   fan:[[".nav-btn[data-v=home]","LOVE","藝人的動態、直播和探索都在這裡。每天打開 App 先來這裡看看他們今天說了什麼。"],
     [".nav-btn[data-v=whisper]","TIE","你跟藝人的一對一聊天室。在 SHOP 買了 TIE 券，藝人傳的訊息就會出現在這裡，你也能回他。"],
-    [".nav-btn[data-v=core]","FEST","打歌投票、小卡、SNS、新聞、演唱會、簽售、應援餐車……所有活動的入口。"],
+    [".nav-btn[data-v=core]","FEST","上面是「今天」要趕的事，下面四個抽屜（應援、活動、看、收藏）放所有玩法；最上面點藝人，就只看她的。"],
     [".nav-btn[data-v=shop]","SHOP","用積分買 Membership、TIE 券、專輯、應援棒和主題。"],
     [".nav-btn[data-v=me]","ME","你的檔案、積分、收藏、設定都在這裡。想再看一次教學也在這裡。"],
     ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播、提到你、輪到你簽售，都會先在這裡通知你。"]],
