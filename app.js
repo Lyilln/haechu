@@ -6165,7 +6165,7 @@ function festToday(gids,one){ const L=[], now=Date.now(), inG=g=>gids.includes(g
   return L.sort((a,b)=>a.o-b.o||(a.end||9e15)-(b.end||9e15)); }
 function festHead(gid){ const g=groupOf(gid); if(!g) return ""; const av=xvGAv(gid);
   let sub=""; try{ const s=promoSongs().filter(x=>x.gid===gid&&!x.demo).sort((a,b)=>songRel(b)-songRel(a))[0]; if(s&&songPhase(s)!=="off"){ const w=songWeekNo(s); sub=`《${esc(s.title)}》打歌第 ${w} 週・${(()=>{ const d=new Date(songRel(s)+MSA.END*MDAY); return `${d.getMonth()+1}/${d.getDate()} 下檔`; })()}`; } }catch(e){}
-  return `<button class="fz-hd" data-a="festGrp" data-v="${gid}" style="--gt:${gTheme(gid)}"><span class="fz-hdav" style="${av.avStyle||""}">${av.av||""}</span><span><b>${esc(g.name)}</b><small>${sub||"點這裡看她的社群"}</small></span><i>›</i></button>`; }
+  return `<button class="fz-hd" data-a="festGrp" data-v="${gid}" style="--gt:${gTheme(gid)}"><span class="fz-hdav" style="${av.avStyle||""}">${av.av||""}</span><span><b>${esc(g.name)}</b><small>${sub||"點這裡看社群頁"}</small></span><i>›</i></button>`; }
 function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>k==="signed"?["signed","pen","簽名專輯",""]:T.find(x=>x[0]===k), today=festToday(gids,!!g);
   const chips=f.length>1||g?`<div class="fz-ch" role="tablist">${[["","全部"],...f.map(x=>[x,(groupOf(x)||{}).name||""])].map(([v,n])=>{ const av=v?xvGAv(v):null; return `<button role="tab" class="${g===v?"on":""}" aria-selected="${g===v}" data-a="festG" data-v="${v}">${av?`<i style="${av.avStyle||""}">${av.av||""}</i>`:""}${esc(n)}</button>`; }).join("")}</div>`:"";
   const tc=x=>`<button class="fz-t" ${x.a?`data-a="${x.a}"`:`data-a="coreGo" data-v="${x.v}"`}><span class="fz-tag ${x.c}">${esc(x.t)}</span><b>${esc(x.b)}</b><small>${esc(x.s)}</small></button>`;
@@ -14013,7 +14013,7 @@ const COACH_INTRO={
 const COACH={
   fan:[[".nav-btn[data-v=home]","LOVE","藝人的動態、直播和探索都在這裡。每天打開 App 先來這裡看看他們今天說了什麼。"],
     [".nav-btn[data-v=whisper]","TIE","你跟藝人的一對一聊天室。在 SHOP 買了 TIE 券，藝人傳的訊息就會出現在這裡，你也能回他。"],
-    [".nav-btn[data-v=core]","FEST","上面是「今天」要趕的事，下面四個抽屜（應援、活動、看、收藏）放所有玩法；最上面點藝人，就只看她的。"],
+    [".nav-btn[data-v=core]","FEST","上面是「今天」要趕的事，下面四個抽屜（應援、活動、看、收藏）放所有玩法；最上面點藝人，就只看那位藝人的。"],
     [".nav-btn[data-v=shop]","SHOP","用積分買 Membership、TIE 券、專輯、應援棒和主題。"],
     [".nav-btn[data-v=me]","ME","你的檔案、積分、收藏、設定都在這裡。想再看一次教學也在這裡。"],
     ['[data-a="openNotifs"]',"通知","藝人發文、回覆你、開直播、提到你、輪到你簽售，都會先在這裡通知你。"]],
