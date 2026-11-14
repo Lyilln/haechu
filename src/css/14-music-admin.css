@@ -686,3 +686,6 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .mu5-tb th{font-weight:700;color:var(--ink-3);padding:4px 2px 6px;text-align:center;vertical-align:bottom;font-size:11.5px}.mu5-tb th small{display:block;font-size:9.5px;font-weight:500;opacity:.8}
 .mu5-tb td{padding:7px 2px;text-align:center;border-top:1px solid var(--line);color:var(--ink)}.mu5-tb td:first-child{text-align:left;font-weight:700;white-space:nowrap;font-size:11.5px}
 .mu5-ul{margin:12px 0 0;padding-left:18px;font-size:12px;line-height:1.7;color:var(--ink-2)}.mu5-ul li+li{margin-top:2px}
+.prg-math{margin:6px 0 12px;padding:12px 16px;border-radius:16px;background:var(--s1);border:1px solid var(--line);font-variant-numeric:tabular-nums}
+.prg-math div{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}.prg-math span{font-size:13px;color:var(--ink-3)}.prg-math b{font-size:17px;font-weight:800;color:var(--ink)}
+.prg-math hr{border:0;border-top:2px solid var(--ink);margin:6px 0}.prg-math .t b{font-size:22px;color:var(--violet,#8843FB)}
