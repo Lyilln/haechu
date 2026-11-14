@@ -72,7 +72,7 @@ const selfSaid=n=>n.self&&/^你傳了 |」直播間說：|的貼文留言：/.te
 function getNotifications(){ return S.get(K.notifs,[]).filter(n=>!selfSaid(n)&&!dbWipedTx(n)).sort((a,b)=>b.ts-a.ts); }
 function hasUnread(){ return S.get(K.unread,"0")==="1"; }
 function markAllRead(){ S.set(K.unread,"0"); }
-function getSettings(){ return {post:true,comment:true,live:true,whisper:true,event:true,...S.get(K.settings,{})}; }
+function getSettings(){ return {post:true,comment:true,live:true,whisper:true,event:true,letter:true,...S.get(K.settings,{})}; }
 function followed(){ const L=S.get(K.fanArtists,[])||[]; return GROUPS.length?L.filter(id=>groupOf(id)):L; }   // 已刪除的團不算追蹤
 function pushNotification({kind,member,group,text,postId,color,commentId,direct=false,liveId,eventId,evKind,liveReply}){
   if(!getSettings()[kind]) return false;                 // 粉絲關掉這類通知 → 不推

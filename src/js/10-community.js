@@ -106,12 +106,19 @@ function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNotice
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" ${ntAttr(n)}><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
 /* 粉絲信：以前只存在寫信的人手機裡，藝人收不到 → 改存共用的一份；舊信由寫信的人的 App 自動補上去 */
-function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(HB_ON&&HB.ver[K.fanLettersAll]==null) return; const mine=S.get(K.fanLetters,[])||[]; if(!mine.length) return; const all=S.get(K.fanLettersAll,[])||[], ids=new Set(all.map(x=>x.id)), add=mine.filter(x=>x&&x.id&&!ids.has(x.id)).map(x=>({...x,by:x.by||myEmail()})); if(add.length) S.set(K.fanLettersAll,[...all,...add]); }catch(e){} }
+function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(HB_ON&&HB.ver[K.fanLettersAll]==null) return; const mine=S.get(K.fanLetters,[])||[]; if(!mine.length) return; const all=S.get(K.fanLettersAll,[])||[], ids=new Set(all.map(x=>x.id)), add=mine.filter(x=>x&&x.id&&!ids.has(x.id)).map(x=>({...x,by:x.by||myEmail()})); if(add.length) S.set(K.fanLettersAll,[...all,...add]);
+    let H={}; try{ H=JSON.parse(localStorage.getItem("hc_lt_hn")||"{}")||{}; }catch(e){} let ch=0; const me=myEmail();
+    all.filter(l=>l&&l.by===me&&l.heart).forEach(l=>Object.keys(l.heart).forEach(mid=>{ const k=l.id+"|"+mid; if(H[k]||!MEMBERS[mid]) return; H[k]=1; ch=1; pushNotification({kind:"letter",member:mid,group:l.gid,text:`${artName(mid,"feed")} 讀了你的粉絲信 💜`}); }));
+    if(ch) try{ localStorage.setItem("hc_lt_hn",JSON.stringify(H)); }catch(e){} }catch(e){} }
+const LT_MAX=3;   /* 跟 Weverse 一樣：每個月最多寫 3 封 */
+const ltMineMonth=()=>{ const me=myEmail(), d=new Date(), m0=new Date(d.getFullYear(),d.getMonth(),1).getTime(), ids=new Set(); [...(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&l.by===me),...(S.get(K.fanLetters,[])||[])].forEach(l=>{ if(l&&l.ts>=m0) ids.add(l.id); }); return ids.size; };
+const ltCard=(l,o={})=>{ const g=groupOf(l.gid)||{}, T=LT_TPL[l.tpl]||LT_TPL[0], hs=Object.keys(l.heart||{}).filter(m=>MEMBERS[m]), fn=(ACCOUNTS[l.by]||{}).name||"粉絲";
+  return `<section class="card fp lt-card ${o.cls||""}" ${o.attr||""} style="background:${T[0]};color:${T[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name||"")}</b><p>${esc(l.text)}</p><small class="fp-sm">${o.from?`From. ${esc(fn)}・`:""}${ymd(l.ts)}</small>${o.heartBtn||(hs.length?`<span class="lt-hs">💜 ${hs.map(m=>esc(artName(m,"feed"))).join("、")} 讀了這封信</span>`:"")}</section>`; };
 setTimeout(ltSync,6000); setInterval(ltSync,90000);
 const ltSeen=()=>{ try{ return JSON.parse(localStorage.getItem("hc_lt_seen")||"{}")||{}; }catch(e){ return {}; } };   /* 已讀只記在藝人自己的手機 */
 const ltFor=mid=>{ const g=(MEMBERS[mid]||{}).group; return (S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===g&&(!MEMBERS[l.to]||l.to===mid)).sort((a,b)=>b.ts-a.ts); };
 function viewArtLetters(mid){ const L=ltFor(mid), R=ltSeen(), g=groupOf((MEMBERS[mid]||{}).group)||{};
-  return `<main class="page">${L.length?L.map(l=>{ const fn=(ACCOUNTS[l.by]||{}).name||"粉絲"; return `<section class="card fp lt-card ${R[l.id]?"":"new"}" data-a="aLtRead" data-v="${l.id}" style="background:${(LT_TPL[l.tpl]||LT_TPL[0])[0]};color:${(LT_TPL[l.tpl]||LT_TPL[0])[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name)}</b><p>${esc(l.text)}</p><small class="fp-sm">From. ${esc(fn)}・${ymd(l.ts)}</small></section>`; }).join(""):`<p class="cmx-empty">還沒有收到粉絲信 💌</p>`}</main>`; }
+  return `<main class="page">${L.length?L.map(l=>{ const on=!!(l.heart||{})[mid]; return ltCard(l,{from:1,cls:R[l.id]?"":"new",attr:`data-a="aLtRead" data-v="${l.id}"`,heartBtn:`<button class="lt-hb ${on?"on":""}" data-a="aLtHeart" data-v="${l.id}" aria-pressed="${on}">${on?"💜 已讀給粉絲看":"🤍 按 💜 讓粉絲知道你讀了"}</button>`}); }).join(""):`<p class="cmx-empty">還沒有收到粉絲信 💌</p>`}</main>`; }
 /* 右下「＋」：粉絲信、貼文 */
 function fabMenu(items,cls){ const n=items.length; return `<div class="cmx-fabw ${cls||""}" data-a="fabClose"><div class="cmx-fabm">${items.map(([a,v,l,ic],k)=>`<button data-a="${a}" data-v="${v}" style="--k:${n-1-k}"><span>${l}</span><i>${ic}</i></button>`).join("")}<button class="x" data-a="fabClose" aria-label="關閉">${I3.x}</button></div></div>`; }
 function openCmFab(gid){ setLayer(fabMenu([["cmLetterTo",gid,"粉絲信",I3.letter],["cmGo","write","貼文",I3.pen]]),"fab"); }
@@ -137,7 +144,7 @@ const LT_TPL=[["#FFFFFF","#1D1A24"],["#FFF4E0","#4A3B1F"],["#EFE8FF","#3B2E6B"],
 const ltKey=(gid,to)=>gid+"|"+to;
 function viewCmLetter(gid,to){ const g=groupOf(gid), name=MEMBERS[to]?artName(to,"feed"):g.name, d=(S.get(K.ltDraft,{}))[ltKey(gid,to)]||{}, tp=ui.ltTpl!=null?ui.ltTpl:(d.tpl||0), C=LT_TPL[tp]||LT_TPL[0];
   return `<div class="ltp" style="--gt:${gTheme(gid)}"><header class="ltp-h"><button class="cmx-ib" data-a="ltX" aria-label="取消">${I3.x}</button><b>To. ${esc(name)}</b><button class="ltp-ok" data-a="ltDone" data-g="${gid}" data-v="${to}">完成</button></header>
-    <div class="ltp-paper" style="background:${C[0]};color:${C[1]}"><textarea id="ltTxt" placeholder="輸入文字" style="color:${C[1]}">${esc(d.text||"")}</textarea><small class="ltp-from">From. ${esc(cmProf(gid).nick)}</small></div>
+    <p class="lt-left">這個月還能寫 <b>${Math.max(0,LT_MAX-ltMineMonth())}</b> / ${LT_MAX} 封・寫的信其他粉絲也看得到</p><div class="ltp-paper" style="background:${C[0]};color:${C[1]}"><textarea id="ltTxt" placeholder="輸入文字" style="color:${C[1]}">${esc(d.text||"")}</textarea><small class="ltp-from">From. ${esc(cmProf(gid).nick)}</small></div>
     <div class="ltp-tools"><span>信紙</span>${LT_TPL.map((c,i)=>`<button class="${i===tp?"on":""}" style="background:${c[0]}" data-a="ltTpl" data-v="${i}" aria-label="信紙 ${i+1}"></button>`).join("")}</div></div>`; }
 function viewCmWrite(gid){ const g=groupOf(gid), hide=!!ui.cwHide;
   return `<div class="cw"><header class="cw-h"><button data-a="back">取消</button><span><b>撰寫貼文</b><small>${esc(g.name)}</small></span><button class="cw-ok" id="cwOk" data-a="cwPost" data-v="${gid}" disabled>新增</button></header>
@@ -148,7 +155,8 @@ function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"po
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
   const fol=grpMembers(gid).filter(m=>(S.get(K.mFollow,{}))[m]).length, bms=S.get(K.bm,[]).length;
   const list=tab==="post"?(posts.length?posts.map(fanCard).join(""):`<p class="cmx-empty">尚未發表貼文。</p>`):tab==="cm"?(cms.length?cms.map(c=>`<section class="card fp">${trT("c:"+c.id,c.text,"")}<small class="fp-sm">${ago(c.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未發表留言。</p>`)
-    :(lts.length?lts.map(l=>`<section class="card fp lt-card" style="background:${(LT_TPL[l.tpl]||LT_TPL[0])[0]};color:${(LT_TPL[l.tpl]||LT_TPL[0])[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name)}</b><p>${esc(l.text)}</p><small class="fp-sm">${ymd(l.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未有撰寫的粉絲信。</p>`);
+    :(()=>{ const all=!!ui.ltAll, A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(A.map(x=>[x.id,x])), L=all?A.filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts):lts.map(l=>byId.get(l.id)||l);
+      return `<div class="lt-sw"><button class="${all?"":"on"}" data-a="ltAll" data-v="">我的</button><button class="${all?"on":""}" data-a="ltAll" data-v="1">全部</button><span>這個月還能寫 ${Math.max(0,LT_MAX-ltMineMonth())} 封</span></div>`+(L.length?L.map(l=>ltCard(l,{from:all})).join(""):`<p class="cmx-empty">${all?"這個團還沒有人寫粉絲信。":"尚未有撰寫的粉絲信。"}</p>`); })();
   return `<div class="gcm cmx-me" style="--gt:${gTheme(gid)}"><header class="cmx-top"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><span></span></header>
     <section class="me-hero" ${bg?`style="background-image:linear-gradient(transparent,rgba(0,0,0,.45)),url(${bg})"`:""}>${cmAvatar(gid,"big")}<small>${ymd(P.joined)} 已加入</small><b>${esc(P.nick)}</b>${P.intro&&!P.hide?`<p>${esc(P.intro)}</p>`:""}
       <div class="me-st"><span><b>${fol}</b>正在追蹤</span><span><b>0</b>追蹤者</span><span><b>${bms}</b>收藏集</span></div><button class="me-ed" data-a="cmGo" data-v="meEdit">編輯個人簡介</button></section>
@@ -432,7 +440,8 @@ document.addEventListener("scroll",e=>{ const t=e.target; if(!t||t.id!=="pinTrk"
 setInterval(()=>{ if(document.hidden||Date.now()-pinTouchT<8000) return; if(route().sub==="notifications"||document.querySelector(".artn-pin")) refreshPin(); },5000);
 /* 點一則通知要去哪裡（通知頁、手機推播點進來都用這個，去的地方一樣） */
 function nfAttrs(n){ const act=n.kind==="tour"?"openTour":n.kind==="news"?"openNews":n.kind==="core"?"goCore":n.kind==="whisper"?"openChat":n.kind==="live"?"openLive":n.kind==="event"?"openEvent":"openPost";
-  return `data-a="${n.kind==="bday"?"gOpen":act}" data-v="${n.kind==="bday"?esc(n.group||""):""}" data-ek="${esc(n.evKind||"")}" data-ev="${esc(n.eventId||"")}" data-lv="${esc(n.liveId||"")}" data-m="${esc(n.member||"")}" data-id="${esc(n.postId||n.newsId||n.tourId||"")}" data-c="${esc(n.commentId||"")}"`; }
+  const go=n.kind==="bday"||n.kind==="letter";   /* 粉絲信被藝人讀了：點了回那個團的社群 */
+  return `data-a="${go?"gOpen":act}" data-v="${go?esc(n.group||""):""}" data-ek="${esc(n.evKind||"")}" data-ev="${esc(n.eventId||"")}" data-lv="${esc(n.liveId||"")}" data-m="${esc(n.member||"")}" data-id="${esc(n.postId||n.newsId||n.tourId||"")}" data-c="${esc(n.commentId||"")}"`; }
 function viewNotifs(){
   const f=followed();
   const all=getNotifications().filter(n=>n.kind!=="system"&&(n.direct||f.includes(n.group)));
