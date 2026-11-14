@@ -254,6 +254,12 @@ function muRankShown(show,wk,ended){ const R=showRank(show,wk), F=ended&&muFin(s
   return {R:R.map(x=>({...x,sc:{...x.sc,total:F.r[x.s.id]!=null?F.r[x.s.id]:x.sc.total}})).sort((a,b)=>b.sc.total-a.sc.total),N:F.n||[]}; }
 /* 自動結算：管理員的手機每分鐘看一次 */
 function msAutoSettle(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null)) return; const ms=getMShow(); if(!ms.songs.length) return; let n=0;
+  /* 舊版 App（節目還叫 MUSIC BANK、星期五結算）會提早開一位：節目還沒結束、也不是管理員手動定的 → 收回，等播出時間到再正式結算 */
+  { const wk=curWeek(), m=getMShow(), W=m.wins[wk]||{}, man=(m.manual||{})[wk]||{}, bad=SHOWS.filter(sh=>(W[sh.id]||((m.npcWin||{})[wk]||{})[sh.id])&&!man[sh.id]&&!showEnded(sh.id,wk));
+    if(bad.length){ const G={...gnGone()}; bad.forEach(sh=>{ const sid=W[sh.id], s=sid&&songOf(sid);
+        if(s){ const id="gna_"+strHash(wk+"|"+`🏆 ${sh.name} 一位：${songName(s)}！`).toString(36); G[id]="pre"+Date.now(); }
+        ["wins","fin","rk","npcWin"].forEach(k=>{ if(m[k]&&m[k][wk]){ m[k]={...m[k]}; m[k][wk]={...m[k][wk]}; delete m[k][wk][sh.id]; } }); });
+      S.set(K.mshow,m); S.set(GN_GONE,G); } }
   [shiftWeek(curWeek(),-1),curWeek()].forEach(wk=>{ if(!ranked(wk)) return; SHOWS.forEach(sh=>{ const ws=(getMShow().wins[wk]||{}), man=((getMShow().manual||{})[wk]||{}); if(ws[sh.id]||man[sh.id]||!showEnded(sh.id,wk)) return;
     const RK=showRank(sh.id,wk), top=RK.find(x=>!x.cr&&x.sc.total>0), nw0=npcWon(sh.id,wk);
     if(nw0){ if(muFin(sh.id,wk)) return;

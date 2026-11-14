@@ -101,7 +101,8 @@ function openVote(sid){
 
 /* 藝人工作上的事（一位、回歸、演唱會、世巡、簽售、綜藝、代言、運動會…）一律自動發社群公告。
    編號用事件本身決定（同一件事在每支管理員手機上都是同一個編號），所以不會重複發 */
-function gnAuto(gid,title,body,key,ts){ try{ if(!gid||!groupOf(gid)) return; const id="gna_"+strHash(String(key||title)).toString(36), GN=S.get(K.gNotices,[])||[]; if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
+function gnAuto(gid,title,body,key,ts){ try{ if(!gid||!groupOf(gid)) return; let id="gna_"+strHash(String(key||title)).toString(36); const GN=S.get(K.gNotices,[])||[], g0=typeof gnGone==="function"&&gnGone()[id]; if(g0){ if(String(g0).startsWith("pre")) id+="r"; else return; }   /* pre＝太早發被收回的，真的結算時可以再發一次 */
+  if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
   GN.push({id,group:gid,auto:1,title:String(title).replace(/^\s+/,""),body:body||String(title),ts:ts||Date.now()}); GN.sort((a,b)=>(b.ts||0)-(a.ts||0)); S.set(K.gNotices,GN.slice(0,400)); }catch(e){} }
 const gnOfMid=mid=>(MEMBERS[mid]||{}).group||"";
 function muNotify(text,gid){ gnAuto(gid,text,"",(ui.gnWk||weekKey(Date.now()))+"|"+text,ui.gnTs);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }

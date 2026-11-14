@@ -180,7 +180,7 @@ function viewCore(){
 }
 /* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
    新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
-const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour","survival"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
 const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
 const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
 function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }
@@ -207,7 +207,7 @@ function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>
   return `${chips}${g?festHead(g):""}
     <div class="fz-sh"><b>今天</b><span>${d.getMonth()+1}/${d.getDate()}（${wd}）</span></div>
     ${today.length?`<div class="fz-today">${today.map(tc).join("")}</div>`:`<p class="fz-none">今天沒有要趕的事 🌙 去抽屜逛逛吧</p>`}
-    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>`; }
+    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>${(()=>{ const t=tile("survival"); if(!t) return ""; const lk=!svOpen(); /* 選秀不屬於任何已出道的藝人：獨立一塊 */ return `<div class="fz-sh"><b>選秀</b><span>還沒出道的練習生</span></div><button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"coreGo"}" data-v="survival"><span>🏆</span><b>${esc(t[2])}</b><small>${t[3]}</small><i>›</i></button>`; })()}`; }
 function viewFestDr(k){ const d=FEST_DR.find(x=>x[0]===k); if(!d) return coreHead("FEST")+`<main class="page"><p class="me-none">找不到</p></main>`; viewCore(); const T=ui.festT||[];
   const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   const L=d[3].map(x=>x==="signed"?["signed","pen","簽名專輯",(()=>{ const n=(S.get(K.signedAlbums,[])||[]).length; return n?`收藏 ${n} 張`:"還沒有簽名專輯"; })()]:T.find(t=>t[0]===x)).filter(Boolean), on=L.filter(t=>!festOff(t[3])), off=L.filter(t=>festOff(t[3]));

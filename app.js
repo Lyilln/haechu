@@ -5417,7 +5417,8 @@ function openVote(sid){
 
 /* 藝人工作上的事（一位、回歸、演唱會、世巡、簽售、綜藝、代言、運動會…）一律自動發社群公告。
    編號用事件本身決定（同一件事在每支管理員手機上都是同一個編號），所以不會重複發 */
-function gnAuto(gid,title,body,key,ts){ try{ if(!gid||!groupOf(gid)) return; const id="gna_"+strHash(String(key||title)).toString(36), GN=S.get(K.gNotices,[])||[]; if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
+function gnAuto(gid,title,body,key,ts){ try{ if(!gid||!groupOf(gid)) return; let id="gna_"+strHash(String(key||title)).toString(36); const GN=S.get(K.gNotices,[])||[], g0=typeof gnGone==="function"&&gnGone()[id]; if(g0){ if(String(g0).startsWith("pre")) id+="r"; else return; }   /* pre＝太早發被收回的，真的結算時可以再發一次 */
+  if(GN.some(n=>n.id===id)||(typeof gnGone==="function"&&gnGone()[id])) return;
   GN.push({id,group:gid,auto:1,title:String(title).replace(/^\s+/,""),body:body||String(title),ts:ts||Date.now()}); GN.sort((a,b)=>(b.ts||0)-(a.ts||0)); S.set(K.gNotices,GN.slice(0,400)); }catch(e){} }
 const gnOfMid=mid=>(MEMBERS[mid]||{}).group||"";
 function muNotify(text,gid){ gnAuto(gid,text,"",(ui.gnWk||weekKey(Date.now()))+"|"+text,ui.gnTs);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
@@ -6147,7 +6148,7 @@ function viewCore(){
 }
 /* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
    新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
-const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour","survival"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["sns","news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
 const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
 const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
 function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }
@@ -6174,7 +6175,7 @@ function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>
   return `${chips}${g?festHead(g):""}
     <div class="fz-sh"><b>今天</b><span>${d.getMonth()+1}/${d.getDate()}（${wd}）</span></div>
     ${today.length?`<div class="fz-today">${today.map(tc).join("")}</div>`:`<p class="fz-none">今天沒有要趕的事 🌙 去抽屜逛逛吧</p>`}
-    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>`; }
+    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>${(()=>{ const t=tile("survival"); if(!t) return ""; const lk=!svOpen(); /* 選秀不屬於任何已出道的藝人：獨立一塊 */ return `<div class="fz-sh"><b>選秀</b><span>還沒出道的練習生</span></div><button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"coreGo"}" data-v="survival"><span>🏆</span><b>${esc(t[2])}</b><small>${t[3]}</small><i>›</i></button>`; })()}`; }
 function viewFestDr(k){ const d=FEST_DR.find(x=>x[0]===k); if(!d) return coreHead("FEST")+`<main class="page"><p class="me-none">找不到</p></main>`; viewCore(); const T=ui.festT||[];
   const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   const L=d[3].map(x=>x==="signed"?["signed","pen","簽名專輯",(()=>{ const n=(S.get(K.signedAlbums,[])||[]).length; return n?`收藏 ${n} 張`:"還沒有簽名專輯"; })()]:T.find(t=>t[0]===x)).filter(Boolean), on=L.filter(t=>!festOff(t[3])), off=L.filter(t=>festOff(t[3]));
@@ -13497,6 +13498,12 @@ function muRankShown(show,wk,ended){ const R=showRank(show,wk), F=ended&&muFin(s
   return {R:R.map(x=>({...x,sc:{...x.sc,total:F.r[x.s.id]!=null?F.r[x.s.id]:x.sc.total}})).sort((a,b)=>b.sc.total-a.sc.total),N:F.n||[]}; }
 /* 自動結算：管理員的手機每分鐘看一次 */
 function msAutoSettle(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null)) return; const ms=getMShow(); if(!ms.songs.length) return; let n=0;
+  /* 舊版 App（節目還叫 MUSIC BANK、星期五結算）會提早開一位：節目還沒結束、也不是管理員手動定的 → 收回，等播出時間到再正式結算 */
+  { const wk=curWeek(), m=getMShow(), W=m.wins[wk]||{}, man=(m.manual||{})[wk]||{}, bad=SHOWS.filter(sh=>(W[sh.id]||((m.npcWin||{})[wk]||{})[sh.id])&&!man[sh.id]&&!showEnded(sh.id,wk));
+    if(bad.length){ const G={...gnGone()}; bad.forEach(sh=>{ const sid=W[sh.id], s=sid&&songOf(sid);
+        if(s){ const id="gna_"+strHash(wk+"|"+`🏆 ${sh.name} 一位：${songName(s)}！`).toString(36); G[id]="pre"+Date.now(); }
+        ["wins","fin","rk","npcWin"].forEach(k=>{ if(m[k]&&m[k][wk]){ m[k]={...m[k]}; m[k][wk]={...m[k][wk]}; delete m[k][wk][sh.id]; } }); });
+      S.set(K.mshow,m); S.set(GN_GONE,G); } }
   [shiftWeek(curWeek(),-1),curWeek()].forEach(wk=>{ if(!ranked(wk)) return; SHOWS.forEach(sh=>{ const ws=(getMShow().wins[wk]||{}), man=((getMShow().manual||{})[wk]||{}); if(ws[sh.id]||man[sh.id]||!showEnded(sh.id,wk)) return;
     const RK=showRank(sh.id,wk), top=RK.find(x=>!x.cr&&x.sc.total>0), nw0=npcWon(sh.id,wk);
     if(nw0){ if(muFin(sh.id,wk)) return;
