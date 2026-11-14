@@ -55,7 +55,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     { const tt=n.match(/^(總分|總積分|總)\s*[:：]?\s*([\d,]+)\s*分?$/); if(tt){ D.said=ptNum(tt[2]); return; } }
     const bm=n.match(/^(目前|現在|累積|累計|餘額|現有|積分|總積分)\s*[:：]?\s*([\d,]+)\s*分?$/); if(bm){ D.said=ptNum(bm[2]); return; }
     if(/^(加分|額外加分|管理員加分|獎勵)\s*[+＋]/.test(n)){ const c=ptNum((n.match(/[+]\s*([\d,]+)/)||[])[1]); D.claim+=c; D.give+=c; D.items.push({seg,claim:c,give:c,st:"ask",why:"管理員另外加的分，照登記算"}); return; }
-    const role=roleAt(D.ds), r=ptMatch(seg,R,role), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null; if(claim!=null) D.claim+=claim;
+    const role=roleAt(D.ds), r=ptOldRule(ptMatch(seg,R,role),D.ds), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null; if(claim!=null) D.claim+=claim;
     if(!r){ if(claim!=null) D.items.push({seg,claim,give:0,st:"no",why:"對不到積分表的項目"}); return; }
     if(r.auto){ D.items.push({seg,r,claim,give:claim||0,st:"auto",why:"App 自己會加（照登記的數字算進總分，不會另外加分）"}); return; }
     if(r.ask||r.pts==null){ D.items.push({seg,r,claim,give:claim||0,st:"ask",why:"這項是管理員決定的分數，照登記算"}); D.give+=claim||0; return; }

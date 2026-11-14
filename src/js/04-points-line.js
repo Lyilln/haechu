@@ -157,7 +157,10 @@ function ptDateLine(seg,yr,curMo){ const t=seg.normalize("NFKC").trim(); if(/[+]
     if(!(mo>=1&&mo<=12&&dd>=1&&dd<=31)) return null; const now=new Date(); let yy=y||yr; if(!y&&mo>now.getMonth()+2) yy--; out.push(`${yy}-${String(mo).padStart(2,"0")}-${String(dd).padStart(2,"0")}`); }
   let [a,b]=[out[0],out[1]||out[0]]; if(b<a) [a,b]=[b,a]; const ds=[]; for(let t0=new Date(a+"T00:00:00").getTime(), t1=new Date(b+"T00:00:00").getTime(), x=t0; x<=t1&&ds.length<31; x+=864e5) ds.push(ymdK(x)); return ds; }
 const ptDs=ds=>ds.length>1?`${ds[0].slice(5).replace("-","/")}–${ds[ds.length-1].slice(5).replace("-","/")}`:ds[0].slice(5).replace("-","/");
-const PT_CAPP_FROM="2026-11-14";   /* 翻唱一天 2,000 分上限從這天開始算；之前登記的分數照舊 */
+const PT_CAPP_FROM="2026-11-14";
+/* 規則改之前寫的照舊規則算：11/15 以前的粉絲信 = +100、一天最多 300 分 */
+const PT_OLD=[{name:"粉絲信",before:"2026-11-15",pts:100,cap:300}];
+const ptOldRule=(r,ds)=>{ if(!r) return r; const o=PT_OLD.find(x=>x.name===r.name&&ds.length&&ds.every(d=>d<x.before)); return o?{...r,pts:o.pts,cap:o.cap}:r; };   /* 翻唱一天 2,000 分上限從這天開始算；之前登記的分數照舊 */
 function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=(ACCOUNTS[email]||{}).member?"artist":"fan", out=[], used={}, notes=[]; let ds=[day0], total=null;
   R.forEach(r=>{ r.alias=[]; PT_ALIAS.forEach(([re,al])=>{ if(re.test(r.key)) r.alias=al.map(ptNz); }); const bare=r.key.replace(/^[a-z]+/,""); if(bare!==r.key&&bare.length>=3&&!r.alias.includes(bare)) r.alias.push(bare); });   /* 「TIE 被翻牌」寫成「被翻牌」也對得到 */
   const now=new Date(), yr=now.getFullYear();
@@ -167,7 +170,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
     { const pm=seg.normalize("NFKC").match(/^([\d\/.\-~～到至月日年]{3,})\s+(\S.*)$/); if(pm){ const d2=ptDateLine(pm[1],yr,now.getMonth()+1); if(d2){ ds=d2; seg=pm[2]; } } }   /* 日期寫在同一行前面：「1103~1105 打卡*4+200」 */
     const tm=seg.normalize("NFKC").match(/^(總計|總共|合計|共計|總分|一共|總|共)\s*[:：]?\s*[+]?\s*([\d,]+)/); if(tm){ total=ptNum(tm[2]); return; }
     const bm=seg.normalize("NFKC").match(/^(目前|現在|累積|累計|餘額|現有|積分)\s*[:：]?\s*([\d,]+)\s*分?$/); if(bm){ notes.push(`登記寫目前有 ${fmt(ptNum(bm[2]))} 分（只是參考，不會加分）`); return; }
-    const r=ptMatch(seg,R,role), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null, d=ds[0], days=ds.length;
+    const r=ptOldRule(ptMatch(seg,R,role),ds), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null, d=ds[0], days=ds.length;
     if(!r){ if(claim!=null) out.push({seg,r:null,d,ds,claim,give:0,st:"no",why:["對不到積分表的項目"]}); return; }
     const rest=seg.replace(cl?cl[0]:"",""); let cnt=null; const um=rest.match(/(\d+)\s*(則|篇|個|句|場|封|首|次|張|群|位|人|分鐘|min|條|天)/i)||rest.match(/[x×＊*]\s*(\d+)/i);
     if(um&&!/字/.test(um[0])) cnt=+um[1]; const unit=r.pts;

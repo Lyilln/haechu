@@ -1173,7 +1173,10 @@ function ptDateLine(seg,yr,curMo){ const t=seg.normalize("NFKC").trim(); if(/[+]
     if(!(mo>=1&&mo<=12&&dd>=1&&dd<=31)) return null; const now=new Date(); let yy=y||yr; if(!y&&mo>now.getMonth()+2) yy--; out.push(`${yy}-${String(mo).padStart(2,"0")}-${String(dd).padStart(2,"0")}`); }
   let [a,b]=[out[0],out[1]||out[0]]; if(b<a) [a,b]=[b,a]; const ds=[]; for(let t0=new Date(a+"T00:00:00").getTime(), t1=new Date(b+"T00:00:00").getTime(), x=t0; x<=t1&&ds.length<31; x+=864e5) ds.push(ymdK(x)); return ds; }
 const ptDs=ds=>ds.length>1?`${ds[0].slice(5).replace("-","/")}–${ds[ds.length-1].slice(5).replace("-","/")}`:ds[0].slice(5).replace("-","/");
-const PT_CAPP_FROM="2026-11-14";   /* 翻唱一天 2,000 分上限從這天開始算；之前登記的分數照舊 */
+const PT_CAPP_FROM="2026-11-14";
+/* 規則改之前寫的照舊規則算：11/15 以前的粉絲信 = +100、一天最多 300 分 */
+const PT_OLD=[{name:"粉絲信",before:"2026-11-15",pts:100,cap:300}];
+const ptOldRule=(r,ds)=>{ if(!r) return r; const o=PT_OLD.find(x=>x.name===r.name&&ds.length&&ds.every(d=>d<x.before)); return o?{...r,pts:o.pts,cap:o.cap}:r; };   /* 翻唱一天 2,000 分上限從這天開始算；之前登記的分數照舊 */
 function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=(ACCOUNTS[email]||{}).member?"artist":"fan", out=[], used={}, notes=[]; let ds=[day0], total=null;
   R.forEach(r=>{ r.alias=[]; PT_ALIAS.forEach(([re,al])=>{ if(re.test(r.key)) r.alias=al.map(ptNz); }); const bare=r.key.replace(/^[a-z]+/,""); if(bare!==r.key&&bare.length>=3&&!r.alias.includes(bare)) r.alias.push(bare); });   /* 「TIE 被翻牌」寫成「被翻牌」也對得到 */
   const now=new Date(), yr=now.getFullYear();
@@ -1183,7 +1186,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
     { const pm=seg.normalize("NFKC").match(/^([\d\/.\-~～到至月日年]{3,})\s+(\S.*)$/); if(pm){ const d2=ptDateLine(pm[1],yr,now.getMonth()+1); if(d2){ ds=d2; seg=pm[2]; } } }   /* 日期寫在同一行前面：「1103~1105 打卡*4+200」 */
     const tm=seg.normalize("NFKC").match(/^(總計|總共|合計|共計|總分|一共|總|共)\s*[:：]?\s*[+]?\s*([\d,]+)/); if(tm){ total=ptNum(tm[2]); return; }
     const bm=seg.normalize("NFKC").match(/^(目前|現在|累積|累計|餘額|現有|積分)\s*[:：]?\s*([\d,]+)\s*分?$/); if(bm){ notes.push(`登記寫目前有 ${fmt(ptNum(bm[2]))} 分（只是參考，不會加分）`); return; }
-    const r=ptMatch(seg,R,role), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null, d=ds[0], days=ds.length;
+    const r=ptOldRule(ptMatch(seg,R,role),ds), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null, d=ds[0], days=ds.length;
     if(!r){ if(claim!=null) out.push({seg,r:null,d,ds,claim,give:0,st:"no",why:["對不到積分表的項目"]}); return; }
     const rest=seg.replace(cl?cl[0]:"",""); let cnt=null; const um=rest.match(/(\d+)\s*(則|篇|個|句|場|封|首|次|張|群|位|人|分鐘|min|條|天)/i)||rest.match(/[x×＊*]\s*(\d+)/i);
     if(um&&!/字/.test(um[0])) cnt=+um[1]; const unit=r.pts;
@@ -4105,7 +4108,7 @@ function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(
     all.filter(l=>l&&l.by===me&&l.heart).forEach(l=>Object.keys(l.heart).forEach(mid=>{ const k=l.id+"|"+mid; if(H[k]||!MEMBERS[mid]) return; H[k]=1; ch=1; pushNotification({kind:"letter",member:mid,group:l.gid,text:`${artName(mid,"feed")} 讀了你的粉絲信 💜`}); }));
     if(ch) try{ localStorage.setItem("hc_lt_hn",JSON.stringify(H)); }catch(e){} }catch(e){} }
 const LT_MAX=3;   /* 跟 Weverse 一樣：每個月最多寫 3 封 */
-const ltMineMonth=()=>{ const me=myEmail(), d=new Date(), m0=new Date(d.getFullYear(),d.getMonth(),1).getTime(), ids=new Set(); [...(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&l.by===me),...(S.get(K.fanLetters,[])||[])].forEach(l=>{ if(l&&l.ts>=m0) ids.add(l.id); }); return ids.size; };
+const ltMineMonth=()=>{ const me=myEmail(), d=new Date(), m0=Math.max(new Date(d.getFullYear(),d.getMonth(),1).getTime(),new Date(2026,10,15).getTime()), ids=new Set();   /* 11/15 規則上路前寫的不算進這個月的 3 封 */ [...(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&l.by===me),...(S.get(K.fanLetters,[])||[])].forEach(l=>{ if(l&&l.ts>=m0) ids.add(l.id); }); return ids.size; };
 const ltCard=(l,o={})=>{ const g=groupOf(l.gid)||{}, T=LT_TPL[l.tpl]||LT_TPL[0], hs=Object.keys(l.heart||{}).filter(m=>MEMBERS[m]), fn=(ACCOUNTS[l.by]||{}).name||"粉絲";
   return `<section class="card fp lt-card ${o.cls||""}" ${o.attr||""} style="background:${T[0]};color:${T[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name||"")}</b><p>${esc(l.text)}</p><small class="fp-sm">${o.from?`From. ${esc(fn)}・`:""}${ymd(l.ts)}</small>${o.heartBtn||(hs.length?`<span class="lt-hs">💜 ${hs.map(m=>esc(artName(m,"feed"))).join("、")} 讀了這封信</span>`:"")}</section>`; };
 setTimeout(ltSync,6000); setInterval(ltSync,90000);
@@ -15000,7 +15003,7 @@ function ptRecount(email,text,start){ const R=ptRulesParse(ptRulesText()), DB=pt
     { const tt=n.match(/^(總分|總積分|總)\s*[:：]?\s*([\d,]+)\s*分?$/); if(tt){ D.said=ptNum(tt[2]); return; } }
     const bm=n.match(/^(目前|現在|累積|累計|餘額|現有|積分|總積分)\s*[:：]?\s*([\d,]+)\s*分?$/); if(bm){ D.said=ptNum(bm[2]); return; }
     if(/^(加分|額外加分|管理員加分|獎勵)\s*[+＋]/.test(n)){ const c=ptNum((n.match(/[+]\s*([\d,]+)/)||[])[1]); D.claim+=c; D.give+=c; D.items.push({seg,claim:c,give:c,st:"ask",why:"管理員另外加的分，照登記算"}); return; }
-    const role=roleAt(D.ds), r=ptMatch(seg,R,role), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null; if(claim!=null) D.claim+=claim;
+    const role=roleAt(D.ds), r=ptOldRule(ptMatch(seg,R,role),D.ds), cl=seg.match(/[+＋]\s*([\d,，]+)/), claim=cl?ptNum(cl[1]):null; if(claim!=null) D.claim+=claim;
     if(!r){ if(claim!=null) D.items.push({seg,claim,give:0,st:"no",why:"對不到積分表的項目"}); return; }
     if(r.auto){ D.items.push({seg,r,claim,give:claim||0,st:"auto",why:"App 自己會加（照登記的數字算進總分，不會另外加分）"}); return; }
     if(r.ask||r.pts==null){ D.items.push({seg,r,claim,give:claim||0,st:"ask",why:"這項是管理員決定的分數，照登記算"}); D.give+=claim||0; return; }
