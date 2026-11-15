@@ -501,6 +501,7 @@ function viewUniOps(){ const th=getThemes().filter(t=>t.status==="pending").leng
     <div class="section-h">系統</div>
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=translate">${AIC.globe}翻譯服務<span class="r">${trEngine()}</span></button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=snsub">${AIC.chat}SNS 投稿紀錄<span class="r">${(()=>{ const n=snSubWait().length; return n?`${n} 則排隊中`:""; })()}</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=banned">${AIC.shield}禁用字詞<span class="r">${bannedList().length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=cloud">${AIC.cloud}雲端用量<span class="r">${HB.kvSz?fmtB(HB.kvSz):""}</span></button>
       <button class="list-btn" data-a="maintToggle">${AIC.wrench}維修模式<span class="r">${maintOn()?"維修中":"關閉"}</span></button>

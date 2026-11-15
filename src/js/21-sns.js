@@ -466,6 +466,11 @@ function snOfSync(){ if(Date.now()-OFS<20000) return; OFS=Date.now(); try{ if(HB
   if(!add.length&&!fix) return; d.posts.push(...add); snSave(d); OFM.t=0; }catch(e){} }
 setInterval(()=>{ if(/\/sns(\?|$)/.test(location.hash)) snOfSync(); },60e3);
 /* 還沒開通：「準備中」頁 */
+/* 管理員：所有還沒開通 SNS 的藝人投稿（自動審：沒有禁用字詞就排隊 1 分鐘～2 小時後發）；排隊中或已發布的都能撤下 */
+const snSubWait=()=>{ const now=Date.now(); return (snDB().sub||[]).filter(x=>x.st==="ok"&&x.at>now); };
+function viewSnSubAdm(){ const d=snDB(), now=Date.now(), L=(d.sub||[]).slice().sort((a,b)=>b.ts-a.ts);
+  return `<main class="page">${L.length?`<section class="card sn-subl">${L.map(x=>{ const st=x.st==="no"?["no",x.why==="管理員撤下"?"已撤下":"退回："+(x.why||"")]:x.at>now?["wait",`排隊中・${fsWhen(x.at).split(" ")[1]||""} 發布`]:["ok","已發布"], tu=snUser(x.to)||{}, m=(x.media||[])[0];
+    return `<div class="sn-subr">${m?`<img class="sn-subi" data-mid="${esc(m.mid||"")}" alt="">`:""}<div><b>${esc(MEMBERS[x.mid]?artName(x.mid,"feed"):"藝人")}<small> → ${esc(tu.u||"")}</small></b><p>${esc(x.cap||"")}</p><small>${fsWhen(x.ts)}・<em class="${st[0]}">${esc(st[1])}</em></small></div>${x.st==="ok"?`<button class="t-pill" data-a="snSubPull" data-v="${x.id}">撤下</button>`:""}</div>`; }).join("")}</section>`:`<p class="cmx-empty">還沒有人投稿</p>`}</main>`; }
 function snPrepPage(mid,days){ const d=snDB(), to=snSubTo(mid), tu=snUser(to), L=(d.sub||[]).filter(x=>x.mid===mid).sort((a,b)=>b.ts-a.ts), pub=new Set((d.posts||[]).map(x=>x.id)), me=snUser(snMeId());
   return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page sn-prep">
     <section class="card sn-prep-h">${snAv(me,72)}<b>${esc(me.u)}</b>${me.name?`<small>${esc(me.name)}</small>`:""}<p>公司跟你說再等 ${days} 天就可以開通了</p></section>
@@ -588,6 +593,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snTagT": { const dr=ui.snDraft; if(!dr) break; const L=dr.tags=dr.tags||[], i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=20) toast("最多標註 20 人"); else L.push(t.dataset.v); t.classList.toggle("on",i<0); break; }
     case "snTagDone": layer.innerHTML=""; render(); break;
     case "snLikers": snLikers(t.dataset.id); break;
+    case "snSubPull": ask("撤下這則投稿？已經發布的也會從官方帳號拿掉。",()=>{ const d=snDB(), x=(d.sub||[]).find(y=>y.id===t.dataset.v); if(!x) return; x.st="no"; x.why="管理員撤下"; snSave(d); toast("已撤下"); render(); }); break;
     case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; navTo("#/"+session().role+"/sns?p=new&id=sub"); break;
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }
     case "snLkX": { layer.innerHTML=""; if(ui.snLkDirty){ ui.snLkDirty=0; render(); } break; }
