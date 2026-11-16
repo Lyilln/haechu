@@ -331,7 +331,7 @@ const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${wi
 /* 點歌：應援選單（買專輯、這首歌的 MV 愛心、My Pick） */
 function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), st=s.demo?{wins:[],five:0,aks:[],pak:0,crowns:[]}:songStats(s.id), wk=curWeek(), pick=S.get(K.pick,null), wkWins=st.wins.filter(x=>x.wk===wk).length, mv=songMv(s), own=owns(s.gid,"album");
   setLayer(`<div class="mu2-shw" data-a="tCloseLayer"><div class="mu2-sh" role="dialog" aria-label="應援"><span class="mu2-grab"></span>
-    <div class="mu2-sht"><span class="mu2-cv lg">${songCover(s.gid,s.title)}</span><div><b>《${esc(s.title)}》</b><small>${esc(g?g.name:"")}${s.rtype?"・"+esc(s.rtype):""}</small></div></div>
+    ${cdBox(s.gid,s.title)}<div class="mu2-sht"><div><b>《${esc(s.title)}》</b><small>${esc(g?g.name:"")}${s.rtype?"・"+esc(s.rtype):""}</small></div></div>
     <div class="mu-tags">${wkWins?`<em class="w">本週 ${wkWins} 冠</em>`:""}${st.wins.length?`<em>一位 ×${st.wins.length}</em>`:`<em>衝刺第一個一位</em>`}${st.five?`<em class="g">五台冠軍</em>`:""}${st.aks.length?`<em class="g">AK${st.aks.length>1?" ×"+st.aks.length:""}</em>`:""}${st.pak?`<em class="g">PAK</em>`:""}${st.crowns.map(c=>`<em class="c">${SHOWS.find(x=>x.id===c).name} 三冠王</em>`).join("")}</div>
     <div class="mu2-act two"><button data-a="muAlbum" data-v="${s.gid}" class="${own?"done":""}" ${own?"disabled":""}><span>💿</span>${own?"已收藏":"買專輯"}</button>
       ${mv?`<button data-a="mvLikeV" data-v="${mv.id}" data-s="${s.id}" class="${mvLikedV(mv.id)?"on":""}"><span>${mvLikedV(mv.id)?"♥":"♡"}</span>MV ${fmt(mvLikesV(mv.id))}</button>`:`<button class="done" disabled><span>♡</span>還沒有 MV</button>`}</div>

@@ -693,6 +693,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "tLeave": openLeaveRoom(t.dataset.m); break;
     case "tLeaveOk": { const m0=t.dataset.m, L=tieLeft(); L[m0]=tiePeriod(m0); S.set(K.tieLeft,L); layer.innerHTML=""; go("fan",null,"whisper"); toast("已離開聊天室"); break; }
     case "tExpired": iosAlert("TIE 券已到期","續訂後就能再傳訊息、收到新訊息。",`<button data-a="tCloseLayer">取消</button><button data-a="goSubs">前往續訂</button>`); break;
+    case "cdxTap": t.classList.toggle("out"); break;
     case "muReveal": muRevealOpen(t.dataset.v,t.dataset.w); break;
     case "muRevealX": document.querySelectorAll(".mrv").forEach(x=>x.remove()); break;
     case "mrvNext": { const w=t.closest(".mrv"); if(w&&w._done&&w._done()) w.remove(); else if(w&&w._next) w._next(); break; }
