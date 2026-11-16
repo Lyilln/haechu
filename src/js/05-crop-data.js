@@ -263,7 +263,7 @@ function concertTick(){   // 開演時通知粉絲；畫面上的狀態變了就
   list.forEach(c=>{ if(!c.ended&&!c.notified&&c.startTs<=n&&c.endTs>n){ c.notified=true; ch=true; const g=groupOf(c.gid); if(g) muNotify(`✺ ${g.name} 演唱會「${c.title}」開始了！快到 CORE 加入燈海`,c.gid); } });
   if(ch) saveConcerts(list);
   const sig=(lightsea()||{}).cid||""; if(ui.lsSig===undefined) ui.lsSig=sig; if(sig!==ui.lsSig){ const was=ui.lsSig; ui.lsSig=sig;
-    if(was&&!sig&&layer.querySelector(".concert2")){ concertOff(); toast("演唱會結束了，謝謝你的應援 💜"); }
+    if(was&&!sig&&layer.querySelector(".concert2")){ concertOff(); toast("演唱會結束了，謝謝你的應援"); }
     const r=route(), typing=/^(INPUT|TEXTAREA)$/.test((document.activeElement||{}).tagName||""); if(!typing&&!layer.innerHTML&&(r.tab==="core"||r.tab==="foc")&&!r.p){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
 }
 setInterval(concertTick,4000);

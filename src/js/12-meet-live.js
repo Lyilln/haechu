@@ -263,7 +263,7 @@ function updateMeetRoom(){
   if(l.endTs){ if(!document.querySelector(".mr-end")){ ui.endFor=l.id; render(); } return; }
   if(!document.getElementById("cmSpot")) return;
   const nw=updSpot(l,false);
-  if(nw&&nw.reply&&mineX(nw.reply)){ const cd=document.querySelector(".sp-card"); if(cd){ const b=cd.getBoundingClientRect(); confetti(b.left+b.width/2,b.top+30); } toast(`💜 ${artName(l.member,"live")} 回覆了你！`); }
+  if(nw&&nw.reply&&mineX(nw.reply)){ const cd=document.querySelector(".sp-card"); if(cd){ const b=cd.getBoundingClientRect(); confetti(b.left+b.width/2,b.top+30); } toast(`${artName(l.member,"live")} 回覆了你！`); }
   const sig=l.msgs.length+":"+liveArt(l).filter(x=>x.reply).length;
   if(sig!==meetSig){ meetSig=sig; const tk=document.getElementById("cmTick"); if(tk) updTick(tk,tickHtml(l)); }
   const v=document.getElementById("mrView"); if(v) v.textContent=fmt(liveViewers(l));

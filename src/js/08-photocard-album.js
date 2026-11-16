@@ -554,7 +554,7 @@ function cvOrient(e){ const st=ui.cvSt; if(!st||e.beta==null||!document.getEleme
 async function cardGyro(){
   try{ if(typeof DeviceOrientationEvent.requestPermission==="function"){ const p=await DeviceOrientationEvent.requestPermission(); if(p!=="granted"){ toast("沒有開啟動作權限，用手指拖也可以喔"); return; } }
     if(!cvGyroOn){ addEventListener("deviceorientation",cvOrient); cvGyroOn=true; }
-    const b=layer.querySelector('[data-a="cardGyro"]'); if(b) b.remove(); toast("傾斜手機看看光澤 ✨");
+    const b=layer.querySelector('[data-a="cardGyro"]'); if(b) b.remove(); toast("傾斜手機看看光澤");
   }catch(e){ toast("這裡還不能用傾斜，先用手指拖動看看"); }
 }
 

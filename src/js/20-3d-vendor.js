@@ -877,7 +877,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="lsFrZ"){ const Z=[1,1.5,2,3], i=Math.max(0,Math.min(Z.length-1,Z.indexOf(f.z)+(+t.dataset.v))); f.z=Z[i]; lsFrameDraw(); return; }
   if(a==="lsFrOn"){ const b=f.box[f.cur]; b.on=!b.on; if(!b.on) f.cur="front"; lsFrameDraw(); return; }
   if(a==="lsFrOk"&&f.only){ const c=lsFrameCut(f,f.only), d=ui.lsDraft; if(!c){ toast("框裡找不到應援棒，把框調到應援棒上"); return; } ui.lsFr=null; layer.innerHTML=""; if(!d) return;
-    d.ds[f.only]=lsViewURL(c); d.ds.v2=1; d.ds._k=null; lsRerender(); toast("已加上，轉轉看 ✨"); return; }
+    d.ds[f.only]=lsViewURL(c); d.ds.v2=1; d.ds._k=null; lsRerender(); toast("已加上，轉轉看"); return; }
   if(a==="lsFrOk"){ const fr=lsFrameCut(f,"front"); if(!fr){ toast("正面框裡找不到應援棒，把框調到應援棒上"); return; }
     ui.lsFr=null; layer.innerHTML=""; if(!lsLoad(fr)) return; const d=ui.lsDraft; if(!d) return; const sd=lsFrameCut(f,"side"), bk=lsFrameCut(f,"back"), tp=lsFrameCut(f,"top");
     const eb0=lsFrameCut(f,"emb"), eb=eb0&&eb0.height/eb0.width<1.8&&eb0.height/eb0.width>.55?eb0:null, xb=f.box.exp, X=xb&&xb.on?(()=>{ try{ const c=document.createElement("canvas"); c.width=Math.round(xb.w); c.height=Math.round(xb.h); c.getContext("2d").drawImage(f.im,xb.x,xb.y,xb.w,xb.h,0,0,c.width,c.height); return lsExpUse(c); }catch(e){ return {}; } })():{};

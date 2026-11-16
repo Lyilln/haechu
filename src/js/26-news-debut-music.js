@@ -658,7 +658,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     if(points()<tot){ toast("積分不足，先補充積分吧"); return; }
     const nick=(T.nick||"").trim(); if(sel.some(id=>!(S.get(K.tieSet,{})[id]||{}).nickname)){ if(!nick){ toast("請先設定你的暱稱"); const n=document.getElementById("tgNick"); if(n) n.focus(); return; } if(nameBlock(nick)) return; }
     sel.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,pl.days,planPts(id,pl)); });
-    const g=groupOf(T.gid); ui.tg=null; layer.innerHTML=""; render(); toast(`已訂閱 ${g?g.name:""} ${sel.length} 位成員的 TIE（${pl.name}）💜`); return; }
+    const g=groupOf(T.gid); ui.tg=null; layer.innerHTML=""; render(); toast(`已訂閱 ${g?g.name:""} ${sel.length} 位成員的 TIE（${pl.name}）`); return; }
 },true);
 /* ===== 一位發表動畫：照各節目真的結算畫面（她給的影片）
    ・THE SHOW：黑底螢光綠，三組照片＋彩色名條，下面一行一行跳分數

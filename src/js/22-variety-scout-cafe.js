@@ -236,7 +236,7 @@ document.addEventListener("submit",e=>{ if(e.target.id!=="vsCmForm") return; e.p
 /* ===== 試玩模式：開關、畫面最上方的提示 ===== */
 document.addEventListener("click",e=>{ const t=e.target.closest('[data-a="sbxT"],[data-a="sbxOff"]'); if(!t) return;
   if(sbxOn()){ ask("結束試玩？剛剛玩的東西都會清掉，換回真正的資料。",()=>sbxOff(),{ok:"結束試玩",danger:false}); return; }
-  ask("開始試玩？\n所有東西只在這支手機上，不會上傳、不會影響其他人。積分給你 999,999 讓你隨便玩。",()=>{ sbxStart(); ui.vsDemo=null; ui.bzDemo=null; S.set(K.points,999999); sbxPill(); render(); toast("試玩開始 🎮"); },{ok:"開始",danger:false}); });
+  ask("開始試玩？\n所有東西只在這支手機上，不會上傳、不會影響其他人。積分給你 999,999 讓你隨便玩。",()=>{ sbxStart(); ui.vsDemo=null; ui.bzDemo=null; S.set(K.points,999999); sbxPill(); render(); toast("試玩開始"); },{ok:"開始",danger:false}); });
 function sbxPill(){ const on=sbxOn(), el=document.getElementById("sbxPill"); if(on&&!el) document.body.insertAdjacentHTML("beforeend",`<button id="sbxPill" data-a="sbxOff">🎮 試玩中・不影響其他人<b>結束</b></button>`); else if(!on&&el) el.remove(); }
 setInterval(sbxPill,1500); setTimeout(sbxPill,800);
 
@@ -562,7 +562,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "cfFav": { const c=cfCur(mid), k=t.dataset.k, F=c.art.favs=c.art.favs||[], i=F.indexOf(k); if(i>=0) F.splice(i,1); else F.push(k); cfArrive(c); cfPut(c); rr(); break; }
     case "cfSign": cfSignPad(mid); break;
     case "cfPadClr": { const cv=document.getElementById("cfPad"); if(cv) cv.getContext("2d").clearRect(0,0,cv.width,cv.height); break; }
-    case "cfPadOk": { const cv=document.getElementById("cfPad"); if(!cv) break; if(cv._n&&cv._n()<3){ toast("先簽個名吧"); break; } const id="cfs"+Date.now().toString(36), b=b64Blob(cv.toDataURL("image/png")); MDB.put(id,b); const c=cfCur(mid); c.art.sig=id; cfArrive(c); cfPut(c); layer.innerHTML=""; rr(); toast("簽好了 ✍️"); break; }
+    case "cfPadOk": { const cv=document.getElementById("cfPad"); if(!cv) break; if(cv._n&&cv._n()<3){ toast("先簽個名吧"); break; } const id="cfs"+Date.now().toString(36), b=b64Blob(cv.toDataURL("image/png")); MDB.put(id,b); const c=cfCur(mid); c.art.sig=id; cfArrive(c); cfPut(c); layer.innerHTML=""; rr(); toast("簽好了"); break; }
     case "cfVoice": { mediaSrc(mid).then(u=>{ if(!u){ toast("語音讀不到"); return; } const au=new Audio(u); au.play().catch(()=>toast("播放失敗")); }); break; }
   } });
 /* 藝人第一次在這間店做任何事 → 算「到店」，通知追蹤這團的粉絲 */
@@ -572,7 +572,7 @@ document.addEventListener("change",async e=>{ const id=e.target.id; if(!["cfPost
   try{ const c=cfCur(mid); if(!c) return;
     if(id==="cfVoiceIn"){ if(f.size>15*1024*1024){ toast("語音檔太大了"); return; } const vid="cfv"+Date.now().toString(36); await MDB.put(vid,f.slice(0,f.size,f.type||"audio/mp4")); c.art.voice=vid; cfArrive(c); }
     else { const r=await cfUp(f,id==="cfSelfie"?"cfsl":"cfp"); if(id==="cfSelfie"){ c.art.selfie=r.id; cfArrive(c); } else{ fanEarn("cfdeco_"+c.id,50,{cap:150,life:1,why:"幫忙佈置咖啡廳"}); } if(id!=="cfSelfie") (id==="cfPoster"?c.posters:c.cups).push({id:"x"+Date.now().toString(36),img:r.id,by:cfMe(),name:ME.name,ts:Date.now()}); }
-    c.posters=c.posters.slice(-60); c.cups=c.cups.slice(-30); cfPut(c); render(); toast("好了 ✨"); }catch(err){ toast("這個檔案讀不出來"); } });
+    c.posters=c.posters.slice(-60); c.cups=c.cups.slice(-30); cfPut(c); render(); toast("好了"); }catch(err){ toast("這個檔案讀不出來"); } });
 /* 店內左右滑：上面的分頁跟著亮 */
 document.addEventListener("scroll",e=>{ const r=e.target; if(!r||r.id!=="cfRoom") return; const i=Math.round(r.scrollLeft/Math.max(1,r.clientWidth*.86)); document.querySelectorAll(".cfr-tabs button").forEach((b,k)=>b.classList.toggle("on",k===i)); },true);
 

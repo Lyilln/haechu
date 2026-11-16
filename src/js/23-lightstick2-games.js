@@ -194,7 +194,7 @@ async function lsDepth(canvas,onP){ try{
     return o.toDataURL("image/png"); }catch(e){ return null; } }
 /* 做好正面之後，背景偷偷算深度（失敗就照原本的方式，不影響） */
 function lsDepthRun(fr){ const d=ui.lsDraft; if(!d||!navigator.onLine) return; const ds=d.ds; let shown=0;
-  lsDepth(fr,p=>{ const pc=Math.round(p*100); if(pc>=shown+20){ shown=pc; toast(`AI 深度模型下載中 ${pc}%（只有第一次）`); } }).then(url=>{ if(!url||ui.lsDraft!==d||d.ds!==ds) return; ds.depth=url; ds._k=null; lsRerender(); toast("AI 深度完成，立體更細緻了 ✨"); }); }
+  lsDepth(fr,p=>{ const pc=Math.round(p*100); if(pc>=shown+20){ shown=pc; toast(`AI 深度模型下載中 ${pc}%（只有第一次）`); } }).then(url=>{ if(!url||ui.lsDraft!==d||d.ds!==ds) return; ds.depth=url; ds._k=null; lsRerender(); toast("AI 深度完成，立體更細緻了"); }); }
 /* ===== 4. 讀設計稿上的尺寸（手機上的文字辨識，第一次下載約 10MB，只在管理員手機） =====
    讀到「全長」（最大的 cm）跟「直徑」（前面有 Ø/⌀/Φ/DIA 的數字），燈頭大小照真的比例調 */
 const lsLoadJs=src=>new Promise((res,rej)=>{ const s=document.createElement("script"); s.src=src; s.onload=res; s.onerror=rej; document.head.appendChild(s); });

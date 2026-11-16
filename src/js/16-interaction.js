@@ -61,7 +61,7 @@ document.addEventListener("click",e=>{
   for(const f of CLICK_GROUPS) if(f(a,t,e,r)!==CLICK_NO) return;   /* 動作照功能分在 10a～10f */
 });
 document.addEventListener("submit",e=>{
-  if(e.target.classList.contains("al-form")){ e.preventDefault(); const v=e.target.querySelector(".al-in").value.trim(); const l=getLive(e.target.dataset.id); if(!v||!l) return; l.title=v; saveLive(l); render(); toast("直播主題已同步到粉絲與藝人端 ✨"); return; }
+  if(e.target.classList.contains("al-form")){ e.preventDefault(); const v=e.target.querySelector(".al-in").value.trim(); const l=getLive(e.target.dataset.id); if(!v||!l) return; l.title=v; saveLive(l); render(); toast("直播主題已同步到粉絲與藝人端"); return; }
   if(e.target.id==="fsForm"){ e.preventDefault(); const i=document.getElementById("fsIn"), text=(i.value||"").trim(), room=document.querySelector(".fs-room[data-fs]"); if(!text||!room) return;
     const ev=fsGet(room.dataset.fs); if(!ev||ev.status!=="live") return; const desk=room.classList.contains("desk"), sl=fsSlot(ev);
     if(!desk&&meBlocked()) return; if(desk&&fsTalking(ev)!==session().member) return; fsSay(ev.id,desk?sl.fk:FS_ME,desk?"artist":"fan",text,desk?session().member:null); i.value=""; i.focus(); return; }
@@ -97,12 +97,12 @@ document.addEventListener("submit",e=>{
       if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
         c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
       if(meBlocked()||banBlock(text)){ ui.cDraft=text; return; }
-      c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:myCmNick(postGid(c.postId)),g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆 💜"); return; }
+      c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:myCmNick(postGid(c.postId)),g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆"); return; }
     if(session().role==="artist"&&!ui.sheet.replyTo){ const c=addArtistComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; }
     if(session().role==="artist"){
       const {c,reached}=replyComment(ui.sheet.replyTo,text); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);
       toast(reached?"已回覆，粉絲收到通知了":"已回覆");
-    } else { if(meBlocked()){ ui.cDraft=text; return; } if(banBlock(text)){ ui.cDraft=text; return; } { const c=addComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; } renderComments(); toast("已留言 💜"); }
+    } else { if(meBlocked()){ ui.cDraft=text; return; } if(banBlock(text)){ ui.cDraft=text; return; } { const c=addComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; } renderComments(); toast("已留言"); }
     return; }
   if(e.target.id==="login"){ e.preventDefault(); login(document.getElementById("em").value,document.getElementById("pw").value); }
   if(e.target.id==="reg"){ e.preventDefault(); const em=(document.getElementById("rEm").value||"").trim().toLowerCase(), nm=(document.getElementById("rNm").value||"").trim(), pw=document.getElementById("rPw").value||"";
@@ -170,9 +170,9 @@ document.addEventListener("change",async e=>{
   if(e.target.id==="lsSheet"||e.target.id==="lsSide"||e.target.id==="lsBack"){ const f=e.target.files&&e.target.files[0], which=e.target.id; e.target.value=""; if(!f) return; const rd=new FileReader();
     rd.onload=()=>{ const im=new Image(); im.onload=()=>{ if(which==="lsSheet"){ lsFrameOpen(im); return; } if(ui.lsDraft){ lsFrameOpen(im,which==="lsSide"?"side":"back"); return; } const V=lsSplitSheet(im); if(!V.length){ toast("找不到應援棒，換一張背景單純的圖試試"); return; }
       if(which==="lsSheet"){ if(!lsLoad(V[0])){ return; } const d=ui.lsDraft; if(V[1]){ d.ds.side=lsViewURL(V[1]); if(V[2]) d.ds.back=lsViewURL(V[2]); d.ds._k=null; } lsRerender(); toast(V[1]?`找到 ${V.length} 個視圖，立體重建完成 ✨`:"只找到一個視圖，先用正面做；可以再加側面圖"); }
-      else { const d=ui.lsDraft; if(!d) return; const big=V.slice().sort((a,b)=>b.width*b.height-a.width*a.height)[0]; if(which==="lsSide") d.ds.side=lsViewURL(big); else d.ds.back=lsViewURL(big); d.ds._k=null; lsRerender(); toast("已加上，轉轉看 ✨"); } };
+      else { const d=ui.lsDraft; if(!d) return; const big=V.slice().sort((a,b)=>b.width*b.height-a.width*a.height)[0]; if(which==="lsSide") d.ds.side=lsViewURL(big); else d.ds.back=lsViewURL(big); d.ds._k=null; lsRerender(); toast("已加上，轉轉看"); } };
       im.onerror=()=>toast("這個檔案打不開，換一張圖試試"); im.src=rd.result; }; rd.readAsDataURL(f); return; }
-  if(e.target.id==="lsFile"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ if(lsLoad(im)){ lsRerender(); toast("辨識完成，可以旋轉看看 ✨"); } }; im.onerror=()=>toast("這個檔案打不開，換一張圖試試"); im.src=rd.result; }; rd.readAsDataURL(f); return; }
+  if(e.target.id==="lsFile"){ const f=e.target.files&&e.target.files[0]; if(!f) return; const rd=new FileReader(); rd.onload=()=>{ const im=new Image(); im.onload=()=>{ if(lsLoad(im)){ lsRerender(); toast("辨識完成，可以旋轉看看"); } }; im.onerror=()=>toast("這個檔案打不開，換一張圖試試"); im.src=rd.result; }; rd.readAsDataURL(f); return; }
   if(e.target.id!=="tbgAlbum"&&e.target.id!=="tbgCam") return;
   const f0=e.target.files&&e.target.files[0], member=e.target.dataset.m; if(!f0) return; const f=await cropImg(f0,{ratio:cropPhone(),max:1400}); e.target.value=""; if(!f) return;
   const rd=new FileReader(); rd.onload=()=>{ const img=new Image(); img.onload=()=>{

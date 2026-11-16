@@ -165,7 +165,7 @@ function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me
     ${mode==="following"?`<div class="sn-fmode">追蹤中</div>`:""}
     <div class="sn-stories"><button class="sn-st me" data-a="${snHasStory(d,me)?"snStory":"snsGo"}" data-v="${snHasStory(d,me)?me:"new"}" data-id="${snHasStory(d,me)?me:"story"}">${snAv(U,62,snHasStory(d,me),snStorySeen(d,me))}${snHasStory(d,me)?"":`<span class="sn-add">${si("plusP")}</span>`}<small>你的限時動態</small></button>${sids.map(id=>{ const u=snUser(id); return u?`<button class="sn-st" data-a="snStory" data-v="${id}">${snAv(u,62,true,snStorySeen(d,id),snStoryCf(d,id))}<small>${esc(u.u)}</small></button>`:""; }).join("")}</div>
     <main class="sn-feed">${(()=>{ const sg=snSuggest(d), row=sg.length?`<section class="sn-sug"><div class="sn-sugh"><b>為你推薦</b><button data-a="snsGo" data-v="sug">查看全部</button></div><div class="sn-sugl">${sg.map(id=>snSugCard(d,id)).join("")}</div></section>`:"";
-      if(!items.length) return `<div class="sn-empty sn-welc"><span>${si("cam")}</span><b>歡迎來到 ${SNS_NAME}</b><p>追蹤帳號後，他們分享的相片和影片會出現在這裡。</p></div>`+row; const h=items.map(x=>snPostCard(d,x.p,x.by)); h.splice(Math.min(2,h.length),0,row); return h.join(""); })()}</main>`; }
+      if(!items.length) return `<div class="sn-empty sn-welc"><span>${si("cam")}</span><b>還沒有動態</b><p>追蹤帳號後，他們分享的相片和影片會出現在這裡。</p></div>`+row; const h=items.map(x=>snPostCard(d,x.p,x.by)); h.splice(Math.min(2,h.length),0,row); return h.join(""); })()}</main>`; }
 
 /* 貼文頁（照 IG：從個人檔案點進來）：標題「貼文」＋帳號，列出他全部的貼文，畫面停在點的那則；往上滑是比較新的、往下是比較舊的 */
 function snPostPage(d,id){ let p=d.posts.find(x=>x.id===id); if(p&&!snCanSee(d,p.uid)) p=null; const u=p&&snUser(p.uid);
@@ -773,7 +773,7 @@ async function vidCompress(f,prog){ const mime=vidMime(), c=document.createEleme
 async function snVidReady(m){ if(!m||m.type!=="video"||!m.file) return true; const f=m.file, mov=/quicktime|hevc/i.test(f.type)||/\.mov$/i.test(f.name||"");
   let b=f; if(f.size>SN_VKEEP||mov){
     setLayer(`<div class="sn-vbusy"><div><b>影片處理中</b><i><u id="snVPr"></u></i><small id="snVPt">0%</small></div></div>`,"snvbusy");
-    try{ b=await vidCompress(f,p=>{ const u=document.getElementById("snVPr"), t=document.getElementById("snVPt"); if(u) u.style.width=Math.round(p*100)+"%"; if(t) t.textContent=Math.round(p*100)+"%"; }); }
+    try{ b=await vidCompress(f,p=>{ const u=document.getElementById("snVPr"), t=document.getElementById("snVPt"); if(u) u.style.transform="scaleX("+Math.max(0,Math.min(1,p)).toFixed(3)+")"; if(t) t.textContent=Math.round(p*100)+"%"; }); }
     catch(e){ b=f.size<=30*1024*1024?f:null; }
     if(b&&b.size>f.size&&f.size<=30*1024*1024&&!mov) b=f;
     layer.innerHTML=""; }
@@ -832,7 +832,13 @@ document.addEventListener("timeupdate",e=>{ const v=e.target; if(!(v instanceof 
    ・打開留言時：影片縮到上面那塊，照影片自己的比例、置中、圓角
    直接算出影片畫面的框（不靠瀏覽器的 contain），iPhone 上也不會偏 */
 let SN_SAFE_T=-1; const snSafeT=()=>{ if(SN_SAFE_T<0){ const p=document.createElement("div"); p.style.cssText="position:fixed;top:0;left:0;width:1px;height:env(safe-area-inset-top,0px);visibility:hidden;pointer-events:none"; document.body.appendChild(p); SN_SAFE_T=p.offsetHeight; p.remove(); } return SN_SAFE_T; };
-function snVidFit(v){ try{ const bg=v.closest(".sn-rbg"); if(!bg||!v.videoWidth) return; const W=bg.offsetWidth, H=bg.offsetHeight, ar=v.videoWidth/v.videoHeight, sh=document.documentElement.classList.contains("sn-vshrink"), land=ar>1.05;
+/* 11/17 影片縮放改成只動 transform（以前直接動 left/top/width/height，iPhone 7 會卡）：
+   先瞬間換到新位置，再從舊位置用 transform 滑過去（FLIP） */
+function snVidFit(v){ const o=v.getBoundingClientRect(), busy=!!(v.getAnimations&&v.getAnimations().length); snVidFit0(v);
+  try{ if(busy||o.width<2||!AN.ok()||!v.animate) return; const n=v.getBoundingClientRect(); if(n.width<2) return; const dx=o.left-n.left, dy=o.top-n.top, sx=o.width/n.width, sy=o.height/n.height;
+    if(Math.abs(dx)<1&&Math.abs(dy)<1&&Math.abs(sx-1)<.01&&Math.abs(sy-1)<.01) return;
+    v.animate([{transformOrigin:"0 0",transform:`translate(${dx}px,${dy}px) scale(${sx},${sy})`},{transformOrigin:"0 0",transform:"none"}],{duration:280,easing:"cubic-bezier(.2,.85,.3,1)"}); }catch(e){} }
+function snVidFit0(v){ try{ const bg=v.closest(".sn-rbg"); if(!bg||!v.videoWidth) return; const W=bg.offsetWidth, H=bg.offsetHeight, ar=v.videoWidth/v.videoHeight, sh=document.documentElement.classList.contains("sn-vshrink"), land=ar>1.05;
     v.classList.toggle("land",land);
     if(!sh&&!land){ v.style.cssText=""; v.classList.remove("fit"); return; }
     let pt=sh?snSafeT()+10:0, pb=sh?12:0; const ph=sh?16:0, aw=W-ph*2;

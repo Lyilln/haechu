@@ -144,7 +144,8 @@ const tiePeriod=member=>{ const r=subs()[member]; if(!r) return 0; const p=(r.pe
   document.addEventListener("pointermove",e=>{ if(!D) return; const dy=e.clientY-D.y0; D.dy=dy; if(dy<0&&D.ex&&!D.sh.classList.contains("full")){ D.sh.style.height=Math.min(innerHeight*.92,D.h0-dy)+"px"; D.sh.style.transform=""; } else if(dy>0){ D.sh.style.transform=`translateY(${dy}px)`; } },{passive:true});
   const end=()=>{ if(!D) return; const {sh,dy,t0,ex}=D; D=null; sh.style.transition=""; const fast=dy/Math.max(1,Date.now()-t0)>.6;
     if(dy>110||(dy>30&&fast)){ sh.style.transform="translateY(100%)"; const w=sh.parentElement; setTimeout(()=>{ if(w&&w.isConnected) w.click(); },220); return; }
-    sh.style.transform=""; if(ex&&dy<-50){ sh.style.height=""; sh.classList.add("full"); } else sh.style.height=""; };
+    const top0=sh.getBoundingClientRect().top; sh.style.transform=""; if(ex&&dy<-50){ sh.style.height=""; sh.classList.add("full"); } else sh.style.height="";
+    if(ex&&sh.animate){ const d=top0-sh.getBoundingClientRect().top; if(Math.abs(d)>1) sh.animate([{transform:`translateY(${d}px)`},{transform:"none"}],{duration:280,easing:"cubic-bezier(.2,.85,.3,1)"}); } };   /* 11/17 拉高面板：高度瞬間換、用 transform 補過去（不再動畫 height） */
   document.addEventListener("pointerup",end); document.addEventListener("pointercancel",end); }
 /* 限動按愛心：IG 那種幾顆小愛心往上飄 */
 function snFlyHearts(btn){ try{ const r=btn.getBoundingClientRect(); for(let k=0;k<6;k++){ const h=document.createElement("i"); h.className="sn-fly"; h.innerHTML=si("heart"); h.style.left=(r.left+r.width/2-14)+"px"; h.style.top=(r.top-6)+"px"; h.style.setProperty("--dx",(Math.random()*90-45).toFixed(0)+"px"); h.style.setProperty("--rt",(Math.random()*50-25).toFixed(0)+"deg"); h.style.animationDelay=(k*70)+"ms"; document.body.appendChild(h); setTimeout(()=>h.remove(),1500+k*70); } }catch(e){} }
@@ -220,7 +221,7 @@ function tiePay(gid,n){ const A=groupArtists(gid), pl=tiePl(), ownL=A.filter(id=
   if(own+n>A.length){ if(n!==own){ toast(own===A.length?`續訂請選 ${own} Ticket${own>1?"s":""}`:`你已經訂閱 ${own} 位，續訂請選 ${own} Ticket${own>1?"s":""}，或加買最多 ${A.length-own} 張`); return; }
     const b=tieBundle(gid,n); if(points()<b.pts){ toast("積分不足，先補充積分吧"); return; }   /* 續訂：已經訂閱的每一位都延長選的天數 */
     S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（續訂 ${tieTk(gid,n)}・${pl.name}）`});
-    ownL.forEach(id=>buyTie(id,pl.days,0)); layer.innerHTML=""; render(); toast(`已續訂 ${ownL.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME}（${pl.name}）💜`); return; }
+    ownL.forEach(id=>buyTie(id,pl.days,0)); layer.innerHTML=""; render(); toast(`已續訂 ${ownL.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME}（${pl.name}）`); return; }
   const b=tieBundle(gid,n); if(points()<b.pts){ toast("積分不足，先補充積分吧"); return; }
   S.set(K.points,points()-b.pts); if(b.pts) recordSale("tie",{mid:A[0],pts:b.pts,label:`${WHISPER_NAME} 券・${groupOf(gid).name}（${tieTk(gid,n)}・${pl.name}）`});
   const P=S.get(TIE_PEND,{}); P[gid]={n:((P[gid]||{}).n||0)+n,ts:Date.now(),days:pl.days}; S.set(TIE_PEND,P);
@@ -236,7 +237,7 @@ function tpkBuyDone(gid,ids){ const need=ids.some(id=>!(S.get(K.tieSet,{})[id]||
   if(need&&!ui.tpkNick){ tieNickSheet(gid,ids); return; }
   const days=(tiePend(gid)||{}).days||30, nick=ui.tpkNick; ui.tpkNick=null; ids.forEach(id=>{ if(nick&&!(S.get(K.tieSet,{})[id]||{}).nickname) saveTieSet(id,{nickname:nick}); buyTie(id,days,0); });
   const P=S.get(TIE_PEND,{}); delete P[gid]; S.set(TIE_PEND,P); ui.pickSet=null; layer.innerHTML="";
-  toast(`已開始訂閱 ${ids.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME} 💜`); ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; location.replace("#/fan/chat?m="+ids[0]);
+  toast(`已開始訂閱 ${ids.map(id=>MEMBERS[id].name).join("、")} 的 ${WHISPER_NAME}`); ui.srch=null; ui.tieEmoji=false; ui.scrollChat=true; location.replace("#/fan/chat?m="+ids[0]);
   { const m1=ids[0]; if(!S.get(K.tieNotice,false)||(isActive(m1)&&!tieAgreed(m1))) setTimeout(()=>openTieAgree(m1,true),250); } }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a, T=ui.tst;
   if(a==="tstMore"&&T){ e.stopImmediatePropagation(); const y=(layer.querySelector(".tst-b")||{}).scrollTop||0; tieStore(T.gid,true); const b=layer.querySelector(".tst-b"); if(b) b.scrollTop=y; return; }

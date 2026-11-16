@@ -186,7 +186,7 @@ function ccTick(){
   const mb=document.getElementById("ccMis");
   if(mb){ if(cmd&&cmd.type==="mission"){ const el2=(Date.now()-cmd.ts)/1000, others=Math.floor(cmd.target*.86*Math.min(1,el2/28)), mine=(ui.swings||0)-(ui.misBase||0), v=Math.min(cmd.target,others+mine*12);
       mb.hidden=false; mb.querySelector("i").style.width=(v/cmd.target*100)+"%"; mb.querySelector("b").textContent=`${fmt(v)} / ${fmt(cmd.target)}・你揮了 ${mine} 下`;
-      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; S.set(K.points,points()+20); confetti(innerWidth/2,innerHeight/3); toast("任務達成！獲得 20 積分 ✨"); } }
+      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; S.set(K.points,points()+20); confetti(innerWidth/2,innerHeight/3); toast("任務達成！獲得 20 積分"); } }
     else mb.hidden=true; }
 }
 function concertOn(){
@@ -240,7 +240,7 @@ function stDockHtml(){ const ls=lightsea(); if(!ls) return ""; if(!stCan()) retu
     <div class="st-fx">${Object.entries(LS_FX).map(([k,l])=>`<button class="${fx===k?"on":""}" data-a="stFx" data-v="${k}">${l}</button>`).join("")}</div>
     ${ia?`<div class="st-cmd">${[["wave","🙌","一起揮"],["white","🤍","亮白燈"],["text","🔤","排字"],["mission","🔥","全場任務"]].map(([k,e,l])=>`<button class="${c&&c.type===k?"on":""}" data-a="stCmd" data-v="${k}"><i>${e}</i><span>${l}</span></button>`).join("")}</div>`:`<div class="st-rest">♪ 純放中，休息一下吧</div>`}`; }
 function stRefresh(){ const d=document.getElementById("stDock"); if(d) d.innerHTML=stDockHtml(); }
-function stTick(){ const st=layer.querySelector(".concert2.stage"); if(!st) return; const ls=lightsea(); if(!ls){ stOff(); toast("演唱會結束了，辛苦了 💜"); return; }
+function stTick(){ const st=layer.querySelector(".concert2.stage"); if(!st) return; const ls=lightsea(); if(!ls){ stOff(); toast("演唱會結束了，辛苦了"); return; }
   const k=JSON.stringify([ls.color,ls.fx,(activeCmd()||{}).type,(curConcert()&&ccTimeline(curConcert())||{}).ia,stCan()]); if(ui.stK!==k){ ui.stK=k; stRefresh(); } }
 function stBoardPop(){ const host=document.getElementById("stBds"); if(!host){ clearInterval(ui.stBdT); return; }
   const cc=curConcert(); if(!cc) return; if(!cc.id) cc.id="demo-cc"; const tl=ccTimeline(cc); if(tl&&!tl.ia) return; bdSim(cc);
@@ -252,7 +252,7 @@ function stBoardPop(){ const host=document.getElementById("stBds"); if(!host){ c
 function stMicDrag(){ const m=document.getElementById("stMic"); if(!m) return; const ls=lightsea(), col=(ls&&ls.color)||m.closest(".concert2")?.dataset.glow||"#C7AEFF";
   m._ls=LS3D.mount(m,{glow:col},{mic:true,swing:true,auto:false,glow:col,onSwing:v=>{ SEA.boost=Math.min(1.4,SEA.boost+v*.003); }}); }
 function stOff(){ clearInterval(ccTimer); clearInterval(ui.stBdT); ui.stK=null; layer.innerHTML=""; render(); }
-function stReply(id,txt){ const L=bdAll(), x=L.find(y=>y.id===id); if(!x) return; x.ans={by:ui.stMid,text:txt,ts:Date.now()}; x.up=false; bdSave(L); const el=document.querySelector(`.st-bd[data-v="${id}"]`); if(el){ el.classList.add("hit"); setTimeout(()=>el.remove(),500); } toast("已回應 💜"); }
+function stReply(id,txt){ const L=bdAll(), x=L.find(y=>y.id===id); if(!x) return; x.ans={by:ui.stMid,text:txt,ts:Date.now()}; x.up=false; bdSave(L); const el=document.querySelector(`.st-bd[data-v="${id}"]`); if(el){ el.classList.add("hit"); setTimeout(()=>el.remove(),500); } toast("已回應"); }
 function stSheet(html){ const st=layer.querySelector(".concert2.stage"); if(!st) return; st.querySelector(".st-shw")?.remove(); const w=document.createElement("div"); w.className="st-shw"; w.dataset.a="stShX"; w.innerHTML=`<div class="st-sh" data-a="stNoop">${html}</div>`; st.appendChild(w); requestAnimationFrame(()=>w.classList.add("open")); }
 function stMenu(){ const cc=curConcert(), mid=ui.stMid, host=cc&&!cc.demo&&cc.host===mid, items=[];
   if(host){ const ms=grpMembers(MEMBERS[mid].group).filter(x=>x!==mid&&!MEMBERS[x].official); if(ms.length) items.push(`<b class="st-sht">一起控燈的成員</b><div class="st-co">${ms.map(x=>`<button class="${cc.co===x?"on":""}" data-a="stCo" data-v="${x}"><span class="av" style="background:${grad(MEMBERS[x].g)}">${mAvIn(x)}</span>${esc(artName(x,"feed"))}</button>`).join("")}</div>`); }
@@ -933,7 +933,7 @@ function openPwSheet(id){ setLayer(`<div class="pv-w sh" data-a="tCloseLayer"><d
     <button class="pv-pri" data-a="pwGo" data-id="${id}">確定</button><span class="pv-err" id="pwErr" hidden>密碼有誤。</span></div></div>`,"pw");
   setTimeout(()=>{ const i=document.getElementById("pwIn"); if(i) i.focus(); },120); }
 function pwTry(id){ const p=getPosts().find(x=>x.id===id), i=document.getElementById("pwIn"); if(!p||!i) return;
-  if(String(i.value).trim()===String(p.pw)){ const L=S.get(K.pwOpen,[]); L.push(id); S.set(K.pwOpen,L); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); toast("🔓 打開了！"); return; }
+  if(String(i.value).trim()===String(p.pw)){ const L=S.get(K.pwOpen,[]); L.push(id); S.set(K.pwOpen,L); layer.innerHTML=""; const y=window.scrollY; render(); window.scrollTo(0,y); toast("打開了！"); return; }
   const e=document.getElementById("pwErr"); if(e){ e.hidden=false; e.classList.remove("pop"); void e.offsetWidth; e.classList.add("pop"); clearTimeout(ui.pwT); ui.pwT=setTimeout(()=>{ e.hidden=true; },1600); } i.select(); }
 function postCard(p,{mine=false,prof=false}={}){
   const m=MEMBERS[p.member], g=groupOf(p.group), liked=likedSet().has(p.id); if(!m||!g) return "";   // 發文的藝人或團已刪除：跳過，不要讓整頁卡住

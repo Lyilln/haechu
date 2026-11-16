@@ -486,7 +486,7 @@ main.page.foc-sub{padding-top:18px!important}
 .btn-block[data-a="nwImg"],.nw-adimg{margin-bottom:14px!important}
 .sch-songs{display:flex;flex-direction:column;gap:8px}.sch-s{display:flex;flex-direction:column;gap:2px;padding:10px 12px;border-radius:14px;background:var(--s2)}.sch-s small{color:var(--ink-3);font-size:12px}
 .sn-lock{margin:40px 8px;padding:28px 22px;border-radius:24px;background:var(--s1);border:1px solid var(--line);text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center}
-.sn-lock b{font-size:17px}.sn-lock p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.6}.sn-lock em{font-style:normal;font-size:26px;font-weight:800;color:var(--violet)}.sn-lock small{color:var(--ink-3)}
+.sn-lock b{font-size:17px}.sn-lock p{margin:0;color:var(--ink-2);font-size:14px;line-height:1.6}.sn-lock em{font-style:normal;font-size:26px;font-weight:700;color:var(--violet)}.sn-lock small{color:var(--ink-3)}
 /* TIE 回覆：回覆列跟輸入列接在一起（同一塊），中間不會有縫 */
 .t-foot:has(.t-rq){flex-wrap:wrap;row-gap:8px}
 .t-foot .t-rq{position:static!important;order:-1;flex:0 0 calc(100% + 28px);margin:-8px -14px 0;background:transparent!important;border-top:0!important;border-bottom:1px solid var(--line);animation:none}
