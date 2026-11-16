@@ -183,7 +183,7 @@ async function hbFlush(){ if(HB.busy||!HB.tok||sbxOn()) return; HB.busy=true; le
   if(HB.dirty.size){ clearTimeout(HB.ft); HB.ft=setTimeout(hbFlush,again?Math.min(15e3,1000*2**Math.min(4,HB.fail)):300); } }
 const hbPendDone=k=>{ if(HB.dirty.has(k)) return; const p=hbPendGet(); if(k in p){ delete p[k]; hbPendSet(p); } };
 async function hbPush(k){ await hbPush0(k); hbPendDone(k); }
-async function hbPush0(k){ let local=hbReadLocal(k); if(local==null) return;   /* 讀不到就不送，避免把雲端整份清空 */ if(HB.ver[k]!=null&&hbJ(local)===HB.base[k]) return;   // 沒有真的改，就不送（避免兩支手機互相觸發）
+async function hbPush0(k){ let local=hbReadLocal(k); if(local==null) return; if(HB_KEEP.has(k)&&HB.base[k]&&Array.isArray(local)){ try{ const kept=hbKeep(k,local,JSON.parse(HB.base[k])); if(hbJ(kept)!==hbJ(local)){ local=kept; hbWriteLocal(k,local); } }catch(e){} }   /* 送出前補回雲端原本就有的：沒有刪除記號的貼文／限動絕對不會因為這支手機的舊資料而不見 */   /* 讀不到就不送，避免把雲端整份清空 */ if(HB.ver[k]!=null&&hbJ(local)===HB.base[k]) return;   // 沒有真的改，就不送（避免兩支手機互相觸發）
   for(let i=0;i<5;i++){
     if(HB.ver[k]==null){
       try{ const r=await hbFetch("/rest/v1/kv",{method:"POST",body:{k,v:local},prefer:"return=representation"}); if(Array.isArray(r)&&r[0]){ hbRow(r[0],false); return; } }

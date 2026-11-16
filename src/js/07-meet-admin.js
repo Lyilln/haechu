@@ -203,7 +203,7 @@ function removeReported(r){
   if(!r.kind||r.kind==="comment"){ removeComment(r.commentId); return; }
   if(r.kind==="live"){ const l=getLive(r.ref.liveId); if(l){ l.msgs=l.msgs.filter(x=>x.ts!==r.ref.ts); saveLive(l); } }
   if(r.kind==="tie"){ S.set(K.whispers,S.get(K.whispers,[]).filter(w=>w.id!==r.ref.wid)); }
-  if(r.kind==="sns"){ try{ const d=snDB(); snPDel(d,p=>p.id===r.ref.wid); snSave(d); }catch(e){} }
+  if(r.kind==="sns"){ try{ const d=snDB(); snPDel(d,p=>p.id===r.ref.wid,"檢舉成立（管理員）"); snSave(d); }catch(e){} }
 }
 function reportWho(r){ if(r.who) return r.who; const c=S.get(K.comments,[]).find(x=>x.id===r.commentId); return c?(c.author==="me"?"fan:me":"fan:"+c.name):null; }
 

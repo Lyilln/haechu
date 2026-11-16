@@ -47,7 +47,7 @@ function snLockOf(mid){ const d=snDebutOf(mid); if(!d||!d.ts) return null; const
 function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEMBERS[s.member]) return; const em=String(s.email||"").toLowerCase(), a=ACCOUNTS[em]||{}; if(a.role==="admin") return; const done=S.get(K.snRetired,{})||{}; if(done[em]) return;
     const d=snDB(), uid="u:"+em, pr=d.prof[uid]||{}, nick=(S.get(K.nicks,{})||{})[em], had=(d.posts||[]).some(p=>p.uid===uid)||pr.u||nick;
     if(had){ const L=S.get(K.usedNames,[])||[]; [pr.u,nick].filter(Boolean).forEach(v=>{ if(!L.some(x=>nameKey(x.v)===nameKey(v))) L.push({v,acc:em,ts:Date.now()}); }); S.set(K.usedNames,L);
-      d.posts=(d.posts||[]).filter(p=>p.uid!==uid); d.stories=(d.stories||[]).filter(x=>x.uid!==uid); if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
+       if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
     done[em]=Date.now(); S.set(K.snRetired,done); }catch(e){} }
 function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member]) return "m:"+s.member; return "u:"+String(s.email||"me").toLowerCase(); }
 function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
@@ -126,7 +126,7 @@ const snCount=p=>p.media?p.media.length:(p.pics||[1]).length;
 function snMentNotify(ids,what){ const me=snMeId(), u=snUser(me)||{}, who=u.u||u.name||"有人"; [...new Set(ids||[])].filter(id=>id&&id!==me).forEach(id=>{ if(String(id).startsWith("u:")) feedPush({kind:"core",self:true,text:`${who} ${what}`},"u:"+id.slice(2)); }); }
 const snStDel=s=>{ const o={...s,ts:0,del:Date.now(),ots:s.ts}; return o; };   /* 刪掉時內容留著（14 天內管理員還能在「限動紀錄」救回來）；ts=0 舊版 App 也當成過期 */
 /* 刪貼文：拿掉，同時留一個「已刪除」記號（別支手機才不會又合併回來） */
-const snPDel=(d,pred)=>{ const gone=d.posts.filter(pred); d.posts=[...d.posts.filter(x=>!pred(x)),...gone.map(p=>({id:p.id,uid:p.uid,ts:0,del:Date.now()}))]; return gone.length; };   /* 刪掉的限動：留一個記號，別支手機才不會又把它合併回來 */
+const snPDel=(d,pred,by)=>{ const gone=d.posts.filter(pred), now=Date.now(); d.posts=[...d.posts.filter(x=>!pred(x)),...gone.map(p=>({...p,ots:p.ts,ts:0,del:now,by:by||snMeId()}))]; return gone.length; };   /* 刪掉的貼文：內容留 14 天、記下是誰刪的，管理員可以在「SNS 刪除紀錄」救回來 */   /* 刪掉的限動：留一個記號，別支手機才不會又把它合併回來 */
 function snActiveStories(d){ const lim=Date.now()-864e5, me=snMeId(); return d.stories.filter(s=>!s.del&&s.ts>lim&&snCanSee(d,s.uid)&&(!s.cf||s.uid===me||((d.cf||{})[s.uid]||[]).includes(me))); }
 const snStoryCf=(d,uid)=>snActiveStories(d).some(s=>s.uid===uid&&s.cf);
 function snHasStory(d,uid){ return snActiveStories(d).some(s=>s.uid===uid); }
@@ -374,7 +374,7 @@ function snFix1(){ try{ if(!isAdminAcct()||S.get("daisuki_sn_fix1",false)) retur
   Object.keys(d.prof).forEach(id=>{ if(id.startsWith("m:")) delete d.prof[id]; else if(id.startsWith("u:")){ const e=id.slice(2), pr=d.prof[id]; if(pr&&pr.u&&(pr.u===e||pr.u===e.split("@")[0]||pr.u===e.replace(/[^a-z0-9._]/g,""))) delete pr.u; } });
   Object.keys(d.fol).forEach(id=>{ if(!ok(id)){ delete d.fol[id]; return; } if(id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; d.fol[id]=m?Object.keys(MEMBERS).filter(x=>!MEMBERS[x].official&&MEMBERS[x].group===m.group&&"m:"+x!==id).map(x=>"m:"+x):[]; } else d.fol[id]=[...new Set(d.fol[id].filter(ok))]; });
   Object.keys(d.hl||{}).forEach(id=>{ if(id.startsWith("m:")||!ok(id)) delete d.hl[id]; });
-  snPDel(d,p=>!ok(p.uid)); d.posts=d.posts.map(p=>{ if(p.del) return p; const q={...p}; delete q.base; return q; }); d.stories=d.stories.map(s=>ok(s.uid)||s.del?s:snStDel(s));
+  snPDel(d,p=>!ok(p.uid),"系統整理（帳號不存在）"); d.posts=d.posts.map(p=>{ if(p.del) return p; const q={...p}; delete q.base; return q; }); d.stories=d.stories.map(s=>ok(s.uid)||s.del?s:snStDel(s));
   const pid=new Set(d.posts.map(p=>p.id)); Object.keys(d.rp||{}).forEach(k=>{ d.rp[k]=(d.rp[k]||[]).filter(x=>pid.has(x.id)); });
   Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.member&&MEMBERS[a.member]){ const id="u:"+String(e).toLowerCase(); (d.prof[id]=d.prof[id]||{}).priv=true; } });
   snSave(d); S.set("daisuki_sn_fix1",Date.now()); }catch(e){} }
@@ -466,6 +466,11 @@ function snOfSync(){ if(Date.now()-OFS<20000) return; OFS=Date.now(); try{ if(HB
   if(!add.length&&!fix) return; d.posts.push(...add); snSave(d); OFM.t=0; }catch(e){} }
 setInterval(()=>{ if(/\/sns(\?|$)/.test(location.hash)) snOfSync(); },60e3);
 /* 還沒開通：「準備中」頁 */
+/* 管理員：SNS 刪除紀錄（14 天內），看得到是誰刪的，可以救回來 */
+const snDelWho=b=>{ if(!b) return "不明（舊版 App）"; if(/^[um]:/.test(b)){ const u=snUser(b); return u?(u.name||u.u)+(b.startsWith("m:")?"（藝人）":""):b; } return b; };
+function viewSnDelAdm(){ const raw=S.get(snKey("posts"),[])||[], L=raw.filter(x=>x&&x.del).sort((a,b)=>b.del-a.del), tm=x=>fsWhen(x);
+  return `<main class="page"><p class="muted" style="margin:0 2px 10px;font-size:12.5px">刪掉的貼文會留 14 天。舊版 App 刪的只剩記號，救不回來。</p>${L.length?`<section class="card sn-subl">${L.map(x=>{ const u=snUser(x.uid)||{}, has=!!((x.media||[]).length||x.cap); const m=(x.media||[])[0];
+    return `<div class="sn-subr">${m?`<img class="sn-subi" data-mid="${esc(m.mid||"")}" alt="">`:""}<div><b>${esc(u.name||u.u||x.uid)}<small> @${esc(u.u||"")}</small></b><p>${has?esc(x.cap||"（只有照片）"):"（內容沒有留下來）"}</p><small>發文 ${x.ots?tm(x.ots):"?"}・刪除 ${tm(x.del)}・<em class="no">${esc(snDelWho(x.by))}</em></small></div>${has?`<button class="t-pill" data-a="snPRestore" data-v="${x.id}">救回來</button>`:""}</div>`; }).join("")}</section>`:`<p class="cmx-empty">14 天內沒有被刪的貼文</p>`}</main>`; }
 /* 管理員：所有還沒開通 SNS 的藝人投稿（自動審：沒有禁用字詞就排隊 1 分鐘～2 小時後發）；排隊中或已發布的都能撤下 */
 const snSubWait=()=>{ const now=Date.now(); return (snDB().sub||[]).filter(x=>x.st==="ok"&&x.at>now); };
 function viewSnSubAdm(){ const d=snDB(), now=Date.now(), L=(d.sub||[]).slice().sort((a,b)=>b.ts-a.ts);
@@ -593,6 +598,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snTagT": { const dr=ui.snDraft; if(!dr) break; const L=dr.tags=dr.tags||[], i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=20) toast("最多標註 20 人"); else L.push(t.dataset.v); t.classList.toggle("on",i<0); break; }
     case "snTagDone": layer.innerHTML=""; render(); break;
     case "snLikers": snLikers(t.dataset.id); break;
+    case "snPRestore": { const raw=S.get(snKey("posts"),[])||[], x=raw.find(y=>y.id===t.dataset.v&&y.del); if(!x) break; const d=snDB(), now=Date.now(), c={...x,id:"p"+now.toString(36),ts:x.ots||now}; delete c.del; delete c.ots; delete c.by; d.posts.push(c); snSave(d); toast("已救回來"); render(); break; }   /* 用新的編號放回去（舊編號有刪除記號） */
     case "snSubPull": ask("撤下這則投稿？已經發布的也會從官方帳號拿掉。",()=>{ const d=snDB(), x=(d.sub||[]).find(y=>y.id===t.dataset.v); if(!x) return; x.st="no"; x.why="管理員撤下"; snSave(d); toast("已撤下"); render(); }); break;
     case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; navTo("#/"+session().role+"/sns?p=new&id=sub"); break;
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }
@@ -689,7 +695,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snAdmUser": { const uid=t.dataset.v; snSheet([[["限動紀錄","snStLog",`data-v="${uid}"`,{ic:"clock"}],["刪除這個帳號的所有 SNS 貼文","snAdmWipe",`data-v="${uid}"`,{ic:"trash",red:1}]]]); break; }
     case "snStLog": { snStLog(t.dataset.v); break; }
     case "snStRestore": { const d=snDB(), x=d.stories.find(y=>y.id===t.dataset.v); if(!x) break; const now=Date.now(), c={...x,id:"st"+now,ts:x.ots&&x.ots>now-864e5?x.ots:now}; delete c.del; delete c.ots; d.stories.push(c); snSave(d); toast("已救回來"); snStLog(x.uid); break; }   /* 用新的編號放回去（舊編號有刪除記號，別支手機會一直蓋掉）；已超過 24 小時就從現在重新算 */
-    case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); snPDel(d,p=>p.uid===uid); d.stories=d.stories.map(x=>x.uid===uid&&!x.del?snStDel(x):x); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
+    case "snAdmWipe": { const uid=t.dataset.v; ask("要刪除這個帳號在 SNS 的所有貼文和限時動態嗎？",()=>{ const d=snDB(); snPDel(d,p=>p.uid===uid,"管理員刪除整個帳號"); d.stories=d.stories.map(x=>x.uid===uid&&!x.del?snStDel(x):x); snSave(d); layer.innerHTML=""; render(); toast("已刪除"); }); break; }
     case "snsExit": { let f=ui.snsFrom; ui.snsFrom=null;
       /* 重新整理過不知道從哪進來：找進 SNS 之前的那一頁；找不到就回首頁（不會只退一步又停在 SNS 裡） */
       if(!f){ const cur=NAV_BASE+NAV_D; for(let i=cur-1;i>=0;i--){ if(NAV_STK[i]&&!NAV_STK[i].includes("/sns")){ f=NAV_STK[i]; break; } } }

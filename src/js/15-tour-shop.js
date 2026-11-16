@@ -367,6 +367,7 @@ function viewAdmin(tab){
     if(tab==="ops"||tab==="shopadm") return viewUniOps();
     if(tab==="try"){ tryFetch(true); return uniHead("試玩訊息")+viewTryInbox(); }
     if(tab==="accounts") return uniHead("帳號")+viewAccounts();
+    if(tab==="sndel") return uniHead("SNS 刪除紀錄")+viewSnDelAdm();
     if(tab==="snsub") return uniHead("SNS 投稿紀錄")+viewSnSubAdm();
     if(tab==="ptadd"||tab==="revenue") return uniHead("加積分")+viewPtAdd()+`<main class="page pt-share-w"><button class="uni-row" data-a="ptShare"><span>藝人分得比例</span><small>${revShare()}%</small>${UI_S.chev}</button></main>`;
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
