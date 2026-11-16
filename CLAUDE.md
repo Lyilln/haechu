@@ -6,3 +6,4 @@
 - `src/js/*.js` 執行時是合成一個 `app.js` 載入的（共用同一個全域），所以檔案之間可以互相呼叫；拆檔只是為了好改。
 - `sw.js`：只做推播（不攔任何網路請求；11/11 攔請求會讓 iPhone 的圖片變成每次重新下載）。
 - 只改到管理員端的東西（說明文字、後台畫面）→ 用 `python3 build.py --quiet`：不跳全站「有新版本」提示，大家下次回到 App 時安靜換新。
+- 有會員用 iPhone 7 Plus（iOS 15.8，Safari 15）：**不要用** 正規式的 `(?<=` `(?<!`、`structuredClone`、`.findLast`、`.toSorted` 這類 Safari 16 以後才有的寫法，會整支 App 白畫面。改完可以 `grep -c "(?<[=!]" app.js` 確認是 0。

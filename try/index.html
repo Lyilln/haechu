@@ -80,7 +80,7 @@ const SN_DFAV="<svg class=\"sn-dfav\" viewBox=\"0 0 40 40\" aria-hidden=\"true\"
 
 const si=(k,cls="")=>`<svg class="si ${cls}" viewBox="0 0 24 24" aria-hidden="true">${SI[k]||""}</svg>`;
 /* 髒話一律擋（跟 App 同一套；媒體伺服器那邊也會再擋一次） */
-const PROF_RE=/(?<![能才精主骨樹軀實苦公])幹(?![嘛麻啥什活部掉得的過練事勁線細])|操[你妳他她]|靠[北杯腰夭]|[雞機]掰|雞巴|婊子|賤[人貨]|去死|死全家|白[痴癡]|智障|他媽|[你妳]媽的|三小|屁眼|王八蛋|f+u+c+k|sh[i1!]t|b[i1!]tch|asshole|cunt|씨발|시발|ㅅㅂ|ㅆㅂ|병신|ㅂㅅ|개새끼|좆|존나|ㅈㄴ/i;
+const PROF_RE=/(?:^|[^能才精主骨樹軀實苦公])幹(?![嘛麻啥什活部掉得的過練事勁線細])|操[你妳他她]|靠[北杯腰夭]|[雞機]掰|雞巴|婊子|賤[人貨]|去死|死全家|白[痴癡]|智障|他媽|[你妳]媽的|三小|屁眼|王八蛋|f+u+c+k|sh[i1!]t|b[i1!]tch|asshole|cunt|씨발|시발|ㅅㅂ|ㅆㅂ|병신|ㅂㅅ|개새끼|좆|존나|ㅈㄴ/i;
 const IDOL={name:"LUMI",user:"lumi.official",tag:"HAECHU 示範偶像"};
 const JOIN="https://line.me/ti/g2/7iT3j2hGOM4GHpnkZeunPHVJbPUODoTZg5zA_Q";
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
@@ -191,7 +191,7 @@ let lsAcc=0;
 function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ if(!ST.done.ls&&v>1){ const u0=unlSet(); done("ls"); unlCheck(u0); const nv=document.querySelector("nav.nav"); if(nv) nv.outerHTML=navBar(ST.tab); const k=document.getElementById("lsLock"); if(k) k.remove(); }   /* 晃一下就解鎖 JOIN（不重畫整頁，應援棒不會斷） */ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; } }}); }catch(e){ el.innerHTML=""; } }
 
 /* ---------- 結尾 ---------- */
-function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>真正的 HAECHU 裡，偶像都是社群裡的真人，每天都在發生新的事。</p>
+function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>HAECHU 是 <b>K-pop 偶像角色扮演（RP）社群</b>：每位偶像都是社群成員自己創造、自己扮演的<b>原創藝人</b>。不是真的韓國偶像，也不是 AI 或二次元角色。在 TIE 跟你聊天的，是扮演那位偶像的成員本人。</p>
   <section class="card tz-how"><h3>💜 在 HAECHU 怎麼玩</h3><ol><li><b>加入後先當粉絲</b>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</li><li><b>想當偶像？從練習生開始</b>在社群累積積分（打卡、宣群、發文、創作…），準備好藝名、Teaser 和 MV，在 App 裡申請出道。</li><li><b>出道</b>管理員審核通過、出道日一到，就有自己的 TIE、SNS、打歌。當粉絲時累積的積分會原封不動帶過去。</li></ol><p class="tz-how-n">只想追星停在第 1 步就好，想出道就繼續往下。</p></section>
   <a class="btn btn-main btn-block" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
   <a class="btn btn-soft btn-block" href="../">我已經有帳號，回到 HAECHU</a></main>`; }
