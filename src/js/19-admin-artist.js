@@ -194,7 +194,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
-  <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)],...(own?[["lt",ltNewN(mid)?`粉絲信 <i class="lt-dot" aria-label="${ltNewN(mid)} 封新信"></i>`:"粉絲信"]]:[])].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
+  <nav class="ap2-tabs" style="grid-template-columns:repeat(${own?4:3},minmax(0,1fr))">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)],...(own?[["lt",ltNewN(mid)?`粉絲信 <i class="lt-dot" aria-label="${ltNewN(mid)} 封新信"></i>`:"粉絲信"]]:[])].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${tab!=="media"&&tab!=="lt"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
 function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0, d=h.getBoundingClientRect().bottom-(bb+b.offsetHeight);
   b.classList.toggle("on",d<=1);   /* 背景照片整個滑到標題列下面才換成小標題列（以前提早 90px，名字和「編輯個人檔案」會從底下透出來） */

@@ -319,7 +319,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "ltAll": ui.ltAll=!!t.dataset.v; render(); break;
     case "ltArtAll": ui.ltArtAll=!!t.dataset.v; render(); break;   /* Letter 分頁預設「全部」（ui.ltAll 沒設過＝全部）；ME 裡預設「我的」 */
     case "aLtHeart": { const mid=session().member, A=S.get(K.fanLettersAll,[])||[], l=A.find(x=>x.id===t.dataset.v); if(!l||!mid) break; const h={...(l.heart||{})}; if(h[mid]) delete h[mid]; else h[mid]=Date.now(); l.heart=h; S.set(K.fanLettersAll,A); try{ const R=ltSeen(); R[l.id]=1; localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
-    case "aLtRead": { const R=ltSeen(); R[t.dataset.v]=1; try{ localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
+    case "ltOpen": { ui.ltOpen={...(ui.ltOpen||{}),[t.dataset.v]:!(ui.ltOpen||{})[t.dataset.v]}; render(); break; }
+    case "aLtRead": { ui.ltOpen={...(ui.ltOpen||{}),[t.dataset.v]:!(ui.ltOpen||{})[t.dataset.v]}; const R=ltSeen(); R[t.dataset.v]=1; try{ localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
     case "cmLetterTo": openLetterTo(t.dataset.v); break;
     case "cmLetter": { const r=route(); layer.innerHTML=""; ui.ltTpl=null; navTo(grpHash(r.id,"letter",t.dataset.v)); window.scrollTo(0,0); break; }
     case "ltTpl": { ui.ltTpl=+t.dataset.v; const tx=document.getElementById("ltTxt"), keep=tx?tx.value:""; render(); const n=document.getElementById("ltTxt"); if(n) n.value=keep; break; }

@@ -180,3 +180,14 @@
 /* 社群 Letter 分頁的「寫粉絲信」按鈕 */
 .lt-wbtn{margin:4px 0 12px}
 .lt-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#FF3B5C;vertical-align:top;margin-left:2px}
+/* 11/17 藝人主頁 4 個分頁排一列不換行；粉絲信長信收成 4 行 */
+.ap2-tabs button{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px;font-size:14px}
+.lt-card p.fold{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+.lt-more{display:block;margin-top:4px;font-size:13px;font-weight:600;opacity:.6}
+/* 粉絲信的 💜：改成卡片右下角的小愛心鈕（以前是一整條寫著 emoji 的按鈕） */
+.lt-card{position:relative}
+.lt-hb{position:absolute;right:14px;bottom:12px;display:inline-flex;align-items:center;gap:4px;margin:0;padding:6px 10px;border-radius:999px;font-size:12.5px;font-weight:600;background:rgba(0,0,0,.06)}
+.lt-hb svg{width:16px;height:16px}
+.lt-hb.on{background:#EDE4FF;color:#7C3AED}
+.lt-hb.on svg{fill:currentColor}
+.lt-card.new{box-shadow:0 0 0 2px #F472B6!important}

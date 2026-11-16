@@ -114,14 +114,15 @@ function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(
 const LT_MAX=3;   /* 跟 Weverse 一樣：每個月最多寫 3 封 */
 const ltMineMonth=()=>{ const me=myEmail(), d=new Date(), m0=Math.max(new Date(d.getFullYear(),d.getMonth(),1).getTime(),new Date(2026,10,15,0,45).getTime()), ids=new Set();   /* 規則上路（11/15 00:45）前寫的不算進這個月的 3 封 */ [...(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&l.by===me),...(S.get(K.fanLetters,[])||[])].forEach(l=>{ if(l&&l.ts>=m0) ids.add(l.id); }); return ids.size; };
 const ltCard=(l,o={})=>{ const g=groupOf(l.gid)||{}, T=LT_TPL[l.tpl]||LT_TPL[0], hs=Object.keys(l.heart||{}).filter(m=>MEMBERS[m]), fn=(ACCOUNTS[l.by]||{}).name||"粉絲";
-  return `<section class="card fp lt-card ${o.cls||""}" ${o.attr||""} style="background:${T[0]};color:${T[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name||"")}</b><p>${esc(l.text)}</p><small class="fp-sm">${o.from?`From. ${esc(fn)}・`:""}${ymd(l.ts)}</small>${o.heartBtn||(hs.length?`<span class="lt-hs">💜 ${hs.map(m=>esc(artName(m,"feed"))).join("、")} 讀了這封信</span>`:"")}</section>`; };
+  const long=String(l.text||"").length>110||String(l.text||"").split("\n").length>4, open=!!(ui.ltOpen||{})[l.id];   /* 11/17 長信先收成 4 行，點一下展開 */
+  return `<section class="card fp lt-card ${o.cls||""}" ${o.attr||`data-a="ltOpen" data-v="${l.id}"`} style="background:${T[0]};color:${T[1]}"><b>To. ${esc(MEMBERS[l.to]?artName(l.to,"feed"):g.name||"")}</b><p class="${long&&!open?"fold":""}">${esc(l.text)}</p>${long&&!open?`<span class="lt-more">展開全文</span>`:""}<small class="fp-sm">${o.from?`From. ${esc(fn)}・`:""}${ymd(l.ts)}</small>${o.heartBtn||(hs.length?`<span class="lt-hs">💜 ${hs.map(m=>esc(artName(m,"feed"))).join("、")} 讀了這封信</span>`:"")}</section>`; };
 setTimeout(ltSync,6000); setInterval(ltSync,90000);
 const ltSeen=()=>{ try{ return JSON.parse(localStorage.getItem("hc_lt_seen")||"{}")||{}; }catch(e){ return {}; } };   /* 已讀只記在藝人自己的手機 */
 const ltFor=mid=>{ const g=(MEMBERS[mid]||{}).group; return (S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===g&&(!MEMBERS[l.to]||l.to===mid)).sort((a,b)=>b.ts-a.ts); };
 function viewArtLetters(mid){ return `<main class="page">${artLtList(mid)}</main>`; }
 const ltNewN=mid=>{ const R=ltSeen(); return ltFor(mid).filter(l=>!R[l.id]).length; };
 function artLtList(mid){ const L=ltFor(mid), R=ltSeen();
-  return `${L.length?L.map(l=>{ const on=!!(l.heart||{})[mid]; return ltCard(l,{from:1,cls:R[l.id]?"":"new",attr:`data-a="aLtRead" data-v="${l.id}"`,heartBtn:`<button class="lt-hb ${on?"on":""}" data-a="aLtHeart" data-v="${l.id}" aria-pressed="${on}">${on?"💜 已讀給粉絲看":"🤍 按 💜 讓粉絲知道你讀了"}</button>`}); }).join(""):`<p class="cmx-empty">還沒有收到粉絲信</p>`}`; }
+  return `${L.length?L.map(l=>{ const on=!!(l.heart||{})[mid]; return ltCard(l,{from:1,cls:R[l.id]?"":"new",attr:`data-a="aLtRead" data-v="${l.id}"`,heartBtn:`<button class="lt-hb ${on?"on":""}" data-a="aLtHeart" data-v="${l.id}" aria-pressed="${on}" aria-label="${on?"已告訴粉絲你讀了":"讓粉絲知道你讀了"}">${I.heart}<span>${on?"已讀":"讀了"}</span></button>`}); }).join(""):`<p class="cmx-empty">還沒有收到粉絲信</p>`}`; }
 /* 右下「＋」：粉絲信、貼文 */
 function fabMenu(items,cls){ const n=items.length; return `<div class="cmx-fabw ${cls||""}" data-a="fabClose"><div class="cmx-fabm">${items.map(([a,v,l,ic],k)=>`<button data-a="${a}" data-v="${v}" style="--k:${n-1-k}"><span>${l}</span><i>${ic}</i></button>`).join("")}<button class="x" data-a="fabClose" aria-label="關閉">${I3.x}</button></div></div>`; }
 function openCmFab(gid){ setLayer(fabMenu([["cmLetterTo",gid,"粉絲信",I3.letter],["cmGo","write","貼文",I3.pen]]),"fab"); }
@@ -162,7 +163,7 @@ function ltList(gid,all){ const A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(
 function ltTab(gid){ const s=session()||{}, mid=s.member, mine=s.role==="artist"&&MEMBERS[mid]&&MEMBERS[mid].group===gid;
   if(!mine) return `${s.role==="fan"?`<button class="btn btn-main btn-block lt-wbtn" data-a="cmLetterTo" data-v="${gid}">寫粉絲信</button>`:""}${ltList(gid,ui.ltAll!==false)}`;
   const inbox=ui.ltArtAll!==true, n=ltNewN(mid);
-  return `<div class="lt-sw"><button class="${inbox?"on":""}" data-a="ltArtAll" data-v="">寫給我的${n?` ${n}`:""}</button><button class="${inbox?"":"on"}" data-a="ltArtAll" data-v="1">全部</button><span>${n?`${n} 封新信`:""}</span></div>`+(inbox?artLtList(mid):(()=>{ const A=(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts); return A.length?A.map(l=>ltCard(l,{from:1})).join(""):`<p class="cmx-empty">這個團還沒有人寫粉絲信。</p>`; })()); }
+  return `<div class="lt-sw"><button class="${inbox?"on":""}" data-a="ltArtAll" data-v="">寫給我的${n?` ${n}`:""}</button><button class="${inbox?"":"on"}" data-a="ltArtAll" data-v="1">全部</button><span></span></div>`+(inbox?artLtList(mid):(()=>{ const A=(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts); return A.length?A.map(l=>ltCard(l,{from:1})).join(""):`<p class="cmx-empty">這個團還沒有人寫粉絲信。</p>`; })()); }
 function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"post", bg=PCI[`cmbg|${gid}`];
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
   const fol=grpMembers(gid).filter(m=>(S.get(K.mFollow,{}))[m]).length, bms=S.get(K.bm,[]).length;
@@ -520,7 +521,6 @@ function viewArtist(tab){
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=points">${I.star}積分收入</button>
-        <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=letters">${I.star}收到的粉絲信<span class="r">${(()=>{ const R=ltSeen(), L=ltFor(mid), n=L.filter(l=>!R[l.id]).length; return n?`<b class="lt-new">${n} 封新信</b>`:`${L.length} 封`; })()}</span></button>
       </section>
       <div class="section-h">團體</div>
       <section class="card">
