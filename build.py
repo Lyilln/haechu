@@ -12,6 +12,47 @@ def cat(pat):
 css, cf = cat("src/css/*.css")
 js, jf = cat("src/js/*.js")
 h = lambda s: hashlib.sha1(s.encode()).hexdigest()[:10]
+# ===== 舊 iPhone（iOS 15）向下相容 =====
+# 1) 補 -webkit- 前綴：iOS 15 的 Safari 只認 -webkit-mask-image / -webkit-backdrop-filter
+css = re.sub(r"([;{\s])mask-image:([^;}]+)", lambda m: f"{m.group(1)}-webkit-mask-image:{m.group(2)};mask-image:{m.group(2)}", css)
+css = re.sub(r"([;{\s])backdrop-filter:([^;}]+)", lambda m: f"{m.group(1)}-webkit-backdrop-filter:{m.group(2)};backdrop-filter:{m.group(2)}", css)
+# 2) color-mix() 要 iOS 16.2：把用到的地方整理成清單放進 app.js，舊手機在畫面上自己算出顏色補上（新手機不會跑）
+def _cmx(src):
+    t = re.sub(r"/\*.*?\*/", "", src, flags=re.S); out = []; i = 0; n = len(t)
+    def block(i, media):
+        while i < n:
+            if t[i] == "}": return i + 1
+            j = t.find("{", i); k = t.find("}", i)
+            if j < 0 or (0 <= k < j): return (k + 1) if k >= 0 else n
+            pre = t[i:j].strip(); d = 1; e = j + 1
+            while e < n and d:
+                if t[e] == "{": d += 1
+                elif t[e] == "}": d -= 1
+                e += 1
+            body = t[j + 1:e - 1]
+            if pre.startswith("@media") or pre.startswith("@supports"):
+                block_inner(body, (media + " and " if media else "") + pre.split(None, 1)[1] if pre.startswith("@media") else media)
+            elif not pre.startswith("@") and "color-mix(" in body:
+                parts = []; dd = 0; cur = ""
+                for ch in body:
+                    if ch == "(": dd += 1
+                    elif ch == ")": dd -= 1
+                    if ch == ";" and dd == 0: parts.append(cur); cur = ""
+                    else: cur += ch
+                parts.append(cur)
+                for dcl in parts:
+                    if "color-mix(" in dcl and ":" in dcl:
+                        pr, v = dcl.split(":", 1); out.append([pre, media, pr.strip(), v.strip()])
+            i = e
+        return n
+    def block_inner(body, media):
+        nonlocal t, n
+        saved = (t, n); t, n = body, len(body); block(0, media); t, n = saved
+    block(0, "")
+    return out
+import json as _json
+_cm = _cmx(css)
+js += "\n/* ===== 舊 iPhone（iOS 15）看不懂 color-mix：build.py 自動整理清單，由 cmxPoly() 補上算好的顏色 ===== */\nconst CMX_RULES=" + _json.dumps(_cm, ensure_ascii=False) + ";\n"
 open(os.path.join(R, "app.css"), "w", encoding="utf-8").write(css)
 # 舊 iPhone（iOS 15）看不懂的寫法：出現就不准產生 app.js（不然整支 App 白畫面）
 _code = re.sub(r"/\*.*?\*/", "", js, flags=re.S)

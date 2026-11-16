@@ -113,3 +113,22 @@ function ptRcTop(email,res){ const e=String(email||"").toLowerCase(), a=ACCOUNTS
     :`<li class="gap"><b>${ptDs([x.D.gap[0]])}～${ptDs([x.D.gap[1]])}</b> 沒有貼到：總分從 ${fmt(x.from)} 跳到 ${fmt(x.D.said-x.D.claim)}，中間多了 ${fmt(x.mid)}，沒辦法檢查。把這幾天也貼上就能檢查</li>`).join("");
   return `<div class="ptrc-app">${L?`<div class="r"><span>LINE 最後寫的總分（${ptDs(L.ds)}）</span><b>${fmt(L.said)}</b></div>`:`<div class="r"><span>LINE 上沒有寫「總：」</span><b>—</b></div>`}<div class="r"><span>App 現在</span><b>${now==null?"—":fmt(now)}</b></div>${v}</div>
     <div class="ptrc-iss"><b>每天的總分有沒有加對</b>${it?`<ul>${it}</ul>`:`<p class="ok">✅ 每天的總分都加對了</p>`}</div>`; }
+
+/* ===== 舊 iPhone（iOS 15，Safari 15）看不懂 color-mix()：用 build.py 整理的 CMX_RULES，把顏色在手機上算好、補成一般的 rgba()
+   新手機（看得懂 color-mix）完全不會跑；換深淺色時重算一次 ===== */
+function cmxPoly(){ try{
+  if(typeof CMX_RULES==="undefined") return; if(!window.__cmxForce&&window.CSS&&CSS.supports&&CSS.supports("color","color-mix(in srgb,red 50%,blue)")) return;
+  const root=getComputedStyle(document.documentElement), cx=document.createElement("canvas").getContext("2d");
+  const rv=v=>{ let k=0; while(/var\(/.test(v)&&k++<8) v=v.replace(/var\((--[\w-]+)\s*(?:,\s*([^()]*(?:\([^()]*\))*[^()]*?))?\)/g,(m,n,fb)=>root.getPropertyValue(n).trim()||(fb||"").trim()||"transparent"); return v; };
+  const col=c=>{ c=c.trim(); if(!c||c==="transparent") return [0,0,0,0]; cx.fillStyle="#010203"; cx.fillStyle=c; const f=String(cx.fillStyle); if(f==="#010203"&&!/^#010203$/i.test(c)) return null;
+    if(f[0]==="#") return [parseInt(f.slice(1,3),16),parseInt(f.slice(3,5),16),parseInt(f.slice(5,7),16),1]; const m=f.match(/[\d.]+/g)||[]; return [+m[0]||0,+m[1]||0,+m[2]||0,m[3]==null?1:+m[3]]; };
+  const top=s=>{ const o=[]; let d=0,c=""; for(const ch of s){ if(ch==="(") d++; else if(ch===")") d--; if(ch===","&&!d){ o.push(c); c=""; } else c+=ch; } o.push(c); return o.map(x=>x.trim()); };
+  const mix=inner=>{ const a=top(inner); if(a.length<3) return null; const P=a.slice(1,3).map(x=>{ const m=x.match(/^(.*?)(?:\s+([\d.]+)%)?$/); return {c:col(rv(m[1])),p:m[2]==null?null:+m[2]/100}; }); if(!P[0].c||!P[1].c) return null;
+    let p=P[0].p, q=P[1].p; if(p==null&&q==null){ p=q=.5; } else if(p==null) p=1-q; else if(q==null) q=1-p; const s=p+q||1; p/=s; q/=s;
+    const A=P[0].c, B=P[1].c, al=A[3]*p+B[3]*q, ch=i=>al?Math.round((A[i]*A[3]*p+B[i]*B[3]*q)/al):0; return `rgba(${ch(0)},${ch(1)},${ch(2)},${+al.toFixed(3)})`; };
+  const fix=v=>{ let k=0; while(v.includes("color-mix(")&&k++<10){ const i=v.lastIndexOf("color-mix("); let d=0,j=i+9; for(;j<v.length;j++){ if(v[j]==="(") d++; else if(v[j]===")"&&!--d) break; } const r=mix(v.slice(i+10,j)); if(!r) return null; v=v.slice(0,i)+r+v.slice(j+1); } return v; };
+  let out=""; CMX_RULES.forEach(([sel,media,prop,val])=>{ const v=fix(val); if(!v) return; const r=`${sel}{${prop}:${v}}`; out+=media?`@media ${media}{${r}}`:r; });
+  let st=document.getElementById("cmxPoly"); if(!st){ st=document.createElement("style"); st.id="cmxPoly"; document.head.appendChild(st); } st.textContent=out;
+  if(!cmxPoly.ob){ let tm=0; cmxPoly.ob=new MutationObserver(()=>{ clearTimeout(tm); tm=setTimeout(cmxPoly,60); }); cmxPoly.ob.observe(document.documentElement,{attributes:true,attributeFilter:["data-theme","class","style"]}); }
+}catch(e){} }
+setTimeout(cmxPoly,0);
