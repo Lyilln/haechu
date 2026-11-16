@@ -27,7 +27,9 @@ function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length;
   const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
   /* 虛擬歌手的分數跟著真的歌走（社群人數少，分數不能高到追不上）：預估本週真歌的最高分，虛擬歌手落在它的 55%～125% */
   const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.25,prog));
-  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
+/* 11/17 粉絲也可以投虛擬歌手：票跟真的歌記在同一本帳（"npc:團名"），一票的分數也一樣 */
+function npcVotePts(name,show,wk){ try{ const sid="npc:"+name, v=musDemoOn()?(((ui.dmV2||{})[show]||{})[sid]||0):showVotes(sid,show,wk); return Math.round(v*msW(show).vote); }catch(e){ return 0; } }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
 const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
 const MSP={win:2000,five:5000,ak:10000,pak:15000};

@@ -5422,7 +5422,9 @@ function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length;
   const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
   /* 虛擬歌手的分數跟著真的歌走（社群人數少，分數不能高到追不上）：預估本週真歌的最高分，虛擬歌手落在它的 55%～125% */
   const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.25,prog));
-  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))}; }).sort((a,b)=>b.total-a.total); }
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
+/* 11/17 粉絲也可以投虛擬歌手：票跟真的歌記在同一本帳（"npc:團名"），一票的分數也一樣 */
+function npcVotePts(name,show,wk){ try{ const sid="npc:"+name, v=musDemoOn()?(((ui.dmV2||{})[show]||{})[sid]||0):showVotes(sid,show,wk); return Math.round(v*msW(show).vote); }catch(e){ return 0; } }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
 const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
 const MSP={win:2000,five:5000,ak:10000,pak:15000};
@@ -10606,6 +10608,7 @@ function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) retu
     ${ui.snRe&&ui.snRe.p===id?`<div class="sn-reb"><span>正在回覆 ${esc(ui.snRe.u)}</span><button data-a="snCmReX" data-id="${id}" aria-label="取消">${si("x","sm")}</button></div>`:""}
     <div class="sn-cemo">${["❤️","🙌","🔥","👏","😢","😍","😮","😂"].map(x=>`<button data-a="snCmEmo" data-v="${x}">${x}</button>`).join("")}</div>
     <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),40)}<div class="sn-cpill"><textarea rows="1" class="ag" id="snCmIn" placeholder="你對此有何看法？" autocomplete="off">${draft!=null?esc(draft):ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit" class="sn-csend" aria-label="發佈"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div></form></div></div>`,"sncm");
+  snShFit(layer.querySelector(".sn-shw"));
   if(reopen){ const w=layer.querySelector(".sn-shw"); if(w){ w.classList.add("open"); const sh=w.querySelector(".sn-sh"); if(sh) sh.style.transition="none"; const c=w.querySelector(".sn-cl"); if(c){ c.scrollTop=cly; AN.flip(c,fk); } } } else requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 /* 留言的「排序方式」：疊在留言面板上面，不把留言面板關掉（跟 IG 一樣） */
 function snCmSortSheet(id){ const w=layer.querySelector(".sn-shw"); if(!w) return; const old=w.querySelector(".sn-shw.sub"); if(old) old.remove(); const top=ui.snCmSort==="top";
@@ -11238,6 +11241,15 @@ function snDmNkOpen(id){ const me=snMeId(), P=[snUser(id),snUser(me)].filter(Boo
   document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="snCmIn") y0=window.scrollY; },true);
   document.addEventListener("focusout",e=>{ if(!e.target||e.target.id!=="snCmIn"||y0==null) return; const y=y0;
     setTimeout(()=>{ const a=document.activeElement; if(a&&a.id==="snCmIn") return; const vv=window.visualViewport; if(window.scrollY!==y||(vv&&vv.offsetTop>0)) window.scrollTo(0,y); y0=null; },80); },true); }
+
+/* 11/17 粉絲端留言面板「被頂開」（同一篇貼文，藝人端正常）：面板底下露出後面的貼文、而且整個變矮。
+   不再相信 vh 和 inset:0 算出來的高度，打開時直接量「螢幕真的有多高」，用 px 把外框和面板高度定死；
+   量完如果外框底部還沒貼到螢幕最底，就往下補齊 */
+function snShFit(w){ if(!w) return; const sh=w.querySelector(".sn-sh.cm"); const H=window.innerHeight;
+  w.style.top="0px"; w.style.bottom="auto"; w.style.height=H+"px";
+  if(sh&&!document.documentElement.classList.contains("sn-vshrink")) sh.style.height=Math.round(H*.7)+"px";
+  requestAnimationFrame(()=>{ if(!w.isConnected) return; const r=w.getBoundingClientRect(), gap=Math.round(H-r.bottom), up=Math.round(r.top); if(gap>1||up!==0){ w.style.top=(-up)+"px"; w.style.height=(H+Math.max(0,gap)+Math.max(0,up))+"px"; } }); }
+addEventListener("resize",()=>{ const w=layer.querySelector(".sn-shw:not(.sub)"); if(w&&w.querySelector(".sn-sh.cm")&&!(document.activeElement&&document.activeElement.id==="snCmIn")) snShFit(w); });
 
 /* HAECHU｜綜藝、星探、代言、生日咖啡廳、運動會 */
 /* =========================================================
@@ -13672,7 +13684,7 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
       return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid,s.title)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
-      .concat(rk&&R.length?NPCS.map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
+      .concat(rk&&R.length?NPCS.map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span>${voted==="npc:"+n.name?`<span class="mu3-stamp ${ui.muStamp===id+"npc:"+n.name?"pop":""}">已投</span>`:rk&&!ended&&!voted&&!won&&!npcWon(id,wk)?`<button class="mu3-vote" data-a="muVote3" data-v="npc:${esc(n.name)}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:""}</div>`})):[])
       .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
@@ -13701,7 +13713,13 @@ function murGo(i){ const sc=document.getElementById("murS"); if(!sc) return; i=M
 /* 點擊 */
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muShow"){ e.stopImmediatePropagation(); const id=t.dataset.v; ui.muOpen={...(ui.muOpen||{}),[id]:!(ui.muOpen||{})[id]}; const sec=t.closest(".mu3-sh"); if(sec){ sec.classList.toggle("open",!!ui.muOpen[id]); t.setAttribute("aria-expanded",ui.muOpen[id]?"true":"false"); } return; }
-  if(a==="muVote3"){ e.stopImmediatePropagation(); if(meBlocked&&meBlocked()) return; const sid=t.dataset.v, sh=t.dataset.s, s=songOf(sid); if(!s) return; const k=myVoteKey(sh);
+  if(a==="muVote3"){ e.stopImmediatePropagation(); if(meBlocked&&meBlocked()) return; const sid=t.dataset.v, sh=t.dataset.s, k=myVoteKey(sh);
+    if(String(sid).startsWith("npc:")){ if(muVotedFor(sh)||showEnded(sh,curWeek())) return; const r=t.getBoundingClientRect();   /* 投虛擬歌手：一樣算一票，沒有公放席小卡（那是真藝人的） */
+      if(musDemoOn()){ ui.dmMine={...(ui.dmMine||{}),[k]:sid}; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1}; }
+      else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); }
+      const tk=document.createElement("span"); tk.className="mu3-fly"; tk.innerHTML=MU_IC.tk; tk.style.left=r.left+"px"; tk.style.top=r.top+"px"; document.body.appendChild(tk); setTimeout(()=>tk.remove(),700);
+      ui.muStamp=sh+sid; setTimeout(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); setTimeout(()=>{ ui.muStamp=null; },900); },380); return; }
+    const s=songOf(sid); if(!s) return;
     if(muVotedFor(sh)) return; if(!s.demo&&showEnded(sh,curWeek())) return;
     const r=t.getBoundingClientRect(); let card=null;
     if(s.demo){ ui.dmMine={...(ui.dmMine||{}),[k]:sid}; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1}; }

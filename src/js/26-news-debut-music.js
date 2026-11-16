@@ -313,7 +313,7 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
     const rows=R.map((x,i)=>{ const s=x.s, g=groupOf(s.gid), mine=voted===s.id, can=rk&&!ended&&!voted&&!x.cr&&!(won);
       const act=x.cr?`<span class="mu3-cr" aria-label="三冠王">${MU_IC.crown}</span>`:mine?`<span class="mu3-stamp ${ui.muStamp===id+s.id?"pop":""}">已投</span>`:can?`<button class="mu3-vote" data-a="muVote3" data-v="${s.id}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:"";
       return {sc:x.sc.total,h:`<div class="mu3-r"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairy" data-v="${s.id}" data-s="${id}"><span class="mu2-cv">${songCover(s.gid,s.title)}</span><span class="mu3-t"><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span></button><span class="mu3-sc">${rk?fmt(x.sc.total):fmt(x.sc.likes)+" ♡"}</span>${act}</div>`}; })
-      .concat(rk&&R.length?NPCS.map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span></div>`})):[])
+      .concat(rk&&R.length?NPCS.map(n=>({sc:n.total,h:`<div class="mu3-r npc"><span class="mu3-n">#</span><button class="mu3-song" data-a="muFairyNpc" data-n="${esc(n.name)}" data-t="${esc(n.title)}" data-s="${id}"><span class="mu2-cv npc">${esc(n.name[0])}</span><span class="mu3-t"><b>${esc(n.title)}</b><small>${esc(n.name)}</small></span></button><span class="mu3-sc">${fmt(n.total)}</span>${voted==="npc:"+n.name?`<span class="mu3-stamp ${ui.muStamp===id+"npc:"+n.name?"pop":""}">已投</span>`:rk&&!ended&&!voted&&!won&&!npcWon(id,wk)?`<button class="mu3-vote" data-a="muVote3" data-v="npc:${esc(n.name)}" data-s="${id}">${MU_IC.tk}<span>投票</span></button>`:""}</div>`})):[])
       .sort((a,b)=>b.sc-a.sc).map((r,i)=>r.h.replace('<span class="mu3-n">#</span>',`<span class="mu3-n">${i+1}</span>`)).join("");
     return `<section class="mu3-sh s-${id} ${open[id]?"open":""}"><button class="mu3-hd" data-a="muShow" data-v="${id}" aria-expanded="${open[id]?"true":"false"}">
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
@@ -342,7 +342,13 @@ function murGo(i){ const sc=document.getElementById("murS"); if(!sc) return; i=M
 /* 點擊 */
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="muShow"){ e.stopImmediatePropagation(); const id=t.dataset.v; ui.muOpen={...(ui.muOpen||{}),[id]:!(ui.muOpen||{})[id]}; const sec=t.closest(".mu3-sh"); if(sec){ sec.classList.toggle("open",!!ui.muOpen[id]); t.setAttribute("aria-expanded",ui.muOpen[id]?"true":"false"); } return; }
-  if(a==="muVote3"){ e.stopImmediatePropagation(); if(meBlocked&&meBlocked()) return; const sid=t.dataset.v, sh=t.dataset.s, s=songOf(sid); if(!s) return; const k=myVoteKey(sh);
+  if(a==="muVote3"){ e.stopImmediatePropagation(); if(meBlocked&&meBlocked()) return; const sid=t.dataset.v, sh=t.dataset.s, k=myVoteKey(sh);
+    if(String(sid).startsWith("npc:")){ if(muVotedFor(sh)||showEnded(sh,curWeek())) return; const r=t.getBoundingClientRect();   /* 投虛擬歌手：一樣算一票，沒有公放席小卡（那是真藝人的） */
+      if(musDemoOn()){ ui.dmMine={...(ui.dmMine||{}),[k]:sid}; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1}; }
+      else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); }
+      const tk=document.createElement("span"); tk.className="mu3-fly"; tk.innerHTML=MU_IC.tk; tk.style.left=r.left+"px"; tk.style.top=r.top+"px"; document.body.appendChild(tk); setTimeout(()=>tk.remove(),700);
+      ui.muStamp=sh+sid; setTimeout(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); setTimeout(()=>{ ui.muStamp=null; },900); },380); return; }
+    const s=songOf(sid); if(!s) return;
     if(muVotedFor(sh)) return; if(!s.demo&&showEnded(sh,curWeek())) return;
     const r=t.getBoundingClientRect(); let card=null;
     if(s.demo){ ui.dmMine={...(ui.dmMine||{}),[k]:sid}; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1}; }
