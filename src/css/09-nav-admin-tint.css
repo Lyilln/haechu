@@ -616,5 +616,7 @@ html[data-theme="dark"] .t-rh,html[data-theme="dark"] .t-foot{background:#323137
 .th-mine-e small{color:var(--ink-3);font-size:13px;line-height:1.6;max-width:300px}
 .th-mine-e .btn{margin-top:10px;min-width:180px}
 /* 限動在 iPhone 下面會露出後面的貼文：黑底拉到螢幕最底（含網址列收起來時多出的那段） */
-.sn-story{bottom:auto;height:100%;min-height:100vh;min-height:100lvh}
+/* 11/17：不再用 100lvh 撐高（加到主畫面的 App 在新 iPhone 上 lvh 比畫面高，下面的「傳送訊息」會掉出螢幕）；
+   限動就是整個畫面那麼高，下面多出來的那段交給 ::after 的黑底補 */
+.sn-story{top:0;bottom:0;height:auto;min-height:0}
 .sn-story::after{content:"";position:absolute;left:0;right:0;top:100%;height:60vh;background:#000;pointer-events:none}

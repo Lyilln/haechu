@@ -11127,7 +11127,12 @@ let SN_SAFE_T=-1; const snSafeT=()=>{ if(SN_SAFE_T<0){ const p=document.createEl
 function snVidFit(v){ try{ const bg=v.closest(".sn-rbg"); if(!bg||!v.videoWidth) return; const W=bg.offsetWidth, H=bg.offsetHeight, ar=v.videoWidth/v.videoHeight, sh=document.documentElement.classList.contains("sn-vshrink"), land=ar>1.05;
     v.classList.toggle("land",land);
     if(!sh&&!land){ v.style.cssText=""; v.classList.remove("fit"); return; }
-    const pt=sh?snSafeT()+10:0, pb=sh?12:0, ph=sh?16:0, aw=W-ph*2, ah=H-pt-pb; let w=aw, h=w/ar; if(h>ah){ h=ah; w=h*ar; }
+    let pt=sh?snSafeT()+10:0, pb=sh?12:0; const ph=sh?16:0, aw=W-ph*2;
+    if(!sh){ /* 11/17 橫的影片：放在「上面 Reels 那排」和「下面帳號、文案」中間的正中間（照 IG），不是整個畫面的正中間 */
+      const br=bg.getBoundingClientRect(), z=br.height/H||1, sec=bg.closest(".sn-reel1"), tb=document.querySelector(".sn-rtab"), rb=sec&&sec.querySelector(".sn-rb");
+      if(tb){ const t=(tb.getBoundingClientRect().bottom-br.top)/z; if(t>0&&t<H/2) pt=t; }
+      if(rb){ const b=(br.bottom-rb.getBoundingClientRect().top)/z; if(b>0&&b<H/2) pb=b; } }
+    const ah=H-pt-pb; let w=aw, h=w/ar; if(h>ah){ h=ah; w=h*ar; }
     v.classList.add("fit"); v.style.cssText=`position:absolute;left:${(W-w)/2}px;top:${pt+(ah-h)/2}px;width:${w}px;height:${h}px;object-fit:cover;border-radius:${sh?14:0}px`; }catch(e){} }
 const snVidFitAll=()=>document.querySelectorAll(".sn-reel1 video.sn-vid").forEach(snVidFit);
 document.addEventListener("loadedmetadata",e=>{ const v=e.target; if(v instanceof HTMLVideoElement&&v.classList.contains("sn-vid")&&v.closest(".sn-reel1")) snVidFit(v); },true);
@@ -11215,6 +11220,12 @@ function snDmSetOpen(id){ const u=snUser(id); if(!u) return; const o=dmSet(id), 
 function snDmNkOpen(id){ const me=snMeId(), P=[snUser(id),snUser(me)].filter(Boolean);
   snStPop(`<div class="sn-dms"><header><button data-a="snDmSet" data-id="${id}">${si("back")}</button><b>暱稱</b><span></span></header><p class="sn-dmsn">暱稱只會在這個聊天室裡顯示，兩個人都看得到。</p>
     <div class="sn-dmsl nk">${P.map(u=>`<button data-a="snDmNk" data-id="${id}" data-v="${u.id}">${snAv(u,44)}<b>${esc(dmNick(u.id,id)||u.name||u.u)}<small>${esc(u.u)}${u.ver?SN_VER:""}</small></b>${si("chev","sm")}</button>`).join("")}</div></div>`,"stp-full"); }
+/* 11/17 留言面板被「頂開」：iPhone 打開鍵盤時會把整頁往上推，鍵盤收起來後有時沒推回去，
+   底部固定的留言面板就跟著浮在半空中、下面露出後面的貼文。收鍵盤時把頁面推回原位 */
+{ let y0=null;
+  document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="snCmIn") y0=window.scrollY; },true);
+  document.addEventListener("focusout",e=>{ if(!e.target||e.target.id!=="snCmIn"||y0==null) return; const y=y0;
+    setTimeout(()=>{ const a=document.activeElement; if(a&&a.id==="snCmIn") return; const vv=window.visualViewport; if(window.scrollY!==y||(vv&&vv.offsetTop>0)) window.scrollTo(0,y); y0=null; },80); },true); }
 
 /* HAECHU｜綜藝、星探、代言、生日咖啡廳、運動會 */
 /* =========================================================
