@@ -176,3 +176,6 @@
 .dmth-night .sn-bub:not(.me){background:#2A2E52!important;color:#fff!important}.dmth-night .sn-dmhead b,.dmth-night .sn-dts{color:#fff!important}
 .sn-dmsl button>.si:last-child{transform:rotate(-90deg)}
 .sn-dmblk{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid #EFEFEF;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 14px)!important}
+
+/* 社群 Letter 分頁的「寫粉絲信」按鈕 */
+.lt-wbtn{margin:4px 0 12px}

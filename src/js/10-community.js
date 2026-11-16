@@ -83,8 +83,8 @@ function viewGrp(gid,tab,mid){ const g=groupOf(gid); if(!g) return go("fan"); co
   if(tab==="letter") return viewCmLetter(gid,mid);
   if(sub) return sub(gid);
   const skel=false;   // 灰色載入畫面只在網路不好、資料還沒到時才會出現；目前資料都在手機裡，所以不會出現
-  const tabs=[["home","Home"],["feed","Feed"],["media",mediaName(gid)],["shop","Shop"]];
-  const body=skel?cmSkel():tab==="feed"?grpFeed(gid):tab==="media"?grpMedia(gid):tab==="shop"?grpShop(gid):grpHome(gid);
+  const tabs=[["home","Home"],["feed","Feed"],["media",mediaName(gid)],["lt","Letter"],["shop","Shop"]];
+  const body=skel?cmSkel():tab==="feed"?grpFeed(gid):tab==="media"?grpMedia(gid):tab==="shop"?grpShop(gid):tab==="lt"?`${(session()||{}).role==="fan"?`<button class="btn btn-main btn-block lt-wbtn" data-a="cmLetterTo" data-v="${gid}">寫粉絲信</button>`:""}${ltList(gid,ui.ltAll!==false)}`:grpHome(gid);
   return `<div class="gcm cmx" style="--gt:${T}">${cmTop(gid,g.name)}${grpHero(gid,skel)}<nav class="cm-tabs cmx-tabs">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="cmTab" data-v="${k}">${l}</button>`).join("")}</nav><main class="page cm-body">${body}</main>
     ${!skel&&followed().includes(gid)?`<button class="cmx-fab" data-a="cmFab" aria-label="發表">${I3.plus}</button>`:""}</div>`; }
 /* 捲過封面後，上方的團名列才變成實心（團體代表色） */
@@ -151,12 +151,15 @@ function viewCmWrite(gid){ const g=groupOf(gid), hide=!!ui.cwHide;
     <textarea id="cwTxt" class="cw-t" placeholder="輸入文字"></textarea>
     <div class="cw-ims">${(ui.cwImgs||[]).map((u,i)=>`<span><img src="${esc(u)}" alt=""><button data-a="cwImgX" data-v="${i}" aria-label="移除">${XI}</button></span>`).join("")}<label class="cw-add" aria-label="加照片">${PDI.photo||"＋"}<input type="file" accept="image/*" multiple id="cwFile" hidden></label></div>
     <footer class="cw-f"><button class="sw ${hide?"on":""}" role="switch" data-a="cwHide" aria-checked="${hide}"></button><span>Hide from Artists<small>開啟後藝人看不到這則貼文</small></span></footer></div>`; }
+/* 粉絲信清單（11/17）：社群上面多一個「Letter」分頁，預設看「全部」＝大家寫給這個團的信（半公開，照 Weverse）；
+   ME 裡的粉絲信分頁預設看「我的」。兩邊用同一個清單 */
+function ltList(gid,all){ const A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(A.map(x=>[x.id,x])), mine=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts), L=all?A.filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts):mine.map(l=>byId.get(l.id)||l);
+  return `<div class="lt-sw"><button class="${all?"":"on"}" data-a="ltAll" data-v="">我的</button><button class="${all?"on":""}" data-a="ltAll" data-v="1">全部</button><span>這個月還能寫 ${Math.max(0,LT_MAX-ltMineMonth())} 封</span></div>`+(L.length?L.map(l=>ltCard(l,{from:all})).join(""):`<p class="cmx-empty">${all?"這個團還沒有人寫粉絲信。":"尚未有撰寫的粉絲信。"}</p>`); }
 function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"post", bg=PCI[`cmbg|${gid}`];
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
   const fol=grpMembers(gid).filter(m=>(S.get(K.mFollow,{}))[m]).length, bms=S.get(K.bm,[]).length;
   const list=tab==="post"?(posts.length?posts.map(fanCard).join(""):`<p class="cmx-empty">尚未發表貼文。</p>`):tab==="cm"?(cms.length?cms.map(c=>`<section class="card fp">${trT("c:"+c.id,c.text,"")}<small class="fp-sm">${ago(c.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未發表留言。</p>`)
-    :(()=>{ const all=!!ui.ltAll, A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(A.map(x=>[x.id,x])), L=all?A.filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts):lts.map(l=>byId.get(l.id)||l);
-      return `<div class="lt-sw"><button class="${all?"":"on"}" data-a="ltAll" data-v="">我的</button><button class="${all?"on":""}" data-a="ltAll" data-v="1">全部</button><span>這個月還能寫 ${Math.max(0,LT_MAX-ltMineMonth())} 封</span></div>`+(L.length?L.map(l=>ltCard(l,{from:all})).join(""):`<p class="cmx-empty">${all?"這個團還沒有人寫粉絲信。":"尚未有撰寫的粉絲信。"}</p>`); })();
+    :ltList(gid,!!ui.ltAll);
   return `<div class="gcm cmx-me" style="--gt:${gTheme(gid)}"><header class="cmx-top"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><span></span></header>
     <section class="me-hero" ${bg?`style="background-image:linear-gradient(transparent,rgba(0,0,0,.45)),url(${bg})"`:""}>${cmAvatar(gid,"big")}<small>${ymd(P.joined)} 已加入</small><b>${esc(P.nick)}</b>${P.intro&&!P.hide?`<p>${esc(P.intro)}</p>`:""}
       <div class="me-st"><span><b>${fol}</b>正在追蹤</span><span><b>0</b>追蹤者</span><span><b>${bms}</b>收藏集</span></div><button class="me-ed" data-a="cmGo" data-v="meEdit">編輯個人簡介</button></section>

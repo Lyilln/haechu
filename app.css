@@ -6757,6 +6757,9 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .sn-dmsl button>.si:last-child{transform:rotate(-90deg)}
 .sn-dmblk{position:fixed;left:0;right:0;bottom:0;z-index:6;background:#fff;border-top:1px solid #EFEFEF;padding:14px 16px calc(env(safe-area-inset-bottom,0px) + 14px)!important}
 
+/* 社群 Letter 分頁的「寫粉絲信」按鈕 */
+.lt-wbtn{margin:4px 0 12px}
+
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}
 .xv-hero,.dk-keep-xv{position:relative;overflow:hidden;border-radius:22px;padding:18px;color:#fff;background:linear-gradient(135deg,#7C4DFF,#B388FF);box-shadow:0 14px 30px -18px rgba(90,50,200,.6)}
