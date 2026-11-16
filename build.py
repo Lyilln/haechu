@@ -13,6 +13,11 @@ css, cf = cat("src/css/*.css")
 js, jf = cat("src/js/*.js")
 h = lambda s: hashlib.sha1(s.encode()).hexdigest()[:10]
 open(os.path.join(R, "app.css"), "w", encoding="utf-8").write(css)
+# 舊 iPhone（iOS 15）看不懂的寫法：出現就不准產生 app.js（不然整支 App 白畫面）
+_code = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
+for _bad, _why in [(r"\(\?<[=!]", "正規式的 (?<= / (?<!"), (r"\bstructuredClone\(", "structuredClone"), (r"\.findLast(Index)?\(", ".findLast"), (r"\.to(Sorted|Reversed|Spliced)\(", ".toSorted 之類"), (r"\b(Object|Map)\.groupBy\(", "groupBy")]:
+    if re.search(_bad, _code):
+        sys.exit(f"build 停止：用了 iOS 15 看不懂的 {_why}，舊 iPhone 會白畫面，請改寫")
 open(os.path.join(R, "app.js"), "w", encoding="utf-8").write(js)
 build = time.strftime("%Y%m%d%H%M%S", time.gmtime())
 shell = open(os.path.join(R, "src/index.html"), encoding="utf-8").read()
