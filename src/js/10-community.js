@@ -162,6 +162,7 @@ function ltList(gid,all){ const A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(
 /* 11/17 Letter 分頁：這個團的藝人一進來先看「寫給我的」（新信標示、點了已讀、💜），也能切到「全部」；粉絲照舊 */
 function ltTab(gid){ const s=session()||{}, mid=s.member, mine=s.role==="artist"&&MEMBERS[mid]&&MEMBERS[mid].group===gid;
   if(!mine) return `${s.role==="fan"?`<button class="btn btn-main btn-block lt-wbtn" data-a="cmLetterTo" data-v="${gid}">寫粉絲信</button>`:""}${ltList(gid,ui.ltAll!==false)}`;
+  if((groupOf(gid)||{}).solo) return artLtList(mid);   /* SOLOIST：信全都是寫給自己的，不需要「寫給我的／全部」 */
   const inbox=ui.ltArtAll!==true, n=ltNewN(mid);
   return `<div class="lt-sw"><button class="${inbox?"on":""}" data-a="ltArtAll" data-v="">寫給我的${n?` ${n}`:""}</button><button class="${inbox?"":"on"}" data-a="ltArtAll" data-v="1">全部</button><span></span></div>`+(inbox?artLtList(mid):(()=>{ const A=(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts); return A.length?A.map(l=>ltCard(l,{from:1})).join(""):`<p class="cmx-empty">這個團還沒有人寫粉絲信。</p>`; })()); }
 function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"post", bg=PCI[`cmbg|${gid}`];
