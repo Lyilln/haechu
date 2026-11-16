@@ -179,3 +179,4 @@
 
 /* 社群 Letter 分頁的「寫粉絲信」按鈕 */
 .lt-wbtn{margin:4px 0 12px}
+.lt-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#FF3B5C;vertical-align:top;margin-left:2px}

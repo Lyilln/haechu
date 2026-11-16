@@ -4136,8 +4136,9 @@ function viewGrp(gid,tab,mid){ const g=groupOf(gid); if(!g) return go("fan"); co
   if(tab==="letter") return viewCmLetter(gid,mid);
   if(sub) return sub(gid);
   const skel=false;   // 灰色載入畫面只在網路不好、資料還沒到時才會出現；目前資料都在手機裡，所以不會出現
-  const tabs=[["home","Home"],["feed","Feed"],["media",mediaName(gid)],["lt","Letter"],["shop","Shop"]];
-  const body=skel?cmSkel():tab==="feed"?grpFeed(gid):tab==="media"?grpMedia(gid):tab==="shop"?grpShop(gid):tab==="lt"?`${(session()||{}).role==="fan"?`<button class="btn btn-main btn-block lt-wbtn" data-a="cmLetterTo" data-v="${gid}">寫粉絲信</button>`:""}${ltList(gid,ui.ltAll!==false)}`:grpHome(gid);
+  const sM=(session()||{}).member, ltN=(session()||{}).role==="artist"&&MEMBERS[sM]&&MEMBERS[sM].group===gid?ltNewN(sM):0;
+  const tabs=[["home","Home"],["feed","Feed"],["media",mediaName(gid)],["lt",ltN?`Letter <i class="lt-dot" aria-label="${ltN} 封新信"></i>`:"Letter"],["shop","Shop"]];
+  const body=skel?cmSkel():tab==="feed"?grpFeed(gid):tab==="media"?grpMedia(gid):tab==="shop"?grpShop(gid):tab==="lt"?ltTab(gid):grpHome(gid);
   return `<div class="gcm cmx" style="--gt:${T}">${cmTop(gid,g.name)}${grpHero(gid,skel)}<nav class="cm-tabs cmx-tabs">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="cmTab" data-v="${k}">${l}</button>`).join("")}</nav><main class="page cm-body">${body}</main>
     ${!skel&&followed().includes(gid)?`<button class="cmx-fab" data-a="cmFab" aria-label="發表">${I3.plus}</button>`:""}</div>`; }
 /* 捲過封面後，上方的團名列才變成實心（團體代表色） */
@@ -4170,8 +4171,10 @@ const ltCard=(l,o={})=>{ const g=groupOf(l.gid)||{}, T=LT_TPL[l.tpl]||LT_TPL[0],
 setTimeout(ltSync,6000); setInterval(ltSync,90000);
 const ltSeen=()=>{ try{ return JSON.parse(localStorage.getItem("hc_lt_seen")||"{}")||{}; }catch(e){ return {}; } };   /* 已讀只記在藝人自己的手機 */
 const ltFor=mid=>{ const g=(MEMBERS[mid]||{}).group; return (S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===g&&(!MEMBERS[l.to]||l.to===mid)).sort((a,b)=>b.ts-a.ts); };
-function viewArtLetters(mid){ const L=ltFor(mid), R=ltSeen(), g=groupOf((MEMBERS[mid]||{}).group)||{};
-  return `<main class="page">${L.length?L.map(l=>{ const on=!!(l.heart||{})[mid]; return ltCard(l,{from:1,cls:R[l.id]?"":"new",attr:`data-a="aLtRead" data-v="${l.id}"`,heartBtn:`<button class="lt-hb ${on?"on":""}" data-a="aLtHeart" data-v="${l.id}" aria-pressed="${on}">${on?"💜 已讀給粉絲看":"🤍 按 💜 讓粉絲知道你讀了"}</button>`}); }).join(""):`<p class="cmx-empty">還沒有收到粉絲信 💌</p>`}</main>`; }
+function viewArtLetters(mid){ return `<main class="page">${artLtList(mid)}</main>`; }
+const ltNewN=mid=>{ const R=ltSeen(); return ltFor(mid).filter(l=>!R[l.id]).length; };
+function artLtList(mid){ const L=ltFor(mid), R=ltSeen();
+  return `${L.length?L.map(l=>{ const on=!!(l.heart||{})[mid]; return ltCard(l,{from:1,cls:R[l.id]?"":"new",attr:`data-a="aLtRead" data-v="${l.id}"`,heartBtn:`<button class="lt-hb ${on?"on":""}" data-a="aLtHeart" data-v="${l.id}" aria-pressed="${on}">${on?"💜 已讀給粉絲看":"🤍 按 💜 讓粉絲知道你讀了"}</button>`}); }).join(""):`<p class="cmx-empty">還沒有收到粉絲信</p>`}`; }
 /* 右下「＋」：粉絲信、貼文 */
 function fabMenu(items,cls){ const n=items.length; return `<div class="cmx-fabw ${cls||""}" data-a="fabClose"><div class="cmx-fabm">${items.map(([a,v,l,ic],k)=>`<button data-a="${a}" data-v="${v}" style="--k:${n-1-k}"><span>${l}</span><i>${ic}</i></button>`).join("")}<button class="x" data-a="fabClose" aria-label="關閉">${I3.x}</button></div></div>`; }
 function openCmFab(gid){ setLayer(fabMenu([["cmLetterTo",gid,"粉絲信",I3.letter],["cmGo","write","貼文",I3.pen]]),"fab"); }
@@ -4208,6 +4211,11 @@ function viewCmWrite(gid){ const g=groupOf(gid), hide=!!ui.cwHide;
    ME 裡的粉絲信分頁預設看「我的」。兩邊用同一個清單 */
 function ltList(gid,all){ const A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(A.map(x=>[x.id,x])), mine=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts), L=all?A.filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts):mine.map(l=>byId.get(l.id)||l);
   return `<div class="lt-sw"><button class="${all?"":"on"}" data-a="ltAll" data-v="">我的</button><button class="${all?"on":""}" data-a="ltAll" data-v="1">全部</button><span>這個月還能寫 ${Math.max(0,LT_MAX-ltMineMonth())} 封</span></div>`+(L.length?L.map(l=>ltCard(l,{from:all})).join(""):`<p class="cmx-empty">${all?"這個團還沒有人寫粉絲信。":"尚未有撰寫的粉絲信。"}</p>`); }
+/* 11/17 Letter 分頁：這個團的藝人一進來先看「寫給我的」（新信標示、點了已讀、💜），也能切到「全部」；粉絲照舊 */
+function ltTab(gid){ const s=session()||{}, mid=s.member, mine=s.role==="artist"&&MEMBERS[mid]&&MEMBERS[mid].group===gid;
+  if(!mine) return `${s.role==="fan"?`<button class="btn btn-main btn-block lt-wbtn" data-a="cmLetterTo" data-v="${gid}">寫粉絲信</button>`:""}${ltList(gid,ui.ltAll!==false)}`;
+  const inbox=ui.ltArtAll!==true, n=ltNewN(mid);
+  return `<div class="lt-sw"><button class="${inbox?"on":""}" data-a="ltArtAll" data-v="">寫給我的${n?` ${n}`:""}</button><button class="${inbox?"":"on"}" data-a="ltArtAll" data-v="1">全部</button><span>${n?`${n} 封新信`:""}</span></div>`+(inbox?artLtList(mid):(()=>{ const A=(S.get(K.fanLettersAll,[])||[]).filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts); return A.length?A.map(l=>ltCard(l,{from:1})).join(""):`<p class="cmx-empty">這個團還沒有人寫粉絲信。</p>`; })()); }
 function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"post", bg=PCI[`cmbg|${gid}`];
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
   const fol=grpMembers(gid).filter(m=>(S.get(K.mFollow,{}))[m]).length, bms=S.get(K.bm,[]).length;
@@ -7512,7 +7520,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "pollVote": { const V=S.get(K.pollVotes,{}), p=getPosts().find(x=>x.id===t.dataset.id); if(!p||!p.poll||V[p.id]!=null) break; if(Date.now()>=p.poll.end){ toast("票選已經結束了"); break; } V[p.id]=+t.dataset.i; S.set(K.pollVotes,V); { const PL=S.get(K.posts,[]), q=PL.find(x=>x.id===p.id); if(q&&q.poll){ q.poll.base=q.poll.opts.map((o,i)=>((q.poll.base&&q.poll.base[i])||0)+(i===+t.dataset.i?1:0)); S.set(K.posts,PL); } } { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "fabClose": if(e.target===t||t.tagName==="BUTTON") closeFab(); break;
     case "aWrite": { const v=ART_W[t.dataset.v]?t.dataset.v:"all"; ui.composeVis=v; ui.composeText=""; ui.composeMedia=[]; ui.composePw=""; ui.composeColor=null; layer.innerHTML=""; navTo("#/artist/write?p="+v); window.scrollTo(0,0); break; }
-    case "ltAll": ui.ltAll=!!t.dataset.v; render(); break;   /* Letter 分頁預設「全部」（ui.ltAll 沒設過＝全部）；ME 裡預設「我的」 */
+    case "ltAll": ui.ltAll=!!t.dataset.v; render(); break;
+    case "ltArtAll": ui.ltArtAll=!!t.dataset.v; render(); break;   /* Letter 分頁預設「全部」（ui.ltAll 沒設過＝全部）；ME 裡預設「我的」 */
     case "aLtHeart": { const mid=session().member, A=S.get(K.fanLettersAll,[])||[], l=A.find(x=>x.id===t.dataset.v); if(!l||!mid) break; const h={...(l.heart||{})}; if(h[mid]) delete h[mid]; else h[mid]=Date.now(); l.heart=h; S.set(K.fanLettersAll,A); try{ const R=ltSeen(); R[l.id]=1; localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
     case "aLtRead": { const R=ltSeen(); R[t.dataset.v]=1; try{ localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
     case "cmLetterTo": openLetterTo(t.dataset.v); break;
@@ -9016,12 +9025,13 @@ function artCmList(mid){ const ps=new Set(getPosts().filter(p=>p.member===mid).m
     if(c.author==="artist"&&c.member===mid&&!own) L.push({fan:null,text:c.text,ts:c.ts,postId:c.postId,cid:c.id,id:c.id}); });   /* 團體：在其他團員貼文底下的留言也算 */
   return L; }
 const ymdhm=ts=>{ const d=new Date(ts), z=n=>String(n).padStart(2,"0"); return `${z(d.getMonth()+1)}. ${z(d.getDate())}. ${z(d.getHours())}:${z(d.getMinutes())}`; };
-function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"feed");
+function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"feed");
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);
   const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cmc" data-a="openPost" data-id="${x.postId}" data-c="${x.cid||""}"><span class="ap2-cl"></span>${x.fan?`<span class="ap2-cq"><b>${esc(shownName(x.fan))}${x.fan.author==="artist"?`<span class="ap2-vf">${I.verified}</span>`:""}</b><em>${esc(x.fan.text)}</em></span>`:""}<span class="ap2-ch"><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<div class="ux-empty"><span>💬</span><b>還沒有留言</b></div>`):false?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
     :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
+    :tab==="lt"&&own?ltTab(M.group)   /* 11/17 粉絲信放在藝人自己的主頁上（以前只在 ME 裡，太難找） */
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own,prof:true})).join(""):`<p class="me-none">還沒有貼文</p>`);   // 個人社群：點貼文任何地方進貼文、頭貼不再重進個人社群
   return `<header class="ap2-bar" id="apBar" style="--apbg:${p.cover?`url('${p.cover}')`:grad(M.g)}">${own?`<span class="ap2-bsp"></span>`:`<button class="ap2-ib" data-a="back" aria-label="返回">${I.back}</button>`}<span class="ap2-bt"><span class="ap2-bav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span></span><span class="ap2-bsp"></span></header>
@@ -9032,8 +9042,8 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
-  <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)]].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
-  <main class="page ap2-body">${tab!=="media"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
+  <nav class="ap2-tabs">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)],...(own?[["lt",ltNewN(mid)?`粉絲信 <i class="lt-dot" aria-label="${ltNewN(mid)} 封新信"></i>`:"粉絲信"]]:[])].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
+  <main class="page ap2-body">${tab!=="media"&&tab!=="lt"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
 function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0, d=h.getBoundingClientRect().bottom-(bb+b.offsetHeight);
   b.classList.toggle("on",d<=1);   /* 背景照片整個滑到標題列下面才換成小標題列（以前提早 90px，名字和「編輯個人檔案」會從底下透出來） */
   const c=h.querySelector(".ap2-c"); if(c){ const o=Math.max(0,Math.min(1,(d-10)/140)); c.style.opacity=o<1?o.toFixed(3):""; c.style.pointerEvents=o<.3?"none":""; } }

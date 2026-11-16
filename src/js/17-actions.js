@@ -316,7 +316,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "pollVote": { const V=S.get(K.pollVotes,{}), p=getPosts().find(x=>x.id===t.dataset.id); if(!p||!p.poll||V[p.id]!=null) break; if(Date.now()>=p.poll.end){ toast("票選已經結束了"); break; } V[p.id]=+t.dataset.i; S.set(K.pollVotes,V); { const PL=S.get(K.posts,[]), q=PL.find(x=>x.id===p.id); if(q&&q.poll){ q.poll.base=q.poll.opts.map((o,i)=>((q.poll.base&&q.poll.base[i])||0)+(i===+t.dataset.i?1:0)); S.set(K.posts,PL); } } { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "fabClose": if(e.target===t||t.tagName==="BUTTON") closeFab(); break;
     case "aWrite": { const v=ART_W[t.dataset.v]?t.dataset.v:"all"; ui.composeVis=v; ui.composeText=""; ui.composeMedia=[]; ui.composePw=""; ui.composeColor=null; layer.innerHTML=""; navTo("#/artist/write?p="+v); window.scrollTo(0,0); break; }
-    case "ltAll": ui.ltAll=!!t.dataset.v; render(); break;   /* Letter 分頁預設「全部」（ui.ltAll 沒設過＝全部）；ME 裡預設「我的」 */
+    case "ltAll": ui.ltAll=!!t.dataset.v; render(); break;
+    case "ltArtAll": ui.ltArtAll=!!t.dataset.v; render(); break;   /* Letter 分頁預設「全部」（ui.ltAll 沒設過＝全部）；ME 裡預設「我的」 */
     case "aLtHeart": { const mid=session().member, A=S.get(K.fanLettersAll,[])||[], l=A.find(x=>x.id===t.dataset.v); if(!l||!mid) break; const h={...(l.heart||{})}; if(h[mid]) delete h[mid]; else h[mid]=Date.now(); l.heart=h; S.set(K.fanLettersAll,A); try{ const R=ltSeen(); R[l.id]=1; localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
     case "aLtRead": { const R=ltSeen(); R[t.dataset.v]=1; try{ localStorage.setItem("hc_lt_seen",JSON.stringify(R)); }catch(e){} render(); break; }
     case "cmLetterTo": openLetterTo(t.dataset.v); break;
