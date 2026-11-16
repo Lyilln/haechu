@@ -25,6 +25,21 @@ var AN={
     else AN.run(app,{opacity:{from:0,to:1,duration:200,ease:"outQuad"}});
     if(!fixed&&(pa==="fade"||pa==="op")) AN.cascade(app);
   },
+  /* auto-animate（vendor/）：盒子裡原地加、刪、換一塊時，自動補上滑動、淡入淡出。
+     同一個盒子只掛一次；還沒載好或「減少動態效果」就不掛，畫面照常直接變 */
+  aa(el){ if(!el||!window.autoAnimate||!AN.ok()) return null; if(el.__aa) return el.__aa; try{ el.__aa=autoAnimate(el,{duration:280,easing:"cubic-bezier(.2,.85,.3,1)"}); }catch(e){ el.__aa=null; } return el.__aa; },
+  /* 只換字、不增減時（例如讚數 1→2）先暫停，不然會淡出淡入看起來像閃一下 */
+  still(el,fn){ const c=el&&el.__aa; if(c&&c.disable) c.disable(); try{ fn(); } finally{ if(c&&c.enable) requestAnimationFrame(()=>c.enable()); } },
+  /* 整塊重畫（例如留言面板）auto-animate 跟不到，用下面這組：
+     重畫前 AN.snap(盒子) 記下每一列 [data-k] 的位置，重畫後 AN.flip(新盒子, 記錄)：
+     原本就有的列從舊位置滑到新位置；新出現的列淡入浮上來。只動 transform／opacity，iPhone 7 也順 */
+  snap(box){ const m={}; if(box&&AN.ok()) box.querySelectorAll("[data-k]").forEach(e=>{ m[e.dataset.k]=e.getBoundingClientRect().top; }); return m; },
+  flip(box,m){ if(!box||!m||!AN.ok()) return; const mv=[], nw=[];
+    box.querySelectorAll("[data-k]").forEach(e=>{ const o=m[e.dataset.k]; if(o==null){ nw.push(e); return; } const dy=o-e.getBoundingClientRect().top; if(Math.abs(dy)>1&&Math.abs(dy)<innerHeight*1.5) mv.push([e,dy]); });
+    if(!Object.keys(m).length) return;   /* 第一次打開不做，交給原本的進場動畫 */
+    mv.forEach(([e,dy])=>AN.run(e,{y:{from:dy,to:0,ease:AN.sp(.12,420)}}));
+    if(nw.length) AN.run(nw,{y:{from:12,to:0,duration:300,ease:"outQuad"},opacity:{from:0,to:1,duration:240,ease:"outQuad"},delay:anime.stagger(30)});
+  },
   /* 換分頁：畫面裡看得到的區塊，一塊接一塊浮上來 */
   cascade(app){ let box=app.querySelector(":scope > main")||app.querySelector("main")||app;
     for(let k=0;k<3&&box.children.length===1;k++) box=box.children[0];
