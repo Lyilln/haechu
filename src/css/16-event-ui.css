@@ -404,4 +404,4 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sn-cdth{position:absolute;inset:0;display:grid;place-items:center;background:#15111c}.sn-cdth .cdx{pointer-events:none}
 .sn-albpick{display:flex;align-items:center;gap:10px;width:calc(100% - 28px);margin:10px 14px;padding:12px 14px;border:1px solid var(--l,#333);border-radius:14px;background:none;color:inherit;font:inherit;font-weight:700;text-align:left}.sn-albpick small{margin-left:auto;font-weight:500;opacity:.6}
 .sn-albl{display:flex;flex-direction:column;gap:6px;padding:6px 14px 14px}.sn-albl button{display:flex;align-items:center;gap:10px;padding:8px;border:0;border-radius:12px;background:rgba(127,127,127,.12);color:inherit;font:inherit;text-align:left}.sn-albl button .mu2-cv{width:44px;height:44px}
-.mu2-sht .cdx{margin:4px auto 10px}
+

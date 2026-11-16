@@ -529,7 +529,6 @@ function clickAdm(a,t,e,r){ switch(a){
     case "nwHide": { const id=t.dataset.v, H={...(S.get(K.newsHide,{})||{})}; if(H[id]) delete H[id]; else H[id]=1; S.set(K.newsHide,H); lsRerender(); toast(H[id]?"已撤下":"已恢復"); break; }
     case "meSec": ui.meSec=t.dataset.v; render(); window.scrollTo(0,0); break;
     case "meSecBack": ui.meSec=null; render(); window.scrollTo(0,0); break;
-    case "muOpen": case "muSheet": openSongSheet(t.dataset.v); break;
     case "goExplore": ui.feedTab="discover"; go("fan",null,"home"); window.scrollTo(0,0); break;
     case "coreLocked": toast("選秀暫未開啟，請隨時關注社群公告"); break;
     case "coreGo": ui.srch=null; if(t.dataset.v==="signed"){ navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break; } navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
@@ -573,8 +572,6 @@ function clickAdm(a,t,e,r){ switch(a){
       const L=S.get(K.vods,[]), gid=ui.vodG||GROUPS[0].id, cat=ui.vodNewCat||"MV"; L.push({id:uid("v"),gid,cat,title:ti,album:document.getElementById("vdAlbum").value,ts:Date.now(),views:0,dur:cat==="SHOW"?1200:cat==="BEHIND"?480:200,link:li}); S.set(K.vods,L); toast("已新增影片，記得上傳縮圖"); { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "vodDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); render(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
 
-    case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ hap([35,15,35]); }catch(err){}
-      const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
     case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
@@ -617,9 +614,9 @@ function clickAdm(a,t,e,r){ switch(a){
     
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
     case "muAlbum": { const g=groupOf(t.dataset.v); if(owns(g.id,"album")){ toast("你已經收藏這張專輯了 💿"); break; } ui.shopTab="merch"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
-    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ if(b.closest(".mu2-sh")) return; b.classList.toggle("on",on); b.innerHTML=b.classList.contains("yv-lk")?`${si("heart")}<span>${fmt(mvLikesV(t.dataset.v))}</span>`:`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
+    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ b.classList.toggle("on",on); b.innerHTML=b.classList.contains("yv-lk")?`${si("heart")}<span>${fmt(mvLikesV(t.dataset.v))}</span>`:`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
     case "mvLike": { const l=S.get(K.mvLike,{}), g=t.dataset.v; if(l[g]) delete l[g]; else l[g]=Date.now(); S.set(K.mvLike,l);
-      if(t.closest(".player,.yv-pw")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`${l[g]?"♥":"♡"} ${fmt(mvLikes(g))}`; } else if(t.closest(".mu2-sh")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`<span>${l[g]?"♥":"♡"}</span>MV ${fmt(mvLikes(g))}`; lsRerender(); } else lsRerender(); break; }
+      if(t.closest(".player,.yv-pw")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`${l[g]?"♥":"♡"} ${fmt(mvLikes(g))}`; } else lsRerender(); break; }
     case "muVote": openVote(t.dataset.v); break;
     case "muVoteGo": { if(t.disabled) break; if(String(t.dataset.v).startsWith("demo_")){ const sid=t.dataset.v, sh=t.dataset.s, k=myVoteKey(sh); ui.dmMine=ui.dmMine||{}; if(ui.dmMine[k]) break; ui.dmMine[k]=sid; ui.dmV=ui.dmV||{}; ui.dmV[sid]=(ui.dmV[sid]||0)+1; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1};   /* 示範：只記在這次打開 */
         const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } const so=songOf(sid); toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); break; }

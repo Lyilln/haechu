@@ -41,7 +41,7 @@ var AN={
         onComplete:()=>{ L.style.removeProperty("transform"); L.style.transition=""; L.classList.remove("mo-run"); } });
       return true; }catch(e){ L.style.transition=""; return false; } },
   /* 彈窗、底部選單 */
-  SH:".ios-sh,.mu2-sh,.pv-s,.sheet,.t-sheet,.cmx-sh",
+  SH:".ios-sh,.pv-s,.sheet,.t-sheet,.cmx-sh",
   AL:".ios-al,.pv-d,.t-modal",
   pop(n){ if(!AN.ok()||!n||n.nodeType!==1||n.closest(".static")) return;
     const sh=n.matches(AN.SH)?[n]:[...n.querySelectorAll(AN.SH)], al=n.matches(AN.AL)?[n]:[...n.querySelectorAll(AN.AL)];
@@ -73,7 +73,7 @@ const hap=(()=>{ let lb=null; return (ms=10)=>{ try{ if(navigator.vibrate&&!/iP(
   lb.click(); }catch(e){} }; })();
 /* 按壓回饋：按下縮一點，放開彈回來（用 CSS 的 scale，不會蓋掉元素原本的 transform） */
 (function(){
-  const PR="button,.btn,a[href],[data-a]", NO="input,textarea,select,label,[contenteditable],.no-press,.mr,.t-msgs,.ab-w,.gc-rit,.concert,.crp,canvas,.sn-reel1,.pm-car,.gal2,.ios-w,.scrim,.t-modal-w,.t-sheet-w,.mu2-shw,.fg-w,.t-drawer-w>.t-drawer,.nav-lens";
+  const PR="button,.btn,a[href],[data-a]", NO="input,textarea,select,label,[contenteditable],.no-press,.mr,.t-msgs,.ab-w,.gc-rit,.concert,.crp,canvas,.sn-reel1,.pm-car,.gal2,.ios-w,.scrim,.t-modal-w,.t-sheet-w,.fg-w,.t-drawer-w>.t-drawer,.nav-lens";
   let cur=null;
   const up=()=>{ const t=cur; cur=null; if(!t) return; try{ anime.animate(t,{"--mp":{to:1,ease:AN.sp(.55,380)},onComplete:()=>{ if(cur!==t){ t.classList.remove("mo-p"); t.style.removeProperty("--mp"); } }}); }catch(e){ t.classList.remove("mo-p"); t.style.removeProperty("--mp"); } };
   document.addEventListener("pointerdown",e=>{ if(!AN.ok()||e.button>0) return; const t=e.target.closest&&e.target.closest(PR); if(!t||t.closest(NO)||t.disabled) return;
@@ -7030,14 +7030,14 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
 
 
 /* ===== 底部選單：背景不跟著動；按住上方（灰色短線）往下拉可以關掉 ===== */
-(function sheetDrag(){ const SH=".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh"; let d=null;
-  document.addEventListener("touchmove",e=>{ const w=e.target.closest(".mu2-shw,.t-sheet-w,.scrim,.ios-w,.cmx-shw,.cmx-fabw,.t-modal-w,.fg-w,.t-drawer-w"); if(!w) return; const sc=e.target.closest(".mu2-sh,.t-sheet,.sheet,.t-modal,.ios-sh,.cmx-sh,.t-drawer");
+(function sheetDrag(){ const SH=".t-sheet,.sheet,.ios-sh,.cmx-sh"; let d=null;
+  document.addEventListener("touchmove",e=>{ const w=e.target.closest(".t-sheet-w,.scrim,.ios-w,.cmx-shw,.cmx-fabw,.t-modal-w,.fg-w,.t-drawer-w"); if(!w) return; const sc=e.target.closest(".t-sheet,.sheet,.t-modal,.ios-sh,.cmx-sh,.t-drawer");
     if(!sc||(sc.scrollHeight<=sc.clientHeight+1&&!d)) { if(e.cancelable) e.preventDefault(); } },{passive:false});
   document.addEventListener("touchstart",e=>{ const sh=e.target.closest(SH); if(!sh) return; const handle=e.target.closest(".grab,.mu2-grab"); if(!handle&&sh.scrollTop>0) return; const t=e.touches[0]; d={sh,y0:t.clientY,t:performance.now(),dy:0,h:!!handle}; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!d) return; const dy=e.touches[0].clientY-d.y0; if(dy<0&&!d.on){ d=null; return; } if(!d.on&&dy<6) return; d.on=true; d.dy=Math.max(0,dy); d.sh.style.transition="none"; d.sh.style.transform=`translateY(${d.dy}px)`; if(e.cancelable) e.preventDefault(); },{passive:false});
   document.addEventListener("touchend",()=>{ if(!d) return; const x=d; d=null; if(!x.on) return; const v=x.dy/Math.max(1,performance.now()-x.t), close=x.dy>x.sh.offsetHeight*.3||v>.6&&x.dy>40;
     x.sh.style.transition="transform .25s cubic-bezier(.2,.8,.3,1)"; x.sh.style.transform=close?"translateY(110%)":"";
-    if(close){ const w=x.sh.closest(".scrim,.t-sheet-w,.mu2-shw,.ios-w,.cmx-shw"); if(w){ w.style.transition="background-color .25s,backdrop-filter .25s"; w.style.backgroundColor="transparent"; w.style.backdropFilter="none"; } }
+    if(close){ const w=x.sh.closest(".scrim,.t-sheet-w,.ios-w,.cmx-shw"); if(w){ w.style.transition="background-color .25s,backdrop-filter .25s"; w.style.backgroundColor="transparent"; w.style.backdropFilter="none"; } }
     if(close) setTimeout(()=>{ ui.sheet=null; layer.innerHTML=""; if(x.sh.classList.contains("sheet")) render(); },230); },{passive:true});
 })();
 
@@ -7064,7 +7064,7 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
   document.addEventListener("touchstart",e=>{ if(!st) document.querySelectorAll(".sb-under").forEach(u=>u.remove());   // 上一次手勢留下的「上一頁」殘影清掉
     if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; const edge=t.clientX<30; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）；瀏覽器的紀錄只有一筆，系統的滑動不會再搶（11/11）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
-    if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
+    if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
     st={x:t.clientX,y:t.clientY,t:performance.now(),dx:0,on:false,edge}; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!st) return; const t=e.touches[0], dx=t.clientX-st.x, dy=t.clientY-st.y;
@@ -7670,7 +7670,6 @@ function clickAdm(a,t,e,r){ switch(a){
     case "nwHide": { const id=t.dataset.v, H={...(S.get(K.newsHide,{})||{})}; if(H[id]) delete H[id]; else H[id]=1; S.set(K.newsHide,H); lsRerender(); toast(H[id]?"已撤下":"已恢復"); break; }
     case "meSec": ui.meSec=t.dataset.v; render(); window.scrollTo(0,0); break;
     case "meSecBack": ui.meSec=null; render(); window.scrollTo(0,0); break;
-    case "muOpen": case "muSheet": openSongSheet(t.dataset.v); break;
     case "goExplore": ui.feedTab="discover"; go("fan",null,"home"); window.scrollTo(0,0); break;
     case "coreLocked": toast("選秀暫未開啟，請隨時關注社群公告"); break;
     case "coreGo": ui.srch=null; if(t.dataset.v==="signed"){ navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break; } navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
@@ -7714,8 +7713,6 @@ function clickAdm(a,t,e,r){ switch(a){
       const L=S.get(K.vods,[]), gid=ui.vodG||GROUPS[0].id, cat=ui.vodNewCat||"MV"; L.push({id:uid("v"),gid,cat,title:ti,album:document.getElementById("vdAlbum").value,ts:Date.now(),views:0,dur:cat==="SHOW"?1200:cat==="BEHIND"?480:200,link:li}); S.set(K.vods,L); toast("已新增影片，記得上傳縮圖"); { const y=window.scrollY; render(); window.scrollTo(0,y); } break; }
     case "vodDel": { const id=t.dataset.v; ask("要刪除這部影片嗎？",()=>{ S.set(K.vods,S.get(K.vods,[]).filter(v=>v.id!==id)); render(); toast("已刪除"); },{title:"刪除影片",ok:"刪除"}); break; }
 
-    case "promoPick": { const was=S.get(K.pick,null); S.set(K.pick,t.dataset.v); try{ hap([35,15,35]); }catch(err){}
-      const r0=t.getBoundingClientRect(); const sid=t.dataset.s; if(sid&&layer.querySelector(".mu2-sh")){ lsRerender(); openSongSheet(sid); } else render(); if(was!==t.dataset.v) confetti(r0.left+r0.width/2,r0.top+r0.height/2); break; }
     case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
@@ -7758,9 +7755,9 @@ function clickAdm(a,t,e,r){ switch(a){
     
     case "muSongDel": { const sg=songOf(t.dataset.v); if(!sg) break; ask(`${songName(sg)} 要結束打歌嗎？過去的一位紀錄會保留在積分裡。`,()=>{ const ms=getMShow(); ms.ended=[...(ms.ended||[]),sg]; ms.songs=ms.songs.filter(x=>x.id!==sg.id); S.set(K.mshow,ms); lsRerender(); toast("已結束打歌"); },{ok:"結束打歌"}); break; }
     case "muAlbum": { const g=groupOf(t.dataset.v); if(owns(g.id,"album")){ toast("你已經收藏這張專輯了 💿"); break; } ui.shopTab="merch"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
-    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); if(t.closest(".mu2-sh")){ const s=songOf(t.dataset.s); if(s) openSongSheet(s.id); lsRerender(); } else document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ if(b.closest(".mu2-sh")) return; b.classList.toggle("on",on); b.innerHTML=b.classList.contains("yv-lk")?`${si("heart")}<span>${fmt(mvLikesV(t.dataset.v))}</span>`:`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
+    case "mvLikeV": { const on=mvLikeToggle(t.dataset.v); document.querySelectorAll(`[data-a="mvLikeV"][data-v="${t.dataset.v}"]`).forEach(b=>{ b.classList.toggle("on",on); b.innerHTML=b.classList.contains("yv-lk")?`${si("heart")}<span>${fmt(mvLikesV(t.dataset.v))}</span>`:`${on?"♥":"♡"} ${fmt(mvLikesV(t.dataset.v))}`; }); break; }
     case "mvLike": { const l=S.get(K.mvLike,{}), g=t.dataset.v; if(l[g]) delete l[g]; else l[g]=Date.now(); S.set(K.mvLike,l);
-      if(t.closest(".player,.yv-pw")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`${l[g]?"♥":"♡"} ${fmt(mvLikes(g))}`; } else if(t.closest(".mu2-sh")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`<span>${l[g]?"♥":"♡"}</span>MV ${fmt(mvLikes(g))}`; lsRerender(); } else lsRerender(); break; }
+      if(t.closest(".player,.yv-pw")){ t.classList.toggle("on",!!l[g]); t.innerHTML=`${l[g]?"♥":"♡"} ${fmt(mvLikes(g))}`; } else lsRerender(); break; }
     case "muVote": openVote(t.dataset.v); break;
     case "muVoteGo": { if(t.disabled) break; if(String(t.dataset.v).startsWith("demo_")){ const sid=t.dataset.v, sh=t.dataset.s, k=myVoteKey(sh); ui.dmMine=ui.dmMine||{}; if(ui.dmMine[k]) break; ui.dmMine[k]=sid; ui.dmV=ui.dmV||{}; ui.dmV[sid]=(ui.dmV[sid]||0)+1; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1};   /* 示範：只記在這次打開 */
         const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } const so=songOf(sid); toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); break; }
@@ -9148,7 +9145,7 @@ const TOUR_LBL={ops:"營運",artist:"藝人",home:"LOVE",live:"直播",whisper:"
 /* 11/11 改：一個分頁裡的東西全部教完才換下一個。
    有入口的地方（例如 FEST 的每一格）：先指那一格 → 馬上進去教那一頁 → 回來指下一格（照畫面上的順序，不會跳來跳去） */
 const TOUR_SUB={
-  fan:{ "fan:core":{promo:{open:"muOpen",key:"fan:core:promo",lbl:"打歌"},cards:{hash:"#/fan/core?p=cards",key:"fan:core:cards",lbl:"卡冊"},sns:{hash:"#/fan/sns",key:"fan:sns",lbl:"SNS"},news:{hash:"#/fan/core?p=news",key:"fan:core:news",lbl:"新聞"},wiki:{hash:"#/fan/core?p=wiki",key:"fan:core:wiki",lbl:"SKpedia"},fsl:{hash:"#/fan/core?p=fsl",key:"fan:core:fsl",lbl:"簽售"},truck:{hash:"#/fan/core?p=truck",key:"fan:core:truck",lbl:"應援餐車"},concert:{hash:"#/fan/core?p=concert",key:"fan:core:concert",lbl:"演唱會"},tour:{hash:"#/fan/core?p=tour",key:"fan:core:tour",lbl:"世巡"}} },
+  fan:{ "fan:core":{promo:{hash:"#/fan/core?p=promo",key:"fan:core:promo",lbl:"打歌"},cards:{hash:"#/fan/core?p=cards",key:"fan:core:cards",lbl:"卡冊"},sns:{hash:"#/fan/sns",key:"fan:sns",lbl:"SNS"},news:{hash:"#/fan/core?p=news",key:"fan:core:news",lbl:"新聞"},wiki:{hash:"#/fan/core?p=wiki",key:"fan:core:wiki",lbl:"SKpedia"},fsl:{hash:"#/fan/core?p=fsl",key:"fan:core:fsl",lbl:"簽售"},truck:{hash:"#/fan/core?p=truck",key:"fan:core:truck",lbl:"應援餐車"},concert:{hash:"#/fan/core?p=concert",key:"fan:core:concert",lbl:"演唱會"},tour:{hash:"#/fan/core?p=tour",key:"fan:core:tour",lbl:"世巡"}} },
   artist:{ "artist:foc":{sns:{hash:"#/artist/sns",key:"artist:sns",lbl:"SNS"},news:{hash:"#/artist?tab=foc&p=news",key:"artist:foc:news",lbl:"新聞"},sign:{hash:"#/artist?tab=foc&p=sign",key:"artist:foc:sign",lbl:"簽售"},truck:{hash:"#/artist?tab=foc&p=truck",key:"artist:foc:truck",lbl:"應援餐車"},concert:{hash:"#/artist?tab=foc&p=concert",key:"artist:foc:concert",lbl:"演唱會"},tour:{hash:"#/artist?tab=foc&p=tour",key:"artist:foc:tour",lbl:"世巡"}} },
   admin:{ "admin:artist":{"#/admin?tab=roster":{hash:"#/admin?tab=roster",key:"admin:roster",lbl:"藝人與團"},"#/admin?tab=roster&p=new":{hash:"#/admin?tab=roster&p=new",key:"admin:rosternew",lbl:"新增藝人"}},
     "admin:ops":{"#/admin?tab=accounts":{hash:"#/admin?tab=accounts",key:"admin:accounts",lbl:"帳號"},"#/admin?tab=ptadd":{hash:"#/admin?tab=ptadd",key:"admin:ptadd",lbl:"加積分"},"#/admin?tab=banned":{hash:"#/admin?tab=banned",key:"admin:banned",lbl:"禁用字詞"}} } };
@@ -10929,7 +10926,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snMiNo": break;
     case "snMiX": snMiClose(true); break;
     case "snMiGo": { const o=SN_MUSK[t.dataset.k]; snMiClose(false); if(!o) break; const m=o.m;
-      if(m.src==="app"&&m.sid&&songOf(m.sid)){ clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; snMusStop(); layer.innerHTML=""; } openSongSheet(m.sid); break; }
+      if(m.src==="app"&&m.sid&&songOf(m.sid)){ clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; snMusStop(); layer.innerHTML=""; } navTo(session().role==="artist"?"#/artist?tab=foc":"#/fan/core?p=promo"); window.scrollTo(0,0); break; }   /* App 的歌 → 打歌頁 */
       const uid=m.src==="orig"&&m.uid?m.uid:o.who; if(uid){ const b=document.createElement("button"); b.dataset.a="snsGo"; b.dataset.v="profile"; b.dataset.id=uid; b.hidden=true; document.body.appendChild(b); b.click(); b.remove(); } else snMiClose(true); break; }
     case "snMiRep": { const k=t.dataset.k, o=SN_MUSK[k]; snMiClose(false); if(!o) break; const isS=k.startsWith("s:"), id=k.slice(2), u=snUser(o.who)||{};
       ask(`檢舉這則${isS?"限時動態":"貼文"}使用的音樂？管理員會審核。`,()=>{ reportItem("sns",{wid:id,text:"音樂："+snMusLabel(o.m),name:u.u||"",who:o.who}); toast("已送出檢舉"); },{title:"檢舉音樂",ok:"檢舉"});
@@ -13631,14 +13628,6 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
 function muThrones(){ const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=L[0], g=s&&groupOf(s.gid); return `<div class="mu3-th ${s?"on":""}"><span class="mu3-thi">${MU_IC[ic]}</span><b>${l}</b>${s?`<span class="mu3-thw"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><i>${esc(g?g.name:"")}</i><small>《${esc(s.title)}》</small></span></span>`:`<small class="mu3-empty">虛位以待</small>`}</div>`; };
   return `<div class="mu3-thr">${thr("five","五台冠軍","five")}${thr("ak","AK","ak")}${thr("pak","PAK","pak")}</div>`; }
 const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${win?"win":""}"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span>${win?`<span class="mu3-cup">${MU_IC.cup}</span>`:""}</span>`; };
-/* 點歌：應援選單（買專輯、這首歌的 MV 愛心、My Pick） */
-function openSongSheet(sid){ const s=songOf(sid); if(!s) return; const g=groupOf(s.gid), st=s.demo?{wins:[],five:0,aks:[],pak:0,crowns:[]}:songStats(s.id), wk=curWeek(), pick=S.get(K.pick,null), wkWins=st.wins.filter(x=>x.wk===wk).length, mv=songMv(s), own=owns(s.gid,"album");
-  setLayer(`<div class="mu2-shw" data-a="tCloseLayer"><div class="mu2-sh" role="dialog" aria-label="應援"><span class="mu2-grab"></span>
-    ${cdBox(s.gid,s.title)}<div class="mu2-sht"><div><b>《${esc(s.title)}》</b><small>${esc(g?g.name:"")}${s.rtype?"・"+esc(s.rtype):""}</small></div></div>
-    <div class="mu-tags">${wkWins?`<em class="w">本週 ${wkWins} 冠</em>`:""}${st.wins.length?`<em>一位 ×${st.wins.length}</em>`:`<em>衝刺第一個一位</em>`}${st.five?`<em class="g">五台冠軍</em>`:""}${st.aks.length?`<em class="g">AK${st.aks.length>1?" ×"+st.aks.length:""}</em>`:""}${st.pak?`<em class="g">PAK</em>`:""}${st.crowns.map(c=>`<em class="c">${SHOWS.find(x=>x.id===c).name} 三冠王</em>`).join("")}</div>
-    <div class="mu2-act two"><button data-a="muAlbum" data-v="${s.gid}" class="${own?"done":""}" ${own?"disabled":""}><span>💿</span>${own?"已收藏":"買專輯"}</button>
-      ${mv?`<button data-a="mvLikeV" data-v="${mv.id}" data-s="${s.id}" class="${mvLikedV(mv.id)?"on":""}"><span>${mvLikedV(mv.id)?"♥":"♡"}</span>MV ${fmt(mvLikesV(mv.id))}</button>`:`<button class="done" disabled><span>♡</span>還沒有 MV</button>`}</div>
-    <button class="mu2-pick ${pick===s.gid?"on":""}" data-a="promoPick" data-v="${s.gid}" data-s="${s.id}">${pick===s.gid?"💜 這是我的 My Pick":"設為 My Pick"}</button></div></div>`,"musheet"); }
 /* 規則：三張卡滑著看 */
 function muRules(){ const wk0=curWeek(), d0=new Date(); d0.setDate(1); const W=[]; let k=weekKey(d0.getTime()); for(let i=0;i<6;i++){ const ms=wkDate(k); if(ms.getMonth()!==d0.getMonth()&&i>0&&monthKey(ms.getTime()+3*864e5)!==monthKey(d0.getTime())) break; W.push(k); k=shiftWeek(k,1); }
   const WS=W.filter(x=>monthKey(wkDate(x).getTime()+3*864e5)===monthKey(Date.now())), band=WS.map(x=>{ const t=weekType(x); return `<span class="t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"} ${x===wk0?"now":""}">${t.slice(0,2)}</span>`; }).join(""), here=WS.map(x=>`<span>${x===wk0?"▲ 你在這裡":""}</span>`).join("");

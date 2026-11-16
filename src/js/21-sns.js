@@ -669,7 +669,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snMiNo": break;
     case "snMiX": snMiClose(true); break;
     case "snMiGo": { const o=SN_MUSK[t.dataset.k]; snMiClose(false); if(!o) break; const m=o.m;
-      if(m.src==="app"&&m.sid&&songOf(m.sid)){ clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; snMusStop(); layer.innerHTML=""; } openSongSheet(m.sid); break; }
+      if(m.src==="app"&&m.sid&&songOf(m.sid)){ clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; snMusStop(); layer.innerHTML=""; } navTo(session().role==="artist"?"#/artist?tab=foc":"#/fan/core?p=promo"); window.scrollTo(0,0); break; }   /* App 的歌 → 打歌頁 */
       const uid=m.src==="orig"&&m.uid?m.uid:o.who; if(uid){ const b=document.createElement("button"); b.dataset.a="snsGo"; b.dataset.v="profile"; b.dataset.id=uid; b.hidden=true; document.body.appendChild(b); b.click(); b.remove(); } else snMiClose(true); break; }
     case "snMiRep": { const k=t.dataset.k, o=SN_MUSK[k]; snMiClose(false); if(!o) break; const isS=k.startsWith("s:"), id=k.slice(2), u=snUser(o.who)||{};
       ask(`檢舉這則${isS?"限時動態":"貼文"}使用的音樂？管理員會審核。`,()=>{ reportItem("sns",{wid:id,text:"音樂："+snMusLabel(o.m),name:u.u||"",who:o.who}); toast("已送出檢舉"); },{title:"檢舉音樂",ok:"檢舉"});

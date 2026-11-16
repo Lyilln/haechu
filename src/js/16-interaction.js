@@ -228,14 +228,14 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
 
 
 /* ===== 底部選單：背景不跟著動；按住上方（灰色短線）往下拉可以關掉 ===== */
-(function sheetDrag(){ const SH=".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh"; let d=null;
-  document.addEventListener("touchmove",e=>{ const w=e.target.closest(".mu2-shw,.t-sheet-w,.scrim,.ios-w,.cmx-shw,.cmx-fabw,.t-modal-w,.fg-w,.t-drawer-w"); if(!w) return; const sc=e.target.closest(".mu2-sh,.t-sheet,.sheet,.t-modal,.ios-sh,.cmx-sh,.t-drawer");
+(function sheetDrag(){ const SH=".t-sheet,.sheet,.ios-sh,.cmx-sh"; let d=null;
+  document.addEventListener("touchmove",e=>{ const w=e.target.closest(".t-sheet-w,.scrim,.ios-w,.cmx-shw,.cmx-fabw,.t-modal-w,.fg-w,.t-drawer-w"); if(!w) return; const sc=e.target.closest(".t-sheet,.sheet,.t-modal,.ios-sh,.cmx-sh,.t-drawer");
     if(!sc||(sc.scrollHeight<=sc.clientHeight+1&&!d)) { if(e.cancelable) e.preventDefault(); } },{passive:false});
   document.addEventListener("touchstart",e=>{ const sh=e.target.closest(SH); if(!sh) return; const handle=e.target.closest(".grab,.mu2-grab"); if(!handle&&sh.scrollTop>0) return; const t=e.touches[0]; d={sh,y0:t.clientY,t:performance.now(),dy:0,h:!!handle}; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!d) return; const dy=e.touches[0].clientY-d.y0; if(dy<0&&!d.on){ d=null; return; } if(!d.on&&dy<6) return; d.on=true; d.dy=Math.max(0,dy); d.sh.style.transition="none"; d.sh.style.transform=`translateY(${d.dy}px)`; if(e.cancelable) e.preventDefault(); },{passive:false});
   document.addEventListener("touchend",()=>{ if(!d) return; const x=d; d=null; if(!x.on) return; const v=x.dy/Math.max(1,performance.now()-x.t), close=x.dy>x.sh.offsetHeight*.3||v>.6&&x.dy>40;
     x.sh.style.transition="transform .25s cubic-bezier(.2,.8,.3,1)"; x.sh.style.transform=close?"translateY(110%)":"";
-    if(close){ const w=x.sh.closest(".scrim,.t-sheet-w,.mu2-shw,.ios-w,.cmx-shw"); if(w){ w.style.transition="background-color .25s,backdrop-filter .25s"; w.style.backgroundColor="transparent"; w.style.backdropFilter="none"; } }
+    if(close){ const w=x.sh.closest(".scrim,.t-sheet-w,.ios-w,.cmx-shw"); if(w){ w.style.transition="background-color .25s,backdrop-filter .25s"; w.style.backgroundColor="transparent"; w.style.backdropFilter="none"; } }
     if(close) setTimeout(()=>{ ui.sheet=null; layer.innerHTML=""; if(x.sh.classList.contains("sheet")) render(); },230); },{passive:true});
 })();
 
@@ -262,7 +262,7 @@ window.addEventListener("storage",render); // 同一台裝置開兩個分頁時�
   document.addEventListener("touchstart",e=>{ if(!st) document.querySelectorAll(".sb-under").forEach(u=>u.remove());   // 上一次手勢留下的「上一頁」殘影清掉
     if(e.touches.length!==1||e.target.closest(".crp,.tph")){ st=null; return; } const t=e.touches[0]; const edge=t.clientX<30; if(!edge){ st=null; return; }   // 只有從最左邊邊緣往右滑才返回（畫面中間滑不算）；瀏覽器的紀錄只有一筆，系統的滑動不會再搶（11/11）
     if(!edge&&e.target.closest(".t-page,.t-msgs,[data-sw]")) { st=null; return; }
-    if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".mu2-sh,.t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
+    if(!edge&&hScrollable(e.target)) { st=null; return; } if(e.target.closest(".t-sheet,.sheet,.ios-sh,.cmx-sh,.ab-w,.cele,.gal2,.pm-car")){ st=null; return; }
     if(!edge&&e.target.closest(".seg2-pane")){ const sg=document.querySelector(".seg2"); if(sg&&!sg.querySelector("button").classList.contains("on")){ st=null; return; } }
     st={x:t.clientX,y:t.clientY,t:performance.now(),dx:0,on:false,edge}; },{passive:true});
   document.addEventListener("touchmove",e=>{ if(!st) return; const t=e.touches[0], dx=t.clientX-st.x, dy=t.clientY-st.y;

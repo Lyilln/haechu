@@ -41,7 +41,7 @@ var AN={
         onComplete:()=>{ L.style.removeProperty("transform"); L.style.transition=""; L.classList.remove("mo-run"); } });
       return true; }catch(e){ L.style.transition=""; return false; } },
   /* 彈窗、底部選單 */
-  SH:".ios-sh,.mu2-sh,.pv-s,.sheet,.t-sheet,.cmx-sh",
+  SH:".ios-sh,.pv-s,.sheet,.t-sheet,.cmx-sh",
   AL:".ios-al,.pv-d,.t-modal",
   pop(n){ if(!AN.ok()||!n||n.nodeType!==1||n.closest(".static")) return;
     const sh=n.matches(AN.SH)?[n]:[...n.querySelectorAll(AN.SH)], al=n.matches(AN.AL)?[n]:[...n.querySelectorAll(AN.AL)];
@@ -73,7 +73,7 @@ const hap=(()=>{ let lb=null; return (ms=10)=>{ try{ if(navigator.vibrate&&!/iP(
   lb.click(); }catch(e){} }; })();
 /* 按壓回饋：按下縮一點，放開彈回來（用 CSS 的 scale，不會蓋掉元素原本的 transform） */
 (function(){
-  const PR="button,.btn,a[href],[data-a]", NO="input,textarea,select,label,[contenteditable],.no-press,.mr,.t-msgs,.ab-w,.gc-rit,.concert,.crp,canvas,.sn-reel1,.pm-car,.gal2,.ios-w,.scrim,.t-modal-w,.t-sheet-w,.mu2-shw,.fg-w,.t-drawer-w>.t-drawer,.nav-lens";
+  const PR="button,.btn,a[href],[data-a]", NO="input,textarea,select,label,[contenteditable],.no-press,.mr,.t-msgs,.ab-w,.gc-rit,.concert,.crp,canvas,.sn-reel1,.pm-car,.gal2,.ios-w,.scrim,.t-modal-w,.t-sheet-w,.fg-w,.t-drawer-w>.t-drawer,.nav-lens";
   let cur=null;
   const up=()=>{ const t=cur; cur=null; if(!t) return; try{ anime.animate(t,{"--mp":{to:1,ease:AN.sp(.55,380)},onComplete:()=>{ if(cur!==t){ t.classList.remove("mo-p"); t.style.removeProperty("--mp"); } }}); }catch(e){ t.classList.remove("mo-p"); t.style.removeProperty("--mp"); } };
   document.addEventListener("pointerdown",e=>{ if(!AN.ok()||e.button>0) return; const t=e.target.closest&&e.target.closest(PR); if(!t||t.closest(NO)||t.disabled) return;
