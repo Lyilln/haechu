@@ -685,7 +685,7 @@ function hrKeep(){ const o=ui.hr; if(!o) return; const v=id=>{ const e=document.
   if(ef!=null){ const t=ymdTs(ef); if(t&&t!==o.eff){ o.eff=t; } } if(ti!=null&&bd!=null&&(ti!==o.title||bd!==o.body)){ o.title=ti; o.body=bd; o.edited=true; } }
 /* 真的執行 */
 function hrRemoveMember(mid,now){ const m=MEMBERS[mid]; if(!m) return; const D=S.get(HR_DEP,{})||{}; D["m:"+mid]={ts:now,name:m.name,gid:m.group}; S.set(HR_DEP,D);
-  const P=S.get(K.posts,[])||[], gone=new Set(P.filter(p=>p.member===mid).map(p=>p.id)); if(gone.size){ S.set(K.posts,P.filter(p=>!gone.has(p.id))); S.set(K.comments,(S.get(K.comments,[])||[]).filter(c=>!gone.has(c.postId))); }
+  const P=S.get(K.posts,[])||[], gone=new Set(P.filter(p=>p.member===mid).map(p=>p.id)); if(gone.size){ postsDel(p=>gone.has(p.id),"成員離開"); S.set(K.comments,(S.get(K.comments,[])||[]).filter(c=>!gone.has(c.postId))); }
   Object.keys(ACCOUNTS).filter(e=>(ACCOUNTS[e]||{}).member===mid).forEach(e=>unbindArtist(e));
   saveRoster(r=>{ delete r.members[mid]; }); delete MEMBERS[mid]; }
 function hrDisband(gid,now){ const g=groupOf(gid); if(!g) return; hrMembers(gid).forEach(m=>hrRemoveMember(m,now)); const D=S.get(HR_DEP,{})||{}; D["g:"+gid]={ts:now,name:g.name}; S.set(HR_DEP,D);

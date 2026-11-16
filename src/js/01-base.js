@@ -113,9 +113,12 @@ function uniPtMerge(){ try{ const s=SS.get(); if(!s||!s.email||(s.admin&&!s.uni)
   const id="ufm_"+String(s.email).toLowerCase(), L=S.get(K.ptGrants,[])||[]; if(L.some(g=>g.id===id)) return true;
   L.push({id,to:"art:"+m,mid:m,n,art:1,why:"粉絲身分的積分併入",by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); return true; }catch(e){ return false; } }
 { const t0=Date.now(), iv=setInterval(()=>{ if(uniPtMerge()||Date.now()-t0>30*60e3) clearInterval(iv); },5000); }
+/* 藝人動態刪除：留記號（誰刪的、什麼時候），雲端才知道是真的刪掉，而不是哪支手機的舊資料少了一則 */
+function postsDel(pred,by){ try{ const raw=store.get(K.posts,undefined)||mem[K.posts]||[], now=Date.now(); let n=0; const out=(Array.isArray(raw)?raw:[]).map(p=>{ if(p&&!p.del&&pred(p)){ n++; return {id:p.id,member:p.member,group:p.group,ts:0,ots:p.ts,text:p.text,del:now,by:by||""}; } return p; }); if(n) S.set(K.posts,out); return n; }catch(e){ return 0; } }
 const S = {
-  get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); if(k===K.points){ const m=uniArt(); if(m) return Math.max(0,((typeof pointsOf==="function"&&pointsOf(m))||{}).net||0); } k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
+  get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); if(k===K.points){ const m=uniArt(); if(m) return Math.max(0,((typeof pointsOf==="function"&&pointsOf(m))||{}).net||0); } k=pk(k);const v=store.get(k,undefined);const r=v===undefined?(k in mem?mem[k]:fb):v; return k==="daisuki_posts"&&Array.isArray(r)?r.filter(x=>!(x&&x.del)):r},   /* 藝人動態：刪除記號畫面上當作沒有 */
   set(k,v){ if(k===K.whispers&&tie2On()){ tieAllSet(v); return; }
+    if(k===K.posts&&Array.isArray(v)){ try{ const raw=store.get(k,undefined)||mem[k]||[], ids=new Set(v.map(x=>x&&x.id)); v=[...v,...(Array.isArray(raw)?raw:[]).filter(x=>x&&x.del&&!ids.has(x.id))]; }catch(e){} }   /* 存的時候把刪除記號留著（不然別支手機的舊資料會讓刪掉的又跑回來） */
     if(k===K.points){ const m=uniArt(); if(m){ const d=Math.round((+v||0)-S.get(K.points,0)); if(d){ const L=S.get(K.ptGrants,[])||[]; L.push({id:"uf_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),to:"art:"+m,mid:m,n:d,art:1,why:d<0?"粉絲身分使用":"粉絲身分獲得",by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); } return; } } try{ if(typeof kvImgSoon==="function") kvImgSoon(k); }catch(e){} k=pk(k);mem[k]=v;store.set(k,v);hbMark(k)},
   del(k){k=pk(k);delete mem[k];store.del(k);hbMark(k)}
 };

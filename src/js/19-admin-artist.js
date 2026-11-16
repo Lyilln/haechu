@@ -418,7 +418,7 @@ function tourDemoOn(ro){ ui.tourDemo=ro||1; try{ const now=Date.now();
 function tourDemoOff(){ ui.tourDemo=null; try{ const T=x=>String(x&&x.id||"").startsWith("tdm_");
   const L=getLives(); if(L.some(T)) S.set(K.lives,L.filter(l=>!T(l)));
   const R=S.get(K.reports,[]); if(R.some(T)) S.set(K.reports,R.filter(r=>!T(r)));
-  const P=S.get(K.posts,[]); if(P.some(T)) S.set(K.posts,P.filter(p=>!T(p)));
+  const P=S.get(K.posts,[]); if(P.some(T)) postsDel(T,"教學示範");
   const Wh=S.get(K.whispers,[]); if(Wh.some(T)) S.set(K.whispers,Wh.filter(w=>!T(w)));
   const A=subs(); if(A.tdm_m){ delete A.tdm_m; S.set(K.tieSubs,A); }
   const F=followed(); if(F.includes("tdm_g")) S.set(K.fanArtists,F.filter(x=>x!=="tdm_g"));

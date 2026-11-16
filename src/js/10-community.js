@@ -481,7 +481,7 @@ function openSettings(){
     ${row("comment","留言回覆","藝人回覆你的留言時")}
     ${row("whisper",WHISPER_NAME+" 訊息","你訂閱的成員傳 "+WHISPER_NAME+" 訊息時")}
     ${row("live","直播開始","追蹤的藝人開播時")}
-    ${row("event","新活動","追蹤的藝人公布 Party、Spot 活動時")}
+    ${row("event","新活動","追蹤的藝人公布演唱會、簽售、見面會等活動時")}
     <button class="btn btn-soft btn-block" style="margin-top:14px" data-a="closeLayer">完成</button>
   </div></div>`,"nset");
 }

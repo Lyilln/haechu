@@ -47,7 +47,7 @@ function snLockOf(mid){ const d=snDebutOf(mid); if(!d||!d.ts) return null; const
 function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEMBERS[s.member]) return; const em=String(s.email||"").toLowerCase(), a=ACCOUNTS[em]||{}; if(a.role==="admin") return; const done=S.get(K.snRetired,{})||{}; if(done[em]) return;
     const d=snDB(), uid="u:"+em, pr=d.prof[uid]||{}, nick=(S.get(K.nicks,{})||{})[em], had=(d.posts||[]).some(p=>p.uid===uid)||pr.u||nick;
     if(had){ const L=S.get(K.usedNames,[])||[]; [pr.u,nick].filter(Boolean).forEach(v=>{ if(!L.some(x=>nameKey(x.v)===nameKey(v))) L.push({v,acc:em,ts:Date.now()}); }); S.set(K.usedNames,L);
-       if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
+       snPDel(d,p=>p.uid===uid,"出道：舊粉絲帳號收起來"); d.stories=(d.stories||[]).map(x=>x.uid===uid&&!x.del?{...snStDel(x),by:"出道：舊粉絲帳號收起來"}:x); if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
     done[em]=Date.now(); S.set(K.snRetired,done); }catch(e){} }
 function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member]) return "m:"+s.member; return "u:"+String(s.email||"me").toLowerCase(); }
 function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};

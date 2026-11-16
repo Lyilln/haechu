@@ -512,9 +512,12 @@ function uniPtMerge(){ try{ const s=SS.get(); if(!s||!s.email||(s.admin&&!s.uni)
   const id="ufm_"+String(s.email).toLowerCase(), L=S.get(K.ptGrants,[])||[]; if(L.some(g=>g.id===id)) return true;
   L.push({id,to:"art:"+m,mid:m,n,art:1,why:"粉絲身分的積分併入",by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); return true; }catch(e){ return false; } }
 { const t0=Date.now(), iv=setInterval(()=>{ if(uniPtMerge()||Date.now()-t0>30*60e3) clearInterval(iv); },5000); }
+/* 藝人動態刪除：留記號（誰刪的、什麼時候），雲端才知道是真的刪掉，而不是哪支手機的舊資料少了一則 */
+function postsDel(pred,by){ try{ const raw=store.get(K.posts,undefined)||mem[K.posts]||[], now=Date.now(); let n=0; const out=(Array.isArray(raw)?raw:[]).map(p=>{ if(p&&!p.del&&pred(p)){ n++; return {id:p.id,member:p.member,group:p.group,ts:0,ots:p.ts,text:p.text,del:now,by:by||""}; } return p; }); if(n) S.set(K.posts,out); return n; }catch(e){ return 0; } }
 const S = {
-  get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); if(k===K.points){ const m=uniArt(); if(m) return Math.max(0,((typeof pointsOf==="function"&&pointsOf(m))||{}).net||0); } k=pk(k);const v=store.get(k,undefined);return v===undefined?(k in mem?mem[k]:fb):v},
+  get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); if(k===K.points){ const m=uniArt(); if(m) return Math.max(0,((typeof pointsOf==="function"&&pointsOf(m))||{}).net||0); } k=pk(k);const v=store.get(k,undefined);const r=v===undefined?(k in mem?mem[k]:fb):v; return k==="daisuki_posts"&&Array.isArray(r)?r.filter(x=>!(x&&x.del)):r},   /* 藝人動態：刪除記號畫面上當作沒有 */
   set(k,v){ if(k===K.whispers&&tie2On()){ tieAllSet(v); return; }
+    if(k===K.posts&&Array.isArray(v)){ try{ const raw=store.get(k,undefined)||mem[k]||[], ids=new Set(v.map(x=>x&&x.id)); v=[...v,...(Array.isArray(raw)?raw:[]).filter(x=>x&&x.del&&!ids.has(x.id))]; }catch(e){} }   /* 存的時候把刪除記號留著（不然別支手機的舊資料會讓刪掉的又跑回來） */
     if(k===K.points){ const m=uniArt(); if(m){ const d=Math.round((+v||0)-S.get(K.points,0)); if(d){ const L=S.get(K.ptGrants,[])||[]; L.push({id:"uf_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),to:"art:"+m,mid:m,n:d,art:1,why:d<0?"粉絲身分使用":"粉絲身分獲得",by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); } return; } } try{ if(typeof kvImgSoon==="function") kvImgSoon(k); }catch(e){} k=pk(k);mem[k]=v;store.set(k,v);hbMark(k)},
   del(k){k=pk(k);delete mem[k];store.del(k);hbMark(k)}
 };
@@ -625,7 +628,7 @@ function hbPendSet(o){ try{ if(Object.keys(o).length) localStorage.setItem(HB_PE
 const HB_GUARD=()=>new Set([tie2On()?null:K.whispers,K.comments,K.posts,K.lives,K.fanPosts,"daisuki_sn_posts","daisuki_sn_stories","daisuki_sn_hl",K.trucks,K.sales,K.ptGrants,"daisuki_varshow","daisuki_biz"].filter(Boolean));
 /* 限時動態只會越來越多：刪掉的換成「已刪除」記號（ts=0，舊版 App 也會當成過期不顯示）。
    合併時任何一邊有的都留著，除非有「已刪除」記號 → 別支手機版本舊、慢一步，都不會再把限動吃掉 */
-const HB_KEEP=new Set(["daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices","daisuki_fan_letters_all"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
+const HB_KEEP=new Set(["daisuki_posts","daisuki_sn_stories","daisuki_sn_posts","daisuki_group_notices","daisuki_fan_letters_all"]);   /* 社群公告也一樣：別支手機的舊資料不能把新公告蓋掉（撤下的公告有另外記號） */   /* 貼文也一樣：只有真的刪除（留記號）才會不見 */
 function hbKeep(k,out,...src){ if(!HB_KEEP.has(k)||!Array.isArray(out)) return out; const m=new Map(), ord=[], raw=[];
   [out,...src].forEach(a=>{ if(!Array.isArray(a)) return; a.forEach(x=>{ if(!x||typeof x!=="object"||x.id==null){ if(a===out) raw.push(x); return; } const p=m.get(x.id); if(!p){ m.set(x.id,x); ord.push(x.id); } else if(x.del&&!p.del) m.set(x.id,x); }); });
   const lim=Date.now()-14*864e5; return [...raw,...ord.map(id=>m.get(id)).filter(x=>!(x.del&&x.del<lim))]; }
@@ -1649,7 +1652,7 @@ function replyComment(commentId,text){
 }
 function deletePost(id){
   S.set(K.comments,S.get(K.comments,[]).filter(c=>c.postId!==id));
-  S.set(K.posts,S.get(K.posts,[]).filter(p=>p.id!==id));
+  postsDel(p=>p.id===id,myEmail());
   S.set(K.notifs,getNotifications().filter(n=>n.postId!==id));
 }
 const likedSet=()=>new Set(S.get(K.likes,[]));
@@ -4482,7 +4485,7 @@ function openSettings(){
     ${row("comment","留言回覆","藝人回覆你的留言時")}
     ${row("whisper",WHISPER_NAME+" 訊息","你訂閱的成員傳 "+WHISPER_NAME+" 訊息時")}
     ${row("live","直播開始","追蹤的藝人開播時")}
-    ${row("event","新活動","追蹤的藝人公布 Party、Spot 活動時")}
+    ${row("event","新活動","追蹤的藝人公布演唱會、簽售、見面會等活動時")}
     <button class="btn btn-soft btn-block" style="margin-top:14px" data-a="closeLayer">完成</button>
   </div></div>`,"nset");
 }
@@ -6119,7 +6122,7 @@ function viewArtistFoc(mid,p){
   return `<main class="page foc">
     ${artPromoCard(mid)}<div class="foc-thr">${muThrones()}</div>
     ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
-    ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
+    ${secH("cam","每天")}<div class="tiles">${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","wiki","news","SKpedia","我的百科")}${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
     ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=toursShown().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}${(()=>{ const c=isCur(), on=c&&c.st==="on", w=isWin(); return tile("focGo","isac","star","偶像運動會",on?"● 進行中":w?`${w.n}・等開幕`:isNextTxt(),on?"on":w?"":"off"); })()}</div>
     
@@ -9201,7 +9204,7 @@ function tourDemoOn(ro){ ui.tourDemo=ro||1; try{ const now=Date.now();
 function tourDemoOff(){ ui.tourDemo=null; try{ const T=x=>String(x&&x.id||"").startsWith("tdm_");
   const L=getLives(); if(L.some(T)) S.set(K.lives,L.filter(l=>!T(l)));
   const R=S.get(K.reports,[]); if(R.some(T)) S.set(K.reports,R.filter(r=>!T(r)));
-  const P=S.get(K.posts,[]); if(P.some(T)) S.set(K.posts,P.filter(p=>!T(p)));
+  const P=S.get(K.posts,[]); if(P.some(T)) postsDel(T,"教學示範");
   const Wh=S.get(K.whispers,[]); if(Wh.some(T)) S.set(K.whispers,Wh.filter(w=>!T(w)));
   const A=subs(); if(A.tdm_m){ delete A.tdm_m; S.set(K.tieSubs,A); }
   const F=followed(); if(F.includes("tdm_g")) S.set(K.fanArtists,F.filter(x=>x!=="tdm_g"));
@@ -10303,7 +10306,7 @@ function snLockOf(mid){ const d=snDebutOf(mid); if(!d||!d.ts) return null; const
 function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEMBERS[s.member]) return; const em=String(s.email||"").toLowerCase(), a=ACCOUNTS[em]||{}; if(a.role==="admin") return; const done=S.get(K.snRetired,{})||{}; if(done[em]) return;
     const d=snDB(), uid="u:"+em, pr=d.prof[uid]||{}, nick=(S.get(K.nicks,{})||{})[em], had=(d.posts||[]).some(p=>p.uid===uid)||pr.u||nick;
     if(had){ const L=S.get(K.usedNames,[])||[]; [pr.u,nick].filter(Boolean).forEach(v=>{ if(!L.some(x=>nameKey(x.v)===nameKey(v))) L.push({v,acc:em,ts:Date.now()}); }); S.set(K.usedNames,L);
-       if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
+       snPDel(d,p=>p.uid===uid,"出道：舊粉絲帳號收起來"); d.stories=(d.stories||[]).map(x=>x.uid===uid&&!x.del?{...snStDel(x),by:"出道：舊粉絲帳號收起來"}:x); if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
     done[em]=Date.now(); S.set(K.snRetired,done); }catch(e){} }
 function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member]) return "m:"+s.member; return "u:"+String(s.email||"me").toLowerCase(); }
 function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
@@ -14743,7 +14746,7 @@ function hrKeep(){ const o=ui.hr; if(!o) return; const v=id=>{ const e=document.
   if(ef!=null){ const t=ymdTs(ef); if(t&&t!==o.eff){ o.eff=t; } } if(ti!=null&&bd!=null&&(ti!==o.title||bd!==o.body)){ o.title=ti; o.body=bd; o.edited=true; } }
 /* 真的執行 */
 function hrRemoveMember(mid,now){ const m=MEMBERS[mid]; if(!m) return; const D=S.get(HR_DEP,{})||{}; D["m:"+mid]={ts:now,name:m.name,gid:m.group}; S.set(HR_DEP,D);
-  const P=S.get(K.posts,[])||[], gone=new Set(P.filter(p=>p.member===mid).map(p=>p.id)); if(gone.size){ S.set(K.posts,P.filter(p=>!gone.has(p.id))); S.set(K.comments,(S.get(K.comments,[])||[]).filter(c=>!gone.has(c.postId))); }
+  const P=S.get(K.posts,[])||[], gone=new Set(P.filter(p=>p.member===mid).map(p=>p.id)); if(gone.size){ postsDel(p=>gone.has(p.id),"成員離開"); S.set(K.comments,(S.get(K.comments,[])||[]).filter(c=>!gone.has(c.postId))); }
   Object.keys(ACCOUNTS).filter(e=>(ACCOUNTS[e]||{}).member===mid).forEach(e=>unbindArtist(e));
   saveRoster(r=>{ delete r.members[mid]; }); delete MEMBERS[mid]; }
 function hrDisband(gid,now){ const g=groupOf(gid); if(!g) return; hrMembers(gid).forEach(m=>hrRemoveMember(m,now)); const D=S.get(HR_DEP,{})||{}; D["g:"+gid]={ts:now,name:g.name}; S.set(HR_DEP,D);

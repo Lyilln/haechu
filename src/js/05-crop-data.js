@@ -371,7 +371,7 @@ function replyComment(commentId,text){
 }
 function deletePost(id){
   S.set(K.comments,S.get(K.comments,[]).filter(c=>c.postId!==id));
-  S.set(K.posts,S.get(K.posts,[]).filter(p=>p.id!==id));
+  postsDel(p=>p.id===id,myEmail());
   S.set(K.notifs,getNotifications().filter(n=>n.postId!==id));
 }
 const likedSet=()=>new Set(S.get(K.likes,[]));

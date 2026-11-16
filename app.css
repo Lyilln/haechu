@@ -3721,7 +3721,9 @@ html[data-theme="dark"] .seg2 .seg2-ind{background:#3A3646!important}
 .fld-lab{display:block;margin:10px 2px 6px;font-size:12.5px;font-weight:700;color:var(--ink-2)}.al-lab{margin:0 0 6px}.rs-sel{flex:1;min-width:0;border:0;background:transparent;font:inherit;font-size:15px;color:var(--ink);outline:0;-webkit-appearance:none;appearance:none}
 /* SNS 在 iPhone 上整頁可以左右滑（兩邊多出黑邊）：頁面本身不准橫向捲，只有輪播、限動列自己能滑 */
 html:has(.sn),html:has(.sn) body{overflow-x:hidden;overscroll-behavior-x:none}
-.sn,.sn-feed,.sn-post{max-width:100vw;overflow-x:clip}
+.sn-feed,.sn-post{max-width:100%;overflow-x:clip}
+.sn .sn-post p,.sn .sn-post b,.sn .sn-cap,.sn .sn-cm p{overflow-wrap:anywhere;word-break:break-word}   /* 很長、沒空格的文字（網址、一串表情）不會把整頁撐寬 */
+.sn img,.sn video{max-width:100%}
 
 /* HAECHU｜導覽列、管理員、主題 TINT */
 /* ===== 液態玻璃導覽列 ===== */
@@ -7140,3 +7142,4 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .lt-left{margin:0 0 10px;font-size:12.5px;color:var(--ink-3);text-align:center}.lt-left b{color:var(--violet,#8843FB)}
 .sn-subr{display:flex;gap:10px;align-items:flex-start;padding:12px 2px;border-bottom:1px solid var(--line)}.sn-subr:last-child{border-bottom:0}.sn-subr>div{flex:1;min-width:0}.sn-subr b{font-size:14px}.sn-subr b small{font-weight:600;color:var(--ink-3)}.sn-subr p{margin:3px 0;font-size:13px;white-space:pre-wrap;word-break:break-word}.sn-subr small{font-size:11.5px;color:var(--ink-3)}.sn-subr em{font-style:normal;font-weight:800}.sn-subr em.wait{color:#B45309}.sn-subr em.ok{color:#15803D}.sn-subr em.no{color:#E11D63}
 .sn-subi{width:52px;height:52px;flex:none;border-radius:10px;object-fit:cover;background:var(--s1)}
+.sn-subr .t-pill{flex:none;align-self:center;padding:5px 12px;min-height:0;font-size:12px}

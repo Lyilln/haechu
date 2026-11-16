@@ -123,7 +123,7 @@ function viewArtistFoc(mid,p){
   return `<main class="page foc">
     ${artPromoCard(mid)}<div class="foc-thr">${muThrones()}</div>
     ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
-    ${secH("cam","每天")}<div class="tiles">${tile("openSns","","cam",SNS_NAME,"個人帳號與貼文")}${tile("focGo","news","news","新聞",newsSub())}</div>
+    ${secH("cam","每天")}<div class="tiles">${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","wiki","news","SKpedia","我的百科")}${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
     ${secH("live","大型活動")}<div class="tiles">${tile("focGo","concert","live","演唱會",mine?"● 進行中":nc?evWhen(nc.startTs):"開一場",mine?"on":"")}${tile("focGo","tour","globe","世巡",(()=>{ const ts=toursShown().filter(x=>x.gid===gid); return ts.some(x=>x.status==="pending")?"審核中":ts.some(x=>x.status==="approved"&&!wtDone(x))?"巡演中":"申請世巡"; })())}${(()=>{ const c=isCur(), on=c&&c.st==="on", w=isWin(); return tile("focGo","isac","star","偶像運動會",on?"● 進行中":w?`${w.n}・等開幕`:isNextTxt(),on?"on":w?"":"off"); })()}</div>
     
