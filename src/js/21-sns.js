@@ -301,7 +301,6 @@ function snOpenCm(id){ const d=snDB(), p=d.posts.find(x=>x.id===id); if(!p) retu
     ${ui.snRe&&ui.snRe.p===id?`<div class="sn-reb"><span>正在回覆 ${esc(ui.snRe.u)}</span><button data-a="snCmReX" data-id="${id}" aria-label="取消">${si("x","sm")}</button></div>`:""}
     <div class="sn-cemo">${["❤️","🙌","🔥","👏","😢","😍","😮","😂"].map(x=>`<button data-a="snCmEmo" data-v="${x}">${x}</button>`).join("")}</div>
     <form class="sn-cf" id="snCmForm" data-id="${id}">${snAv(snUser(me),40)}<div class="sn-cpill"><textarea rows="1" class="ag" id="snCmIn" placeholder="你對此有何看法？" autocomplete="off">${draft!=null?esc(draft):ui.snRe&&ui.snRe.p===id?"@"+esc(ui.snRe.u)+" ":""}</textarea><button type="submit" class="sn-csend" aria-label="發佈"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button></div></form></div></div>`,"sncm");
-  snShFit(layer.querySelector(".sn-shw"));
   if(reopen){ const w=layer.querySelector(".sn-shw"); if(w){ w.classList.add("open"); const sh=w.querySelector(".sn-sh"); if(sh) sh.style.transition="none"; const c=w.querySelector(".sn-cl"); if(c){ c.scrollTop=cly; AN.flip(c,fk); } } } else requestAnimationFrame(()=>{ const w=layer.querySelector(".sn-shw"); if(w) w.classList.add("open"); }); }
 /* 留言的「排序方式」：疊在留言面板上面，不把留言面板關掉（跟 IG 一樣） */
 function snCmSortSheet(id){ const w=layer.querySelector(".sn-shw"); if(!w) return; const old=w.querySelector(".sn-shw.sub"); if(old) old.remove(); const top=ui.snCmSort==="top";
@@ -940,12 +939,3 @@ function snDmNkOpen(id){ const me=snMeId(), P=[snUser(id),snUser(me)].filter(Boo
   document.addEventListener("focusin",e=>{ if(e.target&&e.target.id==="snCmIn") y0=window.scrollY; },true);
   document.addEventListener("focusout",e=>{ if(!e.target||e.target.id!=="snCmIn"||y0==null) return; const y=y0;
     setTimeout(()=>{ const a=document.activeElement; if(a&&a.id==="snCmIn") return; const vv=window.visualViewport; if(window.scrollY!==y||(vv&&vv.offsetTop>0)) window.scrollTo(0,y); y0=null; },80); },true); }
-
-/* 11/17 粉絲端留言面板「被頂開」（同一篇貼文，藝人端正常）：面板底下露出後面的貼文、而且整個變矮。
-   不再相信 vh 和 inset:0 算出來的高度，打開時直接量「螢幕真的有多高」，用 px 把外框和面板高度定死；
-   量完如果外框底部還沒貼到螢幕最底，就往下補齊 */
-function snShFit(w){ if(!w) return; const sh=w.querySelector(".sn-sh.cm"); const H=window.innerHeight;
-  w.style.top="0px"; w.style.bottom="auto"; w.style.height=H+"px";
-  if(sh&&!document.documentElement.classList.contains("sn-vshrink")) sh.style.height=Math.round(H*.7)+"px";
-  requestAnimationFrame(()=>{ if(!w.isConnected) return; const r=w.getBoundingClientRect(), gap=Math.round(H-r.bottom), up=Math.round(r.top); if(gap>1||up!==0){ w.style.top=(-up)+"px"; w.style.height=(H+Math.max(0,gap)+Math.max(0,up))+"px"; } }); }
-addEventListener("resize",()=>{ const w=layer.querySelector(".sn-shw:not(.sub)"); if(w&&w.querySelector(".sn-sh.cm")&&!(document.activeElement&&document.activeElement.id==="snCmIn")) snShFit(w); });
