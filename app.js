@@ -3301,7 +3301,7 @@ async function rgStart({sid,at,mode}){
   let buf=null; try{ buf=await trackBuffer(sid); }catch(e){}
   if(ui.rg!==st) return; const c=audioCtx();
   if(buf&&c){ const lat=(c.outputLatency||0)+(c.baseLatency||0), startIn=(st.zero-performance.now())/1000;
-    const src=c.createBufferSource(); src.buffer=buf; src.connect(c.destination);
+    const src=c.createBufferSource(); src.buffer=buf; st.an=rgAnalyser(c,src);
     if(startIn>=0) src.start(c.currentTime+startIn); else if(-startIn<buf.duration) src.start(0,-startIn); st.src=src; st.zero+=lat*1000; }
   else if(!(await rgMediaStart(st))){ const m=document.getElementById("rgMsg"); if(m) m.innerHTML=`這支手機上讀不到這首歌的音樂，請管理員重新上傳一次 <button class="rg-snd" data-a="sndTest" data-v="${st.sid}">聲音測試</button>`; }
 }
@@ -3335,6 +3335,17 @@ function rgHit(kind,dir,tp){
 function rgJudge(j){ const st=ui.rg, e=document.getElementById("rgJ"); if(e){ e.textContent=j; e.className="rg-j "+j.toLowerCase(); void e.offsetWidth; e.classList.add("pop"); }
   const s=document.getElementById("rgScore"), c=document.getElementById("rgCombo"); if(s&&st) s.textContent=fmt(st.score); if(c&&st) c.textContent=st.combo>1?st.combo+" COMBO":""; }
 const rr=(x,a,b,w,h,r)=>{ x.beginPath(); x.moveTo(a+r,b); x.arcTo(a+w,b,a+w,b+h,r); x.arcTo(a+w,b+h,a,b+h,r); x.arcTo(a,b+h,a,b,r); x.arcTo(a,b,a+w,b,r); x.closePath(); };
+/* 頻譜（11/17，自己寫，不用 audioMotion：它是 AGPL 授權）
+   ・音樂先經過分析器再出去，聲音一模一樣；只有音樂是「整首先解碼」的那條路才有（iPhone 上最穩）
+   ・畫在判定線下面那塊空地，顏色跟著全場應援棒的燈色，透明度壓低，不搶音符的戲
+   ・手機開「減少動態效果」就不畫 */
+function rgAnalyser(c,src){ try{ const an=c.createAnalyser(); an.fftSize=2048; an.smoothingTimeConstant=.8; src.connect(an); an.connect(c.destination); an._d=new Uint8Array(an.frequencyBinCount); an._sr=c.sampleRate; return an; }catch(e){ src.connect(c.destination); return null; } }
+function rgSpec(x,st,W,H){ const an=st.an; if(!an||AN.rm()) return; an.getByteFrequencyData(an._d);
+  const N=36, x0=W*.06, x1=W*.94, gap=3, bw=(x1-x0-gap*(N-1))/N, base=H*.95, top=H*.84, mh=base-top, hz=an._sr/an.fftSize, col=SEA.color||"#C7AEFF";
+  if(st.specCol!==col){ st.specCol=col; const m=/^#?([\da-f]{2})([\da-f]{2})([\da-f]{2})$/i.exec(col)||[0,"c7","ae","ff"]; st.specRGB=[1,2,3].map(i=>parseInt(m[i],16)).join(","); }
+  for(let i=0;i<N;i++){ const f0=50*Math.pow(240,i/N), f1=50*Math.pow(240,(i+1)/N); let v=0, k=0;
+    for(let b=Math.max(1,Math.floor(f0/hz)),e=Math.max(b+1,Math.ceil(f1/hz));b<e&&b<an._d.length;b++){ v+=an._d[b]; k++; }
+    const a=k?Math.pow(v/k/255,1.6):0, h=Math.max(2,a*mh); x.fillStyle=`rgba(${st.specRGB},${.18+a*.32})`; rr(x,x0+i*(bw+gap),base-h,bw,h,Math.min(2,bw/2)); x.fill(); } }
 function rgLoop(){
   const st=ui.rg, cv=document.getElementById("rgCv"); if(!st||!cv) return;
   if(st.mode==="concert"&&!layer.querySelector(".concert2")){ rgStop(); return; }
@@ -3350,6 +3361,7 @@ function rgLoop(){
   const JY=H*.74, TOP=H*.13, SPD=(JY-TOP)/1.5, LX={L:W*.2,C:W*.5,R:W*.8};
   x.textAlign="center"; x.textBaseline="middle";
   for(const k of ["L","C","R"]){ const g=x.createLinearGradient(0,TOP,0,JY); g.addColorStop(0,"rgba(255,255,255,0)"); g.addColorStop(1,k==="C"?"rgba(253,230,138,.35)":"rgba(255,255,255,.25)"); x.strokeStyle=g; x.lineWidth=2; x.beginPath(); x.moveTo(LX[k],TOP); x.lineTo(LX[k],JY); x.stroke(); }
+  rgSpec(x,st,W,H);
   x.strokeStyle="rgba(255,255,255,.3)"; x.lineWidth=2; x.beginPath(); x.moveTo(W*.05,JY); x.lineTo(W*.95,JY); x.stroke();
   for(const k of ["L","R"]){ x.strokeStyle=k==="L"?"rgba(249,168,212,.95)":"rgba(196,181,253,.95)"; x.lineWidth=3; x.beginPath(); x.arc(LX[k],JY,25,0,6.283); x.stroke(); }
   x.strokeStyle="rgba(253,230,138,.9)"; x.lineWidth=3; rr(x,W*.5-46,JY-19,92,38,19); x.stroke();
