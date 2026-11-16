@@ -88,7 +88,7 @@ function sea3D(old,color){
       ${C3_NOISE}
       void main(){
         vec3 p=position; float sw=sin(uT*(0.9+fract(aPh)*1.4)+aPh);
-        p.x+=sw*0.07*(1.0+uBoost*2.5); p.y+=abs(sw)*0.05*(1.0+uBoost*3.0);
+        float hold=uMask>0.5?0.12:1.0; p.x+=sw*0.07*(1.0+uBoost*2.5)*hold; p.y+=abs(sw)*0.05*(1.0+uBoost*3.0)*hold;
         float gx=aGrid.x, gy=aGrid.y, a;
         if(uFx<0.5) a=0.3+0.3*(0.5+0.5*sin(uT*2.3+aPh))+0.25*max(0.0,sin(uT*1.7-gx*7.0));
         else if(uFx<1.5) a=sin(uT*9.0+aPh*0.2)>0.0?0.85:0.12;
@@ -99,7 +99,7 @@ function sea3D(old,color){
         if(uFx>2.5){ float k=mod(floor(gx*6.0+uT*0.8),7.0); for(int i=0;i<7;i++){ if(abs(float(i)-k)<0.5) c=uPal[i]; } }
         if(uWhite>0.5) c=vec3(1.0);
         float big=1.0;
-        if(uMask>0.5){ if(aMask>0.5){ a=0.95+0.05*sin(uT*5.0); c=vec3(1.0); big=1.3; } else a=0.05; }
+        if(uMask>0.5){ if(aMask>0.5){ a=0.95+0.05*sin(uT*5.0); c=vec3(1.0); big=1.2; } else a=0.035; }
         a=clamp(min(1.0,a+0.5*uBoost)*uDim,0.0,1.0);
         vCol=c; vA=a;
         vec4 mv=modelViewMatrix*vec4(p,1.0); gl_Position=projectionMatrix*mv;
@@ -110,19 +110,34 @@ function sea3D(old,color){
         float glow=exp(-d*d*14.0), core=smoothstep(0.16,0.0,d);
         vec3 c=(vCol*glow+vec3(1.0)*core*0.85)*vA; gl_FragColor=vec4(c,max(c.r,max(c.g,c.b))); }`});
   sc.add(new THREE.Points(g,mat));
-  /* 排字：把字畫在 200×100 的小畫布，觀眾席上對到字的那幾支亮白燈 */
-  const textMask=txt=>{ const c=document.createElement("canvas"); c.width=200; c.height=100; const x=c.getContext("2d"); x.fillStyle="#fff"; x.font="900 64px sans-serif"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(txt,100,52,190); return x.getImageData(0,0,200,100).data; };
+  const dotG=new THREE.BufferGeometry(), U2={uT:{value:0},uSz:{value:4}};
+  const dots=new THREE.Points(dotG,new THREE.ShaderMaterial({uniforms:U2,transparent:true,depthTest:false,depthWrite:false,blending:THREE.AdditiveBlending,
+    vertexShader:`attribute float aPh; uniform float uT; uniform float uSz; varying float vA; void main(){ vA=0.82+0.18*sin(uT*4.0+aPh); gl_Position=vec4(position.xy,0.0,1.0); gl_PointSize=uSz; }`,
+    fragmentShader:`varying float vA; void main(){ vec2 q=gl_PointCoord-0.5; float d=length(q); if(d>0.5) discard; float a=(exp(-d*d*10.0)*0.75+smoothstep(0.22,0.0,d))*vA; gl_FragColor=vec4(vec3(a),a); }`}));
+  dots.frustumCulled=false; dots.visible=false; sc.add(dots);
+  /* 11/17 排字變清楚：字撐滿整片觀眾席（以前只佔後面幾排，中文會糊成一團），字型加粗描邊，排字時應援棒幾乎不晃 */
+  const textMask=(txt,MW,MH)=>{ const c=document.createElement("canvas"); c.width=MW; c.height=MH; const x=c.getContext("2d"), F='"PingFang TC","Noto Sans TC","Heiti TC",sans-serif';
+    let fs=MH*.86; x.font=`900 ${fs}px ${F}`; const w=x.measureText(txt).width; if(w>MW*.94) fs*=MW*.94/w; x.font=`900 ${fs}px ${F}`;
+    x.fillStyle=x.strokeStyle="#fff"; x.lineWidth=/[\u3000-\u9fff\uac00-\ud7af]/.test(txt)?0:fs*.04; x.lineJoin="round"; x.textAlign="center"; x.textBaseline="middle"; x.fillText(txt,MW/2,MH*.53); if(x.lineWidth>0) x.strokeText(txt,MW/2,MH*.53); return x.getImageData(0,0,MW,MH).data; };
   let maskKey=null, raf=0, W0=0, H0=0; const t0=performance.now();
-  const done=()=>{ cancelAnimationFrame(raf); try{ g.dispose(); mat.dispose(); R.dispose(); if(R.forceContextLoss) R.forceContextLoss(); }catch(e){} };
+  const done=()=>{ cancelAnimationFrame(raf); try{ g.dispose(); mat.dispose(); dotG.dispose(); dots.material.dispose(); R.dispose(); if(R.forceContextLoss) R.forceContextLoss(); }catch(e){} };
   (function f(now){ if(!cv.isConnected){ done(); return; } raf=requestAnimationFrame(f);
     const W=cv.clientWidth, H=cv.clientHeight; if(!W||!H) return; if(W!==W0||H!==H0){ W0=W; H0=H; R.setSize(W,H,false); cam.aspect=W/H; cam.updateProjectionMatrix(); U.uH.value=H; }
     const t=(now-t0)/1000, ls=lightsea(), cmd=activeCmd(), cue=typeof lsCue==="function"?lsCue():null, fx=cue?cue.fx:ls&&ls.fx||"breath";
     SEA.dim=cue?cue.dim:1; SEA.boost*=.965;
     U.uT.value=t; U.uCol.value.set(SEA.color||color||"#C7AEFF"); U.uFx.value=({breath:0,flash:1,wave:2,rainbow:3})[fx]??0; U.uBoost.value=SEA.boost; U.uDim.value=SEA.dim==null?1:SEA.dim; U.uWhite.value=cmd&&cmd.type==="white"?1:0;
-    const txt=cmd&&cmd.type==="text"?cmd.text:""; if(txt!==maskKey){ maskKey=txt; U.uMask.value=txt?1:0;
-      if(txt){ const m=textMask(txt), v=new THREE.Vector3(); cam.position.set(0,1.5,3); cam.lookAt(0,3.6,-14); cam.updateMatrixWorld();   /* 照畫面上看到的位置排字，手機直拿也不會切到 */
-        for(let i=0;i<N;i++){ v.set(pos[i*3],pos[i*3+1],pos[i*3+2]).project(cam); const mx=Math.floor(((v.x+1)/2-.05)/.9*200), my=Math.floor(((1-v.y)/2-.08)/.5*100); mk[i]=mx>=0&&mx<200&&my>=0&&my<100&&m[(my*200+mx)*4+3]>80?1:0; } g.attributes.aMask.needsUpdate=true; } }
-    cam.position.set(Math.sin(t*.13)*.3,1.5+Math.sin(t*.21)*.08,3); cam.lookAt(0,3.6,-14);
+    const txt=cmd&&cmd.type==="text"?cmd.text:"", mkey=txt&&txt+"|"+W+"x"+H; if(mkey!==maskKey){ maskKey=mkey; U.uMask.value=txt?1:0;
+      if(txt){ const v=new THREE.Vector3(), P=new Float32Array(N*2); let x0=1,x1=-1,y0=1,y1=-1; cam.position.set(0,1.5,3); cam.lookAt(0,3.6,-14); cam.updateMatrixWorld();   /* 照畫面上看到的位置排字，手機直拿也不會切到 */
+        for(let i=0;i<N;i++){ v.set(pos[i*3],pos[i*3+1],pos[i*3+2]).project(cam); const px=v.x, py=v.y; P[i*2]=px; P[i*2+1]=py; if(Math.abs(px)<=1&&Math.abs(py)<=1){ if(px<x0) x0=px; if(px>x1) x1=px; if(py<y0) y0=py; if(py>y1) y1=py; } }
+        { const mx=(x1-x0)*.04, my=(y1-y0)*.06; x0+=mx; x1-=mx; y0+=my; y1-=my; }
+        const bw=(x1-x0)*W, bh=(y1-y0)*H, MW=240, MH=Math.max(40,Math.min(240,Math.round(MW*bh/bw))), m=textMask(txt,MW,MH);
+        for(let i=0;i<N;i++){ const mx=Math.floor((P[i*2]-x0)/(x1-x0+1e-6)*MW), my=Math.floor((y1-P[i*2+1])/(y1-y0+1e-6)*MH); mk[i]=mx>=0&&mx<MW&&my>=0&&my<MH&&m[(my*MW+mx)*4+3]>80?1:0; } g.attributes.aMask.needsUpdate=true;
+        /* 應援棒本身數量有限，中文筆畫會斷；再照字型鋪一層排得整整齊齊的小燈點，字就清楚了 */
+        const st=Math.max(3.4,bw/96), CW=Math.round(bw/st), CH=Math.round(bh/st), m2=textMask(txt,CW,CH), dp=[], dph=[];
+        for(let yy=0;yy<CH;yy++) for(let xx=0;xx<CW;xx++) if(m2[(yy*CW+xx)*4+3]>110){ dp.push(x0+(xx+.5)/CW*(x1-x0)+(Math.random()-.5)*.25/CW,y1-(yy+.5)/CH*(y1-y0),0); dph.push(Math.random()*6.2832); }
+        dotG.setAttribute("position",new THREE.Float32BufferAttribute(dp,3)); dotG.setAttribute("aPh",new THREE.Float32BufferAttribute(dph,1)); dotG.setDrawRange(0,dph.length); U2.uSz.value=st*.95*dpr; }
+      dots.visible=!!txt; } U2.uT.value=t;
+    const cs=txt?.15:1; cam.position.set(Math.sin(t*.13)*.3*cs,1.5+Math.sin(t*.21)*.08*cs,3); cam.lookAt(0,3.6,-14);
     R.render(sc,cam); })(t0);
 }
 /* 燈海畫布（2D）：顏色、效果、排字、自己的座位都畫在這裡 */
@@ -165,7 +180,8 @@ function ccTick(){
   { const bb=document.getElementById("ccBd"); if(bb){ const tl=ls&&ls.tl; bb.hidden=!(!tl||tl.ia); } }
   const ban=document.getElementById("ccCmd"), k=cmd?cmd.ts:"";
   if(ban&&ban.dataset.k!==String(k)){ ban.dataset.k=k; ban.className="cc-cmd"+(cmd?" show":"");
-    ban.innerHTML=!cmd?"":cmd.type==="wave"?"🙌 一起揮！大家把應援棒舉高":cmd.type==="white"?"🤍 全場亮白燈":cmd.type==="text"?`🔤 全場排字「${esc(cmd.text)}」`:`🔥 全場任務：30 秒揮滿 ${fmt(cmd.target)} 下！`;
+    ban.innerHTML=!cmd?"":cmd.type==="wave"?"🙌 一起揮！大家把應援棒舉高":cmd.type==="white"?"🤍 全場亮白燈":cmd.type==="text"?`🔤 全場排字「<span class="cc-tx">${esc(cmd.text)}</span>」`:`🔥 全場任務：30 秒揮滿 ${fmt(cmd.target)} 下！`;
+    if(cmd&&cmd.type==="text") AN.chars(ban.querySelector(".cc-tx"));   /* 排字的字一個一個亮出來，跟燈海同步 */
     if(cmd&&cmd.type==="mission"){ ui.misBase=ui.swings||0; ui.misDone=false; } }
   const mb=document.getElementById("ccMis");
   if(mb){ if(cmd&&cmd.type==="mission"){ const el2=(Date.now()-cmd.ts)/1000, others=Math.floor(cmd.target*.86*Math.min(1,el2/28)), mine=(ui.swings||0)-(ui.misBase||0), v=Math.min(cmd.target,others+mine*12);

@@ -30,6 +30,11 @@ var AN={
   aa(el){ if(!el||!window.autoAnimate||!AN.ok()) return null; if(el.__aa) return el.__aa; try{ el.__aa=autoAnimate(el,{duration:280,easing:"cubic-bezier(.2,.85,.3,1)"}); }catch(e){ el.__aa=null; } return el.__aa; },
   /* 只換字、不增減時（例如讚數 1→2）先暫停，不然會淡出淡入看起來像閃一下 */
   still(el,fn){ const c=el&&el.__aa; if(c&&c.disable) c.disable(); try{ fn(); } finally{ if(c&&c.enable) requestAnimationFrame(()=>c.enable()); } },
+  /* SplitType（vendor/）：把一段字拆成一個一個字，再一個接一個彈出來（演唱會排字提示）。
+     中文、韓文、emoji 都會拆對；沒載好或「減少動態效果」就直接顯示整段 */
+  chars(el){ if(!el||!window.SplitType||!AN.ok()) return; try{ const sp=new SplitType(el,{types:"chars",tagName:"span"}); if(!sp.chars||!sp.chars.length) return;
+    sp.chars.forEach(c=>{ c.style.display="inline-block"; });
+    AN.run(sp.chars,{opacity:{from:0,to:1,duration:220,ease:"outQuad"},y:{from:10,to:0,duration:420,ease:"outBack(1.6)"},scale:{from:.5,to:1,duration:420,ease:"outBack(1.6)"},delay:anime.stagger(90)}); }catch(e){} },
   /* 整塊重畫（例如留言面板）auto-animate 跟不到，用下面這組：
      重畫前 AN.snap(盒子) 記下每一列 [data-k] 的位置，重畫後 AN.flip(新盒子, 記錄)：
      原本就有的列從舊位置滑到新位置；新出現的列淡入浮上來。只動 transform／opacity，iPhone 7 也順 */

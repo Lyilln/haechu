@@ -9,4 +9,5 @@
 | konva/ | konvajs/konva | 10.9.1（TypeScript 編譯成 ES 模組） | MIT（konva/LICENSE） | 簽售簽名板 |
 | planck-1.6.0.js | piqnt/planck.js | 1.6.0 | MIT（planck-LICENSE.txt） | 彩紙物理 |
 | auto-animate-0.10.2.js | formkit/auto-animate | 0.10.2（TypeScript 編譯成一般 script，掛在 window.autoAnimate） | MIT（auto-animate-LICENSE） | SNS 原地增減的區塊自動補過場 |
+| split-type-0.3.4.js | lukePeavey/SplitType | 0.3.4（ES 模組合成一般 script，掛在 window.SplitType） | ISC | 演唱會排字提示一個字一個字彈出 |
 | meshopt_simplifier-1.3.js | zeux/meshoptimizer | 1.3 | MIT（meshoptimizer-LICENSE.md） | 應援棒模型減面 |
