@@ -417,7 +417,9 @@ function clickCm(a,t,e,r){ switch(a){
     case "pQty": { ui.pQty=Math.max(1,Math.min(20,(ui.pQty||1)+(+t.dataset.v))); const p=prodBy(ui.prod); const q=document.getElementById("pQ"); if(q) q.textContent=ui.pQty; const b=layer.querySelector('[data-a="pBuy"]'); if(b&&p) b.textContent=`${storeOf(ui.pStore)?"在 "+storeOf(ui.pStore).name+" 買":"買"} ${ui.pQty} 張・${fmt(p.pts*ui.pQty)} 積分`; break; }
     case "aeNew": { const gid=ui.albG||GROUPS[0].id, a={id:uid("ab"),gid,title:"新專輯",ord:"The 1st Mini Album",ts:Date.now(),vers:[{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}],ex:[]}; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
-    case "aeClose": ui.aeId=null; layer.innerHTML=""; render(); break;
+    case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
+    case "artAlb": artAlbumsSheet(); break;
+    case "cbPrev": ui.cbPrev=!ui.cbPrev; render(); break;
     case "aeVAdd": { const a=aeA(); a.vers.push({id:uid("v"),name:`${String.fromCharCode(65+a.vers.length)} Ver.`,shape:"cd",w:14.2,h:12.5,t:1,pts:7000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}); saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeVDel": { const a=aeA(); if(a.vers.length<=1){ toast("至少要留一個版本"); break; } ask("要刪除這個版本嗎？",()=>{ a.vers=a.vers.filter(v=>v.id!==t.dataset.v); saveAlbum(a); openAlbumEditor(a.id); },{title:"刪除版本",ok:"刪除"}); break; }
     case "aeShape": { const a=aeA(), v=verOf(a,t.dataset.i), sh=shapeOf(t.dataset.v); v.shape=sh.k; if(sh.k!=="custom"){ v.w=sh.w; v.h=sh.h; v.t=sh.t; } saveAlbum(a); openAlbumEditor(a.id); break; }

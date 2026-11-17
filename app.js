@@ -883,7 +883,7 @@ async function hbImgUrl(id,blob){ if(!HB_ON||!HB.tok||!blob||sbxOn()) return nul
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"image/jpeg","x-upsert":"false"}}); return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); await new Promise(r=>setTimeout(r,1200*(i+1))); } }
   return null; }
 /* 換掉的舊圖片從雲端刪掉（只刪 App 自己放的頭貼、背景、出道照；失敗就算了） */
-function mediaDel(url){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||typeof url!=="string"||!url.startsWith(MEDIA_URL+"/media/")) return; if((S.get(K.lives,[])||[]).some(l=>l&&l.cv===url)) return;   /* 還是某場重播的封面：不刪 */ const id=url.slice((MEDIA_URL+"/media/").length); if(!/^(prof_|gph_)/.test(decodeURIComponent(id))) return;
+function mediaDel(url){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||typeof url!=="string"||!url.startsWith(MEDIA_URL+"/media/")) return; if((S.get(K.lives,[])||[]).some(l=>l&&l.cv===url)) return;   /* 還是某場重播的封面：不刪 */ const id=url.slice((MEDIA_URL+"/media/").length); if(!/^(prof_|gph_|alb_)/.test(decodeURIComponent(id))) return;
   fetch(MEDIA_URL+"/media/"+id,{method:"DELETE",headers:{Authorization:"Bearer "+HB.tok}}).catch(()=>{}); }catch(e){} }
 async function hbDownload(id){ if(!HB_ON) return null;
   if(MEDIA_URL){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id)); if(r.ok) return await r.blob(); }catch(e){} }
@@ -2623,10 +2623,21 @@ function openPool(){
    ・小卡照片 pc|專輯|種類|成員；封面 alc|專輯|版本；卡背 cbk|專輯；專輯背面 alb|專輯
    ・沒有上傳的：特殊工藝／預購／Lucky Draw／簽售卡 會先用同一位成員的版本一照片 */
 const PCI={};
+/* 11/17 專輯、小卡照片放上雲端：以前只存在上傳那支手機（IndexedDB），別人的手機看不到卡面。
+   ・上傳時同時傳一份到雲端（R2），網址記在共用的 ALBU（照片 key → 網址），大家的手機都讀得到
+   ・每次畫面重畫時把雲端網址補進 PCI；自己剛傳的那張先用手機裡的，別人換過的就改用雲端的
+   ・以前傳過、只在這支手機裡的：開 App 後自動補傳一次 */
+const ALBU="daisuki_alb_img_u", ALB_K=/^(ph|ib|vc|vb|pc|alc|cbk|alb)\|/;
+const albMine=()=>{ try{ return JSON.parse(localStorage.getItem("hc_alb_mine")||"{}")||{}; }catch(e){ return {}; } };
+async function albImgUp(key,blob){ if(!ALB_K.test(key)||!HB_ON||!blob) return; try{ const url=await hbImgUrl("alb_"+key.replace(/[^a-z0-9]/gi,"_")+"_"+Date.now().toString(36)+".jpg",blob); if(!url) return;
+  const M={...(S.get(ALBU,{})||{})}, old=M[key]; M[key]=url; S.set(ALBU,M); const my=albMine(); my[key]=url; try{ localStorage.setItem("hc_alb_mine",JSON.stringify(my)); }catch(e){} if(old&&old!==url) mediaDel(old); }catch(e){} }
+function albImgApply(){ const M=S.get(ALBU,{})||{}, my=albMine(); for(const k in M){ const u=M[k]; if(!u||PCI[k]===u) continue; if(PCI[k]&&PCI[k].startsWith("blob:")&&my[k]===u) continue; if(PCI[k]&&PCI[k].startsWith("blob:")) URL.revokeObjectURL(PCI[k]); PCI[k]=u; } }
+setTimeout(async()=>{ try{ if(!HB_ON) return; const M=S.get(ALBU,{})||{}, L=(S.get(K.pcImgs,[])||[]).filter(k=>ALB_K.test(k)&&!M[k]&&PCI[k]&&PCI[k].startsWith("blob:"));
+  for(const k of L){ const b=await (await fetch(PCI[k])).blob(); await albImgUp(k,b); } }catch(e){} },12000);
 const PIMG={
   async put(key,blob){ try{ const d=await MDB.open(), ab=await blob.arrayBuffer(); await new Promise((res,rej)=>{ const tx=d.transaction("m","readwrite"); tx.objectStore("m").put({ab,type:blob.type},"img_"+key); tx.oncomplete=res; tx.onerror=()=>rej(tx.error); }); }catch(e){}
-    if(PCI[key]) URL.revokeObjectURL(PCI[key]); PCI[key]=URL.createObjectURL(blob); const L=S.get(K.pcImgs,[]); if(!L.includes(key)) S.set(K.pcImgs,[...L,key]); },
-  async del(key){ try{ const d=await MDB.open(); d.transaction("m","readwrite").objectStore("m").delete("img_"+key); }catch(e){} if(PCI[key]) URL.revokeObjectURL(PCI[key]); delete PCI[key]; S.set(K.pcImgs,S.get(K.pcImgs,[]).filter(k=>k!==key)); },
+    if(PCI[key]&&PCI[key].startsWith("blob:")) URL.revokeObjectURL(PCI[key]); PCI[key]=URL.createObjectURL(blob); const L=S.get(K.pcImgs,[]); if(!L.includes(key)) S.set(K.pcImgs,[...L,key]); albImgUp(key,blob); },
+  async del(key){ try{ const d=await MDB.open(); d.transaction("m","readwrite").objectStore("m").delete("img_"+key); }catch(e){} if(PCI[key]&&PCI[key].startsWith("blob:")) URL.revokeObjectURL(PCI[key]); delete PCI[key]; S.set(K.pcImgs,S.get(K.pcImgs,[]).filter(k=>k!==key)); if(ALB_K.test(key)){ const M={...(S.get(ALBU,{})||{})}; if(M[key]){ mediaDel(M[key]); delete M[key]; S.set(ALBU,M); } } },
   async loadAll(){ const L=S.get(K.pcImgs,[]); if(!L.length) return; let d; try{ d=await MDB.open(); }catch(e){ return; }
     await Promise.all(L.map(key=>new Promise(res=>{ try{ const q=d.transaction("m").objectStore("m").get("img_"+key); q.onsuccess=()=>{ const v=q.result; if(v&&v.ab) PCI[key]=URL.createObjectURL(new Blob([v.ab],{type:v.type||"image/jpeg"})); res(); }; q.onerror=()=>res(); }catch(e){ res(); } })));
     if(!layer.innerHTML) render(); }
@@ -2803,8 +2814,10 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
     <div class="cv-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button>${n?`<button class="btn ${rep?"btn-soft":"btn-main"} btn-sm" data-a="cardRep" data-v="${cid}">${rep?"✓ 我的代表卡":"設為代表卡"}</button>`:""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
   if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); }
-function viewCards(){
-  const own=getCards(), f=followed(), al=getAlbums().filter(a=>f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`))), tb=ui.cbTab||"book", rep=S.get(K.repCard,""), {have,total}=alCount();
+/* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
+const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
+function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
+  const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=getAlbums().filter(a=>prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`))), tb=ui.cbTab||"book", rep=S.get(K.repCard,""), {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
       return n?`<button class="cb-it" data-a="cardView" data-v="${cid}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${n>1?`<em>×${n}</em>`:""}${rep===cid?'<b class="cb-rep">代表卡</b>':""}</button>`:`<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
@@ -2812,7 +2825,7 @@ function viewCards(){
       ${a.vers.map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.map(it=>grid(a,it)).join("")}`).join("")}
       ${(a.ex||[]).filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).length?`<div class="cb-vh">專輯外（店家特典・簽售・打歌節目）</div>${a.ex.filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
       :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`);
-  return coreHead("PHOTOCARD 卡冊")+`<main class="page cards">
+  return coreHead("PHOTOCARD 卡冊")+`<main class="page cards">${isHussey()?`<button class="btn ${prev?"btn-main":"btn-soft"} btn-block cb-prev" data-a="cbPrev">${prev?"預覽中：全部卡片都當成有（不會存）・關掉":"預覽全部卡片（只有 HUSSEY 看得到）"}</button>`:""}
     <div class="seg2 cb-tabs" style="--i:${tb==="log"?1:0}"><i class="seg2-ind"></i><button class="${tb==="book"?"on":""}" data-a="cbTab" data-v="book">卡冊</button><button class="${tb==="log"?"on":""}" data-a="cbTab" data-v="log">開箱紀錄</button></div>
     <div class="seg2-pane ${ui.segAnim||""}">${tb==="log"?cbLog():book}</div></main>`; }
 function cbLog(){ const log=S.get(K.gachaLog,[]).filter(x=>x.vid&&albumOf(x.aid)); if(!log.length) return `<p class="me-none">還沒有開過專輯</p>`;
@@ -2846,7 +2859,14 @@ function aeItemHtml(a,it,ex){ const ms=groupArtists(a.gid);
       <div class="ae-pb"><button class="chip ${p.sp?"on":""}" data-a="aePSp" data-i="${it.id}" data-v="${p.id}">✦ 珠光</button><button class="chip" data-a="aePDel" data-i="${it.id}" data-v="${p.id}">刪除</button></div></div>`).join("")}
       <button class="ae-add" data-a="aePAdd" data-v="${it.id}" style="aspect-ratio:${it.w}/${it.h}">＋<small>加一張照片</small></button></div>
     <div class="ae-row"><span class="ae-lab">這一項共用的背面（照片沒有背面時用）</span>${upCell(`ib|${a.id}|${it.id}`,"",`${it.w}/${it.h}`)}</div></div>`; }
-function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
+/* 11/17 藝人（要出道／回歸的人）也能編自己團的專輯、上傳小卡卡面；價格、預購天數只有管理員能改（藝人不能動自己商品的價格） */
+const aeArt=()=>{ const s=session()||{}; return s.role==="artist"&&!isAdminAcct(); };
+function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
+  setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>專輯・小卡</b><span class="sh-sp"></span></header><div class="tiei-body">
+    <p class="ae-tip">在這裡上傳專輯封面和小卡卡面。上傳後大家的 App 都看得到；價格由管理員設定。</p>
+    <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
+    <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section></div></div>`); }
+function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; if(aeArt()&&a.gid!==(MEMBERS[(session()||{}).member]||{}).group) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
   setLayer(`<div class="tiei ae"><header class="tiei-top"><button class="icon-btn" data-a="aeClose" aria-label="返回">${I.back}</button><b>${esc(g.name)} 專輯</b><span class="sh-sp"></span></header>
     <div class="tiei-body">
       <div class="ae-grid"><label class="w2">專輯名稱<input class="ae-in" data-o="a|title" value="${esc(a.title)}"></label><label class="w2">第幾張<input class="ae-in" data-o="a|ord" value="${esc(a.ord)}"></label></div>
@@ -2855,7 +2875,7 @@ function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; const g=grou
         <span class="ae-lab">外型（選了會自動帶入常見尺寸）</span>
         <div class="ae-shapes">${SHAPES.map(x=>`<button class="ae-sh ${v.shape===x.k?"on":""}" data-a="aeShape" data-i="${v.id}" data-v="${x.k}"><i style="aspect-ratio:${x.w}/${x.h}"></i><b>${x.n}</b><small>${x.d}</small></button>`).join("")}</div>
         <div class="ae-grid"><label>寬（公分）<input class="ae-in" inputmode="decimal" data-o="v|${v.id}|w" value="${v.w}"></label><label>高（公分）<input class="ae-in" inputmode="decimal" data-o="v|${v.id}|h" value="${v.h}"></label><label>厚（公分）<input class="ae-in" inputmode="decimal" data-o="v|${v.id}|t" value="${v.t}"></label>
-          <label>價格（點）<input class="ae-in" inputmode="numeric" data-o="v|${v.id}|pts" value="${v.pts}"></label><label class="w2">預購還剩幾天（0＝沒有預購）<input class="ae-in" inputmode="numeric" data-o="v|${v.id}|pre" value="${Math.max(0,Math.ceil(((v.preEnd||0)-Date.now())/864e5))}"></label></div>
+          ${aeArt()?"":`<label>價格（點）<input class="ae-in" inputmode="numeric" data-o="v|${v.id}|pts" value="${v.pts}"></label><label class="w2">預購還剩幾天（0＝沒有預購）<input class="ae-in" inputmode="numeric" data-o="v|${v.id}|pre" value="${Math.max(0,Math.ceil(((v.preEnd||0)-Date.now())/864e5))}"></label>`}</div>
         <span class="ae-lab">封面、封底（丟進去會自動照圖片比例調整寬度，書背顏色也會從圖片取）</span>
         <div class="ae-cv">${upCell(`vc|${a.id}|${v.id}`,"封面",`${v.w}/${v.h}`)}${upCell(`vb|${a.id}|${v.id}`,"封底",`${v.w}/${v.h}`)}<div class="ae-prev" data-v="${v.id}"><div class="s3 ae-s3">${albumBox(a,v,{maxPx:110})}</div><small>拖動預覽</small></div></div>
         <span class="ae-lab">裡面放的東西</span>${v.inc.map(it=>aeItemHtml(a,it,false)).join("")}
@@ -3604,7 +3624,7 @@ function mountSticks(scope){
 }
 /* 看重播時資料更新：留在原本滑到的地方，不跳回開頭 */
 function rpPaint(id,hc){ const o=document.querySelector(".rp2-log"), y=o&&!hc?o.scrollTop:0; paint(viewReplay(id),false); if(y){ const n=document.querySelector(".rp2-log"); if(n) n.scrollTop=y; } }
-function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
+function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
 
   if(!KVX.ready){ KVX.want=true; return; }   /* 手機的大空間還在讀：讀完才畫，不會先畫出空白的聊天室 */
   try{ debutSync(); }catch(e){} try{ snRetireCheck(); }catch(e){}
@@ -4575,6 +4595,7 @@ function viewArtist(tab){
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=points">${I.star}積分收入</button>
+        <button class="list-btn" data-a="artAlb">${I.star}專輯・小卡<span class="r">上傳卡面</span></button>
       </section>
       <div class="section-h">團體</div>
       <section class="card">
@@ -7622,7 +7643,9 @@ function clickCm(a,t,e,r){ switch(a){
     case "pQty": { ui.pQty=Math.max(1,Math.min(20,(ui.pQty||1)+(+t.dataset.v))); const p=prodBy(ui.prod); const q=document.getElementById("pQ"); if(q) q.textContent=ui.pQty; const b=layer.querySelector('[data-a="pBuy"]'); if(b&&p) b.textContent=`${storeOf(ui.pStore)?"在 "+storeOf(ui.pStore).name+" 買":"買"} ${ui.pQty} 張・${fmt(p.pts*ui.pQty)} 積分`; break; }
     case "aeNew": { const gid=ui.albG||GROUPS[0].id, a={id:uid("ab"),gid,title:"新專輯",ord:"The 1st Mini Album",ts:Date.now(),vers:[{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}],ex:[]}; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
-    case "aeClose": ui.aeId=null; layer.innerHTML=""; render(); break;
+    case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
+    case "artAlb": artAlbumsSheet(); break;
+    case "cbPrev": ui.cbPrev=!ui.cbPrev; render(); break;
     case "aeVAdd": { const a=aeA(); a.vers.push({id:uid("v"),name:`${String.fromCharCode(65+a.vers.length)} Ver.`,shape:"cd",w:14.2,h:12.5,t:1,pts:7000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}); saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeVDel": { const a=aeA(); if(a.vers.length<=1){ toast("至少要留一個版本"); break; } ask("要刪除這個版本嗎？",()=>{ a.vers=a.vers.filter(v=>v.id!==t.dataset.v); saveAlbum(a); openAlbumEditor(a.id); },{title:"刪除版本",ok:"刪除"}); break; }
     case "aeShape": { const a=aeA(), v=verOf(a,t.dataset.i), sh=shapeOf(t.dataset.v); v.shape=sh.k; if(sh.k!=="custom"){ v.w=sh.w; v.h=sh.h; v.t=sh.t; } saveAlbum(a); openAlbumEditor(a.id); break; }

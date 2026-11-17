@@ -6771,6 +6771,7 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .lt-hb.on{background:#EDE4FF;color:#7C3AED}
 .lt-hb.on svg{fill:currentColor}
 .lt-card.new{box-shadow:0 0 0 2px #F472B6!important}
+.cb-prev{margin:0 0 12px}
 
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}

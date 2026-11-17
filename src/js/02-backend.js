@@ -338,7 +338,7 @@ async function hbImgUrl(id,blob){ if(!HB_ON||!HB.tok||!blob||sbxOn()) return nul
   for(let i=0;i<3;i++){ try{ await hbFetch("/storage/v1/object/media/"+encodeURIComponent(id),{method:"POST",body:blob,headers:{"Content-Type":blob.type||"image/jpeg","x-upsert":"false"}}); return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); }catch(e){ if(e.status===409||/exists|duplicate/i.test(e.message)) return HB_URL+"/storage/v1/object/public/media/"+encodeURIComponent(id); await new Promise(r=>setTimeout(r,1200*(i+1))); } }
   return null; }
 /* 換掉的舊圖片從雲端刪掉（只刪 App 自己放的頭貼、背景、出道照；失敗就算了） */
-function mediaDel(url){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||typeof url!=="string"||!url.startsWith(MEDIA_URL+"/media/")) return; if((S.get(K.lives,[])||[]).some(l=>l&&l.cv===url)) return;   /* 還是某場重播的封面：不刪 */ const id=url.slice((MEDIA_URL+"/media/").length); if(!/^(prof_|gph_)/.test(decodeURIComponent(id))) return;
+function mediaDel(url){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||typeof url!=="string"||!url.startsWith(MEDIA_URL+"/media/")) return; if((S.get(K.lives,[])||[]).some(l=>l&&l.cv===url)) return;   /* 還是某場重播的封面：不刪 */ const id=url.slice((MEDIA_URL+"/media/").length); if(!/^(prof_|gph_|alb_)/.test(decodeURIComponent(id))) return;
   fetch(MEDIA_URL+"/media/"+id,{method:"DELETE",headers:{Authorization:"Bearer "+HB.tok}}).catch(()=>{}); }catch(e){} }
 async function hbDownload(id){ if(!HB_ON) return null;
   if(MEDIA_URL){ try{ const r=await fetch(MEDIA_URL+"/media/"+encodeURIComponent(id)); if(r.ok) return await r.blob(); }catch(e){} }

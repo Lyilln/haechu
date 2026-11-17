@@ -683,7 +683,7 @@ function mountSticks(scope){
 }
 /* 看重播時資料更新：留在原本滑到的地方，不跳回開頭 */
 function rpPaint(id,hc){ const o=document.querySelector(".rp2-log"), y=o&&!hc?o.scrollTop:0; paint(viewReplay(id),false); if(y){ const n=document.querySelector(".rp2-log"); if(n) n.scrollTop=y; } }
-function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
+function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
 
   if(!KVX.ready){ KVX.want=true; return; }   /* 手機的大空間還在讀：讀完才畫，不會先畫出空白的聊天室 */
   try{ debutSync(); }catch(e){} try{ snRetireCheck(); }catch(e){}
