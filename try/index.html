@@ -58,6 +58,21 @@ html[data-theme="dark"] .tz-room .t-inp{background:#2A2733!important;border-colo
 .tz-end .card{padding:16px 18px!important;margin-bottom:12px}.tz-end .card h3{margin:0 0 6px;font-size:16px}.tz-end .card p,.tz-end .card li{font-size:13.5px;line-height:1.7;color:var(--ink-2,#5F5A6B)}.tz-end .card ol{margin:6px 0 0;padding-left:20px}
 .tz-end .btn{text-decoration:none;display:flex;align-items:center;justify-content:center}
 .tz-end .btn+.btn{margin-top:10px}
+
+/* 11/17 unslop：圖示、開場 */
+.tz-hi{display:inline-grid;place-items:center;width:20px;height:20px;flex:none;color:var(--violet,#7C3AED)}.tz-hi svg{width:18px;height:18px}
+.tz-unl{display:flex;align-items:center;gap:6px}.tz-unl svg{width:14px;height:14px;flex:none}
+.tz-only{font-size:12.5px;color:var(--ink-3,#8A8496);font-weight:500}
+.tz-in2{min-height:100dvh;display:flex;flex-direction:column;gap:16px;padding:calc(env(safe-area-inset-top,0px) + 24px) 20px calc(env(safe-area-inset-bottom,0px) + 28px);max-width:480px;margin:0 auto}
+.tz-brand{font-family:Fredoka,Quicksand,sans-serif;font-weight:700;font-size:22px;letter-spacing:.02em}.tz-brand small{display:block;font-family:inherit;font-size:12px;font-weight:500;color:var(--ink-3,#8A8496);letter-spacing:0}
+.tz-push{display:flex;gap:12px;align-items:center;text-align:left;border:0;border-radius:20px;padding:14px;margin-top:auto;font:inherit;color:inherit;background:var(--s1,#fff);box-shadow:0 10px 30px -18px rgba(60,20,120,.45)}
+.tz-pav{flex:none;display:grid;place-items:center;width:46px;height:46px;border-radius:50%;color:#fff;font-weight:700;font-size:20px;background:linear-gradient(135deg,#B794FF,#FF8FC2)}
+.tz-pt{display:grid;gap:2px;min-width:0}.tz-pt b{font-size:15px;font-weight:700}.tz-pt b em{font-style:normal;font-weight:500;font-size:12px;color:var(--ink-3,#8A8496);margin-left:6px}.tz-pt>span{font-size:14px;line-height:1.5;color:var(--ink-2,#5F5A6B)}
+.tz-in2 h1{margin:8px 0 0;font-size:24px;font-weight:700}
+.tz-lead{margin:0;font-size:14.5px;line-height:1.7;color:var(--ink-2,#5F5A6B)}
+.tz-path{list-style:none;display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:0;padding:0}
+.tz-path li{display:grid;justify-items:center;gap:6px;padding:12px 0;border-radius:14px;background:var(--s2,rgba(0,0,0,.04))}.tz-path i{display:grid;place-items:center;width:24px;height:24px;color:var(--violet,#7C3AED)}.tz-path i svg{width:22px;height:22px}.tz-path b{font-size:12px;font-weight:700;letter-spacing:.04em}
+.tz-in2 .btn{margin-bottom:auto}
 </style>
 </head>
 <body>
@@ -117,11 +132,13 @@ const isUnl=k=>!TABS.some(x=>x[0]===k)||unlSet().has(k);
 let UNL_NEW=null;
 /* 做完一件事後呼叫：有新解鎖的分頁就跳提示、導覽列那顆彈一下 */
 function unlCheck(before){ const now=unlSet(), add=TABS.filter(([k])=>now.has(k)&&!before.has(k)); if(!add.length) return; UNL_NEW=add[add.length-1][0]; const k0=UNL_NEW; setTimeout(()=>{ if(UNL_NEW===k0) UNL_NEW=null; },4000);
-  toast(`🔓 解鎖了 ${add.map(x=>x[1]).join(" 和 ")}！點下面的選單看看`); if(navigator.vibrate) navigator.vibrate([12,40,12]); }
+  toast(`解鎖了 ${add.map(x=>x[1]).join(" 和 ")}，點下面的選單看看`); if(navigator.vibrate) navigator.vibrate([12,40,12]); }
 function navBar(active){ const i=Math.max(0,TABS.findIndex(x=>x[0]===active)), f=NAVP; NAVP=i; const go=f!=null&&f!==i;
   return `<nav class="nav" aria-label="試玩選單"><div class="nav-in" style="--n:${TABS.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${TABS.map(([k,l,ic])=>`<button class="nav-btn ${active===k?"on":""} ${isUnl(k)?"":"lk"} ${UNL_NEW===k?"unl":""}" data-go="${k}" ${isUnl(k)?"":'aria-disabled="true"'} ${active===k?'aria-current="page"':""}><span class="nav-ico">${ic}${k==="tie"&&CH.unread?`<span class="nbadge">${CH.unread}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`; }
-const head=(title,right="")=>`<header class="top sh-head"><div class="top-row"><div class="logo">HAECHU<small>試玩</small></div><div class="spacer"></div>${right}<span class="art-sub">${title}</span></div></header>`;
-const hint=h=>`<p class="tz-hint"><span>💡</span><span>${h}</span></p>`;
+const head=(title,right="")=>`<header class="top sh-head"><div class="top-row"><div class="logo">HAECHU<small>試玩</small></div><div class="spacer"></div>${right}</div></header>`;
+const TZ_I={bulb:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.6 10.8c.6.5 1 1.2 1 2V16h5.2v-.2c0-.8.4-1.5 1-2A6 6 0 0 0 12 3z"/></svg>',lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>'};   /* 11/17 照 unslop：提示、上鎖改用線條圖示，不用 emoji */
+const hint=h=>`<p class="tz-hint"><span class="tz-hi">${TZ_I.bulb}</span><span>${h}</span></p>`;
+const unl=t=>`<p class="tz-unl">${TZ_I.lock}${t}</p>`;
 
 /* ---------- TIE（照 App 的 TIE：聊天室列表 → 聊天室） ---------- */
 const WELCOME="嗨～我是 LUMI ✨\n這裡是只屬於我們的 TIE 💜\n跟我說說話吧！我看到就會回你～";
@@ -130,7 +147,7 @@ const lumiAv=(cls="")=>`<div class="t-av tz-l ${cls}">L</div>`;
 const tHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tryHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tryHG)"/></svg><i></i></span>`;
 function tieListHtml(){ const L=CH.msgs, last=L[L.length-1];
   return `<div class="t-glow" aria-hidden="true"></div><header class="t-lh sh-head"><div class="t-lh-side"></div><h1>TIE</h1><div class="t-lh-side r"><span class="tz-pill">試玩</span></div></header>
-    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的喔！`)}${!isUnl("sns")?`<p class="tz-unl">🔒 傳一則 TIE 給 ${IDOL.name}，就解鎖 SNS</p>`:""}<span class="t-sec">最近的聊天室</span>
+    <main class="t-list">${hint(`點 <b>${IDOL.name}</b> 的聊天室，跟她聊天。${IDOL.name} 是真人回覆的。`)}${!isUnl("sns")?unl(`傳一則 TIE 給 ${IDOL.name}，就解鎖 SNS`):""}<span class="t-sec">最近的聊天室</span>
       <button class="t-room" data-go="room">${lumiAv("lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${IDOL.name}</b></span><span class="t-room-t">${last?hm(last.ts):""}</span></div>
         <p>${last?(last.from==="fan"?"你：":"")+esc(last.text):"嗨～我是 LUMI ✨"}</p></div>${CH.unread?`<span class="t-cnt">${CH.unread}</span>`:""}</button></main>`; }
 function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.now()},...CH.msgs]; let lastDay="";
@@ -140,8 +157,8 @@ function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.n
     return sep+`<div class="t-art">${lumiAv("ring")}<div class="t-art-c"><div class="t-art-n"><span class="t-badge" style="background:#8843FB">ARTIST</span><b>${IDOL.name}</b></div><div class="t-bw"><div class="t-b">${esc(m.text)}</div><span class="t-side"><span class="t-tm">${hm(m.ts)}</span></span></div></div></div>`; }).join("");
   return `<div class="tz-room"><div class="t-bgl t-default"></div><header class="t-rh sh-head"><div class="t-rh-row"><button class="t-ib" data-go="tie" aria-label="返回">${TI.back}</button><h3>${IDOL.name}</h3><div class="t-rh-r"></div></div>
       <div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tHeart()}<span>+1</span></div></header>
-    <main class="t-msgs" id="msgs">${body}${CH.msgs.length?`<p class="tz-sys">${IDOL.name} 是真人回覆的，可能要等一下下～可以先去玩別的，回來再看 💜</p>`:""}<div id="chat-end"></div></main>
-    ${tryLeft()?`<form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?`還可以傳 ${tryLeft()} 則`:"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form>`:`<div class="t-foot tz-done"><p>試玩的 TIE 只能傳 ${TRY_MAX} 則～${IDOL.name} 是試玩用的角色，加入 HAECHU 後，就能跟在SUN KISS裡已出道藝人聊天 💜</p><button class="btn btn-main" data-go="end">看看怎麼加入</button></div>`}</div>`; }
+    <main class="t-msgs" id="msgs">${body}${CH.msgs.length?`<p class="tz-sys">${IDOL.name} 是真人回覆的，可能要等一下下～可以先去玩別的，回來再看。</p>`:""}<div id="chat-end"></div></main>
+    ${tryLeft()?`<form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?`還可以傳 ${tryLeft()} 則`:"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form>`:`<div class="t-foot tz-done"><p>試玩的 TIE 只能傳 ${TRY_MAX} 則～${IDOL.name} 是試玩用的角色，加入 HAECHU 後，就能跟在 SUN KISS 裡已出道的藝人聊天。</p><button class="btn btn-main" data-go="end">看看怎麼加入</button></div>`}</div>`; }
 function scrollMsgs(){ const e=document.getElementById("chat-end"); if(e) e.scrollIntoView({block:"end"}); }
 function nickSheet(){ layer.innerHTML=`<div class="t-modal-w" data-close="1"><div class="t-modal" role="dialog" aria-label="你的暱稱"><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你。</p><div class="t-mb"><input id="nickIn" class="t-wel-ta tpk-nk" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="t-mbtn main" id="nickOk">確認</button></div></div></div>`; setTimeout(()=>{ const i=document.getElementById("nickIn"); if(i) i.focus(); },60); }
 async function sendMsg(text){ const u0=unlSet(); const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m); unlCheck(u0); if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
@@ -149,7 +166,7 @@ async function sendMsg(text){ const u0=unlSet(); const m={id:"f"+rid(),from:"fan
   catch(e){ m.pend=0; m.fail=1; LS.set("chat",CH); render(); toast("沒傳出去，等一下會自動重傳"); startPoll(); } }
 async function resend(){ if(!CH.msgs.some(x=>x.fail)) return; try{ const v=await push({nick:CH.nick,ts:Date.now(),msgs:CH.msgs.map(x=>{ const o={...x}; delete o.pend; delete o.fail; return o; })}); CH.msgs=mergeMsgs(CH.msgs.map(x=>{ const o={...x}; delete o.fail; return o; }),v.msgs); LS.set("chat",CH); render(); }catch(e){} }
 async function poll(){ if(document.hidden) return; await resend(); if(!CH.msgs.length) return; try{ const v=await pull(); if(!v) return; const before=CH.msgs.length; CH.msgs=mergeMsgs(CH.msgs,v.msgs).map(x=>{ const o={...x}; delete o.pend; return o; });
-  if(CH.msgs.length!==before){ const n=CH.msgs.slice(before).filter(x=>x.from==="idol").length; if(n){ if(!(ST.tab==="tie"&&ST.room)) CH.unread=(CH.unread||0)+n; toast(`💜 ${IDOL.name} 回你了！`); } LS.set("chat",CH); render(); } }catch(e){} }
+  if(CH.msgs.length!==before){ const n=CH.msgs.slice(before).filter(x=>x.from==="idol").length; if(n){ if(!(ST.tab==="tie"&&ST.room)) CH.unread=(CH.unread||0)+n; toast(`${IDOL.name} 回你了`); } LS.set("chat",CH); render(); } }catch(e){} }
 function startPoll(){ if(POLL) return; POLL=setInterval(poll,8000); }
 
 /* ---------- SNS（照 App 的 SNS／IG 貼文） ---------- */
@@ -157,7 +174,7 @@ const POSTS=[{id:"p1",g:"linear-gradient(160deg,#B794FF,#FF8FC2)",t:"Good\nmorni
 const snAv=sz=>`<span class="sn-av ring tz-av2" style="--s:${sz}px"><i class="dflt">${SN_DFAV}</i></span>`;
 const fmtN=n=>n.toLocaleString();
 function snsHtml(){ return `<div class="sn"><header class="sn-top"><span class="sn-ib" aria-hidden="true"></span><span class="sn-ib sn-tic" aria-hidden="true">${si("plusL")}</span><b class="sn-logo sn-feedsw">SNS</b><span class="sn-ib sn-tic" aria-hidden="true">${si("heartL")}</span></header>
-    <main class="sn-feed">${hint("<b>點兩下照片</b>就能按愛心，跟 IG 一樣。在 HAECHU，偶像也會看到你的留言喔！")}${!isUnl("show")?`<p class="tz-unl">🔒 幫一則貼文按讚，就解鎖 FEST</p>`:""}${POSTS.map(p=>{ const on=!!ST.liked[p.id];
+    <main class="sn-feed">${hint("<b>點兩下照片</b>就能按愛心，跟 IG 一樣。在 HAECHU，偶像也會看到你的留言。")}${!isUnl("show")?unl("幫一則貼文按讚，就解鎖 FEST"):""}${POSTS.map(p=>{ const on=!!ST.liked[p.id];
       return `<article class="sn-post"><header><span class="sn-hu">${snAv(32)}<span class="sn-pu"><b>${IDOL.user}${SN_VER}</b><small>HAECHU</small></span></span><span class="sn-sp"></span><button class="sn-ib" aria-label="更多">${si("dots")}</button></header>
         <div class="sn-media"><div class="sn-car" data-dbl="${p.id}"><div class="sn-sl"><div class="tz-pic" style="background:${p.g}">${esc(p.t)}</div></div></div><i class="sn-heart" id="hh-${p.id}">${si("heart")}</i></div>
         <div class="sn-acts"><button class="${on?"liked":""}" data-like="${p.id}" aria-label="讚">${si("heart")}<b>${fmtN(p.lk+(on?1:0))}</b></button><button aria-label="留言">${si("chat")}<b>${fmtN(p.cm)}</b></button><button aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button aria-label="收藏">${si("save")}</button></div>
@@ -173,36 +190,39 @@ function showRows(){ const base=[{t:"Starlight",a:"LUMI",sc:2380,me:1},{t:"Glass
 function showHtml(){ const R=showRows(), lead=R[0], open=ST.showOpen||"ts";
   const cv=x=>`<span class="mu2-cv npc" style="background:${x.me?"linear-gradient(135deg,#B794FF,#FF8FC2)":""}">${esc(x.a[0])}</span>`;
   const rows=R.map((x,i)=>`<div class="mu3-r"><span class="mu3-n">${i+1}</span><span class="mu3-song">${cv(x)}<span class="mu3-t"><b>${esc(x.t)}</b><small>${esc(x.a)}</small></span></span><span class="mu3-sc">${fmtN(x.sc)}</span>${x.me?(ST.voted?`<span class="mu3-stamp pop">已投</span>`:`<button class="mu3-vote" data-vote="1">${MU_IC.tk}<span>投票</span></button>`):""}</div>`).join("");
-  return head("FEST")+`<main class="page mu3">${hint(`每個節目每天可以投 1 票，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 ${IDOL.name} 是第 2 名，幫她一把！`)}${!isUnl("ls")?`<p class="tz-unl">🔒 投一票，就解鎖 LIGHT</p>`:""}
+  return head("FEST")+`<main class="page mu3">${hint(`每個節目每天可以投 1 票，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 ${IDOL.name} 是第 2 名，幫她一把。`)}${!isUnl("ls")?unl("投一票，就解鎖 LIGHT"):""}
     <section class="mu2-wk mu3-wk t-r"><span class="mu2-chip">排名週</span><span class="mu2-wt"><b>每個節目每天可以投 1 票</b></span></section>
-    <div class="mu2-h"><h3>音樂節目</h3></div>
+    <div class="mu2-h"><h3>音樂節目</h3><small class="tz-only">試玩只能投 THE SHOW</small></div>
     <div class="mu3-list">${MU_SHN.map(([id,n1,n2],k)=>{ const on=open===id, me=k===0;
-      return `<section class="mu3-sh s-${id} ${on?"open":""}"><button class="mu3-hd" data-show="${id}" aria-expanded="${on}"><span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${me?`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(lead.a)}</span>`:`<span class="mu3-st muted">試玩只開放 THE SHOW</span>`}<em class="mu3-end">${MU_END[id]}</em></span><span class="mu3-chev">${MU_IC.chev}</span></button>
+      return `<section class="mu3-sh s-${id} ${on?"open":""}"><button class="mu3-hd" data-show="${id}" aria-expanded="${on}"><span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${me?`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(lead.a)}</span>`:``}<em class="mu3-end">${MU_END[id]}</em></span><span class="mu3-chev">${MU_IC.chev}</span></button>
         <div class="mu3-bd">${me?(ST.voted?`<p class="mu3-vt">今天投給了《Starlight》</p>`:"")+rows:`<p class="me-none">試玩只開放 THE SHOW 投票</p>`}</div></section>`; }).join("")}</div>
-    <div class="tz-win ${ST.voted?"on":""}"><b>🏆 ${IDOL.name} 拿下一位！</b>在 HAECHU，打歌一位、AK、三冠王都是粉絲一起投出來的。</div></main>`; }
+    <div class="tz-win ${ST.voted?"on":""}"><b>${IDOL.name} 拿下一位</b>在 HAECHU，打歌一位、AK、三冠王都是粉絲一起投出來的。</div></main>`; }
 
 /* ---------- 應援棒：用 App 的 3D 應援棒（同一份程式、同一套彈簧手感） ---------- */
 const COLS=["#C7AEFF","#FF8FC2","#7FE0FF","#FFE08A","#9CF5B5"];
 let LSD=null; const lsDesign=()=>LSD||(LSD=LS3D.analyze(LS3D.sample("round","#B794FF","#FF8FC2","L")));
-function lsHtml(){ return head("LIGHT")+`<main class="page">${hint("<b>左右拖動</b>揮舞、<b>上下拖動</b>前後搖擺，揮得越用力越亮。演唱會時，全場的應援棒會跟著音樂一起亮！")}
-  ${!isUnl("end")?`<p class="tz-unl" id="lsLock">🔒 晃一下應援棒，就解鎖 JOIN</p>`:""}<section class="card tz-ls"><div class="ls-box tz-lsb" id="lsBox"></div>
+function lsHtml(){ return head("LIGHT")+`<main class="page">${hint("<b>左右拖動</b>揮舞、<b>上下拖動</b>前後搖擺，揮得越用力越亮。演唱會時，全場的應援棒會跟著音樂一起亮。")}
+  ${!isUnl("end")?`<p class="tz-unl" id="lsLock">${TZ_I.lock}晃一下應援棒，就解鎖 JOIN</p>`:""}<section class="card tz-ls"><div class="ls-box tz-lsb" id="lsBox"></div>
   <div class="tz-cols">${COLS.map(c=>`<button class="${c===ST.col?"on":""}" data-col="${c}" style="background:${c}" aria-label="換顏色"></button>`).join("")}</div>
-  <p id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下 💜`:"拖動應援棒揮揮看"}</p></section></main>`; }
+  <p id="lsCnt">${ST.waves?`已經揮了 ${ST.waves} 下`:"拖動應援棒揮揮看"}</p></section></main>`; }
 let lsAcc=0;
-function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ if(!ST.done.ls&&v>1){ const u0=unlSet(); done("ls"); unlCheck(u0); const nv=document.querySelector("nav.nav"); if(nv) nv.outerHTML=navBar(ST.tab); const k=document.getElementById("lsLock"); if(k) k.remove(); }   /* 晃一下就解鎖 JOIN（不重畫整頁，應援棒不會斷） */ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下 💜`; } }}); }catch(e){ el.innerHTML=""; } }
+function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ if(!ST.done.ls&&v>1){ const u0=unlSet(); done("ls"); unlCheck(u0); const nv=document.querySelector("nav.nav"); if(nv) nv.outerHTML=navBar(ST.tab); const k=document.getElementById("lsLock"); if(k) k.remove(); }   /* 晃一下就解鎖 JOIN（不重畫整頁，應援棒不會斷） */ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下`; } }}); }catch(e){ el.innerHTML=""; } }
 
 /* ---------- 結尾 ---------- */
-function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分 💜</h2><p>HAECHU 是 <b>K-pop 偶像角色扮演（RP）社群</b>：每位偶像都是社群成員自己創造、自己扮演的<b>原創藝人</b>。不是真的韓國偶像，也不是 AI 或二次元角色。在 TIE 跟你聊天的，是扮演那位偶像的成員本人。</p>
-  <section class="card tz-how"><h3>💜 在 HAECHU 怎麼玩</h3><ol><li><b>加入後先當粉絲</b>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</li><li><b>想當偶像？從練習生開始</b>在社群累積積分（打卡、宣群、發文、創作…），準備好藝名、Teaser 和 MV，在 App 裡申請出道。</li><li><b>出道</b>管理員審核通過、出道日一到，就有自己的 TIE、SNS、打歌。當粉絲時累積的積分會原封不動帶過去。</li></ol><p class="tz-how-n">只想追星停在第 1 步就好，想出道就繼續往下。</p></section>
+function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分</h2><p>HAECHU 是 <b>K-pop 偶像角色扮演（RP）社群</b>：每位偶像都是社群成員自己創造、自己扮演的<b>原創藝人</b>。不是真的韓國偶像，也不是 AI 或二次元角色。在 TIE 跟你聊天的，是扮演那位偶像的成員本人。</p>
+  <section class="card tz-how"><h3>在 HAECHU 怎麼玩</h3><ol><li><b>加入後先當粉絲</b>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</li><li><b>想當偶像？從練習生開始</b>在社群累積積分（打卡、宣群、發文、創作…），準備好藝名、Teaser 和 MV，在 App 裡申請出道。</li><li><b>出道</b>管理員審核通過、出道日一到，就有自己的 TIE、SNS、打歌。當粉絲時累積的積分會原封不動帶過去。</li></ol><p class="tz-how-n">只想追星停在第 1 步就好，想出道就繼續往下。</p></section>
   <a class="btn btn-main btn-block" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
   <a class="btn btn-soft btn-block" href="../">我已經有帳號，回到 HAECHU</a></main>`; }
 
 /* ---------- 畫面 ---------- */
 function done(k){ if(ST.done[k]) return; ST.done[k]=1; LS.set("done",ST.done); }
 function render(){
-  if(ST.tab==="intro"){ root.innerHTML=`<div class="app no-nav"><div class="tz-in"><span class="tz-av">L</span><h1>來當一次粉絲吧！</h1><p>這是 HAECHU 的試玩，不用帳號。<br>示範偶像 <b>${IDOL.name}</b> 會陪你玩一遍。</p>
-    <section class="card">${[["💌",`收到 ${IDOL.name} 的 TIE，跟她聊天（真人回覆）`],["🔓",`一關接一關解鎖：傳 TIE → SNS 按讚 → FEST 投票 → 晃應援棒（TIE 最多 3 則）`],["📸","滑她的 SNS，點兩下按愛心"],["🏆","幫她打歌，衝上一位"],["🪄","揮 3D 應援棒"]].map(([e,t])=>`<div class="tz-st"><em>${e}</em><span>${t}</span></div>`).join("")}</section>
-    <button class="btn btn-main btn-block" data-go="tie">開始</button></div></div>`; return; }
+  if(ST.tab==="intro"){ /* 11/17 開場：不用置中大頭貼＋清單的模板，直接像收到一則 TIE */
+    root.innerHTML=`<div class="app no-nav"><div class="tz-in2"><div class="tz-brand">HAECHU<small>試玩・不用帳號</small></div>
+    <button class="tz-push" data-go="tie"><span class="tz-pav">L</span><span class="tz-pt"><b>${IDOL.name}<em>TIE・現在</em></b><span>嗨～我是 ${IDOL.name} ✨ 這裡是只屬於我們的 TIE，跟我說說話吧</span></span></button>
+    <h1>你收到一則 TIE</h1><p class="tz-lead">${IDOL.name} 是試玩用的偶像，回你的是真人。跟她聊一句，就會一關一關解鎖：</p>
+    <ol class="tz-path">${TABS.slice(0,4).map(([k,l,ic])=>`<li><i>${ic}</i><b>${l}</b></li>`).join("")}</ol>
+    <button class="btn btn-main btn-block" data-go="tie">打開 TIE</button></div></div>`; return; }
   if(ST.tab==="tie"&&ST.room){ root.innerHTML=`<div class="app no-nav">${roomHtml()}</div>`; requestAnimationFrame(scrollMsgs); const i=document.getElementById("tieIn"); if(i&&ST.draft) i.value=ST.draft; return; }
   if(!isUnl(ST.tab)) ST.tab="tie";
   const chg=PREV_TAB!==ST.tab; PREV_TAB=ST.tab; const sc0=document.querySelector(".sn"), y0=chg?0:window.scrollY, sy0=!chg&&sc0?sc0.scrollTop:0;
@@ -215,7 +235,7 @@ function render(){
 let PREV_TAB=null;
 function go(k){ if(k==="room"){ ST.room=true; CH.unread=0; LS.set("chat",CH); render(); if(!CH.nick) setTimeout(nickSheet,280); return; }
   if(k==="tie"&&ST.room){ ST.room=false; render(); return; }
-  if(TABS.some(x=>x[0]===k)&&!isUnl(k)){ toast(`🔒 ${UNL_REQ[k]()}，就能解鎖 ${TABS.find(x=>x[0]===k)[1]}`); return; }
+  if(TABS.some(x=>x[0]===k)&&!isUnl(k)){ toast(`${UNL_REQ[k]()}，就能解鎖 ${TABS.find(x=>x[0]===k)[1]}`); return; }
   if(UNL_NEW===k) UNL_NEW=null;
   ST.tab=k; ST.room=false; LS.set("tab",k); if(k==="end") done("end"); render(); window.scrollTo(0,0); }
 
@@ -223,7 +243,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-go],[data
   if(t.dataset.go) return go(t.dataset.go);
   if(t.dataset.like) return like(t.dataset.like);
   if(t.dataset.show){ ST.showOpen=ST.showOpen===t.dataset.show?"_":t.dataset.show; render(); return; }
-  if(t.dataset.vote){ if(ST.voted) return; const u0=unlSet(); ST.voted=true; done("show"); render(); toast("🏆 謝謝你的一票！"); setTimeout(()=>{ unlCheck(u0); render(); },900); return; }
+  if(t.dataset.vote){ if(ST.voted) return; const u0=unlSet(); ST.voted=true; done("show"); render(); toast("投好了，謝謝你的一票"); setTimeout(()=>{ unlCheck(u0); render(); },900); return; }
   if(t.dataset.col){ ST.col=t.dataset.col; document.querySelectorAll("[data-col]").forEach(b=>b.classList.toggle("on",b===t)); const el=document.getElementById("lsBox"); if(el&&el._ls) el._ls.set("glow",ST.col); return; }
   if(t.id==="nickOk"){ const v=(document.getElementById("nickIn").value||"").trim(); if(!v){ toast("先取一個暱稱"); return; } if(PROF_RE.test(v.replace(/\s+/g,""))){ toast("暱稱裡有不好的字詞"); return; } CH.nick=v; LS.set("chat",CH); layer.innerHTML=""; render(); setTimeout(()=>{ const i=document.getElementById("tieIn"); if(i) i.focus(); },50); return; }
   if(t.dataset.close&&e.target===t){ layer.innerHTML=""; return; } });
