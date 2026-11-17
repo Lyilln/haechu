@@ -372,8 +372,8 @@ html[data-theme="dark"] .ann-go{background:#F5E6B8!important;color:#26232E!impor
 .mk-l{display:flex;gap:8px;align-items:flex-start}.mk-l i{width:30px;height:30px;border-radius:50%;flex:none}
 .mk-r{display:flex;justify-content:flex-end}
 .mk-b{position:relative;font-size:13px;line-height:1.4;padding:8px 12px;border-radius:16px;border:1.5px solid;max-width:190px}
-.mk-deco{position:absolute;right:-7px;top:-8px;width:16px;height:16px}
-.mk-r .mk-deco{right:auto;left:-7px}
+.mk-deco{position:absolute;right:10px;top:-10px;width:15px;height:15px}
+.mk-r .mk-deco{right:auto;left:10px}
 .mk-in{position:absolute;left:0;right:0;bottom:0;height:60px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:22px}.mk-in i{flex:1;height:34px;border-radius:999px}
 /* TIE 聊天室的主題背景：主角插圖＋花邊 */
 .th-chat{overflow:hidden}
