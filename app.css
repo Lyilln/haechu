@@ -4318,6 +4318,7 @@ html[data-theme="dark"] .t-rh,html[data-theme="dark"] .t-foot{background:#323137
 .th-sub{margin:4px 0 6px!important;font-size:12px}
 .nav-btn .th-ic.th-on{animation:thOnPop .42s cubic-bezier(.3,1.6,.5,1)}@keyframes thOnPop{0%{transform:scale(.7)}100%{transform:scale(1)}}
 .mk-deco2{top:auto!important;bottom:-9px}
+.mk-l .mk-b{border-radius:4px 16px 16px 16px}.mk-r .mk-b{border-radius:16px 16px 4px 16px}   /* 11/17 預覽的對話框跟真的 TIE 一樣形狀 */
 
 /* HAECHU｜TIE 氣泡、SHOP 首頁、直播間、SNS 新版 */
 /* ===== TIE 聊天氣泡：照 Bubble（白泡泡、虛線下面是翻譯）＋ LINE 語音膠囊 ===== */
