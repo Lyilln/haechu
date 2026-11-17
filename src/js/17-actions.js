@@ -719,6 +719,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "thGuide": openThGuide(); break;
     case "thAutoCol": { const d=thDraft(r.id); thAutoColor(d).then(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); }); break; }
     case "thDarkGen": { const d=thDraft(r.id); thDarkFrom(d); ui.thEdV="dark"; { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("已產生深色版，可以再微調"); break; }
+    case "thUpOk": case "thUpNo": { const L=getThemes(), i=L.findIndex(z=>z.id===t.dataset.v); if(i<0||!L[i].upd) break; const u={...L[i].upd}; delete u.ts; L[i]=a==="thUpOk"?{...L[i],...u,ver:(L[i].ver||1)+1}:{...L[i]}; delete L[i].upd; saveThemes(L); applyTheme(); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(a==="thUpOk"?"已更新，有這套主題的人會收到通知":"已退回更新，舊版照樣上架"); break; }
     case "thOk": case "thNo": case "thOnOff": { const L=getThemes(), x=L.find(z=>z.id===t.dataset.v); if(!x) break; x.status=a==="thOk"?"on":a==="thNo"?"rejected":x.status==="on"?"off":"on"; saveThemes(L); applyTheme(); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(a==="thOk"?"已通過，上架到 "+TH_STORE:a==="thNo"?"已退回":x.status==="on"?"已上架":"已下架"); break; }
     case "themeSet": S.set(K.theme,t.dataset.v); applyTheme(); layer.innerHTML=""; render(); break;
     case "fsView": openSignedView(t.dataset.v); break;

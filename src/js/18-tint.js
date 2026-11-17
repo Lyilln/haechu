@@ -20,7 +20,15 @@ let MS_BUILT=null;
 const msBuilt=()=>MS_BUILT||(MS_BUILT=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室和選單圖示都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.UTC(2026,9,1)-i*DAY})));
 const getThemes=()=>{ const L=(S.get(K.themes,[])||[]).map(t=>t.id==="th_ms_dog"&&t.light&&/^#(CDE9C0|9ED68A)$/i.test(t.light.bar)?{...t,light:msBuilt()[1].light,dark:msBuilt()[1].dark}:t), have=new Set(L.map(t=>t.id)); return [...msBuilt().filter(t=>!have.has(t.id)),...L]; };
 const saveThemes=L=>S.set(K.themes,L.filter(t=>!(String(t.id).startsWith("th_ms_")&&msBuilt().some(x=>x.id===t.id&&JSON.stringify(x)===JSON.stringify(t)))));
-const thById=id=>getThemes().find(t=>t.id===id);
+const thById=id=>{ if(String(id).startsWith("upd:")){ const t=getThemes().find(x=>x.id===id.slice(4)); return t&&t.upd?{...t,...t.upd,id:t.id}:t; } return getThemes().find(t=>t.id===id); };
+/* 11/17 照 LINE：上架後藝人也能改，送出的是「更新」——審核期間舊版照常上架；有這套主題的人會收到「OOO 主題更新中」，通過後收到「OOO 主題更新完畢」 */
+function thUpdNotify(){ const s=session(); if(!s||s.role==="admin") return; const own=thOwned(), seen=S.get(acK("daisuki_th_seen"),{}); let ch=false; const L=S.get(K.notifs,[]);
+  own.forEach(id=>{ const t=thById(id); if(!t) return; const o=seen[id]||{v:t.ver||1,u:0}; if(!seen[id]) ch=true;
+    const say=txt=>{ L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,text:txt,ts:Date.now()}); S.set(K.unread,"1"); };
+    if(t.upd&&o.u!==t.upd.ts){ o.u=t.upd.ts; ch=true; say(`「${t.name}」主題更新中`); }
+    if((t.ver||1)>o.v){ o.v=t.ver||1; o.u=0; ch=true; say(`「${t.name}」主題更新完畢`); if(thCurId()===id) setTimeout(()=>toast(`「${t.name}」主題更新完畢`),600); }
+    seen[id]=o; });
+  if(ch){ S.set(acK("daisuki_th_seen"),seen); S.set(K.notifs,L.slice(0,100)); } }
 /* 每個帳號自己的（藝人帳號切到粉絲端也是同一份） */
 const acK=k=>{ const s=session(); const e=s&&s.email?String(s.email).toLowerCase():""; return !e||e===DEMO_FAN?k:k+"@"+e; };
 const thOwned=()=>{ const L=getThemes(), off=L.filter(t=>t.scope==="app"&&t.status==="on").map(t=>t.id); return [...new Set([...off,...S.get(acK(K.thOwned),[])])].filter(id=>{ const t=L.find(x=>x.id===id); return t&&t.status!=="deleted"; }); };
@@ -199,14 +207,14 @@ function viewLook(){
     <div class="th-my">${["",...own].map(id=>{ const x=id?thById(id):null, on=R.on?R.sel.indexOf(id)+1:(cur===id), del=ui.thEditMode&&x&&x.scope!=="app";
       return `<div class="th-mi"><button class="th-mi-c" data-a="${del?"thDel":"thUse"}" data-v="${id}">${x?thCover(x):`<span class="th-cov basic"><b>${esc(APP_NAME)}</b></span>`}</button>
         ${del?`<button class="th-dot del" data-a="thDel" data-v="${id}" aria-label="刪除">${XI}</button>`:R.on?`<button class="th-dot ${on?"on":""}" data-a="thRotPick" data-v="${id}" aria-label="加入輪播">${on||""}</button>`:`<span class="th-dot ${on?"on":""}">${on?"✓":""}</span>`}
-        <b>${x?esc(x.name):"基本"}</b><small>有效期間・無期限</small></div>`; }).join("")}</div>
+        <b>${x?esc(x.name):"基本"}</b><small>${x&&x.upd?"更新中":"有效期間・無期限"}</small></div>`; }).join("")}</div>
     <button class="btn btn-soft btn-block th-goshop" data-a="thStore">到 ${TH_STORE} 逛主題</button>
   </main>`;
 }
 
 /* ---------- 做主題：管理員自己做，或藝人送申請 ---------- */
 const thBlank=()=>{ const s=session()||{}, m=s.member&&MEMBERS[s.member]; return {name:"",desc:"",scope:m?"member":"group",gid:m?m.group:(GROUPS[0]||{}).id||"",mid:s.member||"",price:0,modes:"both",light:{...TH_DEF.light},dark:{...TH_DEF.dark},icons:{},cover:"",pattern:"",art:"",strip:"",deco:"",bubMe:"",bubArt:""}; };
-function thDraft(id){ if(!ui.thDraft||ui.thDraft._for!==(id||"new")){ const t=id&&thById(id), b=thBlank(); const d={...b,...(t?JSON.parse(JSON.stringify(t)):{}),_for:id||"new"};
+function thDraft(id){ if(!ui.thDraft||ui.thDraft._for!==(id||"new")){ const t=id&&thById(id), b=thBlank(); const d={...b,...(t?JSON.parse(JSON.stringify(session().role!=="admin"&&t.upd?{...t,...t.upd}:t)):{}),_for:id||"new"}; delete d.upd;
     d.light={...TH_DEF.light,...(d.light||{})}; d.dark={...TH_DEF.dark,...(d.dark||{})}; d.icons=d.icons||{}; if(!d.art) d.art=thArtOf(d); ui.thDraft=d; ui.thEdV=ui.thEdV||"light"; } return ui.thDraft; }
 const thEdVar=d=>d.modes==="both"?(ui.thEdV||"light"):d.modes;
 function thEdPv(d){ const dk=thEdVar(d)==="dark"; return ["home","chat"].map(k=>`<figure>${thMock(k,d,dk,.42)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室"}[k]}</figcaption></figure>`).join(""); }
@@ -248,16 +256,17 @@ function thSave(id){ const s=session(), adm=s.role==="admin", d=thDraft(id);
   if(base.modes==="light") base.dark=null; if(base.modes==="dark") base.light=null;
   ["light","dark"].forEach(k=>{ if(base[k]) delete base[k].img; });
   try{
-    if(id){ const i=L.findIndex(x=>x.id===id); if(i>=0) L[i]={...L[i],...base,status:adm?"on":"pending"}; }
+    if(id){ const i=L.findIndex(x=>x.id===id); if(i>=0){ if(!adm&&L[i].status==="on"){ ["id","status","by","owner","ts","ver","upd"].forEach(k=>delete base[k]); L[i]={...L[i],upd:{...base,ts:Date.now()}}; saveThemes(L); ui.thDraft=null; toast("已送出更新，審核期間舊版照樣上架"); navBack(); return; }
+      L[i]={...L[i],...base,status:adm?"on":"pending"}; if(adm&&L[i].status==="on") L[i].ver=(L[i].ver||1)+1; } }
     else L.unshift({...base,id:uid("th"),by:adm?"admin":"artist",owner:s.email,status:adm?"on":"pending",ts:Date.now()});
     saveThemes(L);
   }catch(e){ toast("圖片太大，存不下來，請換小一點的圖"); return; }
   ui.thDraft=null; applyTheme(); toast(adm?"已上架到 "+TH_STORE:"已送出，等管理員審核"); navBack(); }
 const TH_ST={on:"上架中",off:"已下架",pending:"審核中",rejected:"沒有通過"};
-function thAdminRow(t,mine){ return `<div class="th-ar">${thCover(t,"row")}<div class="th-ar-b"><b>${esc(t.name)}</b><small>${t.scope==="member"?"藝人":"團"}・${esc(thFor(t))}・${thModeTxt(t)}・${t.price?fmt(t.price)+" 積分":"免費"}</small><span class="th-st ${t.status}">${TH_ST[t.status]||""}${t.by==="artist"&&!mine?"・藝人申請":""}</span>${(()=>{ const n=thCheck(t).length; return n?`<span class="th-warn">⚠ ${n} 個提醒</span>`:`<span class="th-good">✓ 自動檢查沒問題</span>`; })()}
-  <div class="th-ar-a"><button class="btn btn-soft btn-sm" data-a="thOpen" data-v="${t.id}">預覽</button>${mine?(t.status!=="on"?`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button>`:""):t.status==="pending"?`<button class="btn btn-main btn-sm" data-a="thOk" data-v="${t.id}">通過</button><button class="btn btn-soft btn-sm" data-a="thNo" data-v="${t.id}">退回</button>`
+function thAdminRow(t,mine){ return `<div class="th-ar">${thCover(t,"row")}<div class="th-ar-b"><b>${esc(t.name)}</b><small>${t.scope==="member"?"藝人":"團"}・${esc(thFor(t))}・${thModeTxt(t)}・${t.price?fmt(t.price)+" 積分":"免費"}</small><span class="th-st ${t.upd?"pending":t.status}">${t.upd?"更新審核中":TH_ST[t.status]||""}${t.by==="artist"&&!mine?"・藝人申請":""}</span>${(()=>{ const n=thCheck(t).length; return n?`<span class="th-warn">⚠ ${n} 個提醒</span>`:`<span class="th-good">✓ 自動檢查沒問題</span>`; })()}
+  <div class="th-ar-a"><button class="btn btn-soft btn-sm" data-a="thOpen" data-v="${t.id}">預覽</button>${mine?`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">${t.status==="on"?"更新":"編輯"}</button>`:t.upd?`<button class="btn btn-soft btn-sm" data-a="thOpen" data-v="upd:${t.id}">看更新</button><button class="btn btn-main btn-sm" data-a="thUpOk" data-v="${t.id}">通過更新</button><button class="btn btn-soft btn-sm" data-a="thUpNo" data-v="${t.id}">退回</button>`:t.status==="pending"?`<button class="btn btn-main btn-sm" data-a="thOk" data-v="${t.id}">通過</button><button class="btn btn-soft btn-sm" data-a="thNo" data-v="${t.id}">退回</button>`
     :`<button class="btn btn-soft btn-sm" data-a="thEdit" data-v="${t.id}">編輯</button><button class="btn btn-soft btn-sm" data-a="thOnOff" data-v="${t.id}">${t.status==="on"?"下架":"上架"}</button>`}</div></div></div>`; }
-function viewThAdmin(){ const L=getThemes().filter(t=>t.status!=="deleted"), pend=L.filter(t=>t.status==="pending"), rest=L.filter(t=>t.status!=="pending");
+function viewThAdmin(){ const L=getThemes().filter(t=>t.status!=="deleted"), pend=L.filter(t=>t.status==="pending"||t.upd), rest=L.filter(t=>t.status!=="pending"&&!t.upd);
   /* 11/12：跟營運其他頁一樣（上面三段切換、下面導覽列）；「新增主題」改到右上角＋，不再頂在最上面 */
   return `${uniHead("主題管理",`<button class="icon-btn" data-a="thNew" aria-label="新增主題">＋</button>`)}<main class="page">
     ${pend.length?`<div class="section-h">藝人申請<span class="muted">${pend.length} 件</span></div><section class="card th-al">${pend.map(t=>thAdminRow(t,false)).join("")}</section>`:""}
