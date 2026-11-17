@@ -475,7 +475,7 @@ html[data-theme] body .cf-padc canvas{background:transparent!important}
 /* 打歌：週期條字置中、虛擬對手 */
 .mur-band span{display:flex!important;align-items:center;justify-content:center;line-height:1;padding:0!important}
 .mur-band span b{font-weight:800;font-size:12.5px;line-height:1}
-.mu3-r.npc{opacity:.72}.mu3-r.npc .mu3-song{cursor:default}
+.mu3-r.npc{}.mu3-r.npc .mu3-song{cursor:default}
 .mu2-cv.npc{display:grid;place-items:center;background:linear-gradient(135deg,#6B6680,#3B3748)!important;color:#fff;font-weight:800;font-size:12px}
 .mu2-wt small{display:block;margin-top:3px;font-size:11.5px;opacity:.8}
 /* 留言卡、粉絲貼文卡：中間要有間距，不要黏在一起 */
