@@ -394,9 +394,12 @@ function viewFan(tab){
   return fanHeader(false)+`<main class="page">${emptyBox(ic,t,d,`<button class="btn btn-soft" data-a="tab" data-v="home">回首頁</button>`)}</main>`;
 }
 const NAVP={};
+/* 11/18：導覽列的光圈只在「剛按了導覽列」時滑過去；其他時候（頁面裡切分頁、重畫、同步）直接停在對的位置，不再亂跑 */
+const navTapped=()=>Date.now()-(window.__navTap||0)<1200;
+document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest(".nav")) window.__navTap=Date.now(); },true);
 function navBar(items,active,badges={}){
   const r=(session()||{}).role||"x", i=Math.max(0,items.findIndex(x=>x[0]===active)), f=NAVP[r]; NAVP[r]=i;
-  const go=f!=null&&f!==i;
+  const go=f!=null&&f!==i&&navTapped();
   return `<nav class="nav" aria-label="主選單"><div class="nav-in" style="--n:${items.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${items.map(([k,l,ic])=>`
     <button class="nav-btn ${active===k?"on":""}" data-a="tab" data-v="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${thIcon(k,active===k)||ic}${badges[k]==="dot"?`<span class="ndot" aria-label="直播中"></span>`:badges[k]==="moon"?`<span class="nmoon" aria-label="有未讀">${MOON}</span>`:badges[k]?`<span class="nbadge">${badges[k]>99?"99+":badges[k]}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`;
 }

@@ -2459,7 +2459,7 @@ function dbPage(title,okAct,f,secs){ const old=layer.querySelector(".dbx-b"), sk
   setLayer(`<div class="dbx" role="dialog" aria-label="${esc(title)}"><header class="dbx-h"><button class="dbx-x" data-a="tCloseLayer">取消</button><b>${esc(title)}</b>${f.sv?(f.svRo?`<span class="dbx-ok"></span>`:`<button class="dbx-ok" data-a="svDbSave" ${f.busy?"disabled":""}>儲存</button>`):`<button class="dbx-ok" data-a="${okAct}" ${f.busy?"disabled":""}>${f.editId||f.adm?"儲存":"送出"}</button>`}</header>
     <nav class="dbx-steps">${secs.map(([n],i)=>`<button class="${i===st?"on":i<st?"done":""}" data-a="dbStep" data-v="${i}"><i>${i+1}</i>${esc(n)}</button>`).join("")}</nav>
     <div class="dbx-b" data-st="${st}">${f.busy?`<p class="db-busy">${f.busy}</p>`:""}
-      <button class="dbx-ck1" data-a="dbCk"><b>宣傳完整度</b><em>${ck.length-miss}／${ck.length}</em><span>${ui.dbCkOpen?"收起":"看細項"}</span></button>${ui.dbCkOpen?`<div class="dbx-ckl">${ck.map(([l,ok])=>`<span class="${ok?"ok":""}">${ok?"✓":"○"} ${l}</span>`).join("")}</div>`:""}
+      <button class="dbx-ck1" data-a="dbCk"><b>${miss?`宣傳資料還缺 ${miss} 項`:"宣傳資料都填好了"}</b><em>${ck.length-miss}／${ck.length}</em><span>${ui.dbCkOpen?"收起":miss?"看缺什麼":"看清單"}</span></button>${ui.dbCkOpen?`<p class="dbx-ckn">出道當天會自動發的宣傳（預告照、概念照、MV…），沒填的那幾項就不會發。這裡只是幫你看還缺什麼，必填的欄位送出時會另外提醒。</p><div class="dbx-ckl">${ck.map(([l,ok])=>`<span class="${ok?"ok":""}">${ok?"✓":"○"} ${l}</span>`).join("")}</div>`:""}
       <section class="dbx-s"><h4><i>${st+1}</i>${h}</h4>${d?`<p class="dbx-d">${d}</p>`:""}${body}${h==="宣傳排程"?`<div class="dbx-pv"><b>自動發文時間表</b>${dbPlanPv(f)||`<p class="dbx-d">選好日期就會出現</p>`}</div>`:""}</section>
       <div class="dbx-nav">${st>0?`<button class="btn btn-soft" data-a="dbStep" data-v="${st-1}">上一步</button>`:"<span></span>"}${last&&f.sv?(f.svRo?"<span></span>":`<button class="btn btn-soft" data-a="svDbDraft">存草稿</button><button class="btn btn-soft" data-a="svDbSave">儲存</button><button class="btn btn-main" data-a="${okAct}" ${f.busy?"disabled":""}>正式送出</button>`):last?`<button class="btn btn-main" data-a="${okAct}" ${f.busy?"disabled":""}>${f.editId||f.adm?"儲存":"送出"}</button>`:`<button class="btn btn-main" data-a="dbStep" data-v="${st+1}">下一步</button>`}</div>
 </div></div>`,"dbx");
@@ -3795,14 +3795,14 @@ function paint(html,hasNav,navHtml=""){
     if(app&&ui._syncPaint&&!pgChg){ try{ morphNode(app,box.firstElementChild); }catch(e){ const a2=root.querySelector(":scope > .app"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`; if(a2) a2.replaceWith(box.firstElementChild); } }
     else if(app) app.replaceWith(box.firstElementChild); else root.prepend(box.firstElementChild);
     const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
-    const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ const f0=parseFloat(L.style.getPropertyValue("--i")); L.classList.remove("go"); L.style.setProperty("--i",i); L.style.setProperty("--f",i); if(!AN.lens(L,f0,i)) L.style.transform=""; }
+    const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ const f0=parseFloat(L.style.getPropertyValue("--i")); L.classList.remove("go"); L.style.setProperty("--i",i); L.style.setProperty("--f",i); if(!(f0!==i&&navTapped()&&AN.lens(L,f0,i))) L.style.transform=""; }
   } else if(!hasNav&&!oldNav&&ui._syncPaint&&!pgChg&&root.querySelector(":scope > .app")&&root.children.length===1){ const box=document.createElement("div"); box.innerHTML=`<div class="app no-nav${pc}">${html}</div>`; try{ morphNode(root.querySelector(":scope > .app"),box.firstElementChild); }catch(e){ root.innerHTML=box.innerHTML; } }
   else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
   /* 保險：這頁應該有導覽列卻不見了，補回去 */
   if(hasNav&&navHtml&&!root.querySelector(":scope > .nav")) root.insertAdjacentHTML("beforeend",navHtml);
   /* SNS 下面的分頁列：保留原本那條，鏡片直接滑過去，不要整條重畫（才順） */
   { const nw=root.querySelector(".sn-nav2"); if(oldSn&&nw&&oldSn!==nw){ const oL=oldSn.querySelector(".nav-lens"), nL=nw.querySelector(".nav-lens"), ob=[...oldSn.querySelectorAll(".nav-btn")], nb=[...nw.querySelectorAll(".nav-btn")];
-      if(oL&&nL&&ob.length===nb.length){ ob.forEach((b,k)=>{ b.className=nb[k].className; b.querySelector(".nav-ico").innerHTML=nb[k].querySelector(".nav-ico").innerHTML; }); const i=nb.findIndex(b=>b.classList.contains("on")), f0=parseFloat(oL.style.getPropertyValue("--i")); oL.classList.remove("go"); if(i>=0){ oL.style.setProperty("--i",i); oL.style.setProperty("--f",i); } if(!(i>=0&&AN.lens(oL,f0,i))) oL.style.transform=""; nw.replaceWith(oldSn); } } }
+      if(oL&&nL&&ob.length===nb.length){ ob.forEach((b,k)=>{ b.className=nb[k].className; b.querySelector(".nav-ico").innerHTML=nb[k].querySelector(".nav-ico").innerHTML; }); const i=nb.findIndex(b=>b.classList.contains("on")), f0=parseFloat(oL.style.getPropertyValue("--i")); oL.classList.remove("go"); if(i>=0){ oL.style.setProperty("--i",i); oL.style.setProperty("--f",i); } if(!(i>=0&&f0!==i&&navTapped()&&AN.lens(oL,f0,i))) oL.style.transform=""; nw.replaceWith(oldSn); } } }
   if(AN.ok()){ root.querySelectorAll(".nav-lens.go").forEach(L=>AN.lens(L,parseFloat(L.style.getPropertyValue("--f")),parseFloat(L.style.getPropertyValue("--i")))); if(anPa) AN.page(root.querySelector(":scope > .app"),anPa,fixedPage); }
   hydrateMedia(root); try{ snMusWatch(); }catch(e){} try{ truckAttach(); }catch(e){} tieFootPad(); try{ lvLockSync(); }catch(e){} try{ const sw=document.querySelector(".uni-sw"); document.documentElement.style.setProperty("--uniH",sw?sw.offsetHeight+"px":"0px"); }catch(e){} if(VP.mid) vpUI(); try{ lvMiniMount(); }catch(e){}
   const tev=document.getElementById("tev"); if(tev){ tev.focus(); tev.setSelectionRange(tev.value.length,tev.value.length); }
@@ -4499,9 +4499,12 @@ function viewFan(tab){
   return fanHeader(false)+`<main class="page">${emptyBox(ic,t,d,`<button class="btn btn-soft" data-a="tab" data-v="home">回首頁</button>`)}</main>`;
 }
 const NAVP={};
+/* 11/18：導覽列的光圈只在「剛按了導覽列」時滑過去；其他時候（頁面裡切分頁、重畫、同步）直接停在對的位置，不再亂跑 */
+const navTapped=()=>Date.now()-(window.__navTap||0)<1200;
+document.addEventListener("click",e=>{ if(e.target.closest&&e.target.closest(".nav")) window.__navTap=Date.now(); },true);
 function navBar(items,active,badges={}){
   const r=(session()||{}).role||"x", i=Math.max(0,items.findIndex(x=>x[0]===active)), f=NAVP[r]; NAVP[r]=i;
-  const go=f!=null&&f!==i;
+  const go=f!=null&&f!==i&&navTapped();
   return `<nav class="nav" aria-label="主選單"><div class="nav-in" style="--n:${items.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${items.map(([k,l,ic])=>`
     <button class="nav-btn ${active===k?"on":""}" data-a="tab" data-v="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${thIcon(k,active===k)||ic}${badges[k]==="dot"?`<span class="ndot" aria-label="直播中"></span>`:badges[k]==="moon"?`<span class="nmoon" aria-label="有未讀">${MOON}</span>`:badges[k]?`<span class="nbadge">${badges[k]>99?"99+":badges[k]}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`;
 }
@@ -10520,7 +10523,7 @@ function snHasStory(d,uid){ return snActiveStories(d).some(s=>s.uid===uid); }
 function snStorySeen(d,uid){ const me=snMeId(), st=snActiveStories(d).filter(s=>s.uid===uid); return st.length&&st.every(s=>((d.seen[me]||{})[s.id])); }
 const snTabs=(p)=>{ const me=snMeId(), un=dmThreads().filter(x=>{ const l=x.t[x.t.length-1]; return l.from!==me&&!l.read; }).length;
   /* 跟 App 的導覽列同一套：液態玻璃鏡片、按住左右拖切換 */
-  const K=["home","reels","dm","explore","profile"], cur=p==="thread"?"dm":p==="profile"&&route().id?"":p, i=K.indexOf(cur), f=NAVP.sns; if(i>=0) NAVP.sns=i; const go=i>=0&&f!=null&&f!==i;
+  const K=["home","reels","dm","explore","profile"], cur=p==="thread"?"dm":p==="profile"&&route().id?"":p, i=K.indexOf(cur), f=NAVP.sns; if(i>=0) NAVP.sns=i; const go=i>=0&&f!=null&&f!==i&&navTapped();
   return `<nav class="nav sn-nav2" aria-label="SNS 選單"><div class="nav-in" style="--n:5">${i>=0?`<span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>`:""}${[["home","home"],["reels","reels2"],["dm","send"],["explore","search"]].map(([k,ic])=>`<button class="nav-btn ${cur===k?"on":""}" data-a="snsGo" data-v="${k}" aria-label="${k}"><span class="nav-ico">${si(ic)}${k==="dm"&&un?`<span class="nbadge">${un>99?"99+":un}</span>`:""}</span></button>`).join("")}<button class="nav-btn ${cur==="profile"?"on":""}" data-a="snsGo" data-v="profile" aria-label="個人檔案"><span class="nav-ico">${snAv(snUser(snMeId()),26,cur==="profile")}</span></button></div></nav>`; };
 /* 公司官方帳號追蹤自己旗下（已開通 SNS）的藝人；藝人也追蹤自己的公司 */
 function snCoFol(d){ try{ let ch=false; Object.keys(MEMBERS).forEach(mid=>{ const m=MEMBERS[mid]; if(!m||m.official||snLockOf(mid)) return; const cid=ofCoId(coOfGid(m.group)); if(!cid||!snUser(cid)) return; const aid="m:"+mid;

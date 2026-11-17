@@ -863,3 +863,5 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .fc-tri{bottom:66px}.fc-rk{bottom:16px}
 .sv3-adm{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.sv3-adm .btn{white-space:normal;line-height:1.3;min-height:44px;padding:10px 8px}
 .sv3-seats .sv2-t{text-align:center;justify-items:center}.sv3-seats .sv2-t b,.sv3-seats .sv2-t span:not(.sv2-p){display:block;width:100%;text-align:center}
+.pr-trk{overflow:auto}.pr-trk+.db-up4{margin-top:12px}
+.dbx-ckn{margin:8px 2px 4px;font-size:12.5px;line-height:1.6;color:var(--ink-3)}
