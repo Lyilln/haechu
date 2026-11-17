@@ -2714,8 +2714,29 @@ function seedStores(){ if(S.get(K.seedStores,false)) return; S.set(K.seedStores,
   S.set(K.albums2,L); }
 const shapeOf=k=>SHAPES.find(x=>x.k===k)||SHAPES[5], incOf=k=>INC.find(x=>x.k===k)||INC[10];
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-const getAlbums=()=>S.get(K.albums2,[]).filter(a=>groupOf(a.gid)&&(typeof albumOn!=="function"||route().role==="admin"||albumOn(a))).map(a=>{ (a.ex||[]).forEach(e=>{ if(e.rule==="mc"&&e.name==="打歌節目卡") e.name="公放卡"; }); return a; }).sort((a,b)=>b.ts-a.ts);
-const albumOf=id=>S.get(K.albums2,[]).find(a=>a.id===id);
+const getAlbums=()=>cbDemo()?[...cbDemoAlbs(),...S.get(K.albums2,[]).filter(a=>groupOf(a.gid))]:S.get(K.albums2,[]).filter(a=>groupOf(a.gid)&&(typeof albumOn!=="function"||route().role==="admin"||albumOn(a))).map(a=>{ (a.ex||[]).forEach(e=>{ if(e.rule==="mc"&&e.name==="打歌節目卡") e.name="公放卡"; }); return a; }).sort((a,b)=>b.ts-a.ts);
+const albumOf=id=>String(id).startsWith("demo_")?cbDemoAlbs().find(a=>a.id===id):S.get(K.albums2,[]).find(a=>a.id===id);
+/* 11/17 卡冊預覽用的假資料（只有 HUSSEY 打開「預覽全部卡片」時才有）：每個團一張示範專輯，卡面、卡背、封面都是當場用畫布畫的，不存、不上傳 */
+const cbDemo=()=>!!ui.cbPrev&&typeof isHussey==="function"&&isHussey();
+let CB_DEMO=null;
+function cbDemoAlbs(){ if(CB_DEMO) return CB_DEMO; const out=[];
+  GROUPS.slice(0,3).forEach((g,gi)=>{ const ms=(grpMembers(g.id)||[]).filter(m=>MEMBERS[m]).slice(0,5), who=ms.length?ms:[""], aid="demo_"+g.id, pool=[], pob=[];
+    who.forEach((m,mi)=>{ for(let k=0;k<3;k++){ const pid=`p${mi}_${k}`; pool.push({id:pid,mid:m,sp:k===2?1:0}); cbDemoArt(aid,pid,m?artName(m,"feed"):g.name,MEMBERS[m]?MEMBERS[m].g:g.g,k,g.name); } pob.push({id:`b${mi}`,mid:m}); cbDemoArt(aid,`b${mi}`,m?artName(m,"feed"):g.name,MEMBERS[m]?MEMBERS[m].g:g.g,3,g.name); });
+    out.push({id:aid,gid:g.id,title:"示範專輯",ord:"Preview",ts:Date.now()-gi,demo:1,vers:[{id:"v1",name:"Photobook Ver.",shape:"book",w:19,h:25,t:2.2,pts:0,preEnd:0,inc:[{id:"i1",k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool}]}],ex:[{id:"x1",rule:"pob",name:"預購特典",w:5.5,h:8.5,pool:pob}]});
+    cbDemoCover(aid,g.name,g.g); });
+  return CB_DEMO=out; }
+function cbDemoArt(aid,pid,name,gi,kind,gname){ const C=GRADS[(gi||0)%GRADS.length], W=440, H=680;
+  const draw=back=>{ const c=document.createElement("canvas"); c.width=W; c.height=H; const x=c.getContext("2d"), gr=x.createLinearGradient(0,0,W,H); gr.addColorStop(0,back?"#2A1B4A":C[0]); gr.addColorStop(1,back?"#5B3FA0":C[1]); x.fillStyle=gr; x.fillRect(0,0,W,H);
+    if(back){ x.fillStyle="rgba(255,255,255,.08)"; for(let yy=40;yy<H;yy+=70) for(let xx=(yy/70%2)*45;xx<W;xx+=90){ x.font="600 18px sans-serif"; x.fillText("HAECHU",xx,yy); } x.fillStyle="#fff"; x.font="700 34px sans-serif"; x.textAlign="center"; x.fillText(gname,W/2,H/2-6); x.font="500 20px sans-serif"; x.fillStyle="rgba(255,255,255,.75)"; x.fillText(name,W/2,H/2+30); return c.toDataURL("image/jpeg",.85); }
+    for(let i=0;i<14;i++){ x.fillStyle=`rgba(255,255,255,${.05+.1*((i*37)%7)/7})`; x.beginPath(); x.arc((i*97)%W,(i*151)%H,18+(i*13)%46,0,7); x.fill(); }
+    const cx=W/2, cy=H*.42+(kind===1?20:0);   /* 剪影：頭＋肩，三種姿勢稍微不一樣 */
+    x.fillStyle="rgba(255,255,255,.32)"; x.beginPath(); x.arc(cx+(kind-1)*18,cy-70,70,0,7); x.fill(); x.beginPath(); x.ellipse(cx,cy+130,150,120,0,Math.PI,0); x.fill();
+    const sh=x.createLinearGradient(0,H*.6,0,H); sh.addColorStop(0,"rgba(0,0,0,0)"); sh.addColorStop(1,"rgba(0,0,0,.35)"); x.fillStyle=sh; x.fillRect(0,H*.6,W,H*.4);
+    x.fillStyle="#fff"; x.textAlign="left"; x.font="800 44px sans-serif"; x.fillText(name,28,H-64); x.font="500 18px sans-serif"; x.fillStyle="rgba(255,255,255,.8)"; x.fillText(["DAILY","STAGE","SHINE","POB"][kind]+" · 示範卡",30,H-34);
+    x.font="600 16px sans-serif"; x.fillText("HAECHU",28,40); return c.toDataURL("image/jpeg",.85); };
+  PCI[`ph|${aid}|${pid}|f`]=draw(false); PCI[`ph|${aid}|${pid}|b`]=draw(true); }
+function cbDemoCover(aid,gname,gi){ const C=GRADS[(gi||0)%GRADS.length], c=document.createElement("canvas"); c.width=760; c.height=1000; const x=c.getContext("2d"), gr=x.createLinearGradient(0,0,760,1000); gr.addColorStop(0,C[0]); gr.addColorStop(1,C[1]); x.fillStyle=gr; x.fillRect(0,0,760,1000);
+  x.fillStyle="rgba(255,255,255,.9)"; x.font="800 96px sans-serif"; x.textAlign="center"; x.fillText(gname,380,520); x.font="500 34px sans-serif"; x.fillText("The Preview Album",380,580); PCI[`vc|${aid}|v1`]=c.toDataURL("image/jpeg",.85); }
 const saveAlbum=a=>{ const L=S.get(K.albums2,[]), i=L.findIndex(x=>x.id===a.id); if(i>=0) L[i]=a; else L.push(a); S.set(K.albums2,L); };
 const verOf=(a,vid)=>(a.vers||[]).find(v=>v.id===vid);
 const itemOf=(a,iid)=>{ for(const v of a.vers||[]){ const it=v.inc.find(x=>x.id===iid); if(it) return {it,v}; } const e=(a.ex||[]).find(x=>x.id===iid); return e?{it:e,v:null}:null; };
