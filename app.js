@@ -2898,12 +2898,13 @@ const aeArt=()=>{ const s=session()||{}; return s.role==="artist"&&!isAdminAcct(
 function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
   const mc=mcAlb(gid), mcp=mc?mc.ex[0].pool:[];   /* 11/17 公放卡（投票拿到的卡）也由藝人自己上傳：每位成員一款，正面＋背面 */
   setLayer(`<div class="tiei art-alb"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>專輯・小卡</b><span class="sh-sp"></span></header><div class="tiei-body">
-    <p class="ae-tip">在這裡上傳專輯封面和小卡卡面。上傳後大家的 App 都看得到；價格由管理員設定。</p>
-    <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
-    <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
     <div class="section-h">公放卡<span class="mc-must ${mcDone(gid)?"ok":""}">${mcDone(gid)?"✓ 已放好":"必放"}</span></div>
     <div class="mc-rule"><b>打歌節目的週期</b><ul><li>新歌 MV 公開那一週是宣傳週（不排名）→ 下一週起連續 4 個打歌週 → 下檔。回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後的第一個打歌週發</b>（宣傳週的下一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
-    <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section></div></div>`); }
+    <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section>    <div class="section-h">專輯<span class="muted">可不放</span></div>
+    <p class="ae-tip">有出實體專輯（迷你、正規…）再新增；單曲、數位單曲出道不用放，只要放上面的公放卡就好。上傳後大家的 App 都看得到。</p>
+    <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><span style="display:flex;gap:6px"><button class="btn btn-soft btn-sm" data-a="albDel" data-v="${a.id}">刪除</button><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></span></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
+    <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
+</div></div>`); }
 function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; if(aeArt()&&a.gid!==(MEMBERS[(session()||{}).member]||{}).group) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
   setLayer(`<div class="tiei ae"><header class="tiei-top"><button class="icon-btn" data-a="aeClose" aria-label="返回">${I.back}</button><b>${esc(g.name)} 專輯</b><span class="sh-sp"></span></header>
     <div class="tiei-body">
@@ -7714,7 +7715,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "abClose": ui.ab=null; cancelAnimationFrame(gcRaf); layer.innerHTML=""; { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("收進卡冊了 🃏"); break;
     case "goAlbums": { const f=followed(); ui.shopG=f[0]||null; ui.shopCat="album"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
     case "albG": ui.albG=t.dataset.v; render(); break;
-    case "albDel": ask("要下架這張專輯嗎？已經收到的小卡會保留。",()=>{ S.set(K.albums2,S.get(K.albums2,[]).filter(a=>a.id!==t.dataset.v)); render(); toast("已下架"); },{title:"下架專輯",ok:"下架"}); break;
+    case "albDel": ask("要下架這張專輯嗎？已經收到的小卡會保留。",()=>{ S.set(K.albums2,S.get(K.albums2,[]).filter(a=>a.id!==t.dataset.v)); render(); if(layer.querySelector(".art-alb")) artAlbumsSheet(); toast("已下架"); },{title:"下架專輯",ok:"下架"}); break;
     case "tieIntro": if(MEMBERS[t.dataset.m]&&isSelfGid(MEMBERS[t.dataset.m].group)){ toast(selfBuyMsg()); break; } if(MEMBERS[t.dataset.m]&&groupArtists(MEMBERS[t.dataset.m].group).length===1){ tieStore(MEMBERS[t.dataset.m].group); break; } openTieIntro(t.dataset.m); break;
     case "tieIntroGo": layer.innerHTML=""; openBuySheet(t.dataset.m); break;
     case "gnOpen": openGNotice(t.dataset.v); break;
