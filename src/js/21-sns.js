@@ -471,9 +471,12 @@ setInterval(()=>{ if(/\/sns(\?|$)/.test(location.hash)) snOfSync(); },60e3);
 /* 還沒開通：「準備中」頁 */
 /* 管理員：SNS 刪除紀錄（14 天內），看得到是誰刪的，可以救回來 */
 const snDelWho=b=>{ if(!b) return "不明（舊版 App）"; if(/^[um]:/.test(b)){ const u=snUser(b); return u?(u.name||u.u)+(b.startsWith("m:")?"（藝人）":""):b; } return b; };
-function viewSnDelAdm(){ const raw=S.get(snKey("posts"),[])||[], L=raw.filter(x=>x&&x.del).sort((a,b)=>b.del-a.del), tm=x=>fsWhen(x);
-  return `<main class="page"><p class="muted" style="margin:0 2px 10px;font-size:12.5px">刪掉的貼文會留 14 天。舊版 App 刪的只剩記號，救不回來。</p>${L.length?`<section class="card sn-subl">${L.map(x=>{ const u=snUser(x.uid)||{}, has=!!((x.media||[]).length||x.cap); const m=(x.media||[])[0];
-    return `<div class="sn-subr">${m?`<img class="sn-subi" data-mid="${esc(m.mid||"")}" alt="">`:""}<div><b>${esc(u.name||u.u||x.uid)}<small> @${esc(u.u||"")}</small></b><p>${has?esc(x.cap||"（只有照片）"):"（內容沒有留下來）"}</p><small>發文 ${x.ots?tm(x.ots):"?"}・刪除 ${tm(x.del)}・<em class="no">${esc(snDelWho(x.by))}</em></small></div>${has?`<button class="t-pill" data-a="snPRestore" data-v="${x.id}">救回來</button>`:""}</div>`; }).join("")}</section>`:`<p class="cmx-empty">14 天內沒有被刪的貼文</p>`}</main>`; }
+/* 之前按「救回來」沒反應、可能被按了好幾次 → 同一篇救回好幾份：留一份，其他刪掉；原本那筆標成已救回 */
+function snRestFix(){ try{ const raw=S.get(snKey("posts"),[])||[]; let ch=false; const drop=new Set(), R=raw.map(x=>{ if(!x||!x.del||x.rest||!x.ots) return x; const live=raw.filter(y=>y&&!y.del&&y.uid===x.uid&&y.ts===x.ots&&(y.cap||"")===(x.cap||"")&&y.id!==x.id); if(!live.length) return x; live.slice(1).forEach(y=>drop.add(y.id)); ch=true; return {...x,rest:Date.now()}; });
+  if(ch) S.set(snKey("posts"),R.filter(y=>!drop.has(y&&y.id))); }catch(e){} }
+function viewSnDelAdm(){ snRestFix(); const raw=S.get(snKey("posts"),[])||[], L=raw.filter(x=>x&&x.del).sort((a,b)=>b.del-a.del), tm=x=>fsWhen(x);
+  return `<main class="page"><p class="muted" style="margin:0 2px 10px;font-size:12.5px">刪掉的貼文會留 14 天，可以救回來。舊版 App 刪的只剩記號，救不回來。</p>${L.length?`<section class="card sn-subl">${L.map(x=>{ const u=snUser(x.uid)||{}, has=!!((x.media||[]).length||x.cap); const m=(x.media||[])[0];
+    return `<div class="sn-subr">${m?`<img class="sn-subi" data-mid="${esc(m.mid||"")}" alt="">`:""}<div><b>${esc(u.name||u.u||x.uid)}<small> @${esc(u.u||"")}</small></b><p>${has?esc(x.cap||"（只有照片）"):"（內容沒有留下來）"}</p><small>發文 ${x.ots?tm(x.ots):"?"}・刪除 ${tm(x.del)}・<em class="no">${x.by&&x.by===x.uid?"本人自己刪的":x.by?esc(snDelWho(x.by))+" 刪的":"不知道誰刪的（舊版 App）"}</em></small></div>${x.rest?`<span class="sn-rest">已救回來</span>`:has?`<button class="t-pill" data-a="snPRestore" data-v="${x.id}">救回來</button>`:""}</div>`; }).join("")}</section>`:`<p class="cmx-empty">14 天內沒有被刪的貼文</p>`}</main>`; }
 /* 管理員：所有還沒開通 SNS 的藝人投稿（自動審：沒有禁用字詞就排隊 1 分鐘～2 小時後發）；排隊中或已發布的都能撤下 */
 const snSubWait=()=>{ const now=Date.now(); return (snDB().sub||[]).filter(x=>x.st==="ok"&&x.at>now); };
 function viewSnSubAdm(){ const d=snDB(), now=Date.now(), L=(d.sub||[]).slice().sort((a,b)=>b.ts-a.ts);
@@ -603,7 +606,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snTagT": { const dr=ui.snDraft; if(!dr) break; const L=dr.tags=dr.tags||[], i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else if(L.length>=20) toast("最多標註 20 人"); else L.push(t.dataset.v); t.classList.toggle("on",i<0); break; }
     case "snTagDone": layer.innerHTML=""; render(); break;
     case "snLikers": snLikers(t.dataset.id); break;
-    case "snPRestore": { const raw=S.get(snKey("posts"),[])||[], x=raw.find(y=>y.id===t.dataset.v&&y.del); if(!x) break; const d=snDB(), now=Date.now(), c={...x,id:"p"+now.toString(36),ts:x.ots||now}; delete c.del; delete c.ots; delete c.by; d.posts.push(c); snSave(d); toast("已救回來"); render(); break; }   /* 用新的編號放回去（舊編號有刪除記號） */
+    case "snPRestore": { const raw=S.get(snKey("posts"),[])||[], x=raw.find(y=>y.id===t.dataset.v&&y.del); if(!x) break; const d=snDB(), now=Date.now(), c={...x,id:"p"+now.toString(36),ts:x.ots||now}; delete c.del; delete c.ots; delete c.by; delete c.rest; d.posts.push(c); snSave(d); S.set(snKey("posts"),(S.get(snKey("posts"),[])||[]).map(y=>y.id===x.id?{...y,rest:now}:y)); toast("已救回來，貼文回到原本的位置"); render(); break; }   /* 用新的編號放回去（舊編號有刪除記號） */
     case "snSubPull": ask("撤下這則投稿？已經發布的也會從官方帳號拿掉。",()=>{ const d=snDB(), x=(d.sub||[]).find(y=>y.id===t.dataset.v); if(!x) return; x.st="no"; x.why="管理員撤下"; snSave(d); toast("已撤下"); render(); }); break;
     case "snSubNew": ui.snDraft={media:[],cap:"",mode:"sub"}; navTo("#/"+session().role+"/sns?p=new&id=sub"); break;
     case "snNatShare": { const h=location.href.split("#")[0]+"#/"+session().role+"/sns?p=post&id="+encodeURIComponent(t.dataset.id); try{ navigator.share({url:h}).catch(()=>{}); }catch(e){} break; }

@@ -405,3 +405,5 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sn-albpick{display:flex;align-items:center;gap:10px;width:calc(100% - 28px);margin:10px 14px;padding:12px 14px;border:1px solid var(--l,#333);border-radius:14px;background:none;color:inherit;font:inherit;font-weight:700;text-align:left}.sn-albpick small{margin-left:auto;font-weight:500;opacity:.6}
 .sn-albl{display:flex;flex-direction:column;gap:6px;padding:6px 14px 14px}.sn-albl button{display:flex;align-items:center;gap:10px;padding:8px;border:0;border-radius:12px;background:rgba(127,127,127,.12);color:inherit;font:inherit;text-align:left}.sn-albl button .mu2-cv{width:44px;height:44px}
 
+/* 11/18 SNS 刪除紀錄：兩邊、按鈕不要貼邊 */
+.sn-subl .sn-subr{padding:12px 16px}.sn-subr .t-pill{margin-left:4px}.sn-rest{flex:none;align-self:center;font-size:12px;font-weight:800;color:var(--ink-3);padding:5px 4px}
