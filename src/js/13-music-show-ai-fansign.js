@@ -2,13 +2,13 @@
 /* =========================================================
    音樂節目（打歌）：照群組規則
    ・五個節目：THE SHOW（二）、Show Champion（三）、M COUNTDOWN（四）、Show! Music Core（六）、INKIGAYO（日）
-   ・每月：第一週＝宣傳週（不排名、不投票）、中間＝排名週、最後一週＝打歌週（月底決戰）
-     → 一週算在「週一」所在的月份；管理員也可以在 FOC 手動改本週階段
-   ・排名週、打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
+   ・每首歌各算各的（跟現實一樣）：發歌那一週＝宣傳週（不排名、不投票），下一週起連續 4 個打歌週，打完下檔
+     → 管理員可以在 FOC 把本週手動改成宣傳週（全部暫停排名）
+   ・打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
    ・一位得主由管理員在 FOC 公布
    ・同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選
    ・積分：一位 +2000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
-          AK（同一週五個節目全拿）+10000／PAK（連續 4 個排名週都有一位，宣傳週不算中斷）+15000
+          AK（同一週五個節目全拿）+10000／PAK（4 個打歌週都有一位）+15000
    ・MC：每月輪替，主持一個節目每週 +500（照積分表 MC 一次 +500）
    ========================================================= */
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"Show! Music Core",day:6},{id:"ink",name:"INKIGAYO",day:0}];
@@ -16,14 +16,13 @@ const WDAY=["日","一","二","三","四","五","六"];
 /* ===== 打歌：全群同一個月曆（每月第一週宣傳、中間排名、最後一週打歌）＋虛擬對手 =====
    ・新歌 MV 一公開就加入打歌，打滿 4 個能排名的週自動下檔（碰到宣傳週往後延）；同一團有新歌（回歸）時，舊歌直接下檔換新的
    ・同一個節目的參賽歌不到 3 首：自動補虛擬對手，分數要超過它們才拿得到一位，一個人也不會白拿 */
-const MSA={PROMO:0,END:28,MIN:3}, MDAY=864e5;
+const MSA={WEEKS:4,MIN:3}, MDAY=864e5;
 function songRel(s){ if(!s) return 0; if(s.rel) return s.rel; const m=/^s(\d{12,13})$/.exec(String(s.id)); return m?+m[1]:0; }
-/* 11/17 下檔：打滿 4 個「能排名的週」——中間碰到宣傳週就往後延一週，什麼時候發歌都一樣公平 */
-const SEND={};
-function songEndTs(r){ const c=SEND[r]; if(c&&Date.now()-c[1]<6e4) return c[0]; let t=r, n=0;   /* 一天一天往後數，只數排名週／打歌週的日子，數滿 28 天＝每個節目剛好都有 4 次 */
-  for(let i=0;i<120&&n<MSA.END;i++){ const wt=weekType(weekKey(t)); t+=MDAY; if(wt!=="宣傳週") n++; }
-  SEND[r]=[t,Date.now()]; return t; }
-function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const t=at||Date.now(), d=(t-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":t<songEndTs(r)?"act":"end"; }
+/* 11/17 照現實打歌節目：每首歌各算各的——發歌那一週是它的宣傳週（不排名），下一週起連續 4 個打歌週，打完下檔 */
+const MS_NEW=new Date(2026,10,17,11).getTime();   /* 新規則上路：這週已經在排名的歌不會突然被踢掉 */
+const songPromoEnd=r=>r<MS_NEW&&weekKey(r)===weekKey(MS_NEW)?r:wkDate(shiftWeek(weekKey(r),1)).getTime();
+const songEndTs=r=>wkDate(shiftWeek(weekKey(r),1+MSA.WEEKS)).getTime();
+function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const t=at||Date.now(); return t<r?"pre":t<songPromoEnd(r)?"promo":t<songEndTs(r)?"act":"end"; }
 const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
 const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
 const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];
@@ -43,14 +42,13 @@ function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.get
 const curWeek=()=>weekKey(Date.now());
 const shiftWeek=(wk,n)=>{ const d=wkDate(wk); d.setDate(d.getDate()+7*n); return weekKey(d.getTime()); };
 const monthKey=ts=>{ const d=new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
-function autoWeekType(wk){ const d=wkDate(wk||curWeek()), th=new Date(d); th.setDate(th.getDate()+3); const nx=new Date(th); nx.setDate(nx.getDate()+7);   /* 一週算在它的星期四那個月 */
-  if(nx.getMonth()!==th.getMonth()) return "打歌週"; if(th.getDate()<=7) return "宣傳週"; return "排名週"; }
-const parseType=s=>/宣傳/.test(s)?"宣傳週":/打歌/.test(s)?"打歌週":/排名/.test(s)?"排名週":null;
+function autoWeekType(wk){ return "打歌週"; }   /* 11/17 不再有全群共用的宣傳週／排名週；每首歌自己的宣傳週看 songPhase */
+const parseType=s=>/宣傳/.test(s)?"宣傳週":/打歌/.test(s)?"打歌週":/排名/.test(s)?"打歌週":null;
 const getMShow=()=>({songs:[],ended:[],wins:{},wtype:{},mc:{},...S.get(K.mshow,{})});
 function weekType(wk){ wk=wk||curWeek(); if(wk===curWeek()) return parseType(getSched().stage)||autoWeekType(wk); return getMShow().wtype[wk]||autoWeekType(wk); }
 const ranked=wk=>weekType(wk)!=="宣傳週";
 /* 11/17 公放卡只在「出道／回歸後遇到的第一個打歌週」發（通常是那個月最後一週）；過了那週就不發 */
-function mcWeek(s){ if(!s||!s.rel) return null; let wk=weekKey(s.rel); for(let i=0;i<10;i++){ if(weekType(wk)==="打歌週") return wk; wk=shiftWeek(wk,1); } return null; }
+function mcWeek(s){ return s&&s.rel?shiftWeek(weekKey(s.rel),1):null; }   /* 公放卡：發歌後的第一個打歌週 */
 const songOf=id=>{ if(String(id).startsWith("demo_")) return MUS_DEMO().find(s=>s.id===id); const m=getMShow(); return m.songs.find(s=>s.id===id)||(m.ended||[]).find(s=>s.id===id); };
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：沒有打歌中的歌時，放 3 首示範歌，投票只記在這支手機的這次打開，不存、不上雲端 */
 const musDemo=()=>{ try{ if(ui.tourDemo) return true; const s=session(); if(s&&s.role==="artist") return typeof demoOn==="function"&&demoOn(); if(!s||s.role!=="fan") return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""], g=m&&groupOf(m.group), U=x=>String(x||"").toUpperCase()==="HUSSEY"; return U(a.name)||U(m&&m.name)||!!(g&&U(g.name)); }catch(e){ return false; } };
@@ -69,7 +67,7 @@ function crowned(sid,show,wk){ const w=getMShow().wins, ks=Object.keys(w).sort()
 function songStats(sid){
   const w=getMShow().wins, weeks=Object.keys(w).sort(), wins=[], shows=new Set(), aks=[];
   weeks.forEach(k=>{ const ws=w[k]||{}; let n=0; SHOWS.forEach(s=>{ if(ws[s.id]===sid){ wins.push({wk:k,show:s.id}); shows.add(s.id); n++; } }); if(n===SHOWS.length) aks.push(k); });
-  // PAK：連續 4 個排名週（宣傳週略過）都至少拿到一個一位
+  // PAK：連續 4 個打歌週（宣傳週略過）都至少拿到一個一位
   let run=0, pak=null; if(weeks.length){ let k=weeks[0]; const end=weeks[weeks.length-1];
     while(k<=end){ const has=SHOWS.some(s=>(w[k]||{})[s.id]===sid); if(has){ run++; if(run>=4&&!pak) pak=k; } else if(ranked(k)) run=0; k=shiftWeek(k,1); } }
   const crowns=SHOWS.filter(s=>crowned(sid,s.id,shiftWeek(curWeek(),1))).map(s=>s.id);
@@ -81,7 +79,7 @@ function groupMusicPts(gid,{year=null}={}){ const m=getMShow(); return [...m.son
   return n+st.wins.filter(x=>x.wk.startsWith(year)).length*MSP.win+(st.five?MSP.five:0)+st.aks.filter(k=>k.startsWith(year)).length*MSP.ak+(st.pak&&st.pak.startsWith(year)?MSP.pak:0); },0); }
 function mcShows(mid,mon){ const m=getMShow().mc[mon||monthKey(Date.now())]||{}; return SHOWS.filter(s=>(m[s.id]||[]).includes(mid)); }
 const mcWeekly=n=>n*500; /* 積分表：MC 一次 +500（一週主持幾個節目就幾次） */
-/* 粉絲應援：投票（排名週／打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
+/* 粉絲應援：投票（打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
    // 只算真的票
 
 const myVoteKey=show=>new Date().toDateString()+":"+show;
@@ -90,7 +88,7 @@ const mvLikes=gid=>(S.get(K.mvLike,{})[gid]?1:0);
 
 const albumSales=(gid,since=0)=>S.get(K.sales,[]).filter(x=>x.type==="merch"&&x.gid===gid&&x.ts>=since&&/專輯/.test(x.label)).length;
 
-const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +2,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
+const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 新歌發的那一週是宣傳週（不排名），下一週起連續 4 個打歌週<br>• 打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +2,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（4 個打歌週都有一位）+15,000</div>`;
 /* 粉絲：CORE 打歌戰場頁 */
 
 

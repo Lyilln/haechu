@@ -6577,6 +6577,7 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .prg-math{margin:6px 0 12px;padding:12px 16px;border-radius:16px;background:var(--s1);border:1px solid var(--line);font-variant-numeric:tabular-nums}
 .prg-math div{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}.prg-math span{font-size:13px;color:var(--ink-3)}.prg-math b{font-size:17px;font-weight:800;color:var(--ink)}
 .prg-math hr{border:0;border-top:2px solid var(--ink);margin:6px 0}.prg-math .t b{font-size:22px;color:var(--violet,#8843FB)}
+.mur-band+p{margin-top:14px}
 
 /* SNS 動畫節奏（照 motion-design 規則統一）：一條主曲線、一條彈簧、一條退場；三種快慢
    要整體調快調慢，改這幾個數字就好 */

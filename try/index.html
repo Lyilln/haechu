@@ -192,7 +192,7 @@ function showHtml(){ const R=showRows(), lead=R[0], open=ST.showOpen||"ts";
   const cv=x=>`<span class="mu2-cv npc" style="background:${x.me?"linear-gradient(135deg,#B794FF,#FF8FC2)":""}">${esc(x.a[0])}</span>`;
   const rows=R.map((x,i)=>`<div class="mu3-r"><span class="mu3-n">${i+1}</span><span class="mu3-song">${cv(x)}<span class="mu3-t"><b>${esc(x.t)}</b><small>${esc(x.a)}</small></span></span><span class="mu3-sc">${fmtN(x.sc)}</span>${x.me?(ST.voted?`<span class="mu3-stamp pop">已投</span>`:`<button class="mu3-vote" data-vote="1">${MU_IC.tk}<span>投票</span></button>`):""}</div>`).join("");
   return head("FEST")+`<main class="page mu3">${hint(`每個節目每天可以投 1 票，粉絲一起投，偶像就能<b>拿下音樂節目一位</b>。現在 ${IDOL.name} 是第 2 名，幫她一把。`)}${!isUnl("ls")?unl("投一票，就解鎖 LIGHT"):""}
-    <section class="mu2-wk mu3-wk t-r"><span class="mu2-chip">排名週</span><span class="mu2-wt"><b>每個節目每天可以投 1 票</b></span></section>
+    <section class="mu2-wk mu3-wk t-f"><span class="mu2-chip">打歌週</span><span class="mu2-wt"><b>每個節目每天可以投 1 票</b></span></section>
     <div class="mu2-h"><h3>音樂節目</h3><small class="tz-only">試玩只能投 THE SHOW</small></div>
     <div class="mu3-list">${MU_SHN.map(([id,n1,n2],k)=>{ const on=open===id, me=k===0;
       return `<section class="mu3-sh s-${id} ${on?"open":""}"><button class="mu3-hd" data-show="${id}" aria-expanded="${on}"><span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${me?`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(lead.a)}</span>`:``}<em class="mu3-end">${MU_END[id]}</em></span><span class="mu3-chev">${MU_IC.chev}</span></button>

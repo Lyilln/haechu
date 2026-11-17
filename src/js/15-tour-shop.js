@@ -395,19 +395,19 @@ function viewAdmin(tab){
     if(!seg){ const pend=getTours().filter(x=>x.status==="pending").length;
       const tl=(v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="focSeg" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
       return adminHead("FOC")+`<main class="page foc">
-        ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
+        ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌舞台","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
         ${focFold("pd","star","檔期",`${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}`)}
         ${focFold("big","trophy","大型活動",`${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}`)}
         </main>`; }
-    const SEGN={sched:"賽程",music:"打歌",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
-    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
+    const SEGN={sched:"賽程",music:"打歌舞台",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
+    const SEG=[["sched","賽程"],["music","打歌舞台"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>本週階段</h3><span class="badge">即時同步中</span></div>
         <label class="field"><input id="focStage" value="${esc(st)}"></label>
         <div class="chips wrap">${STAGE_PRESETS.map(p=>`<button class="chip ${st===p?"on":""}" data-a="focPreset" data-v="${p}">${p}</button>`).join("")}</div>
         <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
         ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}
-        <p class="reach" style="margin:8px 0 0">每週會自動判斷：每月第一週＝宣傳週（不排名、不能投票）、中間＝排名週、最後一週＝打歌週。這裡手動改的只算本週，下週回到自動。</p>
-        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>打滿 4 個能排名的週（碰到宣傳週往後延），或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
+        <p class="reach" style="margin:8px 0 0">每週都是打歌週；每首新歌發的那一週是它自己的宣傳週（不排名）。這裡改成宣傳週＝本週全部暫停排名，下週回到打歌週。</p>
+        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>發歌那一週是宣傳週，下一週起打 4 個打歌週；打完，或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
         ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="act"?`打歌第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>

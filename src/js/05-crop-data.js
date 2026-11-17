@@ -238,7 +238,7 @@ function fanReply(memberId,text){
 
 /* ===== 全站賽程（管理員 FOC 設定 → 藝人 FOC、粉絲 CORE 同步顯示） ===== */
 const getSched=()=>{ const s={stage:"",deadline:"週日 23:59",notice:"接近開場會自動提醒全體藝人與粉絲",updatedAt:0,...S.get(K.sched,{})}; if(s.wk!==curWeek()) s.stage=autoWeekType(); return s; };
-const STAGE_PRESETS=["宣傳週","排名週","打歌週"];
+const STAGE_PRESETS=["打歌週","宣傳週"];
 /* 演唱會燈海（規則）
    ・只有演唱會時才有燈海；演唱會由管理員（公司方）排日期時間，時間到自動開始、時間到自動結束
    ・演唱會進行中，那一團的藝人在 FOC 控燈（全場顏色、效果、指令）

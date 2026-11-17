@@ -1090,7 +1090,7 @@ const PT_RULES_DEF=`#KISS
 ➞打歌一位 +2,000｜一個節目一次
 ➞5 台冠軍 +5,000｜同一首歌拿過五個節目的一位
 ➞AK +10,000｜同一週五個節目全拿
-➞PAK +15,000｜連續 4 個排名週都有一位
+➞PAK +15,000｜4 個打歌週都有一位
 ➞MC +500｜主持一個節目，一週一次
 ➞見面會、簽售 +500｜一場
 ➞演唱會 +3,000｜一個月一場（世巡的站另外算）
@@ -1541,7 +1541,7 @@ function fanReply(memberId,text){
 
 /* ===== 全站賽程（管理員 FOC 設定 → 藝人 FOC、粉絲 CORE 同步顯示） ===== */
 const getSched=()=>{ const s={stage:"",deadline:"週日 23:59",notice:"接近開場會自動提醒全體藝人與粉絲",updatedAt:0,...S.get(K.sched,{})}; if(s.wk!==curWeek()) s.stage=autoWeekType(); return s; };
-const STAGE_PRESETS=["宣傳週","排名週","打歌週"];
+const STAGE_PRESETS=["打歌週","宣傳週"];
 /* 演唱會燈海（規則）
    ・只有演唱會時才有燈海；演唱會由管理員（公司方）排日期時間，時間到自動開始、時間到自動結束
    ・演唱會進行中，那一團的藝人在 FOC 控燈（全場顏色、效果、指令）
@@ -2902,7 +2902,7 @@ function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).gr
     <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
     <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
     <div class="section-h">公放卡<span class="mc-must ${mcDone(gid)?"ok":""}">${mcDone(gid)?"✓ 已放好":"必放"}</span></div>
-    <div class="mc-rule"><b>打歌節目的週期</b><ul><li>每個月：第一週是宣傳週（不排名）→ 中間是排名週 → 最後一週是打歌週（月底決戰）。</li><li>新歌 MV 公開就加入打歌，打滿 4 個能排名的週才下檔（碰到宣傳週會往後延）；回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後遇到的第一個打歌週發</b>（通常就是那個月的最後一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
+    <div class="mc-rule"><b>打歌節目的週期</b><ul><li>新歌 MV 公開那一週是宣傳週（不排名）→ 下一週起連續 4 個打歌週 → 下檔。回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後的第一個打歌週發</b>（宣傳週的下一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
     <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section></div></div>`); }
 function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; if(aeArt()&&a.gid!==(MEMBERS[(session()||{}).member]||{}).group) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
   setLayer(`<div class="tiei ae"><header class="tiei-top"><button class="icon-btn" data-a="aeClose" aria-label="返回">${I.back}</button><b>${esc(g.name)} 專輯</b><span class="sh-sp"></span></header>
@@ -5471,13 +5471,13 @@ function dtDefault(){const t=new Date(Date.now()+864e5);t.setHours(20,0,0,0);ret
 /* =========================================================
    音樂節目（打歌）：照群組規則
    ・五個節目：THE SHOW（二）、Show Champion（三）、M COUNTDOWN（四）、Show! Music Core（六）、INKIGAYO（日）
-   ・每月：第一週＝宣傳週（不排名、不投票）、中間＝排名週、最後一週＝打歌週（月底決戰）
-     → 一週算在「週一」所在的月份；管理員也可以在 FOC 手動改本週階段
-   ・排名週、打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
+   ・每首歌各算各的（跟現實一樣）：發歌那一週＝宣傳週（不排名、不投票），下一週起連續 4 個打歌週，打完下檔
+     → 管理員可以在 FOC 把本週手動改成宣傳週（全部暫停排名）
+   ・打歌週開放投票；粉絲應援方式：SHOP 買專輯、MV 按愛心、投票
    ・一位得主由管理員在 FOC 公布
    ・同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選
    ・積分：一位 +2000／5台冠軍（同一首歌拿過五個節目的一位）+5000／
-          AK（同一週五個節目全拿）+10000／PAK（連續 4 個排名週都有一位，宣傳週不算中斷）+15000
+          AK（同一週五個節目全拿）+10000／PAK（4 個打歌週都有一位）+15000
    ・MC：每月輪替，主持一個節目每週 +500（照積分表 MC 一次 +500）
    ========================================================= */
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"Show! Music Core",day:6},{id:"ink",name:"INKIGAYO",day:0}];
@@ -5485,14 +5485,13 @@ const WDAY=["日","一","二","三","四","五","六"];
 /* ===== 打歌：全群同一個月曆（每月第一週宣傳、中間排名、最後一週打歌）＋虛擬對手 =====
    ・新歌 MV 一公開就加入打歌，打滿 4 個能排名的週自動下檔（碰到宣傳週往後延）；同一團有新歌（回歸）時，舊歌直接下檔換新的
    ・同一個節目的參賽歌不到 3 首：自動補虛擬對手，分數要超過它們才拿得到一位，一個人也不會白拿 */
-const MSA={PROMO:0,END:28,MIN:3}, MDAY=864e5;
+const MSA={WEEKS:4,MIN:3}, MDAY=864e5;
 function songRel(s){ if(!s) return 0; if(s.rel) return s.rel; const m=/^s(\d{12,13})$/.exec(String(s.id)); return m?+m[1]:0; }
-/* 11/17 下檔：打滿 4 個「能排名的週」——中間碰到宣傳週就往後延一週，什麼時候發歌都一樣公平 */
-const SEND={};
-function songEndTs(r){ const c=SEND[r]; if(c&&Date.now()-c[1]<6e4) return c[0]; let t=r, n=0;   /* 一天一天往後數，只數排名週／打歌週的日子，數滿 28 天＝每個節目剛好都有 4 次 */
-  for(let i=0;i<120&&n<MSA.END;i++){ const wt=weekType(weekKey(t)); t+=MDAY; if(wt!=="宣傳週") n++; }
-  SEND[r]=[t,Date.now()]; return t; }
-function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const t=at||Date.now(), d=(t-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":t<songEndTs(r)?"act":"end"; }
+/* 11/17 照現實打歌節目：每首歌各算各的——發歌那一週是它的宣傳週（不排名），下一週起連續 4 個打歌週，打完下檔 */
+const MS_NEW=new Date(2026,10,17,11).getTime();   /* 新規則上路：這週已經在排名的歌不會突然被踢掉 */
+const songPromoEnd=r=>r<MS_NEW&&weekKey(r)===weekKey(MS_NEW)?r:wkDate(shiftWeek(weekKey(r),1)).getTime();
+const songEndTs=r=>wkDate(shiftWeek(weekKey(r),1+MSA.WEEKS)).getTime();
+function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const t=at||Date.now(); return t<r?"pre":t<songPromoEnd(r)?"promo":t<songEndTs(r)?"act":"end"; }
 const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
 const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
 const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];
@@ -5512,14 +5511,13 @@ function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.get
 const curWeek=()=>weekKey(Date.now());
 const shiftWeek=(wk,n)=>{ const d=wkDate(wk); d.setDate(d.getDate()+7*n); return weekKey(d.getTime()); };
 const monthKey=ts=>{ const d=new Date(ts); return `${d.getFullYear()}-${pad(d.getMonth()+1)}`; };
-function autoWeekType(wk){ const d=wkDate(wk||curWeek()), th=new Date(d); th.setDate(th.getDate()+3); const nx=new Date(th); nx.setDate(nx.getDate()+7);   /* 一週算在它的星期四那個月 */
-  if(nx.getMonth()!==th.getMonth()) return "打歌週"; if(th.getDate()<=7) return "宣傳週"; return "排名週"; }
-const parseType=s=>/宣傳/.test(s)?"宣傳週":/打歌/.test(s)?"打歌週":/排名/.test(s)?"排名週":null;
+function autoWeekType(wk){ return "打歌週"; }   /* 11/17 不再有全群共用的宣傳週／排名週；每首歌自己的宣傳週看 songPhase */
+const parseType=s=>/宣傳/.test(s)?"宣傳週":/打歌/.test(s)?"打歌週":/排名/.test(s)?"打歌週":null;
 const getMShow=()=>({songs:[],ended:[],wins:{},wtype:{},mc:{},...S.get(K.mshow,{})});
 function weekType(wk){ wk=wk||curWeek(); if(wk===curWeek()) return parseType(getSched().stage)||autoWeekType(wk); return getMShow().wtype[wk]||autoWeekType(wk); }
 const ranked=wk=>weekType(wk)!=="宣傳週";
 /* 11/17 公放卡只在「出道／回歸後遇到的第一個打歌週」發（通常是那個月最後一週）；過了那週就不發 */
-function mcWeek(s){ if(!s||!s.rel) return null; let wk=weekKey(s.rel); for(let i=0;i<10;i++){ if(weekType(wk)==="打歌週") return wk; wk=shiftWeek(wk,1); } return null; }
+function mcWeek(s){ return s&&s.rel?shiftWeek(weekKey(s.rel),1):null; }   /* 公放卡：發歌後的第一個打歌週 */
 const songOf=id=>{ if(String(id).startsWith("demo_")) return MUS_DEMO().find(s=>s.id===id); const m=getMShow(); return m.songs.find(s=>s.id===id)||(m.ended||[]).find(s=>s.id===id); };
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：沒有打歌中的歌時，放 3 首示範歌，投票只記在這支手機的這次打開，不存、不上雲端 */
 const musDemo=()=>{ try{ if(ui.tourDemo) return true; const s=session(); if(s&&s.role==="artist") return typeof demoOn==="function"&&demoOn(); if(!s||s.role!=="fan") return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""], g=m&&groupOf(m.group), U=x=>String(x||"").toUpperCase()==="HUSSEY"; return U(a.name)||U(m&&m.name)||!!(g&&U(g.name)); }catch(e){ return false; } };
@@ -5538,7 +5536,7 @@ function crowned(sid,show,wk){ const w=getMShow().wins, ks=Object.keys(w).sort()
 function songStats(sid){
   const w=getMShow().wins, weeks=Object.keys(w).sort(), wins=[], shows=new Set(), aks=[];
   weeks.forEach(k=>{ const ws=w[k]||{}; let n=0; SHOWS.forEach(s=>{ if(ws[s.id]===sid){ wins.push({wk:k,show:s.id}); shows.add(s.id); n++; } }); if(n===SHOWS.length) aks.push(k); });
-  // PAK：連續 4 個排名週（宣傳週略過）都至少拿到一個一位
+  // PAK：連續 4 個打歌週（宣傳週略過）都至少拿到一個一位
   let run=0, pak=null; if(weeks.length){ let k=weeks[0]; const end=weeks[weeks.length-1];
     while(k<=end){ const has=SHOWS.some(s=>(w[k]||{})[s.id]===sid); if(has){ run++; if(run>=4&&!pak) pak=k; } else if(ranked(k)) run=0; k=shiftWeek(k,1); } }
   const crowns=SHOWS.filter(s=>crowned(sid,s.id,shiftWeek(curWeek(),1))).map(s=>s.id);
@@ -5550,7 +5548,7 @@ function groupMusicPts(gid,{year=null}={}){ const m=getMShow(); return [...m.son
   return n+st.wins.filter(x=>x.wk.startsWith(year)).length*MSP.win+(st.five?MSP.five:0)+st.aks.filter(k=>k.startsWith(year)).length*MSP.ak+(st.pak&&st.pak.startsWith(year)?MSP.pak:0); },0); }
 function mcShows(mid,mon){ const m=getMShow().mc[mon||monthKey(Date.now())]||{}; return SHOWS.filter(s=>(m[s.id]||[]).includes(mid)); }
 const mcWeekly=n=>n*500; /* 積分表：MC 一次 +500（一週主持幾個節目就幾次） */
-/* 粉絲應援：投票（排名週／打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
+/* 粉絲應援：投票（打歌週，每個節目每天 1 票）、MV 愛心、專輯 */
    // 只算真的票
 
 const myVoteKey=show=>new Date().toDateString()+":"+show;
@@ -5559,7 +5557,7 @@ const mvLikes=gid=>(S.get(K.mvLike,{})[gid]?1:0);
 
 const albumSales=(gid,since=0)=>S.get(K.sales,[]).filter(x=>x.type==="merch"&&x.gid===gid&&x.ts>=since&&/專輯/.test(x.label)).length;
 
-const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 每月第一週是宣傳週（不排名），中間是排名週，最後一週是打歌週（月底決戰）<br>• 排名週、打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +2,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（連續 4 個排名週都有一位）+15,000</div>`;
+const MUSIC_RULES=()=>`<div style="text-align:left">• 節目：${SHOWS.map(s=>s.name).join("、")}<br>• 新歌發的那一週是宣傳週（不排名），下一週起連續 4 個打歌週<br>• 打歌週開放投票；買專輯、幫 MV 按愛心、投票都能幫藝人<br>• 同一首歌在同一個節目連續三週一位＝三冠王，之後不再列入那個節目的一位候選<br>• 一位 +2,000／5台冠軍 +5,000／AK（同一週五台全拿）+10,000／PAK（4 個打歌週都有一位）+15,000</div>`;
 /* 粉絲：CORE 打歌戰場頁 */
 
 
@@ -6298,7 +6296,7 @@ function viewCore(){
   const fsl=fsAll().filter(e=>f.includes(e.group)&&groupOf(e.group)&&e.id!=="fsshow"&&e.status!=="done"), fsLive=fsl.find(e=>e.status==="live"), fsOpen=fsl.find(e=>e.status==="open");
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
-  const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌",(()=>{ const nx=ranked(curWeek())?SHOWS.filter(x=>!showEnded(x.id)).sort((a,b)=>showEndTs(a.id)-showEndTs(b.id))[0]:null; return nx?`${esc(weekType())}・${esc(nx.name)} ${muLeft(showEndTs(nx.id)-Date.now())}`:esc(weekType()); })()],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
+  const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌舞台",(()=>{ const nx=ranked(curWeek())?SHOWS.filter(x=>!showEnded(x.id)).sort((a,b)=>showEndTs(a.id)-showEndTs(b.id))[0]:null; return nx?`${esc(weekType())}・${esc(nx.name)} ${muLeft(showEndTs(nx.id)-Date.now())}`:esc(weekType()); })()],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
     ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?`今天還有 ${3-svToday()} 票`:"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()],["wiki","news","SKpedia","藝人百科"]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
@@ -6327,7 +6325,7 @@ function festToday(gids,one){ const L=[], now=Date.now(), inG=g=>gids.includes(g
   try{ if(!one&&svOpen()&&svToday()<3) L.push({k:"survival",t:`還有 ${3-svToday()} 票`,c:"",b:"選秀投票",s:"每天 3 票",v:"survival",o:7}); }catch(e){}
   return L.sort((a,b)=>a.o-b.o||(a.end||9e15)-(b.end||9e15)); }
 function festHead(gid){ const g=groupOf(gid); if(!g) return ""; const av=xvGAv(gid);
-  let sub=""; try{ const s=promoSongs().filter(x=>x.gid===gid&&!x.demo).sort((a,b)=>songRel(b)-songRel(a))[0]; if(s&&songPhase(s)!=="off"){ const w=songWeekNo(s); sub=`《${esc(s.title)}》打歌第 ${w} 週・${(()=>{ const d=new Date(songRel(s)+MSA.END*MDAY); return `${d.getMonth()+1}/${d.getDate()} 下檔`; })()}`; } }catch(e){}
+  let sub=""; try{ const s=promoSongs().filter(x=>x.gid===gid&&!x.demo).sort((a,b)=>songRel(b)-songRel(a))[0]; if(s&&songPhase(s)!=="off"){ const w=songWeekNo(s); sub=`《${esc(s.title)}》打歌第 ${w} 週・${(()=>{ const d=new Date(songEndTs(songRel(s))-MDAY); return `${d.getMonth()+1}/${d.getDate()} 下檔`; })()}`; } }catch(e){}
   return `<button class="fz-hd" data-a="festGrp" data-v="${gid}" style="--gt:${gTheme(gid)}"><span class="fz-hdav" style="${av.avStyle||""}">${av.av||""}</span><span><b>${esc(g.name)}</b><small>${sub||"點這裡看社群頁"}</small></span><i>›</i></button>`; }
 function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>k==="signed"?["signed","pen","簽名專輯",""]:T.find(x=>x[0]===k), today=festToday(gids,!!g);
   const chips=f.length>1||g?`<div class="fz-ch" role="tablist">${[["","全部"],...f.map(x=>[x,(groupOf(x)||{}).name||""])].map(([v,n])=>{ const av=v?xvGAv(v):null; return `<button role="tab" class="${g===v?"on":""}" aria-selected="${g===v}" data-a="festG" data-v="${v}">${av?`<i style="${av.avStyle||""}">${av.av||""}</i>`:""}${esc(n)}</button>`; }).join("")}</div>`:"";
@@ -6427,8 +6425,8 @@ function newsAuto(raw){ const L=[], D=864e5, m=getMShow(), songs=[...m.songs,...
   songs.forEach(s=>{ const g=groupOf(s.gid); if(!g) return; const st=songStats(s.id), end=w=>wkDate(w).getTime()+6*D+21*36e5;
     st.aks.forEach(w=>{ const id=`au_ak_${s.id}_${w}`; L.push({id,tag:"ak",ts:end(w),gids:[s.gid],title:`${g.name}《${s.title}》橫掃一週 ${SHOWS.length} 大音樂節目…達成 All-Kill`,
       body:`【${NW_BY}】${g.name} 的《${s.title}》在 ${nwMD(wkDate(w).getTime())} 這一週，拿下 ${SHOWS.map(x=>x.name).join("、")} 全部 ${SHOWS.length} 個音樂節目的一位，達成 All-Kill（AK）。\n\n${g.name} 因此獲得 ${fmt(MSP.ak)} 打歌積分。\n\n${tail(id,g)}`}); });
-    if(st.pak){ const id=`au_pak_${s.id}`; L.push({id,tag:"pak",ts:end(st.pak),gids:[s.gid],title:`${g.name}《${s.title}》連續 4 個排名週拿下一位…達成 Perfect All-Kill`,
-      body:`【${NW_BY}】${g.name} 的《${s.title}》連續 4 個排名週都拿下音樂節目一位，達成 Perfect All-Kill（PAK）。\n\n${g.name} 因此獲得 ${fmt(MSP.pak)} 打歌積分。\n\n${tail(id,g)}`}); } });
+    if(st.pak){ const id=`au_pak_${s.id}`; L.push({id,tag:"pak",ts:end(st.pak),gids:[s.gid],title:`${g.name}《${s.title}》4 個打歌週都拿下一位…達成 Perfect All-Kill`,
+      body:`【${NW_BY}】${g.name} 的《${s.title}》4 個打歌週都拿下音樂節目一位，達成 Perfect All-Kill（PAK）。\n\n${g.name} 因此獲得 ${fmt(MSP.pak)} 打歌積分。\n\n${tail(id,g)}`}); } });
   getTours().filter(t=>t.status==="approved").forEach(t=>{ const g=groupOf(t.gid), Ls=tourStops(t).filter(st=>stopState(st)!=="off"); if(!g||!Ls.length) return; const id0="au_tr_"+t.id;
     L.push({id:id0,tag:"tour",ts:t.okTs||t.ts,gids:[t.gid],title:`${g.name} 世界巡演「${t.title}」確定…${Ls.length} 個城市`,
       body:`【${NW_BY}】${g.name} 的世界巡演「${t.title}」正式確定，將從 ${nwMD(Ls[0].startTs)} 的${Ls[0].city}站開始，走訪 ${Ls.map(x=>x.city).join("、")} 共 ${Ls.length} 個城市。\n\n每一站都是一場演唱會燈海，粉絲可以到 FEST →「世巡」用 ${fmt(TOUR_TIX)} 積分購票，進場後就能在巡演地圖上蓋章。\n\n${tail(id0,g)}`});
@@ -6868,19 +6866,19 @@ function viewAdmin(tab){
     if(!seg){ const pend=getTours().filter(x=>x.status==="pending").length;
       const tl=(v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="focSeg" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
       return adminHead("FOC")+`<main class="page foc">
-        ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
+        ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌舞台","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
         ${focFold("pd","star","檔期",`${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}`)}
         ${focFold("big","trophy","大型活動",`${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}`)}
         </main>`; }
-    const SEGN={sched:"賽程",music:"打歌",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
-    const SEG=[["sched","賽程"],["music","打歌"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
+    const SEGN={sched:"賽程",music:"打歌舞台",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
+    const SEG=[["sched","賽程"],["music","打歌舞台"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>本週階段</h3><span class="badge">即時同步中</span></div>
         <label class="field"><input id="focStage" value="${esc(st)}"></label>
         <div class="chips wrap">${STAGE_PRESETS.map(p=>`<button class="chip ${st===p?"on":""}" data-a="focPreset" data-v="${p}">${p}</button>`).join("")}</div>
         <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
         ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}
-        <p class="reach" style="margin:8px 0 0">每週會自動判斷：每月第一週＝宣傳週（不排名、不能投票）、中間＝排名週、最後一週＝打歌週。這裡手動改的只算本週，下週回到自動。</p>
-        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>打滿 4 個能排名的週（碰到宣傳週往後延），或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
+        <p class="reach" style="margin:8px 0 0">每週都是打歌週；每首新歌發的那一週是它自己的宣傳週（不排名）。這裡改成宣傳週＝本週全部暫停排名，下週回到打歌週。</p>
+        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>發歌那一週是宣傳週，下一週起打 4 個打歌週；打完，或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
         ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="act"?`打歌第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>
@@ -9289,7 +9287,7 @@ const TOUR_LBL={ops:"營運",artist:"藝人",home:"LOVE",live:"直播",whisper:"
 /* 11/11 改：一個分頁裡的東西全部教完才換下一個。
    有入口的地方（例如 FEST 的每一格）：先指那一格 → 馬上進去教那一頁 → 回來指下一格（照畫面上的順序，不會跳來跳去） */
 const TOUR_SUB={
-  fan:{ "fan:core":{promo:{hash:"#/fan/core?p=promo",key:"fan:core:promo",lbl:"打歌"},cards:{hash:"#/fan/core?p=cards",key:"fan:core:cards",lbl:"卡冊"},sns:{hash:"#/fan/sns",key:"fan:sns",lbl:"SNS"},news:{hash:"#/fan/core?p=news",key:"fan:core:news",lbl:"新聞"},wiki:{hash:"#/fan/core?p=wiki",key:"fan:core:wiki",lbl:"SKpedia"},fsl:{hash:"#/fan/core?p=fsl",key:"fan:core:fsl",lbl:"簽售"},truck:{hash:"#/fan/core?p=truck",key:"fan:core:truck",lbl:"應援餐車"},concert:{hash:"#/fan/core?p=concert",key:"fan:core:concert",lbl:"演唱會"},tour:{hash:"#/fan/core?p=tour",key:"fan:core:tour",lbl:"世巡"}} },
+  fan:{ "fan:core":{promo:{hash:"#/fan/core?p=promo",key:"fan:core:promo",lbl:"打歌舞台"},cards:{hash:"#/fan/core?p=cards",key:"fan:core:cards",lbl:"卡冊"},sns:{hash:"#/fan/sns",key:"fan:sns",lbl:"SNS"},news:{hash:"#/fan/core?p=news",key:"fan:core:news",lbl:"新聞"},wiki:{hash:"#/fan/core?p=wiki",key:"fan:core:wiki",lbl:"SKpedia"},fsl:{hash:"#/fan/core?p=fsl",key:"fan:core:fsl",lbl:"簽售"},truck:{hash:"#/fan/core?p=truck",key:"fan:core:truck",lbl:"應援餐車"},concert:{hash:"#/fan/core?p=concert",key:"fan:core:concert",lbl:"演唱會"},tour:{hash:"#/fan/core?p=tour",key:"fan:core:tour",lbl:"世巡"}} },
   artist:{ "artist:foc":{sns:{hash:"#/artist/sns",key:"artist:sns",lbl:"SNS"},news:{hash:"#/artist?tab=foc&p=news",key:"artist:foc:news",lbl:"新聞"},sign:{hash:"#/artist?tab=foc&p=sign",key:"artist:foc:sign",lbl:"簽售"},truck:{hash:"#/artist?tab=foc&p=truck",key:"artist:foc:truck",lbl:"應援餐車"},concert:{hash:"#/artist?tab=foc&p=concert",key:"artist:foc:concert",lbl:"演唱會"},tour:{hash:"#/artist?tab=foc&p=tour",key:"artist:foc:tour",lbl:"世巡"}} },
   admin:{ "admin:artist":{"#/admin?tab=roster":{hash:"#/admin?tab=roster",key:"admin:roster",lbl:"藝人與團"},"#/admin?tab=roster&p=new":{hash:"#/admin?tab=roster&p=new",key:"admin:rosternew",lbl:"新增藝人"}},
     "admin:ops":{"#/admin?tab=accounts":{hash:"#/admin?tab=accounts",key:"admin:accounts",lbl:"帳號"},"#/admin?tab=ptadd":{hash:"#/admin?tab=ptadd",key:"admin:ptadd",lbl:"加積分"},"#/admin?tab=banned":{hash:"#/admin?tab=banned",key:"admin:banned",lbl:"禁用字詞"}} } };
@@ -13760,11 +13758,11 @@ const MU_IC={
 const MU_SHN={ts:["THE","SHOW"],sc:["SHOW","CHAMPION"],mcd:["M","COUNTDOWN"],mb:["SHOW!","MUSIC CORE"],ink:["INKI","GAYO"]};
 const muVotedFor=show=>{ const k=myVoteKey(show); return musDemoOn()?(ui.dmMine||{})[k]:(S.get(K.msMine,{})||{})[k]; };
 function viewPromo(){ setTimeout(muRevealAuto,700);
-  const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"排名週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=[];
+  const wk=curWeek(), dm=musDemoOn(), songs=promoSongs(), t=dm?"打歌週":weekType(wk), rk=dm||ranked(wk), lr=rk?null:lastRankedWk(), open=ui.muOpen||{}, pro=dm?[]:songs.filter(x=>songPhase(x)==="promo");
   const mod=sh=>{ const id=sh.id, ended=rk&&showEnded(id,wk), {R,N:NPCS}=muRankShown(id,wk,ended), won=songOf((getMShow().wins[wk]||{})[id]), voted=muVotedFor(id), [n1,n2]=MU_SHN[id]||[sh.name,""];
     let head="";
     if(!songs.length) head=`<span class="mu3-st muted">目前沒有打歌中的歌</span>`;
-    else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上個排名週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上個排名週沒有一位</span>`):`<span class="mu3-st muted">宣傳週不排名</span>`; }
+    else if(!rk){ const w=lr&&songOf((getMShow().wins[lr]||{})[id]); head=lr?(w?`<span class="mu3-lb">上週一位</span>${muWho(w,true)}`:`<span class="mu3-st muted">上週沒有一位</span>`):`<span class="mu3-st muted">本週暫停排名</span>`; }
     else if(won) head=`<span class="mu3-lb">本週一位</span>${muWho(won,true)}`;
     else if(npcWon(id,wk)){ const nw=npcWon(id,wk); head=`<span class="mu3-lb">本週一位</span><span class="mu3-who win"><span class="mu2-cv sm">${muNpcCover(nw.name,nw.title||"")}</span><span><b>${esc(nw.title||nw.name)}</b><small>${esc(nw.title?nw.name:"")}</small></span><span class="mu3-cup">${MU_IC.cup}</span></span>`; }   /* 虛擬歌手拿一位也一樣有封面和獎盃 */
     else if(!ended&&NPCS[0]&&(!R[0]||NPCS[0].total>R[0].sc.total)) head=`<span class="mu3-lb">目前第一名</span><span class="mu3-st">${esc(NPCS[0].name)}</span>`;
@@ -13780,7 +13778,7 @@ function viewPromo(){ setTimeout(muRevealAuto,700);
       <span class="mu3-nm"><b>${n1}</b><b>${n2}</b></span><span class="mu3-hr">${head}${when}</span><span class="mu3-chev">${MU_IC.chev}</span></button>
       <div class="mu3-bd">${won||(ended&&npcWon(id,wk))?`<button class="mu3-rv" data-a="muReveal" data-v="${id}" data-w="${wk}">▶ 看一位發表</button>`:""}${voted&&rk&&!ended?`<p class="mu3-vt">今天投給了《${esc((songOf(voted)||{}).title||"")}》</p>`:""}${songs.length?rows:`<p class="me-none">目前沒有打歌中的歌</p>`}</div></section>`; };
   return coreHead("")+`<main class="page mu3">
-    <section class="mu2-wk mu3-wk t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"}"><span class="mu2-chip">${esc(t)}</span><span class="mu2-wt"><b>${rk?(songs.length?"每個節目每天可以投 1 票":"目前沒有打歌中的歌"):"宣傳週不排名、不開放投票"}</b>${pro.length?`<small>${pro.map(x=>`${esc(songName(x))} ${Math.max(1,Math.ceil((songRel(x)+MSA.PROMO*MDAY-Date.now())/MDAY))} 天後開始排名`).join("・")}</small>`:""}</span><button class="mu3-i" data-a="coreTip" aria-label="${(session()||{}).role==="fan"?"打歌週期":"規則"}">${MU_IC.i}</button></section>
+    <section class="mu2-wk mu3-wk t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"}"><span class="mu2-chip">${esc(t)}</span><span class="mu2-wt"><b>${rk?(songs.length?"每個節目每天可以投 1 票":"目前沒有打歌中的歌"):"本週暫停排名、不開放投票"}</b>${pro.length?`<small>${pro.map(x=>`${esc(songName(x))} 宣傳週・下週一開始排名`).join("・")}</small>`:""}</span><button class="mu3-i" data-a="coreTip" aria-label="${(session()||{}).role==="fan"?"打歌週期":"規則"}">${MU_IC.i}</button></section>
     ${muThrones()}
     <div class="mu2-h"><h3>音樂節目</h3></div>
     <div class="mu3-list">${SHOWS.map(mod).join("")}</div>
@@ -13790,9 +13788,9 @@ function muThrones(){ const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=
   return `<div class="mu3-thr">${thr("five","五台冠軍","five")}${thr("ak","AK","ak")}${thr("pak","PAK","pak")}</div>`; }
 const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${win?"win":""}"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span>${win?`<span class="mu3-cup">${MU_IC.cup}</span>`:""}</span>`; };
 /* 規則：三張卡滑著看 */
-function muRules(){ const fan=(session()||{}).role==="fan", wk0=curWeek(), d0=new Date(); d0.setDate(1); const W=[]; let k=weekKey(d0.getTime()); for(let i=0;i<6;i++){ const ms=wkDate(k); if(ms.getMonth()!==d0.getMonth()&&i>0&&monthKey(ms.getTime()+3*864e5)!==monthKey(d0.getTime())) break; W.push(k); k=shiftWeek(k,1); }
-  const WS=W.filter(x=>monthKey(wkDate(x).getTime()+3*864e5)===monthKey(Date.now())), band=WS.map(x=>{ const t=weekType(x); return `<span class="t-${t==="宣傳週"?"p":t==="打歌週"?"f":"r"} ${x===wk0?"now":""}">${t.slice(0,2)}</span>`; }).join(""), here=WS.map(x=>`<span>${x===wk0?"▲ 你在這裡":""}</span>`).join("");
-  const c1=`<div class="mur-c"><h4>週期</h4><div class="mur-band">${band.replace(/>(宣傳|排名|打歌)</g,(m0,x)=>`><b>${x}</b><`)}</div><div class="mur-here">${here}</div><p>${{"宣傳週":"這週是宣傳週：每個月的第一週，新歌先上台亮相，不排名、不能投票。下週開始排名。","排名週":"這週是排名週：每個節目每天可以投 1 票，再加上買專輯、MV 愛心和觀看次數，節目播出時間一到，分數最高的拿下一位。這個月最後一週是打歌週（月底決戰）。","打歌週":`這週是打歌週，這個月的月底決戰：一樣每個節目每天可以投 1 票，節目播出時間一到，分數最高的拿下一位。${fan?"":"出道／回歸後的第一個打歌週，每個節目最先投票的 3 位粉絲，投完當下會拿到公放卡。"}`}[weekType(wk0)]||""}</p></div>`;   /* 11/17 只說本週的；其他週點進來時才說 */
+function muRules(){ const fan=(session()||{}).role==="fan";
+  /* 11/17 照現實：每首歌各算各的，所以畫一首歌的 5 週就好 */
+  const c1=`<div class="mur-c"><h4>週期</h4><div class="mur-band"><span class="t-p"><b>宣傳</b></span>${[1,2,3,4].map(n=>`<span class="t-f"><b>打歌${n}</b></span>`).join("")}</div><p>新歌發的那一週是宣傳週：先上台亮相，不排名、不能投票。下一週起是打歌週，連續 4 週，每個節目每天可以投 1 票，節目播出時間一到，分數最高的拿下一位。4 週打完就下檔。${fan?"":"第一個打歌週，每個節目最先投票的 3 位粉絲，投完當下會拿到公放卡。"}</p></div>`;
   const c2=`<div class="mur-c"><h4>怎麼幫偶像</h4><ul class="mur-w"><li><b>${MU_IC.tk}</b><span>投票</span><em>1 票 ≈ ${MS_W.vote} 分</em></li><li><b>💿</b><span>買專輯</span><em>1 張 ≈ ${MS_W.album} 分</em></li><li><b>♡</b><span>MV 愛心</span><em>1 顆 ≈ ${MS_W.like} 分</em></li><li><b>▶</b><span>看 MV</span><em>1 次 ≈ ${MS_W.view} 分</em></li></ul><p>每個節目比重不一樣：Show Champion 最看投票，人氣歌謠最看 MV 觀看，音樂中心專輯和投票也很重要，THE SHOW、人氣歌謠的 MV 愛心也很重要。每個節目每天可以投 1 票。節目播出時間一到就結束，分數最高的拿下一位。</p></div>`;
   const c3=`<div class="mur-c"><h4>獎勵</h4><ul class="mur-w"><li><b>${MU_IC.cup}</b><span>一位</span><em>+${fmt(MSP.win)}</em></li><li><b>${MU_IC.five}</b><span>五台冠軍</span><em>+${fmt(MSP.five)}</em></li><li><b>${MU_IC.ak}</b><span>AK</span><em>+${fmt(MSP.ak)}</em></li><li><b>${MU_IC.pak}</b><span>PAK</span><em>+${fmt(MSP.pak)}</em></li></ul><p>同一首歌在同一個節目連續三週一位＝三冠王，之後這個節目就不再列入一位候選。</p></div>`;
   tieModal(fan?"打歌週期":"打歌規則",fan?`<div class="mur" id="murS">${c1}</div>`:`<div class="mur" id="murS">${c1}${c2}${c3}</div><div class="mur-dots"><button class="on" data-a="murGo" data-v="0" aria-label="第 1 張"></button><button data-a="murGo" data-v="1" aria-label="第 2 張"></button><button data-a="murGo" data-v="2" aria-label="第 3 張"></button></div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`,"mur-m");
@@ -13838,7 +13836,7 @@ function songRankOf(sid,show,wk){ const ended=showEnded(show,wk), {R,N}=muRankSh
   return {all,i,me:i>=0?all[i].x:null,ended}; }
 function muCell(s,show,wk){ if(s._done) return songLastRk(s.id,show); const rk=musDemoOn()||ranked(wk), won=(getMShow().wins[wk]||{})[show], {i,me,ended}=songRankOf(s.id,show,wk);
   if(!rk) return {cls:"off",t:"不排名"}; if(won===s.id) return {cls:"win",t:"一位"}; if(ended) return {cls:"end",t:i>=0?`第 ${i+1} 名`:"—"}; return {cls:"run",t:i>=0&&me&&me.sc.total>0?`第 ${i+1} 名`:"—"}; }
-function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), wt=musDemoOn()?"排名週":weekType(wk);
+function artPromoCard(mid){ const gid=MEMBERS[mid].group, s=grpSong(gid), wk=curWeek(), wt=musDemoOn()?"打歌週":(songPhase(s)==="promo"?"宣傳週・下週開始排名":weekType(wk));
   if(!s){ const p=cbrPre(gid), w=cbrMine(gid), mn=cbrMin(gid), cool=mn-PRE_MIN>Date.now()+864e5;
     return `<button class="foc-now mu4-card" data-a="focGo" data-v="honor"><span class="foc-ic">${FIC.stage}</span><span class="t"><b>${p?`《${esc(p.title)}》${mdTxt(p.day)} 回歸`:w?"回歸申請審核中":cool?"冷卻中":"可以申請回歸了"}</b><small>${p?`D-${dLeft(p.day)}`:w?`《${esc(w.title)}》・${mdTxt(w.day)}`:cool?`${mdTxt(mn-PRE_MIN)} 之後可以申請回歸`:"ME → 申請回歸"}</small></span></button>`; }
   return `<button class="mu4-card card" data-a="focGo" data-v="honor"><span class="mu4-top"><span class="mu2-cv">${songCover(gid)}</span><span class="mu4-ti"><b>《${esc(s.title)}》</b><small>${s._done?"打歌已結束・最後的成績":esc(wt)}${s.rtype?"・"+esc(s.rtype):""}</small></span><span class="mu4-go">›</span></span>
@@ -13932,7 +13930,7 @@ const FAIRY_KEY="daisuki_fairy";
 const FAIRY_BONUS=200, FAIRY_P=.3, FAIRY_CAP=3, FAIRY_MAX_SEC=5;   /* 她 11/10 定：每位成員各自 30%、沒人中就補抽 1 位、最多 3 位一起、一位 +200 */
 const fairyClips=sid=>((S.get(FAIRY_KEY,{})||{})["clip|"+sid])||{};
 const fairyMemsOf=sid=>{ const so=songOf(sid); return so?groupArtists(so.gid).slice().sort():[]; };
-/* 發行當天就把整個打歌期（MSA.END 天）每一個打歌舞台的結尾妖精全部抽好、存在後台；
+/* 發行當天就把整個打歌期（宣傳週＋4 個打歌週）每一個打歌舞台的結尾妖精全部抽好、存在後台；
    每個節目照真實播出的星期幾、時間才公布（例：星期四回歸 → 先公布當天 M COUNTDOWN，接著星期五 MUSIC BANK、星期日 INKIGAYO、下週二 THE SHOW…） */
 const fairyPlanK=sid=>"plan|"+sid;
 function fairyStages(rel){ const L=[], end=songEndTs(rel); for(let d=new Date(rel);d.getTime()<end+7*864e5;d.setDate(d.getDate()+1)){ SHOWS.forEach(sh=>{ const [wd,h,mi]=SHOW_END[sh.id]||[sh.day,18,0]; if(d.getDay()!==wd) return; const t=new Date(d); t.setHours(h,mi,0,0); const ts=t.getTime(); if(ts>=rel&&ts<end) L.push({show:sh.id,ts}); }); } return L.sort((a,b)=>a.ts-b.ts); }
@@ -14308,7 +14306,7 @@ const TOURS={
     ['[data-a="tGallery"]',"照片・影片","藝人傳過的照片和影片，一次看完。"],
     ['[data-a="tToSettings"]',"聊天室設定","聊天室名稱、暱稱、背景，都在這裡改。"],
     [".t-leave","離開聊天室","不想留這個聊天室了，可以離開。"]],
-  "fan:core":[['[data-a="coreGo"][data-v="promo"]',"打歌","藝人上音樂節目打歌的地方。每天可以在每個節目投票，最早投的前三位還能搶到公放席、拿公放卡。"],
+  "fan:core":[['[data-a="coreGo"][data-v="promo"]',"打歌舞台","藝人上音樂節目打歌的地方。每天可以在每個節目投票，最早投的前三位還能搶到公放席、拿公放卡。"],
     ['[data-a="coreGo"][data-v="cards"]',"小卡","買專輯拆出來的小卡、公放卡、簽售卡都收在卡冊裡。"],
     ['[data-a="coreGo"][data-v="sns"]',"SNS","你的個人帳號：發照片和限時動態、追蹤朋友和藝人、傳私訊。"],
     ['[data-a="coreGo"][data-v="news"]',"新聞","出道、回歸、拿一位都會上 HAECHU 娛樂新聞。"],
@@ -14321,11 +14319,11 @@ const TOURS={
     ['[data-a="coreGo"][data-v="concert"]',"演唱會","演唱會開始時進場，舉起應援棒一起變成燈海。"],
     ['[data-a="coreGo"][data-v="tour"]',"世巡","藝人的世界巡演，每一站買票進場、蓋章收集。"],
     ['[data-a="coreLocked"],[data-a="coreGo"][data-v="survival"]',"選秀","選秀開始後，每天都能幫喜歡的練習生投票。"]],
-  "fan:core:promo":[[".mu2-wk","這週是什麼週","每個月第一週是宣傳週（不排名、不能投票），中間是排名週，最後一週是打歌週（月底決戰）。"],
+  "fan:core:promo":[[".mu2-wk","這週是什麼週","新歌發的那一週是宣傳週（不排名、不能投票），下一週起連續 4 個打歌週可以投票。"],
     ['[data-a="coreTip"]',"規則","分數怎麼算、什麼時候結束、三冠王是什麼，點這裡看完整規則，左右滑換頁。"],
     [".mu3-thr","這個月的王座","五台冠軍、AK、PAK，這個月拿到的團會亮在這裡。還沒有人拿到就是「虛位以待」。"],
     [".mu3-list","五個音樂節目","THE SHOW、SHOW CHAMPION、M COUNTDOWN、Show! Music Core、INKIGAYO，每個節目各自排名、各自投票。"],
-    [".mu3-hd","打開節目","點一下展開這個節目的排行榜。收起來的時候，右邊會顯示目前第一名，或上一個排名週的一位。"],
+    [".mu3-hd","打開節目","點一下展開這個節目的排行榜。收起來的時候，右邊會顯示目前第一名，或上週的一位。"],
     [".mu3-end","倒數","每個節目在播出的時間自動結算，這裡顯示還剩多久。"],
     [".mu3-r","排行","名次、歌、分數。分數＝投票 ×100＋專輯 ×200＋MV 愛心 ×20＋MV 觀看 ×2。"],
     ['[data-a="muVote3"]',"投票","每個節目每天可以投 1 票。同一週同一個節目，最早投這首歌的前三位會搶到公放席，拿到一張公放卡；第四位之後就沒有了。"],
@@ -14474,7 +14472,7 @@ const TOURS={
   "admin:posts":[['[data-a="ag"]',"篩選","只看某一個團的貼文。"],[".ap-g,.apl","全部貼文","照藝人分好，點一下展開那位藝人的貼文。"],['[data-a="hide"]',"隱藏","先藏起來，之後還能恢復。"],['[data-a="admDel"]',"刪除","直接刪掉，刪了就不能復原。"]],
   "admin:announce":[['.uni-top [data-a="uniAnn"]',"發公告","右上角的「＋」：用 HAECHU 官方發公告給全部粉絲。"],['[data-a="annDel"],[data-a="gnDel"]',"撤下","把公告撤下來。"]],
   "admin:foc":[['.foc-fold[data-v="wk"]',"每週","每週都要做的事。點標題可以收起來，下次打開會記得。"],
-    ['[data-a="focSeg"][data-v="sched"]',"賽程","設定這週是宣傳週、排名週還是打歌週；不設定就照日期走。"],
+    ['[data-a="focSeg"][data-v="sched"]',"賽程","每週都是打歌週；改成宣傳週＝本週全部暫停排名。"],
     ['[data-a="focSeg"][data-v="music"]',"打歌","五個音樂節目的一位、MC 和歌曲。節目會在播出時間自動結算，需要時可以手動改一位。"],
     ['[data-a="focSeg"][data-v="news"]',"新聞","HAECHU 娛樂新聞。出道、回歸、拿一位會自動寫，也可以自己發。"],
     ['.foc-fold[data-v="pd"]',"檔期","有檔期才辦的活動。"],
