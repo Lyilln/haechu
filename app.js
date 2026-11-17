@@ -563,14 +563,14 @@ const normAcct=u=>String(u||"").normalize("NFKC").replace(/\s+/g,"").toLowerCase
 const normPw=p=>String(p||"").normalize("NFKC").trim();
 const hbEmail=u=>"u"+[...new TextEncoder().encode(normAcct(u))].map(b=>b.toString(16).padStart(2,"0")).join("")+"@haechu.app";
 const hbPw=pw=>"hc:"+normPw(pw).toLowerCase();   // 原本的密碼不分大小寫，照舊
-async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false}={},noAuth=false,retried=false){
+async function hbFetch(path,{method="GET",body,prefer,headers={},raw=false,keepalive=false}={},noAuth=false,retried=false){
   if(!noAuth&&HB.ref&&Date.now()>HB.exp-60e3&&!path.startsWith("/auth/")) await hbRefresh();
   const h={apikey:HB_KEY,...headers};
   if(!noAuth&&HB.tok) h.Authorization="Bearer "+HB.tok;
   if(body!==undefined&&!(body instanceof Blob)) h["Content-Type"]="application/json";
   if(prefer) h.Prefer=prefer;
   const ac=path.startsWith("/rest/v1/kv")&&typeof AbortController!=="undefined"?new AbortController():null, tm=ac?setTimeout(()=>ac.abort(),30e3):0;   /* 資料同步卡住超過 30 秒就重來（不然整個同步會一直卡著，後面發的東西都傳不上去） */
-  let res; try{ res=await fetch(HB_URL+path,{method,headers:h,signal:ac?ac.signal:undefined,body:body===undefined?undefined:body instanceof Blob?body:JSON.stringify(body)}); }catch(e){ clearTimeout(tm); const er=new Error("network"); er.net=true; throw er; } clearTimeout(tm);
+  let res; try{ res=await fetch(HB_URL+path,{method,headers:h,keepalive:keepalive||undefined,signal:ac?ac.signal:undefined,body:body===undefined?undefined:body instanceof Blob?body:JSON.stringify(body)}); }catch(e){ clearTimeout(tm); const er=new Error("network"); er.net=true; throw er; } clearTimeout(tm);
   if(res.status===401&&!noAuth&&!retried&&HB.ref){ if(await hbRefresh()) return hbFetch(path,{method,body,prefer,headers,raw},noAuth,true); }
   if(raw) return res;
   const txt=await res.text(); try{ if(typeof hbRx==="function") hbRx(txt.length); }catch(e){} let j=null; try{ j=txt?JSON.parse(txt):null; }catch(e){ j=txt; }
@@ -847,6 +847,13 @@ async function pushEnable(){
 async function pushDisable(){ const s=await pushSub(); if(s){ try{ await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} try{ await s.unsubscribe(); }catch(e){} } ui.pushOn=false; toast("手機通知關掉了"); pushRefreshUI(); }
 async function pushLogout(){ try{ const s=await pushSub(); if(s&&HB.tok) await hbFetch("/rest/v1/rpc/drop_push",{method:"POST",body:{p_endpoint:s.endpoint}}); }catch(e){} ui.pushOn=false; }
 function pushRefreshUI(){ const sw=document.querySelector('[data-a="pushToggle"].sw'); if(sw) sw.setAttribute("aria-checked",ui.pushOn?"true":"false"); if(!document.querySelector(".sheet")){ const y=window.scrollY; render(); window.scrollTo(0,y); } }
+/* 11/17 人在 App 裡就不推播：iPhone 規定收到推播一定要跳出來（在手機這端偷偷不跳，3 次就會被取消推播權限），
+   所以改成「告訴伺服器我正在看」：開著 App 時每 25 秒回報一次，離開時取消；伺服器（send-push）看到 60 秒內有回報的就不發。
+   伺服器那邊要先跑 supabase/push_seen.sql；還沒跑之前這裡呼叫失敗也沒關係 */
+let pushSeenT=0;
+async function pushSeen(on){ try{ if(!ui.pushOn||!HB.tok) return; const s=await pushSub(); if(!s) return; await hbFetch("/rest/v1/rpc/push_seen",{method:"POST",body:{p_endpoint:s.endpoint,p_on:!!on},keepalive:!on}); }catch(e){} }
+function pushSeenLoop(){ clearInterval(pushSeenT); if(document.hidden){ pushSeen(false); return; } pushSeen(true); pushSeenT=setInterval(()=>{ if(!document.hidden) pushSeen(true); },25e3); }
+document.addEventListener("visibilitychange",pushSeenLoop); window.addEventListener("pagehide",()=>pushSeen(false)); setTimeout(pushSeenLoop,4000);
 /* 新版本：網站更新後，打開中的 App 會跳「有新版本」，按一下就換成新版（加到主畫面的不用刪掉重加） */
 const BUILD=window.HC_BUILD||"dev";   /* 版本號寫在 index.html（build.py 每次發布自動填） */
 /* 有新版本：先在背後把新版的檔案下載好（存進手機），按「更新」時就不用再等下載 */

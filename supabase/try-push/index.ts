@@ -20,7 +20,9 @@ Deno.serve(async (req) => {
   const { data: admins } = await db.from("profiles").select("id").eq("role", "admin");
   const ids = (admins || []).map((a) => a.id);
   if (!ids.length) return ok({ sent: 0 });
-  const { data: subs } = await db.from("push_subs").select("endpoint,sub").in("user_id", ids);
+  const { data: subs0 } = await db.from("push_subs").select("endpoint,sub,seen_at").in("user_id", ids);
+  // 11/17 正在看 App 的（60 秒內有回報）就不推播；iPhone 不准在手機那端偷偷不跳，只能在這裡擋
+  const subs = (subs0 || []).filter((s) => !(s.seen_at && Date.now() - Date.parse(s.seen_at) < 60_000));
 
   const msg = { title: `試玩｜${nick} 傳了 TIE${n > 1 ? `（${n} 則）` : ""}`, body: text || "有訪客在等 LUMI 回覆", path: "#/admin", tag: "try:" + id, open: "try:" + id };
   let sent = 0; const dead: string[] = [];
