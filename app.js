@@ -8374,7 +8374,9 @@ function thUpdNotify(){ const s=session(); if(!s||s.role==="admin") return; cons
   if(ch){ S.set(acK("daisuki_th_seen"),seen); S.set(K.notifs,L.slice(0,100)); } }
 /* 每個帳號自己的（藝人帳號切到粉絲端也是同一份） */
 const acK=k=>{ const s=session(); const e=s&&s.email?String(s.email).toLowerCase():""; return !e||e===DEMO_FAN?k:k+"@"+e; };
-const thOwned=()=>{ const L=getThemes(), off=L.filter(t=>t.scope==="app"&&t.status==="on").map(t=>t.id); return [...new Set([...off,...S.get(acK(K.thOwned),[])])].filter(id=>{ const t=L.find(x=>x.id===id); return t&&t.status!=="deleted"; }); };
+const thOwned=()=>{ const L=getThemes(), se=session()||{}, me=(ACCOUNTS[se.email]||{}).member||se.member, mg=me&&MEMBERS[me]?MEMBERS[me].group:null;
+  /* 11/17 官方免費的、自己做的、自己（或自己的團）的主題：不用買，直接在「我的主題」 */
+  const off=L.filter(t=>t.status==="on"&&(t.scope==="app"||(se.email&&t.owner===se.email)||(me&&t.scope==="member"&&t.mid===me)||(mg&&t.scope==="group"&&t.gid===mg))).map(t=>t.id); return [...new Set([...off,...S.get(acK(K.thOwned),[])])].filter(id=>{ const t=L.find(x=>x.id===id); return t&&t.status!=="deleted"; }); };
 const thCurId=()=>{ const id=S.get(acK(K.thCur),""); return id&&thOwned().includes(id)?id:""; };
 const thCur=()=>{ const id=thCurId(); return id?thById(id):null; };
 const thRot=()=>{ const r={on:false,every:24,last:0,sel:null,...S.get(acK(K.thRot),{})}; if(r.every<=7) r.every*=24; if(!Array.isArray(r.sel)) r.sel=[]; return r; };
