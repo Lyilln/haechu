@@ -13806,16 +13806,21 @@ function muThrones(){ const th=monthThrones(), thr=(k,l,ic)=>{ const L=th[k], s=
 const muWho=(s,win)=>{ const g=groupOf(s.gid); return `<span class="mu3-who ${win?"win":""}"><span class="mu2-cv sm">${songCover(s.gid,s.title)}</span><span><b>${esc(s.title)}</b><small>${esc(g?g.name:"")}</small></span>${win?`<span class="mu3-cup">${MU_IC.cup}</span>`:""}</span>`; };
 /* 規則：三張卡滑著看 */
 function muRules(){ const fan=(session()||{}).role==="fan";
-  /* 11/17 照現實：每首歌各算各的 → 只說「你的那首歌」現在在哪一週。藝人看自己的歌、粉絲看追蹤的團正在打的歌 */
-  const se=session()||{}, mid=(ACCOUNTS[se.email]||{}).member||se.member||se.home, gs=fan?(typeof followed==="function"?followed():[]):[MEMBERS[mid]&&MEMBERS[mid].group];
-  const so=getMShow().songs.filter(x=>gs.includes(x.gid)&&["promo","act"].includes(songPhase(x))).sort((a,b)=>songRel(b)-songRel(a))[0];
-  const ph=so?songPhase(so):"", n=so&&ph==="act"?Math.min(MSA.WEEKS,Math.max(1,Math.round((wkDate(curWeek())-wkDate(weekKey(songPromoEnd(songRel(so)))))/(7*MDAY))+1)):0, at=ph==="promo"?0:n;
-  const left=MSA.WEEKS-n;
-  const txt=!so?"新歌發的那一週是宣傳週，不排名、不能投票。下一週起連續 4 週打歌，每個節目每天可以投 1 票。"
-    :ph==="promo"?"這週是宣傳週：新歌先上台亮相，不排名、不能投票。下週一開始打歌。"
-    :`每個節目每天可以投 1 票，節目播出時間一到，分數最高的拿下一位。${left?`再 ${left} 週就下檔。`:"這是最後一週，打完就下檔。"}${!fan&&mcWeek(so)===curWeek()?"這週每個節目最先投票的 3 位粉絲，投完當下會拿到公放卡。":""}`;
-  const c1=`<div class="mur-c">${so?`<p class="mur-song">${fan?esc(groupOf(so.gid)?groupOf(so.gid).name:"")+" ":""}《${esc(so.title)}》</p><h4>${ph==="promo"?"宣傳週":`打歌第 ${n} 週`}</h4>`:`<h4>週期</h4>`}
-    <ol class="mur-trk">${["宣傳","1","2","3","4"].map((l,k)=>`<li class="${so&&k<at?"mt-p":""} ${so&&k===at?"mt-on":""}"><i></i><span>${l}</span></li>`).join("")}</ol><p>${txt}</p></div>`;
+  /* 11/17 照現實：每首歌各算各的 → 說「這位藝人那首歌」現在在哪一週。
+     藝人看自己的歌；粉絲看 FEST 上面選的那位藝人，選「全部」就把追蹤的、正在打歌的每一首都列出來 */
+  const se=session()||{}, mid=(ACCOUNTS[se.email]||{}).member||se.member||se.home, f=fan&&typeof followed==="function"?followed():[], g=fan&&typeof festSel==="function"?festSel(f):"";
+  const gs=fan?(g?[g]:f):[MEMBERS[mid]&&MEMBERS[mid].group];
+  const L=getMShow().songs.filter(x=>gs.includes(x.gid)&&["promo","act"].includes(songPhase(x))).sort((a,b)=>songRel(b)-songRel(a)).filter((x,i,A)=>A.findIndex(y=>y.gid===x.gid)===i);
+  const st=so=>{ const ph=songPhase(so), n=ph==="act"?Math.min(MSA.WEEKS,Math.max(1,Math.round((wkDate(curWeek())-wkDate(weekKey(songPromoEnd(songRel(so)))))/(7*MDAY))+1)):0; return {ph,n,at:ph==="promo"?0:n}; };
+  const trk=at=>`<ol class="mur-trk">${["宣傳","1","2","3","4"].map((l,k)=>`<li class="${at!=null&&k<at?"mt-p":""} ${k===at?"mt-on":""}"><i></i><span>${l}</span></li>`).join("")}</ol>`;
+  const head=so=>{ const x=st(so); return `<p class="mur-song">${fan?esc((groupOf(so.gid)||{}).name||"")+" ":""}《${esc(so.title)}》</p><h4>${x.ph==="promo"?"宣傳週":`打歌第 ${x.n} 週`}</h4>${trk(x.at)}`; };
+  const GEN="新歌發的那一週是宣傳週，不排名、不能投票。下一週起連續 4 週打歌，每個節目每天可以投 1 票，節目播出時間一到，分數最高的拿下一位。";
+  let c1;
+  if(L.length===1){ const so=L[0], x=st(so), left=MSA.WEEKS-x.n;
+    const txt=x.ph==="promo"?"這週是宣傳週：新歌先上台亮相，不排名、不能投票。下週一開始打歌。":`每個節目每天可以投 1 票，節目播出時間一到，分數最高的拿下一位。${left?`再 ${left} 週就下檔。`:"這是最後一週，打完就下檔。"}${!fan&&mcWeek(so)===curWeek()?"這週每個節目最先投票的 3 位粉絲，投完當下會拿到公放卡。":""}`;
+    c1=`<div class="mur-c">${head(so)}<p>${txt}</p></div>`; }
+  else if(L.length>1) c1=`<div class="mur-c">${L.map(so=>`<div class="mur-one">${head(so)}</div>`).join("")}<p>${GEN}</p></div>`;
+  else c1=`<div class="mur-c"><h4>週期</h4>${trk(null)}<p>${GEN}</p></div>`;
   const c2=`<div class="mur-c"><h4>怎麼幫偶像</h4><ul class="mur-w"><li><b>${MU_IC.tk}</b><span>投票</span><em>1 票 ≈ ${MS_W.vote} 分</em></li><li><b>💿</b><span>買專輯</span><em>1 張 ≈ ${MS_W.album} 分</em></li><li><b>♡</b><span>MV 愛心</span><em>1 顆 ≈ ${MS_W.like} 分</em></li><li><b>▶</b><span>看 MV</span><em>1 次 ≈ ${MS_W.view} 分</em></li></ul><p>每個節目比重不一樣：Show Champion 最看投票，人氣歌謠最看 MV 觀看，音樂中心專輯和投票也很重要，THE SHOW、人氣歌謠的 MV 愛心也很重要。每個節目每天可以投 1 票。節目播出時間一到就結束，分數最高的拿下一位。</p></div>`;
   const c3=`<div class="mur-c"><h4>獎勵</h4><ul class="mur-w"><li><b>${MU_IC.cup}</b><span>一位</span><em>+${fmt(MSP.win)}</em></li><li><b>${MU_IC.five}</b><span>五台冠軍</span><em>+${fmt(MSP.five)}</em></li><li><b>${MU_IC.ak}</b><span>AK</span><em>+${fmt(MSP.ak)}</em></li><li><b>${MU_IC.pak}</b><span>PAK</span><em>+${fmt(MSP.pak)}</em></li></ul><p>同一首歌在同一個節目連續三週一位＝三冠王，之後這個節目就不再列入一位候選。</p></div>`;
   tieModal(fan?"打歌週期":"打歌規則",fan?`<div class="mur" id="murS">${c1}</div>`:`<div class="mur" id="murS">${c1}${c2}${c3}</div><div class="mur-dots"><button class="on" data-a="murGo" data-v="0" aria-label="第 1 張"></button><button data-a="murGo" data-v="1" aria-label="第 2 張"></button><button data-a="murGo" data-v="2" aria-label="第 3 張"></button></div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`,"mur-m");
