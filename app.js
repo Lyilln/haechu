@@ -2827,12 +2827,12 @@ function abSummary(){ const st=ui.ab, r=st.r, all=r.opens.flatMap(o=>o.got.map((
   document.getElementById("abHint").innerHTML=`${r.opens.length} 張專輯全部拆開了・共 ${all.length+xs.length} 樣・新的 ${all.filter(x=>x.nw).length+xs.filter(x=>x.nw).length} 樣`;
   document.getElementById("abFoot").innerHTML=`<button class="btn btn-main btn-block" data-a="abClose">收進卡冊</button>`; }
 /* 卡冊、自由轉看單一樣東西 */
-function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCards(), n=own[cid]||0, mt=cardMeta()[cid]||{}, g=groupOf(o.a.gid), rep=S.get(K.repCard,"")===cid;
+function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCards(), real=own[cid]||0, pv=!real&&!!ui.cbPrev&&isHussey(), n=real||(pv?1:0), mt=cardMeta()[cid]||{}, g=groupOf(o.a.gid), rep=S.get(K.repCard,"")===cid;
   setLayer(`<div class="ph-view cv s3view" role="dialog" aria-label="收藏"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button>
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
     <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?" ✦ 珠光":""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
-      <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${n?`擁有 ${n} 張`:"還沒有"}</small></div>
-    <div class="cv-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button>${n?`<button class="btn ${rep?"btn-soft":"btn-main"} btn-sm" data-a="cardRep" data-v="${cid}">${rep?"✓ 我的代表卡":"設為代表卡"}</button>`:""}</div>
+      <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
+    <div class="cv-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button>${real?`<button class="btn ${rep?"btn-soft":"btn-main"} btn-sm" data-a="cardRep" data-v="${cid}">${rep?"✓ 我的代表卡":"設為代表卡"}</button>`:""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
   if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
@@ -2846,10 +2846,10 @@ function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
       ${a.vers.map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.map(it=>grid(a,it)).join("")}`).join("")}
       ${(a.ex||[]).filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).length?`<div class="cb-vh">專輯外（店家特典・簽售・打歌節目）</div>${a.ex.filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
       :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`);
-  return coreHead("PHOTOCARD 卡冊")+`<main class="page cards">${isHussey()?`<button class="btn ${prev?"btn-main":"btn-soft"} btn-block cb-prev" data-a="cbPrev">${prev?"預覽中：全部卡片都當成有（不會存）・關掉":"預覽全部卡片（只有 HUSSEY 看得到）"}</button>`:""}
+  return coreHead("卡冊")+`<main class="page cards">${isHussey()?`<button class="cb-prev ${prev?"on":""}" data-a="cbPrev">${prev?"結束預覽":"預覽全部卡片"}</button>`:""}
     <div class="seg2 cb-tabs" style="--i:${tb==="log"?1:0}"><i class="seg2-ind"></i><button class="${tb==="book"?"on":""}" data-a="cbTab" data-v="book">卡冊</button><button class="${tb==="log"?"on":""}" data-a="cbTab" data-v="log">開箱紀錄</button></div>
     <div class="seg2-pane ${ui.segAnim||""}">${tb==="log"?cbLog():book}</div></main>`; }
-function cbLog(){ const log=S.get(K.gachaLog,[]).filter(x=>x.vid&&albumOf(x.aid)); if(!log.length) return `<p class="me-none">還沒有開過專輯</p>`;
+function cbLog(){ const log=S.get(K.gachaLog,[]).filter(x=>x.vid&&albumOf(x.aid)); if(!log.length) return `<div class="cb-empty"><b>還沒有開過專輯</b><p>在 SHOP 買專輯，拆開拿到的小卡會收進卡冊。</p><button class="btn btn-main btn-sm" data-a="tab" data-v="shop">去 SHOP</button></div>`;
   return `<section class="card cb-log">${log.map(x=>{ const a=albumOf(x.aid), v=verOf(a,x.vid), g=groupOf(a.gid), d=new Date(x.ts);
     return `<div class="gl-r"><div class="gl-h"><b>${esc(g?g.name:"")}《${esc(a.title)}》${esc(v?v.name:"")}${x.sid&&storeOf(x.sid)?`・${esc(storeOf(x.sid).name)}`:""}</b><small>${ymd(x.ts)} ${pad(d.getHours())}:${pad(d.getMinutes())}</small></div>
       <div class="gl-cs">${[...x.cards,...(x.extra||[])].map(c=>parseIt(c)?`<button class="gl-c ${parseIt(c).p.sp?"t3":"t1"}" data-a="cardView" data-v="${c}">${esc(itemName(c))}</button>`:"").join("")}</div></div>`; }).join("")}</section><p class="cb-lnote">保留最近 50 次</p>`; }
@@ -2879,7 +2879,7 @@ function aeItemHtml(a,it,ex){ const ms=groupArtists(a.gid);
       <select class="ae-sel" data-o="p|${it.id}|${p.id}|mid"><option value="">不指定成員</option>${ms.map(m=>`<option value="${m}" ${p.mid===m?"selected":""}>${esc(artName(m,"feed"))}</option>`).join("")}</select>
       <div class="ae-pb"><button class="chip ${p.sp?"on":""}" data-a="aePSp" data-i="${it.id}" data-v="${p.id}">✦ 珠光</button><button class="chip" data-a="aePDel" data-i="${it.id}" data-v="${p.id}">刪除</button></div></div>`).join("")}
       <button class="ae-add" data-a="aePAdd" data-v="${it.id}" style="aspect-ratio:${it.w}/${it.h}">＋<small>加一張照片</small></button></div>
-    <div class="ae-row"><span class="ae-lab">這一項共用的背面（照片沒有背面時用）</span>${upCell(`ib|${a.id}|${it.id}`,"",`${it.w}/${it.h}`)}</div></div>`; }
+    <div class="ae-row"><span class="ae-lab">卡背設計（這一項整套共用；單張沒傳背面時就用這張）</span>${upCell(`ib|${a.id}|${it.id}`,"",`${it.w}/${it.h}`)}</div></div>`; }
 /* 11/17 藝人（要出道／回歸的人）也能編自己團的專輯、上傳小卡卡面；價格、預購天數只有管理員能改（藝人不能動自己商品的價格） */
 const aeArt=()=>{ const s=session()||{}; return s.role==="artist"&&!isAdminAcct(); };
 function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
