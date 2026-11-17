@@ -2773,7 +2773,7 @@ function buyAlbumV(aid,vid,qty,sid){ const a=albumOf(aid), v=a&&verOf(a,vid); if
   logSelf("core",null,`你在${stn||"SHOP"}買了 ${g.name}《${a.title}》${v.name} ${qty} 張`);
   return {aid,vid,sid,opens}; }
 /* 打歌節目卡：在某個節目幫某團的歌投票，那週那個節目拿 1 張 */
-function giveMcCard(gid,showId){ const wk=curWeek(), key=`${wk}|${showId}|${gid}`, got=S.get(K.mcGot,{}); if(got[key]) return null;
+function giveMcCard(gid,showId,k0){ const wk=curWeek(), key=k0||`${wk}|${showId}|${gid}`, got=S.get(K.mcGot,{}); if(got[key]) return null;
   const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="mc"&&(e.pool||[]).length))||mcAlb(gid); if(!a) return null; const e=a.ex.find(x=>x.rule==="mc"&&(x.pool||[]).length), p=drawFrom(e,1)[0]; if(!p) return null;
   got[key]=Date.now(); S.set(K.mcGot,got); const cid=`it|${a.id}|${e.id}|${p.id}`; giveItem([cid]); return cid; }
 function giveFsCard(gid,mid){ const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="fs")); if(!a) return; const e=a.ex.find(x=>x.rule==="fs"); const ps=e.pool.filter(p=>p.mid===mid); const p=(ps.length?ps:e.pool)[0]; if(p) giveItem([`it|${a.id}|${e.id}|${p.id}`]); }
@@ -2840,8 +2840,8 @@ function abSummary(){ const st=ui.ab, r=st.r, all=r.opens.flatMap(o=>o.got.map((
   document.getElementById("abHint").innerHTML=`${r.opens.length} 張專輯全部拆開了・共 ${all.length+xs.length} 樣・新的 ${all.filter(x=>x.nw).length+xs.filter(x=>x.nw).length} 樣`;
   document.getElementById("abFoot").innerHTML=`<button class="btn btn-main btn-block" data-a="abClose">收進卡冊</button>`; }
 /* 卡冊、自由轉看單一樣東西 */
-function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCards(), real=own[cid]||0, pv=!real&&!!ui.cbPrev&&isHussey(), n=real||(pv?1:0), mt=cardMeta()[cid]||{}, g=groupOf(o.a.gid), rep=S.get(K.repCard,"")===cid;
-  setLayer(`<div class="ph-view cv s3view" role="dialog" aria-label="收藏"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button>
+function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCards(), real=own[cid]||0, pv=!real&&(!!ui.cbPrev&&isHussey()||ui.itPv===cid), n=real||(pv?1:0), mt=cardMeta()[cid]||{}, g=groupOf(o.a.gid), rep=S.get(K.repCard,"")===cid;
+  setLayer(`<div class="ph-view cv s3view" role="dialog" aria-label="收藏"><button class="ph-x" data-a="${ui.itPv===cid?"artAlb":"tCloseLayer"}" aria-label="關閉">${XI}</button>
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
     <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?" ✦ 珠光":""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
@@ -2895,12 +2895,12 @@ function aeItemHtml(a,it,ex){ const ms=groupArtists(a.gid);
     <div class="ae-row"><span class="ae-lab">卡背設計（這一項整套共用；單張沒傳背面時就用這張）</span>${upCell(`ib|${a.id}|${it.id}`,"",`${it.w}/${it.h}`)}</div></div>`; }
 /* 11/17 藝人（要出道／回歸的人）也能編自己團的專輯、上傳小卡卡面；價格、預購天數只有管理員能改（藝人不能動自己商品的價格） */
 const aeArt=()=>{ const s=session()||{}; return s.role==="artist"&&!isAdminAcct(); };
-function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
+function artAlbumsSheet(){ ui.itPv=null; const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
   const mc=mcAlb(gid), mcp=mc?mc.ex[0].pool:[];   /* 11/17 公放卡（投票拿到的卡）也由藝人自己上傳：每位成員一款，正面＋背面 */
   setLayer(`<div class="tiei art-alb"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>專輯・小卡</b><span class="sh-sp"></span></header><div class="tiei-body">
     <div class="section-h">公放卡<span class="mc-must ${mcDone(gid)?"ok":""}">${mcDone(gid)?"✓ 已放好":"必放"}</span></div>
     <div class="mc-rule"><b>打歌節目的週期</b><ul><li>新歌 MV 公開那一週是宣傳週（不排名）→ 下一週起連續 4 個打歌週 → 下檔。回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後的第一個打歌週發</b>（宣傳週的下一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
-    <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section>    <div class="section-h">專輯<span class="muted">可不放</span></div>
+    <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small><button class="btn btn-soft btn-sm ae-pv" data-a="mcPv" data-v="it|mc_${gid}|mc|${p.id}">看效果</button></div>`).join("")}</div>${isAdminAcct()?`<button class="btn btn-soft btn-block" data-a="mcGrantOpen" style="margin-top:10px">補發公放卡給之前投票的粉絲</button>`:""}</section>    <div class="section-h">專輯<span class="muted">可不放</span></div>
     <p class="ae-tip">有出實體專輯（迷你、正規…）再新增；單曲、數位單曲出道不用放，只要放上面的公放卡就好。上傳後大家的 App 都看得到。</p>
     <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><span style="display:flex;gap:6px"><button class="btn btn-soft btn-sm" data-a="albDel" data-v="${a.id}">刪除</button><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></span></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
     <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
@@ -2977,6 +2977,28 @@ async function cardGyro(){
 }
 
 
+
+/* 11/17 補發公放卡：公放卡功能上線前就投票的粉絲。App 只記了「哪天投給哪首」，同一天裡誰先誰後沒記 → 照日期排好、預設勾最早的 3 位，管理員確認後再發 */
+const MCG="daisuki_mc_grant";
+function mcVoters(gid){ const sids=new Set([...(getMShow().songs||[]),...(getMShow().ended||[])].filter(x=>x.gid===gid).map(x=>x.id)), out={}; const ks=new Set();
+  try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){}
+  ks.forEach(k=>{ const em=k.slice(k.indexOf("@")+1), V=S.get(k,{})||{}; Object.entries(V).forEach(([dk,sid])=>{ if(!sids.has(sid)) return; const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1); if(!day||!SHOWS.some(x=>x.id===sh)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||day<L[em]) L[em]=day; }); });
+  const res={}; SHOWS.forEach(sh=>{ res[sh.id]=Object.entries(out[sh.id]||{}).sort((a,b)=>a[1]-b[1]).map(([em,day])=>({em,day})); }); return res; }
+function mcGrantSheet(){ const gid=ui.albG; if(!gid||!isAdminAcct()) return; const V=mcVoters(gid), G=S.get(MCG,[])||[], has=(em,sh)=>G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh);
+  ui.mcSel=ui.mcSel||{}; SHOWS.forEach(sh=>(V[sh.id]||[]).slice(0,3).forEach(v=>{ const k=sh.id+"|"+v.em; if(ui.mcSel[k]==null) ui.mcSel[k]=1; }));
+  const nm=em=>esc((ACCOUNTS[em]||{}).name||acctUser(em)), d=t=>{ const x=new Date(t); return `${x.getMonth()+1}/${x.getDate()}`; };
+  setLayer(`<div class="tiei art-alb"><header class="tiei-top"><button class="icon-btn" data-a="artAlb" aria-label="返回">${I.back}</button><b>補發公放卡</b><span class="sh-sp"></span></header><div class="tiei-body">
+    <p class="ae-tip">投給 ${esc((groupOf(gid)||{}).name||"")} 的粉絲，照第一次投票的日期排。同一天裡誰先投的 App 沒有記，所以預設勾每個節目最早的 3 位，可以自己改。按「發送」後，他們下次打開 App 就會收到。</p>
+    ${SHOWS.map(sh=>{ const L=V[sh.id]||[]; return `<div class="section-h">${esc(sh.name)}</div><section class="card studio">${L.length?L.map(v=>{ const k=sh.id+"|"+v.em, done=has(v.em,sh.id); return `<button class="list-btn" ${done?"disabled":`data-a="mcSelT" data-v="${esc(k)}"`}>${nm(v.em)}<span class="r">${d(v.day)}・${done?"已發":ui.mcSel[k]?"✓ 要發":"不發"}</span></button>`; }).join(""):`<p class="me-none">沒有人投過</p>`}</section>`; }).join("")}
+    <button class="btn btn-main btn-block" data-a="mcGrantGo" style="margin-top:14px">發送</button></div></div>`); }
+function mcGrantGo(){ const gid=ui.albG, G=S.get(MCG,[])||[], sel=Object.entries(ui.mcSel||{}).filter(([,on])=>on).map(([k])=>k.split("|")); let n=0;
+  sel.forEach(([sh,em])=>{ if(G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh)) return; G.push({id:uid("mcg"),gid,em,sh,ts:Date.now()}); n++; });
+  S.set(MCG,G); ui.mcSel=null; toast(n?`已發給 ${n} 位，他們打開 App 就會收到`:"沒有新的要發"); artAlbumsSheet(); }
+/* 粉絲那邊：打開 App 時看有沒有補發給自己的，有就給卡、通知 */
+function mcGrantRun(){ try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(), G=(S.get(MCG,[])||[]).filter(x=>x.em===me); if(!G.length) return; const got=S.get(K.mcGot,{}); let L=null;
+  G.forEach(x=>{ if(got["g:"+x.id]) return; const c=giveMcCard(x.gid,x.sh,"g:"+x.id); if(!c) return; L=L||S.get(K.notifs,[]); const g=groupOf(x.gid), sh=SHOWS.find(z=>z.id===x.sh);
+    L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:x.gid,text:`你是 ${sh?sh.name:""} 最早幫 ${g?g.name:""} 投票的粉絲之一，送你一張公放卡`,ts:Date.now()}); });
+  if(L){ S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); } }catch(e){} }
 
 /* HAECHU｜選秀、燈海、節奏遊戲 */
 /* =========================================================
@@ -3663,7 +3685,7 @@ function mountSticks(scope){
 }
 /* 看重播時資料更新：留在原本滑到的地方，不跳回開頭 */
 function rpPaint(id,hc){ const o=document.querySelector(".rp2-log"), y=o&&!hc?o.scrollTop:0; paint(viewReplay(id),false); if(y){ const n=document.querySelector(".rp2-log"); if(n) n.scrollTop=y; } }
-function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }catch(e){} setTimeout(mcRemind,1500); try{ thUpdNotify(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
+function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }catch(e){} setTimeout(mcRemind,1500); try{ mcGrantRun(); }catch(e){} try{ thUpdNotify(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
 
   if(!KVX.ready){ KVX.want=true; return; }   /* 手機的大空間還在讀：讀完才畫，不會先畫出空白的聊天室 */
   try{ debutSync(); }catch(e){} try{ snRetireCheck(); }catch(e){}
@@ -7699,6 +7721,10 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
+    case "mcPv": ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
+    case "mcGrantOpen": ui.mcSel=null; mcGrantSheet(); break;
+    case "mcSelT": { ui.mcSel=ui.mcSel||{}; ui.mcSel[t.dataset.v]=ui.mcSel[t.dataset.v]?0:1; const sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0; mcGrantSheet(); const s2=layer.querySelector(".tiei-body"); if(s2) s2.scrollTop=y; break; }
+    case "mcGrantGo": mcGrantGo(); break;
     case "cbPrev": ui.cbPrev=!ui.cbPrev; render(); break;
     case "dbStep": ui.dbStep=+t.dataset.v||0; dbReform(); { const b=layer.querySelector(".dbx-b"); if(b) b.scrollTop=0; } break;
     case "dbCk": ui.dbCkOpen=!ui.dbCkOpen; dbReform(); break;

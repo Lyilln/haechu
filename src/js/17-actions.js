@@ -423,6 +423,10 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
+    case "mcPv": ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
+    case "mcGrantOpen": ui.mcSel=null; mcGrantSheet(); break;
+    case "mcSelT": { ui.mcSel=ui.mcSel||{}; ui.mcSel[t.dataset.v]=ui.mcSel[t.dataset.v]?0:1; const sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0; mcGrantSheet(); const s2=layer.querySelector(".tiei-body"); if(s2) s2.scrollTop=y; break; }
+    case "mcGrantGo": mcGrantGo(); break;
     case "cbPrev": ui.cbPrev=!ui.cbPrev; render(); break;
     case "dbStep": ui.dbStep=+t.dataset.v||0; dbReform(); { const b=layer.querySelector(".dbx-b"); if(b) b.scrollTop=0; } break;
     case "dbCk": ui.dbCkOpen=!ui.dbCkOpen; dbReform(); break;

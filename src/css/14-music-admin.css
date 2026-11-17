@@ -683,3 +683,4 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .mur-trk .mt-on i{background:var(--violet,#8843FB);box-shadow:0 0 0 3px color-mix(in srgb,var(--violet,#8843FB) 22%,transparent)}
 .mur-trk span{font-size:12px;color:var(--ink-3)}
 .mur-trk .mt-on span{color:var(--ink);font-weight:700}
+.ae-pv{margin-top:6px;width:100%}
