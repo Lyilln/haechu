@@ -9,8 +9,8 @@
    ・團可以出一套、藝人也可以各自出；管理員自己做，或審核藝人送來的申請
    ========================================================= */
 const TH_STORE="TINT";
-const TH_TABS=[["home","LOVE"],["whisper","TIE"],["core","FEST"],["shop","SHOP"],["me","ME"]];
-const TH_TABS_ART=[["home","LOVE"],["live","MEET"],["whisper","TIE"],["foc","FOC"],["me","ME"]];
+const TH_TABS=[["home","LOVE"],["whisper","TIE"],["core","FEST"],["sns","SNS"],["shop","SHOP"],["me","ME"]];   /* 跟現在的底部選單一樣（11/17 補上 SNS） */
+const TH_TABS_ART=[["home","LOVE"],["live","MEET"],["whisper","TIE"],["foc","FOC"],["sns","SNS"],["me","ME"]];
 const TH_TABS_ALL=[...TH_TABS,["live","MEET"],["foc","FOC"]];
 const TH_COLS=[["ac","主色"],["bg","背景"],["ink","文字"],["sub","次要文字"],["bubA","藝人對話框"],["bubAB","藝人對話框邊框"],["bubM","我的對話框"],["bubMB","我的對話框邊框"],["bar","輸入列"]];
 const TH_DEF={light:{ac:"#8843FB",bg:"#FAF9FC",ink:"#1D1A24",sub:"#837D90",bubA:"#FFFFFF",bubAB:"#ECE8F2",bubM:"#8843FB",bubMB:"#8843FB",bar:"#FFFFFF"},
@@ -119,7 +119,7 @@ function thChatBg(cls){ const t=thCur(); if(!t) return ""; const v=thVar(t,thDar
   return `<div class="${cls} th-chat ${thDarkNow()?"dk":""}" style='background:${thPat(t,v,thDarkNow())}${v.bg}'>${art?`<img class="th-art" src="${art}" alt="">`:""}${t.strip?`<span class="th-strip" style="background-image:url('${t.strip}')"></span>`:""}</div>`; }
 
 /* ---------- 預覽：照真的畫面縮小（主畫面、TIE 聊天室） ---------- */
-function thIco(t,k,col){ return t.icons&&t.icons[k]?`<img src="${t.icons[k]}" alt="">`:`<span style="color:${col}">${NAV[{home:"love",live:"meet",whisper:"tie",core:"core",foc:"foc",shop:"shop",me:"me"}[k]]||""}</span>`; }
+function thIco(t,k,col){ return t.icons&&t.icons[k]?`<img src="${t.icons[k]}" alt="">`:`<span style="color:${col}">${NAV[{home:"love",live:"meet",whisper:"tie",core:"core",foc:"foc",sns:"sns",shop:"shop",me:"me"}[k]]||""}</span>`; }
 function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), pat=thPat(t,v,dark).replace(/"/g,"'"), art=thArtOf(t);
   let body="";
   if(kind==="home") body=`<div class="mk-bgf" style="background:${pat}${v.bg}"></div>
@@ -225,8 +225,8 @@ function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id),
     <section class="card studio"><div class="th-edh"><h3>配色</h3>${d.modes==="both"?`<div class="seg2 th-seg sm" style="--i:${ev==="dark"?1:0}"><i class="seg2-ind"></i><button class="${ev==="dark"?"":"on"}" data-a="thEdV" data-v="light">淺色版</button><button class="${ev==="dark"?"on":""}" data-a="thEdV" data-v="dark">深色版</button></div>`:""}</div>
       <div class="th-tools in"><button class="btn btn-soft btn-sm" data-a="thAutoCol">從圖片自動配色</button>${d.modes==="both"?`<button class="btn btn-soft btn-sm" data-a="thDarkGen">用淺色版產生深色版</button>`:""}</div>
       <div class="th-cgrid">${TH_COLS.map(([k,l])=>`<label class="th-c"><input type="color" class="th-in" data-f="${ev}.${k}" value="${v[k]}"><span>${l}</span></label>`).join("")}</div></section>
-    <section class="card studio"><h3>圖片（可不放）</h3>
-      <div class="th-slots">${up("cover",d.cover,"封面","tall")}${up("art",d.art,"主角插圖","tall")}${up("pattern",d.pattern,"背景圖案")}${up("strip",d.strip,"花邊","wide")}${up("deco",d.deco,"對話框裝飾")}</div>
+    <section class="card studio"><h3>圖片</h3><p class="th-need">封面和主角插圖一定要放，其他可以不放。</p>
+      <div class="th-slots">${up("cover",d.cover,"封面（必要）","tall")}${up("art",d.art,"主角插圖（必要）","tall")}${up("pattern",d.pattern,"背景圖案")}${up("strip",d.strip,"花邊","wide")}${up("deco",d.deco,"對話框裝飾")}</div>
 
       ${lab("選單圖示・粉絲端")}<div class="th-icons">${TH_TABS.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div>
       ${lab("選單圖示・藝人端")}<div class="th-icons">${TH_TABS_ART.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div></section>
@@ -459,7 +459,7 @@ async function thPut(d,f,blob){ const r=await thImgX(blob,TH_KIND(f)); thSetF(d,
 
 /* ① 整包上傳：固定檔名 → 欄位 */
 const TH_FILES={cover:"cover",art:"art",pattern:"pattern",strip:"strip",deco:"deco",
-  nav_love:"icons.home",nav_meet:"icons.live",nav_tie:"icons.whisper",nav_core:"icons.core",nav_shop:"icons.shop",nav_me:"icons.me",
+  nav_love:"icons.home",nav_meet:"icons.live",nav_tie:"icons.whisper",nav_core:"icons.core",nav_foc:"icons.foc",nav_sns:"icons.sns",nav_shop:"icons.shop",nav_me:"icons.me",
   "封面":"cover","主角插圖":"art","插圖":"art","背景圖案":"pattern","圖案":"pattern","花邊":"strip","對話框裝飾":"deco","裝飾":"deco"};
 const thFieldOf=name=>{ const b=String(name).split("/").pop().replace(/\.[a-z0-9]+$/i,"").trim().toLowerCase().replace(/[\s-]+/g,"_"); return TH_FILES[b]||null; };
 /* 自己讀 .zip（iPhone 內建的解壓縮），不行再用 JSZip */
@@ -537,7 +537,7 @@ function openThGuide(){ const t=thById("th_ms_cat")||thDraft(route().id); const 
     ["2","背景圖案","pattern.png","透明 PNG・300×300","會一直重複鋪滿背景，上下左右要能無縫接起來，線條淡一點。",""],
     ["3","花邊","strip.png","透明 PNG・1260×270","放在輸入列上方。左右要能接起來，下半部的地面跟「輸入列」同色。",""],
     ["4","對話框裝飾","deco.png","透明 PNG・64×64","放在每個對話框的角落，小小的就好。",""],
-    ["5","選單圖示 6 個","nav_love / nav_meet / nav_tie / nav_core / nav_shop / nav_me .png","透明 PNG・128×128","圖放正中間，6 個看起來要一樣大。",""],
+    ["5","選單圖示 8 個","nav_love / nav_tie / nav_core / nav_sns / nav_shop / nav_me（粉絲端）＋ nav_meet / nav_foc（藝人端）.png","透明 PNG・128×128","圖放正中間，每個看起來要一樣大。沒放的就用原本的圖示。",""],
     ["6","封面","cover.png","3:4・600×800","放在 TINT 商店和「我的主題」。","必要"]];
   setLayer(`<div class="thg" role="dialog" aria-label="素材說明"><header><span></span><b>素材說明</b><button data-a="tCloseLayer" aria-label="關閉">${XI}</button></header><div class="thg-b">
     <div class="thg-mk">${[["chat",[pin(1,72,68),pin(2,18,30),pin(3,40,84),pin(4,63,18)]],["home",[pin(5,50,95)]]].map(([k,p])=>`<div class="thg-m">${thMock(k,t,false,.44)}${p.join("")}</div>`).join("")}</div>

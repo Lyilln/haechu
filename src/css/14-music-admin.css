@@ -89,12 +89,6 @@
 .mur-c{flex:0 0 100%;scroll-snap-align:center;padding:4px 6px;box-sizing:border-box;text-align:left}
 .mur-c h4{margin:2px 0 12px;font-size:15px}
 .mur-c p{margin:12px 0 0;font-size:12.5px;line-height:1.6;color:var(--ink-3)}
-.mur-band{display:flex;gap:4px}
-.mur-band span{flex:1;position:relative;height:44px;border-radius:10px;display:grid;place-items:center;color:#fff;font-size:12px}
-.mur-band .t-p{background:#A3A3B5}.mur-band .t-r{background:#8843FB}.mur-band .t-f{background:linear-gradient(135deg,#F472B6,#8843FB)}
-.mur-band .now{outline:2px solid var(--ink);outline-offset:2px}
-.mur-band i{position:absolute;bottom:-20px;font-style:normal;font-size:10.5px;font-weight:800;color:var(--ink);white-space:nowrap}
-.mur-band+p{margin-top:28px}
 .mur-w{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
 .mur-w li{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:14px;background:var(--s2)}
 .mur-w b{width:24px;height:24px;display:grid;place-items:center;font-size:17px;color:#8843FB}.mur-w b svg{width:20px;height:20px}
@@ -110,7 +104,6 @@
 .mu3-cdemo b{font-size:13px}.mu3-cdemo small{font-size:11px;opacity:.85}
 .mu3-cp>b{font-size:15px}.mu3-cp .t-mbtn{width:100%}
 .mu3-st.muted{color:inherit!important;opacity:.7}
-.mur-band{padding-bottom:22px}.mur-band+p{margin-top:8px}
 /* ===== 藝人：我的打歌卡＋戰況頁 ===== */
 .mu4-card{display:flex;flex-direction:column;gap:12px;width:100%;padding:14px;border:1px solid var(--line);border-radius:20px;background:var(--s1);font:inherit;color:var(--ink);text-align:left}
 .mu4-card.foc-now{flex-direction:row}
@@ -155,12 +148,6 @@
 .mu5-mcr b{width:116px;flex:none;font-size:13px}.mu5-mcr span{flex:1;min-width:0;font-size:12.5px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.mu5-mcr i{font-style:normal;color:var(--ink-3)}
 .mu5-mcp{max-height:50vh;overflow:auto}
 /* 規則：節奏帶（修正） */
-.mur-band{padding-bottom:0!important}
-.mur-band span{color:#fff!important;font-size:13px;font-weight:800}
-.mur-band .t-p{background:#7A7690!important}
-.mur-band .now{outline:0!important;box-shadow:0 0 0 2px var(--s1),0 0 0 4px #F472B6}
-.mur-here{display:flex;gap:4px;margin-top:8px}.mur-here span{flex:1;text-align:center;font-size:11px;font-weight:800;color:#F472B6;white-space:nowrap}
-.mur-here+p{margin-top:10px!important}
 .mur{touch-action:pan-x pan-y;-webkit-overflow-scrolling:touch}
 .mur-dots button{width:7px;height:7px;padding:0;border:0;border-radius:50%;background:var(--line)}.mur-dots button.on{background:#8843FB;width:18px;border-radius:4px}
 /* 節目模塊：背景會動 */
@@ -473,8 +460,6 @@ html[data-theme] body .cf-padc canvas{background:transparent!important}
 .ex-gi i{width:62px!important;height:62px!important;border-radius:22px!important;overflow:hidden}
 .ex-gi{gap:16px!important}.ex-g{padding:10px 0!important}
 /* 打歌：週期條字置中、虛擬對手 */
-.mur-band span{display:flex!important;align-items:center;justify-content:center;line-height:1;padding:0!important}
-.mur-band span b{font-weight:800;font-size:12.5px;line-height:1}
 .mu3-r.npc{}.mu3-r.npc .mu3-song{cursor:default}
 .mu2-cv.npc{display:grid;place-items:center;background:linear-gradient(135deg,#6B6680,#3B3748)!important;color:#fff;font-weight:800;font-size:12px}
 .mu2-wt small{display:block;margin-top:3px;font-size:11.5px;opacity:.8}
@@ -689,4 +674,12 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .prg-math{margin:6px 0 12px;padding:12px 16px;border-radius:16px;background:var(--s1);border:1px solid var(--line);font-variant-numeric:tabular-nums}
 .prg-math div{display:flex;justify-content:space-between;align-items:baseline;padding:3px 0}.prg-math span{font-size:13px;color:var(--ink-3)}.prg-math b{font-size:17px;font-weight:800;color:var(--ink)}
 .prg-math hr{border:0;border-top:2px solid var(--ink);margin:6px 0}.prg-math .t b{font-size:22px;color:var(--violet,#8843FB)}
-.mur-band+p{margin-top:14px}
+/* 11/17 打歌週期：一條細細的進度，現在那格亮起來 */
+.mur-song{margin:0 0 2px!important;font-size:13px;color:var(--ink-3)}
+.mur-trk{list-style:none;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;margin:12px 0 14px;padding:0}
+.mur-trk li{display:grid;gap:6px;justify-items:center}
+.mur-trk i{display:block;width:100%;height:6px;border-radius:99px;background:var(--line,rgba(127,127,127,.25))}
+.mur-trk .mt-p i{background:color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)}
+.mur-trk .mt-on i{background:var(--violet,#8843FB);box-shadow:0 0 0 3px color-mix(in srgb,var(--violet,#8843FB) 22%,transparent)}
+.mur-trk span{font-size:12px;color:var(--ink-3)}
+.mur-trk .mt-on span{color:var(--ink);font-weight:700}
