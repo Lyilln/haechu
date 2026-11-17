@@ -778,9 +778,33 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .svx.many .sv2-rows .sv2-t,.svx.many .sv2-rows>.sv2-r:first-of-type .sv2-t{width:64px;padding:6px 0 4px}.svx.many .sv2-rows .sv2-p,.svx.many .sv2-rows>.sv2-r:first-of-type .sv2-p{width:34px;height:34px}.svx.many .sv2-rows .sv2-t b{font-size:12px}.svx.many .sv2-rows .sv2-t span{font-size:10.5px}
 .svco-sel{flex:1;border:0;background:none;font:inherit;font-size:16px;color:inherit;-webkit-appearance:none;appearance:none}
 
-/* 等級 A～F */
-.sv3-gr{display:inline-grid;place-items:center;width:17px;height:17px;border-radius:5px;font-style:normal;font-size:10.5px;font-weight:900;color:#fff;line-height:1;vertical-align:1px;margin-left:5px}
-.sv2-t{position:relative}.sv2-t>.sv3-gr{position:absolute;top:-6px;right:-6px;margin:0;z-index:2;box-shadow:0 0 0 2px #fff}
-.sv3-gr.gA{background:#FF4F9A}.sv3-gr.gB{background:#FF9F43}.sv3-gr.gC{background:#F5C518}.sv3-gr.gD{background:#2EBD7E}.sv3-gr.gF{background:#9AA0AE}
-.sv3-gr.big{width:36px;height:36px;border-radius:10px;font-size:20px;margin:0 0 6px;border:0;font-family:inherit}.sv2-pn .sv3-gr.big{display:grid;box-shadow:0 4px 14px rgba(0,0,0,.18)}
-.sv3-grp{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}.sv3-grp .sv3-gr.big{width:46px;height:46px;margin:0}.sv3-grp .sv3-gr.on{box-shadow:0 0 0 3px #fff,0 0 0 5px currentColor;color:#2B2233}
+
+/* 主持人 */
+.sv3-host{display:flex;gap:12px;align-items:flex-start;margin:14px 0 4px;padding:14px;border-radius:18px;background:#fff;box-shadow:0 0 0 1.5px var(--l2)}
+.sv3-hav{flex:none;width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:var(--a);color:#fff}.sv3-hav svg{width:20px;height:20px}
+.sv3-host small{font-size:11.5px;font-weight:900;color:var(--a);letter-spacing:.04em}.sv3-host p{margin:3px 0 0;font-size:14px;line-height:1.65;color:var(--ink)}
+/* 我的任務 */
+.sv3-ms>p{margin:6px 0 0;font-size:13.5px;line-height:1.65;color:var(--ink-2)}.sv3-ms2{font-size:12.5px!important;color:var(--ink-3)!important}.sv3-ms2 button{border:0;background:none;padding:0 0 0 4px;font:inherit;font-weight:900;color:var(--a)}
+.sv3-ms{margin-top:12px}
+/* 任務舞台 */
+.sv3-mt{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin-bottom:10px}.sv3-mt::-webkit-scrollbar{display:none}
+.sv3-mt button{flex:none;display:flex;align-items:center;gap:5px;padding:7px 12px;border:0;border-radius:99px;background:#fff;box-shadow:inset 0 0 0 1.5px var(--l2);font:inherit;font-size:12.5px;font-weight:800;color:var(--a)}.sv3-mt button.on{background:var(--a);color:#fff;box-shadow:none}.sv3-mt i{font-style:normal;font-size:10px;opacity:.75}
+.sv3-sg{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.sv3-st{display:grid;gap:3px;padding:0 0 8px;border:0;border-radius:14px;background:#fff;box-shadow:0 0 0 1.5px var(--l2);overflow:hidden;font:inherit;color:inherit;text-align:left}.sv3-st.me{box-shadow:0 0 0 2.5px var(--a)}
+.sv3-sp{position:relative;display:block;aspect-ratio:4/5;background:linear-gradient(160deg,var(--l2),var(--a2));overflow:hidden}.sv3-sp img,.sv3-sp video{width:100%;height:100%;object-fit:cover;display:block}.sv3-sp .sv2-sil{opacity:.8}
+.sv3-sp em{position:absolute;left:8px;top:8px;width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:var(--a);color:#fff;font-style:normal;font-size:12px;font-weight:900;box-shadow:0 0 0 2px #fff}
+.sv3-play{position:absolute;right:8px;bottom:8px;width:26px;height:26px;border-radius:50%;background:rgba(0,0,0,.45)}.sv3-play:after{content:"";position:absolute;left:10px;top:7px;border:6px solid transparent;border-left:9px solid #fff;border-right:0}
+.sv3-st b{padding:0 10px;font-size:13.5px}.sv3-st small{padding:0 10px;font-size:11.5px;color:var(--ink-3)}
+.sv3-vid{display:block;width:100%;max-height:52vh;border-radius:14px;background:#000;object-fit:contain}.sv3-tag{margin:8px 0 0;font-size:12.5px;font-weight:900;color:#FF4F9A}
+.sv3-cm{margin-top:8px;padding:10px 12px;border-radius:12px;background:rgba(255,79,154,.08);font-size:13px;line-height:1.6}.sv3-cm b{display:block;font-size:11.5px;color:#FF4F9A}.sv3-lv{margin:10px 0 0;font-weight:900;color:#FF4F9A;font-size:13px}
+.sv3-how{margin:0 0 12px;font-size:13.5px;line-height:1.65;color:var(--ink-2)}
+.sv3-upm{display:grid;place-items:center;width:100%;aspect-ratio:4/5;max-height:56vh;border:2px dashed var(--a2);border-radius:18px;background:var(--l);overflow:hidden;font:inherit;color:var(--a)}.sv3-upm img,.sv3-upm video{width:100%;height:100%;object-fit:cover}
+/* 等級：頭像右下角的小圓點（PRODUCE 的分班色，調柔一點） */
+.sv3-gr{--gc:#B7B0C2}.sv3-gr.gA{--gc:#FF6FAE}.sv3-gr.gB{--gc:#FF9B6A}.sv3-gr.gC{--gc:#EFC23F}.sv3-gr.gD{--gc:#5CC495}.sv3-gr.gF{--gc:#B7B0C2}
+.sv3-gr{display:inline-grid;place-items:center;width:15px;height:15px;border-radius:50%;background:var(--gc);color:#fff;font-style:normal;font-size:9px;font-weight:900;line-height:1;margin:0}
+.sv3-av{position:relative;display:block;width:max-content;margin:0 auto 3px}.sv3-av .sv2-p{margin:0}.sv3-av .sv3-gr{position:absolute;right:-3px;bottom:-1px;box-shadow:0 0 0 1.5px #fff}
+.sv3-gr.ln{width:auto;height:16px;padding:0 6px;border-radius:99px;background:none;color:var(--gc);box-shadow:inset 0 0 0 1.3px var(--gc);font-size:10px;margin-left:6px;vertical-align:2px}
+.sv3-gr.big{width:34px;height:34px;font-size:17px;margin:0 0 6px;border:0;font-family:inherit;box-shadow:0 0 0 2px #fff}
+.sv3-grp .sv3-gr.big{width:46px;height:46px;margin:0;box-shadow:none}.sv3-grp .sv3-gr.on{box-shadow:0 0 0 3px #fff,0 0 0 5px var(--gc)}
+.sv3-grp{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;align-items:center}
+.sv3-tm .t-mbtn.main{background:#FF4F9A;color:#fff}.sv3-tm p.sv3-tag,.sv3-tm p.sv3-lv{color:#FF4F9A}
