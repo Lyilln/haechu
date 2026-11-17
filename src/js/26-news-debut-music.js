@@ -123,7 +123,7 @@ function dfOpen(gid){ const x=getDf().find(y=>y.gid===gid), so=dfDebutSong(gid),
 function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&&dfDebutSong(g.id)&&!getDebut().some(d=>d.gid===g.id&&d.status==="ok"));
   dbPage("補出道資料","cbrDfSave",f,[
     ["藝人","選要補資料的 SOLOIST／團（要先有出道曲）",G.length?`<div class="chips wrap">${G.map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrDfGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`:`<p class="dbx-d">還沒有已經出道的團</p>`],
-    ["作品","出道專輯和出道曲",dbWorkF(f,"cbTitle","出道曲")],
+    ["作品","出道專輯和出道曲。核准後記得到 ME → 專輯・小卡 放公放卡（必放）",dbWorkF(f,"cbTitle","出道曲")],
     ["宣傳素材",`會當作出道那時候發的：照出道日 ${f.day?mdTxt(f.day):""} 往前排，不會出現在動態最上面`,dbPromoF(f,"")],
     ["結尾妖精",(groupOf(gid)||{}).solo?"放一段本人的結尾妖精，每個打歌節目都會播":"每位成員放一段，打歌時每個節目會揭曉",dbFairyF(f)],
     ["一位感言","",dbSpkF(f)],
@@ -134,7 +134,7 @@ function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfFo
   const amin=f.adm?dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN):min;
   dbPage(f.adm?"新增回歸":f.editId?"修改回歸申請":"回歸申請","cbrSend",f,[
     ...(f.adm?[["藝人","要回歸的 SOLOIST／團",`<div class="chips wrap">${GROUPS.filter(g=>g.id!=="tdm_g").map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrAdmGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`]]:[]),
-    ["作品","這次回歸的專輯和主打歌",dbWorkF(f,"cbTitle","主打歌")],
+    ["作品","這次回歸的專輯和主打歌。核准後記得到 ME → 專輯・小卡 放公放卡（必放）",dbWorkF(f,"cbTitle","主打歌")],
     ["宣傳排程",f.adm?"儲存後照日期自動發；只有歌名是必填，其他有放才會發":"核准後會照日期自動發；回歸前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">回歸日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(f.adm?amin:min)}" value="${esc(f.date&&ymdTs(f.date)>=(f.adm?amin:min)?f.date:ymdIn(f.adm?amin:min))}">`)],
     ["結尾妖精","打歌時每週每個節目會揭曉一位",dbFairyF(f)],
     ["一位感言","",dbSpkF(f)],

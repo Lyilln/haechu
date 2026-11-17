@@ -515,6 +515,7 @@ function viewArtist(tab){
   }
   if(tab==="me"){
     return head+`<main class="page">
+      ${mcDone(m.group)?"":`<button class="mc-warn" data-a="artAlb"><b>公放卡還沒上傳（必放）</b><span>粉絲投票拿到的卡要用你的照片，點這裡上傳</span></button>`}
       <section class="card me-card"><div class="av lg" style="margin:0 auto;background:${grad(m.g)}">${mAvIn(mid)}</div>
         <h2>${esc(artName(mid,"feed"))}</h2><span class="muted" style="font-size:13px">${g.solo?"SOLOIST":esc(g.name)}・藝人帳號</span>${lvLine()}</section>
       <div class="section-h">${WHISPER_NAME} 設定</div>
@@ -522,7 +523,7 @@ function viewArtist(tab){
         <button class="list-btn" data-a="aNick">${I.star}Membership 粉絲的愛稱<span class="r">${esc(artistNick(mid)||"還沒設定")}</span></button>
         <button class="list-btn" data-a="thMine">${I.star}申請主題<span class="r">${TH_STORE}</span></button>
         <button class="list-btn" data-a="uniGo" data-v="#/artist?tab=points">${I.star}積分收入</button>
-        <button class="list-btn" data-a="artAlb">${I.star}專輯・小卡<span class="r">上傳卡面</span></button>
+        <button class="list-btn" data-a="artAlb">${I.star}專輯・小卡<span class="r">${mcDone(m.group)?"上傳卡面":`<b class="mc-miss">公放卡還沒放</b>`}</span></button>
       </section>
       <div class="section-h">團體</div>
       <section class="card">

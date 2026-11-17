@@ -50,7 +50,7 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
     ["基本資料","",`${f.pre?whoPre:kind+who}<span class="fs-f-lab">公司</span>${coChips(f.co||"","dbCo")}
       <span class="fs-f-lab">粉絲名 <em>選填</em></span><input id="prX_fan" class="a-nick-in" maxlength="16" placeholder="例：MY、CARAT" value="${X("fan")}">
       <span class="fs-f-lab">${grp?"團名":"藝名"}的由來 <em>選填</em></span><textarea id="prX_intro" class="a-nick-in dbx-ta" rows="3" placeholder="輸入文字">${X("intro")}</textarea>`],
-    ["作品","出道專輯和主打歌",dbWorkF(f,"dbSong","出道曲（主打歌）")],
+    ["作品","出道專輯和主打歌。核准後記得到 ME → 專輯・小卡 放公放卡（必放）",dbWorkF(f,"dbSong","出道曲（主打歌）")],
     ["宣傳排程","核准後會照日期自動發；出道前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">出道日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(dMin)}" value="${esc(f.date||ymdIn(dMin))}">`)],
     ["結尾妖精","打歌時每週每個節目會揭曉一位",dbFairyF(f)],
     ["一位感言","",dbSpkF(f)],
@@ -364,6 +364,8 @@ const getAlbums=()=>cbDemo()?[...cbDemoAlbs(),...S.get(K.albums2,[]).filter(a=>g
 const albumOf=id=>String(id).startsWith("demo_")?cbDemoAlbs().find(a=>a.id===id):String(id).startsWith("mc_")?mcAlb(String(id).slice(3)):S.get(K.albums2,[]).find(a=>a.id===id);
 /* 11/17 預設公放卡：這個團的專輯裡沒有設定「公放卡」時，投票照樣拿得到一張（每位成員一款，卡面用成員的照片或顏色）。
    不是商品：不會出現在 SHOP、後台專輯清單；只在卡冊裡（有拿到才出現） */
+/* 公放卡是必放：每位成員的正面都傳了才算好（雲端有、或這支手機剛傳） */
+function mcDone(gid){ const a=mcAlb(gid); if(!a) return true; const M=S.get(ALBU,{})||{}; return a.ex[0].pool.every(p=>{ const k=`ph|mc_${gid}|${p.id}|f`; return !!(M[k]||PCI[k]); }); }
 function mcAlb(gid){ const g=groupOf(gid); if(!g) return null; const ms=(grpMembers(gid)||[]).filter(m=>MEMBERS[m]);
   return {id:"mc_"+gid,gid,title:"公放卡",ord:"打歌節目",sys:1,ts:0,vers:[],ex:[{id:"mc",rule:"mc",name:"公放卡",w:5.5,h:8.5,pool:(ms.length?ms:[""]).map(m=>({id:m||"g",mid:m}))}]}; }
 /* 11/17 卡冊預覽用的假資料（只有 HUSSEY 打開「預覽全部卡片」時才有）：每個團一張示範專輯，卡面、卡背、封面都是當場用畫布畫的，不存、不上傳 */
@@ -538,7 +540,8 @@ function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).gr
     <p class="ae-tip">在這裡上傳專輯封面和小卡卡面。上傳後大家的 App 都看得到；價格由管理員設定。</p>
     <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
     <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
-    <div class="section-h">公放卡</div><p class="ae-tip">粉絲在打歌節目投票（每個節目前 3 位）會拿到的卡。專輯裡另外設了公放卡的話，會先用專輯的。</p>
+    <div class="section-h">公放卡<span class="mc-must ${mcDone(gid)?"ok":""}">${mcDone(gid)?"✓ 已放好":"必放"}</span></div>
+    <div class="mc-rule"><b>公放卡怎麼發</b><ul><li>粉絲在打歌節目投票給你們的歌：每個節目、每週，前 3 位投票的人各拿到 1 張。</li><li>同一位粉絲在同一個節目，一週只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
     <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section></div></div>`); }
 function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; if(aeArt()&&a.gid!==(MEMBERS[(session()||{}).member]||{}).group) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
   setLayer(`<div class="tiei ae"><header class="tiei-top"><button class="icon-btn" data-a="aeClose" aria-label="返回">${I.back}</button><b>${esc(g.name)} 專輯</b><span class="sh-sp"></span></header>
