@@ -2902,7 +2902,7 @@ function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).gr
     <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
     <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
     <div class="section-h">公放卡<span class="mc-must ${mcDone(gid)?"ok":""}">${mcDone(gid)?"✓ 已放好":"必放"}</span></div>
-    <div class="mc-rule"><b>打歌節目的週期</b><ul><li>每個月：第一週是宣傳週（不排名）→ 中間是排名週 → 最後一週是打歌週（月底決戰）。</li><li>新歌 MV 公開就加入打歌，打滿 4 週下檔；回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後遇到的第一個打歌週發</b>（通常就是那個月的最後一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
+    <div class="mc-rule"><b>打歌節目的週期</b><ul><li>每個月：第一週是宣傳週（不排名）→ 中間是排名週 → 最後一週是打歌週（月底決戰）。</li><li>新歌 MV 公開就加入打歌，打滿 4 個能排名的週才下檔（碰到宣傳週會往後延）；回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後遇到的第一個打歌週發</b>（通常就是那個月的最後一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
     <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section></div></div>`); }
 function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; if(aeArt()&&a.gid!==(MEMBERS[(session()||{}).member]||{}).group) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
   setLayer(`<div class="tiei ae"><header class="tiei-top"><button class="icon-btn" data-a="aeClose" aria-label="返回">${I.back}</button><b>${esc(g.name)} 專輯</b><span class="sh-sp"></span></header>
@@ -5483,11 +5483,16 @@ function dtDefault(){const t=new Date(Date.now()+864e5);t.setHours(20,0,0,0);ret
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"Show! Music Core",day:6},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
 /* ===== 打歌：全群同一個月曆（每月第一週宣傳、中間排名、最後一週打歌）＋虛擬對手 =====
-   ・新歌 MV 一公開就加入打歌，打滿 4 週（28 天）自動下檔；同一團有新歌（回歸）時，舊歌直接下檔換新的
+   ・新歌 MV 一公開就加入打歌，打滿 4 個能排名的週自動下檔（碰到宣傳週往後延）；同一團有新歌（回歸）時，舊歌直接下檔換新的
    ・同一個節目的參賽歌不到 3 首：自動補虛擬對手，分數要超過它們才拿得到一位，一個人也不會白拿 */
 const MSA={PROMO:0,END:28,MIN:3}, MDAY=864e5;
 function songRel(s){ if(!s) return 0; if(s.rel) return s.rel; const m=/^s(\d{12,13})$/.exec(String(s.id)); return m?+m[1]:0; }
-function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const d=((at||Date.now())-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":d<MSA.END?"act":"end"; }
+/* 11/17 下檔：打滿 4 個「能排名的週」——中間碰到宣傳週就往後延一週，什麼時候發歌都一樣公平 */
+const SEND={};
+function songEndTs(r){ const c=SEND[r]; if(c&&Date.now()-c[1]<6e4) return c[0]; let t=r, n=0;   /* 一天一天往後數，只數排名週／打歌週的日子，數滿 28 天＝每個節目剛好都有 4 次 */
+  for(let i=0;i<120&&n<MSA.END;i++){ const wt=weekType(weekKey(t)); t+=MDAY; if(wt!=="宣傳週") n++; }
+  SEND[r]=[t,Date.now()]; return t; }
+function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const t=at||Date.now(), d=(t-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":t<songEndTs(r)?"act":"end"; }
 const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
 const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
 const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];
@@ -6875,7 +6880,7 @@ function viewAdmin(tab){
         <button class="btn btn-main btn-block" data-a="focSave">儲存並同步到藝人端與粉絲端</button>
         ${sc.updatedAt?`<p class="reach">上次更新：${ago(sc.updatedAt)}</p>`:""}
         <p class="reach" style="margin:8px 0 0">每週會自動判斷：每月第一週＝宣傳週（不排名、不能投票）、中間＝排名週、最後一週＝打歌週。這裡手動改的只算本週，下週回到自動。</p>
-        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>打滿 4 週，或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
+        <div class="mu5-st" style="margin-top:18px">打歌中的歌</div><ul class="mu5-ul" style="margin:4px 0 10px"><li>MV 公開那天加入打歌。</li><li>打滿 4 個能排名的週（碰到宣傳週往後延），或同一組有新歌回歸時下檔。</li><li>同一個節目參賽不到 3 首，會自動補虛擬對手。</li></ul>
         ${(()=>{ const L=getMShow().songs.filter(x=>groupOf(x.gid)); return L.length?`<div class="sch-songs">${L.map(x=>{ const ph=songPhase(x), r=songRel(x); return `<div class="sch-s"><b>${esc(songName(x))}</b><small>${ph==="act"?`打歌第 ${songWeekNo(x)} 週`:ph==="pre"?"還沒公開":"已結束"}${r?`・${new Date(r).getMonth()+1}/${new Date(r).getDate()} 公開`:""}</small></div>`; }).join("")}</div>`:`<p class="reach">目前沒有打歌中的歌。MV 一公開就會自動加進來。</p>`; })()}</section>
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>
@@ -12613,7 +12618,7 @@ function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.end
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
     /* HUSSEY 10/20 出道、11/8 才補傳 MV：打歌期照出道日算（只改這一次；其他人照 MV 公開日） */
     { const x=(m.songs||[]).find(y=>{ const g=groupOf(y.gid); return g&&/^HUSSEY$/i.test(String(g.name).trim())&&/SUPA\s*DUPA\s*LUV/i.test(String(y.title||"")); }), d=new Date(2026,9,20,18,0).getTime(); if(x&&songRel(x)>d+3*MDAY){ x.rel=d; ch=true; } }
-    (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
+    (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now<songEndTs(v.ts)).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
       const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v); if(/^\s*出道\s*$/.test(title)&&all.some(x=>x.gid===v.gid&&x.debut)) return;   /* 已經有出道曲：不要再建一首叫「出道」的 */
       m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{}),...(v.au?{au:v.au}:{})}); ch=true; try{ if(v.fy){ fairySetClips("s"+v.ts,v.fy); } }catch(e){} const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });
@@ -13930,7 +13935,7 @@ const fairyMemsOf=sid=>{ const so=songOf(sid); return so?groupArtists(so.gid).sl
 /* 發行當天就把整個打歌期（MSA.END 天）每一個打歌舞台的結尾妖精全部抽好、存在後台；
    每個節目照真實播出的星期幾、時間才公布（例：星期四回歸 → 先公布當天 M COUNTDOWN，接著星期五 MUSIC BANK、星期日 INKIGAYO、下週二 THE SHOW…） */
 const fairyPlanK=sid=>"plan|"+sid;
-function fairyStages(rel){ const L=[], end=rel+MSA.END*864e5; for(let d=new Date(rel);d.getTime()<end+7*864e5;d.setDate(d.getDate()+1)){ SHOWS.forEach(sh=>{ const [wd,h,mi]=SHOW_END[sh.id]||[sh.day,18,0]; if(d.getDay()!==wd) return; const t=new Date(d); t.setHours(h,mi,0,0); const ts=t.getTime(); if(ts>=rel&&ts<end) L.push({show:sh.id,ts}); }); } return L.sort((a,b)=>a.ts-b.ts); }
+function fairyStages(rel){ const L=[], end=songEndTs(rel); for(let d=new Date(rel);d.getTime()<end+7*864e5;d.setDate(d.getDate()+1)){ SHOWS.forEach(sh=>{ const [wd,h,mi]=SHOW_END[sh.id]||[sh.day,18,0]; if(d.getDay()!==wd) return; const t=new Date(d); t.setHours(h,mi,0,0); const ts=t.getTime(); if(ts>=rel&&ts<end) L.push({show:sh.id,ts}); }); } return L.sort((a,b)=>a.ts-b.ts); }
 function fairyMakePlan(so){ const mems=fairyMemsOf(so.id); if(!mems.length) return null; const C=fairyClips(so.id), pool=mems.filter(m=>C[m]).length?mems.filter(m=>C[m]):mems, rel=songRel(so)||Date.now();
   return fairyStages(rel).map(st=>{ let ms=pool.filter(()=>Math.random()<FAIRY_P); if(!ms.length) ms=[pool[Math.floor(Math.random()*pool.length)]]; if(ms.length>FAIRY_CAP) ms=ms.sort(()=>Math.random()-.5).slice(0,FAIRY_CAP); return {...st,mids:ms}; }); }
 const stMids=st=>st?(st.mids||(st.mid?[st.mid]:[])):[];

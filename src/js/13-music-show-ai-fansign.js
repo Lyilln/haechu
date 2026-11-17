@@ -14,11 +14,16 @@
 const SHOWS=[{id:"ts",name:"THE SHOW",day:2},{id:"sc",name:"Show Champion",day:3},{id:"mcd",name:"M COUNTDOWN",day:4},{id:"mb",name:"Show! Music Core",day:6},{id:"ink",name:"INKIGAYO",day:0}];
 const WDAY=["日","一","二","三","四","五","六"];
 /* ===== 打歌：全群同一個月曆（每月第一週宣傳、中間排名、最後一週打歌）＋虛擬對手 =====
-   ・新歌 MV 一公開就加入打歌，打滿 4 週（28 天）自動下檔；同一團有新歌（回歸）時，舊歌直接下檔換新的
+   ・新歌 MV 一公開就加入打歌，打滿 4 個能排名的週自動下檔（碰到宣傳週往後延）；同一團有新歌（回歸）時，舊歌直接下檔換新的
    ・同一個節目的參賽歌不到 3 首：自動補虛擬對手，分數要超過它們才拿得到一位，一個人也不會白拿 */
 const MSA={PROMO:0,END:28,MIN:3}, MDAY=864e5;
 function songRel(s){ if(!s) return 0; if(s.rel) return s.rel; const m=/^s(\d{12,13})$/.exec(String(s.id)); return m?+m[1]:0; }
-function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const d=((at||Date.now())-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":d<MSA.END?"act":"end"; }
+/* 11/17 下檔：打滿 4 個「能排名的週」——中間碰到宣傳週就往後延一週，什麼時候發歌都一樣公平 */
+const SEND={};
+function songEndTs(r){ const c=SEND[r]; if(c&&Date.now()-c[1]<6e4) return c[0]; let t=r, n=0;   /* 一天一天往後數，只數排名週／打歌週的日子，數滿 28 天＝每個節目剛好都有 4 次 */
+  for(let i=0;i<120&&n<MSA.END;i++){ const wt=weekType(weekKey(t)); t+=MDAY; if(wt!=="宣傳週") n++; }
+  SEND[r]=[t,Date.now()]; return t; }
+function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r) return "act"; const t=at||Date.now(), d=(t-r)/MDAY; return d<0?"pre":d<MSA.PROMO?"promo":t<songEndTs(r)?"act":"end"; }
 const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
 const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
 const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];

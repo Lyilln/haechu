@@ -75,7 +75,7 @@ function mvIsDebut(v){ try{ const m=getMShow(), mine=[...(m.songs||[]),...(m.end
 function mvSongTick(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null||HB.ver[K.vods]==null)) return; const now=Date.now(), m=getMShow(); let ch=false;
     /* HUSSEY 10/20 出道、11/8 才補傳 MV：打歌期照出道日算（只改這一次；其他人照 MV 公開日） */
     { const x=(m.songs||[]).find(y=>{ const g=groupOf(y.gid); return g&&/^HUSSEY$/i.test(String(g.name).trim())&&/SUPA\s*DUPA\s*LUV/i.test(String(y.title||"")); }), d=new Date(2026,9,20,18,0).getTime(); if(x&&songRel(x)>d+3*MDAY){ x.rel=d; ch=true; } }
-    (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now-v.ts<MSA.END*MDAY).forEach(v=>{
+    (S.get(K.vods,[])||[]).filter(v=>vodIsMV(v)&&v.gid&&groupOf(v.gid)&&v.ts&&v.ts<=now&&now<songEndTs(v.ts)).forEach(v=>{
       const all=[...m.songs,...(m.ended||[])]; if(all.some(x=>x.gid===v.gid&&(x.mv===v.id||Math.abs(songRel(x)-v.ts)<3*MDAY))) return;
       const title=mvTitleOf(v.title)||"新歌", db=mvIsDebut(v); if(/^\s*出道\s*$/.test(title)&&all.some(x=>x.gid===v.gid&&x.debut)) return;   /* 已經有出道曲：不要再建一首叫「出道」的 */
       m.songs.push({id:"s"+v.ts,gid:v.gid,title,rel:v.ts,mv:v.id,...(db?{debut:1}:{}),...(v.au?{au:v.au}:{})}); ch=true; try{ if(v.fy){ fairySetClips("s"+v.ts,v.fy); } }catch(e){} const g=groupOf(v.gid); if(g) muNotify(`🎤 ${g.name}《${title}》${db?"出道 ":""}MV 公開，開始打歌！`,v.gid); });

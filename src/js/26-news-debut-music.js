@@ -474,7 +474,7 @@ const fairyMemsOf=sid=>{ const so=songOf(sid); return so?groupArtists(so.gid).sl
 /* 發行當天就把整個打歌期（MSA.END 天）每一個打歌舞台的結尾妖精全部抽好、存在後台；
    每個節目照真實播出的星期幾、時間才公布（例：星期四回歸 → 先公布當天 M COUNTDOWN，接著星期五 MUSIC BANK、星期日 INKIGAYO、下週二 THE SHOW…） */
 const fairyPlanK=sid=>"plan|"+sid;
-function fairyStages(rel){ const L=[], end=rel+MSA.END*864e5; for(let d=new Date(rel);d.getTime()<end+7*864e5;d.setDate(d.getDate()+1)){ SHOWS.forEach(sh=>{ const [wd,h,mi]=SHOW_END[sh.id]||[sh.day,18,0]; if(d.getDay()!==wd) return; const t=new Date(d); t.setHours(h,mi,0,0); const ts=t.getTime(); if(ts>=rel&&ts<end) L.push({show:sh.id,ts}); }); } return L.sort((a,b)=>a.ts-b.ts); }
+function fairyStages(rel){ const L=[], end=songEndTs(rel); for(let d=new Date(rel);d.getTime()<end+7*864e5;d.setDate(d.getDate()+1)){ SHOWS.forEach(sh=>{ const [wd,h,mi]=SHOW_END[sh.id]||[sh.day,18,0]; if(d.getDay()!==wd) return; const t=new Date(d); t.setHours(h,mi,0,0); const ts=t.getTime(); if(ts>=rel&&ts<end) L.push({show:sh.id,ts}); }); } return L.sort((a,b)=>a.ts-b.ts); }
 function fairyMakePlan(so){ const mems=fairyMemsOf(so.id); if(!mems.length) return null; const C=fairyClips(so.id), pool=mems.filter(m=>C[m]).length?mems.filter(m=>C[m]):mems, rel=songRel(so)||Date.now();
   return fairyStages(rel).map(st=>{ let ms=pool.filter(()=>Math.random()<FAIRY_P); if(!ms.length) ms=[pool[Math.floor(Math.random()*pool.length)]]; if(ms.length>FAIRY_CAP) ms=ms.sort(()=>Math.random()-.5).slice(0,FAIRY_CAP); return {...st,mids:ms}; }); }
 const stMids=st=>st?(st.mids||(st.mid?[st.mid]:[])):[];
