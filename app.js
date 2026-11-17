@@ -7941,7 +7941,7 @@ function clickAdm(a,t,e,r){ switch(a){
         const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } const so=songOf(sid); toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); break; }
       if(meBlocked()) break; const sid=t.dataset.v, sh=t.dataset.s, wk=curWeek(), v=S.get(K.msVotes,{}), m=S.get(K.msMine,{});
       if(m[myVoteKey(sh)]) break; if(showEnded(sh,wk)){ toast("這個節目這週已經結束了"); break; } addShowVote(sid,sh); m[myVoteKey(sh)]=sid; S.set(K.msMine,m);
-      const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } { const so=songOf(sid), mc=so&&giveMcCard(so.gid,sh); toast(mc?`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}・拿到 ${itemName(mc)} 🎤`:`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); } break; }
+      const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } { const so=songOf(sid), mc=so&&mcWeek(so)===curWeek()&&showSeat(sid,sh)<3?giveMcCard(so.gid,sh):null; toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); if(mc) setTimeout(()=>muCardPop(mc,sh,so),420); } break; }
     case "openSigned": layer.innerHTML=""; navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break;
     default: return CLICK_NO;
   } }
@@ -13855,8 +13855,18 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   if(a==="coreTip"&&route().p==="promo"){ e.stopImmediatePropagation(); muRules(); return; }
 },true);
 /* 拿到打歌節目卡：卡片翻出來 */
-function muCardPop(cid,sh,s){ const nm=(SHOWS.find(x=>x.id===sh)||{}).name||""; const face=cid?itemFace(cid):`<span class="mu3-cdemo s-${sh}"><b>${esc(nm)}</b><small>${esc(groupOf(s.gid)?groupOf(s.gid).name:"")}</small></span>`;
-  setLayer(`<div class="mu3-cpw" data-a="tCloseLayer"><div class="mu3-cp" role="dialog" aria-label="拿到公放卡"><div class="mu3-cf">${face}</div><b>搶到 ${esc(nm)} 公放席・拿到公放卡</b>${cid?`<button class="t-mbtn main" data-a="coreGo" data-v="cards">去卡冊看看</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">好</button></div></div>`,"mucard"); }
+/* 11/17 公放卡：投完當下就拿到 → 全螢幕華麗登場（光芒旋轉、卡片從背面翻過來、閃光掃過、彩帶），點一下或按按鈕收下 */
+function muCardPop(cid,sh,s){ const nm=(SHOWS.find(x=>x.id===sh)||{}).name||"", gn=groupOf(s.gid)?groupOf(s.gid).name:"";
+  const face=cid?itemFace(cid):`<span class="mu3-cdemo s-${sh}"><b>${esc(nm)}</b><small>${esc(gn)}</small></span>`, back=cid?itemBack(cid):`<span class="mu3-cdemo s-${sh}"><b>HAECHU</b></span>`;
+  setLayer(`<div class="mcx" role="dialog" aria-label="拿到公放卡"><div class="mcx-bg"></div><div class="mcx-ray"></div><div class="mcx-glow"></div>
+    <div class="mcx-stars">${Array.from({length:14},(_,i)=>`<i style="--x:${(i*37)%100}%;--y:${(i*53)%100}%;--d:${(i%7)*.18}s"></i>`).join("")}</div>
+    <p class="mcx-k">${esc(nm)}・公放席</p>
+    <div class="mcx-c"><div class="mcx-in"><div class="mcx-f mcx-b">${back}</div><div class="mcx-f mcx-fr">${face}<span class="mcx-sh"></span></div></div></div>
+    <h2 class="mcx-t"><span class="cc-tx">拿到公放卡</span></h2><p class="mcx-s">${esc(gn)} 打歌週，每個節目最先投票的 3 位才有</p>
+    <div class="mcx-a">${cid?`<button class="t-mbtn main" data-a="coreGo" data-v="cards">去卡冊看看</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">收下</button></div></div>`,"mucard");
+  try{ const t=layer.querySelector(".mcx-t .cc-tx"); setTimeout(()=>{ try{ AN&&AN.chars&&AN.chars(t); }catch(e){} },1250); }catch(e){}
+  const W=innerWidth, H=innerHeight, cf=(x,y,o)=>{ try{ confetti(x,y,{cols:["#FFE7A8","#FFB8E0","#C9B6FF","#FFFFFF","#F9D56E"],...o}); const c=document.getElementById("confetti"); if(c) c.style.zIndex="310"; }catch(e){} }; setTimeout(()=>cf(W/2,H*.42,{n:90}),1150); setTimeout(()=>{ cf(W*.2,H*.3,{}); cf(W*.8,H*.3,{}); },1500);
+  try{ navigator.vibrate&&navigator.vibrate([30,60,40]); }catch(e){} }
 
 /* =========================================================
    藝人：FOC 最上面「我的打歌」卡＋戰況頁（取代「榮譽與職務」）

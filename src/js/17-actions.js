@@ -636,7 +636,7 @@ function clickAdm(a,t,e,r){ switch(a){
         const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } const so=songOf(sid); toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); break; }
       if(meBlocked()) break; const sid=t.dataset.v, sh=t.dataset.s, wk=curWeek(), v=S.get(K.msVotes,{}), m=S.get(K.msMine,{});
       if(m[myVoteKey(sh)]) break; if(showEnded(sh,wk)){ toast("這個節目這週已經結束了"); break; } addShowVote(sid,sh); m[myVoteKey(sh)]=sid; S.set(K.msMine,m);
-      const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } { const so=songOf(sid), mc=so&&giveMcCard(so.gid,sh); toast(mc?`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}・拿到 ${itemName(mc)} 🎤`:`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); } break; }
+      const r0=t.getBoundingClientRect(); confetti(r0.left+r0.width/2,r0.top+r0.height/2); openVote(sid); { const y=window.scrollY; render(); window.scrollTo(0,y); } { const so=songOf(sid), mc=so&&mcWeek(so)===curWeek()&&showSeat(sid,sh)<3?giveMcCard(so.gid,sh):null; toast(`已在 ${SHOWS.find(x=>x.id===sh).name} 投給${songName(so)}`); if(mc) setTimeout(()=>muCardPop(mc,sh,so),420); } break; }
     case "openSigned": layer.innerHTML=""; navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break;
     default: return CLICK_NO;
   } }
