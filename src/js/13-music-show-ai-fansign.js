@@ -44,6 +44,8 @@ const parseType=s=>/宣傳/.test(s)?"宣傳週":/打歌/.test(s)?"打歌週":/�
 const getMShow=()=>({songs:[],ended:[],wins:{},wtype:{},mc:{},...S.get(K.mshow,{})});
 function weekType(wk){ wk=wk||curWeek(); if(wk===curWeek()) return parseType(getSched().stage)||autoWeekType(wk); return getMShow().wtype[wk]||autoWeekType(wk); }
 const ranked=wk=>weekType(wk)!=="宣傳週";
+/* 11/17 公放卡只在「出道／回歸後遇到的第一個打歌週」發（通常是那個月最後一週）；過了那週就不發 */
+function mcWeek(s){ if(!s||!s.rel) return null; let wk=weekKey(s.rel); for(let i=0;i<10;i++){ if(weekType(wk)==="打歌週") return wk; wk=shiftWeek(wk,1); } return null; }
 const songOf=id=>{ if(String(id).startsWith("demo_")) return MUS_DEMO().find(s=>s.id===id); const m=getMShow(); return m.songs.find(s=>s.id===id)||(m.ended||[]).find(s=>s.id===id); };
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：沒有打歌中的歌時，放 3 首示範歌，投票只記在這支手機的這次打開，不存、不上雲端 */
 const musDemo=()=>{ try{ if(ui.tourDemo) return true; const s=session(); if(s&&s.role==="artist") return typeof demoOn==="function"&&demoOn(); if(!s||s.role!=="fan") return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""], g=m&&groupOf(m.group), U=x=>String(x||"").toUpperCase()==="HUSSEY"; return U(a.name)||U(m&&m.name)||!!(g&&U(g.name)); }catch(e){ return false; } };
