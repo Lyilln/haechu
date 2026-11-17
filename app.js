@@ -466,7 +466,7 @@ const K = {
   pcImgs:"daisuki_pc_imgs",
   albums:"daisuki_albums", seedAlb:"daisuki_seed_alb", albBuy:"daisuki_album_buys",
   grpSeen:"daisuki_group_seen",
-  gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", gPhoto:"daisuki_group_photo", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", lockCfg:"daisuki_lock", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters",fanLettersAll:"daisuki_fan_letters_all", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
+  gTheme:"daisuki_group_theme", pwOpen:"daisuki_pw_open", seedPriv:"daisuki_seed_priv", seedPriv2:"daisuki_seed_priv2", seedArtFan:"daisuki_seed_artfan", themes:"daisuki_themes", seedThemes:"daisuki_seed_themes", seedThemes2:"daisuki_seed_themes2", seedMascot:"daisuki_seed_mascot", seedMascot2:"daisuki_seed_mascot2", artProf:"daisuki_art_prof", gPhoto:"daisuki_group_photo", artBday:"daisuki_art_bday", tours:"daisuki_tours", tieLeft:"daisuki_tie_left", banned:"daisuki_banned", sns:"daisuki_sns2", artNSeen:"daisuki_art_nseen", mediaName:"daisuki_media_name", nicks:"daisuki_nicks", pollVotes:"daisuki_poll_votes", thOwned:"daisuki_th_owned", thCur:"daisuki_th_cur", thRot:"daisuki_th_rot", vods:"daisuki_vods", seedVod:"daisuki_seed_vod", fandom:"daisuki_fandom", tieAgree:"daisuki_tie_agree", tieCele:"daisuki_tie_cele", boxKeep:"daisuki_box_keep", pickNoShow:"daisuki_pick_noshow", cmProf:"daisuki_cm_prof", bm:"daisuki_bookmarks", fanLetters:"daisuki_fan_letters",fanLettersAll:"daisuki_fan_letters_all", ltDraft:"daisuki_letter_draft", cmNotif:"daisuki_cm_notif", seedPhotos:"daisuki_seed_photos", seedPhotos2:"daisuki_seed_photos2", stores:"daisuki_stores", seedStores:"daisuki_seed_stores", ldGiven:"daisuki_ld_given", seedStores2:"daisuki_seed_stores2", mcGot:"daisuki_mc_got", fanPosts:"daisuki_fan_posts", mFollow:"daisuki_member_follow",
   gNotices:"daisuki_group_notices", seedGN:"daisuki_seed_gn",
   notifs:"daisuki_notifications", maint:"daisuki_maint", feed:"daisuki_feed", feedSeen:"daisuki_feed_seen", unread:"daisuki_notif_unread", fanArtists:"daisuki_fan_artists",
   posts:"daisuki_posts", session:"daisuki_session", settings:"daisuki_notif_settings",
@@ -1801,7 +1801,7 @@ function setLayer(html,key){
 let ssMem=null;   // 只放在記憶體：關掉或重新打開就要重新登入（帳號會幫你記著）
 /* 簽售報名用的「我是誰」：示範帳號沿用 fan:me，新註冊的帳號用自己的 email，報名紀錄才不會混在一起 */
 const fsMeOf=v=>{ const e=v&&v.role==="fan"?String(v.email||"").toLowerCase():""; return e?"fan:"+e:"fan:me"; };
-const SS={ get(){ return ssMem; }, set(v){ ssMem=v; sessSave(v); try{ FS_ME=fsMeOf(v); }catch(e){} try{ const a=v&&(!v.admin||v.uni)&&ACCOUNTS[v.email]; ME.name=(a&&a.name)||"棉花糖粉絲"; applyNick(); }catch(e){} try{ applyTheme(); }catch(e){} }, del(){ ssMem=null; sessSave(null); try{ localStorage.removeItem("daisuki_hb_auth"); }catch(e){} try{ FS_ME="fan:me"; }catch(e){} try{ ui.lk=null; lockPaint(); applyTheme(); }catch(e){} } };
+const SS={ get(){ return ssMem; }, set(v){ ssMem=v; sessSave(v); try{ FS_ME=fsMeOf(v); }catch(e){} try{ const a=v&&(!v.admin||v.uni)&&ACCOUNTS[v.email]; ME.name=(a&&a.name)||"棉花糖粉絲"; applyNick(); }catch(e){} try{ applyTheme(); }catch(e){} }, del(){ ssMem=null; sessSave(null); try{ localStorage.removeItem("daisuki_hb_auth"); }catch(e){} try{ FS_ME="fan:me"; }catch(e){} try{ applyTheme(); }catch(e){} } };
 /* 登入狀態：記在這支手機，3 個月內有打開過就不用重新登入（太久沒用才要再登入） */
 const SESS_DAYS=90;
 function sessSave(v){ try{ if(v) localStorage.setItem("daisuki_session",JSON.stringify({v,ts:Date.now()})); else localStorage.removeItem("daisuki_session"); }catch(e){} }
@@ -7940,10 +7940,6 @@ function clickTheme(a,t,e,r){ switch(a){
     
     
     
-    case "lkKey": lockKey(t.dataset.v); break;
-    case "lkCancel": ui.lk=null; lockPaint(); break;
-    case "lkForgot": iosAlert("忘記密碼","登出後重新登入，密碼鎖就會關掉。",`<button data-a="tCloseLayer">取消</button><button data-a="lkReset">登出</button>`); break;
-    case "lkReset": S.set(acK(K.lockCfg),{on:false,pin:""}); ui.lk=null; lockPaint(); layer.innerHTML=""; SS.del(); go("auth"); break;
     case "thAdmin": navTo("#/admin/themes"); break;
     case "thMine": navTo("#/artist/thmine"); break;
     case "thNew": ui.thDraft=null; ui.thImportRep=null; navTo("#/"+session().role+"/thedit"); break;
@@ -8347,23 +8343,23 @@ seedStores(); seedStores2(); seedMascots(); ui.selectDraft=null; ui.feedTab="fee
 /* HAECHU｜主題 TINT */
 /* =========================================================
    主題（照 LINE 主題小舖）：SHOP 裡的「TINT」
-   ・一套主題＝素材包：封面、配色（淺色／深色各一組）、背景圖案、主角插圖、花邊、對話框裝飾、密碼鎖圖示 4 個、選單圖示 6 個
-   ・換的地方：App 背景與文字顏色、底部選單、TIE 聊天室（背景、插圖、花邊、對話框、輸入列）、密碼鎖畫面
+   ・一套主題＝素材包：封面、配色（淺色／深色各一組）、背景圖案、主角插圖、花邊、對話框裝飾、選單圖示 6 個
+   ・換的地方：App 背景與文字顏色、底部選單、TIE 聊天室（背景、插圖、花邊、對話框、輸入列）
    ・只有自己看得到；自己設過的 TIE 背景不會被蓋掉（對話框和輸入列還是會跟著主題）
    ・主題有淺色＋深色兩版 → 跟著外觀切換；只有一版 → 怎麼切都維持原樣
-   ・主題輪播、密碼鎖：預設關閉，每個人自己決定
+   ・主題輪播：預設關閉，每個人自己決定
    ・團可以出一套、藝人也可以各自出；管理員自己做，或審核藝人送來的申請
    ========================================================= */
 const TH_STORE="TINT";
 const TH_TABS=[["home","LOVE"],["whisper","TIE"],["core","FEST"],["shop","SHOP"],["me","ME"]];
 const TH_TABS_ART=[["home","LOVE"],["live","MEET"],["whisper","TIE"],["foc","FOC"],["me","ME"]];
 const TH_TABS_ALL=[...TH_TABS,["live","MEET"],["foc","FOC"]];
-const TH_COLS=[["ac","主色"],["bg","背景"],["ink","文字"],["sub","次要文字"],["bubA","藝人對話框"],["bubAB","藝人對話框邊框"],["bubM","我的對話框"],["bubMB","我的對話框邊框"],["bar","輸入列／鍵盤"]];
+const TH_COLS=[["ac","主色"],["bg","背景"],["ink","文字"],["sub","次要文字"],["bubA","藝人對話框"],["bubAB","藝人對話框邊框"],["bubM","我的對話框"],["bubMB","我的對話框邊框"],["bar","輸入列"]];
 const TH_DEF={light:{ac:"#8843FB",bg:"#FAF9FC",ink:"#1D1A24",sub:"#837D90",bubA:"#FFFFFF",bubAB:"#ECE8F2",bubM:"#8843FB",bubMB:"#8843FB",bar:"#FFFFFF"},
   dark:{ac:"#A48CFF",bg:"#141219",ink:"#F3F1F7",sub:"#9A94A6",bubA:"#2A2733",bubAB:"#2A2733",bubM:"#7B35F0",bubMB:"#7B35F0",bar:"#1B1A21"}};
 /* 吉祥物主題是 HAECHU 內建的免費主題：不存在資料裡，每個人都看得到 */
 let MS_BUILT=null;
-const msBuilt=()=>MS_BUILT||(MS_BUILT=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室、選單圖示和密碼鎖都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.UTC(2026,9,1)-i*DAY})));
+const msBuilt=()=>MS_BUILT||(MS_BUILT=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室和選單圖示都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.UTC(2026,9,1)-i*DAY})));
 const getThemes=()=>{ const L=(S.get(K.themes,[])||[]).map(t=>t.id==="th_ms_dog"&&t.light&&/^#(CDE9C0|9ED68A)$/i.test(t.light.bar)?{...t,light:msBuilt()[1].light,dark:msBuilt()[1].dark}:t), have=new Set(L.map(t=>t.id)); return [...msBuilt().filter(t=>!have.has(t.id)),...L]; };
 const saveThemes=L=>S.set(K.themes,L.filter(t=>!(String(t.id).startsWith("th_ms_")&&msBuilt().some(x=>x.id===t.id&&JSON.stringify(x)===JSON.stringify(t)))));
 const thById=id=>getThemes().find(t=>t.id===id);
@@ -8374,7 +8370,6 @@ const thCurId=()=>{ const id=S.get(acK(K.thCur),""); return id&&thOwned().includ
 const thCur=()=>{ const id=thCurId(); return id?thById(id):null; };
 const thRot=()=>{ const r={on:false,every:24,last:0,sel:null,...S.get(acK(K.thRot),{})}; if(r.every<=7) r.every*=24; if(!Array.isArray(r.sel)) r.sel=[]; return r; };
 const TH_EVERY=[[12,"每 12 小時"],[24,"每天"],[72,"每 3 天"],[168,"每週"]];
-const lockCfg=()=>({on:false,pin:""});
 const thModeTxt=t=>t.modes==="both"?"淺色＋深色":t.modes==="light"?"只有淺色":"只有深色";
 const thFor=t=>t.scope==="app"?"HAECHU":t.scope==="member"?(MEMBERS[t.mid]?MEMBERS[t.mid].name:""):(groupOf(t.gid)?groupOf(t.gid).name:"");
 const thForce=()=>{ const t=thCur(); if(!t) return null; return t.modes==="light"?false:t.modes==="dark"?true:null; };
@@ -8465,7 +8460,7 @@ function thRotTick(){ if(!session()) return; const R=thRot(), own=thOwned(), poo
 function thChatBg(cls){ const t=thCur(); if(!t) return ""; const v=thVar(t,thDarkNow()), art=thArtOf(t);
   return `<div class="${cls} th-chat ${thDarkNow()?"dk":""}" style='background:${thPat(t,v,thDarkNow())}${v.bg}'>${art?`<img class="th-art" src="${art}" alt="">`:""}${t.strip?`<span class="th-strip" style="background-image:url('${t.strip}')"></span>`:""}</div>`; }
 
-/* ---------- 預覽：照真的畫面縮小（主畫面、TIE 聊天室、密碼鎖） ---------- */
+/* ---------- 預覽：照真的畫面縮小（主畫面、TIE 聊天室） ---------- */
 function thIco(t,k,col){ return t.icons&&t.icons[k]?`<img src="${t.icons[k]}" alt="">`:`<span style="color:${col}">${NAV[{home:"love",live:"meet",whisper:"tie",core:"core",foc:"foc",shop:"shop",me:"me"}[k]]||""}</span>`; }
 function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), pat=thPat(t,v,dark).replace(/"/g,"'"), art=thArtOf(t);
   let body="";
@@ -8485,11 +8480,8 @@ function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,
       <div class="mk-l"><i style="background:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.3)},${v.ac})"></i><span class="mk-b" style="background:${v.bubA};border-color:${v.bubAB};color:${bt(v.bubA)}">大家早點睡喔～${deco}</span></div>
       <div class="mk-r"><span class="mk-b" style="background:${v.bubM};border-color:${v.bubMB};color:${bt(v.bubM)}">晚安！${deco}</span></div></div>
     <div class="mk-in" style="background:${v.bar}"><span style="color:${v.ink}">＋</span><i style="background:${dark?mixHex(v.bar,"#ffffff",.08):"#fff"}"></i></div>`; }
-  if(kind==="lock") body=`<div class="mk-bgf" style="background:${v.bg}"></div>
-    <div class="mk-lt"><b style="color:${v.ink}">輸入密碼</b><small style="color:${v.sub}">請輸入 4 位數密碼</small><div class="mk-pass">${[0,1,2,3].map(i=>thPassIco(t,i,v,i<2)).join("")}</div></div>
-    <div class="mk-pad ${dark?"dk":""}" style="background:${pat.replace(rgba(v.bg,.8),rgba(v.bar,.8)).replace(rgba(v.bg,.8),rgba(v.bar,.8))}${v.bar}">${t.strip?`<span class="mk-strip top" style="background-image:url('${t.strip}')"></span>`:""}<div class="mk-keys">${[1,2,3,4,5,6,7,8,9,"",0,"⌫"].map(n=>`<span style="color:${v.ink}">${n}</span>`).join("")}</div></div>`;
   return `<div class="mk" style="--k:${k}"><div class="mk-in0">${body}</div></div>`; }
-function thPassIco(t,i,v,on){ const src=t.pass&&(t.pass[i]||t.pass.find(Boolean)); return src?`<img class="${on?"on":""}" src="${src}" alt="">`:`<i class="${on?"on":""}" style="border-color:${v.ac};${on?`background:${v.ac}`:""}"></i>`; }
+
 function thCover(t,cls=""){ return t.cover?`<img class="th-cov ${cls}" src="${t.cover}" alt="">`:`<span class="th-cov ${cls}">${thMock("home",t,t.modes==="dark",.3)}</span>`; }
 
 /* ---------- SHOP 裡的 TINT ---------- */
@@ -8507,7 +8499,7 @@ function viewTint(id){
       ${t.desc?`<p class="thd-desc">${esc(t.desc)}</p>`:""}
       <div class="thd-meta"><span>${t.scope==="app"?"官方免費主題":t.scope==="member"?"藝人主題":"團體主題"}</span><span>${thModeTxt(t)}</span></div>
       <div class="thd-pvh"><b>套用後的樣子</b>${both?`<div class="seg2 th-seg" style="--i:${dk?1:0}"><i class="seg2-ind"></i><button class="${dk?"":"on"}" data-a="thPv" data-v="0">淺色</button><button class="${dk?"on":""}" data-a="thPv" data-v="1">深色</button></div>`:""}</div>
-      <div class="thd-pv">${["home","chat"].map(k=>`<figure>${thMock(k,t,dk,.6)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室",lock:"密碼鎖"}[k]}</figcaption></figure>`).join("")}</div>
+      <div class="thd-pv">${["home","chat"].map(k=>`<figure>${thMock(k,t,dk,.6)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室"}[k]}</figcaption></figure>`).join("")}</div>
     </main>`; }
   const on=getThemes().filter(t=>t.status==="on"), f=followed();
   const sort=L=>L.slice().sort((a,b)=>(f.includes(b.gid)-f.includes(a.gid))||(b.ts-a.ts));
@@ -8528,9 +8520,9 @@ function thBuy(id){ const t=thById(id); if(!t) return;
   iosAlert("下載完成",`要現在套用「${esc(t.name)}」嗎？`,`<button data-a="tCloseLayer">稍後</button><button data-a="thUse" data-v="${id}">套用</button>`); }
 function thUse(id){ S.set(acK(K.thCur),id||""); layer.innerHTML=""; applyTheme(); render(); }
 
-/* ---------- 外觀（模式、主題一覽、輪播、密碼鎖） ---------- */
+/* ---------- 外觀（模式、主題一覽、輪播） ---------- */
 function viewLook(){
-  const m=themeMode(), own=thOwned(), cur=thCurId(), R=thRot(), L=lockCfg(), f=thForce(), t=thCur();
+  const m=themeMode(), own=thOwned(), cur=thCurId(), R=thRot(), f=thForce(), t=thCur();
   const ck=on=>on?`<span class="r lk-ck">✓</span>`:"";
   return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">外觀</div><span class="sh-sp"></span></div></header><main class="page">
     <div class="section-h">顯示模式${f!=null?`<span class="muted">${esc(t.name)}${f?"只有深色":"只有淺色"}</span>`:""}</div>
@@ -8548,35 +8540,12 @@ function viewLook(){
   </main>`;
 }
 
-/* ---------- 密碼鎖畫面（照 LINE：上面標題＋4 個主題圖示，下面花邊＋圖案鍵盤） ---------- */
-
-function lockPaint(){ let el=document.getElementById("lockEl"); const k=ui.lk; if(!k){ if(el) el.remove(); return; }
-  if(!el){ el=document.createElement("div"); el.id="lockEl"; document.body.appendChild(el); }
-  const t=thCur(), dark=thDarkNow(), v=t?thVar(t,dark):TH_DEF[dark?"dark":"light"], tt=t||{};
-  const title=k.mode==="unlock"?"輸入密碼":k.mode==="off"?"輸入目前的密碼":k.first?"再輸入一次":"設定密碼";
-  const sub=k.err||(k.mode==="set"&&!k.first?"請輸入 4 位數密碼":k.mode==="set"?"確認剛剛的 4 位數密碼":"請輸入 4 位數密碼");
-  el.className="lk"; el.style.cssText=`background:${v.bg};--lk-ac:${v.ac}`;
-  el.innerHTML=`<div class="lk-top">${k.mode==="unlock"?"":`<button class="lk-x" data-a="lkCancel" aria-label="取消" style="color:${v.ink}">${XI}</button>`}
-      <b class="lk-t" style="color:${v.ink}">${title}</b><small class="lk-s ${k.err?"err":""}" style="color:${k.err?"var(--red)":v.sub}">${sub}</small>
-      <div class="lk-pass ${k.err?"shake":""}">${[0,1,2,3].map(i=>thPassIco(tt,i,v,i<k.pin.length)).join("")}</div></div>
-    <div class="lk-pad ${dark?"dk":""}" style='background:${tt.pattern?thPat(tt,{...v,bg:v.bar},dark):""}${v.bar}'>${tt.strip?`<span class="lk-strip" style="background-image:url('${tt.strip}')"></span>`:""}
-      <div class="lk-keys">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-a="lkKey" data-v="${n}" style="color:${v.ink}">${n}</button>`).join("")}${k.mode==="unlock"?`<button class="lk-fg" data-a="lkForgot" style="color:${v.ink}">忘記密碼</button>`:"<span></span>"}<button data-a="lkKey" data-v="0" style="color:${v.ink}">0</button><button class="lk-del" data-a="lkKey" data-v="del" aria-label="刪除" style="color:${v.ink}"><svg viewBox="0 0 28 20" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M9 2h16v16H9L2 10z"/><path d="m13 6 8 8m0-8-8 8" stroke-linecap="round"/></svg></button></div></div>`; }
-function lockKey(v){ const k=ui.lk; if(!k) return; if(v==="del"){ k.pin=k.pin.slice(0,-1); k.err=""; return lockPaint(); } if(k.pin.length>=4) return; k.pin+=v; k.err=""; lockPaint();
-  if(k.pin.length<4) return;
-  setTimeout(()=>{ const L=lockCfg();
-    if(k.mode==="unlock"||k.mode==="off"){ if(k.pin===L.pin){ if(k.mode==="off") S.set(acK(K.lockCfg),{on:false,pin:""}); ui.lk=null; lockPaint(); if(k.mode==="off") render(); } else { k.pin=""; k.err="密碼不對，請再試一次"; lockPaint(); } return; }
-    if(!k.first){ k.first=k.pin; k.pin=""; lockPaint(); return; }
-    if(k.first===k.pin){ S.set(acK(K.lockCfg),{on:true,pin:k.pin}); ui.lk=null; lockPaint(); render(); toast("已設定密碼鎖"); }
-    else { k.first=""; k.pin=""; k.err="兩次不一樣，請重新設定"; lockPaint(); } },140); }
-/* 離開 App 再回來就鎖起來 */
-/* 密碼鎖已拿掉（不使用） */
-
 /* ---------- 做主題：管理員自己做，或藝人送申請 ---------- */
-const thBlank=()=>{ const s=session()||{}, m=s.member&&MEMBERS[s.member]; return {name:"",desc:"",scope:m?"member":"group",gid:m?m.group:(GROUPS[0]||{}).id||"",mid:s.member||"",price:0,modes:"both",light:{...TH_DEF.light},dark:{...TH_DEF.dark},icons:{},pass:["","","",""],cover:"",pattern:"",art:"",strip:"",deco:""}; };
+const thBlank=()=>{ const s=session()||{}, m=s.member&&MEMBERS[s.member]; return {name:"",desc:"",scope:m?"member":"group",gid:m?m.group:(GROUPS[0]||{}).id||"",mid:s.member||"",price:0,modes:"both",light:{...TH_DEF.light},dark:{...TH_DEF.dark},icons:{},cover:"",pattern:"",art:"",strip:"",deco:""}; };
 function thDraft(id){ if(!ui.thDraft||ui.thDraft._for!==(id||"new")){ const t=id&&thById(id), b=thBlank(); const d={...b,...(t?JSON.parse(JSON.stringify(t)):{}),_for:id||"new"};
-    d.light={...TH_DEF.light,...(d.light||{})}; d.dark={...TH_DEF.dark,...(d.dark||{})}; d.icons=d.icons||{}; d.pass=(d.pass||[]).concat(["","","",""]).slice(0,4); if(!d.art) d.art=thArtOf(d); ui.thDraft=d; ui.thEdV=ui.thEdV||"light"; } return ui.thDraft; }
+    d.light={...TH_DEF.light,...(d.light||{})}; d.dark={...TH_DEF.dark,...(d.dark||{})}; d.icons=d.icons||{}; if(!d.art) d.art=thArtOf(d); ui.thDraft=d; ui.thEdV=ui.thEdV||"light"; } return ui.thDraft; }
 const thEdVar=d=>d.modes==="both"?(ui.thEdV||"light"):d.modes;
-function thEdPv(d){ const dk=thEdVar(d)==="dark"; return ["home","chat"].map(k=>`<figure>${thMock(k,d,dk,.42)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室",lock:"密碼鎖"}[k]}</figcaption></figure>`).join(""); }
+function thEdPv(d){ const dk=thEdVar(d)==="dark"; return ["home","chat"].map(k=>`<figure>${thMock(k,d,dk,.42)}<figcaption>${{home:"主畫面",chat:"TIE 聊天室"}[k]}</figcaption></figure>`).join(""); }
 function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id), me=s.member&&MEMBERS[s.member], ev=thEdVar(d), v=d[ev];
   const lab=t=>`<span class="fld-lab">${t}</span>`;
   const up=(f,cur,ttl,kind="")=>`<div class="th-slot ${kind}">${cur?`<button class="th-icb has" data-a="thImgX" data-f="${f}" aria-label="移除${ttl}"><img src="${cur}" alt=""><i>${XI}</i></button>`:`<label class="th-icb">＋<input type="file" accept="image/*" class="th-up" data-f="${f}" hidden></label>`}<small>${ttl}</small></div>`;
@@ -8640,7 +8609,7 @@ function viewThMine(){ const s=session(), L=getThemes().filter(t=>t.owner===s.em
 
 /* 圖片：圖示縮成 128px 方形 PNG（保留透明）；封面、插圖、花邊、圖案縮小後存 */
 
-const thSetF=(d,f,v)=>{ const p=f.split("."); if(p.length===1) d[p[0]]=v; else if(p[0]==="pass"){ d.pass=d.pass||["","","",""]; d.pass[+p[1]]=v; } else { d[p[0]]=d[p[0]]||{}; d[p[0]][p[1]]=v; } };
+const thSetF=(d,f,v)=>{ const p=f.split("."); if(p.length===1) d[p[0]]=v; else { d[p[0]]=d[p[0]]||{}; d[p[0]][p[1]]=v; } };
 document.addEventListener("input",e=>{ const t=e.target; if(!t.classList||!t.classList.contains("th-in")||!ui.thDraft) return; thSetF(ui.thDraft,t.dataset.f,t.value);
   if(t.type==="color"){ const pv=document.querySelector(".th-ed-pv"); if(pv) pv.innerHTML=thEdPv(ui.thDraft); const ck=document.querySelector(".th-chk"); if(ck) ck.outerHTML=thCheckHtml(ui.thDraft); } });
 document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList||!ui.thDraft) return;
@@ -8676,8 +8645,6 @@ function thPack(p,motif){
     ?[[30,52,1.1],[120,46,1.4],[220,54,1],[300,44,1.5],[395,52,1.1]].map(([x,y,s])=>ART.cloud(x,y,s,"#FFFFFF",p.c,2)).join("")+[[80,30],[180,22],[262,30],[360,24]].map(([x,y])=>ART.spark(x,y,6,p.e)).join("")
     :[[14,56,18,p.a],[44,50,22,p.b],[78,58,16,p.f],[110,52,20,p.a],[146,58,14,"#ffffff"],[176,50,22,p.b],[212,56,18,p.f],[246,50,20,p.a],[282,58,15,"#ffffff"],[312,52,21,p.b],[348,56,17,p.f],[382,50,22,p.a],[412,56,16,p.b]].map(([x,y,r,c])=>ART.flower(x,y,r,c,p.e,1.6,p.d)).join("")));
   const art=svgUrl(320,380,ART.moonChar(p));
-  const passBg=(inner)=>svgUrl(64,64,`<circle cx="32" cy="32" r="28" fill="${p.c}"/>`+inner);
-  const pass=[passBg(ART.star(32,33,17,p.e,2.4,p.d)),passBg(`<defs><mask id="pm"><rect width="64" height="64" fill="#fff"/><circle cx="40" cy="26" r="14" fill="#000"/></mask></defs><circle cx="31" cy="33" r="17" fill="${p.e}" stroke="${p.d}" stroke-width="2.4" mask="url(#pm)"/>`),passBg(ART.heart(32,19,1.15,p.a,2.4,p.d)),passBg(ART.flower(32,33,18,p.b,p.e,2.2,p.d))];
   const ic=inner=>svgUrl(48,48,inner);
   const icons={home:ic(ART.heart(24,12,1.15,p.a,2.6,p.d)+ART.spark(36,13,4,p.e)),
     live:ic(`<path d="M7 14h34a2 2 0 0 1 2 2v4a4 4 0 0 0 0 8v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a4 4 0 0 0 0-8v-4a2 2 0 0 1 2-2z" fill="${p.b}" stroke="${p.d}" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 18v12" stroke="${p.d}" stroke-width="2" stroke-dasharray="2 3"/>`+ART.heart(30,18,.42,p.a,1.6,p.d)),
@@ -8685,7 +8652,7 @@ function thPack(p,motif){
     core:ic(`<path d="M18 34V12l20-5v22" fill="none" stroke="${p.d}" stroke-width="2.6" stroke-linejoin="round"/><ellipse cx="13" cy="34" rx="6" ry="5" fill="${p.b}" stroke="${p.d}" stroke-width="2.4"/><ellipse cx="33" cy="29" rx="6" ry="5" fill="${p.a}" stroke="${p.d}" stroke-width="2.4"/>`+ART.spark(40,40,4,p.e)),
     shop:ic(`<path d="M13 8h22l8 11-19 22L5 19z" fill="${p.f}" stroke="${p.d}" stroke-width="2.4" stroke-linejoin="round"/><path d="M5 19h38M17 8l7 33M31 8l-7 33" fill="none" stroke="${p.d}" stroke-width="1.8" stroke-linejoin="round"/>`),
     me:ic(`<path d="M7 36 5 14l10 8 9-12 9 12 10-8-2 22z" fill="${p.e}" stroke="${p.d}" stroke-width="2.4" stroke-linejoin="round"/><circle cx="24" cy="27" r="3.4" fill="${p.a}" stroke="${p.d}" stroke-width="1.8"/><circle cx="14" cy="29" r="2.4" fill="${p.b}"/><circle cx="34" cy="29" r="2.4" fill="${p.b}"/>`)};
-  return {pattern,deco,strip,art,pass,icons};
+  return {pattern,deco,strip,art,icons};
 }
 function thCoverSvg(p,title,pack){ return svgUrl(300,400,`<rect width="300" height="400" fill="${p.bg}"/><image href="${pack.pattern}" width="150" height="150"/><image href="${pack.pattern}" x="150" width="150" height="150"/><image href="${pack.pattern}" y="150" width="150" height="150"/><image href="${pack.pattern}" x="150" y="150" width="150" height="150"/><image href="${pack.pattern}" y="300" width="150" height="150"/><image href="${pack.pattern}" x="150" y="300" width="150" height="150"/>
   <text x="150" y="64" text-anchor="middle" font-family="Georgia,'Times New Roman',serif" font-style="italic" font-weight="700" font-size="38" fill="${p.d}">${title}</text>
@@ -8695,7 +8662,7 @@ function seedThemes(){ if(S.get(K.seedThemes2,false)) return; S.set(K.seedThemes
   const P1={a:"#F28DB8",b:"#C9A7F0",c:"#F7C9DA",d:"#8A3A63",e:"#FFE3A1",f:"#A9D8F5",bg:"#FFF1F6",bar:"#F6C6DA"};
   const P2={a:"#8FB0FF",b:"#B9CCFF",c:"#CFDDFF",d:"#34488F",e:"#FFF1B8",f:"#BFE8FF",bg:"#EEF4FF",bar:"#D5E2FF"};
   const k1=thPack(P1,"flower"), k2=thPack(P2,"cloud");
-  const T1={id:"th_demo1",name:g.name,desc:`${g.name} 的官方主題。粉紅色的月亮花園，聊天室裡有睡在雲上的月亮陪你，密碼鎖是星星、月亮、愛心和小花。淺色和深色都有。`,by:"admin",scope:"group",gid:g.id,mid:"",price:300,modes:"both",
+  const T1={id:"th_demo1",name:g.name,desc:`${g.name} 的官方主題。粉紅色的月亮花園，聊天室裡有睡在雲上的月亮陪你，淺色和深色都有。`,by:"admin",scope:"group",gid:g.id,mid:"",price:300,modes:"both",
     light:{ac:"#D9558F",bg:"#FFF1F6",ink:"#7A2E52",sub:"#C47A9C",bubA:"#FFF6DE",bubAB:"#EDB9CE",bubM:"#FFFFFF",bubMB:"#EDB9CE",bar:"#F6C6DA"},
     dark:{ac:"#FF8FC4",bg:"#1E141B",ink:"#FBE9F2",sub:"#C9A3B8",bubA:"#3A2633",bubAB:"#5A3A4C",bubM:"#E0619E",bubMB:"#E0619E",bar:"#2E1E28"},
     ...k1,cover:thCoverSvg(P1,g.name,k1),status:"on",ts:Date.now()-2*DAY};
@@ -8768,8 +8735,6 @@ function msPack(sp,p,strip){
     :ground+[[16,54,16,p.a],[48,48,20,p.b],[84,56,14,"#fff"],[116,50,19,p.a],[150,56,15,p.e],[182,48,21,p.b],[218,56,16,"#fff"],[250,50,19,p.a],[286,56,14,p.e],[318,48,20,p.b],[354,56,16,"#fff"],[388,50,19,p.a],[416,56,15,p.b]].map(([x,y,r,col])=>ART.flower(x,y,r,col,"#FFD86B",1.6,p.d)).join("");
   const stripU=svgUrl(420,90,stripArt);
   const art=svgUrl(240,260,msBody(sp,"smile"));
-  const face=e=>svgUrl(64,64,`<g transform="translate(-4 -3) scale(.3)">${msHead(sp,e)}</g>`);
-  const pass=[face("smile"),face("wink"),face("love"),face("wow")];
   const ic=inner=>svgUrl(48,48,inner);
   const icons={home:svgUrl(48,48,`<g transform="translate(-4.8 0) scale(.24)">${msHead(sp,"smile")}</g>`),
     live:ic(`<path d="M7 14h34a2 2 0 0 1 2 2v4a4 4 0 0 0 0 8v4a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-4a4 4 0 0 0 0-8v-4a2 2 0 0 1 2-2z" fill="${p.b}" stroke="${MS_LN}" stroke-width="2.4" stroke-linejoin="round"/><path d="M18 18v12" stroke="${MS_LN}" stroke-width="2" stroke-dasharray="2 3"/>`+ART.heart(30,18,.42,p.a,1.6,MS_LN)),
@@ -8788,7 +8753,7 @@ function msPack(sp,p,strip){
     <text x="150" y="70" text-anchor="middle" font-family="'Arial Rounded MT Bold','Hiragino Maru Gothic ProN','PingFang TC',sans-serif" font-weight="900" font-size="44" fill="${p.a}" stroke="#fff" stroke-width="7" paint-order="stroke" letter-spacing="2">HAECHU</text>
     <text x="150" y="96" text-anchor="middle" font-family="'Arial Rounded MT Bold',sans-serif" font-weight="800" font-size="14" fill="${p.d}" letter-spacing="4">with ${MSC[sp].en}</text>
     ${props}<image href="${art}" x="26" y="104" width="248" height="268"/>`);
-  return {pattern,deco,strip:stripU,art,pass,icons,cover};
+  return {pattern,deco,strip:stripU,art,icons,cover};
 }
 const MS_THEMES=[
   {sp:"cat",name:"貓咪",strip:"flower",p:{a:"#FF9FB4",b:"#FFD08A",c:"#F6C7B4",d:"#7A4434",e:"#FFE08A",f:"#BFE3FF",bg:"#FFF4EC",bar:"#FBD8C6"},
@@ -8806,7 +8771,7 @@ const MS_THEMES=[
 ];
 function seedMascots(){ return; if(S.get(K.seedMascot2,false)) return; S.set(K.seedMascot2,true);
   const L=getThemes().filter(t=>!String(t.id).startsWith("th_ms_"));
-  const add=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室、選單圖示和密碼鎖都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.now()-(10+i)*DAY}));
+  const add=MS_THEMES.map((m,i)=>({id:"th_ms_"+m.sp,name:m.name,desc:`HAECHU官方的免費主題。${m.name}拿著應援棒陪你追星，聊天室和選單圖示都換成${m.name}。淺色和深色都有。`,by:"admin",scope:"app",gid:"",mid:"",price:0,modes:"both",light:m.light,dark:m.dark,...msPack(m.sp,m.p,m.strip),status:"on",ts:Date.now()-(10+i)*DAY}));
   saveThemes([...add,...L]); }
 
 /* =========================================================
@@ -8817,7 +8782,7 @@ function seedMascots(){ return; if(S.get(K.seedMascot2,false)) return; S.set(K.s
    ④ 素材說明頁：圖解每張圖出現在哪、要多大
    ========================================================= */
 /* 圖片處理：自動裁掉透明空白、置中；回傳圖和檢查用的資訊 */
-const TH_KIND=f=>f.startsWith("icons.")||f.startsWith("pass.")||f==="deco"?"icon":f;
+const TH_KIND=f=>f.startsWith("icons.")||f==="deco"?"icon":f;
 async function thImgX(blob,kind){ const url=URL.createObjectURL(blob);
   try{ const img=await new Promise((res,rej)=>{ const i=newImg(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
     const W=img.naturalWidth, H=img.naturalHeight, c0=document.createElement("canvas"); c0.width=W; c0.height=H; const x0=c0.getContext("2d"); x0.drawImage(img,0,0);
@@ -8835,7 +8800,7 @@ async function thImgX(blob,kind){ const url=URL.createObjectURL(blob);
 async function thPut(d,f,blob){ const r=await thImgX(blob,TH_KIND(f)); thSetF(d,f,r.data); d.meta=d.meta||{}; d.meta[f]=r.meta; return r; }
 
 /* ① 整包上傳：固定檔名 → 欄位 */
-const TH_FILES={cover:"cover",art:"art",pattern:"pattern",strip:"strip",deco:"deco",pass1:"pass.0",pass2:"pass.1",pass3:"pass.2",pass4:"pass.3",
+const TH_FILES={cover:"cover",art:"art",pattern:"pattern",strip:"strip",deco:"deco",
   nav_love:"icons.home",nav_meet:"icons.live",nav_tie:"icons.whisper",nav_core:"icons.core",nav_shop:"icons.shop",nav_me:"icons.me",
   "封面":"cover","主角插圖":"art","插圖":"art","背景圖案":"pattern","圖案":"pattern","花邊":"strip","對話框裝飾":"deco","裝飾":"deco"};
 const thFieldOf=name=>{ const b=String(name).split("/").pop().replace(/\.[a-z0-9]+$/i,"").trim().toLowerCase().replace(/[\s-]+/g,"_"); return TH_FILES[b]||null; };
@@ -8897,11 +8862,11 @@ function thCheck(d){ const W=[], vs=d.modes==="both"?["light","dark"]:[d.modes];
     if(contrast(v.sub,v.bg)<2.6) W.push({t:`${nm}：次要文字太淡`});
     if(contrast(thTxtOn(v.bubA,v),v.bubA)<3) W.push({t:`${nm}：藝人對話框裡的字會看不清楚`});
     if(contrast(thTxtOn(v.bubM,v),v.bubM)<3) W.push({t:`${nm}：我的對話框裡的字會看不清楚`});
-    if(contrast(v.ink,v.bar)<3) W.push({t:`${nm}：密碼鍵盤的數字會看不清楚`});
+    if(contrast(v.ink,v.bar)<3) W.push({t:`${nm}：輸入列的字會看不清楚`});
     if(contrast(v.ac,v.bg)<1.8) W.push({t:`${nm}：主色和背景太像，按鈕會不明顯`});
     if(k==="dark"&&lumHex(v.bg)>.35) W.push({t:"深色版的背景太亮了"}); if(k==="light"&&lumHex(v.bg)<.6) W.push({t:"淺色版的背景太暗了"}); });
-  const M=d.meta||{}, need=["art","pattern","strip","deco"].concat(Object.keys(M).filter(f=>f.startsWith("icons.")||f.startsWith("pass.")));
-  const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾"})[f]||(f.startsWith("pass.")?"密碼鎖圖示 "+(+f.slice(5)+1):"選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6))||[])[1]||""));
+  const M=d.meta||{}, need=["art","pattern","strip","deco"].concat(Object.keys(M).filter(f=>f.startsWith("icons.")));
+  const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾"})[f]||("選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6))||[])[1]||""));
   [...new Set(need)].forEach(f=>{ const m=M[f]; if(m&&!m.alpha) W.push({t:`${NM(f)}不是透明底，放在背景上會有一塊方框`}); });
   Object.entries(M).forEach(([f,m])=>{ const min=f==="cover"?450:f==="art"?400:f==="strip"?600:f==="pattern"?120:f==="deco"?40:80, side=f==="strip"?m.w:Math.min(m.w,m.h); if(side<min) W.push({t:`${NM(f)}太小了（${m.w}×${m.h}），放大會糊`}); });
   const kb=JSON.stringify(d).length/1024; if(kb>900) W.push({t:`整套素材太大（約 ${Math.round(kb)} KB），請換小一點的圖`});
@@ -8912,13 +8877,12 @@ const thCheckHtml=d=>{ const W=thCheck(d); return `<section class="card studio t
 function openThGuide(){ const t=thById("th_ms_cat")||thDraft(route().id); const pin=(n,x,y)=>`<i class="thg-pin" style="left:${x}%;top:${y}%">${n}</i>`;
   const SPEC=[["1","主角插圖","art.png","透明 PNG・約 800×900","放在聊天室右下角。角色朝左或朝前，腳要完整。","必要"],
     ["2","背景圖案","pattern.png","透明 PNG・300×300","會一直重複鋪滿背景，上下左右要能無縫接起來，線條淡一點。",""],
-    ["3","花邊","strip.png","透明 PNG・1260×270","放在輸入列和密碼鍵盤上方。左右要能接起來，下半部的地面跟「輸入列／鍵盤」同色。",""],
+    ["3","花邊","strip.png","透明 PNG・1260×270","放在輸入列上方。左右要能接起來，下半部的地面跟「輸入列」同色。",""],
     ["4","對話框裝飾","deco.png","透明 PNG・64×64","放在每個對話框的角落，小小的就好。",""],
     ["5","選單圖示 6 個","nav_love / nav_meet / nav_tie / nav_core / nav_shop / nav_me .png","透明 PNG・128×128","圖放正中間，6 個看起來要一樣大。",""],
-    ["6","密碼鎖圖示 4 個","pass1 ~ pass4.png","透明 PNG・128×128","輸入一碼亮一個，可以是 4 種表情。",""],
-    ["7","封面","cover.png","3:4・600×800","放在 TINT 商店和「我的主題」。","必要"]];
+    ["6","封面","cover.png","3:4・600×800","放在 TINT 商店和「我的主題」。","必要"]];
   setLayer(`<div class="thg" role="dialog" aria-label="素材說明"><header><span></span><b>素材說明</b><button data-a="tCloseLayer" aria-label="關閉">${XI}</button></header><div class="thg-b">
-    <div class="thg-mk">${[["chat",[pin(1,72,68),pin(2,18,30),pin(3,40,84),pin(4,63,18)]],["home",[pin(5,50,95)]],["lock",[pin(6,50,30),pin(3,50,52)]]].map(([k,p])=>`<div class="thg-m">${thMock(k,t,false,.44)}${p.join("")}</div>`).join("")}</div>
+    <div class="thg-mk">${[["chat",[pin(1,72,68),pin(2,18,30),pin(3,40,84),pin(4,63,18)]],["home",[pin(5,50,95)]]].map(([k,p])=>`<div class="thg-m">${thMock(k,t,false,.44)}${p.join("")}</div>`).join("")}</div>
     <h3>每張圖</h3><div class="thg-list">${SPEC.map(([n,nm,file,size,tip,req])=>`<div class="thg-it"><i class="thg-pin s">${n}</i><div><b>${nm}${req?`<em>${req}</em>`:""}</b><code>${file}</code><small>${size}</small><p>${tip}</p></div></div>`).join("")}</div>
     <h3>一次上傳整包</h3><p class="thg-p">把圖照上面的檔名放進同一個 .zip，按「整包上傳」選這個檔案，App 會自動放到對的位置。也可以不壓縮，直接一次選多張圖。檔名也可以用中文：封面、主角插圖、背景圖案、花邊、對話框裝飾。</p>
     <h3>顏色</h3><p class="thg-p">放好封面或主角插圖後，App 會自動抓顏色配好淺色和深色兩組，再自己微調就好。字太淡、看不清楚的話，「自動檢查」會提醒。</p>

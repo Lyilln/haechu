@@ -367,7 +367,6 @@ html[data-theme="dark"] .ann-go{background:#F5E6B8!important;color:#26232E!impor
 .mk-nav small{font-size:8px;font-weight:800;letter-spacing:.06em}
 .mk-art{position:absolute;right:-8px;bottom:118px;width:200px}
 .mk-strip{position:absolute;left:0;right:0;bottom:60px;height:56px;background:repeat-x left bottom/auto 100%}
-.mk-strip.top{bottom:auto;top:-36px}
 .mk-ch{position:absolute;left:0;right:0;top:24px;height:44px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:22px}.mk-ch b{flex:1;font-size:16px}
 .mk-msgs{position:absolute;left:12px;right:12px;top:84px;display:flex;flex-direction:column;gap:12px}
 .mk-l{display:flex;gap:8px;align-items:flex-start}.mk-l i{width:30px;height:30px;border-radius:50%;flex:none}
@@ -376,11 +375,6 @@ html[data-theme="dark"] .ann-go{background:#F5E6B8!important;color:#26232E!impor
 .mk-deco{position:absolute;right:-7px;top:-8px;width:16px;height:16px}
 .mk-r .mk-deco{right:auto;left:-7px}
 .mk-in{position:absolute;left:0;right:0;bottom:0;height:60px;display:flex;align-items:center;gap:10px;padding:0 14px;font-size:22px}.mk-in i{flex:1;height:34px;border-radius:999px}
-.mk-lt{position:absolute;left:0;right:0;top:80px;display:flex;flex-direction:column;align-items:center;gap:6px}.mk-lt b{font-size:22px}.mk-lt small{font-size:12px}
-.mk-pass{display:flex;gap:14px;margin-top:30px}.mk-pass img{width:46px;height:46px;opacity:.35;filter:grayscale(.6)}.mk-pass img.on{opacity:1;filter:none}
-.mk-pass i{width:16px;height:16px;border-radius:50%;border:2px solid}
-.mk-pad{position:absolute;left:0;right:0;bottom:0;height:300px}
-.mk-keys{position:absolute;inset:34px 26px 18px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;justify-items:center;font-size:26px;font-weight:600}
 /* TIE 聊天室的主題背景：主角插圖＋花邊 */
 .th-chat{overflow:hidden}
 .t-bgl .th-art{height:auto!important;object-fit:contain!important}.th-chat.dk .th-art{opacity:.85}.th-chat.dk .th-strip,.lk-pad.dk .lk-strip,.mk-pad.dk .mk-strip{filter:brightness(.72) saturate(.9)}
@@ -398,25 +392,6 @@ html[data-theme="dark"] .ann-go{background:#F5E6B8!important;color:#26232E!impor
 .th-dot.on{background:var(--violet);border-color:#fff}
 .th-dot.del{background:rgba(0,0,0,.55)}
 .th-goshop{margin:18px 0 6px}
-/* 密碼鎖（照 LINE：上面標題＋4 個圖示，下面花邊＋圖案鍵盤） */
-.lk{position:fixed;inset:0;z-index:200;display:flex;flex-direction:column;overflow:hidden;animation:fade .2s}
-.lk-top{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:calc(env(safe-area-inset-top,0px) + 40px) 24px 30px}
-.lk-x{position:absolute;top:calc(env(safe-area-inset-top,0px) + 8px);right:14px;width:44px;height:44px;font-size:22px}
-.lk-t{font-size:24px;font-weight:900;letter-spacing:.04em}
-.lk-s{font-size:13.5px;font-weight:700}
-.lk-pass{display:flex;gap:16px;margin-top:34px}
-.lk-pass img{width:58px;height:58px;object-fit:contain;opacity:.32;filter:grayscale(.7);transform:scale(.88);transition:all .18s cubic-bezier(.3,1.4,.5,1)}
-.lk-pass img.on{opacity:1;filter:none;transform:scale(1)}
-.lk-pass i{width:16px;height:16px;border-radius:50%;border:2px solid;transition:background .15s}
-.lk-pass.shake{animation:lkShake .35s}
-@keyframes lkShake{20%,60%{transform:translateX(-9px)}40%,80%{transform:translateX(9px)}}
-.lk-pad{position:relative;flex:none;height:52%;max-height:440px;padding:40px 22px calc(env(safe-area-inset-bottom,0px) + 16px)}
-.lk-strip{position:absolute;left:0;right:0;top:-44px;height:80px;background:repeat-x left bottom/auto 100%;pointer-events:none}
-.lk-keys{position:relative;height:100%;display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(4,1fr);align-items:center;justify-items:center}
-.lk-keys button{width:76px;height:64px;border-radius:18px;font-size:30px;font-weight:600;background:none;transition:background .12s}
-.lk-keys button:active{background:rgba(255,255,255,.35)}
-.lk-keys .lk-fg{font-size:13px;font-weight:800}
-.lk-keys .lk-del svg{width:30px;height:22px}
 /* 做主題 */
 .th-ed-pv{margin-bottom:6px}
 .th-edh{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}.th-edh h3{margin:0!important}

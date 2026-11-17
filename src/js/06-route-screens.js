@@ -75,7 +75,7 @@ function setLayer(html,key){
 let ssMem=null;   // 只放在記憶體：關掉或重新打開就要重新登入（帳號會幫你記著）
 /* 簽售報名用的「我是誰」：示範帳號沿用 fan:me，新註冊的帳號用自己的 email，報名紀錄才不會混在一起 */
 const fsMeOf=v=>{ const e=v&&v.role==="fan"?String(v.email||"").toLowerCase():""; return e?"fan:"+e:"fan:me"; };
-const SS={ get(){ return ssMem; }, set(v){ ssMem=v; sessSave(v); try{ FS_ME=fsMeOf(v); }catch(e){} try{ const a=v&&(!v.admin||v.uni)&&ACCOUNTS[v.email]; ME.name=(a&&a.name)||"棉花糖粉絲"; applyNick(); }catch(e){} try{ applyTheme(); }catch(e){} }, del(){ ssMem=null; sessSave(null); try{ localStorage.removeItem("daisuki_hb_auth"); }catch(e){} try{ FS_ME="fan:me"; }catch(e){} try{ ui.lk=null; lockPaint(); applyTheme(); }catch(e){} } };
+const SS={ get(){ return ssMem; }, set(v){ ssMem=v; sessSave(v); try{ FS_ME=fsMeOf(v); }catch(e){} try{ const a=v&&(!v.admin||v.uni)&&ACCOUNTS[v.email]; ME.name=(a&&a.name)||"棉花糖粉絲"; applyNick(); }catch(e){} try{ applyTheme(); }catch(e){} }, del(){ ssMem=null; sessSave(null); try{ localStorage.removeItem("daisuki_hb_auth"); }catch(e){} try{ FS_ME="fan:me"; }catch(e){} try{ applyTheme(); }catch(e){} } };
 /* 登入狀態：記在這支手機，3 個月內有打開過就不用重新登入（太久沒用才要再登入） */
 const SESS_DAYS=90;
 function sessSave(v){ try{ if(v) localStorage.setItem("daisuki_session",JSON.stringify({v,ts:Date.now()})); else localStorage.removeItem("daisuki_session"); }catch(e){} }

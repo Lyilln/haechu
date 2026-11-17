@@ -665,10 +665,6 @@ function clickTheme(a,t,e,r){ switch(a){
     
     
     
-    case "lkKey": lockKey(t.dataset.v); break;
-    case "lkCancel": ui.lk=null; lockPaint(); break;
-    case "lkForgot": iosAlert("忘記密碼","登出後重新登入，密碼鎖就會關掉。",`<button data-a="tCloseLayer">取消</button><button data-a="lkReset">登出</button>`); break;
-    case "lkReset": S.set(acK(K.lockCfg),{on:false,pin:""}); ui.lk=null; lockPaint(); layer.innerHTML=""; SS.del(); go("auth"); break;
     case "thAdmin": navTo("#/admin/themes"); break;
     case "thMine": navTo("#/artist/thmine"); break;
     case "thNew": ui.thDraft=null; ui.thImportRep=null; navTo("#/"+session().role+"/thedit"); break;
