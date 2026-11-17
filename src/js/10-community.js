@@ -398,7 +398,7 @@ function navBar(items,active,badges={}){
   const r=(session()||{}).role||"x", i=Math.max(0,items.findIndex(x=>x[0]===active)), f=NAVP[r]; NAVP[r]=i;
   const go=f!=null&&f!==i;
   return `<nav class="nav" aria-label="主選單"><div class="nav-in" style="--n:${items.length}"><span class="nav-lens ${go?"go":""}" style="--i:${i};--f:${go?f:i}" aria-hidden="true"></span>${items.map(([k,l,ic])=>`
-    <button class="nav-btn ${active===k?"on":""}" data-a="tab" data-v="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${thIcon(k)||ic}${badges[k]==="dot"?`<span class="ndot" aria-label="直播中"></span>`:badges[k]==="moon"?`<span class="nmoon" aria-label="有未讀">${MOON}</span>`:badges[k]?`<span class="nbadge">${badges[k]>99?"99+":badges[k]}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`;
+    <button class="nav-btn ${active===k?"on":""}" data-a="tab" data-v="${k}" ${active===k?'aria-current="page"':""}><span class="nav-ico">${thIcon(k,active===k)||ic}${badges[k]==="dot"?`<span class="ndot" aria-label="直播中"></span>`:badges[k]==="moon"?`<span class="nmoon" aria-label="有未讀">${MOON}</span>`:badges[k]?`<span class="nbadge">${badges[k]>99?"99+":badges[k]}</span>`:""}</span>${l}</button>`).join("")}</div></nav>`;
 }
 /* 導覽列圖標：細線「小飾品」系列（墜飾愛心、票根、蝴蝶結、鑽石、皇冠） */
 const NS='fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"';

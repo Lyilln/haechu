@@ -105,7 +105,8 @@ function thAcFillSel(){ if(thAcSel) return thAcSel; const out=new Set(), over=ne
   [...document.styleSheets].filter(x=>x.ownerNode&&(x.ownerNode.tagName==="STYLE"||x.ownerNode.tagName==="LINK"&&x.ownerNode.dataset.app!=null)&&!["thCSS","thRecolor"].includes(x.ownerNode.id)).forEach(sh=>{ try{ walk(sh.cssRules); }catch(e){} });
   return thAcSel=[...out].filter(x=>!over.has(x)); }
 /* 選單圖示：主題有放就用主題的（藝人端的 FOC 沿用 CORE 的圖） */
-function thIcon(k){ const t=session()?thCur():null; if(!t||!t.icons) return ""; const src=t.icons[k]||(k==="foc"?t.icons.core:""); return src?`<img class="th-ic" src="${src}" alt="">`:""; }
+/* 11/17 照 LINE：每個分頁可以放兩張——平常一張、選中時換另一個動作（沒放選中那張就用平常那張） */
+function thIcon(k,on){ const t=session()?thCur():null; if(!t||!t.icons) return ""; const I=t.icons, base=I[k]||(k==="foc"?I.core:""), src=(on&&(I[k+"_on"]||(k==="foc"&&!I.foc?I.core_on:"")))||base; return src?`<img class="th-ic ${on&&src!==base?"th-on":""}" src="${src}" alt="">`:""; }
 /* 每次畫面更新都對一次：淺色／深色／跟隨系統、目前的主題，跟畫面上的不一樣就重新套（別的手機改了主題、系統切換深色時，TIE 才不會一下對一下錯） */
 let thSig="";
 function thSync(){ try{ const t=session()?thCur():null, fz=t?thForce():null, dk=fz==null?themeDark():fz, sig=(t?t.id+":"+(t.ts||0):"-")+"|"+(dk?1:0);
@@ -119,7 +120,7 @@ function thChatBg(cls){ const t=thCur(); if(!t) return ""; const v=thVar(t,thDar
   return `<div class="${cls} th-chat ${thDarkNow()?"dk":""}" style='background:${thPat(t,v,thDarkNow())}${v.bg}'>${art?`<img class="th-art" src="${art}" alt="">`:""}${t.strip?`<span class="th-strip" style="background-image:url('${t.strip}')"></span>`:""}</div>`; }
 
 /* ---------- 預覽：照真的畫面縮小（主畫面、TIE 聊天室） ---------- */
-function thIco(t,k,col){ return t.icons&&t.icons[k]?`<img src="${t.icons[k]}" alt="">`:`<span style="color:${col}">${NAV[{home:"love",live:"meet",whisper:"tie",core:"core",foc:"foc",sns:"sns",shop:"shop",me:"me"}[k]]||""}</span>`; }
+function thIco(t,k,col,on){ const I=t.icons||{}, src=(on&&I[k+"_on"])||I[k]; return src?`<img src="${src}" alt="">`:`<span style="color:${col}">${NAV[{home:"love",live:"meet",whisper:"tie",core:"core",foc:"foc",sns:"sns",shop:"shop",me:"me"}[k]]||""}</span>`; }
 function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), pat=thPat(t,v,dark).replace(/"/g,"'"), art=thArtOf(t);
   let body="";
   if(kind==="home") body=`<div class="mk-bgf" style="background:${pat}${v.bg}"></div>
@@ -127,7 +128,7 @@ function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,
     <div class="mk-tabs"><b style="color:${v.ink}">動態</b><span style="color:${v.sub}">探索</span></div>
     ${[0,1].map(i=>`<div class="mk-card" style="background:${card}"><div class="mk-u"><i style="background:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.3)},${v.ac})"></i><span><b style="background:${v.ink}"></b><s style="background:${v.sub}"></s></span></div>
       <p style="background:${rgba(v.ink,.14)}"></p><p style="background:${rgba(v.ink,.14)};width:62%"></p>${i?"":`<div class="mk-pic" style="background:${rgba(v.ac,.22)}"></div>`}<div class="mk-act"><i style="background:${v.ac}"></i><i style="background:${rgba(v.ink,.25)}"></i></div></div>`).join("")}
-    <div class="mk-nav" style="background:${card}">${TH_TABS.map(([key,l],i)=>`<span class="${i?"":"on"}" style="${i?"":`background:${rgba(v.ac,.14)}`}">${thIco(t,key,i?v.sub:v.ac)}<small style="color:${i?v.sub:v.ink}">${l}</small></span>`).join("")}</div>`;
+    <div class="mk-nav" style="background:${card}">${TH_TABS.map(([key,l],i)=>`<span class="${i?"":"on"}" style="${i?"":`background:${rgba(v.ac,.14)}`}">${thIco(t,key,i?v.sub:v.ac,!i)}<small style="color:${i?v.sub:v.ink}">${l}</small></span>`).join("")}</div>`;
   if(kind==="chat"){ const bt=(f,txt)=>thTxtOn(f,v);
     const deco=t.deco?`<img class="mk-deco" src="${t.deco}" alt="">`:"";
     body=`<div class="mk-bgf" style="background:${pat}${v.bg}"></div>${art?`<img class="mk-art" src="${art}" alt="">`:""}${t.strip?`<span class="mk-strip" style="background-image:url('${t.strip}')"></span>`:""}
@@ -228,8 +229,8 @@ function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id),
     <section class="card studio"><h3>圖片</h3><p class="th-need">封面和主角插圖一定要放，其他可以不放。</p>
       <div class="th-slots">${up("cover",d.cover,"封面（必要）","tall")}${up("art",d.art,"主角插圖（必要）","tall")}${up("pattern",d.pattern,"背景圖案")}${up("strip",d.strip,"花邊","wide")}${up("deco",d.deco,"對話框裝飾")}</div>
 
-      ${lab("選單圖示・粉絲端")}<div class="th-icons">${TH_TABS.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div>
-      ${lab("選單圖示・藝人端")}<div class="th-icons">${TH_TABS_ART.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div></section>
+      ${[["粉絲端",TH_TABS],["藝人端",TH_TABS_ART]].map(([w,L])=>`${lab("選單圖示・"+w)}<div class="th-icons">${L.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div>
+      <p class="th-need th-sub">選中時（像 LINE 換一個動作；沒放就用上面那張）</p><div class="th-icons">${L.map(([k,l])=>up("icons."+k+"_on",d.icons[k+"_on"],l)).join("")}</div>`).join("")}</section>
     <button class="btn btn-main btn-block" data-a="thSave" data-v="${id||""}">${adm?"儲存並上架":"送出申請"}</button>
   </main>`; }
 function thSave(id){ const s=session(), adm=s.role==="admin", d=thDraft(id);
@@ -460,6 +461,7 @@ async function thPut(d,f,blob){ const r=await thImgX(blob,TH_KIND(f)); thSetF(d,
 /* ① 整包上傳：固定檔名 → 欄位 */
 const TH_FILES={cover:"cover",art:"art",pattern:"pattern",strip:"strip",deco:"deco",
   nav_love:"icons.home",nav_meet:"icons.live",nav_tie:"icons.whisper",nav_core:"icons.core",nav_foc:"icons.foc",nav_sns:"icons.sns",nav_shop:"icons.shop",nav_me:"icons.me",
+  nav_love_on:"icons.home_on",nav_meet_on:"icons.live_on",nav_tie_on:"icons.whisper_on",nav_core_on:"icons.core_on",nav_foc_on:"icons.foc_on",nav_sns_on:"icons.sns_on",nav_shop_on:"icons.shop_on",nav_me_on:"icons.me_on",
   "封面":"cover","主角插圖":"art","插圖":"art","背景圖案":"pattern","圖案":"pattern","花邊":"strip","對話框裝飾":"deco","裝飾":"deco"};
 const thFieldOf=name=>{ const b=String(name).split("/").pop().replace(/\.[a-z0-9]+$/i,"").trim().toLowerCase().replace(/[\s-]+/g,"_"); return TH_FILES[b]||null; };
 /* 自己讀 .zip（iPhone 內建的解壓縮），不行再用 JSZip */
@@ -524,7 +526,7 @@ function thCheck(d){ const W=[], vs=d.modes==="both"?["light","dark"]:[d.modes];
     if(contrast(v.ac,v.bg)<1.8) W.push({t:`${nm}：主色和背景太像，按鈕會不明顯`});
     if(k==="dark"&&lumHex(v.bg)>.35) W.push({t:"深色版的背景太亮了"}); if(k==="light"&&lumHex(v.bg)<.6) W.push({t:"淺色版的背景太暗了"}); });
   const M=d.meta||{}, need=["art","pattern","strip","deco"].concat(Object.keys(M).filter(f=>f.startsWith("icons.")));
-  const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾"})[f]||("選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6))||[])[1]||""));
+  const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾"})[f]||("選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6).replace("_on",""))||[])[1]||"")+(f.endsWith("_on")?"（選中）":""));
   [...new Set(need)].forEach(f=>{ const m=M[f]; if(m&&!m.alpha) W.push({t:`${NM(f)}不是透明底，放在背景上會有一塊方框`}); });
   Object.entries(M).forEach(([f,m])=>{ const min=f==="cover"?450:f==="art"?400:f==="strip"?600:f==="pattern"?120:f==="deco"?40:80, side=f==="strip"?m.w:Math.min(m.w,m.h); if(side<min) W.push({t:`${NM(f)}太小了（${m.w}×${m.h}），放大會糊`}); });
   const kb=JSON.stringify(d).length/1024; if(kb>900) W.push({t:`整套素材太大（約 ${Math.round(kb)} KB），請換小一點的圖`});
@@ -537,7 +539,7 @@ function openThGuide(){ const t=thById("th_ms_cat")||thDraft(route().id); const 
     ["2","背景圖案","pattern.png","透明 PNG・300×300","會一直重複鋪滿背景，上下左右要能無縫接起來，線條淡一點。",""],
     ["3","花邊","strip.png","透明 PNG・1260×270","放在輸入列上方。左右要能接起來，下半部的地面跟「輸入列」同色。",""],
     ["4","對話框裝飾","deco.png","透明 PNG・64×64","放在每個對話框的角落，小小的就好。",""],
-    ["5","選單圖示 8 個","nav_love / nav_tie / nav_core / nav_sns / nav_shop / nav_me（粉絲端）＋ nav_meet / nav_foc（藝人端）.png","透明 PNG・128×128","圖放正中間，每個看起來要一樣大。沒放的就用原本的圖示。",""],
+    ["5","選單圖示 8 個","nav_love / nav_tie / nav_core / nav_sns / nav_shop / nav_me（粉絲端）＋ nav_meet / nav_foc（藝人端）.png","透明 PNG・128×128","圖放正中間，每個看起來要一樣大。沒放的就用原本的圖示。檔名後面加 _on（例如 nav_love_on）是選中時的那張，可以換一個動作。",""],
     ["6","封面","cover.png","3:4・600×800","放在 TINT 商店和「我的主題」。","必要"]];
   setLayer(`<div class="thg" role="dialog" aria-label="素材說明"><header><span></span><b>素材說明</b><button data-a="tCloseLayer" aria-label="關閉">${XI}</button></header><div class="thg-b">
     <div class="thg-mk">${[["chat",[pin(1,72,68),pin(2,18,30),pin(3,40,84),pin(4,63,18)]],["home",[pin(5,50,95)]]].map(([k,p])=>`<div class="thg-m">${thMock(k,t,false,.44)}${p.join("")}</div>`).join("")}</div>
