@@ -3908,7 +3908,7 @@ function postCard(p,{mine=false,prof=false}={}){
   return `<article class="card post post-tap" id="post-${p.id}" data-a="comments" data-id="${p.id}">
     <div class="post-head">
       ${viewerFan()&&!mine&&!prof?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
-      <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
+      <div class="who"><b>${esc(artName(p.member,prof?"cm":"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
       ${canModerate()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
     </div>
     ${p.tag&&p.tag!=="日常"?`<span class="post-tag t-${POST_TAGS.indexOf(p.tag)}">${p.tag==="劇透"?"⚠ ":""}${esc(p.tag)}</span>`:""}
@@ -7927,7 +7927,7 @@ function clickTheme(a,t,e,r){ switch(a){
     case "artProfOpen": openArtistProfile(t.dataset.m); break;
     case "apfClose": { const el=layer.querySelector(".apf"); if(el){ el.classList.add("out"); setTimeout(()=>{ if(layer.querySelector(".apf.out")) layer.innerHTML=""; },240); } break; }
     case "banSave": { const L=(document.getElementById("banTa")||{value:""}).value.split("\n").map(x=>x.trim()).filter(Boolean); S.set(K.banned,L); toast("已儲存 "+L.length+" 個禁用字詞"); break; }
-    case "artNameEd": { const mid=session().member||uniMe(), k=ART_NK[t.dataset.v]?t.dataset.v:"tie"; ui.artFromDrawer=!!t.closest(".t-drawer-w"); tieModal(ART_NK[k],"",`<input id="artNameIn" class="a-nick-in" data-k="${k}" maxlength="16" placeholder="輸入文字" value="${esc(artName(mid,k))}"><button class="t-mbtn main" data-a="artNameOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
+    case "artNameEd": { const mid=session().member||uniMe(), k=ART_NK[t.dataset.v]?t.dataset.v:"tie"; ui.artFromDrawer=!!t.closest(".t-drawer-w"); tieModal(ART_NK[k],"",`<input id="artNameIn" class="a-nick-in" data-k="${k}" maxlength="16" placeholder="輸入文字" value="${esc(artName(mid,k==="tie"?"tie":"cm"))}"><button class="t-mbtn main" data-a="artNameOk">儲存</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "artNameOk": { const mid=session().member||uniMe(), el=document.getElementById("artNameIn")||{value:"",dataset:{}}, k=ART_NK[el.dataset.k]?el.dataset.k:"tie", v=el.value.trim(); if(!v){ toast("名稱不能空白"); break; } if(nameBlock(v)) break;
       setArtProf(mid,{[artNKey(k)]:v===MEMBERS[mid].name?"":v}); layer.innerHTML=""; render(); if(ui.artFromDrawer&&k==="tie") openTieArtDrawer(mid,true); toast("已更新"+ART_NK[k]); break; }
     case "artCoverEd": case "artAvEd": { const mid=session().member||uniMe(), cov=a==="artCoverEd"; ui.artPl=t.dataset.v==="tie"?"tie":""; ui.artFromDrawer=!!t.closest(".t-drawer-w"); const p=artProf(mid), has=ui.artPl?(cov?p.cover_tie:p.av_tie):(cov?p.cover:p.avatar); if(has){ iosSheet([[cov?"換一張背景":"換一張頭貼",cov?"artPickCover":"artPickAv"],["恢復預設",cov?"artResetCover":"artResetAv"]]); break; } }   // 還沒換過：直接打開相簿，不用多一層選單
@@ -9024,10 +9024,12 @@ function imgSwap(url,done){ if(!url||url.startsWith("data:")){ done(); return; }
 const mediaName=gid=>"MEET・Media";   // 固定名稱，不能改（直播在 App 裡叫 MEET）
 const ART_NK={feed:"名稱",live:"名稱",tie:"TIE 聊天室名稱"};
 /* 名稱：TIE 聊天室自己一個；動態、直播等其他地方共用一個（連動）。沒改過就是藝名 */
-const artNKey=k=>k==="tie"?"n_tie":"n_feed";
+const artNKey=k=>k==="tie"?"n_tie":"n_feed";   /* "cm"（個人社群）和舊的 "feed" 都存在 n_feed */
 /* 藝名（管理員設定的那個，例如韓文藝名）：出道、打歌、結尾妖精、公司、人事這些正式場合都用這個，不用本人改的社群名 */
-const stageNm=mid=>{ try{ const k=String(((typeof wkPage==="function"&&wkPage("m:"+mid).f)||{}).kname||"").split("\n")[0].trim(); if(k) return k; }catch(e){} return (MEMBERS[mid]||{}).name||""; };   /* SKpedia 填了韓文藝名就用韓文，沒填才用英文 */
-function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView()) return m.name; return artProf(mid)[artNKey(k)]||m.name; }
+const stageNm=mid=>(MEMBERS[mid]||{}).name||"";   /* 11/17 一律英文藝名（以前 SKpedia 填了韓文藝名會用韓文） */
+/* 11/17 名字規則（全 App）：外面一律用英文藝名（MEMBERS 的名字，管理員設定）；
+   藝人自己改的「社群名稱」只在點進她的個人社群（主頁、主頁上的貼文）才顯示 → 用 artName(mid,"cm")；TIE 聊天室用自己的 TIE 名稱（"tie"） */
+function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView()) return m.name; if(k==="cm"||k==="tie") return artProf(mid)[artNKey(k)]||m.name; return m.name; }
 /* 管理員端（管理那一段）看到的都是管理員在後台設的原本名字，不管本人怎麼改 */
 const adminView=()=>{ try{ return route().role==="admin"&&!!session()&&session().role==="admin"; }catch(e){ return false; } };
 function origName(by,fallback){ const e=String(by||"").toLowerCase(); const a=e&&ACCOUNTS[e]; return realName(e)||(a&&a.name)||fallback||"粉絲"; }
@@ -9071,7 +9073,7 @@ function artCmList(mid){ const ps=new Set(getPosts().filter(p=>p.member===mid).m
     if(c.author==="artist"&&c.member===mid&&!own) L.push({fan:null,text:c.text,ts:c.ts,postId:c.postId,cid:c.id,id:c.id}); });   /* 團體：在其他團員貼文底下的留言也算 */
   return L; }
 const ymdhm=ts=>{ const d=new Date(ts), z=n=>String(n).padStart(2,"0"); return `${z(d.getMonth()+1)}. ${z(d.getDate())}. ${z(d.getHours())}:${z(d.getMinutes())}`; };
-function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"feed");
+function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"cm");
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);

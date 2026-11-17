@@ -130,10 +130,12 @@ function imgSwap(url,done){ if(!url||url.startsWith("data:")){ done(); return; }
 const mediaName=gid=>"MEET・Media";   // 固定名稱，不能改（直播在 App 裡叫 MEET）
 const ART_NK={feed:"名稱",live:"名稱",tie:"TIE 聊天室名稱"};
 /* 名稱：TIE 聊天室自己一個；動態、直播等其他地方共用一個（連動）。沒改過就是藝名 */
-const artNKey=k=>k==="tie"?"n_tie":"n_feed";
+const artNKey=k=>k==="tie"?"n_tie":"n_feed";   /* "cm"（個人社群）和舊的 "feed" 都存在 n_feed */
 /* 藝名（管理員設定的那個，例如韓文藝名）：出道、打歌、結尾妖精、公司、人事這些正式場合都用這個，不用本人改的社群名 */
-const stageNm=mid=>{ try{ const k=String(((typeof wkPage==="function"&&wkPage("m:"+mid).f)||{}).kname||"").split("\n")[0].trim(); if(k) return k; }catch(e){} return (MEMBERS[mid]||{}).name||""; };   /* SKpedia 填了韓文藝名就用韓文，沒填才用英文 */
-function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView()) return m.name; return artProf(mid)[artNKey(k)]||m.name; }
+const stageNm=mid=>(MEMBERS[mid]||{}).name||"";   /* 11/17 一律英文藝名（以前 SKpedia 填了韓文藝名會用韓文） */
+/* 11/17 名字規則（全 App）：外面一律用英文藝名（MEMBERS 的名字，管理員設定）；
+   藝人自己改的「社群名稱」只在點進她的個人社群（主頁、主頁上的貼文）才顯示 → 用 artName(mid,"cm")；TIE 聊天室用自己的 TIE 名稱（"tie"） */
+function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView()) return m.name; if(k==="cm"||k==="tie") return artProf(mid)[artNKey(k)]||m.name; return m.name; }
 /* 管理員端（管理那一段）看到的都是管理員在後台設的原本名字，不管本人怎麼改 */
 const adminView=()=>{ try{ return route().role==="admin"&&!!session()&&session().role==="admin"; }catch(e){ return false; } };
 function origName(by,fallback){ const e=String(by||"").toLowerCase(); const a=e&&ACCOUNTS[e]; return realName(e)||(a&&a.name)||fallback||"粉絲"; }
@@ -177,7 +179,7 @@ function artCmList(mid){ const ps=new Set(getPosts().filter(p=>p.member===mid).m
     if(c.author==="artist"&&c.member===mid&&!own) L.push({fan:null,text:c.text,ts:c.ts,postId:c.postId,cid:c.id,id:c.id}); });   /* 團體：在其他團員貼文底下的留言也算 */
   return L; }
 const ymdhm=ts=>{ const d=new Date(ts), z=n=>String(n).padStart(2,"0"); return `${z(d.getMonth()+1)}. ${z(d.getDate())}. ${z(d.getHours())}:${z(d.getMinutes())}`; };
-function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"feed");
+function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"cm");
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);

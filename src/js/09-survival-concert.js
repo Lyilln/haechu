@@ -946,7 +946,7 @@ function postCard(p,{mine=false,prof=false}={}){
   return `<article class="card post post-tap" id="post-${p.id}" data-a="comments" data-id="${p.id}">
     <div class="post-head">
       ${viewerFan()&&!mine&&!prof?`<button class="av av-go" data-a="goArtist" data-v="${p.member}" aria-label="${esc(artName(p.member,"feed"))} 的頁面" style="background:${grad(m.g)}">${mAvIn(p.member)}</button>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(p.member)}</div>`}
-      <div class="who"><b>${esc(artName(p.member,"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
+      <div class="who"><b>${esc(artName(p.member,prof?"cm":"feed"))} ${I.verified}${m.official?' <span class="badge">官方</span>':""}${p.hidden?' <span class="badge warn">已被管理員隱藏</span>':""}</b><span>${ymdhm(p.ts)}</span></div>
       ${canModerate()&&!mine?`<button class="uni-more" data-a="postMod" data-id="${p.id}" aria-label="管理這則">⋯</button>`:""}
     </div>
     ${p.tag&&p.tag!=="日常"?`<span class="post-tag t-${POST_TAGS.indexOf(p.tag)}">${p.tag==="劇透"?"⚠ ":""}${esc(p.tag)}</span>`:""}
