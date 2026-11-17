@@ -2717,7 +2717,11 @@ function seedStores(){ if(S.get(K.seedStores,false)) return; S.set(K.seedStores,
 const shapeOf=k=>SHAPES.find(x=>x.k===k)||SHAPES[5], incOf=k=>INC.find(x=>x.k===k)||INC[10];
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
 const getAlbums=()=>cbDemo()?[...cbDemoAlbs(),...S.get(K.albums2,[]).filter(a=>groupOf(a.gid))]:S.get(K.albums2,[]).filter(a=>groupOf(a.gid)&&(typeof albumOn!=="function"||route().role==="admin"||albumOn(a))).map(a=>{ (a.ex||[]).forEach(e=>{ if(e.rule==="mc"&&e.name==="打歌節目卡") e.name="公放卡"; }); return a; }).sort((a,b)=>b.ts-a.ts);
-const albumOf=id=>String(id).startsWith("demo_")?cbDemoAlbs().find(a=>a.id===id):S.get(K.albums2,[]).find(a=>a.id===id);
+const albumOf=id=>String(id).startsWith("demo_")?cbDemoAlbs().find(a=>a.id===id):String(id).startsWith("mc_")?mcAlb(String(id).slice(3)):S.get(K.albums2,[]).find(a=>a.id===id);
+/* 11/17 預設公放卡：這個團的專輯裡沒有設定「公放卡」時，投票照樣拿得到一張（每位成員一款，卡面用成員的照片或顏色）。
+   不是商品：不會出現在 SHOP、後台專輯清單；只在卡冊裡（有拿到才出現） */
+function mcAlb(gid){ const g=groupOf(gid); if(!g) return null; const ms=(grpMembers(gid)||[]).filter(m=>MEMBERS[m]);
+  return {id:"mc_"+gid,gid,title:"公放卡",ord:"打歌節目",sys:1,ts:0,vers:[],ex:[{id:"mc",rule:"mc",name:"公放卡",w:5.5,h:8.5,pool:(ms.length?ms:[""]).map(m=>({id:m||"g",mid:m}))}]}; }
 /* 11/17 卡冊預覽用的假資料（只有 HUSSEY 打開「預覽全部卡片」時才有）：每個團一張示範專輯，卡面、卡背、封面都是當場用畫布畫的，不存、不上傳 */
 const cbDemo=()=>!!ui.cbPrev&&typeof isHussey==="function"&&isHussey();
 let CB_DEMO=null;
@@ -2763,7 +2767,7 @@ function buyAlbumV(aid,vid,qty,sid){ const a=albumOf(aid), v=a&&verOf(a,vid); if
   return {aid,vid,sid,opens}; }
 /* 打歌節目卡：在某個節目幫某團的歌投票，那週那個節目拿 1 張 */
 function giveMcCard(gid,showId){ const wk=curWeek(), key=`${wk}|${showId}|${gid}`, got=S.get(K.mcGot,{}); if(got[key]) return null;
-  const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="mc"&&(e.pool||[]).length)); if(!a) return null; const e=a.ex.find(x=>x.rule==="mc"&&(x.pool||[]).length), p=drawFrom(e,1)[0]; if(!p) return null;
+  const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="mc"&&(e.pool||[]).length))||mcAlb(gid); if(!a) return null; const e=a.ex.find(x=>x.rule==="mc"&&(x.pool||[]).length), p=drawFrom(e,1)[0]; if(!p) return null;
   got[key]=Date.now(); S.set(K.mcGot,got); const cid=`it|${a.id}|${e.id}|${p.id}`; giveItem([cid]); return cid; }
 function giveFsCard(gid,mid){ const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="fs")); if(!a) return; const e=a.ex.find(x=>x.rule==="fs"); const ps=e.pool.filter(p=>p.mid===mid); const p=(ps.length?ps:e.pool)[0]; if(p) giveItem([`it|${a.id}|${e.id}|${p.id}`]); }
 const alCount=()=>{ const f=followed(), own=getCards(); let have=0, total=0; getAlbums().filter(a=>f.includes(a.gid)).forEach(a=>[...a.vers.flatMap(v=>v.inc),...(a.ex||[])].forEach(it=>(it.pool||[]).forEach(p=>{ total++; if(own[`it|${a.id}|${it.id}|${p.id}`]) have++; }))); return {have,total}; };
@@ -2840,7 +2844,7 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
 function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
-  const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=getAlbums().filter(a=>prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`))), tb=ui.cbTab||"book", rep=S.get(K.repCard,""), {have,total}=alCount();
+  const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", rep=S.get(K.repCard,""), {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
       return n?`<button class="cb-it" data-a="cardView" data-v="${cid}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${n>1?`<em>×${n}</em>`:""}${rep===cid?'<b class="cb-rep">代表卡</b>':""}</button>`:`<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
