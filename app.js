@@ -8433,7 +8433,7 @@ ${H} .t-rh{background:${v.bar}!important;-webkit-backdrop-filter:none!important;
 ${H} .t-rh-row h3,${H} .t-ib,${H} .t-sub{color:${v.ink}!important}${H} .t-dots i{background:${v.ink}!important}
 ${H} .t-b{background:${v.bubA}!important;color:${thTxtOn(v.bubA,v)}!important;border:1.5px solid ${v.bubAB}!important;box-shadow:none!important;position:relative}
 ${H} .t-b.me{background:${v.bubM}!important;color:${thTxtOn(v.bubM,v)}!important;border-color:${v.bubMB}!important;text-shadow:none!important}
-${thBubCss(H,t)}${t.deco?`${H} .t-b::after{content:"";position:absolute;right:-7px;top:-8px;width:18px;height:18px;background:url("${t.deco}") center/contain no-repeat;pointer-events:none}${H} .t-b.me::after{right:auto;left:-7px}${H} .t-b.t-stk::after,${H} .t-bw .t-media::after,${H} .t-b:has(img,video)::after{display:none}`:""}
+${t.deco2?`${H} .t-b::before{content:"";position:absolute;right:-8px;bottom:-9px;width:22px;height:22px;background:url("${t.deco2}") center/contain no-repeat;pointer-events:none;z-index:1}${H} .t-b.me::before{right:auto;left:-8px}${H} .t-b.t-stk::before,${H} .t-bw .t-media::before{display:none}`:""}${t.deco?`${H} .t-b::after{content:"";position:absolute;right:-7px;top:-8px;width:18px;height:18px;background:url("${t.deco}") center/contain no-repeat;pointer-events:none}${H} .t-b.me::after{right:auto;left:-7px}${H} .t-b.t-stk::after,${H} .t-bw .t-media::after,${H} .t-b:has(img,video)::after{display:none}`:""}
 ${H} .t-glow{background:linear-gradient(180deg,${rgba(v.ac,dark?.32:.2)} 0%,${rgba(v.ac,dark?.14:.08)} 35%,${rgba(v.bg,0)} 100%)!important}
 ${H} .t-page{background:${v.bg}!important}
 ${H} .t-bgl.t-default{background:${thPat(t,v,dark)}${v.bg}!important}
@@ -8470,14 +8470,6 @@ function thRotTick(){ if(!session()) return; const R=thRot(), own=thOwned(), poo
 function thChatBg(cls){ const t=thCur(); if(!t) return ""; const v=thVar(t,thDarkNow()), art=thArtOf(t);
   return `<div class="${cls} th-chat ${thDarkNow()?"dk":""}" style='background:${thPat(t,v,thDarkNow())}${v.bg}'>${art?`<img class="th-art" src="${art}" alt="">`:""}${t.strip?`<span class="th-strip" style="background-image:url('${t.strip}')"></span>`:""}</div>`; }
 
-/* 11/17 照 LINE 的對話框：一張圖切九宮格（四個角放裝飾和尾巴、不變形，中間跟著字拉長）。
-   圖是正方形，上傳時會變成 240×240：外圈各 80px 是角，正中間 80px 會被拉長。只放一張就兩邊共用。 */
-const thBubImg=(t,me)=>(me?t.bubMe||t.bubArt:t.bubArt||t.bubMe)||"";
-/* 字的顏色看氣泡圖正中間的亮度（深色模式也一樣看得清楚）；切 80px 整數，才不會有細細的接縫 */
-const thBubM=(t,me)=>(t.meta||{})[me?(t.bubMe?"bubMe":"bubArt"):(t.bubArt?"bubArt":"bubMe")]||{};
-const thBubInk=(t,me)=>{ const m=thBubM(t,me); return m.lum!=null&&m.lum<.5?"#FFFFFF":"#2B2640"; };
-const thBubSt=(src,ink,cc)=>`background:${cc?cc+" content-box":"transparent"}!important;border:1px solid transparent!important;border-image:url('${src}') 80 fill / 24px / 8px stretch!important;box-shadow:none!important;border-radius:0!important;padding:10px 14px!important;color:${ink||"#2B2640"}!important;text-shadow:none!important`;
-function thBubCss(H,t){ const a=thBubImg(t,0), m=thBubImg(t,1); return (a?`${H} .t-b:not(.me):not(.t-stk){${thBubSt(a,thBubInk(t,0),thBubM(t,0).cc)}}`:"")+(m?`${H} .t-b.me:not(.t-stk){${thBubSt(m,thBubInk(t,1),thBubM(t,1).cc)}}`:"")+(a||m?`${H} .t-b:not(.t-stk)::after{display:none!important}`:""); }
 /* ---------- 預覽：照真的畫面縮小（主畫面、TIE 聊天室） ---------- */
 function thIco(t,k,col,on){ const I=t.icons||{}, src=(on&&I[k+"_on"])||I[k]; return src?`<img src="${src}" alt="">`:`<span style="color:${col}">${NAV[{home:"love",live:"meet",whisper:"tie",core:"core",foc:"foc",sns:"sns",shop:"shop",me:"me"}[k]]||""}</span>`; }
 function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), pat=thPat(t,v,dark).replace(/"/g,"'"), art=thArtOf(t);
@@ -8489,14 +8481,14 @@ function thMock(kind,t,dark,k=.5){ const v=thVar(t,dark), card=dark?mixHex(v.bg,
       <p style="background:${rgba(v.ink,.14)}"></p><p style="background:${rgba(v.ink,.14)};width:62%"></p>${i?"":`<div class="mk-pic" style="background:${rgba(v.ac,.22)}"></div>`}<div class="mk-act"><i style="background:${v.ac}"></i><i style="background:${rgba(v.ink,.25)}"></i></div></div>`).join("")}
     <div class="mk-nav" style="background:${card}">${TH_TABS.map(([key,l],i)=>`<span class="${i?"":"on"}" style="${i?"":`background:${rgba(v.ac,.14)}`}">${thIco(t,key,i?v.sub:v.ac,!i)}<small style="color:${i?v.sub:v.ink}">${l}</small></span>`).join("")}</div>`;
   if(kind==="chat"){ const bt=(f,txt)=>thTxtOn(f,v);
-    const deco=t.deco&&!thBubImg(t,0)?`<img class="mk-deco" src="${t.deco}" alt="">`:"";
+    const deco=(t.deco?`<img class="mk-deco" src="${t.deco}" alt="">`:"")+(t.deco2?`<img class="mk-deco mk-deco2" src="${t.deco2}" alt="">`:"");
     body=`<div class="mk-bgf" style="background:${pat}${v.bg}"></div>${art?`<img class="mk-art" src="${art}" alt="">`:""}${t.strip?`<span class="mk-strip" style="background-image:url('${t.strip}')"></span>`:""}
     <div class="mk-ch"><span style="color:${v.ink}">‹</span><b style="color:${v.ink}">${esc(t.scope==="member"&&MEMBERS[t.mid]?MEMBERS[t.mid].name:"藝人")}</b><span style="color:${v.ink}">⋮</span></div>
     <div class="mk-msgs">
-      <div class="mk-l"><i style="background:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.3)},${v.ac})"></i><span class="mk-b" style="background:${v.bubA};border-color:${v.bubAB};color:${bt(v.bubA)};${thBubImg(t,0)?thBubSt(thBubImg(t,0),thBubInk(t,0),thBubM(t,0).cc).replace(/!important/g,""):""}">今天的舞台好開心！${deco}</span></div>
-      <div class="mk-r"><span class="mk-b" style="background:${v.bubM};border-color:${v.bubMB};color:${bt(v.bubM)};${thBubImg(t,1)?thBubSt(thBubImg(t,1),thBubInk(t,1),thBubM(t,1).cc).replace(/!important/g,""):""}">辛苦了 💜${deco}</span></div>
-      <div class="mk-l"><i style="background:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.3)},${v.ac})"></i><span class="mk-b" style="background:${v.bubA};border-color:${v.bubAB};color:${bt(v.bubA)};${thBubImg(t,0)?thBubSt(thBubImg(t,0),thBubInk(t,0),thBubM(t,0).cc).replace(/!important/g,""):""}">大家早點睡喔～${deco}</span></div>
-      <div class="mk-r"><span class="mk-b" style="background:${v.bubM};border-color:${v.bubMB};color:${bt(v.bubM)};${thBubImg(t,1)?thBubSt(thBubImg(t,1),thBubInk(t,1),thBubM(t,1).cc).replace(/!important/g,""):""}">晚安！${deco}</span></div></div>
+      <div class="mk-l"><i style="background:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.3)},${v.ac})"></i><span class="mk-b" style="background:${v.bubA};border-color:${v.bubAB};color:${bt(v.bubA)}">今天的舞台好開心！${deco}</span></div>
+      <div class="mk-r"><span class="mk-b" style="background:${v.bubM};border-color:${v.bubMB};color:${bt(v.bubM)}">辛苦了 💜${deco}</span></div>
+      <div class="mk-l"><i style="background:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.3)},${v.ac})"></i><span class="mk-b" style="background:${v.bubA};border-color:${v.bubAB};color:${bt(v.bubA)}">大家早點睡喔～${deco}</span></div>
+      <div class="mk-r"><span class="mk-b" style="background:${v.bubM};border-color:${v.bubMB};color:${bt(v.bubM)}">晚安！${deco}</span></div></div>
     <div class="mk-in" style="background:${v.bar}"><span style="color:${v.ink}">＋</span><i style="background:${dark?mixHex(v.bar,"#ffffff",.08):"#fff"}"></i></div>`; }
   return `<div class="mk" style="--k:${k}"><div class="mk-in0">${body}</div></div>`; }
 
@@ -8559,7 +8551,7 @@ function viewLook(){
 }
 
 /* ---------- 做主題：管理員自己做，或藝人送申請 ---------- */
-const thBlank=()=>{ const s=session()||{}, m=s.member&&MEMBERS[s.member]; return {name:"",desc:"",scope:m?"member":"group",gid:m?m.group:(GROUPS[0]||{}).id||"",mid:s.member||"",price:0,modes:"both",light:{...TH_DEF.light},dark:{...TH_DEF.dark},icons:{},cover:"",pattern:"",art:"",strip:"",deco:"",bubMe:"",bubArt:""}; };
+const thBlank=()=>{ const s=session()||{}, m=s.member&&MEMBERS[s.member]; return {name:"",desc:"",scope:m?"member":"group",gid:m?m.group:(GROUPS[0]||{}).id||"",mid:s.member||"",price:0,modes:"both",light:{...TH_DEF.light},dark:{...TH_DEF.dark},icons:{},cover:"",pattern:"",art:"",strip:"",deco:"",deco2:""}; };
 function thDraft(id){ if(!ui.thDraft||ui.thDraft._for!==(id||"new")){ const t=id&&thById(id), b=thBlank(); const d={...b,...(t?JSON.parse(JSON.stringify(session().role!=="admin"&&t.upd?{...t,...t.upd}:t)):{}),_for:id||"new"}; delete d.upd;
     d.light={...TH_DEF.light,...(d.light||{})}; d.dark={...TH_DEF.dark,...(d.dark||{})}; d.icons=d.icons||{}; if(!d.art) d.art=thArtOf(d); ui.thDraft=d; ui.thEdV=ui.thEdV||"light"; } return ui.thDraft; }
 const thEdVar=d=>d.modes==="both"?(ui.thEdV||"light"):d.modes;
@@ -8586,7 +8578,7 @@ function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id),
       <div class="th-tools in"><button class="btn btn-soft btn-sm" data-a="thAutoCol">從圖片自動配色</button>${d.modes==="both"?`<button class="btn btn-soft btn-sm" data-a="thDarkGen">用淺色版產生深色版</button>`:""}</div>
       <div class="th-cgrid">${TH_COLS.map(([k,l])=>`<label class="th-c"><input type="color" class="th-in" data-f="${ev}.${k}" value="${v[k]}"><span>${l}</span></label>`).join("")}</div></section>
     <section class="card studio"><h3>圖片</h3><p class="th-need">封面和主角插圖一定要放，其他可以不放。</p>
-      <div class="th-slots">${up("cover",d.cover,"封面（必要）","tall")}${up("art",d.art,"主角插圖（必要）","tall")}${up("pattern",d.pattern,"背景圖案")}${up("strip",d.strip,"花邊","wide")}${up("deco",d.deco,"對話框裝飾")}${up("bubMe",d.bubMe,"我的對話框圖")}${up("bubArt",d.bubArt,"藝人對話框圖")}</div>
+      <div class="th-slots">${up("cover",d.cover,"封面（必要）","tall")}${up("art",d.art,"主角插圖（必要）","tall")}${up("pattern",d.pattern,"背景圖案")}${up("strip",d.strip,"花邊","wide")}${up("deco",d.deco,"對話框裝飾（上）")}${up("deco2",d.deco2,"對話框裝飾（下）")}</div>
 
       ${[["粉絲端",TH_TABS],["藝人端",TH_TABS_ART]].map(([w,L])=>`${lab("選單圖示・"+w)}<div class="th-icons">${L.map(([k,l])=>up("icons."+k,d.icons[k],l)).join("")}</div>
       <p class="th-need th-sub">選中時（像 LINE 換一個動作；沒放就用上面那張）</p><div class="th-icons">${L.map(([k,l])=>up("icons."+k+"_on",d.icons[k+"_on"],l)).join("")}</div>`).join("")}</section>
@@ -8801,7 +8793,7 @@ function seedMascots(){ return; if(S.get(K.seedMascot2,false)) return; S.set(K.s
    ④ 素材說明頁：圖解每張圖出現在哪、要多大
    ========================================================= */
 /* 圖片處理：自動裁掉透明空白、置中；回傳圖和檢查用的資訊 */
-const TH_KIND=f=>f.startsWith("icons.")||f==="deco"?"icon":f;
+const TH_KIND=f=>f.startsWith("icons.")||f==="deco"||f==="deco2"?"icon":f;
 async function thImgX(blob,kind){ const url=URL.createObjectURL(blob);
   try{ const img=await new Promise((res,rej)=>{ const i=newImg(); i.onload=()=>res(i); i.onerror=rej; i.src=url; });
     const W=img.naturalWidth, H=img.naturalHeight, c0=document.createElement("canvas"); c0.width=W; c0.height=H; const x0=c0.getContext("2d"); x0.drawImage(img,0,0);
@@ -8812,7 +8804,6 @@ async function thImgX(blob,kind){ const url=URL.createObjectURL(blob);
     const sx=trim?Math.max(0,bx[0]-2):0, sy=trim?Math.max(0,bx[1]-2):0, sw=trim?Math.min(W,bx[2]+3)-sx:W, sh=trim?Math.min(H,bx[3]+3)-sy:H;
     const c=document.createElement("canvas"), x=c.getContext("2d"); let data;
     if(kind==="icon"){ const n=128, pad=10, sc=Math.min((n-pad*2)/sw,(n-pad*2)/sh); c.width=c.height=n; x.drawImage(c0,sx,sy,sw,sh,(n-sw*sc)/2,(n-sh*sc)/2,sw*sc,sh*sc); data=c.toDataURL("image/png"); }
-    else if(kind==="bubMe"||kind==="bubArt"){ c.width=c.height=240; x.drawImage(c0,0,0,W,H,0,0,240,240); data=c.toDataURL("image/png"); let lum=1, cc=""; try{ const D=x.getImageData(110,110,20,20).data; let r=0,g=0,b=0,n=0; for(let i=0;i<D.length;i+=4){ if(D[i+3]<128) continue; r+=D[i];g+=D[i+1];b+=D[i+2];n++; } if(n){ lum=(.2126*r+.7152*g+.0722*b)/n/255; cc="#"+[r,g,b].map(v=>Math.round(v/n).toString(16).padStart(2,"0")).join(""); } }catch(e){} return {data,meta:{w:W,h:H,alpha,kb:Math.round(data.length*.75/1024),lum,cc}}; }
     else { const max={cover:600,art:700,pattern:300,strip:900}[kind]||700, sc=Math.min(1,max/Math.max(sw,sh)); c.width=Math.round(sw*sc); c.height=Math.round(sh*sc); x.drawImage(c0,sx,sy,sw,sh,0,0,c.width,c.height);
       data=kind==="cover"&&!alpha?c.toDataURL("image/jpeg",.86):c.toDataURL("image/png"); }
     return {data,meta:{w:W,h:H,alpha,kb:Math.round(data.length*.75/1024)}}; }
@@ -8820,7 +8811,7 @@ async function thImgX(blob,kind){ const url=URL.createObjectURL(blob);
 async function thPut(d,f,blob){ const r=await thImgX(blob,TH_KIND(f)); thSetF(d,f,r.data); d.meta=d.meta||{}; d.meta[f]=r.meta; return r; }
 
 /* ① 整包上傳：固定檔名 → 欄位 */
-const TH_FILES={bubble_me:"bubMe",bubble_artist:"bubArt","我的對話框":"bubMe","藝人對話框":"bubArt",cover:"cover",art:"art",pattern:"pattern",strip:"strip",deco:"deco",
+const TH_FILES={deco2:"deco2","對話框裝飾2":"deco2",cover:"cover",art:"art",pattern:"pattern",strip:"strip",deco:"deco",
   nav_love:"icons.home",nav_meet:"icons.live",nav_tie:"icons.whisper",nav_core:"icons.core",nav_foc:"icons.foc",nav_sns:"icons.sns",nav_shop:"icons.shop",nav_me:"icons.me",
   nav_love_on:"icons.home_on",nav_meet_on:"icons.live_on",nav_tie_on:"icons.whisper_on",nav_core_on:"icons.core_on",nav_foc_on:"icons.foc_on",nav_sns_on:"icons.sns_on",nav_shop_on:"icons.shop_on",nav_me_on:"icons.me_on",
   "封面":"cover","主角插圖":"art","插圖":"art","背景圖案":"pattern","圖案":"pattern","花邊":"strip","對話框裝飾":"deco","裝飾":"deco"};
@@ -8886,8 +8877,8 @@ function thCheck(d){ const W=[], vs=d.modes==="both"?["light","dark"]:[d.modes];
     if(contrast(v.ink,v.bar)<3) W.push({t:`${nm}：輸入列的字會看不清楚`});
     if(contrast(v.ac,v.bg)<1.8) W.push({t:`${nm}：主色和背景太像，按鈕會不明顯`});
     if(k==="dark"&&lumHex(v.bg)>.35) W.push({t:"深色版的背景太亮了"}); if(k==="light"&&lumHex(v.bg)<.6) W.push({t:"淺色版的背景太暗了"}); });
-  const M=d.meta||{}, need=["art","pattern","strip","deco","bubMe","bubArt"].concat(Object.keys(M).filter(f=>f.startsWith("icons.")));
-  const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾",bubMe:"我的對話框圖",bubArt:"藝人對話框圖"})[f]||("選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6).replace("_on",""))||[])[1]||"")+(f.endsWith("_on")?"（選中）":""));
+  const M=d.meta||{}, need=["art","pattern","strip","deco","deco2"].concat(Object.keys(M).filter(f=>f.startsWith("icons.")));
+  const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾（上）",deco2:"對話框裝飾（下）"})[f]||("選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6).replace("_on",""))||[])[1]||"")+(f.endsWith("_on")?"（選中）":""));
   [...new Set(need)].forEach(f=>{ const m=M[f]; if(m&&!m.alpha) W.push({t:`${NM(f)}不是透明底，放在背景上會有一塊方框`}); });
   Object.entries(M).forEach(([f,m])=>{ const min=f==="cover"?450:f==="art"?400:f==="strip"?600:f==="pattern"?120:f==="deco"?40:80, side=f==="strip"?m.w:Math.min(m.w,m.h); if(side<min) W.push({t:`${NM(f)}太小了（${m.w}×${m.h}），放大會糊`}); });
   const kb=JSON.stringify(d).length/1024; if(kb>900) W.push({t:`整套素材太大（約 ${Math.round(kb)} KB），請換小一點的圖`});
@@ -8900,7 +8891,7 @@ function openThGuide(){ const t=thById("th_ms_cat")||thDraft(route().id); const 
     ["2","背景圖案","pattern.png","透明 PNG・300×300","會一直重複鋪滿背景，上下左右要能無縫接起來，線條淡一點。",""],
     ["3","花邊","strip.png","透明 PNG・1260×270","放在輸入列上方。左右要能接起來，下半部的地面跟「輸入列」同色。",""],
     ["4","對話框裝飾","deco.png","透明 PNG・64×64","放在每個對話框的角落，小小的就好。",""],
-    ["4","對話框圖（像 LINE）","bubble_me.png／bubble_artist.png","透明 PNG・240×240","整個氣泡的樣子。外圈各 80px 是角，放尾巴和裝飾，不會變形；正中間 80px 會跟著字拉長，要是單純的底色。我的氣泡尾巴朝右、藝人的朝左；只放一張就兩邊共用。放了以後「對話框裝飾」就不顯示。",""],
+    ["4","對話框裝飾（下）","deco2.png","透明 PNG・64×64","放在對話框下面的角，像 LINE 那樣一上一下各一個（例如上面小圓點、下面小雲或星星）。對話框本身的形狀不會變。",""],
     ["5","選單圖示 8 個","nav_love / nav_tie / nav_core / nav_sns / nav_shop / nav_me（粉絲端）＋ nav_meet / nav_foc（藝人端）.png","透明 PNG・128×128","圖放正中間，每個看起來要一樣大。沒放的就用原本的圖示。檔名後面加 _on（例如 nav_love_on）是選中時的那張，可以換一個動作。",""],
     ["6","封面","cover.png","3:4・600×800","放在 TINT 商店和「我的主題」。","必要"]];
   setLayer(`<div class="thg" role="dialog" aria-label="素材說明"><header><span></span><b>素材說明</b><button data-a="tCloseLayer" aria-label="關閉">${XI}</button></header><div class="thg-b">
