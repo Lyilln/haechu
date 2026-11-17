@@ -6360,7 +6360,7 @@ html.tie2l .tq-pv{top:0!important;bottom:0!important;height:auto!important}
 /* 提示框：跟著目前主題的顏色（底色、字、主色圓點），不要固定的紫色 */
 html[data-th] body .toast,html[data-th] .toast{background:color-mix(in srgb,var(--s1) 88%,transparent)!important;color:var(--ink)!important;border:1px solid var(--line)!important;box-shadow:0 10px 30px -14px rgba(0,0,0,.45)!important}
 html[data-th] .toast-ic{background:var(--violet)!important}
-html[data-th] .toast button{color:var(--violet)!important}
+html[data-th] .toast button{background:var(--violet)!important;color:var(--bg)!important}   /* 11/17 按鈕是主色底：字用背景色，淺色、深色主題都看得到（原本主色字疊在主色底上，淺色時看不到） */
 .fp-pd .card.fp{border:0;border-radius:0;box-shadow:none;background:transparent;margin:0}
 .toast span{text-align:center;line-height:1.45}
 /* 貼文頁標題的藍勾勾：跟動態裡一樣是藍底白勾（不要跟著字變白） */

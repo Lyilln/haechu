@@ -8409,8 +8409,10 @@ function thRecolor(t,v){ let st=document.getElementById("thRecolor"); if(!st){ s
   const fix=val=>hex2rgb(val).replace(/rgba?\(([^)]+)\)/g,(m0,inner)=>{ const q=inner.split(/[\s,\/]+/).filter(Boolean).map(Number); const [r,g,b]=q, a=q.length>3?q[3]:1; if([r,g,b].some(isNaN)) return m0;
     const [h,sa,l]=toHsl(r,g,b); if(sa<.18||l<.06||l>.985||!(h>=235&&h<=350)) return m0;
     const [R2,G2,B2]=toRgb(TH,Math.min(1,sa*Math.max(.45,TS)),l); return a<1?`rgba(${Math.round(R2)},${Math.round(G2)},${Math.round(B2)},${+a.toFixed(3)})`:`rgb(${Math.round(R2)},${Math.round(G2)},${Math.round(B2)})`; });
-  const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,"html[data-th]"); if(/^html\b/.test(x)) return x.replace(/^html/,'html[data-th]:not([data-theme="dark"])'); if(x===":root") return 'html[data-th]:not([data-theme="dark"])'; return 'html[data-th]:not([data-theme="dark"]) '+x; }).join(",");
-  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me/.test(r.selectorText)) continue;   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
+  /* 11/17 前綴包在 :where() 裡＝不加權重：換色只蓋過 App 原本的顏色，不會蓋過主題自己指定的（例如淺色時的提示框、對話框） */
+  const W1='html:where([data-th])', W2='html:where([data-th]:not([data-theme="dark"]))';
+  const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,W1); if(/^html\b/.test(x)) return x.replace(/^html/,W2); if(x===":root") return W2; return W2+' '+x; }).join(",");
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast/.test(r.selectorText)) continue;   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
       for(const p2 of P){ const val=r.style.getPropertyValue(p2); if(!val||/var\(/.test(val)) continue; const nv=fix(val); if(nv!==val) d.push(`${p2}:${nv}${r.style.getPropertyPriority(p2)?"!important":""}`); }
       if(d.length) out.push(`${pre(r.selectorText)}{${d.join(";")}}`); }
     else if(r.type===4&&r.cssRules){ const b0=out.length; walk(r.cssRules); if(out.length>b0){ const inner=out.splice(b0); out.push(`@media ${r.conditionText||r.media.mediaText}{${inner.join("\n")}}`); } } } };
