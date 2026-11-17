@@ -2677,7 +2677,7 @@ function spin3d(obj,host,{onTap,auto=false,rx=-6,ry=-18}={}){ let vx=0, vy=0, dr
    ・粉絲擁有的東西 id：it|專輯|內容物|照片
    ========================================================= */
 const SHAPES=[{k:"book",n:"大本寫真書",d:"像一本書，最常見",w:19,h:25,t:2.2},{k:"cd",n:"CD 盒",d:"方形盒子，CD 大小",w:14.2,h:12.5,t:1},{k:"small",n:"小本",d:"比手掌小一點的小書",w:12,h:17,t:1.2},
-  {k:"cardbox",n:"卡片盒",d:"小小一盒，裡面主要是小卡",w:7.5,h:11,t:2},{k:"lp",n:"黑膠",d:"很大的正方形",w:31.5,h:31.5,t:.6},{k:"custom",n:"自己填",d:"照實際量的長寬高",w:15,h:20,t:1.5}];
+  {k:"cardbox",n:"卡片盒",d:"小小一盒，裡面主要是小卡",w:7.5,h:11,t:2},{k:"platform",n:"平台版",d:"沒有 CD，只有小卡和下載卡（數位單曲用）",w:6,h:9.2,t:.6},{k:"lp",n:"黑膠",d:"很大的正方形",w:31.5,h:31.5,t:.6},{k:"custom",n:"自己填",d:"照實際量的長寬高",w:15,h:20,t:1.5}];
 const INC=[{k:"pc",n:"隨機小卡",w:5.5,h:8.5},{k:"selfie",n:"自拍卡",w:5.5,h:8.5},{k:"unit",n:"小分隊卡",w:5.5,h:8.5},{k:"polaroid",n:"拍立得",w:5.4,h:8.6},{k:"postcard",n:"明信片",w:10,h:15},{k:"id",n:"身分證卡",w:8.6,h:5.4},
   {k:"bookmark",n:"書籤",w:5,h:15},{k:"sticker",n:"貼紙",w:9,h:12},{k:"poster",n:"折疊海報",w:14.8,h:21},{k:"lyric",n:"歌詞紙",w:12,h:12},{k:"other",n:"其他",w:10,h:10}];
 const EXR={pob:{n:"預購特典",d:"店家附送：預購期間在這家店買，每張專輯附 1 張，裝在店家的信封裡，不在專輯內；可以設定限量，送完為止",st:true},ld:{n:"Lucky Draw",d:"店家抽獎：在這家店買專輯（預購期間）就能抽，抽中的人拿這張卡、代替預購特典；張數有限，抽完就沒了",st:true},fs:{n:"簽售卡",d:"參加簽售、簽好專輯時拿到，不在專輯內"},mc:{n:"公放卡",d:"打歌期間，每個節目每週最早幫這首歌投票的前三位（就像搶到公放席去節目現場）各拿 1 張，第四位之後沒有，不在專輯內"}};
@@ -7662,7 +7662,11 @@ function clickCm(a,t,e,r){ switch(a){
     case "abNext": { const st=ui.ab; if(!st) break; abStart(st.r,st.idx+1); break; }
     case "abSumV": { const w=document.getElementById("abW"); if(!w) break; const v=document.createElement("div"); v.className="s3v"; v.innerHTML=`<button class="ph-x" data-a="s3Close" aria-label="關閉">${XI}</button><div class="s3">${item3d(t.dataset.v,Math.min(260,innerWidth*.62))}</div><p class="s3-l">${esc(itemName(t.dataset.v))}</p><div class="s3-btns"><button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button></div>`; w.appendChild(v); ui.s3=spin3d(v.querySelector(".s3-obj"),v.querySelector(".s3"),{rx:-4,ry:-18}); C3.upItem(v.querySelector(".s3"),t.dataset.v,Math.min(260,innerWidth*.62)); break; }
     case "pQty": { ui.pQty=Math.max(1,Math.min(20,(ui.pQty||1)+(+t.dataset.v))); const p=prodBy(ui.prod); const q=document.getElementById("pQ"); if(q) q.textContent=ui.pQty; const b=layer.querySelector('[data-a="pBuy"]'); if(b&&p) b.textContent=`${storeOf(ui.pStore)?"在 "+storeOf(ui.pStore).name+" 買":"買"} ${ui.pQty} 張・${fmt(p.pts*ui.pQty)} 積分`; break; }
-    case "aeNew": { const gid=ui.albG||GROUPS[0].id, a={id:uid("ab"),gid,title:"新專輯",ord:"The 1st Mini Album",ts:Date.now(),vers:[{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}],ex:[]}; saveAlbum(a); openAlbumEditor(a.id); break; }
+    case "aeNew": { const gid=ui.albG||GROUPS[0].id, now=Date.now();
+      /* 11/17 照這個團接下來的出道／回歸自動帶：發行型態是「數位單曲」→ 只開平台版（沒有 CD、只有小卡），其他照一般寫真書；也自動接上「跟著發行上架」 */
+      const src=(typeof promoSrcs==="function"?promoSrcs():[]).filter(s=>s.gid===gid&&s.day>now-864e5).sort((a,b)=>a.day-b.day)[0], dg=!!src&&src.rtype==="數位單曲", pf=SHAPES.find(x=>x.k==="platform");
+      const v=dg?{id:uid("v"),name:"Platform Ver.",shape:"platform",w:pf.w,h:pf.h,t:pf.t,pts:3000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:2,pool:[]}]}:{id:uid("v"),name:"A Ver.",shape:"book",w:19,h:25,t:2.2,pts:9000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]};
+      const a={id:uid("ab"),gid,title:src?(((src.pr||{}).album)||src.title||"新專輯"):"新專輯",ord:src&&src.rtype?(dg?"Digital Single":src.rtype):"The 1st Mini Album",ts:now,vers:[v],ex:[],...(src&&src.day>now?{rel:src.id}:{})}; saveAlbum(a); openAlbumEditor(a.id); if(dg) toast("數位單曲：先幫你開好平台版（只有小卡）"); break; }
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
