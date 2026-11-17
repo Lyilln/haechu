@@ -465,14 +465,15 @@ async function tryFetch(force){ try{ if(!HB_ON||!HB.tok||!MEDIA_URL||!isAdminAcc
   const r=await fetch(MEDIA_URL+"/try",{headers:{Authorization:"Bearer "+HB.tok},cache:"no-store"}); if(!r.ok) return; const L=await r.json(); const before=JSON.stringify(TRYW); TRYW=Array.isArray(L)?L:[]; if(JSON.stringify(TRYW)!==before){ hbSoon(); if(ui.tryOpenK&&document.getElementById("tryBody")) tryChat(ui.tryOpenK); } }catch(e){} }
 setInterval(()=>{ if(!document.hidden) tryFetch(); },20000); setTimeout(()=>tryFetch(true),4000);
 function tryConvs(){ const out=new Map();
-  (TRYW||[]).forEach(v=>{ if(v&&v.id&&Array.isArray(v.msgs)&&v.msgs.length) out.set("w:"+v.id,v); });
+  const old=v=>{ const F=v.msgs.filter(m=>m.from==="fan").sort((a,b)=>a.ts-b.ts), n=Date.now(); return F.length>=3?n-F[2].ts>36e5:F.length?n-F[F.length-1].ts>3*864e5:false; };   /* 11/17 傳完 3 則：1 小時後消失；沒傳完：3 天沒動就消失（伺服器那邊同時刪掉） */
+  (TRYW||[]).forEach(v=>{ if(v&&v.id&&Array.isArray(v.msgs)&&v.msgs.length&&!old(v)) out.set("w:"+v.id,v); });
   const ks=new Set(); try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){} Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_try_")) ks.add(k); }); }catch(e){}
-  ks.forEach(k=>{ const v=S.get(k,null); if(v&&Array.isArray(v.msgs)&&v.msgs.length) out.set(k,v); });
+  ks.forEach(k=>{ const v=S.get(k,null); if(v&&Array.isArray(v.msgs)&&v.msgs.length&&!old(v)) out.set(k,v); });
   return [...out.entries()].map(([k,v])=>{ const L=v.msgs.slice().sort((a,b)=>a.ts-b.ts), last=L[L.length-1]; return {k,nick:v.nick||"訪客",msgs:L,last,wait:last.from==="fan"}; }).sort((a,b)=>b.last.ts-a.last.ts); }
 const tryGet=k=>{ if(k.startsWith("w:")){ const id=k.slice(2); return (TRYW||[]).find(v=>v.id===id)||null; } return S.get(k,null); };
 const tryUnread=()=>{ try{ return isAdminAcct()?tryConvs().filter(c=>c.wait).length:0; }catch(e){ return 0; } };
 function viewTryInbox(){ const C=tryConvs();
-  return `<main class="page"><p class="reach" style="margin:4px 2px 12px">訪客在試玩頁（${esc(location.origin+location.pathname.replace(/[^/]*$/,""))}try/）傳給 ${TRY_IDOL} 的訊息。四位管理員都看得到，你的回覆會以 ${TRY_IDOL} 的身分出現。</p>
+  return `<main class="page"><p class="reach" style="margin:4px 2px 12px">訪客在試玩頁（${esc(location.origin+location.pathname.replace(/[^/]*$/,""))}try/）傳給 ${TRY_IDOL} 的訊息。四位管理員都看得到，你的回覆會以 ${TRY_IDOL} 的身分出現。傳完 3 則的對話 1 小時後自動刪掉，沒傳完的 3 天沒動也會刪掉。</p>
     ${C.length?`<section class="card">${C.map(c=>`<button class="list-btn try-row" data-a="tryOpen" data-v="${esc(c.k)}"><span class="try-rl"><b>${esc(c.nick)}</b><small>${c.last.from==="fan"?"":"你們："}${esc(String(c.last.text).slice(0,40))}・${ago(c.last.ts)}</small></span><span class="r">${c.wait?`<em class="t-cnt">待回覆</em>`:"已回覆"}</span></button>`).join("")}</section>`:`<section class="card uni-empty">還沒有訪客傳訊息</section>`}</main>`; }
 /* 管理員看試玩對話：跟 App 裡藝人端的 TIE 聊天室一模一樣（不含側邊抽屜）：訪客＝FROM FAN 在左邊，管理員以 LUMI 的身分＝紫色泡泡在右邊 */
 function tryChat(k){ const v=tryGet(k); if(!v) return; ui.tryOpenK=k; const L=(v.msgs||[]).slice().sort((a,b)=>a.ts-b.ts), nick=v.nick||"訪客";

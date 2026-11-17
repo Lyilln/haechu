@@ -82,13 +82,20 @@ export default {
         }
         return null;
       };
+      const tryOld = (v, up) => {
+        const F = ((v && v.msgs) || []).filter(m => m.from === "fan").sort((a, c) => a.ts - c.ts), now = Date.now();
+        if (!F.length) return now - up > 3 * 864e5;
+        if (F.length >= 3) return now - F[2].ts > 36e5;
+        return now - F[F.length - 1].ts > 3 * 864e5;
+      };
       if (!id) {
         if (req.method !== "GET") return reply({ error: "method" }, 405);
         if (!(await isAdmin())) return reply({ error: "forbidden" }, 403);
         const out = []; let cursor;
         for (let i = 0; i < 10; i++) {
           const l = await env.MEDIA.list({ prefix: "try/", cursor, limit: 1000 });
-          const got = await Promise.all(l.objects.filter(o => Date.now() - o.uploaded.getTime() < 60 * 864e5).map(async o => { const { v } = await load(o.key); return v && { id: o.key.slice(4, -5), ...v }; }));
+          // 11/17 自動清掉：3 則傳完的，第 3 則後 1 小時刪；沒傳完的，最後一則訊息後 3 天刪（後台列表才不會越來越長）
+          const got = await Promise.all(l.objects.map(async o => { const { v } = await load(o.key); if (tryOld(v, o.uploaded.getTime())) { await env.MEDIA.delete(o.key); return null; } return v && { id: o.key.slice(4, -5), ...v }; }));
           got.forEach(x => x && out.push(x));
           if (!l.truncated) break; cursor = l.cursor;
         }
