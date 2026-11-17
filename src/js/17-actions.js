@@ -424,6 +424,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
     case "cbPrev": ui.cbPrev=!ui.cbPrev; render(); break;
+    case "dbStep": ui.dbStep=+t.dataset.v||0; dbReform(); { const b=layer.querySelector(".dbx-b"); if(b) b.scrollTop=0; } break;
+    case "dbCk": ui.dbCkOpen=!ui.dbCkOpen; dbReform(); break;
     case "aeVAdd": { const a=aeA(); a.vers.push({id:uid("v"),name:`${String.fromCharCode(65+a.vers.length)} Ver.`,shape:"cd",w:14.2,h:12.5,t:1,pts:7000,preEnd:0,inc:[{id:uid("i"),k:"pc",name:"隨機小卡",w:5.5,h:8.5,n:1,pool:[]}]}); saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeVDel": { const a=aeA(); if(a.vers.length<=1){ toast("至少要留一個版本"); break; } ask("要刪除這個版本嗎？",()=>{ a.vers=a.vers.filter(v=>v.id!==t.dataset.v); saveAlbum(a); openAlbumEditor(a.id); },{title:"刪除版本",ok:"刪除"}); break; }
     case "aeShape": { const a=aeA(), v=verOf(a,t.dataset.i), sh=shapeOf(t.dataset.v); v.shape=sh.k; if(sh.k!=="custom"){ v.w=sh.w; v.h=sh.h; v.t=sh.t; } saveAlbum(a); openAlbumEditor(a.id); break; }

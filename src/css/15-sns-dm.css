@@ -201,3 +201,19 @@
 .cb-empty b{font-size:16px;font-weight:700}
 .cb-empty p{margin:0;font-size:13.5px;color:var(--ink-3)}
 .cb-empty .btn{margin-top:6px}
+/* 11/17 出道／回歸申請表：步驟列＋一次一區 */
+.dbx-steps{display:flex;gap:6px;overflow-x:auto;padding:10px 16px;border-bottom:1px solid var(--line);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.dbx-steps::-webkit-scrollbar{display:none}
+.dbx-steps button{flex:none;display:inline-flex;align-items:center;gap:6px;border:0;border-radius:999px;padding:6px 12px;font:inherit;font-size:13px;font-weight:600;background:var(--s2);color:var(--ink-3)}
+.dbx-steps button i{font-style:normal;display:inline-grid;place-items:center;width:18px;height:18px;border-radius:50%;font-size:11px;background:rgba(127,127,127,.18)}
+.dbx-steps button.on{background:var(--violet);color:#fff}
+.dbx-steps button.on i{background:rgba(255,255,255,.25)}
+.dbx-steps button.done{color:var(--ink-2)}
+.dbx-ck1{display:flex;align-items:center;gap:8px;width:100%;border:0;border-radius:14px;padding:12px 14px;margin-bottom:12px;font:inherit;background:var(--s1);color:inherit;text-align:left}
+.dbx-ck1 b{font-size:14px;font-weight:700}
+.dbx-ck1 em{font-style:normal;font-weight:700;color:var(--violet)}
+.dbx-ck1 span{margin-left:auto;font-size:12.5px;color:var(--ink-3)}
+.dbx-ckl{margin:-4px 0 12px;padding:0 4px}
+.dbx-nav{display:flex;justify-content:space-between;gap:10px;margin:16px 0 calc(env(safe-area-inset-bottom,0px) + 24px)}
+.dbx-nav .btn{flex:1}
+.dbx-nav span{flex:1}
