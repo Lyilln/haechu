@@ -6797,6 +6797,7 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .dbx-nav{display:flex;justify-content:space-between;gap:10px;margin:16px 0 calc(env(safe-area-inset-bottom,0px) + 24px)}
 .dbx-nav .btn{flex:1}
 .dbx-nav span{flex:1}
+.ae-mn{display:block;text-align:center;font-size:12.5px;font-weight:600;margin-top:4px}
 
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}

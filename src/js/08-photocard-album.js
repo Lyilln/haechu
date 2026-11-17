@@ -299,7 +299,7 @@ document.addEventListener("change",async e=>{ const t=e.target; if(!t.classList|
     if(cr){ const c=await cropImg(f,cr); t.value=""; if(!c) return; f=c; } }
   if(cell) cell.classList.add("busy");
   try{ const b=await shrinkImg(f, key.startsWith("vc")||key.startsWith("vb")?1400:1000); if(!b) throw 0; await PIMG.put(key,b); if(key.startsWith("cmav|")) cmAvSync(key.slice(5),b); if(key.startsWith("vc|")) await aeCoverAuto(key); else toast("照片上傳好了"); }catch(err){ toast("這張照片讀不出來，換一張試試"); }
-  if(layer.querySelector(".ae")) openAlbumEditor(ui.aeId); else if(/^(cm(av|bg)|vth)\|/.test(key)) render(); });
+  if(layer.querySelector(".ae")) openAlbumEditor(ui.aeId); else if(layer.querySelector(".art-alb")) artAlbumsSheet(); else if(/^(cm(av|bg)|vth)\|/.test(key)) render(); });
 /* ===== 自由轉：手指往哪拖就往哪轉，放開會順著慣性轉一下；正面、背面都看得到 ===== */
 function spin3d(obj,host,{onTap,auto=false,rx=-6,ry=-18}={}){ let vx=0, vy=0, drag=null, raf=0, alive=true, idle=performance.now();
   const apply=()=>{ obj.style.transform=`rotateX(${rx}deg) rotateY(${ry}deg)`; const r=ry*Math.PI/180, q=rx*Math.PI/180; obj.style.setProperty("--ang",(ry*1.5+rx)+"deg"); obj.style.setProperty("--mx",(50+Math.sin(r)*45)+"%"); obj.style.setProperty("--my",(45-Math.sin(q)*45)+"%"); };
@@ -533,10 +533,13 @@ function aeItemHtml(a,it,ex){ const ms=groupArtists(a.gid);
 /* 11/17 藝人（要出道／回歸的人）也能編自己團的專輯、上傳小卡卡面；價格、預購天數只有管理員能改（藝人不能動自己商品的價格） */
 const aeArt=()=>{ const s=session()||{}; return s.role==="artist"&&!isAdminAcct(); };
 function artAlbumsSheet(){ const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
-  setLayer(`<div class="tiei"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>專輯・小卡</b><span class="sh-sp"></span></header><div class="tiei-body">
+  const mc=mcAlb(gid), mcp=mc?mc.ex[0].pool:[];   /* 11/17 公放卡（投票拿到的卡）也由藝人自己上傳：每位成員一款，正面＋背面 */
+  setLayer(`<div class="tiei art-alb"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>專輯・小卡</b><span class="sh-sp"></span></header><div class="tiei-body">
     <p class="ae-tip">在這裡上傳專輯封面和小卡卡面。上傳後大家的 App 都看得到；價格由管理員設定。</p>
     <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
-    <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section></div></div>`); }
+    <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>
+    <div class="section-h">公放卡</div><p class="ae-tip">粉絲在打歌節目投票（每個節目前 3 位）會拿到的卡。專輯裡另外設了公放卡的話，會先用專輯的。</p>
+    <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small></div>`).join("")}</div></section></div></div>`); }
 function openAlbumEditor(aid){ const a=albumOf(aid); if(!a) return; if(aeArt()&&a.gid!==(MEMBERS[(session()||{}).member]||{}).group) return; const g=groupOf(a.gid), sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0;
   setLayer(`<div class="tiei ae"><header class="tiei-top"><button class="icon-btn" data-a="aeClose" aria-label="返回">${I.back}</button><b>${esc(g.name)} 專輯</b><span class="sh-sp"></span></header>
     <div class="tiei-body">
