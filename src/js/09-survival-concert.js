@@ -3,43 +3,7 @@
    SURVIVAL PROJECT（選秀宇宙）：先做好內容，管理員在 FOC 決定要不要開放
    ・每天 3 票免費，投給心儀的練習生，幫他衝向 PAK
    ========================================================= */
-const TRAINEES=[
-  {id:"t1",name:"星宇",agency:"Star Horizon",tags:["火爆","完美主義"],st:[85,92,78],g:2},
-  {id:"t2",name:"光賢",agency:"Neon Peak",tags:["懶洋洋","幽默"],st:[94,76,88],g:0},
-  {id:"t3",name:"夏澄",agency:"Zenith Arts",tags:["冷靜","努力家"],st:[72,98,81],g:4},
-  {id:"t4",name:"承恩",agency:"Blue Wave",tags:["陽光","自信"],st:[88,85,95],g:6},
-  {id:"t5",name:"子安",agency:"Moonlit Ent.",tags:["害羞","溫柔"],st:[91,70,84],g:5},
-  {id:"t6",name:"時溫",agency:"Aurora Lab",tags:["話少","舞蹈狂"],st:[68,96,79],g:1},
-  {id:"t7",name:"若川",agency:"Prism Works",tags:["搞笑","元氣"],st:[80,82,90],g:7},
-  {id:"t8",name:"一然",agency:"Cloud Nine",tags:["穩重","主唱"],st:[97,74,83],g:3}];
-/* 先只開給 HUSSEY（husay）自己的帳號試用，其他人照管理員的開關 */
-const svOpen=()=>sbxOn()||!!S.get(K.svOpen,false)||String((session()||{}).email||"").toLowerCase()==="husay";
-const svVotes=()=>({t1:18420,t2:17110,t3:16980,t4:15230,t5:12870,t6:11940,t7:9820,t8:9310,...S.get(K.svVotes,{})});
-const svToday=()=>{ const r=S.get(K.svMine,{}), k=new Date().toDateString(); return r.day===k?r.n:0; };
-function svEnd(){ const t=new Date(); t.setDate(t.getDate()+((7-t.getDay())%7)); t.setHours(23,59,0,0); return t.getTime(); }
-/* 11/12 改版：照 PRODUCE 的順位金字塔（女生版粉＋白、男生版藍＋白，管理員在 FOC → 選秀切換） */
-const SV_MY="daisuki_sv_my", svMy=()=>S.get(SV_MY,{})||{}, svTheme=()=>S.get("daisuki_sv_theme","b")==="g"?"g":"b";
-const svPh=t=>t&&t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil"></i>`;
-function viewSurvival(id){
-  const v=svVotes(), list=[...TRAINEES].sort((a,b)=>v[b.id]-v[a.id]), left=3-svToday(), end=svEnd(), d=Math.max(0,end-Date.now()), my=svMy(), th=svTheme(), dt=new Date(); dt.setMinutes(0,0,0);
-  const rk=tid=>list.findIndex(x=>x.id===tid)+1, DEBUT=Math.min(6,list.length);
-  if(id){ const t=TRAINEES.find(x=>x.id===id); if(!t) return coreHead("選秀")+`<main class="page"><p class="me-none">找不到這位練習生</p></main>`; const r=rk(t.id);
-    return coreHead("練習生")+`<main class="page sv2 ${th}"><section class="sv2-prof"><div class="sv2-pp">${svPh(t)}</div><span class="sv2-no">${pad(r)}</span><div class="sv2-pn"><small>${esc(t.agency)}</small><b>${esc(t.name)}</b><span>${t.tags.map(esc).join("・")}</span></div></section>
-      <div class="sv2-bar"><div><b>${fmt(v[t.id])}</b><span>票數</span></div><div><b>${r}位</b><span>目前順位</span></div><div><b>${my[t.id]||0}</b><span>我的 PICK</span></div></div>
-      <div class="sv2-sh"><b>能力值</b></div><div class="sv2-st">${["Vocal","Dance","Charm"].map((l,k)=>`<span><em>${l}</em><i><u style="width:${t.st[k]}%"></u></i><b>${t.st[k]}</b></span>`).join("")}</div>
-      <p class="sv2-note">${r<=DEBUT?`現在在出道組（前 ${DEBUT} 位）`:`離出道組還差 ${fmt(v[list[DEBUT-1].id]-v[t.id]+1)} 票`}</p>
-      <button class="sv2-cta" data-a="svVote" data-v="${t.id}" ${left?"":"disabled"}>${left?`PICK ${esc(t.name)}（今天還能投 ${left} 票）`:"今天的票投完了"}</button></main>`; }
-  const rows=[]; let n=0, k=1; while(n<Math.min(10,list.length)){ rows.push(list.slice(n,n+k)); n+=k; k++; }
-  const tile=t=>{ const r=rk(t.id), me=!!my[t.id]; return `<button class="sv2-t ${me?"me":""}" data-a="uniGo" data-v="#/fan/core?p=survival&id=${t.id}"><span class="sv2-p">${svPh(t)}</span><b>${r}位</b><span>${esc(t.name)}</span><small>${fmt(v[t.id])}</small></button>`; };
-  const row=(t,i)=>`<div class="sv2-row" data-a="uniGo" data-v="#/fan/core?p=survival&id=${t.id}"><span class="sv2-rk">${i+1}位</span><span class="sv2-av">${svPh(t)}</span><div class="sv2-nm"><b>${esc(t.name)}</b><small>${esc(t.agency)}・${fmt(v[t.id])} 票</small></div><button class="sv2-pk" data-a="svVote" data-v="${t.id}" ${left?"":"disabled"}>PICK</button></div>`;
-  const mine=list.filter(t=>my[t.id]).length;
-  return coreHead("選秀")+`<main class="page sv2 ${th}">${svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`}
-    <section class="sv2-pyr"><div class="sv2-rib"><span>SURVIVAL PROJECT</span><span>出道組選拔・投票倒數 ${Math.floor(d/864e5)} 天 ${Math.floor(d%864e5/36e5)} 時</span></div><span class="sv2-date">${dt.getMonth()+1}/${dt.getDate()} ${pad(dt.getHours())}:00 基準</span>
-      <div class="sv2-rows"><i class="sv2-crown">👑</i>${rows.map(r=>`<div class="sv2-r">${r.map(tile).join("")}</div>`).join("")}</div><div class="sv2-foot">《1位～${Math.min(10,list.length)}位》</div></section>
-    <div class="sv2-bar"><div><b>${left} / 3</b><span>今天還能 PICK</span></div><div><b>TOP ${DEBUT}</b><span>出道組</span></div><div><b>${mine} 位</b><span>我的 PICK</span></div></div>
-    <div class="sv2-sh"><b>出道組</b><i>1～${DEBUT} 位</i></div>${list.slice(0,DEBUT).map(row).join("")}
-    ${list.length>DEBUT?`<div class="sv2-sh out"><b>淘汰邊緣</b><i>${DEBUT+1} 位以下</i></div>${list.slice(DEBUT).map((t,i)=>row(t,i+DEBUT)).join("")}`:""}</main>`;
-}
+/* 11/17 選秀改版：整個搬到 31-survival.js（一季：招募 → 第一輪 → 第二輪 → 決賽 → 出道準備 → 限定團體出道） */
 
 /* =========================================================
    應援棒玩法（燈海）
@@ -683,7 +647,7 @@ function mountSticks(scope){
 }
 /* 看重播時資料更新：留在原本滑到的地方，不跳回開頭 */
 function rpPaint(id,hc){ const o=document.querySelector(".rp2-log"), y=o&&!hc?o.scrollTop:0; paint(viewReplay(id),false); if(y){ const n=document.querySelector(".rp2-log"); if(n) n.scrollTop=y; } }
-function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }catch(e){} setTimeout(mcRemind,1500); try{ mcGrantRun(); }catch(e){} try{ thUpdNotify(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
+function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }catch(e){} setTimeout(mcRemind,1500); try{ svTick(); }catch(e){} setTimeout(()=>{ try{ svRevealCheck(); }catch(e){} },1800); try{ mcGrantRun(); }catch(e){} try{ thUpdNotify(); }catch(e){}   /* 11/17 換頁是用 replaceState，不會觸發 hashchange → 進 SNS 時整體縮放沒改回 1，留言面板就被頂開；每次畫面重畫都重算一次 */
 
   if(!KVX.ready){ KVX.want=true; return; }   /* 手機的大空間還在讀：讀完才畫，不會先畫出空白的聊天室 */
   try{ debutSync(); }catch(e){} try{ snRetireCheck(); }catch(e){}
