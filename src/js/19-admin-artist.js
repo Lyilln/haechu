@@ -82,6 +82,7 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
       <span class="fld-lab">帳號</span><label class="field">${I.user}<input id="acUser" maxlength="20" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).un||"")}"></label>
       <span class="fld-lab">本名（只有管理員看得到）</span><label class="field">${I.user}<input id="acReal" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).rn||"")}"></label>
       <span class="fld-lab">暱稱（大家看到的名字，本人之後可以改）</span><label class="field">${I.heart}<input id="acName" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).nm||"")}"></label>
+      <span class="fld-lab">公司（照填單時選的；沒選就留空＝選秀裡的個人練習生）</span><label class="field"><select id="acCo" class="svco-sel"><option value="">沒有（個人練習生）</option>${SK_COS.map(c=>`<option ${((ui.acDraft||{}).co||"")===c?"selected":""}>${esc(c)}</option>`).join("")}</select></label>
       <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="acPw" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).pw||"")}"></label>
       <button class="btn btn-main btn-block" data-a="acCreate" ${ui.acBusy?"disabled":""}>${ui.acBusy?"建立中…":"建立帳號"}</button></section>
     <div class="section-h">全部帳號<span class="muted">${L.length} 個</span>${calPick("ac")}</div>
