@@ -8584,11 +8584,15 @@ function viewThEdit(id){ const s=session(), adm=s.role==="admin", d=thDraft(id),
       <p class="th-need th-sub">選中時（像 LINE 換一個動作；沒放就用上面那張）</p><div class="th-icons">${L.map(([k,l])=>up("icons."+k+"_on",d.icons[k+"_on"],l)).join("")}</div>`).join("")}</section>
     <button class="btn btn-main btn-block" data-a="thSave" data-v="${id||""}">${adm?"儲存並上架":"送出申請"}</button>
   </main>`; }
-function thSave(id){ const s=session(), adm=s.role==="admin", d=thDraft(id);
+/* 11/17 送出時把圖片放到圖片伺服器，主題裡只存連結（水彩、透明底的圖很大，整包存在共用資料裡每支手機都要下載） */
+async function thUpImgs(d){ if(!(HB_ON&&MEDIA_URL)) return; const tag="th_"+Date.now().toString(36)+"_", up=async(o,k)=>{ const v=o[k]; if(typeof v!=="string"||!v.startsWith("data:")) return; try{ const b=await (await fetch(v)).blob(), u=await hbImgUrl(tag+k+(b.type==="image/jpeg"?".jpg":".png"),b); if(u) o[k]=u; }catch(e){} };
+  for(const k of ["cover","art","pattern","strip","deco","deco2"]) await up(d,k); for(const k of Object.keys(d.icons||{})) await up(d.icons,k); }
+async function thSave(id){ const s=session(), adm=s.role==="admin", d=thDraft(id);
   if(!d.name.trim()){ toast("請輸入主題名稱"); return; }
   { const hard=thCheck(d).filter(w=>w.hard); if(hard.length){ toast(hard.map(w=>w.t).join("、")); return; } }
   if(d.scope==="member"&&!MEMBERS[d.mid]){ toast("請選藝人"); return; }
   if(d.scope==="group"&&!groupOf(d.gid)){ toast("請選團"); return; }
+  if(ui.thSaving) return; if(HB_ON&&MEDIA_URL&&JSON.stringify(d).includes("data:image")){ ui.thSaving=1; toast("正在上傳圖片…"); try{ await thUpImgs(d); }finally{ ui.thSaving=0; } }
   const L=getThemes(), base={...d}; delete base._for;
   base.price=Math.max(0,Math.min(99999,parseInt(base.price,10)||0)); base.name=base.name.trim(); base.desc=(base.desc||"").trim();
   if(base.modes==="light") base.dark=null; if(base.modes==="dark") base.light=null;
@@ -8880,8 +8884,8 @@ function thCheck(d){ const W=[], vs=d.modes==="both"?["light","dark"]:[d.modes];
   const M=d.meta||{}, need=["art","pattern","strip","deco","deco2"].concat(Object.keys(M).filter(f=>f.startsWith("icons.")));
   const NM=f=>({cover:"封面",art:"主角插圖",pattern:"背景圖案",strip:"花邊",deco:"對話框裝飾（上）",deco2:"對話框裝飾（下）"})[f]||("選單圖示 "+((TH_TABS_ALL.find(x=>x[0]===f.slice(6).replace("_on",""))||[])[1]||"")+(f.endsWith("_on")?"（選中）":""));
   [...new Set(need)].forEach(f=>{ const m=M[f]; if(m&&!m.alpha) W.push({t:`${NM(f)}不是透明底，放在背景上會有一塊方框`}); });
-  Object.entries(M).forEach(([f,m])=>{ const min=f==="cover"?450:f==="art"?400:f==="strip"?600:f==="pattern"?120:f==="deco"?40:80, side=f==="strip"?m.w:Math.min(m.w,m.h); if(side<min) W.push({t:`${NM(f)}太小了（${m.w}×${m.h}），放大會糊`}); });
-  const kb=JSON.stringify(d).length/1024; if(kb>900) W.push({t:`整套素材太大（約 ${Math.round(kb)} KB），請換小一點的圖`});
+  Object.entries(M).forEach(([f,m])=>{ const min=f==="cover"?450:f==="art"?400:f==="strip"?600:f==="pattern"?120:f==="deco"||f==="deco2"?40:80, side=f==="strip"?m.w:Math.min(m.w,m.h); if(side<min) W.push({t:`${NM(f)}太小了（${m.w}×${m.h}），放大會糊`}); });
+  const kb=JSON.stringify(d).length/1024; if(kb>900&&!(HB_ON&&MEDIA_URL)) W.push({t:`整套素材太大（約 ${Math.round(kb)} KB），請換小一點的圖`});
   return W; }
 const thCheckHtml=d=>{ const W=thCheck(d); return `<section class="card studio th-chk"><h3>自動檢查</h3>${W.length?`<ul>${W.map(w=>`<li class="${w.hard?"hard":""}">${w.t}</li>`).join("")}</ul>`:`<p class="th-ok">✓ 都沒問題</p>`}</section>`; };
 
