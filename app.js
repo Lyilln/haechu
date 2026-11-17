@@ -2447,7 +2447,8 @@ function dbFairyF(f){ const fy=prOf(f).fy||{}; let L;
   if(f.cb){ L=groupArtists(f.gid).slice().sort().map(m=>[m,stageNm(m)]); }
   else L=[["me",(f.name||"").trim()||(f.kind==="group"?"你":"藝名")],...(f.kind==="group"?(f.mems||[]).map((m,i)=>[ "m"+i,(m.name||"").trim()||`成員 ${i+1}`]):[])];
   return `<div class="fy-g">${L.map(([k,lab])=>fairyThumb(fy[k],lab,`data-a="dbFy" data-k="${esc(k)}"`,false)).join("")}</div><p class="dbx-d">每位成員放一段自己的結尾妖精（影片，最多 ${FAIRY_MAX_SEC} 秒）。⚠️ 只能放人設（皮相）的片段。</p>`; }
-function dbDayF(f,w){ const pr=prOf(f); return `<span class="fs-f-lab">${w} Showcase 時間 <em>選填，沒有就留空</em></span><input id="prX_sc" class="a-nick-in" type="time" value="${esc(pr.sc||"")}"><p class="dbx-d">${w}當天：MV、專輯照「每天發布時間」同時公開，主打歌開始打歌${pr.sc?`；${esc(pr.sc)} 發 Showcase 公告`:""}。</p>`; }
+function dbDayF(f,w){ const pr=prOf(f); return `<div class="dbx-day"><b>${w}當天會自動發生</b><ul><li>到了「每天發布時間」，MV 和專輯照一起公開</li><li>主打歌開始打歌（進打歌舞台）</li>${pr.sc?`<li>${esc(pr.sc)} 公司官方帳號發「${w} Showcase 今天 ${esc(pr.sc)} 開始」公告</li>`:""}</ul></div>
+    <span class="fs-f-lab">Showcase 開始時間 <em>選填</em></span><input id="prX_sc" class="a-nick-in" type="time" value="${esc(pr.sc||"")}"><p class="dbx-d">Showcase＝${w}後的第一個舞台（例如在群裡直播、表演）。有辦就填幾點開始，當天到了那個時間會自動發公告提醒大家來看；沒有辦就留空。</p>`; }
 /* 跟真實的出道／回歸宣傳比，還缺什麼 */
 function dbCheck(f){ const pr=prOf(f), cv=(pr.cv||[]).filter(v=>(v.ph||[]).some(Boolean)||(v.phP||[]).some(Boolean)).length, db=!f.cb;
   return [["Teaser 照片",!!(f.teaser||(f.tx||[]).some(Boolean))],["概念照（至少 2 個版本）",cv>=2],["曲目表",!needsTrk(f.rtype)||!!String(pr.trk||"").trim()],["Highlight Medley／概念影片",!!pr.vid],["MV Teaser",!!f.mvt],["MV",!!f.mv],["專輯名稱",!!String(pr.album||"").trim()],["專輯介紹",!!String(pr.desc||"").trim()],["製作人員",!!String(pr.credit||"").trim()],["結尾妖精",Object.values(pr.fy||{}).some(v=>v&&v.m)],...(db?[["粉絲名",!!String(pr.fan||"").trim()]]:[])]; }
