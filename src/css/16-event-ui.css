@@ -407,3 +407,4 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 
 /* 11/18 SNS 刪除紀錄：兩邊、按鈕不要貼邊 */
 .sn-subl .sn-subr{padding:12px 16px}.sn-subr .t-pill{margin-left:4px}.sn-rest{flex:none;align-self:center;font-size:12px;font-weight:800;color:var(--ink-3);padding:5px 4px}
+.sn-subr p{white-space:pre-wrap}.sn-subr .sn-subi{margin-top:2px}

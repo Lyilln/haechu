@@ -99,6 +99,9 @@ function snLikedBy(d,p){ const L=(d.likes[p.id]||[]).filter(x=>snUser(x)); if(!L
   return `<p class="sn-lb" data-a="snLikers" data-id="${p.id}" role="button"><span class="sn-lbav">${S2.map(x=>snAv(snUser(x),20)).join("")}</span><span><b>${esc(u0.u)}</b>${snLikes(d,p)>1?`和其他 ${fmt(snLikes(d,p)-1)} 人都說讚`:" 說讚"}</span></p>`; }
 /* 說明文字：#標籤、@帳號 可以點 */
 /* 已經是 HTML 的文字（翻譯外框）：只把 @帳號、#標籤 變成可以點的 */
+/* 11/18：藝人投稿 → 公司帳號照抄（空格、換行都一樣）。開頭已經寫了 [藝名] 就不再加；最後自動帶藝名 hashtag */
+function snSubCap(nm,cap){ const t=String(cap||"").replace(/\s+$/,""), tg="#"+String(nm||"").replace(/\s+/g,""), rx=new RegExp("^\\s*\\[\\s*"+String(nm||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"\\s*\\]","i");
+  const head=!nm||rx.test(t)?t:(t?`[${nm}] ${t}`:`[${nm}]`); return nm&&!head.toLowerCase().includes(tg.toLowerCase())?`${head}\n\n${tg}`:head; }
 function snRichH(h){ return String(h||"").replace(/(^|[\s>])@([a-z0-9._]{2,30})/gi,(m,p,hd)=>`${p}<button class="sn-lnk" data-a="snAtGo" data-v="${hd.toLowerCase()}">@${hd}</button>`); }
 function snRich(t){ return esc(t||"").replace(/(^|[\s>])([#＃][^\s#＃@.,，。!！?？]{1,30})|(^|[\s>])@([a-z0-9._]{2,30})/gi,(m,p1,tag,p2,h)=>tag?`${p1}<button class="sn-lnk" data-a="snTagGo" data-v="${esc(tag.slice(1).toLowerCase())}">${tag}</button>`:`${p2}<button class="sn-lnk" data-a="snAtGo" data-v="${h.toLowerCase()}">@${h}</button>`); }
 const snTagsOf=p=>((p.cap||"").match(/[#＃][^\s#＃@.,，。!！?？]{1,30}/g)||[]).map(x=>x.slice(1).toLowerCase());
@@ -580,7 +583,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       const vm=dr.media.find(m=>m.type==="video"); if(vm&&vm.file){ dr.cap=cap; dr.busy=1; snVidReady(vm).then(ok=>{ dr.busy=0; if(ok){ const b=document.querySelector('[data-a="snPost"]'); if(b) b.click(); else { ui.snDraft=dr; } } }); break; }
       const d=snDB(), me=snMeId();
       if(dr.mode==="sub"){ const mid=(session()||{}).member, to=snSubTo(mid), now=Date.now(), bad=!!cap&&(hasSlur(cap)||hasBanned(cap)), nm=(MEMBERS[mid]||{}).name||"";
-        (d.sub=d.sub||[]).push({id:"sb"+now.toString(36),mid,to,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap:`[${nm}] ${cap}`.trim(),ts:now,st:bad?"no":"ok",why:bad?"內容有不能用的字詞":"",at:now+Math.round((60+Math.random()*7140)*1000)});
+        (d.sub=d.sub||[]).push({id:"sb"+now.toString(36),mid,to,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap:snSubCap(nm,cap),ts:now,st:bad?"no":"ok",why:bad?"內容有不能用的字詞":"",at:now+Math.round((60+Math.random()*7140)*1000)});
         snSave(d); toast(bad?"投稿被退回：內容有不能用的字詞":"已送出，公司審核後會發布"); ui.snDraft=null; navBack(); break; }
       if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(dr.ov?{ov:dr.ov}:{}),...((dr.stx||[]).length?{stx:dr.stx}:{}),...((dr.ment||[]).length?{ment:dr.ment}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
       else { const as=isAdminAcct()&&dr.as&&snOfAccs().includes(dr.as)?dr.as:me; d.posts.push({id:"sp"+Date.now(),uid:as,media:dr.media.length?dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }):[],...(dr.alb&&!dr.media.length?{alb:dr.alb}:{}),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice()}:{})}); toast("已分享"); }
