@@ -738,3 +738,5 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .svr-out{position:relative;margin:0;font-size:13px;color:rgba(255,255,255,.7)}
 .sv2:has(~.sv3-bk){padding-bottom:110px}
 .sv2.g .sv2-crown{color:#E2559A}
+.sv3-dm{display:grid;gap:8px;margin:0 0 12px;padding:10px 12px;border-radius:14px;background:repeating-linear-gradient(135deg,rgba(226,85,154,.08) 0 10px,transparent 10px 20px),var(--s1)}.sv3-dm b{font-size:12.5px;color:#E2559A}
+.sv3-dm div{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}.sv3-dm div::-webkit-scrollbar{display:none}.sv3-dm button{flex:none;padding:7px 12px;border:0;border-radius:99px;background:var(--s2,rgba(0,0,0,.05));font:inherit;font-size:13px;color:inherit}.sv3-dm button.on{background:#E2559A;color:#fff}
