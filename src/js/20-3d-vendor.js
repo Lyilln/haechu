@@ -251,7 +251,21 @@ const C3={
     obj.add(card(ft,false),card(bt,true));
     const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; obj.add(edge);
     let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; obj.add(hm); }); }
-    C3.fit(st,w,h,1.32);
+    /* 11/18 卡套：軟卡套＝透明 PP 袋（上面開口、左右下熱封邊、比卡大一點點）；硬殼卡套＝硬 PVC 殼（四周厚邊、上面開口、正面有半圓拇指缺口） */
+    const sl=ui.c3Sl|0; ui.c3Sl=0; let fw=w, fh=h;
+    if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
+      const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; obj.add(m); return m; };
+      if(sl===1){ const sw=w+.28, sh=h+.5, sy=-.1, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);
+        [1,-1].forEach(k=>add(new THREE.PlaneGeometry(sw,sh),film,0,sy,k*gap));
+        add(new THREE.BoxGeometry(.05,sh,gap*2),seam,-sw/2,sy,0); add(new THREE.BoxGeometry(.05,sh,gap*2),seam,sw/2,sy,0); add(new THREE.BoxGeometry(sw,.07,gap*2),seam,0,sy-sh/2,0);
+        fw=sw; fh=sh; }
+      else { const tw=w+.9, tg=h+1.25, td=.34, ty=-.12, pl=.045, nr=.6, top=tg/2, face=clr(.2,.03), rail=clr(.5,.12);
+        const fr=new THREE.Shape(); fr.moveTo(-tw/2,-tg/2); fr.lineTo(tw/2,-tg/2); fr.lineTo(tw/2,top); fr.lineTo(nr,top); fr.absarc(0,top,nr,0,Math.PI,true); fr.lineTo(-tw/2,top); fr.lineTo(-tw/2,-tg/2);
+        const bk=new THREE.Shape(); bk.moveTo(-tw/2,-tg/2); bk.lineTo(tw/2,-tg/2); bk.lineTo(tw/2,top); bk.lineTo(-tw/2,top); bk.lineTo(-tw/2,-tg/2);
+        add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
+        const rw=.32; add(new THREE.BoxGeometry(rw,tg,td),rail,-tw/2+rw/2,ty,0); add(new THREE.BoxGeometry(rw,tg,td),rail,tw/2-rw/2,ty,0); add(new THREE.BoxGeometry(tw,rw,td),rail,0,ty-tg/2+rw/2,0);
+        fw=tw; fh=tg; } }
+    C3.fit(st,fw,fh,1.32);
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
     return C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t; }}); },
   /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */

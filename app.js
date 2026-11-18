@@ -2867,13 +2867,13 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid,ui.cvSid)}</small><small>${o.it.w} × ${o.it.h} 公分${pv?"・預覽":ui.cvSid?"":n?`・擁有 ${n} 張`:"・還沒收集到"}</small>${pv||!csid?"":condTxt(cid,csid)}</div>
     <div class="cv-btns">${!pv&&real&&csid?`<button class="btn btn-soft btn-sm" data-a="condSlOpen" data-v="${cid}" data-s="${csid}">${condOf(condCp(cid,csid)).sl?"換卡套":"套卡套"}</button>`:""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
-  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; if(wr) setTimeout(()=>toast(`這張卡${wr}了…套個卡套吧`),600); }
+  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); ui.c3Sl=!pv&&csid?condOf(condCp(cid,csid)).sl|0:0; C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; if(wr) setTimeout(()=>toast(`這張卡${wr}了…套個卡套吧`),600); }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
 function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
   const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>cbHasCards(a)&&(prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`)))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
-      if(n){ /* 11/18 每一張卡分開放（各有自己的序號），點哪張就看哪張 */ const cs=prev?[]:(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); return Array.from({length:n},(_,i)=>cs[i]||null).map(c=>`<button class="cb-it" data-a="cardView" data-v="${cid}" data-s="${c?c.id:""}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${c?condFx(c):""}</button>`).join(""); } return `<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
+      if(n){ /* 11/18 每一張卡分開放（各有自己的序號），點哪張就看哪張 */ const cs=prev?[]:(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); return Array.from({length:n},(_,i)=>cs[i]||null).map(c=>`<button class="cb-it ${c&&condOf(c).sl?"slv sl"+condOf(c).sl:""}" data-a="cardView" data-v="${cid}" data-s="${c?c.id:""}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${c?condFx(c):""}</button>`).join(""); } return `<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=(prev?"":lotBanner())+(al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
     return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.filter(v=>(v.inc||[]).some(it=>(it.pool||[]).length)).map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.filter(it=>(it.pool||[]).length).map(it=>grid(a,it)).join("")}`).join("")}
@@ -9791,7 +9791,21 @@ const C3={
     obj.add(card(ft,false),card(bt,true));
     const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; obj.add(edge);
     let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; obj.add(hm); }); }
-    C3.fit(st,w,h,1.32);
+    /* 11/18 卡套：軟卡套＝透明 PP 袋（上面開口、左右下熱封邊、比卡大一點點）；硬殼卡套＝硬 PVC 殼（四周厚邊、上面開口、正面有半圓拇指缺口） */
+    const sl=ui.c3Sl|0; ui.c3Sl=0; let fw=w, fh=h;
+    if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
+      const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; obj.add(m); return m; };
+      if(sl===1){ const sw=w+.28, sh=h+.5, sy=-.1, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);
+        [1,-1].forEach(k=>add(new THREE.PlaneGeometry(sw,sh),film,0,sy,k*gap));
+        add(new THREE.BoxGeometry(.05,sh,gap*2),seam,-sw/2,sy,0); add(new THREE.BoxGeometry(.05,sh,gap*2),seam,sw/2,sy,0); add(new THREE.BoxGeometry(sw,.07,gap*2),seam,0,sy-sh/2,0);
+        fw=sw; fh=sh; }
+      else { const tw=w+.9, tg=h+1.25, td=.34, ty=-.12, pl=.045, nr=.6, top=tg/2, face=clr(.2,.03), rail=clr(.5,.12);
+        const fr=new THREE.Shape(); fr.moveTo(-tw/2,-tg/2); fr.lineTo(tw/2,-tg/2); fr.lineTo(tw/2,top); fr.lineTo(nr,top); fr.absarc(0,top,nr,0,Math.PI,true); fr.lineTo(-tw/2,top); fr.lineTo(-tw/2,-tg/2);
+        const bk=new THREE.Shape(); bk.moveTo(-tw/2,-tg/2); bk.lineTo(tw/2,-tg/2); bk.lineTo(tw/2,top); bk.lineTo(-tw/2,top); bk.lineTo(-tw/2,-tg/2);
+        add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
+        const rw=.32; add(new THREE.BoxGeometry(rw,tg,td),rail,-tw/2+rw/2,ty,0); add(new THREE.BoxGeometry(rw,tg,td),rail,tw/2-rw/2,ty,0); add(new THREE.BoxGeometry(tw,rw,td),rail,0,ty-tg/2+rw/2,0);
+        fw=tw; fh=tg; } }
+    C3.fit(st,fw,fh,1.32);
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
     return C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t; }}); },
   /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */

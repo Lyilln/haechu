@@ -108,7 +108,12 @@
 .pcw.dent::after{content:"";position:absolute;right:6%;bottom:5%;width:18%;height:12%;border-radius:50%;background:radial-gradient(closest-side,rgba(0,0,0,.28),rgba(255,255,255,.18) 70%,transparent)}
 .pcw.cut{border-left:3px solid rgba(255,255,255,.85);border-top:2px solid rgba(255,255,255,.7)}
 .pcw.bend::before{content:"";position:absolute;left:-10%;right:-10%;top:58%;height:2px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),rgba(0,0,0,.18),transparent);-webkit-transform:rotate(-14deg);transform:rotate(-14deg)}
-.pcs{position:absolute;inset:-3px;pointer-events:none;border-radius:6px;z-index:4;background:linear-gradient(130deg,rgba(255,255,255,.28),transparent 35%,transparent 70%,rgba(255,255,255,.18));box-shadow:0 0 0 1px rgba(255,255,255,.7)}
-.pcs.s2{inset:-5px;border-radius:4px;box-shadow:0 0 0 2px rgba(220,226,240,.95),0 2px 6px rgba(0,0,0,.15)}
+/* 卡套（卡冊、市場的小圖）：軟卡套＝比卡大一點的透明袋，上面開口、左右下有封邊；硬殼＝厚透明殼，四周厚邊、上緣中間有半圓缺口 */
+.pcs{position:absolute;pointer-events:none;z-index:4}
+.pcs.s1{left:-3px;right:-3px;top:-2px;bottom:-5px;border-radius:3px;border:1px solid rgba(165,175,195,.6);border-top:0;background:linear-gradient(118deg,rgba(255,255,255,.34) 0%,rgba(255,255,255,.08) 22%,transparent 40%,transparent 66%,rgba(255,255,255,.2) 80%,transparent 90%);box-shadow:inset 0 -2px 0 rgba(255,255,255,.55),0 1px 2px rgba(0,0,0,.08)}
+.pcs.s2{left:-8px;right:-8px;top:-8px;bottom:-10px;border-radius:3px;border:5px solid rgba(236,242,252,.62);background:linear-gradient(125deg,rgba(255,255,255,.42) 0%,rgba(255,255,255,.1) 18%,transparent 34%,transparent 70%,rgba(255,255,255,.18) 84%,transparent);box-shadow:inset 0 0 0 1px rgba(255,255,255,.9),0 0 0 1px rgba(150,160,180,.6),0 3px 8px rgba(0,0,0,.18)}
+.pcs.s2::before{content:"";position:absolute;left:50%;top:-5px;width:26%;height:9%;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:0 0 999px 999px;background:rgba(255,255,255,.55);box-shadow:inset 0 -1px 0 rgba(150,160,180,.5)}
+.cb-it.slv{overflow:visible}.cb-it.slv>.itf{border-radius:6px;overflow:hidden}.cb-it.sl2{margin:7px 7px 9px}
+.tm-f,.tm-big{overflow:visible}
 .cv-cond{display:block;margin-top:2px}.cv-cond b{font-weight:800}.cv-cond.l0 b{color:#1F9D5A}.cv-cond.l3 b,.cv-cond.l4 b{color:#D9465A}
 .cv-btns .btn{margin:6px auto 0}
