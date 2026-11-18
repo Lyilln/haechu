@@ -2874,7 +2874,7 @@ const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMB
 function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
   const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>cbHasCards(a)&&(prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`)))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
-      if(n){ /* 11/18 每一張卡分開放（各有自己的序號），點哪張就看哪張 */ const cs=prev?[]:(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); return Array.from({length:n},(_,i)=>cs[i]||null).map(c=>`<button class="cb-it ${c&&condOf(c).sl?"slv sl"+condOf(c).sl:""}" data-a="cardView" data-v="${cid}" data-s="${c?c.id:""}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${c?condFx(c):""}</button>`).join(""); } return `<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
+      if(n){ /* 11/18 每一張卡分開放（各有自己的序號），點哪張就看哪張 */ const cs=prev?[]:(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); return Array.from({length:n},(_,i)=>cs[i]||null).map(c=>`<button class="cb-it ${c&&condOf(c).sl&&!condOf(c).out?"slv sl"+condOf(c).sl:""}" data-a="cardView" data-v="${cid}" data-s="${c?c.id:""}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${c?condFx(c):""}</button>`).join(""); } return `<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=(prev?"":lotBanner())+(al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
     return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.filter(v=>(v.inc||[]).some(it=>(it.pool||[]).length)).map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.filter(it=>(it.pool||[]).length).map(it=>grid(a,it)).join("")}`).join("")}
@@ -16132,13 +16132,15 @@ function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv();
   const has=[1,2].filter(k=>I[k]>0); return has.length?has.map(k=>`<button class="btn btn-soft btn-sm" data-a="condOn" data-v="${cid}" data-s="${sid}" data-k="${k}">套${SLV[k].n}（剩 ${I[k]}）</button>`).join(""):`<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`; }
 function condOutGo(cid,sid,btn){ const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp||!cp.c||!cp.c.sl) return; if(condOutGo.on) return; condOutGo.on=1; const out=!cp.c.out;
   cp.c={...cp.c,out:out?1:0}; S.set(K.serials,L); if(btn) btn.disabled=true;
-  const done=()=>{ condOutGo.on=0; const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
+  const done=()=>{ condOutGo.on=0; condTileUp(cid,sid); const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
   if(ui.s3&&ui.s3.slide){ ui.s3.slide(out,done); return; }
   /* CSS 版（沒有 3D）：卡往上滑出、卡套淡掉；放回去反過來 */
   const f=layer.querySelector(".s3-f"), o=layer.querySelector(".s3-obj"); if(!f||!o){ done(); return; } const c=condOf(cp);
   if(!out&&!f.querySelector(".pcs")) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c.sl}" style="opacity:0"></i>`); const p=f.querySelector(".pcs");
   o.classList.add(out?"cso":"csi"); if(p) p.style.transition="opacity .6s"; setTimeout(()=>{ if(p) p.style.opacity=out?0:1; },out?800:0);
   setTimeout(()=>{ o.classList.remove("cso","csi"); if(out&&p) p.remove(); done(); },1500); }
+/* 卡冊後面那一格也要跟著換（大圖是蓋在卡冊上面的，關掉後不會重畫） */
+function condTileUp(cid,sid){ try{ const cp=condCp(cid,sid); document.querySelectorAll(`.cb-it[data-s="${sid}"]`).forEach(el=>{ const c=condOf(cp); el.querySelectorAll(".pcw,.pcs").forEach(x=>x.remove()); el.classList.remove("slv","sl1","sl2"); if(c.sl&&!c.out) el.classList.add("slv","sl"+c.sl); el.insertAdjacentHTML("beforeend",condFx(cp)); }); }catch(e){} }
 /* SHOP：收藏用品（卡套） */
 function slvShopHtml(){ const I=slvInv();
   return `<section class="slv-shop" id="slvShop"><h2>收藏用品</h2><p>小卡拿出來看會磨損，套上卡套就安全了。買了放在你的庫存，在卡冊點開小卡就能套。</p>
@@ -16148,8 +16150,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="slvBuy"){ const k=+t.dataset.k, P=SLV[k]; if(points()<P.pp){ toast("積分不夠"); return; } S.set(K.points,points()-P.pp); const I=slvInv(); I[k]=(I[k]||0)+P.pk; slvSet(I); toast(`買了${P.n} ${P.pk} 個，到卡冊點開小卡就能套`); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(a==="slvGoShop"){ layer.innerHTML=""; ui.shopG=null; ui.prod=null; go("fan",null,"shop"); setTimeout(()=>{ const el=document.getElementById("slvShop"); if(el) el.scrollIntoView({block:"center"}); },400); return; }
   const cid=t.dataset.v, sid=t.dataset.s, L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp) return; const I=slvInv(), c={lv:0,d:[],...(cp.c||{})};
-  if(a==="condOn"){ const k=+t.dataset.k; if(!(I[k]>0)) return; I[k]--; slvSet(I); cp.c={...c,sl:k,out:0}; S.set(K.serials,L); ui.c3In=1; ui.cvSid=sid; openItemView(cid); return; }
-  if(a==="condOff"){ if(c.sl){ I[c.sl]=(I[c.sl]||0)+1; slvSet(I); } cp.c={...c,sl:0,out:0}; S.set(K.serials,L); toast("卡套收回庫存了"); ui.cvSid=sid; openItemView(cid); return; } },true);
+  if(a==="condOn"){ const k=+t.dataset.k; if(!(I[k]>0)) return; I[k]--; slvSet(I); cp.c={...c,sl:k,out:0}; S.set(K.serials,L); condTileUp(cid,sid); ui.c3In=1; ui.cvSid=sid; openItemView(cid); return; }
+  if(a==="condOff"){ if(c.sl){ I[c.sl]=(I[c.sl]||0)+1; slvSet(I); } cp.c={...c,sl:0,out:0}; S.set(K.serials,L); condTileUp(cid,sid); toast("卡套收回庫存了"); ui.cvSid=sid; openItemView(cid); return; } },true);
 /* 11/18 舊的公放卡（分節目之前發的）搬進各節目：照「哪個節目拿到的」紀錄（K.mcGot：週|節目|團）放回那個節目；
    對不到的就照順序分到各節目。序號在新的節目系列裡重抽，卡況、卡套跟著走。每個人只跑一次。 */
 function mcMigrate(){ try{ const s=session(); if(!s||s.role!=="fan"||S.get(acK("daisuki_mc_mig"),0)) return false; const own=getCards(), L=getSerials(), got=S.get(K.mcGot,{})||{}; let ch=false;
