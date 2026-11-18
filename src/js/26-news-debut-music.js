@@ -367,7 +367,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     if(muVotedFor(sh)) return; if(!s.demo&&showEnded(sh,curWeek())) return;
     const r=t.getBoundingClientRect(); let card=null;
     if(s.demo){ ui.dmMine={...(ui.dmMine||{}),[k]:sid}; ui.dmV2=ui.dmV2||{}; ui.dmV2[sh]={...(ui.dmV2[sh]||{}),[sid]:((ui.dmV2[sh]||{})[sid]||0)+1}; }
-    else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); if(mcWeek(s)===curWeek()){ const seat=showSeat(sid,sh); card=seat<3?giveMcCard(s.gid,sh):null; if(seat>=3&&seat<99) setTimeout(()=>toast("公放席滿了"),420); } }
+    else { const m=S.get(K.msMine,{}); m[k]=sid; S.set(K.msMine,m); addShowVote(sid,sh); { const seat=showSeat(sid,sh); /* 每一票都記到大家共用的公放席紀錄（藝人、管理員的補發名單看得到誰投了） */ if(mcWeek(s)===curWeek()){ card=seat<3?giveMcCard(s.gid,sh):null; if(seat>=3&&seat<99) setTimeout(()=>toast("公放席滿了"),420); } } }
     const tk=document.createElement("span"); tk.className="mu3-fly"; tk.innerHTML=MU_IC.tk; tk.style.left=r.left+"px"; tk.style.top=r.top+"px"; document.body.appendChild(tk); setTimeout(()=>tk.remove(),700);   /* 投票券撕下來飛出去 */
     ui.muStamp=sh+sid; setTimeout(()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); setTimeout(()=>{ ui.muStamp=null; },900); if(card||s.demo) muCardPop(card,sh,s); },380); return; }
   if(a==="murGo"){ e.stopImmediatePropagation(); murGo(+t.dataset.v); return; }

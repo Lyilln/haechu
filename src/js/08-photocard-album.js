@@ -645,8 +645,8 @@ function mcGrantGo(){ const gid=ui.albG, G=S.get(MCG,[])||[], sel=Object.entries
   S.set(MCG,G); ui.mcSel=null; toast(n?`已發給 ${n} 位，他們打開 App 就會收到`:"沒有新的要發"); artAlbumsSheet(); }
 /* 11/18 公放卡週裡、在這個版本之前就投了票的粉絲：打開 App 時把自己的公放席補上（照投票那天排），前 3 位補發卡＋通知 */
 function mcHeal(){ const s=session(); if(!s||s.role!=="fan"||Date.now()-(mcHeal.t||0)<30e3) return; mcHeal.t=Date.now(); const wk=curWeek(), me=myEmail(), V=S.get(K.msMine,{})||{}, got=S.get(K.mcGot,{}); let L=null;
-  Object.entries(V).forEach(([dk,sid])=>{ const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1), so=songOf(sid); if(!day||weekKey(day)!==wk||!so||so.demo||mcWeek(so)!==wk||mcSelfAcc(me,so.gid)||got[`${wk}|${sh}|${so.gid}`]) return;
-    const seat=showSeat(sid,sh,day); if(seat>=3) return; const c=giveMcCard(so.gid,sh); if(!c) return; const g=groupOf(so.gid), x=SHOWS.find(z=>z.id===sh); L=L||S.get(K.notifs,[]);
+  Object.entries(V).forEach(([dk,sid])=>{ const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1), so=songOf(sid); if(!day||weekKey(day)!==wk||!so||so.demo||mcSelfAcc(me,so.gid)) return;
+    const seat=showSeat(sid,sh,day); /* 這週投過的都補記到共用紀錄 */ if(mcWeek(so)!==wk||got[`${wk}|${sh}|${so.gid}`]||seat>=3) return; const c=giveMcCard(so.gid,sh); if(!c) return; const g=groupOf(so.gid), x=SHOWS.find(z=>z.id===sh); L=L||S.get(K.notifs,[]);
     L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:so.gid,text:`你是這週 ${x?x.name:""} 最早幫 ${g?g.name:""} 投票的粉絲之一，送你一張公放卡`,ts:Date.now()}); });
   if(L){ S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); } }
 /* 粉絲那邊：打開 App 時看有沒有補發給自己的，有就給卡、通知 */
