@@ -228,3 +228,5 @@
 .mc-warn{display:grid;gap:2px;width:100%;text-align:left;border:0;border-radius:14px;padding:12px 14px;margin:0 0 12px;font:inherit;background:rgba(229,72,77,.1);color:inherit}
 .mc-warn b{color:#E5484D;font-size:14px}
 .mc-warn span{font-size:12.5px;color:var(--ink-3)}
+/* 11/18：SNS 是 IG 的樣子，換主題時字的顏色不跟著變 */
+html .sn,html[data-th] .sn,html[data-th] .sn-shw,html[data-th] .sn-sh{--ink:var(--t,#000);--ink-2:var(--s,#737373);--ink-3:var(--s,#737373)}
