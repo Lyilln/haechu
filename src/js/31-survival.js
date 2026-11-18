@@ -59,6 +59,9 @@ function svAlive(ph){ const s=svSeason(); if(!s) return new Set(); ph=ph||s.ph; 
   if(ph==="r1"||ph==="recruit") return new Set(svAll().map(t=>t.id)); if(ph==="r2") return new Set(K0.r1||[]); if(ph==="final") return new Set(K0.r2||[]); return new Set(K0.r2||[]); }
 const svRank=ph=>{ const sc=svScores(ph); const sd=(svSeason()||{}).id||""; return Object.keys(sc).sort((a,b)=>sc[b]-sc[a]||svHash(sd+a)-svHash(sd+b)); };
 const svById=id=>svAll().find(t=>t.id===id);
+/* 星探用：正在參加選秀的人（報名中、還沒被淘汰、出道準備中的出道組）不能被私訊 */
+function svInShow(em){ const s=svReal(); if(!s||s.ph==="done") return false; em=String(em||"").toLowerCase(); const e=(S.get(SVE,[])||[]).find(x=>x.sid===s.id&&!x.out&&String(x.email||"").toLowerCase()===em); if(!e) return false;
+  const K=s.keep||{}; if(s.ph==="recruit"||s.ph==="r1") return true; if(s.ph==="r2") return (K.r1||[]).includes(e.id); if(s.ph==="final") return (K.r2||[]).includes(e.id); return (s.debut||[]).includes(e.id); }
 const svPh=t=>t&&t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil"></i>`;
 const svLeftTxt=ms=>{ ms=Math.max(0,ms); const d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5); return d?`${d} 天 ${h} 時`:`${h} 時 ${Math.floor(ms%36e5/6e4)} 分`; };
 
