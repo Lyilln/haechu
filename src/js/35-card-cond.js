@@ -23,10 +23,14 @@ function condTxt(cid,sid){ const cp=condCp(cid,sid); if(!cp) return ""; const c=
 function condFx(cp){ const c=condOf(cp); if(!c.lv&&!c.sl) return ""; const D=c.d||[], k=[];
   if(D.some(x=>/白邊|磨損/.test(x))) k.push("edge"); if(D.includes("表面刮痕")) k.push("scr"); if(D.some(x=>/凹/.test(x))) k.push("dent"); if(D.includes("印刷線")) k.push("pl"); if(D.includes("裁切偏移")) k.push("cut"); if(D.includes("輕微彎折")) k.push("bend");
   return `<i class="pcw ${k.join(" ")} l${c.lv}"></i>${c.sl&&!c.out?`<i class="pcs s${c.sl}"></i>`:""}`; }
-/* 大圖下面：軟卡套／硬殼卡套兩個切換鈕。點一下套上（從庫存拿一個），再點一下拿出來（卡套收回庫存）；庫存都沒有就「去 SHOP 買卡套」 */
-function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv(), on=c.out?0:c.sl;
-  if(!on&&!I[1]&&!I[2]) return `<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`;
-  return [1,2].map(k=>`<button class="cv-slt ${on===k?"on":""}" data-a="condTg" data-v="${cid}" data-s="${sid}" data-k="${k}" ${on!==k&&!I[k]?"disabled":""}><b>${SLV[k].n}</b><small>${on===k?"套著・點一下拿出來":I[k]?`點一下套上・剩 ${I[k]}`:"庫存沒有"}</small></button>`).join(""); }
+/* 11/18 點卡面就套／拿出卡套（沒有按鈕）：沒套→用選好的那種套上（庫存扣一個）；套著→拿出來（卡套收回庫存）。
+   大圖下面只有一行提示；兩種卡套都有時多一排小選項選要用哪種；庫存都沒有才出現「去 SHOP 買卡套」 */
+const slvPick=()=>{ const I=slvInv(), k=+(ui.slvK||0); return I[k]>0?k:I[2]>0?2:I[1]>0?1:0; };
+function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv(), on=c.out?0:c.sl, k=slvPick();
+  if(on) return `<small class="cv-tap">點卡面，把卡從${SLV[on].n}拿出來</small>`;
+  if(!k) return `<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`;
+  return `${I[1]>0&&I[2]>0?`<span class="cv-slk">${[1,2].map(x=>`<button class="${x===k?"on":""}" data-a="slvK" data-k="${x}" data-v="${cid}" data-s="${sid}">${SLV[x].n}・${I[x]}</button>`).join("")}</span>`:""}<small class="cv-tap">點卡面，套上${SLV[k].n}（剩 ${I[k]}）</small>`; }
+function condTap(cid,sid){ const now=Date.now(); if(now-(condTap.t||0)<700) return; condTap.t=now;   /* 3D 跟 CSS 版都會收到同一下點擊：只算一次 */ const c=condOf(condCp(cid,sid)), on=c.out?0:c.sl; if(on){ condTgGo(cid,sid,on); return; } const k=slvPick(); if(!k){ toast("沒有卡套了，到 SHOP 買"); return; } condTgGo(cid,sid,k); }
 function condTgGo(cid,sid,k,btn){ if(condTgGo.on) return; const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp) return; const I=slvInv(), c={lv:0,d:[],...(cp.c||{})}, on=c.out?0:c.sl;
   if(on===k){ /* 拿出來：播滑出來的動畫，卡套收回庫存 */ condTgGo.on=1; if(btn) btn.disabled=true;
     const fin=()=>{ condTgGo.on=0; I[k]=(I[k]||0)+1; slvSet(I); cp.c={...c,sl:0,out:0}; S.set(K.serials,L); condTileUp(cid,sid); const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
@@ -40,7 +44,8 @@ function condTileUp(cid,sid){ try{ const cp=condCp(cid,sid); document.querySelec
 function slvShopHtml(){ const I=slvInv();
   return `<section class="slv-shop" id="slvShop"><h2>收藏用品</h2><p>小卡拿出來看會磨損，套上卡套就安全了。買了放在你的庫存，在卡冊點開小卡就能套。</p>
     ${[1,2].map(k=>`<div class="slv-it"><span class="slv-pic k${k}"><i></i></span><span class="slv-b"><b>${SLV[k].n}・${SLV[k].pk} 入</b><small>${k===1?"貼身透明袋（58×89mm），上面開口；拿出來看的磨損機率降到 1%":"硬塑膠殼，裡面已經套好一層軟卡套；不會再磨損"}</small><em>庫存 ${I[k]} 個</em></span><button class="btn btn-main btn-sm" data-a="slvBuy" data-k="${k}">${SLV[k].pp} 積分</button></div>`).join("")}</section>`; }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condTg"],[data-a="slvBuy"],[data-a="slvGoShop"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a;
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condTg"],[data-a="slvBuy"],[data-a="slvGoShop"],[data-a="slvK"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a;
+  if(a==="slvK"){ ui.slvK=+t.dataset.k; const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(t.dataset.v,t.dataset.s); return; }
   if(a==="condTg"){ condTgGo(t.dataset.v,t.dataset.s,+t.dataset.k,t); return; }
   if(a==="slvBuy"){ const k=+t.dataset.k, P=SLV[k]; if(points()<P.pp){ toast("積分不夠"); return; } S.set(K.points,points()-P.pp); const I=slvInv(); I[k]=(I[k]||0)+P.pk; slvSet(I); toast(`買了${P.n} ${P.pk} 個，到卡冊點開小卡就能套`); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(a==="slvGoShop"){ layer.innerHTML=""; ui.shopG=null; ui.prod=null; go("fan",null,"shop"); setTimeout(()=>{ const el=document.getElementById("slvShop"); if(el) el.scrollIntoView({block:"center"}); },400); return; }

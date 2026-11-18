@@ -136,3 +136,5 @@
 .cv-slt b{font-size:14px}.cv-slt small{font-size:11px;opacity:.75}
 .cv-slt.on{background:#fff;color:#3A2233;border-color:#fff}.cv-slt.on b,.cv-slt.on small{color:#3A2233}.cv-slt.on small{opacity:.7}.cv-slt small{color:inherit}
 .cv-slt:disabled{opacity:.4}
+.cv-tap{display:block;width:100%;text-align:center;font-size:12.5px;opacity:.85}
+.cv-slk{display:flex;gap:6px;justify-content:center;width:100%}.cv-slk button{border:0;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.14);color:inherit;font:inherit;font-size:12.5px;font-weight:700}.cv-slk button.on{background:#fff;color:#5B2A86}

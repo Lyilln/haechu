@@ -270,7 +270,7 @@ const C3={
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
     /* 11/18 從卡套拿出來／放回去：卡從上面開口滑出來，卡套淡掉；放回去反過來 */
     let an=null; const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, up=h*.92;
-    const api=C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t;
+    const api=C3.spin(st,obj,host,{rx:-6,ry:-18,onTap:()=>layer.querySelector(".ph-view.cv")&&ui.cvTap&&ui.cvTap(),tick:t=>{ if(holo) holo.uniforms.uT.value=t;
       if(an){ const k=Math.min(1,(performance.now()-an.t0)/an.d), e=ease(k);
         if(an.out){ if(k<.6){ cardG.position.y=up*ease(k/.6); } else { const q=ease((k-.6)/.4); cardG.position.y=up*(1-q); slA(1-q); slvG.position.y=-q*h*.5; } }
         else { if(k<.35){ const q=ease(k/.35); slvG.position.y=-(1-q)*h*.5; slA(q); cardG.position.y=up*q; } else cardG.position.y=up*(1-ease((k-.35)/.65)); }

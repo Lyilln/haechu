@@ -2867,7 +2867,7 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid,ui.cvSid)}</small><small>${o.it.w} × ${o.it.h} 公分${pv?"・預覽":ui.cvSid?"":n?`・擁有 ${n} 張`:"・還沒收集到"}</small>${pv||!csid?"":condTxt(cid,csid)}</div>
     <div class="cv-btns">${!pv&&real&&csid?condBtns(cid,csid):""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
-  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); { const c0=!pv&&csid?condOf(condCp(cid,csid)):null, f=layer.querySelector(".s3-f"); if(f&&c0&&c0.sl&&!c0.out) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c0.sl}"></i>`); }   /* 沒有 3D 的手機：卡套畫在 CSS 版上 */
+  if(ui.s3) ui.s3.stop(); ui.cvTap=!pv&&real&&csid?()=>condTap(cid,csid):null; ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18,onTap:()=>ui.cvTap&&ui.cvTap()}); { const c0=!pv&&csid?condOf(condCp(cid,csid)):null, f=layer.querySelector(".s3-f"); if(f&&c0&&c0.sl&&!c0.out) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c0.sl}"></i>`); }   /* 沒有 3D 的手機：卡套畫在 CSS 版上 */
   ui.c3Sl=!pv&&csid?condOf(condCp(cid,csid)).sl|0:0; ui.c3Out=!pv&&csid?condOf(condCp(cid,csid)).out|0:0; C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; if(wr) setTimeout(()=>toast(`這張卡${wr}了…套個卡套吧`),600); }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
@@ -9812,7 +9812,7 @@ const C3={
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
     /* 11/18 從卡套拿出來／放回去：卡從上面開口滑出來，卡套淡掉；放回去反過來 */
     let an=null; const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, up=h*.92;
-    const api=C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t;
+    const api=C3.spin(st,obj,host,{rx:-6,ry:-18,onTap:()=>layer.querySelector(".ph-view.cv")&&ui.cvTap&&ui.cvTap(),tick:t=>{ if(holo) holo.uniforms.uT.value=t;
       if(an){ const k=Math.min(1,(performance.now()-an.t0)/an.d), e=ease(k);
         if(an.out){ if(k<.6){ cardG.position.y=up*ease(k/.6); } else { const q=ease((k-.6)/.4); cardG.position.y=up*(1-q); slA(1-q); slvG.position.y=-q*h*.5; } }
         else { if(k<.35){ const q=ease(k/.35); slvG.position.y=-(1-q)*h*.5; slA(q); cardG.position.y=up*q; } else cardG.position.y=up*(1-ease((k-.35)/.65)); }
@@ -16126,10 +16126,14 @@ function condTxt(cid,sid){ const cp=condCp(cid,sid); if(!cp) return ""; const c=
 function condFx(cp){ const c=condOf(cp); if(!c.lv&&!c.sl) return ""; const D=c.d||[], k=[];
   if(D.some(x=>/白邊|磨損/.test(x))) k.push("edge"); if(D.includes("表面刮痕")) k.push("scr"); if(D.some(x=>/凹/.test(x))) k.push("dent"); if(D.includes("印刷線")) k.push("pl"); if(D.includes("裁切偏移")) k.push("cut"); if(D.includes("輕微彎折")) k.push("bend");
   return `<i class="pcw ${k.join(" ")} l${c.lv}"></i>${c.sl&&!c.out?`<i class="pcs s${c.sl}"></i>`:""}`; }
-/* 大圖下面：軟卡套／硬殼卡套兩個切換鈕。點一下套上（從庫存拿一個），再點一下拿出來（卡套收回庫存）；庫存都沒有就「去 SHOP 買卡套」 */
-function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv(), on=c.out?0:c.sl;
-  if(!on&&!I[1]&&!I[2]) return `<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`;
-  return [1,2].map(k=>`<button class="cv-slt ${on===k?"on":""}" data-a="condTg" data-v="${cid}" data-s="${sid}" data-k="${k}" ${on!==k&&!I[k]?"disabled":""}><b>${SLV[k].n}</b><small>${on===k?"套著・點一下拿出來":I[k]?`點一下套上・剩 ${I[k]}`:"庫存沒有"}</small></button>`).join(""); }
+/* 11/18 點卡面就套／拿出卡套（沒有按鈕）：沒套→用選好的那種套上（庫存扣一個）；套著→拿出來（卡套收回庫存）。
+   大圖下面只有一行提示；兩種卡套都有時多一排小選項選要用哪種；庫存都沒有才出現「去 SHOP 買卡套」 */
+const slvPick=()=>{ const I=slvInv(), k=+(ui.slvK||0); return I[k]>0?k:I[2]>0?2:I[1]>0?1:0; };
+function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv(), on=c.out?0:c.sl, k=slvPick();
+  if(on) return `<small class="cv-tap">點卡面，把卡從${SLV[on].n}拿出來</small>`;
+  if(!k) return `<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`;
+  return `${I[1]>0&&I[2]>0?`<span class="cv-slk">${[1,2].map(x=>`<button class="${x===k?"on":""}" data-a="slvK" data-k="${x}" data-v="${cid}" data-s="${sid}">${SLV[x].n}・${I[x]}</button>`).join("")}</span>`:""}<small class="cv-tap">點卡面，套上${SLV[k].n}（剩 ${I[k]}）</small>`; }
+function condTap(cid,sid){ const now=Date.now(); if(now-(condTap.t||0)<700) return; condTap.t=now;   /* 3D 跟 CSS 版都會收到同一下點擊：只算一次 */ const c=condOf(condCp(cid,sid)), on=c.out?0:c.sl; if(on){ condTgGo(cid,sid,on); return; } const k=slvPick(); if(!k){ toast("沒有卡套了，到 SHOP 買"); return; } condTgGo(cid,sid,k); }
 function condTgGo(cid,sid,k,btn){ if(condTgGo.on) return; const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp) return; const I=slvInv(), c={lv:0,d:[],...(cp.c||{})}, on=c.out?0:c.sl;
   if(on===k){ /* 拿出來：播滑出來的動畫，卡套收回庫存 */ condTgGo.on=1; if(btn) btn.disabled=true;
     const fin=()=>{ condTgGo.on=0; I[k]=(I[k]||0)+1; slvSet(I); cp.c={...c,sl:0,out:0}; S.set(K.serials,L); condTileUp(cid,sid); const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
@@ -16143,7 +16147,8 @@ function condTileUp(cid,sid){ try{ const cp=condCp(cid,sid); document.querySelec
 function slvShopHtml(){ const I=slvInv();
   return `<section class="slv-shop" id="slvShop"><h2>收藏用品</h2><p>小卡拿出來看會磨損，套上卡套就安全了。買了放在你的庫存，在卡冊點開小卡就能套。</p>
     ${[1,2].map(k=>`<div class="slv-it"><span class="slv-pic k${k}"><i></i></span><span class="slv-b"><b>${SLV[k].n}・${SLV[k].pk} 入</b><small>${k===1?"貼身透明袋（58×89mm），上面開口；拿出來看的磨損機率降到 1%":"硬塑膠殼，裡面已經套好一層軟卡套；不會再磨損"}</small><em>庫存 ${I[k]} 個</em></span><button class="btn btn-main btn-sm" data-a="slvBuy" data-k="${k}">${SLV[k].pp} 積分</button></div>`).join("")}</section>`; }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condTg"],[data-a="slvBuy"],[data-a="slvGoShop"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a;
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condTg"],[data-a="slvBuy"],[data-a="slvGoShop"],[data-a="slvK"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a;
+  if(a==="slvK"){ ui.slvK=+t.dataset.k; const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(t.dataset.v,t.dataset.s); return; }
   if(a==="condTg"){ condTgGo(t.dataset.v,t.dataset.s,+t.dataset.k,t); return; }
   if(a==="slvBuy"){ const k=+t.dataset.k, P=SLV[k]; if(points()<P.pp){ toast("積分不夠"); return; } S.set(K.points,points()-P.pp); const I=slvInv(); I[k]=(I[k]||0)+P.pk; slvSet(I); toast(`買了${P.n} ${P.pk} 個，到卡冊點開小卡就能套`); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(a==="slvGoShop"){ layer.innerHTML=""; ui.shopG=null; ui.prod=null; go("fan",null,"shop"); setTimeout(()=>{ const el=document.getElementById("slvShop"); if(el) el.scrollIntoView({block:"center"}); },400); return; }

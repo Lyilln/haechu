@@ -499,7 +499,7 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid,ui.cvSid)}</small><small>${o.it.w} × ${o.it.h} 公分${pv?"・預覽":ui.cvSid?"":n?`・擁有 ${n} 張`:"・還沒收集到"}</small>${pv||!csid?"":condTxt(cid,csid)}</div>
     <div class="cv-btns">${!pv&&real&&csid?condBtns(cid,csid):""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
-  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); { const c0=!pv&&csid?condOf(condCp(cid,csid)):null, f=layer.querySelector(".s3-f"); if(f&&c0&&c0.sl&&!c0.out) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c0.sl}"></i>`); }   /* 沒有 3D 的手機：卡套畫在 CSS 版上 */
+  if(ui.s3) ui.s3.stop(); ui.cvTap=!pv&&real&&csid?()=>condTap(cid,csid):null; ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18,onTap:()=>ui.cvTap&&ui.cvTap()}); { const c0=!pv&&csid?condOf(condCp(cid,csid)):null, f=layer.querySelector(".s3-f"); if(f&&c0&&c0.sl&&!c0.out) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c0.sl}"></i>`); }   /* 沒有 3D 的手機：卡套畫在 CSS 版上 */
   ui.c3Sl=!pv&&csid?condOf(condCp(cid,csid)).sl|0:0; ui.c3Out=!pv&&csid?condOf(condCp(cid,csid)).out|0:0; C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; if(wr) setTimeout(()=>toast(`這張卡${wr}了…套個卡套吧`),600); }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
