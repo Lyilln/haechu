@@ -52,8 +52,8 @@ async function mkCollect(){ if(mkCollect.on) return; const me=mkMe(), s=session(
     } }catch(e){} finally{ mkCollect.on=false; } }
 setInterval(()=>{ if(mkMe()&&mkAll().some(x=>x.by===mkMe()||x.buyer===mkMe())) mkCollect(); },20e3);
 /* 這張上架的卡能不能接上我手上的連號（同一個系列，號碼差 1～4） */
-function mkFits(x){ const kd=serKind(x.cid); if(!kd||!x.cp.n) return false; const o=parseIt(x.cid), key=kd.o||(kd.r+"|"+(o?o.p.mid:"")), L=getSerials();
-  return Object.keys(L).some(cid=>{ const k2=serKind(cid); if(!k2) return false; const o2=parseIt(cid); if((k2.o||(k2.r+"|"+(o2?o2.p.mid:"")))!==key) return false; return L[cid].some(c=>c.n&&!c.rd&&Math.abs(c.n-x.cp.n)>=1&&Math.abs(c.n-x.cp.n)<=4); }); }
+function mkFits(x){ if(!x.cp.n) return false; const key=serKey(x.cid,x.cp); if(!key) return false; const L=getSerials();
+  return Object.keys(L).some(cid=>L[cid].some(c=>c.n&&!c.rd&&serKey(cid,c)===key&&Math.abs(c.n-x.cp.n)>=1&&Math.abs(c.n-x.cp.n)<=4)); }
 /* ===== 畫面 ===== */
 const MK_KIND=[["","全部"],["mc","公放卡"],["fs","簽售卡"],["ex","特典"],["album","專輯小卡"]];
 const mkKindOk=(cid,k)=>{ if(!k) return true; const r=mkLab(cid).rule; return k==="ex"?(r==="pob"||r==="ld"):r===k; };

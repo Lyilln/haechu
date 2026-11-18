@@ -97,7 +97,7 @@ ${H} .nav-btn.on,${H} .nav-btn.on .nav-ico{color:${vink}!important}
 ${H} .t-b{background:${v.bubA}!important;color:${thTxtOn(v.bubA,v)}!important;border:1.5px solid ${v.bubAB}!important;box-shadow:none!important;position:relative}
 ${H} .t-b.me{background:${v.bubM}!important;color:${thTxtOn(v.bubM,v)}!important;border-color:${v.bubMB}!important;text-shadow:none!important}
 ${t.deco2?`${H} .t-b::before{content:"";position:absolute;right:14px;bottom:-11px;width:20px;height:20px;background:url("${t.deco2}") center/contain no-repeat;pointer-events:none;z-index:1}${H} .t-b.me::before{right:auto;left:14px}${H} .t-b.t-stk::before,${H} .t-bw .t-media::before{display:none}`:""}${t.deco?`${H} .t-b::after{content:"";position:absolute;right:12px;top:-12px;width:18px;height:18px;background:url("${t.deco}") center/contain no-repeat;pointer-events:none}${H} .t-b.me::after{right:auto;left:12px}${H} .t-b.t-stk::after,${H} .t-bw .t-media::after,${H} .t-b:has(img,video)::after{display:none}`:""}
-${H} .t-glow{background:linear-gradient(180deg,${rgba(v.ac,dark?.32:.2)} 0%,${rgba(v.ac,dark?.14:.08)} 35%,${rgba(v.bg,0)} 100%)!important}
+${H} .t-glow{display:none!important}   /* 11/18 主色光暈在主題背景上很突兀 */
 ${H} .t-page{background:${v.bg}!important}
 ${H} .t-bgl.t-default{background:${thPat(t,v,dark)}${v.bg}!important}
 ${H} .t-pill{color:${vink}!important;border-color:${rgba(v.ac,.25)}!important;background:${card}!important}

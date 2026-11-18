@@ -21,9 +21,8 @@ const coupons=()=>(S.get(K.coupons,[])||[]).filter(x=>x&&x.id);
 const cpLive=()=>coupons().filter(x=>!x.used);
 /* 找出手上還沒兌換的 5 張連號 */
 function lotRuns(){ const L=getSerials(), G={};
-  Object.keys(L).forEach(cid=>{ const kd=serKind(cid); if(!kd) return; const o=parseIt(cid); if(!o) return; const key=kd.o||(kd.r+"|"+(o.p.mid||"")), mid=o.p.mid;
-    const g=G[key]||(G[key]={key,lab:`${mid&&MEMBERS[mid]?MEMBERS[mid].name:(groupOf(o.a.gid)||{}).name||""} ${o.it.name}`,cs:[]});
-    L[cid].forEach(x=>{ if(x.n&&!x.rd) g.cs.push({cid,id:x.id,n:x.n}); }); });
+  Object.keys(L).forEach(cid=>{ const o=parseIt(cid); if(!o||!serKind(cid)) return; const mid=o.p.mid;
+    L[cid].forEach(x=>{ if(!x.n||x.rd) return; const key=serKey(cid,x), g=G[key]||(G[key]={key,lab:`${mid&&MEMBERS[mid]?MEMBERS[mid].name:(groupOf(o.a.gid)||{}).name||""} ${o.it.name}`,cs:[]}); g.cs.push({cid,id:x.id,n:x.n}); }); });
   const out=[]; Object.values(G).forEach(g=>{ const c=g.cs.sort((a,b)=>a.n-b.n); let run=[];
     c.forEach(x=>{ if(run.length&&x.n!==run[run.length-1].n+1) run=[]; run.push(x); if(run.length===5){ out.push({key:g.key,lab:g.lab,cs:run}); run=[]; } }); });
   return out; }
