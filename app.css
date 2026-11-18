@@ -7631,6 +7631,16 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .s3-f{position:relative}
 @-webkit-keyframes csOut{0%{-webkit-transform:translateY(0)}45%{-webkit-transform:translateY(-70%)}100%{-webkit-transform:translateY(0)}}@keyframes csOut{0%{transform:translateY(0)}45%{transform:translateY(-70%)}100%{transform:translateY(0)}}
 .s3-obj.cso .s3-f>.itf,.s3-obj.csi .s3-f>.itf{-webkit-animation:csOut 1.5s ease-in-out;animation:csOut 1.5s ease-in-out}
+/* 11/18 SHOP：收藏用品（卡套） */
+.slv-shop{margin-top:16px;padding:20px 18px;border-radius:26px;background:var(--s1);border:1px solid var(--line)}
+.slv-shop h2{margin:0 0 6px;font-size:20px;font-weight:800;color:var(--ink)}.slv-shop>p{margin:0 0 12px;font-size:13px;line-height:1.55;color:var(--sub)}
+.slv-it{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.slv-b{flex:1;min-width:0}.slv-b b{display:block;font-size:15px;color:var(--ink)}.slv-b small{display:block;font-size:12px;line-height:1.45;color:var(--sub);margin-top:2px}.slv-b em{font-style:normal;font-size:12px;color:var(--accent,#8B5CF6);font-weight:700}
+.slv-pic{position:relative;flex:0 0 52px;height:72px;border-radius:8px;background:linear-gradient(160deg,#EDE7F6,#D9CFF0)}
+.slv-pic i{position:absolute;left:9px;right:9px;top:10px;bottom:9px;border-radius:4px;background:linear-gradient(160deg,#C4B5FD,#F0ABFC)}
+.slv-pic.k1::after{content:"";position:absolute;left:7px;right:7px;top:7px;bottom:6px;border:1px solid rgba(255,255,255,.95);border-top:0;border-radius:3px;background:linear-gradient(120deg,rgba(255,255,255,.45),transparent 40%,transparent 70%,rgba(255,255,255,.25))}
+.slv-pic.k2::after{content:"";position:absolute;left:3px;right:3px;top:3px;bottom:2px;border:4px solid rgba(255,255,255,.75);border-radius:3px;background:linear-gradient(125deg,rgba(255,255,255,.5),transparent 35%,transparent 70%,rgba(255,255,255,.25));box-shadow:0 0 0 1px rgba(150,160,180,.5)}
+.slv-pic.k2::before{content:"";position:absolute;z-index:1;left:50%;top:3px;width:14px;height:6px;-webkit-transform:translateX(-50%);transform:translateX(-50%);border-radius:0 0 8px 8px;background:#fff}
 
 /* ===== 交易市場 ===== */
 .tm .tiei-body{padding-bottom:40px}

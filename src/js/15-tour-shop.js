@@ -243,6 +243,7 @@ function viewShop(){
       ${f.length?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}">${gPhoto(gid)?`<span class="ws-lgp" role="img" aria-label="${esc(g.name)}" style="background-image:url('${esc(gPhoto(gid))}')"></span>`:`<span>${esc(g.name)}</span>`}</i><small>${esc(g.name)}</small></button>`:""}).join("")}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
       <button class="ws-find" data-a="shOpen" data-k="shop">${I.search||"🔍"}<b>藝人</b></button></section>
     ${thShopCard()}
+    ${slvShopHtml()}
     ${f.map(gid=>{const g=groupOf(gid); if(!g) return ""; return `<section class="wsp-sec"><button class="wsp-now" data-a="shopG" data-v="${gid}" style="background:${grad(g.g)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(g.name)} ›</b></button>
       <div class="wsp-row">${shopProducts(gid).map(prodCard).join("")}</div></section>`}).join("")}
     ${mine.length?`<h2 class="mf-h">我的 ${WHISPER_NAME} 券</h2>${passGroups(mine).map(P=>{ const id=P.ids[0], g=groupOf(P.gid), m=MEMBERS[id], st=passStatus(id), solo=P.ids.length===1&&(!g||(g.members||[]).length<=1);

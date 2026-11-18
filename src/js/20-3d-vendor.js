@@ -252,7 +252,7 @@ const C3={
     const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; cardG.add(edge);
     let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; cardG.add(hm); }); }
     /* 11/18 卡套：軟卡套＝透明 PP 袋（上面開口、左右下熱封邊、比卡大一點點）；硬殼卡套＝硬 PVC 殼（四周厚邊、上面開口、正面有半圓拇指缺口） */
-    const sl=ui.c3Sl|0, out0=!!ui.c3Out; ui.c3Sl=0; ui.c3Out=0; let fw=w, fh=h;
+    const sl=ui.c3Sl|0, pin=!!ui.c3In&&sl, out0=!!ui.c3Out||pin; ui.c3Sl=0; ui.c3Out=0; ui.c3In=0;   /* pin：剛套上卡套 → 開場就播「放進去」 */ let fw=w, fh=h;
     if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
       const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; slvG.add(m); return m; };
       { const sw=w+.3, sh=h+.4, sy=-.08, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);   /* 11/18 照真的：小卡 55×85mm 用 58×89mm 的貼身卡套（上面開口）；硬殼卡套裡面也一定先套一層 */
@@ -276,6 +276,7 @@ const C3={
         else { if(k<.35){ const q=ease(k/.35); slvG.position.y=-(1-q)*h*.5; slA(q); cardG.position.y=up*q; } else cardG.position.y=up*(1-ease((k-.35)/.65)); }
         if(k>=1){ cardG.position.y=0; slvG.position.y=0; slA(an.out?0:1); const cb=an.cb; an=null; if(cb) cb(); } } }});
     if(api&&sl) api.slide=(out,cb)=>{ an={out,t0:performance.now(),d:1500,cb}; if(api.face) api.face(); };
+    if(api&&pin) setTimeout(()=>api.slide&&api.slide(false),350);
     return api; },
   /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */
   upItem(host,cid,maxPx,after){ const old=ui.s3; C3.swap(host,()=>C3.item(host,cid,maxPx)).then(api=>{ if(!api) return; if(ui.s3!==old||!host.isConnected){ api.stop(); return; } if(old) old.stop(); ui.s3=api; if(after) after(api); }); },
