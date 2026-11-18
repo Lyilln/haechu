@@ -28,7 +28,7 @@ function serPick(st,kd){ if(kd.o){ const n=(st.o[kd.o]|0)+1; st.o[kd.o]=n; retur
   const n=free[Math.random()*free.length|0]; used.push(n); return n; }
 /* 把手上每一張卡都對上一筆；缺號碼的補號碼 */
 async function serialSync(){ if(serialSync.on) return; const s=session(); if(!s||s.role!=="fan"||sbxOn()) return; serialSync.on=true;
-  try{ const own=getCards(), meta=cardMeta(), L=getSerials(); let ch=false;
+  try{ mcMigrate(); const own=getCards(), meta=cardMeta(), L=getSerials(); let ch=false;
     if(!S.get(K.serV,0)){ /* 11/18 改規則：已經照順序編好的公放卡、簽售卡重新抽號碼（一次） */ Object.keys(L).forEach(cid=>{ const o=String(cid).startsWith("it|")&&parseIt(cid); if(o&&(o.it.rule==="mc"||o.it.rule==="fs")) L[cid].forEach(x=>{ x.n=null; }); }); S.set(K.serV,2); ch=true; }
     Object.keys(own).forEach(cid=>{ const n=own[cid]|0, a=L[cid]||[];
       while(a.length<n){ const kd=String(cid).startsWith("it|")?serKind(cid,{ts:Date.now()}):null, first=!a.length&&meta[cid];

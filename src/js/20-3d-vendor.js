@@ -246,15 +246,15 @@ const C3={
       C3.pic(pcImg(a,p,"b")||PCI[`ib|${a.id}|${it.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C2[0],C2[1]); C3.txt(x,g.name,W/2,H*.46,`700 ${Math.min(W,H)*.1}px ${SERIF}`,"#fff",W*.86); C3.txt(x,a.title,W/2,H*.56,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }) ]);
     if(!host.isConnected){ ft.dispose(); bt.dispose(); return null; }
     const z=(typeof ZM==="function"?ZM():1)||1, VW=Math.round(Math.min(innerWidth/z*.94,420)), VH=Math.round(Math.min(innerHeight/z*.56,(maxPx||250)*1.75));
-    const st=C3.stage(host,VW,VH), obj=new THREE.Group(); st.sc.add(obj); st.disp.push(ft,bt);
+    const st=C3.stage(host,VW,VH), obj=new THREE.Group(), cardG=new THREE.Group(), slvG=new THREE.Group(); st.sc.add(obj); obj.add(cardG,slvG); st.disp.push(ft,bt);
     const card=(tex,back)=>{ const mesh=new THREE.Mesh(C3.plane(w,h,r),new THREE.MeshPhysicalMaterial({map:tex,roughness:.42,metalness:0,clearcoat:.7,clearcoatRoughness:.12,envMapIntensity:.32})); mesh.position.z=back?-th/2-.001:th/2+.001; if(back) mesh.rotation.y=Math.PI; return mesh; };
-    obj.add(card(ft,false),card(bt,true));
-    const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; obj.add(edge);
-    let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; obj.add(hm); }); }
+    cardG.add(card(ft,false),card(bt,true));
+    const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; cardG.add(edge);
+    let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; cardG.add(hm); }); }
     /* 11/18 卡套：軟卡套＝透明 PP 袋（上面開口、左右下熱封邊、比卡大一點點）；硬殼卡套＝硬 PVC 殼（四周厚邊、上面開口、正面有半圓拇指缺口） */
-    const sl=ui.c3Sl|0; ui.c3Sl=0; let fw=w, fh=h;
+    const sl=ui.c3Sl|0, out0=!!ui.c3Out; ui.c3Sl=0; ui.c3Out=0; let fw=w, fh=h;
     if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
-      const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; obj.add(m); return m; };
+      const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; slvG.add(m); return m; };
       { const sw=w+.3, sh=h+.4, sy=-.08, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);   /* 11/18 照真的：小卡 55×85mm 用 58×89mm 的貼身卡套（上面開口）；硬殼卡套裡面也一定先套一層 */
         [1,-1].forEach(k=>add(new THREE.PlaneGeometry(sw,sh),film,0,sy,k*gap));
         add(new THREE.BoxGeometry(.05,sh,gap*2),seam,-sw/2,sy,0); add(new THREE.BoxGeometry(.05,sh,gap*2),seam,sw/2,sy,0); add(new THREE.BoxGeometry(sw,.07,gap*2),seam,0,sy-sh/2,0);
@@ -265,9 +265,18 @@ const C3={
         add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
         const rw=.32; add(new THREE.BoxGeometry(rw,tg,td),rail,-tw/2+rw/2,ty,0); add(new THREE.BoxGeometry(rw,tg,td),rail,tw/2-rw/2,ty,0); add(new THREE.BoxGeometry(tw,rw,td),rail,0,ty-tg/2+rw/2,0);
         fw=tw; fh=tg; } }
-    C3.fit(st,fw,fh,1.32);
+    C3.fit(st,fw,fh*(sl?1.25:1),1.32);
+    const slMat=[]; slvG.traverse(m=>{ if(m.material) slMat.push([m.material,m.material.opacity]); }); const slA=a=>{ slMat.forEach(([mt,op])=>{ mt.opacity=op*a; }); slvG.visible=a>.01; }; if(out0) slA(0);
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
-    return C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t; }}); },
+    /* 11/18 從卡套拿出來／放回去：卡從上面開口滑出來，卡套淡掉；放回去反過來 */
+    let an=null; const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, up=h*.92;
+    const api=C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t;
+      if(an){ const k=Math.min(1,(performance.now()-an.t0)/an.d), e=ease(k);
+        if(an.out){ if(k<.6){ cardG.position.y=up*ease(k/.6); } else { const q=ease((k-.6)/.4); cardG.position.y=up*(1-q); slA(1-q); slvG.position.y=-q*h*.5; } }
+        else { if(k<.35){ const q=ease(k/.35); slvG.position.y=-(1-q)*h*.5; slA(q); cardG.position.y=up*q; } else cardG.position.y=up*(1-ease((k-.35)/.65)); }
+        if(k>=1){ cardG.position.y=0; slvG.position.y=0; slA(an.out?0:1); const cb=an.cb; an=null; if(cb) cb(); } } }});
+    if(api&&sl) api.slide=(out,cb)=>{ an={out,t0:performance.now(),d:1500,cb}; if(api.face) api.face(); };
+    return api; },
   /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */
   upItem(host,cid,maxPx,after){ const old=ui.s3; C3.swap(host,()=>C3.item(host,cid,maxPx)).then(api=>{ if(!api) return; if(ui.s3!==old||!host.isConnected){ api.stop(); return; } if(old) old.stop(); ui.s3=api; if(after) after(api); }); },
   /* ---------- 專輯 ---------- */

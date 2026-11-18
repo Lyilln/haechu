@@ -2865,9 +2865,10 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
     <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?` ✦ 貴卡${fxOf(o.p)!=="none"?"・"+FX_N[fxOf(o.p)]:""}`:""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid,ui.cvSid)}</small><small>${o.it.w} × ${o.it.h} 公分${pv?"・預覽":ui.cvSid?"":n?`・擁有 ${n} 張`:"・還沒收集到"}</small>${pv||!csid?"":condTxt(cid,csid)}</div>
-    <div class="cv-btns">${!pv&&real&&csid?`<button class="btn btn-soft btn-sm" data-a="condSlOpen" data-v="${cid}" data-s="${csid}">${condOf(condCp(cid,csid)).sl?"換卡套":"套卡套"}</button>`:""}</div>
+    <div class="cv-btns">${!pv&&real&&csid?condBtns(cid,csid):""}</div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
-  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); ui.c3Sl=!pv&&csid?condOf(condCp(cid,csid)).sl|0:0; C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; if(wr) setTimeout(()=>toast(`這張卡${wr}了…套個卡套吧`),600); }
+  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); { const c0=!pv&&csid?condOf(condCp(cid,csid)):null, f=layer.querySelector(".s3-f"); if(f&&c0&&c0.sl&&!c0.out) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c0.sl}"></i>`); }   /* 沒有 3D 的手機：卡套畫在 CSS 版上 */
+  ui.c3Sl=!pv&&csid?condOf(condCp(cid,csid)).sl|0:0; ui.c3Out=!pv&&csid?condOf(condCp(cid,csid)).out|0:0; C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; if(wr) setTimeout(()=>toast(`這張卡${wr}了…套個卡套吧`),600); }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
 function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
@@ -9786,15 +9787,15 @@ const C3={
       C3.pic(pcImg(a,p,"b")||PCI[`ib|${a.id}|${it.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C2[0],C2[1]); C3.txt(x,g.name,W/2,H*.46,`700 ${Math.min(W,H)*.1}px ${SERIF}`,"#fff",W*.86); C3.txt(x,a.title,W/2,H*.56,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }) ]);
     if(!host.isConnected){ ft.dispose(); bt.dispose(); return null; }
     const z=(typeof ZM==="function"?ZM():1)||1, VW=Math.round(Math.min(innerWidth/z*.94,420)), VH=Math.round(Math.min(innerHeight/z*.56,(maxPx||250)*1.75));
-    const st=C3.stage(host,VW,VH), obj=new THREE.Group(); st.sc.add(obj); st.disp.push(ft,bt);
+    const st=C3.stage(host,VW,VH), obj=new THREE.Group(), cardG=new THREE.Group(), slvG=new THREE.Group(); st.sc.add(obj); obj.add(cardG,slvG); st.disp.push(ft,bt);
     const card=(tex,back)=>{ const mesh=new THREE.Mesh(C3.plane(w,h,r),new THREE.MeshPhysicalMaterial({map:tex,roughness:.42,metalness:0,clearcoat:.7,clearcoatRoughness:.12,envMapIntensity:.32})); mesh.position.z=back?-th/2-.001:th/2+.001; if(back) mesh.rotation.y=Math.PI; return mesh; };
-    obj.add(card(ft,false),card(bt,true));
-    const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; obj.add(edge);
-    let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; obj.add(hm); }); }
+    cardG.add(card(ft,false),card(bt,true));
+    const edge=new THREE.Mesh(new THREE.ExtrudeGeometry(C3.shape(w,h,r),{depth:th,bevelEnabled:false,curveSegments:10}),[new THREE.MeshBasicMaterial({visible:false}),new THREE.MeshStandardMaterial({color:p.sp?0xF2ECFF:0xF4F1F6,roughness:.45,metalness:p.sp?.5:0,envMapIntensity:1})]);   /* 只畫側邊（厚度），正反面交給照片那兩片，才不會互相閃 */ edge.position.z=-th/2; cardG.add(edge);
+    let holo=null; if(p.sp){ holo=C3.holo(.42); [false,true].forEach(b=>{ const hm=new THREE.Mesh(C3.plane(w,h,r),holo); hm.position.z=b?-th/2-.003:th/2+.003; if(b) hm.rotation.y=Math.PI; cardG.add(hm); }); }
     /* 11/18 卡套：軟卡套＝透明 PP 袋（上面開口、左右下熱封邊、比卡大一點點）；硬殼卡套＝硬 PVC 殼（四周厚邊、上面開口、正面有半圓拇指缺口） */
-    const sl=ui.c3Sl|0; ui.c3Sl=0; let fw=w, fh=h;
+    const sl=ui.c3Sl|0, out0=!!ui.c3Out; ui.c3Sl=0; ui.c3Out=0; let fw=w, fh=h;
     if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
-      const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; obj.add(m); return m; };
+      const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; slvG.add(m); return m; };
       { const sw=w+.3, sh=h+.4, sy=-.08, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);   /* 11/18 照真的：小卡 55×85mm 用 58×89mm 的貼身卡套（上面開口）；硬殼卡套裡面也一定先套一層 */
         [1,-1].forEach(k=>add(new THREE.PlaneGeometry(sw,sh),film,0,sy,k*gap));
         add(new THREE.BoxGeometry(.05,sh,gap*2),seam,-sw/2,sy,0); add(new THREE.BoxGeometry(.05,sh,gap*2),seam,sw/2,sy,0); add(new THREE.BoxGeometry(sw,.07,gap*2),seam,0,sy-sh/2,0);
@@ -9805,9 +9806,18 @@ const C3={
         add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
         const rw=.32; add(new THREE.BoxGeometry(rw,tg,td),rail,-tw/2+rw/2,ty,0); add(new THREE.BoxGeometry(rw,tg,td),rail,tw/2-rw/2,ty,0); add(new THREE.BoxGeometry(tw,rw,td),rail,0,ty-tg/2+rw/2,0);
         fw=tw; fh=tg; } }
-    C3.fit(st,fw,fh,1.32);
+    C3.fit(st,fw,fh*(sl?1.25:1),1.32);
+    const slMat=[]; slvG.traverse(m=>{ if(m.material) slMat.push([m.material,m.material.opacity]); }); const slA=a=>{ slMat.forEach(([mt,op])=>{ mt.opacity=op*a; }); slvG.visible=a>.01; }; if(out0) slA(0);
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
-    return C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t; }}); },
+    /* 11/18 從卡套拿出來／放回去：卡從上面開口滑出來，卡套淡掉；放回去反過來 */
+    let an=null; const ease=x=>x<.5?2*x*x:1-Math.pow(-2*x+2,2)/2, up=h*.92;
+    const api=C3.spin(st,obj,host,{rx:-6,ry:-18,tick:t=>{ if(holo) holo.uniforms.uT.value=t;
+      if(an){ const k=Math.min(1,(performance.now()-an.t0)/an.d), e=ease(k);
+        if(an.out){ if(k<.6){ cardG.position.y=up*ease(k/.6); } else { const q=ease((k-.6)/.4); cardG.position.y=up*(1-q); slA(1-q); slvG.position.y=-q*h*.5; } }
+        else { if(k<.35){ const q=ease(k/.35); slvG.position.y=-(1-q)*h*.5; slA(q); cardG.position.y=up*q; } else cardG.position.y=up*(1-ease((k-.35)/.65)); }
+        if(k>=1){ cardG.position.y=0; slvG.position.y=0; slA(an.out?0:1); const cb=an.cb; an=null; if(cb) cb(); } } }});
+    if(api&&sl) api.slide=(out,cb)=>{ an={out,t0:performance.now(),d:1500,cb}; if(api.face) api.face(); };
+    return api; },
   /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */
   upItem(host,cid,maxPx,after){ const old=ui.s3; C3.swap(host,()=>C3.item(host,cid,maxPx)).then(api=>{ if(!api) return; if(ui.s3!==old||!host.isConnected){ api.stop(); return; } if(old) old.stop(); ui.s3=api; if(after) after(api); }); },
   /* ---------- 專輯 ---------- */
@@ -15965,7 +15975,7 @@ function serPick(st,kd){ if(kd.o){ const n=(st.o[kd.o]|0)+1; st.o[kd.o]=n; retur
   const n=free[Math.random()*free.length|0]; used.push(n); return n; }
 /* 把手上每一張卡都對上一筆；缺號碼的補號碼 */
 async function serialSync(){ if(serialSync.on) return; const s=session(); if(!s||s.role!=="fan"||sbxOn()) return; serialSync.on=true;
-  try{ const own=getCards(), meta=cardMeta(), L=getSerials(); let ch=false;
+  try{ mcMigrate(); const own=getCards(), meta=cardMeta(), L=getSerials(); let ch=false;
     if(!S.get(K.serV,0)){ /* 11/18 改規則：已經照順序編好的公放卡、簽售卡重新抽號碼（一次） */ Object.keys(L).forEach(cid=>{ const o=String(cid).startsWith("it|")&&parseIt(cid); if(o&&(o.it.rule==="mc"||o.it.rule==="fs")) L[cid].forEach(x=>{ x.n=null; }); }); S.set(K.serV,2); ch=true; }
     Object.keys(own).forEach(cid=>{ const n=own[cid]|0, a=L[cid]||[];
       while(a.length<n){ const kd=String(cid).startsWith("it|")?serKind(cid,{ts:Date.now()}):null, first=!a.length&&meta[cid];
@@ -16104,24 +16114,45 @@ const condNew=()=>Math.random()<.08?{c:{lv:1,d:[COND_F[Math.random()*COND_F.leng
 const condCp=(cid,sid)=>(getSerials()[cid]||[]).find(x=>x.id===sid)||null;
 /* 點開看：可能磨損一級 */
 function condWear(cid,sid){ const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp) return null; const c={lv:0,d:[],sl:0,...(cp.c||{})}, day=ymd(Date.now());
-  if(c.lv>=4||c.wd===day) return null; const odd=c.sl?SLV[c.sl].odd:.03; if(Math.random()>=odd) return null;
+  if(c.lv>=4||c.wd===day) return null; const odd=c.sl&&!c.out?SLV[c.sl].odd:.03;   /* 拿出卡套的卡＝裸卡 */ if(Math.random()>=odd) return null;
   const pool=COND_W.filter(x=>!c.d.includes(x)&&(c.lv>=2||x!=="輕微彎折")), w=pool[Math.random()*pool.length|0]||COND_W[0];
   c.lv++; c.d=[...c.d,w]; c.wd=day; cp.c=c; S.set(K.serials,L); return w; }
 function condTxt(cid,sid){ const cp=condCp(cid,sid); if(!cp) return ""; const c=condOf(cp);
-  return `<small class="cv-cond l${c.lv}">卡況：<b>${COND_N[c.lv]}</b>${c.d.length?`（${c.d.map(esc).join("、")}）`:""}${c.sl?`・${SLV[c.sl].n}`:"・沒套卡套"}</small>`; }
+  return `<small class="cv-cond l${c.lv}">卡況：<b>${COND_N[c.lv]}</b>${c.d.length?`（${c.d.map(esc).join("、")}）`:""}${c.sl?(c.out?`・已從${SLV[c.sl].n.replace(/（.*）/,"")}拿出來`:`・${SLV[c.sl].n}`):"・沒套卡套"}</small>`; }
 /* 卡冊、市場的卡面：畫上瑕疵 */
 function condFx(cp){ const c=condOf(cp); if(!c.lv&&!c.sl) return ""; const D=c.d||[], k=[];
   if(D.some(x=>/白邊|磨損/.test(x))) k.push("edge"); if(D.includes("表面刮痕")) k.push("scr"); if(D.some(x=>/凹/.test(x))) k.push("dent"); if(D.includes("印刷線")) k.push("pl"); if(D.includes("裁切偏移")) k.push("cut"); if(D.includes("輕微彎折")) k.push("bend");
-  return `<i class="pcw ${k.join(" ")} l${c.lv}"></i>${c.sl?`<i class="pcs s${c.sl}"></i>`:""}`; }
+  return `<i class="pcw ${k.join(" ")} l${c.lv}"></i>${c.sl&&!c.out?`<i class="pcs s${c.sl}"></i>`:""}`; }
+/* 大圖下面的按鈕：有卡套→拿出來／放回去＋換卡套；沒有→套卡套 */
+function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)); return c.sl?`<button class="btn btn-main btn-sm" data-a="condOut" data-v="${cid}" data-s="${sid}">${c.out?"放回卡套":"從卡套拿出來"}</button><button class="btn btn-soft btn-sm" data-a="condSlOpen" data-v="${cid}" data-s="${sid}">換卡套</button>`:`<button class="btn btn-soft btn-sm" data-a="condSlOpen" data-v="${cid}" data-s="${sid}">套卡套</button>`; }
+function condOutGo(cid,sid,btn){ const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp||!cp.c||!cp.c.sl) return; if(condOutGo.on) return; condOutGo.on=1; const out=!cp.c.out;
+  cp.c={...cp.c,out:out?1:0}; S.set(K.serials,L); if(btn) btn.disabled=true;
+  const done=()=>{ condOutGo.on=0; const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
+  if(ui.s3&&ui.s3.slide){ ui.s3.slide(out,done); return; }
+  /* CSS 版（沒有 3D）：卡往上滑出、卡套淡掉；放回去反過來 */
+  const f=layer.querySelector(".s3-f"), o=layer.querySelector(".s3-obj"); if(!f||!o){ done(); return; } const c=condOf(cp);
+  if(!out&&!f.querySelector(".pcs")) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c.sl}" style="opacity:0"></i>`); const p=f.querySelector(".pcs");
+  o.classList.add(out?"cso":"csi"); if(p) p.style.transition="opacity .6s"; setTimeout(()=>{ if(p) p.style.opacity=out?0:1; },out?800:0);
+  setTimeout(()=>{ o.classList.remove("cso","csi"); if(out&&p) p.remove(); done(); },1500); }
 function condSleeve(cid,sid){ const cp=condCp(cid,sid); if(!cp) return; const c=condOf(cp);
   tieModal("卡套",`<p class="fy-info">軟卡套：貼身的透明袋（58×89mm），上面開口。<br>硬殼卡套：硬塑膠殼，先套軟卡套再放進去，最保護。<br>已經磨損的不會變回來。</p><p class="fy-info">現在：${c.sl?SLV[c.sl].n:"沒套卡套"}・你有 ${fmt(points())} 積分</p>`,
     `${[1,2].map(k=>`<button class="t-mbtn ${k===2?"main":""}" data-a="condSl" data-v="${k}" ${c.sl===k?"disabled":""}>${SLV[k].n}・${SLV[k].p} 積分<small>（磨損機率 ${k===1?"1%":"0%"}）</small></button>`).join("")}${c.sl?`<button class="t-mbtn" data-a="condSl" data-v="0">拿掉卡套</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`);
   ui.condAt={cid,sid}; }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condSlOpen"],[data-a="condSl"]'); if(!t) return; e.stopImmediatePropagation();
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condSlOpen"],[data-a="condSl"],[data-a="condOut"]'); if(!t) return; e.stopImmediatePropagation();
+  if(t.dataset.a==="condOut"){ condOutGo(t.dataset.v,t.dataset.s,t); return; }
   if(t.dataset.a==="condSlOpen"){ condSleeve(t.dataset.v,t.dataset.s); return; }
   const at=ui.condAt||{}, k=+t.dataset.v, L=getSerials(), cp=(L[at.cid]||[]).find(x=>x.id===at.sid); if(!cp) return;
   if(k&&points()<SLV[k].p){ toast("積分不夠"); return; } if(k) S.set(K.points,points()-SLV[k].p);
-  cp.c={lv:0,d:[],...(cp.c||{}),sl:k}; S.set(K.serials,L); layer.innerHTML=""; toast(k?`套上${SLV[k].n}了`:"卡套拿掉了"); ui.cvSid=at.sid; openItemView(at.cid); },true);
+  cp.c={lv:0,d:[],...(cp.c||{}),sl:k,out:0}; S.set(K.serials,L); layer.innerHTML=""; toast(k?`套上${SLV[k].n}了`:"卡套拿掉了"); ui.cvSid=at.sid; openItemView(at.cid); },true);
+/* 11/18 舊的公放卡（分節目之前發的）搬進各節目：照「哪個節目拿到的」紀錄（K.mcGot：週|節目|團）放回那個節目；
+   對不到的就照順序分到各節目。序號在新的節目系列裡重抽，卡況、卡套跟著走。每個人只跑一次。 */
+function mcMigrate(){ try{ const s=session(); if(!s||s.role!=="fan"||S.get(acK("daisuki_mc_mig"),0)) return false; const own=getCards(), L=getSerials(), got=S.get(K.mcGot,{})||{}; let ch=false;
+  Object.keys(own).forEach(cid=>{ const o=String(cid).startsWith("it|")&&parseIt(cid); if(!o||o.it.rule!=="mc"||o.it.show) return; const gid=o.a.gid, m=o.p.mid||"g", n=own[cid]|0; if(!n) return;
+    const sh=Object.entries(got).filter(([k])=>k.endsWith("|"+gid)&&SHOWS.some(x=>k.split("|")[1]===x.id)).sort((a,b)=>a[1]-b[1]).map(([k])=>k.split("|")[1]);
+    const cps=(L[cid]||[]).slice(0,n); while(cps.length<n) cps.push({id:uid("s"),n:null,ts:Date.now()});
+    cps.forEach((cp,i)=>{ const so=sh[i]||SHOWS[i%SHOWS.length].id, nc=`it|mc_${gid}|mc_${so}|${m}_${so}`; own[nc]=(own[nc]||0)+1; (L[nc]=L[nc]||[]).push({...cp,n:null}); });
+    delete own[cid]; delete L[cid]; ch=true; });
+  if(ch){ S.set(K.cards,own); S.set(K.serials,L); } S.set(acK("daisuki_mc_mig"),1); return ch; }catch(e){ return false; } }
 
 /* ===== 舊 iPhone（iOS 15）看不懂 color-mix：build.py 自動整理清單，由 cmxPoly() 補上算好的顏色 ===== */
 const CMX_RULES=[[".ob-n", "", "background", "color-mix(in srgb,var(--ink) 18%,transparent)"], [".ux-empty span", "", "background", "color-mix(in srgb,var(--accent,#8B5CF6) 10%,transparent)"], ["html[data-theme] body header.top", "", "background", "color-mix(in srgb,var(--bg) 88%,transparent)"], ["html[data-theme] body .nav-in", "", "background", "color-mix(in srgb,var(--s1) 92%,transparent)"], [".foc-pill", "", "background", "color-mix(in srgb,#6D8DF5 16%,transparent)"], [".foc-ms2 span.on", "", "background", "color-mix(in srgb,var(--accent,#8B5CF6) 14%,transparent)"], [".foc-ms2 span.on", "", "border-color", "color-mix(in srgb,var(--accent,#8B5CF6) 40%,transparent)"], ["html[data-theme] body .t-lh", "", "background", "color-mix(in srgb,var(--bg) 82%,transparent)"], ["html[data-theme] body .t-search:not(.in)", "", "background", "color-mix(in srgb,var(--bg) 95%,transparent)"], [".ap-cell small", "", "background", "color-mix(in srgb,var(--s1) 85%,transparent)"], [".sto-av", "", "background", "linear-gradient(140deg,var(--c),color-mix(in srgb,var(--c) 55%,#1a1424))"], [".sto-av", "", "box-shadow", "0 4px 14px color-mix(in srgb,var(--c) 35%,transparent)"], [".cm-shade", "", "background", "linear-gradient(180deg,transparent 30%,color-mix(in srgb,var(--gt) 70%,#000 30%) 100%)"], [".cm-chips button.on", "", "background", "color-mix(in srgb,var(--gt) 72%,#1B1626)"], [".ofd-tag", "", "background", "color-mix(in srgb,var(--ink) 8%,transparent)"], [".ofd>.ofm-bar", "", "border-top", "1px solid color-mix(in srgb,var(--ink) 10%,transparent)"], [".cmx-hbg", "", "background", "linear-gradient(160deg,color-mix(in srgb,var(--gt) 55%,#fff),var(--gt))"], [".ap2-bar", "", "background", "color-mix(in srgb,var(--bg) 70%,transparent)"], [".me-hero", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--gt) 70%,#000) 0%,var(--gt) 100%)"], [".yv-th", "", "background", "linear-gradient(135deg,color-mix(in srgb,var(--gt) 60%,#fff),var(--gt))"], [".t-spin", "", "border-color", "color-mix(in srgb,var(--violet,#A47BFF) 22%,transparent)!important"], [".snof-card", "", "background", "radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--c) 70%,#000),#0b0910)"], [".sn-nav", "", "background", "color-mix(in srgb,var(--b) 82%,transparent)"], [".sn-nav", "", "border", ".5px solid color-mix(in srgb,var(--t) 10%,transparent)"], [".ia-ban", "", "background", "color-mix(in srgb,var(--s1,#fff) 88%,transparent)"], [".tr-n", "", "background", "color-mix(in srgb,var(--gt,#8843FB) 14%,transparent)"], [".nw-tag", "", "background", "color-mix(in srgb,var(--c) 14%,transparent)"], [".nw-ph", "", "background", "linear-gradient(135deg,var(--gt),color-mix(in srgb,var(--gt) 55%,#fff))"], [".nw-gs span", "", "background", "color-mix(in srgb,var(--gt) 12%,transparent)"], [".cal-btn", "", "background", "color-mix(in srgb,currentColor 10%,transparent)"], [".cal-x", "", "background", "color-mix(in srgb,var(--accent,#c06) 14%,transparent)"], [".sn-sh.srt .srt-g", "", "background", "color-mix(in srgb,var(--sn-t,#fff) 7%,transparent)"], [".pta-r.on", "", "background", "color-mix(in srgb,var(--violet) 10%,transparent)"], [".lsf-seg button.cur", "", "background", "color-mix(in srgb,var(--c) 22%,transparent)"], [".lsf-b", "", "background", "color-mix(in srgb,var(--c) 10%,transparent)"], [".sn-nav button.on:last-child", "", "background", "color-mix(in srgb,var(--t) 9%,transparent)"], [".sn-pick", "", "border", "1.5px dashed color-mix(in srgb,var(--t,#fff) 22%,transparent)"], [".sn-pick", "", "background", "color-mix(in srgb,var(--t,#fff) 5%,transparent)"], [".sn-next:disabled", "", "background", "color-mix(in srgb,var(--t,#fff) 12%,transparent)"], [".sn-next:disabled", "", "color", "color-mix(in srgb,var(--t,#fff) 45%,transparent)!important"], [".sn-aud button", "", "border", "1px solid color-mix(in srgb,var(--t,#fff) 22%,transparent)"], [".sn-aud button.on", "", "background", "color-mix(in srgb,var(--t,#fff) 12%,transparent)"], [".sn-aud .cf.on", "", "background", "color-mix(in srgb,#1CD14F 16%,transparent)"], [".sn-tagr", "", "border-top", ".5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important"], [".sn-tagr", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important"], [".fp-reps", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 8%,transparent)"], [".pre-bn button", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 12%,var(--card,#fff))"], [".sn-fb", "", "background", "color-mix(in srgb,var(--t,#000) 8%,transparent)"], [".sn-musb", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#000) 14%,transparent)"], [".sn-musr", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#000) 14%,transparent)"], [".smp-pl", "", "box-shadow", "0 6px 18px color-mix(in srgb,var(--violet,#8843FB) 40%,transparent)"], [".smp-sh.l", "", "background", "linear-gradient(90deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))"], [".smp-sh.r", "", "background", "linear-gradient(270deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))"], [".smp-win", "", "box-shadow", "0 0 0 999px color-mix(in srgb,var(--s2) 55%,transparent),0 0 18px color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)"], [".smp-win em", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 30%,transparent)"], [".stk-pan", "", "border-top", "1px solid color-mix(in srgb,currentColor 10%,transparent)"], [".stk-tabs button.on", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 14%,transparent)"], [".stk-grid button:active", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 12%,transparent)"], [".stk-grab", "", "background", "color-mix(in srgb,currentColor 20%,transparent)"], ["#stkDock", "", "border-top", "1px solid color-mix(in srgb,currentColor 8%,transparent)"], [".vs-hero", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--glass) 82%,transparent),var(--glass)),var(--vg)"], [".vs-pick button.on", "", "background", "color-mix(in srgb,var(--accent,#8843FB) 14%,transparent)"], [".scx-num button.on", "", "background", "color-mix(in srgb,#7C5CFF 22%,transparent)"], [".cfs-awn", "", "background", "repeating-linear-gradient(90deg,var(--ac) 0 18px,color-mix(in srgb,var(--ac) 55%,#fff) 18px 36px)"], [".fya", "", "background", "radial-gradient(120% 90% at 50% 110%,color-mix(in srgb,var(--c1) 55%,#000) 0%,#07050d 62%)"], [".fya.ph::after", "", "background", "linear-gradient(115deg,color-mix(in srgb,var(--c1) 38%,transparent) 0%,transparent 42%,transparent 60%,color-mix(in srgb,var(--c2) 40%,transparent) 100%)"], [".fya-mono", "", "filter", "drop-shadow(0 0 28px color-mix(in srgb,var(--c2) 70%,transparent))"], [".fya-beam", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--c1) 55%,transparent),transparent 75%)"], [".fya-beam.b3", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--c2) 55%,transparent),transparent 75%)"], [".pr-auto::after", "", "background", "linear-gradient(160deg,color-mix(in srgb,var(--c) 40%,transparent),transparent 60%)"], ["html[data-th] body .toast,html[data-th] .toast", "", "background", "color-mix(in srgb,var(--s1) 88%,transparent)!important"], [".mur-trk .mt-p i", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)"], [".mur-trk .mt-on i", "", "box-shadow", "0 0 0 3px color-mix(in srgb,var(--violet,#8843FB) 22%,transparent)"], [".sn-gb", "", "background", "color-mix(in srgb,var(--t) 8%,transparent)"], [".sn-dmhead button", "", "background", "color-mix(in srgb,var(--t) 10%,transparent)"], [".pd-c.lp-on", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 10%,transparent)"], [".sn-pvh", "", "background", "color-mix(in srgb,var(--b,#000) 78%,transparent)!important"]];

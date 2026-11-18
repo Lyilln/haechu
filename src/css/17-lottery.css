@@ -117,4 +117,7 @@
 .cb-it.slv{overflow:visible}.cb-it.slv>.itf{border-radius:6px;overflow:hidden}.cb-it.sl2{margin:7px 7px 9px}
 .tm-f,.tm-big{overflow:visible}
 .cv-cond{display:block;margin-top:2px}.cv-cond b{font-weight:800}.cv-cond.l0 b{color:#1F9D5A}.cv-cond.l3 b,.cv-cond.l4 b{color:#D9465A}
-.cv-btns .btn{margin:6px auto 0}
+.cv-btns .btn{margin:2px 0 0}
+.s3-f{position:relative}
+@-webkit-keyframes csOut{0%{-webkit-transform:translateY(0)}45%{-webkit-transform:translateY(-70%)}100%{-webkit-transform:translateY(0)}}@keyframes csOut{0%{transform:translateY(0)}45%{transform:translateY(-70%)}100%{transform:translateY(0)}}
+.s3-obj.cso .s3-f>.itf,.s3-obj.csi .s3-f>.itf{-webkit-animation:csOut 1.5s ease-in-out;animation:csOut 1.5s ease-in-out}
