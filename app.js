@@ -8370,7 +8370,7 @@ seedStores(); seedStores2(); seedMascots(); ui.selectDraft=null; ui.feedTab="fee
 /* =========================================================
    主題（照 LINE 主題小舖）：SHOP 裡的「TINT」
    ・一套主題＝素材包：封面、配色（淺色／深色各一組）、背景圖案、主角插圖、花邊、對話框裝飾、選單圖示 6 個
-   ・換的地方：App 背景與文字顏色、底部選單、TIE 聊天室（背景、插圖、花邊、對話框）；TIE 的頂部和輸入列不換，維持原本的白／深色半透明（11/18 她定）
+   ・換的地方：App 背景與文字顏色、底部選單、TIE 聊天室（背景、插圖、花邊、對話框）；TIE 的頂部和輸入列不換，維持原本的白／深色、不透明（11/18 她定）
    ・只有自己看得到；自己設過的 TIE 背景不會被蓋掉（對話框還是會跟著主題）
    ・主題有淺色＋深色兩版 → 跟著外觀切換；只有一版 → 怎麼切都維持原樣
    ・主題輪播：預設關閉，每個人自己決定
@@ -8450,12 +8450,12 @@ function thApplyCSS(){
   const dark=thDarkNow(), v=thVar(t,dark), [r,g,b]=hexRgb(v.ac); try{ thRecolor(t,thVar(t,false)); }catch(e){}
   const card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), s2=dark?mixHex(v.bg,"#ffffff",.11):mixHex(v.bg,v.ac,.06), s3=dark?mixHex(v.bg,"#ffffff",.16):mixHex(v.bg,v.ac,.11);
   const vink=dark?mixHex(v.ac,"#ffffff",.35):mixHex(v.ac,v.ink,.35), H="html[data-th][data-theme]";
-  /* 11/18 TIE 聊天室的頂部和輸入列不跟著主題：先讀沒套主題時的顏色變數，套在這兩條上（按鈕維持原本的紫色）；底色是原本的白／深色，半透明讓背景透一點 */
+  /* 11/18 TIE 聊天室的頂部和輸入列不跟著主題：先讀沒套主題時的顏色變數，套在這兩條上（按鈕維持原本的紫色）；底色是原本的白／深色（不透明） */
   root.removeAttribute("data-th"); const cs0=getComputedStyle(root), TV=["--violet","--violet-ink","--violet-soft","--candy","--bg","--s1","--s2","--s3","--card-solid","--glass","--glass-pink","--line","--ink","--ink-2","--ink-3"].map(k=>{ const x=cs0.getPropertyValue(k).trim(); return x?`${k}:${x}`:""; }).filter(Boolean).join(";");
   root.setAttribute("data-th",t.id);
   st.textContent=`${H}{--violet:${v.ac};--violet-ink:${vink};--violet-soft:${rgba(v.ac,dark?.2:.13)};--candy:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.22)} 0%,${v.ac} 100%);--bg:${v.bg};--s1:${card};--s2:${s2};--s3:${s3};--card-solid:${card};--glass:${card};--glass-pink:${card};--line:${rgba(v.ink,dark?.12:.09)};--ink:${v.ink};--ink-2:${v.sub};--ink-3:${mixHex(v.sub,v.bg,.25)}}
 ${H} .t-rh,${H} .t-foot{${TV}}
-${H} .t-rh,${H} .t-foot{background:${dark?"rgba(27,26,33,.8)":"rgba(255,255,255,.8)"}!important;-webkit-backdrop-filter:blur(14px)!important;backdrop-filter:blur(14px)!important}
+${H} .t-rh,${H} .t-foot{background:${dark?"#1B1A21":"#FFFFFF"}!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 ${H} body{background:${thPat(t,v,dark)}${v.bg}!important}
 ${H} .t-art-n b:not(.a-nick),${H} .t-acc b{color:${v.ink}!important}
 ${H} .bg{display:none}
