@@ -286,7 +286,7 @@ const svTrio=L=>`<div class="sv5-me">${L.map(([b,s])=>`<div><b>${b}</b><small>${
 const svPyr5=(h,ids,tile)=>`<section class="sv5-pyr"><h4>${h}</h4>${svPyr(ids,tile)}</section>`;
 const svEnt5=L=>`<div class="sv5-ent">${L.map(([v,b,sm])=>`<button data-a="uniGo" data-v="#/fan/core?p=survival&v=${v}"><b>${b}</b><small>${sm}</small></button>`).join("")}</div>`;
 const svHow5=()=>`<button class="sv5-how" data-a="uniGo" data-v="#/fan/core?p=survival&v=how">怎麼玩？</button>`;
-const svBack5=t=>`<div class="sv5-bk"><button data-a="back">‹ 回選秀</button><b>${t}</b></div>`;
+const svBack5=t=>`<div class="sv5-bk"><b>${t}</b></div>`;   /* 上面的返回鍵就能回去，不另外放「回選秀」 */
 const svRecMe=s=>s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry();
 
 function svRecruitHtml(s){ const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
