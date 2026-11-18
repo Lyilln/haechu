@@ -7389,6 +7389,26 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .wt-tabs::-webkit-scrollbar{display:none}
 .wt-tabs button{flex:none;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--s1);color:var(--ink-2);font:inherit;font-size:14px}
 .wt-tabs button.on{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:700}
+/* 選秀：挑戰 1 號位、1 號位對決、1 分鐘 PR、開場座位 */
+.sv2-t.ch1{border-style:dashed}
+.svf-ch1{margin:0 0 8px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.7);font-size:13px;line-height:1.6;color:var(--ink-2)}
+.sv4-c1,.sv4-pr,.sv4-seat{margin:14px 0;padding:14px;border-radius:18px;background:rgba(255,255,255,.75);border:1px solid rgba(0,0,0,.05)}
+.sv4-h{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}.sv4-h b{font-size:15px}.sv4-h small{font-size:12px;color:var(--ink-3)}
+.sv4-c1l{display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
+.sv4-c1i{display:flex;flex-direction:column;align-items:center;gap:6px}
+.sv4-c1i small{font-size:11px;color:var(--ink-3)}
+.sv2-cta.sm{width:auto;margin:0;padding:6px 16px;font-size:13px}
+.sv4-prb{display:flex;gap:12px;align-items:flex-start}
+.sv4-prp{flex:none;width:84px;height:84px;border-radius:16px;overflow:hidden;background:#f3e6ee;display:flex;align-items:center;justify-content:center}
+.sv4-prp img{width:100%;height:100%;object-fit:cover}
+.sv4-prb b{font-size:16px}.sv4-prb small{display:block;font-size:12px;color:var(--ink-3)}
+.sv4-prb p{margin:6px 0 0;font-size:13.5px;line-height:1.6}.sv4-prb p.sub{color:var(--ink-3);font-size:12.5px}
+.sv4-seat summary{font-size:14px;font-weight:700;cursor:pointer;margin-bottom:6px}
+.sv4-seat .sv2-t span:last-child{font-size:10px;max-width:56px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sv4-seat .sv2-t,.sv4-c1 .sv2-t{-webkit-animation:none!important;animation:none!important;opacity:1!important}
+.sv4-seat,.sv4-c1,.sv4-pr{position:relative;overflow:hidden}
+.sv4-seat,.sv4-c1,.sv4-pr{z-index:1;background:#fff}
+.sv4-prp{position:relative}
 
 /* ===== 連號開獎：扭蛋機 ===== */
 .lot .tiei-body{padding-bottom:40px}
