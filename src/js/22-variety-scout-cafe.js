@@ -270,9 +270,11 @@ function scPick(uid,sc,d,co0){ const me=scNext(sc,co0); sc.by[uid]=me; const co=
   sc.picked[uid]=Date.now(); }
 /* 自動挖掘：只在管理員的手機跑（不會重複私訊） */
 /* 不能挖的人：已出道、已簽公司（帳號有公司或名單勾了）、已經挖過、正在參加選秀 */
+/* 11/18 選秀節目進行中（招募～決賽）：星探全部暫停，誰都不私訊；節目結束後再恢復 */
+const scPause=()=>{ try{ const s=typeof svReal==="function"&&svReal(); return !!(s&&["recruit","r1","r2","final"].includes(s.ph)); }catch(e){ return false; } };
 const scBlock=(sc,uid)=>{ const x=sc.list.find(y=>y.uid===uid); return scArtist(uid)||!!scCoOf(uid)||!!(x&&x.signed)||!!sc.picked[uid]||(typeof svInShow==="function"&&svInShow(String(uid).slice(2))); };
 /* 自動挖掘：只在管理員的手機跑。每位粉絲都看（不用先加名單）→ 哪幾家公司的條件達到了 → 派出最少挖過人的那家，私訊後自動放進名單 */
-function scAuto(){ try{ if(!isAdminAcct()||ui.svDemo) return; if(HB_ON&&HB.ver[SC_KEY]==null&&!Object.keys(HB.ver||{}).length) return; const sc=scGet(), C=scCos(sc); if(!C.length) return; const d=snDB(); let n=0;
+function scAuto(){ try{ if(!isAdminAcct()||ui.svDemo||scPause()) return; if(HB_ON&&HB.ver[SC_KEY]==null&&!Object.keys(HB.ver||{}).length) return; const sc=scGet(), C=scCos(sc); if(!C.length) return; const d=snDB(); let n=0;
   const cnt={}; Object.values(sc.by).forEach(id=>{ const a=scAcc(id); if(a) cnt[a.co]=(cnt[a.co]||0)+1; });
   Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(!a||a.role&&a.role!=="fan") return; const uid="u:"+String(e).toLowerCase(); if(scBlock(sc,uid)||!snUser(uid)) return;
     const ok=C.filter(co=>scStat(d,uid,scCfgOf(sc,co)).ok); if(!ok.length) return; const mn=Math.min(...ok.map(co=>cnt[co]||0)), P=ok.filter(co=>(cnt[co]||0)===mn), co=P[Math.floor(Math.random()*P.length)];
@@ -290,7 +292,7 @@ function snScoutPage(d){ if(!isAdminAcct()) return snProfile(d,"o:scout"); const
     <section class="scx-hero"><span class="scx-av">✦</span><b>haechu.scout${SN_VER}</b><small>尋找下一顆星</small>
       <div class="scx-num"><button class="${f==="all"?"on":""}" data-a="scF" data-v="all"><b>${rows.length}</b>名單</button><button class="${f==="ok"?"on":""}" data-a="scF" data-v="ok"><b>${N("ok")}</b>符合</button><button class="${f==="picked"?"on":""}" data-a="scF" data-v="picked"><b>${N("picked")}</b>已挖掘</button></div></section>
     <section class="scx-card"><h3>星探帳號<button data-a="scAccEd" data-v="">＋ 新增</button></h3>${sc.accs.length?`<div class="scx-accs">${sc.accs.map(a=>`<button data-a="scAccEd" data-v="${a.id}">${snAv(snUser(a.id),52)}<b>${esc(a.name||a.u)}</b><small>@${esc(a.u)}・${esc(a.co||"")}</small></button>`).join("")}</div>`:`<p class="scx-empty">還沒有星探帳號，挖人時會用 haechu.scout</p>`}</section>
-    <section class="scx-card"><h3>挖掘條件</h3>${CO.length?`<p class="scx-empty">每家公司各自設定。所有粉絲都會自動檢查，達到哪家的條件就由那家的星探私訊；已出道、已簽公司、正在參加選秀的人不會被挖。</p><nav class="scx-f">${CO.map(k=>`<button class="${k===co?"on":""}" data-a="scCoTab" data-v="${esc(k)}">${esc(k)}</button>`).join("")}</nav>${step("days","最近",c.days,"天")}${step("posts","發文至少",c.posts,"則")}${step("fol","粉絲至少",c.fol,"人")}${step("likes","平均讚數至少",c.likes,"個")}`:`<p class="scx-empty">先新增星探帳號（選好公司），才能設定那家公司的挖掘條件。</p>`}</section>
+    ${scPause()?`<p class="scx-pause">選秀節目進行中，星探暫停：條件達到也不會私訊，節目結束後自動恢復。</p>`:""}<section class="scx-card"><h3>挖掘條件</h3>${CO.length?`<p class="scx-empty">每家公司各自設定。所有粉絲都會自動檢查，達到哪家的條件就由那家的星探私訊；已出道、已簽公司、正在參加選秀的人不會被挖。</p><nav class="scx-f">${CO.map(k=>`<button class="${k===co?"on":""}" data-a="scCoTab" data-v="${esc(k)}">${esc(k)}</button>`).join("")}</nav>${step("days","最近",c.days,"天")}${step("posts","發文至少",c.posts,"則")}${step("fol","粉絲至少",c.fol,"人")}${step("likes","平均讚數至少",c.likes,"個")}`:`<p class="scx-empty">先新增星探帳號（選好公司），才能設定那家公司的挖掘條件。</p>`}</section>
     <section class="scx-card"><h3>星探私訊<button data-a="scMsgEd">${ui.scMsgEd?"完成":"編輯"}</button></h3>
       <div class="scx-dm"><span class="scx-av sm">✦</span>${ui.scMsgEd?`<textarea id="scMsg" rows="5" placeholder="輸入文字">${esc(c.msg)}</textarea>`:`<p>${esc(c.msg).replace(/\n/g,"<br>")}</p>`}</div></section>
     <div class="scx-lh"><b>名單</b><button class="scx-add" data-a="scAddOpen">＋ 加入</button></div>
@@ -299,7 +301,7 @@ function snScoutPage(d){ if(!isAdminAcct()) return snProfile(d,"o:scout"); const
       return `<article class="scx-i ${st}"><div class="scx-ih"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${x.uid}">${snAv(u,46)}</button><span class="scx-who"><b>${esc(u.u)}</b><small>${esc(u.name)}</small></span><em class="scx-pill ${st}">${SL[st]}${pk?`・${ymd(pk)}`:""}</em>${pk&&snUser(scWho(sc,x.uid))?`<small class="scx-by">${esc(snUser(scWho(sc,x.uid)).u)}</small>`:""}</div>
         ${st==="debut"?"":`<div class="scx-bars">${bar("發文",s.posts,c.posts)}${bar("粉絲",s.fol,c.fol)}${bar("平均讚",s.likes,c.likes)}</div>`}
         ${x.note?`<p class="scx-note">${esc(x.note)}</p>`:""}
-        <div class="scx-act"><button class="${x.signed||scCoOf(x.uid)?"on":""}" data-a="scSigned" data-v="${x.uid}">${x.signed||scCoOf(x.uid)?`✓ 已簽${scCoOf(x.uid)?" "+esc(scCoOf(x.uid)):"公司"}`:"已簽公司"}</button><button data-a="scNote" data-v="${x.uid}">備註</button>${pk?`<button data-a="scOpen" data-v="${x.uid}">對話${dm.length?` ${dm.length}`:""}</button>`:!scBlock(sc,x.uid)?`<button class="pri" data-a="scNow" data-v="${x.uid}">挖掘</button>`:""}<button class="x" data-a="scDel" data-v="${x.uid}" aria-label="移除">×</button></div>
+        <div class="scx-act"><button class="${x.signed||scCoOf(x.uid)?"on":""}" data-a="scSigned" data-v="${x.uid}">${x.signed||scCoOf(x.uid)?`✓ 已簽${scCoOf(x.uid)?" "+esc(scCoOf(x.uid)):"公司"}`:"已簽公司"}</button><button data-a="scNote" data-v="${x.uid}">備註</button>${pk?`<button data-a="scOpen" data-v="${x.uid}">對話${dm.length?` ${dm.length}`:""}</button>`:!scBlock(sc,x.uid)&&!scPause()?`<button class="pri" data-a="scNow" data-v="${x.uid}">挖掘</button>`:""}<button class="x" data-a="scDel" data-v="${x.uid}" aria-label="移除">×</button></div>
         ${pk&&open?`<div class="scx-chat">${dm.slice(-12).map(m=>`<p class="${m.from===who?"me":""}">${m.mid?"📷":esc(m.text||"").replace(/\n/g,"<br>")}</p>`).join("")}<form class="sc-rf" data-v="${x.uid}"><textarea rows="1" class="ag" placeholder="輸入文字" autocomplete="off"></textarea><button type="submit">傳送</button></form></div>`:""}</article>`; }).join(""):`<div class="scx-none"><span class="scx-av">✦</span><b>${rows.length?"這裡沒有人":"名單是空的"}</b>${rows.length?"":`<button class="scx-add" data-a="scAddOpen">＋ 加入第一位</button>`}</div>`}
   </main>`; }
 function scAddSheet(){ const sc=scGet(), q=nz((ui.scQ||"").trim()), U=snAllUsers().filter(u=>u.id.startsWith("u:")&&!scArtist(u.id)&&!sc.list.some(x=>x.uid===u.id)&&(!q||nz(u.u).includes(q)||nz(u.name).includes(q))).slice(0,40);
@@ -435,7 +437,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       scSet(sc); rr(); break; }
     case "scNote": { const sc=scGet(), x=sc.list.find(y=>y.uid===t.dataset.v); if(!x) break; tieModal("備註",`<textarea id="scNoteIn" class="a-nick-in sn-caped" rows="4" placeholder="輸入文字">${esc(x.note||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="scNoteOk" data-v="${x.uid}">儲存</button>`,"row"); break; }
     case "scNoteOk": { const sc=scGet(), x=sc.list.find(y=>y.uid===t.dataset.v); if(x){ x.note=((document.getElementById("scNoteIn")||{}).value||"").trim(); scSet(sc); } layer.innerHTML=""; rr(); break; }
-    case "scNow": { const v=t.dataset.v; ask("現在就用星探帳號私訊他？",()=>{ const sc=scGet(), d=snDB(); if(sc.picked[v]) return; scPick(v,sc,d); scSet(sc); rr(); toast("已私訊"); },{danger:false}); break; }
+    case "scNow": { const v=t.dataset.v; if(scPause()){ toast("選秀節目進行中，星探暫停"); break; } ask("現在就用星探帳號私訊他？",()=>{ const sc=scGet(), d=snDB(); if(sc.picked[v]) return; scPick(v,sc,d); scSet(sc); rr(); toast("已私訊"); },{danger:false}); break; }
     case "bzAT": bzAKeep(); ui.bzA.type=t.dataset.v; rr(); break;
     case "bzAM": { bzAKeep(); const L=ui.bzA.mids, i=L.indexOf(t.dataset.v); if(i>=0) L.splice(i,1); else L.push(t.dataset.v); rr(); break; }
     case "bzAD": bzAKeep(); ui.bzA.days=+t.dataset.v; rr(); break;

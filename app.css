@@ -7506,6 +7506,7 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sv5-h11{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px dashed var(--l2)}.sv5-h11 small{font-size:12px;color:#9A7F8C;font-weight:700}.sv5-h11 .sv2-t{width:86px}
 .sv5-adm{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.03)}
 .sv5-prt .sv2-p{position:relative;margin:0;border-radius:0;overflow:hidden;background:linear-gradient(160deg,var(--l2),var(--a2))}
+.scx-pause{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#FFF4E5;color:#9A5B00;font-size:13px;font-weight:700;line-height:1.5}
 
 /* ===== 連號開獎：扭蛋機 ===== */
 .lot .tiei-body{padding-bottom:40px}
