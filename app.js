@@ -9795,11 +9795,11 @@ const C3={
     const sl=ui.c3Sl|0; ui.c3Sl=0; let fw=w, fh=h;
     if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
       const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; obj.add(m); return m; };
-      if(sl===1){ const sw=w+.28, sh=h+.5, sy=-.1, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);
+      { const sw=w+.3, sh=h+.4, sy=-.08, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);   /* 11/18 照真的：小卡 55×85mm 用 58×89mm 的貼身卡套（上面開口）；硬殼卡套裡面也一定先套一層 */
         [1,-1].forEach(k=>add(new THREE.PlaneGeometry(sw,sh),film,0,sy,k*gap));
         add(new THREE.BoxGeometry(.05,sh,gap*2),seam,-sw/2,sy,0); add(new THREE.BoxGeometry(.05,sh,gap*2),seam,sw/2,sy,0); add(new THREE.BoxGeometry(sw,.07,gap*2),seam,0,sy-sh/2,0);
         fw=sw; fh=sh; }
-      else { const tw=w+.9, tg=h+1.25, td=.34, ty=-.12, pl=.045, nr=.6, top=tg/2, face=clr(.2,.03), rail=clr(.5,.12);
+      if(sl===2){ const tw=w+.9, tg=h+1.15, td=.34, ty=-.14, pl=.045, nr=.6, top=tg/2, face=clr(.2,.03), rail=clr(.5,.12);
         const fr=new THREE.Shape(); fr.moveTo(-tw/2,-tg/2); fr.lineTo(tw/2,-tg/2); fr.lineTo(tw/2,top); fr.lineTo(nr,top); fr.absarc(0,top,nr,0,Math.PI,true); fr.lineTo(-tw/2,top); fr.lineTo(-tw/2,-tg/2);
         const bk=new THREE.Shape(); bk.moveTo(-tw/2,-tg/2); bk.lineTo(tw/2,-tg/2); bk.lineTo(tw/2,top); bk.lineTo(-tw/2,top); bk.lineTo(-tw/2,-tg/2);
         add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
@@ -16097,7 +16097,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
    ・賣到市場：整筆跟著卡走，買的人看得到卡況。 */
 const COND_N=["全新","近全新","輕微使用","明顯使用","嚴重損傷"];
 const COND_F=["印刷線","裁切偏移","小凹痕"], COND_W=["右下角白邊","左上角白邊","邊緣磨損","表面刮痕","卡角凹折","輕微彎折"];
-const SLV={1:{n:"軟卡套",p:5,odd:.01},2:{n:"硬殼卡套",p:20,odd:0}};
+const SLV={1:{n:"軟卡套",p:5,odd:.01},2:{n:"硬殼卡套（內含軟卡套）",p:20,odd:0}};   /* 真的硬殼卡套不能直接放卡（裡面硬、會刮傷），一定先套一層軟卡套 */
 const condOf=cp=>(cp&&cp.c)||{lv:0,d:[],sl:0};
 /* 新拿到的一張：8% 廠損 */
 const condNew=()=>Math.random()<.08?{c:{lv:1,d:[COND_F[Math.random()*COND_F.length|0]],sl:0}}:{};
@@ -16114,7 +16114,7 @@ function condFx(cp){ const c=condOf(cp); if(!c.lv&&!c.sl) return ""; const D=c.d
   if(D.some(x=>/白邊|磨損/.test(x))) k.push("edge"); if(D.includes("表面刮痕")) k.push("scr"); if(D.some(x=>/凹/.test(x))) k.push("dent"); if(D.includes("印刷線")) k.push("pl"); if(D.includes("裁切偏移")) k.push("cut"); if(D.includes("輕微彎折")) k.push("bend");
   return `<i class="pcw ${k.join(" ")} l${c.lv}"></i>${c.sl?`<i class="pcs s${c.sl}"></i>`:""}`; }
 function condSleeve(cid,sid){ const cp=condCp(cid,sid); if(!cp) return; const c=condOf(cp);
-  tieModal("卡套",`<p class="fy-info">套上卡套，拿出來看比較不容易磨損。已經磨損的不會變回來。</p><p class="fy-info">現在：${c.sl?SLV[c.sl].n:"沒套卡套"}・你有 ${fmt(points())} 積分</p>`,
+  tieModal("卡套",`<p class="fy-info">軟卡套：貼身的透明袋（58×89mm），上面開口。<br>硬殼卡套：硬塑膠殼，先套軟卡套再放進去，最保護。<br>已經磨損的不會變回來。</p><p class="fy-info">現在：${c.sl?SLV[c.sl].n:"沒套卡套"}・你有 ${fmt(points())} 積分</p>`,
     `${[1,2].map(k=>`<button class="t-mbtn ${k===2?"main":""}" data-a="condSl" data-v="${k}" ${c.sl===k?"disabled":""}>${SLV[k].n}・${SLV[k].p} 積分<small>（磨損機率 ${k===1?"1%":"0%"}）</small></button>`).join("")}${c.sl?`<button class="t-mbtn" data-a="condSl" data-v="0">拿掉卡套</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">取消</button>`);
   ui.condAt={cid,sid}; }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condSlOpen"],[data-a="condSl"]'); if(!t) return; e.stopImmediatePropagation();

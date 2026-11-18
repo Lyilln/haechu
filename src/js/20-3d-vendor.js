@@ -255,11 +255,11 @@ const C3={
     const sl=ui.c3Sl|0; ui.c3Sl=0; let fw=w, fh=h;
     if(sl){ const clr=(op,rg)=>new THREE.MeshPhysicalMaterial({color:0xF6F9FF,transparent:true,opacity:op,roughness:rg,metalness:0,clearcoat:1,clearcoatRoughness:.03,envMapIntensity:1.4,side:THREE.DoubleSide,depthWrite:false});
       const add=(geo,mat,x,y,z)=>{ const m=new THREE.Mesh(geo,mat); m.position.set(x,y,z); m.renderOrder=5; obj.add(m); return m; };
-      if(sl===1){ const sw=w+.28, sh=h+.5, sy=-.1, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);
+      { const sw=w+.3, sh=h+.4, sy=-.08, gap=th/2+.025, film=clr(.14,.06), seam=clr(.42,.25);   /* 11/18 照真的：小卡 55×85mm 用 58×89mm 的貼身卡套（上面開口）；硬殼卡套裡面也一定先套一層 */
         [1,-1].forEach(k=>add(new THREE.PlaneGeometry(sw,sh),film,0,sy,k*gap));
         add(new THREE.BoxGeometry(.05,sh,gap*2),seam,-sw/2,sy,0); add(new THREE.BoxGeometry(.05,sh,gap*2),seam,sw/2,sy,0); add(new THREE.BoxGeometry(sw,.07,gap*2),seam,0,sy-sh/2,0);
         fw=sw; fh=sh; }
-      else { const tw=w+.9, tg=h+1.25, td=.34, ty=-.12, pl=.045, nr=.6, top=tg/2, face=clr(.2,.03), rail=clr(.5,.12);
+      if(sl===2){ const tw=w+.9, tg=h+1.15, td=.34, ty=-.14, pl=.045, nr=.6, top=tg/2, face=clr(.2,.03), rail=clr(.5,.12);
         const fr=new THREE.Shape(); fr.moveTo(-tw/2,-tg/2); fr.lineTo(tw/2,-tg/2); fr.lineTo(tw/2,top); fr.lineTo(nr,top); fr.absarc(0,top,nr,0,Math.PI,true); fr.lineTo(-tw/2,top); fr.lineTo(-tw/2,-tg/2);
         const bk=new THREE.Shape(); bk.moveTo(-tw/2,-tg/2); bk.lineTo(tw/2,-tg/2); bk.lineTo(tw/2,top); bk.lineTo(-tw/2,top); bk.lineTo(-tw/2,-tg/2);
         add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
