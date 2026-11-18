@@ -2868,11 +2868,11 @@ function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
   const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>cbHasCards(a)&&(prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`)))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
       if(n){ /* 11/18 每一張卡分開放（各有自己的序號），點哪張就看哪張 */ const cs=prev?[]:(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); return Array.from({length:n},(_,i)=>cs[i]||null).map(c=>`<button class="cb-it" data-a="cardView" data-v="${cid}" data-s="${c?c.id:""}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}</button>`).join(""); } return `<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
-  const book=al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
+  const book=(prev?"":lotBanner())+(al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
     return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.filter(v=>(v.inc||[]).some(it=>(it.pool||[]).length)).map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.filter(it=>(it.pool||[]).length).map(it=>grid(a,it)).join("")}`).join("")}
       ${(a.ex||[]).filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).length?`<div class="cb-vh">專輯外（店家特典・簽售・打歌節目）</div>${a.ex.filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
-      :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`);
+      :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`));
   return coreHead("卡冊")+`<main class="page cards">${isHussey()?`<button class="cb-prev ${prev?"on":""}" data-a="cbPrev">${prev?"結束預覽":"預覽全部卡片"}</button>`:""}
     <div class="seg2 cb-tabs" style="--i:${tb==="log"?1:0}"><i class="seg2-ind"></i><button class="${tb==="book"?"on":""}" data-a="cbTab" data-v="book">卡冊</button><button class="${tb==="log"?"on":""}" data-a="cbTab" data-v="log">開箱紀錄</button></div>
     <div class="seg2-pane ${ui.segAnim||""}">${tb==="log"?cbLog():book}</div></main>`; }
@@ -6347,7 +6347,7 @@ function festToday(gids,one){ const L=[], now=Date.now(), inG=g=>gids.includes(g
   try{ const n=getTrucks().filter(t=>!tkFunded(t)&&MEMBERS[t.mid]&&inG(MEMBERS[t.mid].group)).length; if(n) L.push({k:"truck",t:"集資中",c:"y",b:"應援餐車",s:`${n} 台在集資`,v:"truck",o:6}); }catch(e){}
   try{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)&&inG(x.gid)); if(t&&tourStops(t).some(st=>stopState(st)==="live")) L.push({k:"tour",t:"進行中",c:"r",b:`${gn(t.gid)}・${t.title}`,s:"世巡這一站開演了",v:"tour",o:1}); }catch(e){}
   try{ if(!one&&svOpen()&&svVoting()&&svLeft()>0) L.push({k:"survival",t:`還有 ${svLeft()} 票`,c:"",b:"選秀投票",s:svFinal()?"決賽每天 1 票":"每天 3 票",v:"survival",o:7}); }catch(e){}
-  try{ const n=lotReady().length; if(!one&&n) L.push({k:"lot",t:"開獎中",c:"r",b:"連號開獎",s:`你有 ${n} 張券可以轉`,a:"lotOpen",o:7}); }catch(e){}
+  try{ const n=lotReady().length; if(n) L.push({k:"lot",t:"開獎中",c:"r",b:"扭蛋機",s:`你有 ${n} 張券・24:00 結束`,a:"lotOpen",o:-1}); }catch(e){}
   return L.sort((a,b)=>a.o-b.o||(a.end||9e15)-(b.end||9e15)); }
 function festHead(gid){ const g=groupOf(gid); if(!g) return ""; const av=xvGAv(gid);
   let sub=""; try{ const s=promoSongs().filter(x=>x.gid===gid&&!x.demo).sort((a,b)=>songRel(b)-songRel(a))[0]; if(s&&songPhase(s)!=="off"){ const w=songWeekNo(s); sub=`《${esc(s.title)}》打歌第 ${w} 週・${(()=>{ const d=new Date(songEndTs(songRel(s))-MDAY); return `${d.getMonth()+1}/${d.getDate()} 下檔`; })()}`; } }catch(e){}
@@ -6360,7 +6360,7 @@ function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>
   return `${chips}${g?festHead(g):""}
     <div class="fz-sh"><b>今天</b><span>${d.getMonth()+1}/${d.getDate()}（${wd}）</span></div>
     ${today.length?`<div class="fz-today">${today.map(tc).join("")}</div>`:`<p class="fz-none">今天沒有要趕的事 🌙 去抽屜逛逛吧</p>`}
-    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>${(()=>{ const t=tile("survival"); if(!t) return ""; const lk=!svOpen(); /* 選秀不屬於任何已出道的藝人：獨立一塊 */ return `<div class="fz-sh"><b>選秀</b><span>還沒出道的練習生</span></div><button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"coreGo"}" data-v="survival"><span>🏆</span><b>${esc(t[2])}</b><small>${t[3]}</small><i>›</i></button>`; })()}${(()=>{ try{ if(!mkCan()) return ""; const n=mkAll().filter(x=>x.st==="on"&&x.by!==mkMe()).length; return `<div class="fz-sh"><b>交易市場</b><span>${mkOn()?"粉絲之間買賣小卡":"試玩・只有你看得到"}</span></div><button class="fz-sv tm-en" data-a="mkOpen"><span>🛍️</span><b>交易市場</b><small>${n?`市集上有 ${n} 張卡`:"買賣小卡、收卡"}</small><i>›</i></button>`; }catch(e){ return ""; } })()}${(()=>{ try{ const n=lotReady().length, w=lotWait().length; return `<div class="fz-sh"><b>開獎</b><span>每月 1 號 21:00～24:00</span></div><button class="fz-sv lot-en" data-a="lotOpen"><span>🎰</span><b>連號開獎</b><small>${n?`開獎中・你有 ${n} 張券`:w?`你有 ${w} 張券・${lotWhen(lotNextAt())} 開獎`:`下次開獎 ${lotWhen(lotNextAt())}`}</small><i>›</i></button>`; }catch(e){ return ""; } })()}`; }
+    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>${(()=>{ const t=tile("survival"); if(!t) return ""; const lk=!svOpen(); /* 選秀不屬於任何已出道的藝人：獨立一塊 */ return `<div class="fz-sh"><b>選秀</b><span>還沒出道的練習生</span></div><button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"coreGo"}" data-v="survival"><span>🏆</span><b>${esc(t[2])}</b><small>${t[3]}</small><i>›</i></button>`; })()}${(()=>{ try{ if(!mkCan()) return ""; const n=mkAll().filter(x=>x.st==="on"&&x.by!==mkMe()).length; return `<div class="fz-sh"><b>交易市場</b><span>${mkOn()?"粉絲之間買賣小卡":"還沒開放・只有你看得到（試玩）"}</span></div><button class="fz-sv tm-en" data-a="mkOpen"><span>🛍️</span><b>交易市場</b><small>${n?`市集上有 ${n} 張卡`:"買賣小卡、收卡"}</small><i>›</i></button>`; }catch(e){ return ""; } })()}`; }
 function viewFestDr(k){ const d=FEST_DR.find(x=>x[0]===k); if(!d) return coreHead("FEST")+`<main class="page"><p class="me-none">找不到</p></main>`; viewCore(); const T=ui.festT||[];
   const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   const L=d[3].map(x=>x==="signed"?["signed","pen","簽名專輯",(()=>{ const n=(S.get(K.signedAlbums,[])||[]).length; return n?`收藏 ${n} 張`:"還沒有簽名專輯"; })()]:T.find(t=>t[0]===x)).filter(Boolean), on=L.filter(t=>!festOff(t[3])), off=L.filter(t=>festOff(t[3]));
@@ -15738,15 +15738,11 @@ function serTxt(cid,sid){ const a=(getSerials()[cid]||[]).filter(x=>!sid||x.id==
   const ns=a.filter(x=>x.n).map(x=>String(x.n).padStart(4,"0")); return "・"+(ns.length?"No."+ns.join("、"):"")+(ns.length<a.length?(ns.length?"・":"")+"序號產生中":"")+(sid&&a[0].rd?"・已兌換":""); }
 setInterval(serialSync,20e3); setTimeout(serialSync,6e3);
 
-/* ===== 11/18 連號開獎（FEST → 選秀下面）＋折價券 =====
-   ・同一位藝人、同一種卡（公放卡／簽售卡／同一批特典）有 5 張連號 → 換 1 張抽獎券；用過的卡標記「已兌換」（記在那張卡上，賣掉也跟著走）。
-   ・只有每月 1 號 21:00～24:00（台灣時間）扭蛋機轉得動：在那之前換到的券那時轉；沒轉完、或之後才換的，留到下個月 1 號。
-   ・結果大家都看得到（K.lotRes，大家共用）。HUSSEY 帳號沒有券時可以「試轉」看效果，不算數。
-   ・折價券（K.coupons）：只能用一次、不能轉賣、只能折官方商品（專輯、Membership、周邊）。之後的 1 折券也放這裡。 */
-const LOT_PZ=[{k:"p35",n:"積分 +35",pt:35,w:25},{k:"p50",n:"積分 +50",pt:50,w:22},{k:"p75",n:"積分 +75",pt:75,w:18},{k:"p100",n:"積分 +100",pt:100,w:14},{k:"p200",n:"積分 +200",pt:200,w:9},{k:"p500",n:"積分 +500",pt:500,w:5,big:1},
-  {k:"tie",n:"TIE 一個月體驗券",w:4,big:1},{k:"c85",n:"8.5 折折價券",w:2.5,big:1},{k:"p1000",n:"積分 +1000",pt:1000,w:.5,big:2}];
-const LOT_RANK=["p35","p50","p75","p100","p200","p500","tie","c85","p1000"];
-const lotPz=k=>LOT_PZ.find(x=>x.k===k)||LOT_PZ[0];
+/* ===== 11/18 連號開獎＋折價券（主程式這邊只放「判斷」：什麼時候該跳出來）=====
+   ・扭蛋機、換券視窗的畫面和動畫在 lazy/lot.js：要跳出來時才載入，平常不載入（App 不會越來越重）
+   ・FEST 不放開獎入口。條件達成才跳出來：湊到 5 張連號 → 跳「湊到連號了」；每月 1 號 21:00～24:00 手上有券 → 扭蛋機跳出來
+   ・那 3 小時關掉扭蛋機的話，FEST「今天」有一格「開獎中」可以叫回來；卡冊上面有連號可換時會出現一條提示
+   ・結果大家都看得到（K.lotRes）。折價券（K.coupons）：只能用一次、不能轉賣、只能折官方商品 */
 /* 開獎時間：每月 1 號 21:00 台灣時間（= 13:00 UTC） */
 function lotOpenAt(now=Date.now()){ const d=new Date(now+8*36e5); let y=d.getUTCFullYear(), m=d.getUTCMonth(), t=Date.UTC(y,m,1,13); if(t>now){ m--; if(m<0){ m=11; y--; } t=Date.UTC(y,m,1,13); } return t; }
 function lotNextAt(now=Date.now()){ const d=new Date(lotOpenAt(now)+8*36e5); let y=d.getUTCFullYear(), m=d.getUTCMonth()+1; if(m>11){ m=0; y++; } return Date.UTC(y,m,1,13); }
@@ -15766,89 +15762,35 @@ function lotRuns(){ const L=getSerials(), G={};
   const out=[]; Object.values(G).forEach(g=>{ const c=g.cs.sort((a,b)=>a.n-b.n); let run=[];
     c.forEach(x=>{ if(run.length&&x.n!==run[run.length-1].n+1) run=[]; run.push(x); if(run.length===5){ out.push({key:g.key,lab:g.lab,cs:run}); run=[]; } }); });
   return out; }
-function lotRedeem(i){ const r=lotRuns()[i]; if(!r) return; const tid=uid("lt"), L=getSerials();
-  r.cs.forEach(c=>{ const x=(L[c.cid]||[]).find(z=>z.id===c.id); if(x) x.rd=tid; }); S.set(K.serials,L);
-  const T=lotTix(); T.push({id:tid,ts:Date.now(),lab:r.lab,ns:r.cs.map(c=>c.n)}); S.set(K.lotTix,T);
-  toast(`換到 1 張抽獎券，${lotWhen(lotNextAt())} 開獎`); lotPage(); }
-function lotRoll(){ let r=Math.random()*LOT_PZ.reduce((s,x)=>s+x.w,0); for(const x of LOT_PZ){ r-=x.w; if(r<=0) return x; } return LOT_PZ[0]; }
-/* 抽一張券：決定獎品、發獎、記到大家看得到的結果 */
-function lotDraw(demo){ const pz=lotRoll(); if(demo) return pz; const t=lotReady()[0]; if(!t) return null; const T=lotTix(), x=T.find(z=>z.id===t.id), now=Date.now(), rd=lotRound(lotOpenAt());
-  x.drawn={ts:now,pz:pz.k,r:rd}; S.set(K.lotTix,T);
-  if(pz.pt){ S.set(K.points,points()+pz.pt); try{ const lg=S.get(K.earnLog,[])||[], lim=now-60*864e5; lg.push({k:"lot",n:pz.pt,why:"連號開獎",ts:now}); S.set(K.earnLog,lg.filter(z=>z.ts>lim).slice(-600)); }catch(e){} }
-  if(pz.k==="tie"){ const V=tvAll(); V.push({id:"tv_lot_"+t.id,from:"連號開獎",days:30,ts:now,exp:now+TV_LIFE}); S.set(K.tieVch,V); }
-  if(pz.k==="c85"){ const C=coupons(); C.push({id:"cp_"+t.id,pay:.85,n:"8.5 折折價券",from:"連號開獎",ts:now}); S.set(K.coupons,C); }
-  const s=session()||{}, R=S.get(K.lotRes,[])||[]; R.unshift({id:t.id,r:rd,who:(ACCOUNTS[s.email]||{}).name||"粉絲",lab:t.lab,pz:pz.k,ts:now}); S.set(K.lotRes,R.slice(0,400));
-  return pz; }
-/* ===== 開獎頁 ===== */
-function lotPage(){ const ready=lotReady(), wait=lotWait(), runs=lotRuns(), demo=!ready.length&&isHussey(), rd=lotRound(lotOpenAt());
-  const res=(S.get(K.lotRes,[])||[]).filter(x=>x.r===rd).sort((a,b)=>LOT_RANK.indexOf(b.pz)-LOT_RANK.indexOf(a.pz)||b.ts-a.ts);
-  const st=ready.length?`本期開獎中・你有 <b>${ready.length}</b> 張券可以轉`:demo?"你目前沒有可以轉的券・HUSSEY 可以試轉（不算數）":`下次開獎 ${lotWhen(lotNextAt())}～24:00`;
-  setLayer(`<div class="tiei lot" role="dialog" aria-label="連號開獎"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>連號開獎</b><span class="sh-sp"></span></header>
-    <div class="tiei-body">
-      <p class="lot-st">${st}</p>
-      <div class="gm ${ready.length||demo?"":"off"}" id="gm">${gmHtml()}</div>
-      <p class="lot-tip">${ready.length||demo?"轉一圈把手，轉一次用 1 張券":"每月 1 號 21:00～24:00 把手才轉得動"}</p>
-      ${wait.length?`<p class="lot-wait">${wait.length} 張券留到 ${lotWhen(lotNextAt())} 開獎</p>`:""}
-      <section class="lot-sec"><h3>可以換券的連號</h3>${runs.length?runs.map((r,i)=>`<div class="lot-run"><span><b>${esc(r.lab)}</b><small>No.${String(r.cs[0].n).padStart(4,"0")}～${String(r.cs[4].n).padStart(4,"0")}</small></span><button data-a="lotRedeem" data-v="${i}">換 1 張券</button></div>`).join(""):`<p class="lot-none">同一位藝人、同一種卡（公放卡、簽售卡、同一批特典）收集到 5 張連號，就能換 1 張抽獎券。</p>`}</section>
-      ${cpLive().length?`<section class="lot-sec"><h3>我的折價券</h3>${cpLive().map(c=>`<div class="lot-run"><span><b>${esc(c.n)}</b><small>${esc(c.from||"")}・只能折官方商品，結帳時選</small></span></div>`).join("")}</section>`:""}
-      <section class="lot-sec"><h3>${rd.replace("-"," 年 ").replace(/^(\d+ 年 )0?/,"$1")} 月開獎結果</h3>${!res.length?`<p class="lot-none">還沒有人轉開</p>`:`<ul class="lot-res">${res.slice(0,60).map(x=>{ const p=lotPz(x.pz); return `<li class="${p.big?"big":""}"><b>${esc(x.who)}</b><span>${esc(p.n)}</span><small>${esc(x.lab||"")}</small></li>`; }).join("")}</ul>`}</section>
-      <details class="lot-sec lot-odds"><summary>獎品和機率</summary><ul>${LOT_PZ.map(p=>`<li><span>${esc(p.n)}</span><b>${p.w}%</b></li>`).join("")}</ul><p>8.5 折折價券只能用一次、不能轉賣，只能折官方商品。TIE 體驗券用在一位藝人，開通 30 天。扭蛋機只有每月 1 號 21:00～24:00 轉得動，沒轉完的券會留到下個月 1 號，不會不見。</p></details>
-    </div></div>`,"lot");
-  gmMount(layer.querySelector("#gm"),{can:ready.length>0||demo,demo}); }
-/* ===== 扭蛋機：玻璃罩裡的扭蛋會滾、轉把手機器會晃，轉滿一圈掉一顆出來 ===== */
-const GM_C=["#C7AEFF","#F9A8D4","#93E1C6","#FCD98A","#9CC9FF","#B79BFF","#FDB4A0"];
-function gmHtml(){ return `<div class="gm-m"><div class="gm-dome"><canvas class="gm-cv" width="440" height="440"></canvas><i class="gm-glare"></i></div>
-  <div class="gm-body"><span class="gm-plate">HAECHU</span><button class="gm-knob" aria-label="轉把手"><i class="gm-bar"></i></button><span class="gm-chute"><i></i></span></div><div class="gm-foot"></div></div><div class="gm-out"></div>`; }
-function gmMount(host,{can,demo}){ if(!host) return; const cv=host.querySelector(".gm-cv"), ctx=cv.getContext("2d"), W=cv.width, R=W/2-6, br=34, m=host.querySelector(".gm-m"), knob=host.querySelector(".gm-knob"), rm=matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const B=Array.from({length:16},(_,i)=>({x:W/2+(Math.random()-.5)*R,y:W/2+Math.random()*R*.6,vx:0,vy:0,c:GM_C[i%GM_C.length],a:Math.random()*6}));
-  let shake=0, ang=0, busy=false, raf=0;
-  const step=()=>{ if(!cv.isConnected){ cancelAnimationFrame(raf); return; }
-    B.forEach(b=>{ b.vy+=.5; if(shake>0){ b.vx+=(Math.random()-.5)*shake; b.vy-=Math.random()*shake*.9; } b.vx*=.985; b.vy*=.985; b.x+=b.vx; b.y+=b.vy; b.a+=b.vx*.03;
-      const dx=b.x-W/2, dy=b.y-W/2, d=Math.hypot(dx,dy), lim=R-br; if(d>lim){ const nx=dx/d, ny=dy/d, vn=b.vx*nx+b.vy*ny; b.x=W/2+nx*lim; b.y=W/2+ny*lim; if(vn>0){ b.vx-=1.5*vn*nx; b.vy-=1.5*vn*ny; } } });
-    for(let i=0;i<B.length;i++) for(let j=i+1;j<B.length;j++){ const p=B[i], q=B[j], dx=q.x-p.x, dy=q.y-p.y, d=Math.hypot(dx,dy)||.01, o=2*br-d; if(o>0){ const nx=dx/d, ny=dy/d; p.x-=nx*o/2; p.y-=ny*o/2; q.x+=nx*o/2; q.y+=ny*o/2; const rv=(q.vx-p.vx)*nx+(q.vy-p.vy)*ny; if(rv<0){ const k=rv*.6; p.vx+=k*nx; p.vy+=k*ny; q.vx-=k*nx; q.vy-=k*ny; } } }
-    shake*=.9; ctx.clearRect(0,0,W,W); B.forEach(b=>gmBall(ctx,b.x,b.y,br,b.c,b.a)); raf=requestAnimationFrame(step); };
-  step();
-  if(!can) return;
-  const wob=v=>{ if(rm) return; m.style.transform=`rotate(${(Math.random()-.5)*v}deg) translateX(${(Math.random()-.5)*v}px)`; clearTimeout(m._t); m._t=setTimeout(()=>{ m.style.transform=""; },140); };
-  const setK=a=>{ knob.style.transform=`rotate(${a}deg)`; };
-  let last=null, tick=0, moved=0;
-  const center=()=>{ const r=knob.getBoundingClientRect(); return [r.left+r.width/2,r.top+r.height/2]; };
-  const turn=d=>{ if(busy||d<=0) return; ang+=d; setK(ang); shake=Math.min(6,shake+d*.08); wob(Math.min(3,d*.15)); const t=Math.floor(ang/90); if(t>tick){ tick=t; sfx("flip"); } if(ang>=360){ busy=true; done(); } };
-  knob.addEventListener("pointerdown",e=>{ if(busy) return; e.preventDefault(); knob.setPointerCapture&&knob.setPointerCapture(e.pointerId); const [cx,cy]=center(); last=Math.atan2(e.clientY-cy,e.clientX-cx); moved=0; });
-  knob.addEventListener("pointermove",e=>{ if(last==null||busy) return; const [cx,cy]=center(), a=Math.atan2(e.clientY-cy,e.clientX-cx); let d=(a-last)*180/Math.PI; if(d>180) d-=360; if(d<-180) d+=360; last=a; moved+=Math.abs(d); turn(Math.max(0,d)); });
-  const up=()=>{ if(last==null) return; last=null; if(busy) return; if(moved<6){ /* 只點一下：自動轉一圈 */ busy=true; const a0=ang, t0=performance.now(); (function f(n){ const k=Math.min(1,(n-t0)/1100), e2=1-Math.pow(1-k,3), a=a0+(360-a0)*e2; shake=Math.min(6,shake+.9); wob(2); setK(a); if(Math.floor(a/90)>tick){ tick=Math.floor(a/90); sfx("flip"); } if(k<1) requestAnimationFrame(f); else { ang=360; done(); } })(t0); } };
-  knob.addEventListener("pointerup",up); knob.addEventListener("pointercancel",up);
-  function done(){ const pz=lotDraw(demo); if(!pz){ toast("沒有可以轉的券"); return; } shake=8; wob(4); sfx("whoosh");
-    const out=host.querySelector(".gm-out"), c=GM_C[Math.random()*GM_C.length|0];
-    out.innerHTML=`<button class="gm-cap" style="--c:${c}" aria-label="打開扭蛋"><i class="t"></i><i class="b"></i></button><small class="gm-tap">點扭蛋打開</small>`;
-    const cap=out.querySelector(".gm-cap"); requestAnimationFrame(()=>cap.classList.add("in"));
-    cap.addEventListener("click",()=>{ if(cap.classList.contains("op")) return; cap.classList.add("op"); sfx("flip"); out.querySelector(".gm-tap").remove();
-      setTimeout(()=>{ const r=cap.getBoundingClientRect(); out.insertAdjacentHTML("beforeend",`<div class="gm-pz ${pz.big?"big":""}"><small>${demo?"試轉（不算數）":"恭喜抽到"}</small><b>${esc(pz.n)}</b><button data-a="lotAgain">${demo||lotReady().length?"再轉一次":"好"}</button></div>`);
-        if(pz.big&&!rm) confetti(r.left+r.width/2,r.top+r.height/2); },380); },{once:false}); } }
-function gmBall(ctx,x,y,r,c,a){ ctx.save(); ctx.translate(x,y); ctx.rotate(a);
-  ctx.beginPath(); ctx.arc(0,0,r,Math.PI,0); ctx.closePath(); ctx.fillStyle=c; ctx.fill();
-  ctx.beginPath(); ctx.arc(0,0,r,0,Math.PI); ctx.closePath(); ctx.fillStyle="#FBFAFD"; ctx.fill();
-  ctx.strokeStyle="rgba(40,20,70,.18)"; ctx.lineWidth=2; ctx.beginPath(); ctx.arc(0,0,r-1,0,Math.PI*2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(-r,0); ctx.lineTo(r,0); ctx.stroke();
-  ctx.rotate(-a); ctx.fillStyle="rgba(255,255,255,.55)"; ctx.beginPath(); ctx.ellipse(-r*.38,-r*.42,r*.26,r*.14,-.6,0,Math.PI*2); ctx.fill(); ctx.restore(); }
+/* 跳出來的時機：沒有別的視窗開著、是粉絲端 */
+const lotSeenK=()=>"hc_lot_seen@"+String((session()||{}).email||"").toLowerCase();
+const lotRunKey=r=>r.cs.map(c=>c.id).join(",");
+function lotCheck(){ try{ const s=session(); if(!s||s.role!=="fan"||sbxOn()||layer.innerHTML||ovl.innerHTML||document.querySelector("textarea:focus,input:focus")) return;
+  let seen=[]; try{ seen=JSON.parse(localStorage.getItem(lotSeenK())||"[]"); }catch(e){}
+  const r=lotRuns().find(x=>!seen.includes(lotRunKey(x))); if(r){ lazy("lot").then(()=>{ if(!layer.innerHTML) lotRunPop(r); }).catch(()=>{}); return; }
+  if(lotReady().length&&!ui.lotClosed) lazy("lot").then(()=>{ if(!layer.innerHTML) lotPop(); }).catch(()=>{}); }catch(e){} }
+setInterval(lotCheck,8e3); setTimeout(lotCheck,4e3);
+/* 卡冊上面：有連號可以換才出現 */
+const lotBanner=()=>{ try{ const n=lotRuns().length; return n?`<button class="lot-bn" data-a="lotRunsOpen"><b>你有 ${n} 組連號可以換扭蛋券</b><i>›</i></button>`:""; }catch(e){ return ""; } };
+/* 要用時才載入的程式（同一個倉庫的 lazy/ 資料夾；網址指紋由 build.py 填） */
+function lazy(n){ lazy.p=lazy.p||{}; return lazy.p[n]||(lazy.p[n]=new Promise((ok,no)=>{ const s=document.createElement("script"); s.src=(window.LAZY||{})[n]||("lazy/"+n+".js"); s.onload=ok; s.onerror=()=>{ delete lazy.p[n]; toast("沒有連上網路，等一下再試"); no(); }; document.head.appendChild(s); })); }
 /* ===== 結帳用折價券：先把折掉的積分補進去再扣，失敗就收回 ===== */
 function cpPrice(p){ if(!p) return 0; if(p.kind==="album"){ const a=albumOf(p.aid), v=a&&verOf(a,p.vid); return v?v.pts*(ui.pQty||1):0; } if(p.kind==="ms"){ const x=MS_PLANS.find(z=>z.id===(ui.prodPlan||MS_PLANS[0].id)); return x?x.pts:0; } if(p.kind==="merch"){ const it=MERCH.find(z=>z.k===p.k); return it?it.pts:0; } return 0; }
 function cpRow(p){ if(!p||!["album","ms","merch"].includes(p.kind)||p.own) return ""; const L=cpLive(); if(!L.length) return ""; const on=L.find(c=>c.id===ui.pCp), cost=cpPrice(p);
   return `<div class="cp-row"><span>折價券</span>${[`<button class="${on?"":"on"}" data-a="cpPick" data-v="">不使用</button>`,...L.map(c=>`<button class="${on&&on.id===c.id?"on":""}" data-a="cpPick" data-v="${c.id}">${esc(c.n)}</button>`)].join("")}${on?`<small>折後 ${fmt(Math.ceil(cost*on.pay))} 積分</small>`:""}</div>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
-  if(a==="lotOpen"){ e.stopImmediatePropagation(); lotPage(); }
-  else if(a==="lotRedeem"){ e.stopImmediatePropagation(); lotRedeem(+t.dataset.v); }
-  else if(a==="lotAgain"){ e.stopImmediatePropagation(); lotPage(); }
+  if(a==="lotOpen"){ e.stopImmediatePropagation(); ui.lotClosed=0; lazy("lot").then(()=>lotPop()); }
+  else if(a==="lotDemo"){ e.stopImmediatePropagation(); lazy("lot").then(()=>lotPop(true)); }
+  else if(a==="lotRunsOpen"){ e.stopImmediatePropagation(); const r=lotRuns()[0]; if(r) lazy("lot").then(()=>lotRunPop(r)); }
   else if(a==="cpPick"){ e.stopImmediatePropagation(); ui.pCp=t.dataset.v||""; if(ui.prod) openProd(ui.prod); }
   else if(a==="pBuy"&&ui.pCp){ const p=prodBy(t.dataset.v), c=cpLive().find(x=>x.id===ui.pCp); if(!p||!c||!["album","ms","merch"].includes(p.kind)||isSelfGid(p.gid)) return;
     const cost=cpPrice(p), off=cost-Math.ceil(cost*c.pay), before=points(); S.set(K.points,before+off);
     setTimeout(()=>{ if(points()<before+off){ const C=coupons(), x=C.find(z=>z.id===c.id); if(x){ x.used=Date.now(); x.on=p.name; S.set(K.coupons,C); } ui.pCp=""; toast(`用了${c.n}，省 ${fmt(off)} 積分`); if(ui.prod) openProd(ui.prod); } else S.set(K.points,points()-off); },0); } },true);
 
-/* ===== 11/18 交易市場（FEST → 選秀下面）：先做好藏起來，管理員在「選秀」後台打開才開放；HUSSEY 帳號一直看得到（試玩） =====
-   ・只用積分買賣，不做卡換卡。賣出收 5% 手續費。價格上下限 MK_MIN～MK_MAX。
-   ・藝人不能買賣自己團的卡。卡上的序號、「已兌換」標記跟著卡走。
-   ・上架＝卡先從賣家手上拿出來放進市場（K.mkList，大家共用）；買家用版本號搶（不會兩個人買到同一張）。
-   ・錢和卡的交割由各自的手機做（mkCollect）：買家拿卡扣分、賣家收錢、下架退卡、管理員退回交易都在這裡處理，每一步都有記號，不會重複。
-   ・收卡（K.mkWant）：「我在找 ○○」，大家看得到；有人上架那張卡會顯示。 */
+/* ===== 11/18 交易市場（常駐功能，管理員開放後入口出現在 FEST 選秀（與大賞）下面；沒開放時只有 HUSSEY 試玩）=====
+   ・主程式這邊只放：開放判斷、交割（買家拿卡扣分、賣家收錢、下架退卡、管理員退回）、管理員後台
+   ・市集畫面在 lazy/mk.js：點入口時才載入
+   ・只用積分買賣，不做卡換卡。賣出收 5% 手續費。藝人不能買賣自己團的卡。序號、「已兌換」標記跟著卡走 */
 const MK_MIN=20, MK_MAX=3000, MK_FEE=.05;
 const mkOn=()=>!!S.get(K.mkOpen,false);
 const mkCan=()=>{ const s=session(); if(!s||s.role!=="fan") return false; return mkOn()||isHussey()||String(s.email||"").toLowerCase()==="husay"; };
@@ -15871,16 +15813,6 @@ async function mkEdit(k,fn){ if(HB_ON&&HB.tok) return kvCas(k,fn); const res=fn(
 /* 從自己手上拿出一張／放回一張 */
 function mkTake(cid,sid){ const own=getCards(), L=getSerials(), a=L[cid]||[], i=a.findIndex(x=>x.id===sid); if(i<0||!(own[cid]>0)) return null; const cp=a.splice(i,1)[0]; own[cid]--; if(!own[cid]) delete own[cid]; if(a.length) L[cid]=a; else delete L[cid]; S.set(K.cards,own); S.set(K.serials,L); return cp; }
 function mkPut(cid,cp){ const own=getCards(), L=getSerials(), meta=cardMeta(); own[cid]=(own[cid]||0)+1; (L[cid]=L[cid]||[]).push(cp); if(!meta[cid]){ meta[cid]={ts:Date.now(),no:cp.n}; S.set(K.cardMeta,meta); } S.set(K.cards,own); S.set(K.serials,L); }
-async function mkSell(cid,sid,price){ price=Math.round(+price||0); if(isSelfGid(mkGid(cid))){ toast("不能賣自己團的卡"); return; } if(price<MK_MIN||price>MK_MAX){ toast(`價格要在 ${MK_MIN}～${fmt(MK_MAX)} 積分之間`); return; }
-  const cp=(getSerials()[cid]||[]).find(x=>x.id===sid); if(!cp||!cp.n){ toast("這張卡的序號還在產生中，等一下再上架"); return; }
-  const it={id:uid("mk"),cid,cp:{...cp},price,by:mkMe(),byN:mkName(),ts:Date.now(),st:"on"};
-  try{ mkTake(cid,sid); await mkEdit(K.mkList,v=>({v:[it,...(Array.isArray(v)?v:[])].slice(0,800)})); toast("上架了"); }catch(e){ mkPut(cid,cp); toast("沒有連上網路，卡已經放回去了"); }
-  ui.mkSell=null; mkPage(); }
-async function mkBuy(id){ const x=mkAll().find(z=>z.id===id); if(!x||x.st!=="on") { toast("這張已經被買走了"); mkPage(); return; }
-  if(x.by===mkMe()){ toast("這是你自己上架的"); return; } if(isSelfGid(mkGid(x.cid))){ toast("不能買自己團的卡"); return; } if(points()<x.price){ toast(`積分不夠，要 ${fmt(x.price)} 積分`); return; }
-  let ok=false; try{ ok=await mkEdit(K.mkList,v=>{ const L=Array.isArray(v)?v:[], y=L.find(z=>z.id===id); if(!y||y.st!=="on") return false; Object.assign(y,{st:"sold",buyer:mkMe(),buyerN:mkName(),soldTs:Date.now()}); return {v:L}; }); }catch(e){ toast("沒有連上網路，等一下再買"); return; }
-  if(!ok){ toast("慢了一步，這張已經被買走了"); mkPage(); return; }
-  await mkCollect(); ui.mkView=null; toast(`買到了！${mkNo(x.cp.n)} 收進卡冊`); mkPage(); }
 async function mkOff(id,adm){ try{ await mkEdit(K.mkList,v=>{ const L=Array.isArray(v)?v:[], y=L.find(z=>z.id===id); if(!y||y.st!=="on"||(!adm&&y.by!==mkMe())) return false; Object.assign(y,{st:"off",offTs:Date.now(),offBy:adm?"admin":"me"}); return {v:L}; }); }catch(e){ toast("沒有連上網路"); return; }
   await mkCollect(); toast(adm?"已下架，卡會退回給賣家":"已下架，卡放回你的卡冊"); adm?render():mkPage(); }
 async function mkRev(id){ try{ await mkEdit(K.mkList,v=>{ const L=Array.isArray(v)?v:[], y=L.find(z=>z.id===id); if(!y||y.st!=="sold"||y.rv) return false; y.rv=Date.now(); return {v:L}; }); }catch(e){ toast("沒有連上網路"); return; } toast("已退回：買家拿回積分、賣家拿回卡"); render(); }
@@ -15896,65 +15828,20 @@ async function mkCollect(){ if(mkCollect.on) return; const me=mkMe(), s=session(
       if(x.rv&&x.by===me&&x.paid&&!x.sRv&&await flag(x.id,"sRv",y=>!!y.rv)){ S.set(K.points,points()-Math.floor(x.price*(1-MK_FEE))); mkPut(x.cid,x.cp); }
     } }catch(e){} finally{ mkCollect.on=false; } }
 setInterval(()=>{ if(mkMe()&&mkAll().some(x=>x.by===mkMe()||x.buyer===mkMe())) mkCollect(); },20e3);
-/* 這張上架的卡能不能接上我手上的連號（同一個系列，號碼差 1～4） */
-function mkFits(x){ if(!x.cp.n) return false; const key=serKey(x.cid,x.cp); if(!key) return false; const L=getSerials();
-  return Object.keys(L).some(cid=>L[cid].some(c=>c.n&&!c.rd&&serKey(cid,c)===key&&Math.abs(c.n-x.cp.n)>=1&&Math.abs(c.n-x.cp.n)<=4)); }
-/* ===== 畫面 ===== */
-const MK_KIND=[["","全部"],["mc","公放卡"],["fs","簽售卡"],["ex","特典"],["album","專輯小卡"]];
-const mkKindOk=(cid,k)=>{ if(!k) return true; const r=mkLab(cid).rule; return k==="ex"?(r==="pob"||r==="ld"):r===k; };
-function mkTile(x,mine){ const l=mkLab(x.cid), fit=!mine&&mkFits(x); return `<button class="tm-t" data-a="mkView" data-v="${x.id}"><div class="tm-f">${itemFace(x.cid)}</div><b>${esc(l.who)}</b><small>${esc(l.kind)}・${mkNo(x.cp.n)}${x.cp.rd?"・已兌換":""}</small>${fit?`<em class="tm-fit">能接你的連號</em>`:""}<span class="tm-p">${fmt(x.price)} 積分</span></button>`; }
-function mkPage(){ if(!mkCan()){ toast("交易市場還沒開放"); return; } const tab=ui.mkTab||"mkt", me=mkMe(), q=String(ui.mkQ||"").trim().toLowerCase(), kd=ui.mkK||"", L=mkAll();
-  const head=`<header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>交易市場</b><span class="sh-sp"></span></header>
-    ${mkOn()?"":`<p class="tm-pre">還沒開放，只有你看得到（試玩）。這裡的買賣是真的會扣積分、移動卡片。</p>`}
-    <nav class="tm-tabs">${[["mkt","市集"],["want","收卡"],["mine","我的"],["log","紀錄"]].map(([k,n])=>`<button class="${tab===k?"on":""}" data-a="mkTab" data-v="${k}">${n}</button>`).join("")}</nav>`;
-  let body="";
-  if(tab==="mkt"){ const on=L.filter(x=>x.st==="on"&&x.by!==me).filter(x=>{ const l=mkLab(x.cid); if(!mkKindOk(x.cid,kd)) return false; if(ui.mkSp&&!l.sp) return false; if(ui.mkFit&&!mkFits(x)) return false; return !q||[l.who,l.grp,l.kind,l.alb].join(" ").toLowerCase().includes(q); }).sort((a,b)=>b.ts-a.ts);
-    body=`<div class="tm-flt"><input class="tm-q" id="mkQ" type="search" placeholder="搜尋藝人、團名、專輯" value="${esc(ui.mkQ||"")}"><div class="tm-chips">${MK_KIND.map(([k,n])=>`<button class="${kd===k?"on":""}" data-a="mkK" data-v="${k}">${n}</button>`).join("")}<button class="${ui.mkSp?"on":""}" data-a="mkSp">貴卡</button><button class="${ui.mkFit?"on":""}" data-a="mkFit">能接我的連號</button></div></div>
-      ${on.length?`<div class="tm-wall">${on.map(x=>mkTile(x)).join("")}</div>`:`<p class="tm-none">${L.some(x=>x.st==="on"&&x.by!==me)?"沒有符合的卡":"市集上還沒有卡"}</p>`}`; }
-  else if(tab==="want"){ const W=mkWants().sort((a,b)=>b.ts-a.ts);
-    body=`<button class="tm-add" data-a="mkWantPick">＋ 我在找…</button>${W.length?`<div class="tm-list">${W.map(w=>{ const l=mkLab(w.cid), n=L.filter(x=>x.st==="on"&&x.cid===w.cid).length; return `<div class="tm-row"><div class="tm-sf">${itemFace(w.cid)}</div><span><b>${esc(l.who)} ${esc(l.kind)}</b><small>${esc(w.byN||"")} 在找${w.max?`・最多出 ${fmt(w.max)} 積分`:""}${n?`・市集上有 ${n} 張`:""}</small></span>${w.by===me?`<button class="tm-sb" data-a="mkWantDel" data-v="${w.id}">取消</button>`:n?`<button class="tm-sb" data-a="mkFind" data-v="${w.cid}">去看</button>`:(getCards()[w.cid]?`<button class="tm-sb" data-a="mkSellPick" data-v="${w.cid}">我有，上架</button>`:"")}</div>`; }).join("")}</div>`:`<p class="tm-none">還沒有人在收卡。想湊連號或畢業缺哪張，就貼出來找。</p>`}`; }
-  else if(tab==="mine"){ const on=L.filter(x=>x.st==="on"&&x.by===me), own=getCards(), S2=getSerials(), cs=Object.keys(own).filter(c=>c.startsWith("it|")&&parseIt(c)&&!isSelfGid(mkGid(c))&&(S2[c]||[]).some(z=>z.n));
-    body=`<section class="tm-sec"><h3>上架中</h3>${on.length?`<div class="tm-wall">${on.map(x=>mkTile(x,1)).join("")}</div>`:`<p class="tm-none">還沒有上架的卡</p>`}</section>
-      <section class="tm-sec"><h3>上架一張卡</h3><p class="tm-none">賣出會扣 5% 手續費，價格 ${MK_MIN}～${fmt(MK_MAX)} 積分。</p>${cs.length?`<div class="tm-list">${cs.map(c=>{ const l=mkLab(c), w=mkWants().filter(z=>z.cid===c&&z.by!==me).length; return `<button class="tm-row" data-a="mkSellPick" data-v="${c}"><div class="tm-sf">${itemFace(c)}</div><span><b>${esc(l.who)} ${esc(l.kind)}</b><small>${esc(l.alb)}・擁有 ${own[c]} 張${w?`・${w} 人在找`:""}</small></span><i>›</i></button>`; }).join("")}</div>`:`<p class="tm-none">卡冊裡還沒有可以賣的卡</p>`}</section>`; }
-  else { const H=L.filter(x=>(x.st==="sold"&&(x.by===me||x.buyer===me))).sort((a,b)=>(b.soldTs||0)-(a.soldTs||0));
-    body=H.length?`<div class="tm-list">${H.map(x=>{ const l=mkLab(x.cid), sold=x.by===me; return `<div class="tm-row"><div class="tm-sf">${itemFace(x.cid)}</div><span><b>${sold?"賣出":"買入"}・${esc(l.who)} ${esc(l.kind)} ${mkNo(x.cp.n)}</b><small>${ymd(x.soldTs)}・${sold?`給 ${esc(x.buyerN||"")}・入帳 ${fmt(Math.floor(x.price*(1-MK_FEE)))}`:`向 ${esc(x.byN||"")}・${fmt(x.price)}`} 積分${x.rv?"・已被管理員退回":""}</small></span></div>`; }).join("")}</div>`:`<p class="tm-none">還沒有交易紀錄</p>`; }
-  setLayer(`<div class="tiei tm" role="dialog" aria-label="交易市場">${head}<div class="tiei-body">${body}</div></div>`,"mk");
-  const qi=layer.querySelector("#mkQ"); if(qi){ qi.addEventListener("input",()=>{ ui.mkQ=qi.value; clearTimeout(qi._t); qi._t=setTimeout(()=>{ const p=qi.selectionStart; mkPage(); const n=layer.querySelector("#mkQ"); if(n){ n.focus(); try{ n.setSelectionRange(p,p); }catch(e){} } },350); }); } }
-function mkSheet(html){ ovl.innerHTML=`<div class="tm-ov" data-a="mkClose"><div class="tm-sh" role="dialog">${html}</div></div>`; }
-function mkView(id){ const x=mkAll().find(z=>z.id===id); if(!x) return; const l=mkLab(x.cid), mine=x.by===mkMe();
-  mkSheet(`<div class="tm-big">${itemFace(x.cid,{big:true})}</div><b class="tm-sh-t">${esc(l.who)}・${esc(l.kind)}</b><small class="tm-sh-s">${esc(l.grp)}《${esc(l.alb)}》・${mkNo(x.cp.n)}${l.sp?"・貴卡":""}${x.cp.rd?"・已兌換（不能再拿去抽）":""}</small><small class="tm-sh-s">賣家 ${esc(x.byN||"")}</small>
-    <div class="tm-sh-b">${mine?`<button class="tm-go soft" data-a="mkOff" data-v="${x.id}">下架</button>`:`<button class="tm-go" data-a="mkBuy" data-v="${x.id}">用 ${fmt(x.price)} 積分買下</button>`}<button class="tm-go soft" data-a="mkClose">取消</button></div>`); }
-function mkSellPick(cid){ const a=(getSerials()[cid]||[]).filter(z=>z.n).sort((p,q)=>p.n-q.n), l=mkLab(cid); if(!a.length) return; const sid=ui.mkSid&&a.some(z=>z.id===ui.mkSid)?ui.mkSid:a[0].id;
-  mkSheet(`<div class="tm-big">${itemFace(cid,{big:true})}</div><b class="tm-sh-t">${esc(l.who)}・${esc(l.kind)}</b>${a.length>1?`<div class="tm-chips c">${a.map(z=>`<button class="${z.id===sid?"on":""}" data-a="mkSid" data-v="${z.id}" data-c="${cid}">${mkNo(z.n)}${z.rd?"（已兌換）":""}</button>`).join("")}</div>`:`<small class="tm-sh-s">${mkNo(a[0].n)}${a[0].rd?"・已兌換":""}</small>`}
-    <label class="tm-pr"><span>價格</span><input id="mkPr" type="number" inputmode="numeric" min="${MK_MIN}" max="${MK_MAX}" placeholder="${MK_MIN}～${MK_MAX}"><span>積分</span></label><small class="tm-sh-s" id="mkNet">賣出扣 5% 手續費</small>
-    <div class="tm-sh-b"><button class="tm-go" data-a="mkSellGo" data-v="${cid}" data-s="${sid}">上架</button><button class="tm-go soft" data-a="mkClose">取消</button></div>`);
-  const pi=ovl.querySelector("#mkPr"); pi.addEventListener("input",()=>{ const n=Math.round(+pi.value||0); ovl.querySelector("#mkNet").textContent=n?`賣出後你拿到 ${fmt(Math.floor(n*(1-MK_FEE)))} 積分（扣 5% 手續費）`:"賣出扣 5% 手續費"; }); }
-function mkWantPick(){ const f=followed(), q=String(ui.mkWq||"").toLowerCase(), C=[]; getAlbums().filter(a=>f.includes(a.gid)&&!isSelfGid(a.gid)).forEach(a=>[...a.vers.flatMap(v=>v.inc),...(a.ex||[])].forEach(it=>(it.pool||[]).forEach(p=>C.push(`it|${a.id}|${it.id}|${p.id}`))));
-  f.forEach(g=>{ const m=mcAlb(g); if(m&&!isSelfGid(g)) m.ex[0].pool.forEach(p=>C.push(`it|${m.id}|mc|${p.id}`)); });
-  const L=[...new Set(C)].filter(c=>parseIt(c)&&(!q||Object.values(mkLab(c)).join(" ").toLowerCase().includes(q))).slice(0,80);
-  mkSheet(`<b class="tm-sh-t">我在找哪一張？</b><input class="tm-q" id="mkWq" type="search" placeholder="搜尋藝人、專輯" value="${esc(ui.mkWq||"")}"><div class="tm-list sc">${L.map(c=>{ const l=mkLab(c); return `<button class="tm-row" data-a="mkWantAdd" data-v="${c}"><div class="tm-sf">${itemFace(c)}</div><span><b>${esc(l.who)} ${esc(l.kind)}</b><small>${esc(l.alb)}</small></span></button>`; }).join("")||`<p class="tm-none">追蹤的藝人裡沒有符合的卡</p>`}</div><div class="tm-sh-b"><button class="tm-go soft" data-a="mkClose">取消</button></div>`);
-  const qi=ovl.querySelector("#mkWq"); qi.addEventListener("input",()=>{ ui.mkWq=qi.value; clearTimeout(qi._t); qi._t=setTimeout(()=>{ mkWantPick(); const n=ovl.querySelector("#mkWq"); if(n){ n.focus(); const p=n.value.length; try{ n.setSelectionRange(p,p); }catch(e){} } },350); }); }
-async function mkWantAdd(cid){ const me=mkMe(); if(mkWants().some(w=>w.by===me&&w.cid===cid)){ toast("你已經在找這張了"); return; }
-  const w={id:uid("mw"),cid,by:me,byN:mkName(),ts:Date.now()}; try{ await mkEdit(K.mkWant,v=>({v:[w,...(Array.isArray(v)?v:[])].slice(0,400)})); }catch(e){ toast("沒有連上網路"); return; } ovl.innerHTML=""; ui.mkTab="want"; mkPage(); toast("貼出去了，有人上架會顯示在這裡"); }
-async function mkWantDel(id){ try{ await mkEdit(K.mkWant,v=>({v:(Array.isArray(v)?v:[]).filter(w=>!(w.id===id&&w.by===mkMe()))})); }catch(e){ toast("沒有連上網路"); return; } mkPage(); }
 /* 管理員（選秀後台下面）：開關＋全部交易紀錄，可以下架、退回 */
 function mkAdminHtml(){ const L=mkAll(), sold=L.filter(x=>x.st==="sold").sort((a,b)=>(b.soldTs||0)-(a.soldTs||0)), on=L.filter(x=>x.st==="on");
-  return `<section class="card studio"><div class="foc-cfg-h"><h3>交易市場</h3><span class="badge">${mkOn()?"開放中":"未開放"}</span></div><p class="reach">粉絲之間用積分買賣小卡，賣出扣 5% 手續費，價格 ${MK_MIN}～${fmt(MK_MAX)} 積分，藝人不能買賣自己團的卡。沒開放時只有 HUSSEY 看得到（試玩）。</p>
+  return `<section class="card studio"><div class="foc-cfg-h"><h3>連號開獎・扭蛋機</h3></div><p class="reach">平常不會出現。粉絲湊到 5 張連號時跳出「湊到連號了」；每月 1 號 21:00～24:00 手上有券時扭蛋機跳出來。這裡可以試轉看效果（不算數）。</p><div class="ls-btns"><button class="btn btn-soft" data-a="lotDemo">試轉扭蛋機</button></div></section>
+<section class="card studio"><div class="foc-cfg-h"><h3>交易市場</h3><span class="badge">${mkOn()?"開放中":"未開放"}</span></div><p class="reach">粉絲之間用積分買賣小卡，賣出扣 5% 手續費，價格 ${MK_MIN}～${fmt(MK_MAX)} 積分，藝人不能買賣自己團的卡。沒開放時只有 HUSSEY 看得到（試玩）。</p>
     <div class="ls-btns"><button class="btn ${mkOn()?"btn-soft":"btn-main"}" data-a="mkToggle">${mkOn()?"關閉交易市場":"開放交易市場"}</button></div>
     <div class="mu5-st" style="margin-top:16px">上架中（${on.length}）</div>${on.length?`<ul class="tm-adm">${on.slice(0,50).map(x=>{ const l=mkLab(x.cid); return `<li><span><b>${esc(x.byN||x.by)}</b>・${esc(l.who)} ${esc(l.kind)} ${mkNo(x.cp.n)}・${fmt(x.price)}</span><button class="btn btn-soft" data-a="mkAdmOff" data-v="${x.id}">下架</button></li>`; }).join("")}</ul>`:`<p class="reach">沒有</p>`}
     <div class="mu5-st" style="margin-top:16px">交易紀錄（${sold.length}）</div>${sold.length?`<ul class="tm-adm">${sold.slice(0,100).map(x=>{ const l=mkLab(x.cid); return `<li><span>${ymd(x.soldTs)}・<b>${esc(x.byN||x.by)}</b> → <b>${esc(x.buyerN||x.buyer)}</b>・${esc(l.who)} ${esc(l.kind)} ${mkNo(x.cp.n)}・${fmt(x.price)} 積分</span>${x.rv?`<em>已退回</em>`:`<button class="btn btn-soft" data-a="mkAdmRev" data-v="${x.id}">退回</button>`}</li>`; }).join("")}</ul>`:`<p class="reach">還沒有交易</p>`}</section>`; }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t||!/^mk[A-Z]/.test(t.dataset.a)) return; e.stopImmediatePropagation(); const a=t.dataset.a, v=t.dataset.v;
-  if(a==="mkOpen"){ ui.mkTab=ui.mkTab||"mkt"; mkCollect().then(()=>{ if(layer.querySelector(".tm")) mkPage(); }); mkPage(); }
-  else if(a==="mkTab"){ ui.mkTab=v; mkPage(); } else if(a==="mkK"){ ui.mkK=v; mkPage(); } else if(a==="mkSp"){ ui.mkSp=!ui.mkSp; mkPage(); } else if(a==="mkFit"){ ui.mkFit=!ui.mkFit; mkPage(); }
-  else if(a==="mkView") mkView(v);
-  else if(a==="mkClose"){ if(t.classList.contains("tm-ov")&&e.target!==t) return; ovl.innerHTML=""; }
-  else if(a==="mkBuy"){ ovl.innerHTML=""; mkBuy(v); } else if(a==="mkOff"){ ovl.innerHTML=""; mkOff(v); }
-  else if(a==="mkSellPick"){ ui.mkSid=null; mkSellPick(v); } else if(a==="mkSid"){ ui.mkSid=v; const p=(ovl.querySelector("#mkPr")||{}).value; mkSellPick(t.dataset.c); if(p) ovl.querySelector("#mkPr").value=p; }
-  else if(a==="mkSellGo"){ const p=(ovl.querySelector("#mkPr")||{}).value; ovl.innerHTML=""; mkSell(v,t.dataset.s,p); }
-  else if(a==="mkWantPick"){ ui.mkWq=""; mkWantPick(); } else if(a==="mkWantAdd") mkWantAdd(v); else if(a==="mkWantDel") mkWantDel(v);
-  else if(a==="mkFind"){ ui.mkTab="mkt"; const l=mkLab(v); ui.mkQ=l.who; ui.mkK=""; mkPage(); }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a, v=t.dataset.v;
+  if(!["mkOpen","mkToggle","mkAdmOff","mkAdmRev"].includes(a)) return; e.stopImmediatePropagation();
+  if(a==="mkOpen"){ ui.mkTab=ui.mkTab||"mkt"; lazy("mk").then(()=>{ mkPage(); mkCollect().then(()=>{ if(layer.querySelector(".tm")) mkPage(); }); }).catch(()=>{}); }
   else if(a==="mkToggle"){ S.set(K.mkOpen,!mkOn()); toast(mkOn()?"交易市場開放了，粉絲在 FEST 看得到":"交易市場關閉了"); render(); }
   else if(a==="mkAdmOff") mkOff(v,1); else if(a==="mkAdmRev") mkRev(v); });
 
 /* ===== 舊 iPhone（iOS 15）看不懂 color-mix：build.py 自動整理清單，由 cmxPoly() 補上算好的顏色 ===== */
 const CMX_RULES=[[".ob-n", "", "background", "color-mix(in srgb,var(--ink) 18%,transparent)"], [".ux-empty span", "", "background", "color-mix(in srgb,var(--accent,#8B5CF6) 10%,transparent)"], ["html[data-theme] body header.top", "", "background", "color-mix(in srgb,var(--bg) 88%,transparent)"], ["html[data-theme] body .nav-in", "", "background", "color-mix(in srgb,var(--s1) 92%,transparent)"], [".foc-pill", "", "background", "color-mix(in srgb,#6D8DF5 16%,transparent)"], [".foc-ms2 span.on", "", "background", "color-mix(in srgb,var(--accent,#8B5CF6) 14%,transparent)"], [".foc-ms2 span.on", "", "border-color", "color-mix(in srgb,var(--accent,#8B5CF6) 40%,transparent)"], ["html[data-theme] body .t-lh", "", "background", "color-mix(in srgb,var(--bg) 82%,transparent)"], ["html[data-theme] body .t-search:not(.in)", "", "background", "color-mix(in srgb,var(--bg) 95%,transparent)"], [".ap-cell small", "", "background", "color-mix(in srgb,var(--s1) 85%,transparent)"], [".sto-av", "", "background", "linear-gradient(140deg,var(--c),color-mix(in srgb,var(--c) 55%,#1a1424))"], [".sto-av", "", "box-shadow", "0 4px 14px color-mix(in srgb,var(--c) 35%,transparent)"], [".cm-shade", "", "background", "linear-gradient(180deg,transparent 30%,color-mix(in srgb,var(--gt) 70%,#000 30%) 100%)"], [".cm-chips button.on", "", "background", "color-mix(in srgb,var(--gt) 72%,#1B1626)"], [".ofd-tag", "", "background", "color-mix(in srgb,var(--ink) 8%,transparent)"], [".ofd>.ofm-bar", "", "border-top", "1px solid color-mix(in srgb,var(--ink) 10%,transparent)"], [".cmx-hbg", "", "background", "linear-gradient(160deg,color-mix(in srgb,var(--gt) 55%,#fff),var(--gt))"], [".ap2-bar", "", "background", "color-mix(in srgb,var(--bg) 70%,transparent)"], [".me-hero", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--gt) 70%,#000) 0%,var(--gt) 100%)"], [".yv-th", "", "background", "linear-gradient(135deg,color-mix(in srgb,var(--gt) 60%,#fff),var(--gt))"], [".t-spin", "", "border-color", "color-mix(in srgb,var(--violet,#A47BFF) 22%,transparent)!important"], [".snof-card", "", "background", "radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--c) 70%,#000),#0b0910)"], [".sn-nav", "", "background", "color-mix(in srgb,var(--b) 82%,transparent)"], [".sn-nav", "", "border", ".5px solid color-mix(in srgb,var(--t) 10%,transparent)"], [".ia-ban", "", "background", "color-mix(in srgb,var(--s1,#fff) 88%,transparent)"], [".tr-n", "", "background", "color-mix(in srgb,var(--gt,#8843FB) 14%,transparent)"], [".nw-tag", "", "background", "color-mix(in srgb,var(--c) 14%,transparent)"], [".nw-ph", "", "background", "linear-gradient(135deg,var(--gt),color-mix(in srgb,var(--gt) 55%,#fff))"], [".nw-gs span", "", "background", "color-mix(in srgb,var(--gt) 12%,transparent)"], [".cal-btn", "", "background", "color-mix(in srgb,currentColor 10%,transparent)"], [".cal-x", "", "background", "color-mix(in srgb,var(--accent,#c06) 14%,transparent)"], [".sn-sh.srt .srt-g", "", "background", "color-mix(in srgb,var(--sn-t,#fff) 7%,transparent)"], [".pta-r.on", "", "background", "color-mix(in srgb,var(--violet) 10%,transparent)"], [".lsf-seg button.cur", "", "background", "color-mix(in srgb,var(--c) 22%,transparent)"], [".lsf-b", "", "background", "color-mix(in srgb,var(--c) 10%,transparent)"], [".sn-nav button.on:last-child", "", "background", "color-mix(in srgb,var(--t) 9%,transparent)"], [".sn-pick", "", "border", "1.5px dashed color-mix(in srgb,var(--t,#fff) 22%,transparent)"], [".sn-pick", "", "background", "color-mix(in srgb,var(--t,#fff) 5%,transparent)"], [".sn-next:disabled", "", "background", "color-mix(in srgb,var(--t,#fff) 12%,transparent)"], [".sn-next:disabled", "", "color", "color-mix(in srgb,var(--t,#fff) 45%,transparent)!important"], [".sn-aud button", "", "border", "1px solid color-mix(in srgb,var(--t,#fff) 22%,transparent)"], [".sn-aud button.on", "", "background", "color-mix(in srgb,var(--t,#fff) 12%,transparent)"], [".sn-aud .cf.on", "", "background", "color-mix(in srgb,#1CD14F 16%,transparent)"], [".sn-tagr", "", "border-top", ".5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important"], [".sn-tagr", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important"], [".fp-reps", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 8%,transparent)"], [".pre-bn button", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 12%,var(--card,#fff))"], [".sn-fb", "", "background", "color-mix(in srgb,var(--t,#000) 8%,transparent)"], [".sn-musb", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#000) 14%,transparent)"], [".sn-musr", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#000) 14%,transparent)"], [".smp-pl", "", "box-shadow", "0 6px 18px color-mix(in srgb,var(--violet,#8843FB) 40%,transparent)"], [".smp-sh.l", "", "background", "linear-gradient(90deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))"], [".smp-sh.r", "", "background", "linear-gradient(270deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))"], [".smp-win", "", "box-shadow", "0 0 0 999px color-mix(in srgb,var(--s2) 55%,transparent),0 0 18px color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)"], [".smp-win em", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 30%,transparent)"], [".stk-pan", "", "border-top", "1px solid color-mix(in srgb,currentColor 10%,transparent)"], [".stk-tabs button.on", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 14%,transparent)"], [".stk-grid button:active", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 12%,transparent)"], [".stk-grab", "", "background", "color-mix(in srgb,currentColor 20%,transparent)"], ["#stkDock", "", "border-top", "1px solid color-mix(in srgb,currentColor 8%,transparent)"], [".vs-hero", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--glass) 82%,transparent),var(--glass)),var(--vg)"], [".vs-pick button.on", "", "background", "color-mix(in srgb,var(--accent,#8843FB) 14%,transparent)"], [".scx-num button.on", "", "background", "color-mix(in srgb,#7C5CFF 22%,transparent)"], [".cfs-awn", "", "background", "repeating-linear-gradient(90deg,var(--ac) 0 18px,color-mix(in srgb,var(--ac) 55%,#fff) 18px 36px)"], [".fya", "", "background", "radial-gradient(120% 90% at 50% 110%,color-mix(in srgb,var(--c1) 55%,#000) 0%,#07050d 62%)"], [".fya.ph::after", "", "background", "linear-gradient(115deg,color-mix(in srgb,var(--c1) 38%,transparent) 0%,transparent 42%,transparent 60%,color-mix(in srgb,var(--c2) 40%,transparent) 100%)"], [".fya-mono", "", "filter", "drop-shadow(0 0 28px color-mix(in srgb,var(--c2) 70%,transparent))"], [".fya-beam", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--c1) 55%,transparent),transparent 75%)"], [".fya-beam.b3", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--c2) 55%,transparent),transparent 75%)"], [".pr-auto::after", "", "background", "linear-gradient(160deg,color-mix(in srgb,var(--c) 40%,transparent),transparent 60%)"], ["html[data-th] body .toast,html[data-th] .toast", "", "background", "color-mix(in srgb,var(--s1) 88%,transparent)!important"], [".mur-trk .mt-p i", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)"], [".mur-trk .mt-on i", "", "box-shadow", "0 0 0 3px color-mix(in srgb,var(--violet,#8843FB) 22%,transparent)"], [".sn-gb", "", "background", "color-mix(in srgb,var(--t) 8%,transparent)"], [".sn-dmhead button", "", "background", "color-mix(in srgb,var(--t) 10%,transparent)"], [".pd-c.lp-on", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 10%,transparent)"], [".sn-pvh", "", "background", "color-mix(in srgb,var(--b,#000) 78%,transparent)!important"]];
+
+window.LAZY={"lot": "lazy/lot.js?v=f79e11706d", "mk": "lazy/mk.js?v=9fb132db4b"};

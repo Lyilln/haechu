@@ -59,6 +59,14 @@ _code = re.sub(r"/\*.*?\*/", "", js, flags=re.S)
 for _bad, _why in [(r"\(\?<[=!]", "正規式的 (?<= / (?<!"), (r"\bstructuredClone\(", "structuredClone"), (r"\.findLast(Index)?\(", ".findLast"), (r"\.to(Sorted|Reversed|Spliced)\(", ".toSorted 之類"), (r"\b(Object|Map)\.groupBy\(", "groupBy")]:
     if re.search(_bad, _code):
         sys.exit(f"build 停止：用了 iOS 15 看不懂的 {_why}，舊 iPhone 會白畫面，請改寫")
+# 要用時才載入的程式（src/lazy/*.js → lazy/*.js）：一樣擋 iOS 15 看不懂的寫法；網址指紋寫進 app.js 的 LAZY
+os.makedirs(os.path.join(R, "lazy"), exist_ok=True); _lz = {}
+for _f in sorted(glob.glob(os.path.join(R, "src/lazy/*.js"))):
+    _n = os.path.splitext(os.path.basename(_f))[0]; _t = open(_f, encoding="utf-8").read(); _c = re.sub(r"/\*.*?\*/", "", _t, flags=re.S)
+    for _bad, _why in [(r"\(\?<[=!]", "正規式的 (?<= / (?<!"), (r"\bstructuredClone\(", "structuredClone"), (r"\.findLast(Index)?\(", ".findLast"), (r"\.to(Sorted|Reversed|Spliced)\(", ".toSorted 之類")]:
+        if re.search(_bad, _c): sys.exit(f"build 停止：lazy/{_n}.js 用了 iOS 15 看不懂的 {_why}")
+    open(os.path.join(R, "lazy", _n + ".js"), "w", encoding="utf-8").write(_t); _lz[_n] = f"lazy/{_n}.js?v={h(_t)}"
+js += "\nwindow.LAZY=" + _json.dumps(_lz) + ";\n"
 open(os.path.join(R, "app.js"), "w", encoding="utf-8").write(js)
 build = time.strftime("%Y%m%d%H%M%S", time.gmtime())
 shell = open(os.path.join(R, "src/index.html"), encoding="utf-8").read()

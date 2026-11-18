@@ -7450,6 +7450,31 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .cp-row button{padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--s1);color:var(--ink);font:inherit;font-size:13px}
 .cp-row button.on{border-color:var(--violet);color:var(--violet);font-weight:700}
 .cp-row small{width:100%;font-size:12.5px;color:var(--violet)}
+/* 跳出來的視窗（湊到連號／扭蛋機） */
+.lp-ov{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(20,12,40,.55);-webkit-animation:lpFade .2s ease;animation:lpFade .2s ease}
+.lp-sh{position:relative;width:100%;max-width:360px;max-height:calc(100vh - 40px);overflow-y:auto;-webkit-overflow-scrolling:touch;box-sizing:border-box;padding:22px 18px 18px;border-radius:28px;background:var(--s1);color:var(--ink);text-align:center;box-shadow:0 20px 50px rgba(20,10,50,.35);-webkit-animation:gmPop .35s var(--sn-spr,ease);animation:gmPop .35s var(--sn-spr,ease)}
+.lp-x{position:absolute;right:12px;top:12px;width:34px;height:34px;border:0;border-radius:50%;background:var(--s2);color:var(--ink-3);font-size:16px}
+.lp-sh h2{margin:0;font-size:19px}
+.lp-sub{margin:4px 0 14px;font-size:13px;color:var(--ink-3)}.lp-sub b{color:var(--violet)}
+.lp-sh p{margin:0 0 16px;font-size:14px;line-height:1.6;color:var(--ink-2)}
+.lp-fan{display:flex;justify-content:center;height:128px;margin:6px 0 14px}
+.lp-fan span{position:relative;flex:none;width:64px;margin:0 -12px;border:2px solid #fff;border-radius:8px;overflow:hidden;box-shadow:0 4px 12px rgba(40,20,80,.18);background:#fff;align-self:flex-start}
+.lp-fan .itf{position:relative;display:block;width:100%;aspect-ratio:5.5/8.5;overflow:hidden;border-radius:0}
+.lp-fan .itf img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.lp-fan .itf .itf-ph{position:absolute;inset:0}.lp-fan .itf .itf-ph b,.lp-fan .itf .itf-ph small{display:none}
+.lp-fan em{position:absolute;left:0;right:0;bottom:0;padding:3px 0;background:rgba(0,0,0,.45);color:#fff;font:700 9.5px/1.2 system-ui,sans-serif;font-style:normal}
+.lp-bt{display:flex;gap:8px}.lp-bt button{flex:1;padding:12px;border:0;border-radius:14px;font:inherit;font-size:15px;font-weight:700}
+.lp-bt .go{background:var(--violet);color:#fff}.lp-bt .no{background:var(--s2);color:var(--ink)}
+.lp-gm{transform:scale(.86);transform-origin:50% 0;margin-bottom:-46px}
+.lp-tip{margin:0!important;font-size:13px!important;color:var(--ink-3)!important}
+.lp-more{margin-top:10px;text-align:left}
+.lp-more details{border-top:1px solid var(--line);padding:8px 0}
+.lp-more summary{text-align:center;font-size:13px;color:var(--ink-3);cursor:pointer;list-style:none}
+.lp-more summary::-webkit-details-marker{display:none}
+.lp-odds{margin:8px 0 0;padding:0;list-style:none;font-size:13px}.lp-odds li{display:flex;justify-content:space-between;padding:3px 0}
+@-webkit-keyframes lpFade{from{opacity:0}}@keyframes lpFade{from{opacity:0}}
+/* 卡冊上面：有連號可以換時才出現 */
+.lot-bn{display:flex;align-items:center;width:100%;margin:0 0 14px;padding:12px 16px;border:1px solid var(--line);border-radius:16px;background:var(--s1);color:var(--ink);font:inherit;text-align:left}
+.lot-bn b{flex:1;font-size:14px;color:var(--violet)}.lot-bn i{font-style:normal;font-size:18px;color:var(--ink-3)}
 
 /* ===== 交易市場 ===== */
 .tm .tiei-body{padding-bottom:40px}
