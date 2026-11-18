@@ -6353,7 +6353,7 @@ function festHome(f){ const g=festSel(f), gids=g?[g]:f, T=ui.festT||[], tile=k=>
   return `${chips}${g?festHead(g):""}
     <div class="fz-sh"><b>今天</b><span>${d.getMonth()+1}/${d.getDate()}（${wd}）</span></div>
     ${today.length?`<div class="fz-today">${today.map(tc).join("")}</div>`:`<p class="fz-none">今天沒有要趕的事 🌙 去抽屜逛逛吧</p>`}
-    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>${(()=>{ const t=tile("survival"); if(!t) return ""; const lk=!svOpen(); /* 選秀不屬於任何已出道的藝人：獨立一塊 */ return `<div class="fz-sh"><b>選秀</b><span>還沒出道的練習生</span></div><button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"coreGo"}" data-v="survival"><span>🏆</span><b>${esc(t[2])}</b><small>${t[3]}</small><i>›</i></button>`; })()}${(()=>{ try{ const n=lotReady().length, w=lotWait().length; return `<div class="fz-sh"><b>開獎</b><span>每月 1 號 21:00</span></div><button class="fz-sv lot-en" data-a="lotOpen"><span>🎰</span><b>連號開獎</b><small>${n?`開獎中・你有 ${n} 張券`:w?`你有 ${w} 張券・${lotWhen(lotNextAt())} 開獎`:`下次開獎 ${lotWhen(lotNextAt())}`}</small><i>›</i></button>`; }catch(e){ return ""; } })()}`; }
+    <div class="fz-sh"><b>全部玩法</b>${g?`<span>有 ${esc((groupOf(g)||{}).name||"")} 的排前面</span>`:""}</div><div class="fz-drs">${dr}</div>${(()=>{ const t=tile("survival"); if(!t) return ""; const lk=!svOpen(); /* 選秀不屬於任何已出道的藝人：獨立一塊 */ return `<div class="fz-sh"><b>選秀</b><span>還沒出道的練習生</span></div><button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"coreGo"}" data-v="survival"><span>🏆</span><b>${esc(t[2])}</b><small>${t[3]}</small><i>›</i></button>`; })()}${(()=>{ try{ const n=lotReady().length, w=lotWait().length; return `<div class="fz-sh"><b>開獎</b><span>每月 1 號 21:00～24:00</span></div><button class="fz-sv lot-en" data-a="lotOpen"><span>🎰</span><b>連號開獎</b><small>${n?`開獎中・你有 ${n} 張券`:w?`你有 ${w} 張券・${lotWhen(lotNextAt())} 開獎`:`下次開獎 ${lotWhen(lotNextAt())}`}</small><i>›</i></button>`; }catch(e){ return ""; } })()}`; }
 function viewFestDr(k){ const d=FEST_DR.find(x=>x[0]===k); if(!d) return coreHead("FEST")+`<main class="page"><p class="me-none">找不到</p></main>`; viewCore(); const T=ui.festT||[];
   const tb=([v,ic,n,sub])=>`<button class="tile ${v==="survival"&&!svOpen()?"lock":""}" data-a="${v==="survival"&&!svOpen()?"coreLocked":"coreGo"}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   const L=d[3].map(x=>x==="signed"?["signed","pen","簽名專輯",(()=>{ const n=(S.get(K.signedAlbums,[])||[]).length; return n?`收藏 ${n} 張`:"還沒有簽名專輯"; })()]:T.find(t=>t[0]===x)).filter(Boolean), on=L.filter(t=>!festOff(t[3])), off=L.filter(t=>festOff(t[3]));
@@ -15727,7 +15727,7 @@ setInterval(serialSync,20e3); setTimeout(serialSync,6e3);
 
 /* ===== 11/18 連號開獎（FEST → 選秀下面）＋折價券 =====
    ・同一位藝人、同一種卡（公放卡／簽售卡／同一批特典）有 5 張連號 → 換 1 張抽獎券；用過的卡標記「已兌換」（記在那張卡上，賣掉也跟著走）。
-   ・每月 1 號晚上 9 點（台灣時間）開獎：在那之前換到的券，開獎後到扭蛋機轉開；之後才換的等下個月。
+   ・只有每月 1 號 21:00～24:00（台灣時間）扭蛋機轉得動：在那之前換到的券那時轉；沒轉完、或之後才換的，留到下個月 1 號。
    ・結果大家都看得到（K.lotRes，大家共用）。HUSSEY 帳號沒有券時可以「試轉」看效果，不算數。
    ・折價券（K.coupons）：只能用一次、不能轉賣、只能折官方商品（專輯、Membership、周邊）。之後的 1 折券也放這裡。 */
 const LOT_PZ=[{k:"p35",n:"積分 +35",pt:35,w:25},{k:"p50",n:"積分 +50",pt:50,w:22},{k:"p75",n:"積分 +75",pt:75,w:18},{k:"p100",n:"積分 +100",pt:100,w:14},{k:"p200",n:"積分 +200",pt:200,w:9},{k:"p500",n:"積分 +500",pt:500,w:5,big:1},
@@ -15740,8 +15740,10 @@ function lotNextAt(now=Date.now()){ const d=new Date(lotOpenAt(now)+8*36e5); let
 const lotRound=t=>{ const d=new Date(t+8*36e5); return d.getUTCFullYear()+"-"+String(d.getUTCMonth()+1).padStart(2,"0"); };
 const lotWhen=t=>{ const d=new Date(t+8*36e5); return `${d.getUTCMonth()+1}/${d.getUTCDate()}（${"日一二三四五六"[d.getUTCDay()]}）21:00`; };
 const lotTix=()=>(S.get(K.lotTix,[])||[]).filter(x=>x&&x.id);
-const lotReady=()=>lotTix().filter(x=>!x.drawn&&x.ts<lotOpenAt());
-const lotWait=()=>lotTix().filter(x=>!x.drawn&&x.ts>=lotOpenAt());
+/* 只有每月 1 號 21:00～24:00 轉得動；沒轉完的券留到下個月 1 號 */
+const lotLive=()=>Date.now()<lotOpenAt()+3*36e5;
+const lotReady=()=>lotLive()?lotTix().filter(x=>!x.drawn&&x.ts<lotOpenAt()):[];
+const lotWait=()=>{ const r=new Set(lotReady().map(x=>x.id)); return lotTix().filter(x=>!x.drawn&&!r.has(x.id)); };
 const coupons=()=>(S.get(K.coupons,[])||[]).filter(x=>x&&x.id);
 const cpLive=()=>coupons().filter(x=>!x.used);
 /* 找出手上還沒兌換的 5 張連號 */
@@ -15768,17 +15770,17 @@ function lotDraw(demo){ const pz=lotRoll(); if(demo) return pz; const t=lotReady
 /* ===== 開獎頁 ===== */
 function lotPage(){ const ready=lotReady(), wait=lotWait(), runs=lotRuns(), demo=!ready.length&&isHussey(), rd=lotRound(lotOpenAt());
   const res=(S.get(K.lotRes,[])||[]).filter(x=>x.r===rd).sort((a,b)=>LOT_RANK.indexOf(b.pz)-LOT_RANK.indexOf(a.pz)||b.ts-a.ts);
-  const st=ready.length?`本期開獎中・你有 <b>${ready.length}</b> 張券可以轉`:demo?"你目前沒有可以轉的券・HUSSEY 可以試轉（不算數）":`下次開獎 ${lotWhen(lotNextAt())}`;
+  const st=ready.length?`本期開獎中・你有 <b>${ready.length}</b> 張券可以轉`:demo?"你目前沒有可以轉的券・HUSSEY 可以試轉（不算數）":`下次開獎 ${lotWhen(lotNextAt())}～24:00`;
   setLayer(`<div class="tiei lot" role="dialog" aria-label="連號開獎"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>連號開獎</b><span class="sh-sp"></span></header>
     <div class="tiei-body">
       <p class="lot-st">${st}</p>
       <div class="gm ${ready.length||demo?"":"off"}" id="gm">${gmHtml()}</div>
-      <p class="lot-tip">${ready.length||demo?"轉一圈把手，轉一次用 1 張券":"開獎時間到了，把手才轉得動"}</p>
-      ${wait.length?`<p class="lot-wait">${wait.length} 張券等 ${lotWhen(lotNextAt())} 開獎</p>`:""}
+      <p class="lot-tip">${ready.length||demo?"轉一圈把手，轉一次用 1 張券":"每月 1 號 21:00～24:00 把手才轉得動"}</p>
+      ${wait.length?`<p class="lot-wait">${wait.length} 張券留到 ${lotWhen(lotNextAt())} 開獎</p>`:""}
       <section class="lot-sec"><h3>可以換券的連號</h3>${runs.length?runs.map((r,i)=>`<div class="lot-run"><span><b>${esc(r.lab)}</b><small>No.${String(r.cs[0].n).padStart(4,"0")}～${String(r.cs[4].n).padStart(4,"0")}</small></span><button data-a="lotRedeem" data-v="${i}">換 1 張券</button></div>`).join(""):`<p class="lot-none">同一位藝人、同一種卡（公放卡、簽售卡、同一批特典）收集到 5 張連號，就能換 1 張抽獎券。</p>`}</section>
       ${cpLive().length?`<section class="lot-sec"><h3>我的折價券</h3>${cpLive().map(c=>`<div class="lot-run"><span><b>${esc(c.n)}</b><small>${esc(c.from||"")}・只能折官方商品，結帳時選</small></span></div>`).join("")}</section>`:""}
       <section class="lot-sec"><h3>${rd.replace("-"," 年 ").replace(/^(\d+ 年 )0?/,"$1")} 月開獎結果</h3>${!res.length?`<p class="lot-none">還沒有人轉開</p>`:`<ul class="lot-res">${res.slice(0,60).map(x=>{ const p=lotPz(x.pz); return `<li class="${p.big?"big":""}"><b>${esc(x.who)}</b><span>${esc(p.n)}</span><small>${esc(x.lab||"")}</small></li>`; }).join("")}</ul>`}</section>
-      <details class="lot-sec lot-odds"><summary>獎品和機率</summary><ul>${LOT_PZ.map(p=>`<li><span>${esc(p.n)}</span><b>${p.w}%</b></li>`).join("")}</ul><p>8.5 折折價券只能用一次、不能轉賣，只能折官方商品。TIE 體驗券用在一位藝人，開通 30 天。</p></details>
+      <details class="lot-sec lot-odds"><summary>獎品和機率</summary><ul>${LOT_PZ.map(p=>`<li><span>${esc(p.n)}</span><b>${p.w}%</b></li>`).join("")}</ul><p>8.5 折折價券只能用一次、不能轉賣，只能折官方商品。TIE 體驗券用在一位藝人，開通 30 天。扭蛋機只有每月 1 號 21:00～24:00 轉得動，沒轉完的券會留到下個月 1 號，不會不見。</p></details>
     </div></div>`,"lot");
   gmMount(layer.querySelector("#gm"),{can:ready.length>0||demo,demo}); }
 /* ===== 扭蛋機：玻璃罩裡的扭蛋會滾、轉把手機器會晃，轉滿一圈掉一顆出來 ===== */
