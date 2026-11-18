@@ -39,6 +39,6 @@ async function serialSync(){ if(serialSync.on) return; const s=session(); if(!s|
     if(layer&&layer.querySelector(".cv-info")) hbSoon();
   }catch(e){} finally{ serialSync.on=false; } }
 /* 卡片資訊那行：No.0003，有好幾張就全部列出來 */
-function serTxt(cid){ const a=(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); if(!a.length) return "";
-  const ns=a.filter(x=>x.n).map(x=>String(x.n).padStart(4,"0")); return "・"+(ns.length?"No."+ns.join("、"):"")+(ns.length<a.length?(ns.length?"・":"")+"序號產生中":""); }
+function serTxt(cid,sid){ const a=(getSerials()[cid]||[]).filter(x=>!sid||x.id===sid).sort((x,y)=>(x.n||1e9)-(y.n||1e9)); if(!a.length) return "";
+  const ns=a.filter(x=>x.n).map(x=>String(x.n).padStart(4,"0")); return "・"+(ns.length?"No."+ns.join("、"):"")+(ns.length<a.length?(ns.length?"・":"")+"序號產生中":"")+(sid&&a[0].rd?"・已兌換":""); }
 setInterval(serialSync,20e3); setTimeout(serialSync,6e3);

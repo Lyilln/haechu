@@ -202,7 +202,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "cbTab": segSwitch(t,()=>{ ui.cbTab=t.dataset.v; },(ui.cbTab||"book")==="book"&&t.dataset.v==="log"?1:-1); break;
     case "cardGyro": cardGyro(); break;
     case "gdDone": { const got=ui.drawGot||[], nw=ui.drawFresh?ui.drawFresh.size:0; layer.innerHTML=""; lsRerender(); const r3=got.filter(c=>c.endsWith(":3")).length; toast(r3?`收進卡冊了，有 ${r3} 張流光卡 ✨`:nw?`收進卡冊了，新卡 ${nw} 張 🃏`:"收進卡冊了 🃏"); break; }
-    case "cardView": openCardView(t.dataset.v); break;
+    case "cardView": ui.cvSid=t.dataset.s||""; openCardView(t.dataset.v); break;
     case "openCards": navTo("#/fan/core?p=cards"); window.scrollTo(0,0); break;
     case "svToggle": S.set(K.svOpen,!S.get(K.svOpen,false)); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(S.get(K.svOpen,false)?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
     case "svPreview": SS.set({...session(),role:"fan",member:null}); navTo("#/fan/core?p=survival"); break;
@@ -418,7 +418,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
-    case "mcPv": ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
+    case "mcPv": ui.cvSid=""; ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
     case "mcGrantOpen": ui.mcSel=null; mcGrantSheet(); break;
     case "mcSelT": { ui.mcSel=ui.mcSel||{}; ui.mcSel[t.dataset.v]=ui.mcSel[t.dataset.v]?0:1; const sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0; mcGrantSheet(); const s2=layer.querySelector(".tiei-body"); if(s2) s2.scrollTop=y; break; }
     case "mcGrantGo": mcGrantGo(); break;

@@ -2858,16 +2858,16 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
   setLayer(`<div class="ph-view cv s3view" role="dialog" aria-label="收藏"><button class="ph-x" data-a="${ui.itPv===cid?"artAlb":"tCloseLayer"}" aria-label="關閉">${XI}</button>
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
     <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?` ✦ 貴卡${fxOf(o.p)!=="none"?"・"+FX_N[fxOf(o.p)]:""}`:""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
-      <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid)}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
+      <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid,ui.cvSid)}</small><small>${o.it.w} × ${o.it.h} 公分${pv?"・預覽":ui.cvSid?"":n?`・擁有 ${n} 張`:"・還沒收集到"}</small></div>
     <div class="cv-btns"></div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
-  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); }
+  if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); ui.cvSid=""; }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
 function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
   const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>cbHasCards(a)&&(prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`)))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
-      return n?`<button class="cb-it" data-a="cardView" data-v="${cid}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${n>1?`<em>×${n}</em>`:""}</button>`:`<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
+      if(n){ /* 11/18 每一張卡分開放（各有自己的序號），點哪張就看哪張 */ const cs=prev?[]:(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); return Array.from({length:n},(_,i)=>cs[i]||null).map(c=>`<button class="cb-it" data-a="cardView" data-v="${cid}" data-s="${c?c.id:""}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}</button>`).join(""); } return `<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
     return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.filter(v=>(v.inc||[]).some(it=>(it.pool||[]).length)).map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.filter(it=>(it.pool||[]).length).map(it=>grid(a,it)).join("")}`).join("")}
@@ -7501,7 +7501,7 @@ function clickGen(a,t,e,r){ switch(a){
     case "cbTab": segSwitch(t,()=>{ ui.cbTab=t.dataset.v; },(ui.cbTab||"book")==="book"&&t.dataset.v==="log"?1:-1); break;
     case "cardGyro": cardGyro(); break;
     case "gdDone": { const got=ui.drawGot||[], nw=ui.drawFresh?ui.drawFresh.size:0; layer.innerHTML=""; lsRerender(); const r3=got.filter(c=>c.endsWith(":3")).length; toast(r3?`收進卡冊了，有 ${r3} 張流光卡 ✨`:nw?`收進卡冊了，新卡 ${nw} 張 🃏`:"收進卡冊了 🃏"); break; }
-    case "cardView": openCardView(t.dataset.v); break;
+    case "cardView": ui.cvSid=t.dataset.s||""; openCardView(t.dataset.v); break;
     case "openCards": navTo("#/fan/core?p=cards"); window.scrollTo(0,0); break;
     case "svToggle": S.set(K.svOpen,!S.get(K.svOpen,false)); { const y=window.scrollY; render(); window.scrollTo(0,y); } toast(S.get(K.svOpen,false)?"選秀宇宙已開放，粉絲在 FEST 看得到了":"選秀宇宙已關閉"); break;
     case "svPreview": SS.set({...session(),role:"fan",member:null}); navTo("#/fan/core?p=survival"); break;
@@ -7717,7 +7717,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeOpen": openAlbumEditor(t.dataset.v); break;
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
-    case "mcPv": ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
+    case "mcPv": ui.cvSid=""; ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
     case "mcGrantOpen": ui.mcSel=null; mcGrantSheet(); break;
     case "mcSelT": { ui.mcSel=ui.mcSel||{}; ui.mcSel[t.dataset.v]=ui.mcSel[t.dataset.v]?0:1; const sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0; mcGrantSheet(); const s2=layer.querySelector(".tiei-body"); if(s2) s2.scrollTop=y; break; }
     case "mcGrantGo": mcGrantGo(); break;
@@ -15728,8 +15728,8 @@ async function serialSync(){ if(serialSync.on) return; const s=session(); if(!s|
     if(layer&&layer.querySelector(".cv-info")) hbSoon();
   }catch(e){} finally{ serialSync.on=false; } }
 /* 卡片資訊那行：No.0003，有好幾張就全部列出來 */
-function serTxt(cid){ const a=(getSerials()[cid]||[]).slice().sort((x,y)=>(x.n||1e9)-(y.n||1e9)); if(!a.length) return "";
-  const ns=a.filter(x=>x.n).map(x=>String(x.n).padStart(4,"0")); return "・"+(ns.length?"No."+ns.join("、"):"")+(ns.length<a.length?(ns.length?"・":"")+"序號產生中":""); }
+function serTxt(cid,sid){ const a=(getSerials()[cid]||[]).filter(x=>!sid||x.id===sid).sort((x,y)=>(x.n||1e9)-(y.n||1e9)); if(!a.length) return "";
+  const ns=a.filter(x=>x.n).map(x=>String(x.n).padStart(4,"0")); return "・"+(ns.length?"No."+ns.join("、"):"")+(ns.length<a.length?(ns.length?"・":"")+"序號產生中":"")+(sid&&a[0].rd?"・已兌換":""); }
 setInterval(serialSync,20e3); setTimeout(serialSync,6e3);
 
 /* ===== 11/18 連號開獎（FEST → 選秀下面）＋折價券 =====
