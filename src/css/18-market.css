@@ -55,3 +55,4 @@
 .tm .itf .itf-ph,.tm-sh .itf .itf-ph{position:absolute;inset:0;height:100%}
 .tm-sec h3,.tm .tiei-body h3{text-align:left}
 .tm-pr input{width:150px}
+.seg2.n3 .seg2-ind{width:calc((100% - 8px)/3)}

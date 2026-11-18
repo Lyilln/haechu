@@ -506,7 +506,7 @@ function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
       ${(a.ex||[]).filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).length?`<div class="cb-vh">專輯外（店家特典・簽售・打歌節目）</div>${a.ex.filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
       :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`));
   return coreHead("卡冊")+`<main class="page cards">${isHussey()?`<button class="cb-prev ${prev?"on":""}" data-a="cbPrev">${prev?"結束預覽":"預覽全部卡片"}</button>`:""}
-    <div class="seg2 cb-tabs" style="--i:${tb==="log"?1:0}"><i class="seg2-ind"></i><button class="${tb==="book"?"on":""}" data-a="cbTab" data-v="book">卡冊</button><button class="${tb==="log"?"on":""}" data-a="cbTab" data-v="log">開箱紀錄</button></div>
+    <div class="seg2 cb-tabs ${mkCan()&&!prev?"n3":""}" style="--i:${tb==="log"?1:0}"><i class="seg2-ind"></i><button class="${tb==="book"?"on":""}" data-a="cbTab" data-v="book">卡冊</button><button class="${tb==="log"?"on":""}" data-a="cbTab" data-v="log">開箱紀錄</button>${mkCan()&&!prev?`<button data-a="mkOpen">市場</button>`:""}</div>
     <div class="seg2-pane ${ui.segAnim||""}">${tb==="log"?cbLog():book}</div></main>`; }
 /* 11/18：卡冊只放真的有小卡可以收的專輯（單曲出道只放了公放卡、或專輯還沒放卡片，就不出現空的專輯） */
 const cbHasCards=a=>!!a&&[...(a.vers||[]).flatMap(v=>v.inc||[]),...(a.ex||[])].some(it=>(it.pool||[]).length);
