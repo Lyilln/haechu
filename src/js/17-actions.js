@@ -948,14 +948,14 @@ function clickTie(a,t,e,r){ switch(a){
       if(t.dataset.v==="enter") setTimeout(()=>tieCeleCheck(m2),250); else setTimeout(()=>{ const i=document.getElementById("win"); if(i) i.focus(); },50); break; }
     case "celeClose": clearTimeout(ui.celeT); layer.innerHTML=""; break;
     case "tPickSel": { const id=t.dataset.v, gid=t.dataset.g, mode=t.dataset.mode, k=mode==="new"?tpkK(gid):groupArtists(gid).filter(isActive).length, L=Array.isArray(ui.pickSet)?ui.pickSet:[];
-      if(mode==="new"&&L.includes(id)&&isActive(id)){ toast("這位已經在訂閱中"); break; }
+      if(mode==="new"&&!tpkRenew(gid)&&L.includes(id)&&isActive(id)){ toast("這位已經在訂閱中"); break; }
       if(L.includes(id)) ui.pickSet=L.filter(x=>x!==id); else if(L.length<k) ui.pickSet=[...L,id]; else { toast(`最多選 ${k} 位，先取消一位再選`); break; } render(); break; }
     case "pickClose": { const c=document.getElementById("pickNo"); if(c&&c.checked) S.set(K.pickNoShow,true); layer.innerHTML=""; const go=ui.pickGo; ui.pickGo=null; if(go) go(); break; }
     case "pickMore": { const c=document.getElementById("pickNo"); if(c&&c.checked) S.set(K.pickNoShow,true); layer.innerHTML=""; tieModal("更改藝人",`一張 ${WHISPER_NAME} 券在使用期間，可以把收訊息的成員換成同一團的另一位，只能換 1 次。<br>換過去之後，聊天室會變成新成員的；券到期、重新購買後，可以再換 1 次。`,`<button class="t-mbtn main" data-a="pickMoreOk">知道了</button>`); break; }
     case "pickMoreOk": { layer.innerHTML=""; const go=ui.pickGo; ui.pickGo=null; if(go) go(); break; }
     case "tPickSave": { const gid=t.dataset.g, mode=t.dataset.mode, own=groupArtists(gid).filter(isActive), sel=Array.isArray(ui.pickSet)?ui.pickSet:own, k=mode==="new"?tpkK(gid):own.length;
       if(sel.length<k){ toast(`還要再選 ${k-sel.length} 位`); break; }
-      if(mode==="new"){ tpkBuyDone(gid,sel.filter(x=>!own.includes(x))); break; }
+      if(mode==="new"){ tpkBuyDone(gid,tpkRenew(gid)?sel:sel.filter(x=>!own.includes(x))); break; }
       const out=own.filter(x=>!sel.includes(x)), inn=sel.filter(x=>!own.includes(x)); if(!out.length){ navBack(); break; }
       const L=subs(), used=out.filter(x=>(L[x]||{}).swapPer===tiePeriod(x)); if(used.length){ toast(`${used.map(x=>MEMBERS[x].name).join("、")} 的券這段期間已經換過 1 次了`); break; }
       const from=t.dataset.m; openPickNotice(()=>{ out.forEach((x,i)=>{ const rec=L[x], to=inn[i]; if(!rec||!to) return; L[to]={...rec,since:Date.now(),periods:[{start:Date.now(),end:null}],swapPer:Date.now()}; delete L[x]; }); S.set(K.tieSubs,L); ui.pickSet=null; toast("已更改藝人"); navTo("#/fan/chat?m="+(sel.includes(from)?from:inn[0])); }); break; }
