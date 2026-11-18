@@ -9817,7 +9817,7 @@ const C3={
         if(an.out){ if(k<.6){ cardG.position.y=up*ease(k/.6); } else { const q=ease((k-.6)/.4); cardG.position.y=up*(1-q); slA(1-q); slvG.position.y=-q*h*.5; } }
         else { if(k<.35){ const q=ease(k/.35); slvG.position.y=-(1-q)*h*.5; slA(q); cardG.position.y=up*q; } else cardG.position.y=up*(1-ease((k-.35)/.65)); }
         if(k>=1){ cardG.position.y=0; slvG.position.y=0; slA(an.out?0:1); const cb=an.cb; an=null; if(cb) cb(); } } }});
-    if(api&&sl) api.slide=(out,cb)=>{ an={out,t0:performance.now(),d:1500,cb}; if(api.face) api.face(); };
+    if(api&&sl) api.slide=(out,cb)=>{ an={out,t0:performance.now(),d:1500,cb};   /* 轉到哪個角度都直接套／拿，不先轉回正面 */ };
     if(api&&pin) setTimeout(()=>api.slide&&api.slide(false),350);
     return api; },
   /* 卡冊、拆專輯看單張：換掉原本的 CSS 版（ui.s3） */
