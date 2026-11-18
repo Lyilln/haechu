@@ -194,7 +194,7 @@ function festToday(gids,one){ const L=[], now=Date.now(), inG=g=>gids.includes(g
   try{ cfOpenNow().filter(x=>inG(MEMBERS[x.m].group)).slice(0,3).forEach(x=>L.push({k:"cafe",t:"營業中",c:"g",b:`${MEMBERS[x.m].name} 生日咖啡廳`,s:gn(MEMBERS[x.m].group),v:"cafe",o:5})); }catch(e){}
   try{ const n=getTrucks().filter(t=>!tkFunded(t)&&MEMBERS[t.mid]&&inG(MEMBERS[t.mid].group)).length; if(n) L.push({k:"truck",t:"集資中",c:"y",b:"應援餐車",s:`${n} 台在集資`,v:"truck",o:6}); }catch(e){}
   try{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)&&inG(x.gid)); if(t&&tourStops(t).some(st=>stopState(st)==="live")) L.push({k:"tour",t:"進行中",c:"r",b:`${gn(t.gid)}・${t.title}`,s:"世巡這一站開演了",v:"tour",o:1}); }catch(e){}
-  try{ if(!one&&svOpen()&&svVoting()&&svLeft()>0) L.push({k:"survival",t:`還有 ${svLeft()} 票`,c:"",b:"選秀投票",s:svFinal()?"決賽每天 1 票":"每天 3 票",v:"survival",o:7}); }catch(e){}
+  try{ if(!one&&svOpen()&&svVoting()&&svLeft()>0&&!svTrainee(svSeason())) L.push({k:"survival",t:`還有 ${svLeft()} 票`,c:"",b:"選秀投票",s:svFinal()?"決賽每天 1 票":"每天 3 票",v:"survival",o:7}); }catch(e){}
   try{ const n=lotReady().length; if(n) L.push({k:"lot",t:"開獎中",c:"r",b:"扭蛋機",s:`你有 ${n} 張券・24:00 結束`,a:"lotOpen",o:-1}); }catch(e){}
   return L.sort((a,b)=>a.o-b.o||(a.end||9e15)-(b.end||9e15)); }
 function festHead(gid){ const g=groupOf(gid); if(!g) return ""; const av=xvGAv(gid);
