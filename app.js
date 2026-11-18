@@ -8370,8 +8370,8 @@ seedStores(); seedStores2(); seedMascots(); ui.selectDraft=null; ui.feedTab="fee
 /* =========================================================
    主題（照 LINE 主題小舖）：SHOP 裡的「TINT」
    ・一套主題＝素材包：封面、配色（淺色／深色各一組）、背景圖案、主角插圖、花邊、對話框裝飾、選單圖示 6 個
-   ・換的地方：App 背景與文字顏色、底部選單；TIE 不換（11/18 她定），只在對話框角落加裝飾
-   ・只有自己看得到
+   ・換的地方：App 背景與文字顏色、底部選單、TIE 聊天室（背景、插圖、花邊、對話框）；TIE 的頂部和輸入列不換，維持原本的白／深色半透明（11/18 她定）
+   ・只有自己看得到；自己設過的 TIE 背景不會被蓋掉（對話框還是會跟著主題）
    ・主題有淺色＋深色兩版 → 跟著外觀切換；只有一版 → 怎麼切都維持原樣
    ・主題輪播：預設關閉，每個人自己決定
    ・團可以出一套、藝人也可以各自出；管理員自己做，或審核藝人送來的申請
@@ -8437,7 +8437,7 @@ function thRecolor(t,v){ let st=document.getElementById("thRecolor"); if(!st){ s
   /* 11/17 前綴包在 :where() 裡＝不加權重：換色只蓋過 App 原本的顏色，不會蓋過主題自己指定的（例如淺色時的提示框、對話框） */
   const W1='html:where([data-th])', W2='html:where([data-th]:not([data-theme="dark"]))';
   const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,W1); if(/^html\b/.test(x)) return x.replace(/^html/,W2); if(x===":root") return W2; return W2+' '+x; }).join(",");
-  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast|\.mu[23]-|\.s-(?:ts|sc|mcd|mb|ink)\b|\.mcx|\.t-(?!modal|mb\b|mbtn)/.test(r.selectorText)) continue;   /* 音樂節目卡、公放卡登場：各節目有自己的品牌色，不跟著主題換；TIE 的翻譯文字用藝人選的顏色 */   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast|\.mu[23]-|\.s-(?:ts|sc|mcd|mb|ink)\b|\.mcx|\.t-tr\b|\.t-rh|\.t-foot|\.t-inp/.test(r.selectorText)) continue;   /* 音樂節目卡、公放卡登場：各節目有自己的品牌色，不跟著主題換；TIE 的翻譯文字用藝人選的顏色 */   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
       for(const p2 of P){ const val=r.style.getPropertyValue(p2); if(!val||/var\(/.test(val)) continue; const nv=fix(val); if(nv!==val) d.push(`${p2}:${nv}${r.style.getPropertyPriority(p2)?"!important":""}`); }
       if(d.length) out.push(`${pre(r.selectorText)}{${d.join(";")}}`); }
     else if(r.type===4&&r.cssRules){ const b0=out.length; walk(r.cssRules); if(out.length>b0){ const inner=out.splice(b0); out.push(`@media ${r.conditionText||r.media.mediaText}{${inner.join("\n")}}`); } } } };
@@ -8450,18 +8450,27 @@ function thApplyCSS(){
   const dark=thDarkNow(), v=thVar(t,dark), [r,g,b]=hexRgb(v.ac); try{ thRecolor(t,thVar(t,false)); }catch(e){}
   const card=dark?mixHex(v.bg,"#ffffff",.07):mixHex(v.bg,"#ffffff",.62), s2=dark?mixHex(v.bg,"#ffffff",.11):mixHex(v.bg,v.ac,.06), s3=dark?mixHex(v.bg,"#ffffff",.16):mixHex(v.bg,v.ac,.11);
   const vink=dark?mixHex(v.ac,"#ffffff",.35):mixHex(v.ac,v.ink,.35), H="html[data-th][data-theme]";
-  /* 11/18 主題不改 TIE：先讀沒套主題時的顏色變數，套在 TIE 的畫面上 */
+  /* 11/18 TIE 聊天室的頂部和輸入列不跟著主題：先讀沒套主題時的顏色變數，套在這兩條上（按鈕維持原本的紫色）；底色是原本的白／深色，半透明讓背景透一點 */
   root.removeAttribute("data-th"); const cs0=getComputedStyle(root), TV=["--violet","--violet-ink","--violet-soft","--candy","--bg","--s1","--s2","--s3","--card-solid","--glass","--glass-pink","--line","--ink","--ink-2","--ink-3"].map(k=>{ const x=cs0.getPropertyValue(k).trim(); return x?`${k}:${x}`:""; }).filter(Boolean).join(";");
   root.setAttribute("data-th",t.id);
   st.textContent=`${H}{--violet:${v.ac};--violet-ink:${vink};--violet-soft:${rgba(v.ac,dark?.2:.13)};--candy:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.22)} 0%,${v.ac} 100%);--bg:${v.bg};--s1:${card};--s2:${s2};--s3:${s3};--card-solid:${card};--glass:${card};--glass-pink:${card};--line:${rgba(v.ink,dark?.12:.09)};--ink:${v.ink};--ink-2:${v.sub};--ink-3:${mixHex(v.sub,v.bg,.25)}}
-${[".t-lh",".t-list",".t-rh",".t-msgs",".t-foot",".t-bgl",".t-glow",".t-page",".t-ph",".t-bgp",".t-edit"].map(x=>H+" "+x).join(",")}{${TV}}
+${H} .t-rh,${H} .t-foot{${TV}}
+${H} .t-rh,${H} .t-foot{background:${dark?"rgba(27,26,33,.8)":"rgba(255,255,255,.8)"}!important;-webkit-backdrop-filter:blur(14px)!important;backdrop-filter:blur(14px)!important}
 ${H} body{background:${thPat(t,v,dark)}${v.bg}!important}
+${H} .t-art-n b:not(.a-nick),${H} .t-acc b{color:${v.ink}!important}
 ${H} .bg{display:none}
-${H} header.top{background:${rgba(v.bg,.86)}!important;border-bottom-color:${rgba(v.ink,.06)}!important}
+${H} header.top,${H} .t-lh{background:${rgba(v.bg,.86)}!important;border-bottom-color:${rgba(v.ink,.06)}!important}
 ${H} .nav-in{background:${rgba(card,.92)}!important}
 ${H} .nav-btn.on,${H} .nav-btn.on .nav-ico{color:${vink}!important}
-${H} .t-b{position:relative}
+${H} .t-b{background:${v.bubA}!important;color:${thTxtOn(v.bubA,v)}!important;border:1.5px solid ${v.bubAB}!important;box-shadow:none!important;position:relative}
+${H} .t-b.me{background:${v.bubM}!important;color:${thTxtOn(v.bubM,v)}!important;border-color:${v.bubMB}!important;text-shadow:none!important}
 ${t.deco2?`${H} .t-b::before{content:"";position:absolute;right:14px;bottom:-11px;width:20px;height:20px;background:url("${t.deco2}") center/contain no-repeat;pointer-events:none;z-index:1}${H} .t-b.me::before{right:auto;left:14px}${H} .t-b.t-stk::before,${H} .t-bw .t-media::before{display:none}`:""}${t.deco?`${H} .t-b::after{content:"";position:absolute;right:12px;top:-12px;width:18px;height:18px;background:url("${t.deco}") center/contain no-repeat;pointer-events:none}${H} .t-b.me::after{right:auto;left:12px}${H} .t-b.t-stk::after,${H} .t-bw .t-media::after,${H} .t-b:has(img,video)::after{display:none}`:""}
+${H} .t-glow{background:linear-gradient(180deg,${rgba(v.ac,dark?.32:.2)} 0%,${rgba(v.ac,dark?.14:.08)} 35%,${rgba(v.bg,0)} 100%)!important}
+${H} .t-page{background:${v.bg}!important}
+${H} .t-bgl.t-default{background:${thPat(t,v,dark)}${v.bg}!important}
+${H} .t-pill{color:${vink}!important;border-color:${rgba(v.ac,.25)}!important;background:${card}!important}
+${H} .t-empty-ico{color:${rgba(v.ac,.6)}!important;border-color:${rgba(v.ac,.2)}!important}
+${H} .t-meta span,${H} .t-time,${H} .t-day span{color:${v.sub}!important}
 ${(()=>{ if(1.05/(wcagLum(v.ac)+.05)>=3) return ""; /* 換成深色字：主題文字色跟主色對比夠（4.5 以上）才用，不然一律用深墨色，避免「紫底淡紫字」看不到 */
     const cr=(a,b2)=>{ const A=wcagLum(a)+.05, B=wcagLum(b2)+.05; return Math.max(A,B)/Math.min(A,B); }, on=cr(v.ink,v.ac)>=4.5?v.ink:"#1D1A24", L=thAcFillSel(); const L2=[...L,".th-dot.on"]; return `${L2.map(x=>H+" "+x).join(",")}{color:${on}!important;text-shadow:none!important}`; })()}`;
 }
@@ -8487,7 +8496,7 @@ function thRotTick(){ if(!session()) return; const R=thRot(), own=thOwned(), poo
   const cur=thCurId(), i=pool.indexOf(cur), next=pool[(i+1)%pool.length];
   S.set(acK(K.thCur),next); S.set(acK(K.thRot),{...R,last:now}); applyTheme(); }
 /* TIE 聊天室：還在用預設背景時，才換成主題的背景圖案＋主角插圖＋花邊 */
-function thChatBg(cls){ return ""; /* 11/18 主題不改 TIE 聊天室（背景、插圖、花邊都不換） */ const t=thCur(); if(!t) return ""; const v=thVar(t,thDarkNow()), art=thArtOf(t);
+function thChatBg(cls){ const t=thCur(); if(!t) return ""; const v=thVar(t,thDarkNow()), art=thArtOf(t);
   return `<div class="${cls} th-chat ${thDarkNow()?"dk":""}" style='background:${thPat(t,v,thDarkNow())}${v.bg}'>${art?`<img class="th-art" src="${art}" alt="">`:""}${t.strip?`<span class="th-strip" style="background-image:url('${t.strip}')"></span>`:""}</div>`; }
 
 /* ---------- 預覽：照真的畫面縮小（主畫面、TIE 聊天室） ---------- */
