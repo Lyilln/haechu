@@ -181,6 +181,8 @@ function confetti(x,y,o={}){
 /* 體感演唱會：應援棒模式 */
 let concertTimer=null;
 /* ---------- SHOP：TIE 券 ---------- */
+/* 我的 TIE 券：同一團、同一種狀態的成員合成一張「N 人券」（SOLO 就是 1 人券） */
+function passGroups(ids){ const M={}; ids.forEach(id=>{ const st=passStatus(id)||{cls:"off"}, k=((MEMBERS[id]||{}).group||id)+"|"+st.cls; (M[k]=M[k]||{gid:(MEMBERS[id]||{}).group,ids:[]}).ids.push(id); }); return Object.values(M); }
 function passStatus(mid){
   const r=subs()[mid]; if(!r) return null; const now=Date.now();
   if(now<=r.expires){ const d=daysLeft(r.expires); return {cls:"on",txt:`運行中・剩餘 ${d} 天`}; }
@@ -242,9 +244,11 @@ function viewShop(){
     ${thShopCard()}
     ${f.map(gid=>{const g=groupOf(gid); if(!g) return ""; return `<section class="wsp-sec"><button class="wsp-now" data-a="shopG" data-v="${gid}" style="background:${grad(g.g)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(g.name)} ›</b></button>
       <div class="wsp-row">${shopProducts(gid).map(prodCard).join("")}</div></section>`}).join("")}
-    ${mine.length?`<h2 class="mf-h">我的 ${WHISPER_NAME} 券</h2>${mine.map(id=>{const m=MEMBERS[id], st=passStatus(id);return `<div class="card pass">
-      <div class="av" style="background:${grad(m.g)}">${mAvIn(id)}</div>
-      <div class="pass-b"><b>${WHISPER_NAME} 券・${esc(artName(id,"tie"))}</b><span class="pass-st ${st.cls}">${st.txt}</span><span class="pass-d">💜 +${subDays(id)} 天</span></div>
+    ${mine.length?`<h2 class="mf-h">我的 ${WHISPER_NAME} 券</h2>${passGroups(mine).map(P=>{ const id=P.ids[0], g=groupOf(P.gid), m=MEMBERS[id], st=passStatus(id), solo=P.ids.length===1&&(!g||(g.members||[]).length<=1);
+      const D=P.ids.map(x=>subs()[x]?daysLeft(subs()[x].expires):0), H=P.ids.map(x=>+subDays(x)||0), rg=a=>Math.min(...a)===Math.max(...a)?`${a[0]}`:`${Math.min(...a)}～${Math.max(...a)}`;
+      return `<div class="card pass">
+      ${P.ids.length>1&&g&&gPhoto(P.gid)?`<div class="av" style="background:${grad(g.g)};background-image:url('${esc(gPhoto(P.gid))}');background-size:cover;background-position:center"></div>`:`<div class="av" style="background:${grad(m.g)}">${mAvIn(id)}</div>`}
+      <div class="pass-b"><b>${WHISPER_NAME} 券・${P.ids.length} 人券</b><small class="pass-who">${esc(g&&!solo?g.name+"・":"")}${P.ids.map(x=>esc(artName(x,"tie"))).join("、")}</small><span class="pass-st ${st.cls}">${st.cls==="on"?`運行中・剩餘 ${rg(D)} 天`:st.txt}</span><span class="pass-d">💜 +${rg(H)} 天</span></div>
       <button class="btn btn-sm ${st.cls==="on"?"btn-soft":"btn-main"}" data-a="buyOpen" data-m="${id}">${st.cls==="on"?"續訂":"重新購買"}</button>
       ${demoOn()?`<div class="pass-demo">示範：<button data-a="passDay99" data-m="${id}">跳到第 100 天</button><button data-a="passExpire" data-m="${id}" data-v="short">設為剛到期</button><button data-a="passExpire" data-m="${id}" data-v="long">設為到期超過 24 小時</button></div>`:""}</div>`}).join("")}`:""}`}
   </main>`;

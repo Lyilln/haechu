@@ -601,3 +601,4 @@ html[data-theme="dark"] .t-rh,html[data-theme="dark"] .t-foot{background:#323137
 .nav-btn .th-ic.th-on{animation:thOnPop .42s cubic-bezier(.3,1.6,.5,1)}@keyframes thOnPop{0%{transform:scale(.7)}100%{transform:scale(1)}}
 .mk-deco2{top:auto!important;bottom:-9px}
 .mk-l .mk-b{border-radius:4px 16px 16px 16px}.mk-r .mk-b{border-radius:16px 16px 4px 16px}   /* 11/17 預覽的對話框跟真的 TIE 一樣形狀 */
+.thd-top{align-items:center}.thd-price{line-height:1}.thd-price i{line-height:1;padding-top:1px;box-sizing:border-box}

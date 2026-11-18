@@ -4319,6 +4319,7 @@ html[data-theme="dark"] .t-rh,html[data-theme="dark"] .t-foot{background:#323137
 .nav-btn .th-ic.th-on{animation:thOnPop .42s cubic-bezier(.3,1.6,.5,1)}@keyframes thOnPop{0%{transform:scale(.7)}100%{transform:scale(1)}}
 .mk-deco2{top:auto!important;bottom:-9px}
 .mk-l .mk-b{border-radius:4px 16px 16px 16px}.mk-r .mk-b{border-radius:16px 16px 4px 16px}   /* 11/17 預覽的對話框跟真的 TIE 一樣形狀 */
+.thd-top{align-items:center}.thd-price{line-height:1}.thd-price i{line-height:1;padding-top:1px;box-sizing:border-box}
 
 /* HAECHU｜TIE 氣泡、SHOP 首頁、直播間、SNS 新版 */
 /* ===== TIE 聊天氣泡：照 Bubble（白泡泡、虛線下面是翻譯）＋ LINE 語音膠囊 ===== */
@@ -6346,7 +6347,7 @@ main.page.foc-sub{padding-top:18px!important}
 .t-foot .t-rq{position:static!important;order:-1;flex:0 0 calc(100% + 28px);margin:-8px -14px 0;background:transparent!important;border-top:0!important;border-bottom:1px solid var(--line);animation:none}
 /* TIE 字：草書，字裡面的顏色慢慢流動（不加外光） */
 .t-sub-n{font-family:"Times New Roman","Noto Serif",serif!important;font-weight:700!important;font-size:1.1em!important;letter-spacing:.02em!important;line-height:1;padding:0 .08em;
-  background:linear-gradient(90deg,#B48CFF,#FF7DB5,#FFC46B,#7FD8FF,#B48CFF) 0 0/300% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;filter:none!important;animation:tieFlow 5s linear infinite}
+  background:linear-gradient(90deg,#7A45E6,#DB2F86,#D9811A,#2A8FD0,#7A45E6) 0 0/300% 100%!important;-webkit-background-clip:text!important;background-clip:text!important;color:transparent!important;-webkit-text-fill-color:transparent!important;text-shadow:none!important;filter:none!important;animation:tieFlow 5s linear infinite}
 @keyframes tieFlow{to{background-position:300% 0}}
 @media (prefers-reduced-motion:reduce){.t-sub-n{animation:none}}
 /* 空狀態：整頁置中，不要卡在左上角（兩欄排版的頁面也一樣） */
@@ -6735,6 +6736,7 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .pr-trk{overflow:auto}.pr-trk+.db-up4{margin-top:12px}
 .dbx-ckn{margin:8px 2px 4px;font-size:12.5px;line-height:1.6;color:var(--ink-3)}
 .dbx-day{margin:0 0 14px;padding:12px 14px;border-radius:14px;background:var(--s2,rgba(0,0,0,.04))}.dbx-day b{font-size:13.5px}.dbx-day ul{margin:6px 0 0;padding-left:18px;display:grid;gap:4px;font-size:13px;line-height:1.6;color:var(--ink-2)}
+.pass-who{display:block;margin:1px 0 2px;font-size:12px;color:var(--ink-3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* SNS 動畫節奏（照 motion-design 規則統一）：一條主曲線、一條彈簧、一條退場；三種快慢
    要整體調快調慢，改這幾個數字就好 */
