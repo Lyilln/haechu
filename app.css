@@ -7384,3 +7384,69 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sn-subl .sn-subr{padding:12px 16px}.sn-subr .t-pill{margin-left:4px}.sn-rest{flex:none;align-self:center;font-size:12px;font-weight:800;color:var(--ink-3);padding:5px 4px}
 .sn-subr p{white-space:pre-wrap}.sn-subr .sn-subi{margin-top:2px}
 .sn-rest{font-size:11.5px}
+
+/* ===== 連號開獎：扭蛋機 ===== */
+.lot .tiei-body{padding-bottom:40px}
+.lot-st{margin:4px 0 14px;text-align:center;font-size:14px;color:var(--ink-2)}
+.lot-st b{color:var(--violet)}
+.lot-tip,.lot-wait{margin:10px 0 0;text-align:center;font-size:12.5px;color:var(--ink-3)}
+.gm{position:relative;display:flex;flex-direction:column;align-items:center;margin:0 auto;width:270px}
+.gm-m{position:relative;display:flex;flex-direction:column;align-items:center;transition:transform .12s var(--sn-out,ease);transform-origin:50% 100%}
+.gm-dome{position:relative;z-index:2;width:224px;height:224px;margin-bottom:-26px;border-radius:50%;background:rgba(255,255,255,.16);box-shadow:inset 0 0 0 7px rgba(255,255,255,.55),inset 0 -14px 26px rgba(120,90,180,.18),0 10px 24px rgba(40,20,80,.18);overflow:hidden}
+.gm-cv{position:absolute;inset:0;width:100%;height:100%}
+.gm-glare{position:absolute;left:30px;top:22px;width:62px;height:96px;border-radius:50%;border-left:7px solid rgba(255,255,255,.65);transform:rotate(22deg);pointer-events:none}
+.gm-body{position:relative;z-index:3;width:250px;height:156px;border-radius:30px 30px 22px 22px;background:#8843FB;box-shadow:inset 0 10px 0 rgba(255,255,255,.16),inset 0 -10px 0 rgba(0,0,0,.14),0 12px 26px rgba(70,30,140,.28)}
+.gm-body:before{content:"";position:absolute;left:50%;top:-8px;width:176px;height:22px;margin-left:-88px;border-radius:12px;background:#E9E4F2;box-shadow:inset 0 -4px 0 rgba(0,0,0,.1)}
+.gm-plate{position:absolute;left:22px;top:28px;padding:3px 10px;border-radius:8px;background:rgba(255,255,255,.18);color:#fff;font:700 12px/1.4 Fredoka,system-ui,sans-serif;letter-spacing:.06em}
+.gm-knob{position:absolute;left:50%;top:44px;width:78px;height:78px;margin-left:-39px;padding:0;border:0;border-radius:50%;background:#F4F1F9;box-shadow:inset 0 -6px 0 rgba(0,0,0,.1),0 4px 0 rgba(0,0,0,.18);touch-action:none;cursor:grab;-webkit-tap-highlight-color:transparent}
+.gm-bar{position:absolute;left:8px;right:8px;top:50%;height:18px;margin-top:-9px;border-radius:9px;background:#D7CCF0;box-shadow:inset 0 -3px 0 rgba(0,0,0,.12)}
+.gm-bar:after{content:"";position:absolute;right:4px;top:50%;width:10px;height:10px;margin-top:-5px;border-radius:50%;background:#8843FB}
+.gm-chute{position:absolute;right:20px;bottom:18px;width:52px;height:40px;border-radius:12px;background:#3A1A75;box-shadow:inset 0 6px 8px rgba(0,0,0,.35)}
+.gm-chute i{position:absolute;left:6px;right:6px;top:6px;height:12px;border-radius:6px;background:rgba(255,255,255,.12)}
+.gm-foot{width:226px;height:16px;margin-top:-4px;border-radius:0 0 18px 18px;background:#5B25B8}
+.gm.off .gm-knob{opacity:.55;cursor:default}
+.gm-out{position:relative;min-height:12px;display:flex;flex-direction:column;align-items:center}
+.gm-cap{position:relative;width:76px;height:76px;margin-top:-40px;padding:0;border:0;background:none;opacity:0;transform:translate(70px,-70px) scale(.4);transition:transform .7s var(--sn-spr,ease),opacity .2s;-webkit-tap-highlight-color:transparent}
+.gm-cap.in{opacity:1;transform:none;margin-top:16px}
+.gm-cap i{position:absolute;left:0;width:76px;height:38px;transition:transform .45s var(--sn-out,ease),opacity .45s}
+.gm-cap .t{top:0;border-radius:38px 38px 0 0;background:var(--c)}
+.gm-cap .b{bottom:0;border-radius:0 0 38px 38px;background:#FBFAFD;box-shadow:inset 0 -5px 0 rgba(0,0,0,.08),0 0 0 1.5px rgba(60,30,110,.14)}
+.gm-cap .t{box-shadow:0 0 0 1.5px rgba(60,30,110,.14)}
+.gm-cap.in:not(.op){-webkit-animation:gmBob 1.6s ease-in-out .8s infinite;animation:gmBob 1.6s ease-in-out .8s infinite}
+.gm-cap.op .t{transform:translateY(-34px) rotate(-24deg);opacity:0}
+.gm-cap.op .b{transform:translateY(20px);opacity:0}
+@-webkit-keyframes gmBob{50%{-webkit-transform:translateY(-4px) rotate(-3deg)}}
+@keyframes gmBob{50%{transform:translateY(-4px) rotate(-3deg)}}
+.gm-tap{margin-top:8px;font-size:12px;color:var(--ink-3)}
+.gm-pz{display:flex;flex-direction:column;align-items:center;gap:4px;margin-top:-50px;padding:18px 26px 16px;border:1px solid var(--line);border-radius:22px;background:var(--s1);-webkit-animation:gmPop .45s var(--sn-spr,ease);animation:gmPop .45s var(--sn-spr,ease)}
+.gm-pz small{font-size:12px;color:var(--ink-3)}
+.gm-pz b{font-size:22px;color:var(--ink)}
+.gm-pz.big b{color:var(--violet)}
+.gm-pz button{margin-top:8px;padding:9px 22px;border:0;border-radius:999px;background:var(--violet);color:#fff;font:inherit;font-weight:700}
+@-webkit-keyframes gmPop{from{opacity:0;-webkit-transform:scale(.7)}}
+@keyframes gmPop{from{opacity:0;transform:scale(.7)}}
+@media (prefers-reduced-motion:reduce){.gm-cap,.gm-cap i{transition:none}.gm-cap.in:not(.op){-webkit-animation:none;animation:none}.gm-pz{-webkit-animation:none;animation:none}}
+.lot-sec{margin:22px 0 0;padding:14px 16px;border:1px solid var(--line);border-radius:18px;background:var(--s1)}
+.lot-sec h3{margin:0 0 8px;font-size:15px}
+.lot-none{margin:0;font-size:13px;line-height:1.6;color:var(--ink-3)}
+.lot-run{display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid var(--line)}
+.lot-run:first-of-type{border-top:0}
+.lot-run span{flex:1;min-width:0;display:flex;flex-direction:column}
+.lot-run b{font-size:14px}.lot-run small{font-size:12px;color:var(--ink-3)}
+.lot-run button{flex:none;padding:7px 14px;border:0;border-radius:999px;background:var(--violet);color:#fff;font:inherit;font-size:13px;font-weight:700}
+.lot-res{margin:0;padding:0;list-style:none}
+.lot-res li{display:grid;grid-template-columns:auto 1fr;gap:0 10px;padding:8px 0;border-top:1px solid var(--line);font-size:13.5px}
+.lot-res li:first-child{border-top:0}
+.lot-res li span{text-align:right;color:var(--ink-2)}
+.lot-res li small{grid-column:1/-1;font-size:11.5px;color:var(--ink-3)}
+.lot-res li.big span{color:var(--violet);font-weight:700}
+.lot-odds summary{font-size:14px;font-weight:700;cursor:pointer}
+.lot-odds ul{margin:10px 0 0;padding:0;list-style:none;font-size:13px}
+.lot-odds li{display:flex;justify-content:space-between;padding:4px 0}
+.lot-odds p{margin:8px 0 0;font-size:12px;line-height:1.6;color:var(--ink-3)}
+/* 商品頁：選折價券 */
+.cp-row{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:12px}
+.cp-row>span{font-size:13px;color:var(--ink-3)}
+.cp-row button{padding:6px 12px;border:1px solid var(--line);border-radius:999px;background:var(--s1);color:var(--ink);font:inherit;font-size:13px}
+.cp-row button.on{border-color:var(--violet);color:var(--violet);font-weight:700}
+.cp-row small{width:100%;font-size:12.5px;color:var(--violet)}
