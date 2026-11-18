@@ -112,6 +112,7 @@ function openTieDrawer(member){
       <div class="t-acc"><span class="t-me-av">me</span><b>${esc(nickFor(member))}</b></div>
       <button class="t-acc t-acc-art" data-a="artProfOpen" data-m="${member}">${tieAv(m,"")}<div>${artBadge(member)}<b>${esc(artName(member,"tie"))}</b></div></button>
       <button class="t-box" data-a="tBox">${TI.tag}<b>${WHISPER_NAME} BOX</b></button>
+      ${isActive(member)&&grpMembers(m.group).filter(x=>!MEMBERS[x].official).length>1?`<button class="t-box" data-a="tPickGo" data-m="${member}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg><b>變更藝人</b><small class="t-box-s">${(subs()[member]||{}).swapPer===tiePeriod(member)?"這張券已經換過了":"這張券可以換 1 次"}</small></button>`:""}
     </div>
     ${isActive(member)?"":`<button class="t-leave" data-a="tLeave" data-m="${member}">離開聊天室 <span>→</span></button>`}
     <footer><button data-a="tGallery" data-m="${member}" aria-label="照片・影片">${TI.grid}</button><button data-a="tToSettings" data-m="${member}" aria-label="聊天室設定">${TI.gear}</button></footer>
