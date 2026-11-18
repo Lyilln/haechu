@@ -7487,6 +7487,25 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 /* 11/18 iPhone：3D 裡轉動的光碟圖案不會被圓角裁掉 → 變成八角形。圖案本身也做成圓的＋遮罩 */
 .cdx-disc{-webkit-mask-image:-webkit-radial-gradient(white,black);-webkit-backface-visibility:hidden;backface-visibility:hidden}
 .cdx-print,.cdx-print img,.cdx-print i{border-radius:50%;overflow:hidden}
+/* 11/18 等級評價、互評、第二輪保密 */
+.sv5-grme{position:relative;z-index:1;margin:12px 0;padding:16px;border-radius:22px;background:#fff;box-shadow:inset 0 0 0 2px var(--a);text-align:center}
+.sv5-grme small{font-size:12px;color:var(--a);font-weight:900}.sv5-grme div{display:flex;justify-content:center;align-items:center;gap:10px;margin:10px 0}.sv5-grme em{font-style:normal;font-size:22px;color:var(--a);font-weight:900}
+.sv5-grme p{margin:0;font-size:13.5px;line-height:1.6;color:#6F5A66}.sv5-grme p b{color:#3A2233;margin-right:4px}
+.sv5-cen{position:relative;z-index:1;display:flex;align-items:center;gap:12px;margin:12px 0;padding:10px 14px;border-radius:18px;background:var(--l)}.sv5-cen .sv2-t{flex:0 0 auto;width:86px}.sv5-cen p{margin:0;font-size:13px;color:#6F5A66;line-height:1.5}
+.sv5-grh{display:flex;align-items:center;gap:8px;margin:16px 0 8px}.sv5-grh b{font-size:15px;color:#3A2233}.sv5-grh small{color:#9A7F8C;font-size:12px}
+.sv5-grg{display:grid;gap:8px}
+.sv5-gri{position:relative;z-index:1;display:grid;grid-template-columns:44px 1fr;grid-template-rows:auto auto;column-gap:10px;align-items:center;text-align:left;padding:8px 10px;border:0;border-radius:14px;background:#fff;box-shadow:0 0 0 1.5px var(--l2);font:inherit;color:inherit}
+.sv5-gri.me{box-shadow:0 0 0 2px var(--a)}
+.sv5-gri .sv2-p{grid-row:1/3;width:44px;height:44px;margin:0;border-radius:50%;overflow:hidden;position:relative;background:linear-gradient(160deg,var(--l2),var(--a2))}.sv5-gri .sv2-p img{width:100%;height:100%;object-fit:cover}
+.sv5-gri b{font-size:14px;color:#3A2233}.sv5-gri b em{font-style:normal;margin-left:6px;font-size:11px;color:var(--a);background:var(--l);padding:1px 6px;border-radius:99px}.sv5-gri small{font-size:12px;color:#8A7F96;line-height:1.4}
+.sv5-prl{display:grid;gap:10px}
+.sv5-pr{position:relative;z-index:1;display:flex;gap:12px;align-items:center;padding:10px;border-radius:16px;background:#fff;box-shadow:0 0 0 1.5px var(--l2)}
+.sv5-prt{position:relative;flex:0 0 72px;height:90px;border:0;padding:0;border-radius:12px;overflow:hidden;background:var(--l)}.sv5-prt img,.sv5-prt video,.sv5-prt .sv2-p{width:100%;height:100%;object-fit:cover;display:block}
+.sv5-pr div{flex:1;min-width:0}.sv5-pr b{display:block;font-size:15px;color:#3A2233}.sv5-pr small{font-size:11.5px;color:#9A7F8C}
+.sv5-pr span{display:flex;gap:2px;margin-top:6px}.sv5-pr span button{border:0;background:none;font-size:26px;line-height:1;color:#E5DCE2;padding:2px}.sv5-pr span button.on{color:#FFB300}
+.sv5-h11{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:8px;padding-top:10px;border-top:1px dashed var(--l2)}.sv5-h11 small{font-size:12px;color:#9A7F8C;font-weight:700}.sv5-h11 .sv2-t{width:86px}
+.sv5-adm{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.03)}
+.sv5-prt .sv2-p{position:relative;margin:0;border-radius:0;overflow:hidden;background:linear-gradient(160deg,var(--l2),var(--a2))}
 
 /* ===== 連號開獎：扭蛋機 ===== */
 .lot .tiei-body{padding-bottom:40px}
