@@ -362,7 +362,6 @@ function viewFan(tab){
       <section class="card me-card">
         <div class="av lg" style="margin:0 auto;background:${grad(3)}">${esc((ME.name||"棉")[0])}</div>
         <button class="me-nm" data-a="meNickEd" aria-label="修改名稱"><h2>${esc(ME.name)}</h2>${UI_S.pen}</button><span class="muted" style="font-size:13px">粉絲帳號</span>${lvLine()}
-        ${(()=>{const rc=S.get(K.repCard,""), it=rc.startsWith("it|"), m=rc&&(it?parseIt(rc):MEMBERS[rc.split(":")[0]]); return rc&&m&&getCards()[rc]?`<button class="me-rep" data-a="cardView" data-v="${rc}"><span class="me-rep-c">${cardFace(rc)}</span><span><small>我的代表卡</small><b>${esc(it?itemName(rc):m.name)}</b></span><i>›</i></button>`:""})()}
       </section>
       ${secH("star","我的")}
       <div class="me-grid">${[["ms","gem","會員",`${f.filter(isMember).length} 個`],["tie","tie",`${WHISPER_NAME} 券`,`${Object.keys(subs()).filter(isActive).length} 張運行中`],["merch","bag","周邊",`${(()=>{const o=S.get(K.owned,{});return Object.keys(o).reduce((n,g)=>n+Object.keys(o[g]||{}).length,0)})()} 件`],

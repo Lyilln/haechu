@@ -5,7 +5,7 @@
    ・機率：★★★ 3%、★★ 15%、★ 82%；十連保底至少一張 ★★；單抽 100 點、十連 900 點
    ・從 NSY 留下：抽卡前的光門過場、翻卡音效、要全部翻開才收下、「翻開其餘 N 張」、
      卡池一覽、抽卡紀錄、會跟著手指／手機傾斜的光澤
-   ・自己加的：NEW 標記、稀有卡背面先透光、卡號與首次獲得日、代表卡、每張卡的機率
+   ・自己加的：NEW 標記、稀有卡背面先透光、卡號與首次獲得日、每張卡的機率
    ・沒有留下：每日免費領積分、另一種貨幣、隨機覆蓋卡冊格子、手機震動（iPhone 不支援）、
      「第 n 格／預覽占位」這種後台用語、每抽一次就發一則通知
    ========================================================= */
@@ -421,9 +421,13 @@ const alCount=()=>{ const f=followed(), own=getCards(); let have=0, total=0; get
 const parseIt=cid=>{ const [,aid,iid,pid]=String(cid).split("|"), a=albumOf(aid); if(!a) return null; const r=itemOf(a,iid); if(!r) return null; const p=photoOf(r.it,pid); return p?{a,it:r.it,v:r.v,p}:null; };
 /* 一樣東西的正面／背面（沒上傳照片時用成員的顏色做示意） */
 function itemFace(cid,{big=false}={}){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), m=MEMBERS[p.mid], C=GRADS[(m?m.g:g.g)%GRADS.length], img=PCI[`ph|${a.id}|${p.id}|f`];
-  return `<div class="itf ${p.sp?"sp":""} ${big?"big":""} k-${it.k}" style="--c1:${C[0]};--c2:${C[1]}">${img?`<img src="${img}" alt="">`:`<div class="itf-ph"><i>${esc(m?ini(m.name):ini(g.name))}</i><b>${esc(m?m.name:g.name)}</b><small>${esc(it.name)}</small></div>`}<span class="apc-gl"></span>${p.sp?'<span class="apc-rim"></span>':""}</div>`; }
+  return `<div class="itf ${p.sp?"sp":""} ${big?"big":""} k-${it.k}" style="--c1:${C[0]};--c2:${C[1]}">${img?`<img src="${img}" alt="">`:`<div class="itf-ph"><i>${esc(m?ini(m.name):ini(g.name))}</i><b>${esc(m?m.name:g.name)}</b><small>${esc(it.name)}</small></div>`}<span class="apc-gl"></span>${fxSpan(p)}</div>`; }
+/* 11/18 貴卡：藝人決定專輯小卡哪幾張是貴卡（比較難抽到）、要不要特效；特典卡（店家）由管理員決定。特效：珠光（pearl）／流光（holo）／無 */
+const fxOf=p=>p&&p.sp?(p.fx||"pearl"):"";
+const fxSpan=p=>{ const f=fxOf(p); return f==="pearl"?'<span class="apc-rim"></span>':f==="holo"?'<span class="apc-holo"></span>':""; };
+const FX_N={pearl:"珠光",holo:"流光",none:"無特效"};
 function itemBack(cid){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), img=PCI[`ph|${a.id}|${p.id}|b`]||PCI[`ib|${a.id}|${it.id}`];
-  return img?`<div class="itb img ${p.sp?"sp":""}"><img src="${img}" alt="">${p.sp?'<span class="apc-rim"></span>':""}</div>`:`<div class="itb ${p.sp?"sp":""}" style="background:${grad(g.g)}"><b>${esc(g.name)}</b><small>${esc(a.title)}</small>${p.sp?'<span class="apc-rim"></span>':""}</div>`; }
+  return img?`<div class="itb img ${p.sp?"sp":""}"><img src="${img}" alt="">${fxSpan(p)}</div>`:`<div class="itb ${p.sp?"sp":""}" style="background:${grad(g.g)}"><b>${esc(g.name)}</b><small>${esc(a.title)}</small>${fxSpan(p)}</div>`; }
 const itemDims=(it,scale)=>`width:${(it.w*scale).toFixed(1)}px;height:${(it.h*scale).toFixed(1)}px;--rad:${Math.max(3,.35*scale).toFixed(1)}px`;
 function item3d(cid,maxPx){ const o=parseIt(cid); if(!o) return ""; const sc=Math.min(maxPx/o.it.w,maxPx*1.45/o.it.h); return `<div class="s3-obj s3-it" style="${itemDims(o.it,sc)}"><div class="s3-f">${itemFace(cid,{big:true})}</div><div class="s3-b">${itemBack(cid)}</div><div class="s3-edge"></div></div>`; }
 const itemName=cid=>{ const o=parseIt(cid); if(!o) return ""; const m=MEMBERS[o.p.mid]; return `${m?m.name+"・":""}${exName(o.it)}${o.p.sp?" ✦":""}`; };
@@ -480,10 +484,10 @@ function abSummary(){ const st=ui.ab, r=st.r, all=r.opens.flatMap(o=>o.got.map((
   document.getElementById("abHint").innerHTML=`${r.opens.length} 張專輯全部拆開了・共 ${all.length+xs.length} 樣・新的 ${all.filter(x=>x.nw).length+xs.filter(x=>x.nw).length} 樣`;
   document.getElementById("abFoot").innerHTML=`<button class="btn btn-main btn-block" data-a="abClose">收進卡冊</button>`; }
 /* 卡冊、自由轉看單一樣東西 */
-function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCards(), real=own[cid]||0, pv=!real&&(!!ui.cbPrev&&isHussey()||ui.itPv===cid), n=real||(pv?1:0), mt=cardMeta()[cid]||{}, g=groupOf(o.a.gid), rep=S.get(K.repCard,"")===cid;
+function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCards(), real=own[cid]||0, pv=!real&&(!!ui.cbPrev&&isHussey()||ui.itPv===cid), n=real||(pv?1:0), mt=cardMeta()[cid]||{}, g=groupOf(o.a.gid);
   setLayer(`<div class="ph-view cv s3view" role="dialog" aria-label="收藏"><button class="ph-x" data-a="${ui.itPv===cid?"artAlb":"tCloseLayer"}" aria-label="關閉">${XI}</button>
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
-    <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?" ✦ 珠光":""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
+    <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?` ✦ 貴卡${fxOf(o.p)!=="none"?"・"+FX_N[fxOf(o.p)]:""}`:""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
     <div class="cv-btns"></div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
@@ -491,9 +495,9 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
 const isHussey=()=>{ try{ const s=session()||{}, a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]||{}; return String(a.name||"").toUpperCase()==="HUSSEY"||String(m.name||"").toUpperCase()==="HUSSEY"; }catch(e){ return false; } };
 function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
-  const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>cbHasCards(a)&&(prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`)))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", rep=S.get(K.repCard,""), {have,total}=alCount();
+  const own=prev?(()=>{ const o={...getCards()}; getAlbums().forEach(a=>a.vers.forEach(v=>(v.inc||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; })))); (getAlbums()).forEach(a=>(a.ex||[]).forEach(it=>(it.pool||[]).forEach(p=>{ const c=`it|${a.id}|${it.id}|${p.id}`; if(!o[c]) o[c]=1; }))); return o; })():getCards(), f=followed(), al=[...getAlbums().filter(a=>cbHasCards(a)&&(prev||f.includes(a.gid)||Object.keys(own).some(c=>c.startsWith(`it|${a.id}|`)))),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)], tb=ui.cbTab||"book", {have,total}=alCount();
   const grid=(a,it)=>`<div class="cb-kr"><span class="cb-kn">${esc(exName(it))}<small>${it.w} × ${it.h} cm</small></span><div class="cb-ig" style="--cw:${it.w>it.h?120:it.w>7?96:72}px">${(it.pool||[]).map(p=>{ const cid=`it|${a.id}|${it.id}|${p.id}`, n=own[cid], m=MEMBERS[p.mid];
-      return n?`<button class="cb-it" data-a="cardView" data-v="${cid}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${n>1?`<em>×${n}</em>`:""}${rep===cid?'<b class="cb-rep">代表卡</b>':""}</button>`:`<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
+      return n?`<button class="cb-it" data-a="cardView" data-v="${cid}" style="aspect-ratio:${it.w}/${it.h}">${itemFace(cid)}${n>1?`<em>×${n}</em>`:""}</button>`:`<div class="cb-it none ${p.sp?"sp":""}" style="aspect-ratio:${it.w}/${it.h}"><span>?</span><small>${esc(m?m.name:"")}${p.sp?" ✦":""}</small></div>`; }).join("")}</div></div>`;
   const book=al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
     return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.filter(v=>(v.inc||[]).some(it=>(it.pool||[]).length)).map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.filter(it=>(it.pool||[]).length).map(it=>grid(a,it)).join("")}`).join("")}
@@ -529,10 +533,10 @@ const upCell=(key,lab,ratio,extra="")=>`<label class="ap-cell ${PCI[key]?"has":"
 function aeItemHtml(a,it,ex){ const ms=groupArtists(a.gid);
   return `<div class="ae-it"><div class="ae-ith">${ex?`<b>${esc(EXR[it.rule].n)}</b><small>${esc(EXR[it.rule].d)}</small>`:`<div class="chips sm">${INC.map(x=>`<button class="chip ${it.k===x.k?"on":""}" data-a="aeIK" data-i="${it.id}" data-v="${x.k}">${x.n}</button>`).join("")}</div>`}<button class="ae-del" data-a="aeIDel" data-v="${it.id}" aria-label="刪除這一項">${XI}</button></div>
     <div class="ae-grid"><label>名稱<input class="ae-in" data-o="i|${it.id}|name" value="${esc(it.name)}"></label>${ex?"":`<label>一張專輯放幾張<input class="ae-in" inputmode="numeric" data-o="i|${it.id}|n" value="${it.n||1}"></label>`}${it.rule==="pob"?`<label>限量幾張（0＝不限量）<input class="ae-in" inputmode="numeric" data-o="i|${it.id}|cap" value="${it.cap||0}"></label>${it.cap?`<p class="ae-tip w2">已送出 ${(S.get(K.ldGiven,{}))[it.id]||0} 張・剩 ${ldLeft(it)} 張</p>`:""}`:""}${it.rule==="ld"?`<label>總共幾張（抽完就沒了）<input class="ae-in" inputmode="numeric" data-o="i|${it.id}|cap" value="${it.cap||20}"></label><label>每張專輯抽中機率（%）<input class="ae-in" inputmode="numeric" data-o="i|${it.id}|odds" value="${it.odds||10}"></label><p class="ae-tip w2">已送出 ${(S.get(K.ldGiven,{}))[it.id]||0} 張・剩 ${ldLeft(it)} 張</p>`:""}<label>寬（公分）<input class="ae-in" inputmode="decimal" data-o="i|${it.id}|w" value="${it.w}"></label><label>高（公分）<input class="ae-in" inputmode="decimal" data-o="i|${it.id}|h" value="${it.h}"></label></div>
-    <p class="ae-tip">照片池：抽的時候從這些照片裡隨機抽（珠光的比較難抽到）。每張可以上傳正面、背面，指定是哪位成員。</p>
+    <p class="ae-tip">照片池：抽的時候從這些照片裡隨機抽（貴卡比較難抽到）。每張可以上傳正面、背面，指定是哪位成員。</p>
     <div class="ae-pool">${(it.pool||[]).map(p=>`<div class="ae-ph">${upCell(`ph|${a.id}|${p.id}|f`,"正面",`${it.w}/${it.h}`)}${upCell(`ph|${a.id}|${p.id}|b`,"背面",`${it.w}/${it.h}`)}
       <select class="ae-sel" data-o="p|${it.id}|${p.id}|mid"><option value="">不指定成員</option>${ms.map(m=>`<option value="${m}" ${p.mid===m?"selected":""}>${esc(artName(m,"feed"))}</option>`).join("")}</select>
-      <div class="ae-pb"><button class="chip ${p.sp?"on":""}" data-a="aePSp" data-i="${it.id}" data-v="${p.id}">✦ 珠光</button><button class="chip" data-a="aePDel" data-i="${it.id}" data-v="${p.id}">刪除</button></div></div>`).join("")}
+      <div class="ae-pb">${ex&&aeArt()?(p.sp?`<span class="chip on">✦ 貴卡・${FX_N[fxOf(p)]}</span>`:""):`<button class="chip ${p.sp?"on":""}" data-a="aePSp" data-i="${it.id}" data-v="${p.id}">✦ 貴卡</button>${p.sp?["pearl","holo","none"].map(f=>`<button class="chip ${fxOf(p)===f?"on":""}" data-a="aePFx" data-i="${it.id}" data-v="${p.id}" data-f="${f}">${FX_N[f]}</button>`).join(""):""}`}<button class="chip" data-a="aePDel" data-i="${it.id}" data-v="${p.id}">刪除</button></div></div>`).join("")}
       <button class="ae-add" data-a="aePAdd" data-v="${it.id}" style="aspect-ratio:${it.w}/${it.h}">＋<small>加一張照片</small></button></div>
     <div class="ae-row"><span class="ae-lab">卡背設計（這一項整套共用；單張沒傳背面時就用這張）</span>${upCell(`ib|${a.id}|${it.id}`,"",`${it.w}/${it.h}`)}</div></div>`; }
 /* 11/17 藝人（要出道／回歸的人）也能編自己團的專輯、上傳小卡卡面；價格、預購天數只有管理員能改（藝人不能動自己商品的價格） */
@@ -590,7 +594,7 @@ let cvRaf=0, cvGyroOn=false;
 function openCardView(cid){
   if(String(cid).startsWith("it|")) return openItemView(cid);
   const own=getCards(), n=own[cid]||0, mt=cardMeta()[cid]||{}, [mid,t]=cid.split(":"), m=MEMBERS[mid]; if(!m) return;
-  const g=groupOf(m.group), rep=S.get(K.repCard,"")===cid, touch="ontouchstart" in window&&typeof DeviceOrientationEvent!=="undefined";
+  const g=groupOf(m.group), touch="ontouchstart" in window&&typeof DeviceOrientationEvent!=="undefined";
   setLayer(`<div class="ph-view cv" data-a="tCloseLayer" role="dialog" aria-label="卡片"><button class="ph-x" data-a="tCloseLayer" aria-label="關閉">${XI}</button>
     <div class="cv-tilt" id="cvTilt">${cardFace(cid,{big:true})}</div>
     <div class="cv-info"><span class="cv-tag t${t}">${"★".repeat(+t)} ${["","日常 NORMAL","舞台 RARE","流光 SUPER RARE"][+t]}</span><b>${esc(m.name)}</b>

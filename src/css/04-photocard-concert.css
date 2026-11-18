@@ -91,7 +91,6 @@
 .cb-tabs button{flex:1;padding:8px;border-radius:999px;font-size:13px;font-weight:800;color:#A47BFF}
 .cb-tabs button.on{background:#fff;color:#6F2FE6;box-shadow:0 4px 12px -6px rgba(124,58,237,.4)}
 
-.cb-rep{position:absolute;left:50%;bottom:-7px;transform:translateX(-50%);font-size:9.5px;font-weight:900;color:#fff;background:linear-gradient(90deg,#F472B6,#8843FB);padding:1px 8px;border-radius:999px;white-space:nowrap}
 .cb-log{padding:6px 14px}
 .gl-r{padding:12px 0;border-bottom:1px solid #F3EEFF}.gl-r:last-child{border-bottom:0}
 .gl-h{display:flex;align-items:center;gap:8px;margin-bottom:8px}.gl-h b{font-size:13.5px;color:#5B21B6}.gl-h small{font-size:11.5px;color:var(--ink-3)}
@@ -102,9 +101,6 @@
 .gl-c.t2{background:#FCE7F3;color:#BE185D}.gl-c.t2 i{color:#F472B6}
 .gl-c.t3{background:linear-gradient(90deg,#FEF3C7,#FCE7F3);color:#B45309}.gl-c.t3 i{color:#F59E0B}
 .cb-lnote{text-align:center;font-size:11px;color:var(--ink-3);margin:8px 0}
-.me-rep{display:flex;align-items:center;gap:12px;width:100%;margin-top:14px;padding:10px 12px;border-radius:18px;background:linear-gradient(135deg,rgba(253,230,138,.25),rgba(249,168,212,.25));text-align:left}
-.me-rep-c{width:46px;flex:none}.me-rep-c .pc{font-size:8px;border-width:1.5px}.me-rep-c .pc-ft{display:none}
-.me-rep>span:nth-child(2){flex:1;display:flex;flex-direction:column}.me-rep small{font-size:11px;color:var(--ink-3)}.me-rep b{font-size:14px;color:#5B21B6}.me-rep i{font-style:normal;color:#C7AEFF;font-size:20px}
 /* ===== 抽卡演出 v3 ===== */
 .gc-w{position:fixed;inset:0;z-index:86;overflow:hidden;color:#fff;background:radial-gradient(120% 70% at 50% 0%,#3B2A6B,#140B2E 62%,#0B0620);touch-action:none}
 .gc-w::before{content:"";position:absolute;inset:0;opacity:0;transition:opacity 1.2s;pointer-events:none}

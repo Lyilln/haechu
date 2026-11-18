@@ -413,3 +413,7 @@ html[data-theme] body .cm-rep{display:block;margin:4px 0 0;padding:0}
 .sto-add{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px;border:0;background:transparent;color:var(--accent,#A78BFA);font:inherit;font-size:15px;font-weight:700;text-align:left}
 .sto-add span{width:42px;height:42px;border-radius:13px;border:1.5px dashed currentColor;display:grid;place-items:center;font-size:20px;font-weight:500;opacity:.85}
 .sto-note{margin:8px 6px 4px;color:var(--ink-3);font-size:12.5px}
+/* 11/18 貴卡特效：流光（彩虹光帶在卡面上流動） */
+.apc-holo{position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(115deg,transparent 18%,rgba(255,92,200,.38) 32%,rgba(92,214,255,.38) 44%,rgba(255,240,120,.34) 56%,rgba(160,120,255,.36) 68%,transparent 82%) 0 0/260% 260%;mix-blend-mode:color-dodge;animation:apcHolo 3.6s linear infinite}
+@keyframes apcHolo{from{background-position:0% 0%}to{background-position:-260% -260%}}
+@media (prefers-reduced-motion:reduce){.apc-holo{animation:none;background-position:30% 30%}}

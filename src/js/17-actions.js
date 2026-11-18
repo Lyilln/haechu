@@ -200,7 +200,6 @@ function clickGen(a,t,e,r){ switch(a){
     case "gdSnd": { S.set(K.gachaSnd,!sfxOn()); t.textContent=sfxOn()?"🔊":"🔈"; if(sfxOn()) sfx("flip"); break; }
     case "poolMiss": ui.poolMiss=t.dataset.v==="1"; openPool(); break;
     case "cbTab": segSwitch(t,()=>{ ui.cbTab=t.dataset.v; },(ui.cbTab||"book")==="book"&&t.dataset.v==="log"?1:-1); break;
-    case "cardRep": { const on=S.get(K.repCard,"")===t.dataset.v; S.set(K.repCard,on?"":t.dataset.v); toast(on?"已取消代表卡":"設為代表卡了，會顯示在 ME"); openCardView(t.dataset.v); if(route().tab==="me"||route().p==="cards") lsRerender(); break; }
     case "cardGyro": cardGyro(); break;
     case "gdDone": { const got=ui.drawGot||[], nw=ui.drawFresh?ui.drawFresh.size:0; layer.innerHTML=""; lsRerender(); const r3=got.filter(c=>c.endsWith(":3")).length; toast(r3?`收進卡冊了，有 ${r3} 張流光卡 ✨`:nw?`收進卡冊了，新卡 ${nw} 張 🃏`:"收進卡冊了 🃏"); break; }
     case "cardView": openCardView(t.dataset.v); break;
@@ -433,7 +432,8 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeIK": { const a=aeA(), r=itemOf(a,t.dataset.i), d=incOf(t.dataset.v); r.it.k=d.k; r.it.name=d.n; r.it.w=d.w; r.it.h=d.h; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeIDel": { const a=aeA(); ask("要刪除這一項嗎？",()=>{ a.vers.forEach(v=>v.inc=v.inc.filter(x=>x.id!==t.dataset.v)); a.ex=(a.ex||[]).filter(x=>x.id!==t.dataset.v); saveAlbum(a); openAlbumEditor(a.id); },{title:"刪除",ok:"刪除"}); break; }
     case "aePAdd": { const a=aeA(), r=itemOf(a,t.dataset.v); r.it.pool=[...(r.it.pool||[]),{id:uid("p"),mid:null,sp:false}]; saveAlbum(a); openAlbumEditor(a.id); break; }
-    case "aePSp": { const a=aeA(), r=itemOf(a,t.dataset.i), ph=photoOf(r.it,t.dataset.v); ph.sp=!ph.sp; saveAlbum(a); openAlbumEditor(a.id); break; }
+    case "aePFx": { const a=aeA(), r=itemOf(a,t.dataset.i), ph=photoOf(r.it,t.dataset.v); if(!r.v&&aeArt()) break; ph.fx=t.dataset.f; saveAlbum(a); openAlbumEditor(a.id); break; }
+    case "aePSp": { const a=aeA(), r=itemOf(a,t.dataset.i), ph=photoOf(r.it,t.dataset.v); if(!r.v&&aeArt()) break; ph.sp=!ph.sp; if(ph.sp&&!ph.fx) ph.fx="pearl"; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aePDel": { const a=aeA(), r=itemOf(a,t.dataset.i); r.it.pool=r.it.pool.filter(x=>x.id!==t.dataset.v); saveAlbum(a); openAlbumEditor(a.id); break; }
     case "aeXAdd": { const a=aeA(), r=t.dataset.v; a.ex=[...(a.ex||[]),{id:uid("i"),rule:r,k:"pc",name:EXR[r].n,w:5.5,h:8.5,pool:[],...(EXR[r].st?{store:t.dataset.s}:{}),...(r==="ld"?{cap:20,odds:10}:{})}]; saveAlbum(a); openAlbumEditor(a.id); break; }
     case "abClose": ui.ab=null; cancelAnimationFrame(gcRaf); layer.innerHTML=""; { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("收進卡冊了 🃏"); break;
