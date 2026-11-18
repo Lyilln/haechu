@@ -419,6 +419,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "aeClose": ui.aeId=null; layer.innerHTML=""; if(aeArt()) artAlbumsSheet(); render(); break;
     case "artAlb": artAlbumsSheet(); break;
     case "mcPv": ui.cvSid=""; ui.itPv=t.dataset.v; openItemView(t.dataset.v); break;
+    case "mcShT": { ui.mcSh=t.dataset.v; const sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0; artAlbumsSheet(); const b=layer.querySelector(".tiei-body"); if(b) b.scrollTop=y; break; }
     case "mcGrantOpen": ui.mcSel=null; mcGrantSheet(); break;
     case "mcSelT": { ui.mcSel=ui.mcSel||{}; ui.mcSel[t.dataset.v]=ui.mcSel[t.dataset.v]?0:1; const sc=layer.querySelector(".tiei-body"), y=sc?sc.scrollTop:0; mcGrantSheet(); const s2=layer.querySelector(".tiei-body"); if(s2) s2.scrollTop=y; break; }
     case "mcGrantGo": mcGrantGo(); break;

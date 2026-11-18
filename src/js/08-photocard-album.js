@@ -368,9 +368,13 @@ const albumOf=id=>String(id).startsWith("demo_")?cbDemoAlbs().find(a=>a.id===id)
 /* 11/17 預設公放卡：這個團的專輯裡沒有設定「公放卡」時，投票照樣拿得到一張（每位成員一款，卡面用成員的照片或顏色）。
    不是商品：不會出現在 SHOP、後台專輯清單；只在卡冊裡（有拿到才出現） */
 /* 公放卡是必放：每位成員的正面都傳了才算好（雲端有、或這支手機剛傳） */
-function mcDone(gid){ const a=mcAlb(gid); if(!a) return true; const M=S.get(ALBU,{})||{}; return a.ex[0].pool.every(p=>{ const k=`ph|mc_${gid}|${p.id}|f`; return !!(M[k]||PCI[k]); }); }
-function mcAlb(gid){ const g=groupOf(gid); if(!g) return null; const ms=(grpMembers(gid)||[]).filter(m=>MEMBERS[m]);
-  return {id:"mc_"+gid,gid,title:"公放卡",ord:"打歌節目",sys:1,ts:0,vers:[],ex:[{id:"mc",rule:"mc",name:"公放卡",w:5.5,h:8.5,pool:(ms.length?ms:[""]).map(m=>({id:m||"g",mid:m}))}]}; }
+function mcDone(gid,sh){ const a=mcAlb(gid); if(!a) return true; const M=S.get(ALBU,{})||{}; return a.ex.filter(e=>e.show&&(!sh||e.show===sh)).every(e=>e.pool.every(p=>{ const k=`ph|mc_${gid}|${p.id}|f`; return !!(M[k]||PCI[k]); })); }
+function mcAlb(gid){ const g=groupOf(gid); if(!g) return null; const ms=(grpMembers(gid)||[]).filter(m=>MEMBERS[m]), M=ms.length?ms:[""];
+  /* 11/18 每個打歌節目各一款（藝人每個節目都要傳）；舊的「公放卡」（id mc）留給之前已經發出去的卡 */
+  return {id:"mc_"+gid,gid,title:"公放卡",ord:"打歌節目",sys:1,ts:0,vers:[],ex:[{id:"mc",rule:"mc",name:"公放卡",old:1,w:5.5,h:8.5,pool:M.map(m=>({id:m||"g",mid:m}))},
+    ...SHOWS.map(sh=>({id:"mc_"+sh.id,rule:"mc",show:sh.id,name:sh.name+" 公放卡",w:5.5,h:8.5,pool:M.map(m=>({id:(m||"g")+"_"+sh.id,mid:m,base:m||"g"}))}))]}; }
+/* 卡面：這個節目沒傳就先用舊的那張（藝人補傳後自動換） */
+const pcImg=(a,p,sd)=>PCI[`ph|${a.id}|${p.id}|${sd}`]||(p.base?PCI[`ph|${a.id}|${p.base}|${sd}`]:"")||"";
 /* 11/17 卡冊預覽用的假資料（只有 HUSSEY 打開「預覽全部卡片」時才有）：每個團一張示範專輯，卡面、卡背、封面都是當場用畫布畫的，不存、不上傳 */
 const cbDemo=()=>!!ui.cbPrev&&typeof isHussey==="function"&&isHussey();
 let CB_DEMO=null;
@@ -416,19 +420,21 @@ function buyAlbumV(aid,vid,qty,sid){ const a=albumOf(aid), v=a&&verOf(a,vid); if
   return {aid,vid,sid,opens}; }
 /* 打歌節目卡：在某個節目幫某團的歌投票，那週那個節目拿 1 張 */
 function giveMcCard(gid,showId,k0){ const wk=curWeek(), key=k0||`${wk}|${showId}|${gid}`, got=S.get(K.mcGot,{}); if(got[key]) return null;
-  const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="mc"&&(e.pool||[]).length))||mcAlb(gid); if(!a) return null; const e=a.ex.find(x=>x.rule==="mc"&&(x.pool||[]).length), p=drawFrom(e,1)[0]; if(!p) return null;
+  const a=mcAlb(gid); if(!a) return null; const e=a.ex.find(x=>x.show===showId)||a.ex.find(x=>x.show), p=drawFrom(e,1)[0]; if(!p) return null;
   got[key]=Date.now(); S.set(K.mcGot,got); const cid=`it|${a.id}|${e.id}|${p.id}`; giveItem([cid]); return cid; }
 function giveFsCard(gid,mid){ const a=getAlbums().find(x=>x.gid===gid&&(x.ex||[]).some(e=>e.rule==="fs")); if(!a) return; const e=a.ex.find(x=>x.rule==="fs"); const ps=e.pool.filter(p=>p.mid===mid); const p=(ps.length?ps:e.pool)[0]; if(p) giveItem([`it|${a.id}|${e.id}|${p.id}`]); }
-const alCount=()=>{ const f=followed(), own=getCards(); let have=0, total=0; getAlbums().filter(a=>f.includes(a.gid)).forEach(a=>[...a.vers.flatMap(v=>v.inc),...(a.ex||[])].forEach(it=>(it.pool||[]).forEach(p=>{ total++; if(own[`it|${a.id}|${it.id}|${p.id}`]) have++; }))); return {have,total}; };
+/* 公放卡：舊款（之前發的）、專輯裡的舊公放卡欄位，有拿到才顯示／才算 */
+const mcShowIt=(a,it,own)=>it.rule!=="mc"||String(a.id).startsWith("mc_")&&!it.old||(it.pool||[]).some(p=>own[`it|${a.id}|${it.id}|${p.id}`]);
+const alCount=()=>{ const f=followed(), own=getCards(); let have=0, total=0; [...getAlbums().filter(a=>f.includes(a.gid)),...GROUPS.map(g=>Object.keys(own).some(c=>c.startsWith(`it|mc_${g.id}|`))?mcAlb(g.id):null).filter(Boolean)].forEach(a=>[...a.vers.flatMap(v=>v.inc),...(a.ex||[]).filter(it=>mcShowIt(a,it,own))].forEach(it=>(it.pool||[]).forEach(p=>{ total++; if(own[`it|${a.id}|${it.id}|${p.id}`]) have++; }))); return {have,total}; };
 const parseIt=cid=>{ const [,aid,iid,pid]=String(cid).split("|"), a=albumOf(aid); if(!a) return null; const r=itemOf(a,iid); if(!r) return null; const p=photoOf(r.it,pid); return p?{a,it:r.it,v:r.v,p}:null; };
 /* 一樣東西的正面／背面（沒上傳照片時用成員的顏色做示意） */
-function itemFace(cid,{big=false}={}){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), m=MEMBERS[p.mid], C=GRADS[(m?m.g:g.g)%GRADS.length], img=PCI[`ph|${a.id}|${p.id}|f`];
+function itemFace(cid,{big=false}={}){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), m=MEMBERS[p.mid], C=GRADS[(m?m.g:g.g)%GRADS.length], img=pcImg(a,p,"f");
   return `<div class="itf ${p.sp?"sp":""} ${big?"big":""} k-${it.k}" style="--c1:${C[0]};--c2:${C[1]}">${img?`<img src="${img}" alt="">`:`<div class="itf-ph"><i>${esc(m?ini(m.name):ini(g.name))}</i><b>${esc(m?m.name:g.name)}</b><small>${esc(it.name)}</small></div>`}<span class="apc-gl"></span>${fxSpan(p)}</div>`; }
 /* 11/18 貴卡：藝人決定專輯小卡哪幾張是貴卡（比較難抽到）、要不要特效；特典卡（店家）由管理員決定。特效：珠光（pearl）／流光（holo）／無 */
 const fxOf=p=>p&&p.sp?(p.fx||"pearl"):"";
 const fxSpan=p=>{ const f=fxOf(p); return f==="pearl"?'<span class="apc-rim"></span>':f==="holo"?'<span class="apc-holo"></span>':""; };
 const FX_N={pearl:"珠光",holo:"流光",none:"無特效"};
-function itemBack(cid){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), img=PCI[`ph|${a.id}|${p.id}|b`]||PCI[`ib|${a.id}|${it.id}`];
+function itemBack(cid){ const o=parseIt(cid); if(!o) return ""; const {a,it,p}=o, g=groupOf(a.gid), img=pcImg(a,p,"b")||PCI[`ib|${a.id}|${it.id}`];
   return img?`<div class="itb img ${p.sp?"sp":""}"><img src="${img}" alt="">${fxSpan(p)}</div>`:`<div class="itb ${p.sp?"sp":""}" style="background:${grad(g.g)}"><b>${esc(g.name)}</b><small>${esc(a.title)}</small>${fxSpan(p)}</div>`; }
 const itemDims=(it,scale)=>`width:${(it.w*scale).toFixed(1)}px;height:${(it.h*scale).toFixed(1)}px;--rad:${Math.max(3,.35*scale).toFixed(1)}px`;
 function item3d(cid,maxPx){ const o=parseIt(cid); if(!o) return ""; const sc=Math.min(maxPx/o.it.w,maxPx*1.45/o.it.h); return `<div class="s3-obj s3-it" style="${itemDims(o.it,sc)}"><div class="s3-f">${itemFace(cid,{big:true})}</div><div class="s3-b">${itemBack(cid)}</div><div class="s3-edge"></div></div>`; }
@@ -503,7 +509,7 @@ function viewCards(){ const prev=!!ui.cbPrev&&isHussey();
   const book=(prev?"":lotBanner())+(al.length?al.map(a=>{ const g=groupOf(a.gid), C=GRADS[g.g%GRADS.length];
     return `<section class="cb-al"><div class="cb-alh"><span class="cb-alc" style="background:linear-gradient(135deg,${C[0]},${C[1]})">${PCI[`vc|${a.id}|${a.vers[0]&&a.vers[0].id}`]?`<img src="${PCI[`vc|${a.id}|${a.vers[0].id}`]}" alt="">`:esc(ini(g.name))}</span><span><b>${esc(a.title)}</b><small>${esc(g.name)}・${esc(a.ord)}</small></span></div>
       ${a.vers.filter(v=>(v.inc||[]).some(it=>(it.pool||[]).length)).map(v=>`<div class="cb-vh">${esc(v.name)}${vPre(v)?'<em class="cb-pre">預購中</em>':""}</div>${v.inc.filter(it=>(it.pool||[]).length).map(it=>grid(a,it)).join("")}`).join("")}
-      ${(a.ex||[]).filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).length?`<div class="cb-vh">專輯外（店家特典・簽售・打歌節目）</div>${a.ex.filter(e=>!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
+      ${(a.ex||[]).filter(e=>(!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store))&&mcShowIt(a,e,own)).length?`<div class="cb-vh">${String(a.id).startsWith("mc_")?"打歌節目・每個節目各一款":"專輯外（店家特典・簽售・打歌節目）"}</div>${a.ex.filter(e=>(!EXR[e.rule]||!EXR[e.rule].st||storeOf(e.store))&&mcShowIt(a,e,own)).map(it=>grid(a,it)).join("")}`:""}</section>`; }).join(""):(!f.length?`<div class="cb-none"><b>還沒有加入社群</b><p>先到「探索」找喜歡的藝人，加入社群後，他們發行的專輯小卡會收在這裡。</p><button class="btn btn-main" data-a="goExplore">去探索</button></div>`
       :`<div class="cb-none"><b>目前還沒有專輯可以收集</b><button class="btn btn-main" data-a="goAlbums">去 SHOP 看看</button></div>`));
   return coreHead("卡冊")+`<main class="page cards">${isHussey()?`<button class="cb-prev ${prev?"on":""}" data-a="cbPrev">${prev?"結束預覽":"預覽全部卡片"}</button>`:""}
     <div class="seg2 cb-tabs ${mkCan()&&!prev?"n3":""}" style="--i:${tb==="log"?1:0}"><i class="seg2-ind"></i><button class="${tb==="book"?"on":""}" data-a="cbTab" data-v="book">卡冊</button><button class="${tb==="log"?"on":""}" data-a="cbTab" data-v="log">開箱紀錄</button>${mkCan()&&!prev?`<button data-a="mkOpen">市場</button>`:""}</div>
@@ -544,11 +550,11 @@ function aeItemHtml(a,it,ex){ const ms=groupArtists(a.gid);
 /* 11/17 藝人（要出道／回歸的人）也能編自己團的專輯、上傳小卡卡面；價格、預購天數只有管理員能改（藝人不能動自己商品的價格） */
 const aeArt=()=>{ const s=session()||{}; return s.role==="artist"&&!isAdminAcct(); };
 function artAlbumsSheet(){ ui.itPv=null; const s=session()||{}, gid=(MEMBERS[s.member]||{}).group; if(!gid) return; ui.albG=gid; const L=getAlbums().filter(a=>a.gid===gid);
-  const mc=mcAlb(gid), mcp=mc?mc.ex[0].pool:[];   /* 11/17 公放卡（投票拿到的卡）也由藝人自己上傳：每位成員一款，正面＋背面 */
+  const mc=mcAlb(gid), sh=SHOWS.some(x=>x.id===ui.mcSh)?ui.mcSh:SHOWS[0].id, mce=mc?mc.ex.find(e=>e.show===sh):null, mcp=mce?mce.pool:[];   /* 11/17 公放卡（投票拿到的卡）也由藝人自己上傳：每位成員一款，正面＋背面 */
   setLayer(`<div class="tiei art-alb"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>專輯・小卡</b><span class="sh-sp"></span></header><div class="tiei-body">
     <div class="section-h">公放卡<span class="mc-must ${mcDone(gid)?"ok":""}">${mcDone(gid)?"✓ 已放好":"必放"}</span></div>
     <div class="mc-rule"><b>打歌節目的週期</b><ul><li>新歌 MV 公開那一週是宣傳週（不排名）→ 下一週起連續 4 個打歌週 → 下檔。回歸時換成新歌。</li></ul><b>公放卡怎麼發</b><ul><li><b>只在出道／回歸後的第一個打歌週發</b>（宣傳週的下一週）；過了那週就不再發。</li><li>那一週，每個節目最先投票給你們的 3 位粉絲，投完的當下就拿到 1 張；第 4 位之後拿不到。</li><li>同一位粉絲在同一個節目只拿得到 1 張；投給虛擬歌手不會拿到。</li><li>每位成員一款，粉絲拿到哪一位是隨機的。</li><li>尺寸 5.5 × 8.5 公分。<b>正面每位都要放</b>；背面可以不放，沒放就用預設卡背。</li><li>專輯裡另外設了公放卡的話，會先發專輯裡的。</li></ul></div>
-    <section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small><button class="btn btn-soft btn-sm ae-pv" data-a="mcPv" data-v="it|mc_${gid}|mc|${p.id}">看效果</button></div>`).join("")}</div>${isAdminAcct()?`<button class="btn btn-soft btn-block" data-a="mcGrantOpen" style="margin-top:10px">補發公放卡給之前投票的粉絲</button>`:""}</section>    <div class="section-h">專輯<span class="muted">可不放</span></div>
+    <p class="ae-tip">每個打歌節目各一款，五個節目都要傳。還沒傳的節目，粉絲會先拿到你們之前傳的那款。</p><div class="chips wrap mc-shs">${SHOWS.map(x=>`<button class="chip ${x.id===sh?"on":""}" data-a="mcShT" data-v="${x.id}">${esc(x.name)}${mcDone(gid,x.id)?" ✓":""}</button>`).join("")}</div><section class="card studio"><div class="ae-pool">${mcp.map(p=>`<div class="ae-ph">${upCell(`ph|mc_${gid}|${p.id}|f`,"正面","5.5/8.5")}${upCell(`ph|mc_${gid}|${p.id}|b`,"背面","5.5/8.5")}<small class="ae-mn">${esc(p.mid?artName(p.mid,"feed"):(groupOf(gid)||{}).name||"")}</small><button class="btn btn-soft btn-sm ae-pv" data-a="mcPv" data-v="it|mc_${gid}|mc_${sh}|${p.id}">看效果</button></div>`).join("")}</div>${isAdminAcct()?`<button class="btn btn-soft btn-block" data-a="mcGrantOpen" style="margin-top:10px">補發公放卡給之前投票的粉絲</button>`:""}</section>    <div class="section-h">專輯<span class="muted">可不放</span></div>
     <p class="ae-tip">有出實體專輯（迷你、正規…）再新增；單曲、數位單曲出道不用放，只要放上面的公放卡就好。上傳後大家的 App 都看得到。</p>
     <section class="card studio">${L.map(a=>`<div class="leak-row"><span>《${esc(a.title)}》<small>${esc(a.ord)}・${a.vers.length} 個版本</small></span><span style="display:flex;gap:6px"><button class="btn btn-soft btn-sm" data-a="albDel" data-v="${a.id}">刪除</button><button class="btn btn-main btn-sm" data-a="aeOpen" data-v="${a.id}">編輯</button></span></div>`).join("")||`<p class="me-none">還沒有專輯</p>`}
     <button class="btn btn-soft btn-block" data-a="aeNew" style="margin-top:8px">＋ 新增專輯</button></section>

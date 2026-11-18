@@ -241,9 +241,9 @@ const C3={
     const w=it.w, h=it.h, r=Math.min(w,h)*.06, th=.06;
     const [TW,TH]=C3.dims(w,h,1024);
     const [ft,bt]=await Promise.all([
-      C3.pic(PCI[`ph|${a.id}|${p.id}|f`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C[0],C[1]); const R0=Math.min(W,H)*.2; x.fillStyle="rgba(255,255,255,.28)"; x.beginPath(); x.arc(W/2,H*.42,R0,0,7); x.fill();
+      C3.pic(pcImg(a,p,"f"),TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C[0],C[1]); const R0=Math.min(W,H)*.2; x.fillStyle="rgba(255,255,255,.28)"; x.beginPath(); x.arc(W/2,H*.42,R0,0,7); x.fill();
         C3.txt(x,m?ini(m.name):ini(g.name),W/2,H*.42,`700 ${R0*1.05}px ${SANS}`,"#fff"); C3.txt(x,m?m.name:g.name,W/2,H*.68,`700 ${Math.min(W,H)*.09}px ${SANS}`,"#fff",W*.86); C3.txt(x,it.name,W/2,H*.76,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }),
-      C3.pic(PCI[`ph|${a.id}|${p.id}|b`]||PCI[`ib|${a.id}|${it.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C2[0],C2[1]); C3.txt(x,g.name,W/2,H*.46,`700 ${Math.min(W,H)*.1}px ${SERIF}`,"#fff",W*.86); C3.txt(x,a.title,W/2,H*.56,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }) ]);
+      C3.pic(pcImg(a,p,"b")||PCI[`ib|${a.id}|${it.id}`],TW,TH,(x,W,H)=>{ C3.grad(x,W,H,C2[0],C2[1]); C3.txt(x,g.name,W/2,H*.46,`700 ${Math.min(W,H)*.1}px ${SERIF}`,"#fff",W*.86); C3.txt(x,a.title,W/2,H*.56,`500 ${Math.min(W,H)*.055}px ${SANS}`,"rgba(255,255,255,.85)",W*.86); }) ]);
     if(!host.isConnected){ ft.dispose(); bt.dispose(); return null; }
     const z=(typeof ZM==="function"?ZM():1)||1, VW=Math.round(Math.min(innerWidth/z*.94,420)), VH=Math.round(Math.min(innerHeight/z*.56,(maxPx||250)*1.75));
     const st=C3.stage(host,VW,VH), obj=new THREE.Group(); st.sc.add(obj); st.disp.push(ft,bt);

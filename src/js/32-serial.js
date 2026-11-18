@@ -9,7 +9,7 @@ const getSerials=()=>S.get(K.serials,{})||{};
 /* 11/18 公放卡、簽售卡也改成「這一批的號碼裡隨機給」：照順序的話，一個人一次投 5 個節目就直接拿到 5 張連號。
    公放卡一批＝同一團、同一個打歌週（5 個節目 × 前 3 名 = 15 張，0001～0015）；簽售卡一批＝同一場簽售 */
 function serKind(cid,x){ const o=parseIt(cid); if(!o||!o.it.rule) return null; const {a,it,p}=o;
-  if(it.rule==="mc") return {r:"mc|"+a.gid+"|"+weekKey((x&&x.ts)||Date.now()),cap:SHOWS.length*3};
+  if(it.rule==="mc") return it.show?{r:"mc|"+a.gid+"|"+it.show+"|"+weekKey((x&&x.ts)||Date.now()),cap:3}:{r:"mc|"+a.gid+"|"+weekKey((x&&x.ts)||Date.now()),cap:SHOWS.length*3};   /* 11/18 每個節目各自編號（每節目 3 張） */
   if(it.rule==="fs") return {r:"fs|"+a.id+"|"+it.id,cap:0};
   if(it.rule==="pob"||it.rule==="ld") return {r:a.id+"|"+it.id,cap:it.cap|0};
   return null; }
