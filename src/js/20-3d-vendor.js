@@ -265,7 +265,7 @@ const C3={
         add(new THREE.ExtrudeGeometry(fr,{depth:pl,bevelEnabled:false,curveSegments:16}),face,0,ty,td/2-pl); add(new THREE.ExtrudeGeometry(bk,{depth:pl,bevelEnabled:false}),face,0,ty,-td/2);
         const rw=.32; add(new THREE.BoxGeometry(rw,tg,td),rail,-tw/2+rw/2,ty,0); add(new THREE.BoxGeometry(rw,tg,td),rail,tw/2-rw/2,ty,0); add(new THREE.BoxGeometry(tw,rw,td),rail,0,ty-tg/2+rw/2,0);
         fw=tw; fh=tg; } }
-    C3.fit(st,fw,fh*(sl?1.25:1),1.32);
+    C3.fit(st,w,h,1.32);   /* 11/18 不管有沒有套卡套都照卡的大小取景：卡一樣大，卡套在外面多一圈 */
     const slMat=[]; slvG.traverse(m=>{ if(m.material) slMat.push([m.material,m.material.opacity]); }); const slA=a=>{ slMat.forEach(([mt,op])=>{ mt.opacity=op*a; }); slvG.visible=a>.01; }; if(out0) slA(0);
     host.querySelectorAll(".s3-obj").forEach(e=>e.style.display="none"); host.appendChild(st.cv); host.classList.add("c3-on");
     /* 11/18 從卡套拿出來／放回去：卡從上面開口滑出來，卡套淡掉；放回去反過來 */
