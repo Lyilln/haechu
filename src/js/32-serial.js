@@ -32,7 +32,7 @@ async function serialSync(){ if(serialSync.on) return; const s=session(); if(!s|
     if(!S.get(K.serV,0)){ /* 11/18 改規則：已經照順序編好的公放卡、簽售卡重新抽號碼（一次） */ Object.keys(L).forEach(cid=>{ const o=String(cid).startsWith("it|")&&parseIt(cid); if(o&&(o.it.rule==="mc"||o.it.rule==="fs")) L[cid].forEach(x=>{ x.n=null; }); }); S.set(K.serV,2); ch=true; }
     Object.keys(own).forEach(cid=>{ const n=own[cid]|0, a=L[cid]||[];
       while(a.length<n){ const kd=String(cid).startsWith("it|")?serKind(cid,{ts:Date.now()}):null, first=!a.length&&meta[cid];
-        a.push({id:uid("s"),n:kd?null:(first&&first.no)||serRand(),ts:(first&&first.ts)||Date.now()}); ch=true; }
+        a.push({id:uid("s"),n:kd?null:(first&&first.no)||serRand(),ts:(first&&first.ts)||Date.now(),...(first?{}:condNew())}); ch=true; }
       if(a.length>n){ a.sort((x,y)=>(y.n?1:0)-(x.n?1:0)||x.ts-y.ts); a.length=n; ch=true; }   /* 兩支手機同時補：多出來的拿掉，有號碼的留著 */
       if(n) L[cid]=a; else if(L[cid]){ delete L[cid]; ch=true; } });
     if(ch) S.set(K.serials,L);
