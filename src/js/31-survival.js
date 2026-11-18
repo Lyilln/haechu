@@ -275,7 +275,7 @@ function svC1(s){ const E=svEntries(), M=svSeats(), hold=M[1]||null, npc=svAll()
   const V0=s.demo?(ui.svC1V||{}):((S.get(SVC1,{})||{})[s.id]||{}), cnt=id=>(V0[id]||0)+(npc.some(t=>t.id===id)?svHash(s.id+"|c1v|"+id)%4:0), V=V0, done=s.demo?!!ui.svC1Done:Date.now()>=svC1End(s);
   let win=hold; if(chs.length&&done){ win=cand.slice().sort((a,b)=>cnt(b.id)-cnt(a.id)||(a===hold?-1:b===hold?1:0))[0]; }
   return {hold,chs,cand,win,done:!chs.length||done,cnt}; }
-function svC1Vote(id){ const s=svSeason(); if(!s||s.ph!=="r1") return; const c=svC1(s); if(c.done){ toast("1 號位對決已經結束了"); return; }
+function svC1Vote(id){ const s=svSeason(); if(!s||s.ph!=="r1") return; if(svTrainee(s)){ toast("參賽的練習生不能投票"); return; } const c=svC1(s); if(c.done){ toast("1 號位對決已經結束了"); return; }
   if(s.demo){ ui.svC1V={...(ui.svC1V||{}),[id]:((ui.svC1V||{})[id]||0)+1}; ui.svC1Done=1; render(); toast("示範：投完直接看結果"); return; }
   const mine=S.get(acK("daisuki_sv_c1"),{})||{}; if(mine[s.id]){ toast("你已經投過了"); return; } mine[s.id]=id; S.set(acK("daisuki_sv_c1"),mine);
   const A={...(S.get(SVC1,{})||{})}; A[s.id]={...(A[s.id]||{})}; A[s.id][id]=(A[s.id][id]||0)+1; S.set(SVC1,A); render(); toast("投好了"); }
@@ -288,7 +288,7 @@ function svOpenSeats(s){ const E=svEntries(), c=svC1(s), out={}; E.forEach(e=>{ 
 function svC1Html(s){ if(s.ph!=="r1") return ""; const c=svC1(s); if(!c.cand.length) return ""; const my=s.demo?null:((S.get(acK("daisuki_sv_c1"),{})||{})[s.id]);
   const tile=(t,lab,sub)=>`<div class="sv2-t ${my===t.id?"me":""}"><span class="sv2-p">${svPh(t)}</span><b>${esc(t.name)}</b><span>${lab}</span>${sub||""}</div>`;
   let h="";
-  if(!c.done) h=svHost(s,"有人想搶 1 號位！國民製作人，請選出誰坐上 1 號位，坐上的人有 1 分鐘 PR 時間。")+`<section class="sv4-c1"><div class="sv4-h"><b>1 號位對決</b><small>${s.demo?"示範":"倒數 "+svLeftTxt(svC1End(s)-Date.now())}・一人一票</small></div><div class="sv4-c1l">${c.cand.map(t=>`<div class="sv4-c1i">${tile(t,t===c.hold?"原本坐 1 號位":"挑戰者",`<small>${fmt(c.cnt(t.id))} 票</small>`)}${my?"":`<button class="sv2-cta sm" data-a="svC1" data-v="${t.id}">投他</button>`}</div>`).join("")}</div></section>`;
+  if(!c.done) h=svHost(s,"有人想搶 1 號位！國民製作人，請選出誰坐上 1 號位，坐上的人有 1 分鐘 PR 時間。")+`<section class="sv4-c1"><div class="sv4-h"><b>1 號位對決</b><small>${s.demo?"示範":"倒數 "+svLeftTxt(svC1End(s)-Date.now())}・一人一票</small></div><div class="sv4-c1l">${c.cand.map(t=>`<div class="sv4-c1i">${tile(t,t===c.hold?"原本坐 1 號位":"挑戰者",`<small>${fmt(c.cnt(t.id))} 票</small>`)}${my||svTrainee(s)?"":`<button class="sv2-cta sm" data-a="svC1" data-v="${t.id}">投他</button>`}</div>`).join("")}</div></section>`;
   else if(c.win) h=`<section class="sv4-pr"><div class="sv4-h"><b>1 分鐘 PR</b><small>${c.chs.length?"1 號位對決的贏家":"坐上 1 號位"}</small></div><div class="sv4-prb"><span class="sv4-prp">${svPh(c.win)}</span><div><b>${esc(c.win.name)}</b><small>${esc(c.win.co||svCoOf(c.win.email)||"個人練習生")}</small><p>${esc(c.win.msg||"")}</p><p class="sub">${esc(c.win.ps||"")}</p></div></div></section>`+svHost(s,`坐上 1 號位的 ${esc(c.win.name)}，給你 1 分鐘的 PR 時間！`);
   const O=svOpenSeats(s);
   h+=`<details class="sv4-seat"><summary>開場座位：誰坐在哪裡</summary>${svPyr(Array.from({length:SV_N},(x,i)=>i+1),n=>{ const t=O[n]; return `<div class="sv2-t ${t?"":"svx-e"}"><span class="sv2-p">${t?svPh(t):`<i class="sv2-sil"></i>`}</span><b>${n}</b><span>${t?esc(t.name):"空位"}</span></div>`; })}</details>`;
@@ -321,7 +321,7 @@ function svProfile(id){ const s=svSeason(), x=svById(id); if(!x) return `<main c
     ${x.ps||x.intro?`<div class="sv2-sh"><b>個性</b></div><p class="sv3-intro">${esc(x.ps||x.intro)}</p>`:""}${(x.sk||[]).length?`<div class="sv2-sh"><b>擅長</b></div><div class="sv3-sk">${x.sk.map(k=>`<span>${esc(k)}</span>`).join("")}</div>`:""}
     ${x.msg?`<div class="sv2-sh"><b>想對國民製作人說的話</b></div><p class="sv3-intro">${esc(x.msg)}</p>`:""}
     ${[["r1","第一次排名發表"],["r2","第二次排名發表"],["final","出道感言"]].filter(([k])=>(s.ann||{})[k]&&((s.keep||{})[k]||[]).concat(k==="final"?s.debut||[]:[]).includes(id)&&svSpeech(x,k)).map(([k,l])=>`<div class="sv2-sh"><b>${l}</b></div><p class="sv3-intro">「${esc(svSpeech(x,k))}」</p>`).join("")}
-    ${svVoting()&&alive?`<button class="sv2-cta" data-a="svPick" data-v="${id}" ${svLeft()-Object.values(ui.svB||{}).reduce((a,b)=>a+b,0)>0?"":"disabled"}>${c?`已選 ${c} 票・再 PICK 一次`:`PICK ${esc(x.name)}`}</button>`:""}</main>${svVoting()?svBasketHtml():""}`; }
+    ${svVoting()&&alive?`${svTrainee(svSeason())?"":`<button class="sv2-cta" data-a="svPick" data-v="${id}" ${svLeft()-Object.values(ui.svB||{}).reduce((a,b)=>a+b,0)>0?"":"disabled"}>${c?`已選 ${c} 票・再 PICK 一次`:`PICK ${esc(x.name)}`}</button>`}`:""}</main>${svVoting()?svBasketHtml():""}`; }
 
 /* ---------- 報名表（名字、生日、公司、照片、自我介紹） ---------- */
 function svApplyForm(){ const e=svMyEntry()||{}, f=ui.svF||(ui.svF={name:e.name||"",bd:e.bd||"",photo:e.photo||"",seat:e.seat||0,ch1:e.ch1||0,ps:e.ps||e.intro||"",sk:[...(e.sk||[])],msg:e.msg||""}), s=svSeason()||{}, co=s.demo?"":svCoOf(myEmail());
@@ -356,7 +356,7 @@ function svAdminHtml(){ const s=svSeason(), E=svEntries();
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^sv(Pick|Unpick|Send|Apply|ApplyOk|Photo|Co|Quit|New|Next|Done|PrepW|End|Bonus|BonusOk|Kick|RevealGo|DebutApply|Demo|xSkip|Seat|Sk|Speak|SpeakOk|Gr|GrOk|Mk|Stage|Lv|Up|UpPick|UpPos|UpOk|Cm|CmOk|Cast|CastOk|DbDraft|DbSave|MemEd|MemOk|PvNew|PvOk|Pvo|PvEnd|Tab|More|DemoT|NpcPh|Ch1|C1|ChSend)$/.test(a)) return; e.stopImmediatePropagation();
   const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); }, s=svSeason();
   switch(a){
-    case "svPick": { if(!svVoting()) return; if(meBlocked()) return; const B=ui.svB=ui.svB||{}, n=Object.values(B).reduce((x,y)=>x+y,0); if(n>=svLeft()){ toast(svLeft()?`今天最多再投 ${svLeft()} 票`:"今天的票投完了，明天再來"); return; } if(!svAlive().has(t.dataset.v)) return; B[t.dataset.v]=(B[t.dataset.v]||0)+1; rr(); return; }
+    case "svPick": { if(!svVoting()) return; if(meBlocked()) return; if(svTrainee(s)){ toast("參賽的練習生不能投票"); return; } const B=ui.svB=ui.svB||{}, n=Object.values(B).reduce((x,y)=>x+y,0); if(n>=svLeft()){ toast(svLeft()?`今天最多再投 ${svLeft()} 票`:"今天的票投完了，明天再來"); return; } if(!svAlive().has(t.dataset.v)) return; B[t.dataset.v]=(B[t.dataset.v]||0)+1; rr(); return; }
     case "svUnpick": { const B=ui.svB||{}; if(B[t.dataset.v]) B[t.dataset.v]--; if(!B[t.dataset.v]) delete B[t.dataset.v]; rr(); return; }
     case "svSend": { const B=ui.svB||{}, n=Object.values(B).reduce((x,y)=>x+y,0); if(!n||!s||!svVoting()) return; if(n>svLeft()){ ui.svB={}; rr(); toast("票數不對，請重新選"); return; }
       if(s.demo){ ui.svDV=ui.svDV||{}; Object.entries(B).forEach(([id,c])=>{ ui.svDV[id]=(ui.svDV[id]||0)+c; }); ui.svDU=(ui.svDU||0)+n; const all=svAll(), rk=svRank(); ui.svB={}; rr(); xvResult({tone:"p",small:"示範・不會存",title:"PICK 完成",big:`${n} 票`,chips:[...Object.keys(B).map(id=>`${(all.find(x=>x.id===id)||{}).name} 現在 ${rk.indexOf(id)+1}位`),svLeft()?`今天還能投 ${svLeft()} 票`:"今天投完了，明天再來"],back:"好"}); return; }
@@ -398,7 +398,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
         S.set(SVNP,M); rr(); toast(`已放好 ${k} 張`); }; pickClick(inp); return; }
     case "svMk": { ui.svMk=t.dataset.v; rr(); return; }
     case "svStage": { svStageView(t.dataset.v); return; }
-    case "svLv": { if(!s||!svVoting()||meBlocked()) return; const x=svStages(s.ph).find(y=>y.id===t.dataset.v); if(!x) return; const k=s.id+x.mk;
+    case "svLv": { if(!s||!svVoting()||meBlocked()) return; if(svTrainee(s)){ toast("參賽的練習生不能投現場票"); return; } const x=svStages(s.ph).find(y=>y.id===t.dataset.v); if(!x) return; const k=s.id+x.mk;
       if(s.demo){ ui.svDLm={...(ui.svDLm||{}),[k]:x.id}; ui.svDL={...(ui.svDL||{}),[x.id]:((ui.svDL||{})[x.id]||0)+1}; }
       else { const M=S.get(acK("daisuki_sv_lv"),{})||{}; if(M[k]){ toast("這個任務已經投過現場票了"); return; } M[k]=x.id; S.set(acK("daisuki_sv_lv"),M); const L={...(S.get(SVLV,{})||{})}; L[x.id]=(L[x.id]||0)+1; S.set(SVLV,L); }
       layer.innerHTML=""; rr(); toast("現場票投好了"); return; }
