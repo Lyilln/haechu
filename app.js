@@ -2999,6 +2999,7 @@ const MCG="daisuki_mc_grant";
 function mcVoters(gid){ const sids=new Set([...(getMShow().songs||[]),...(getMShow().ended||[])].filter(x=>x.gid===gid).map(x=>x.id)), out={}; const ks=new Set();
   try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){}
   ks.forEach(k=>{ const em=k.slice(k.indexOf("@")+1), V=S.get(k,{})||{}; if(typeof mcSelfAcc==="function"&&mcSelfAcc(em,gid)) return; Object.entries(V).forEach(([dk,sid])=>{ if(!sids.has(sid)) return; const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1); if(!day||!SHOWS.some(x=>x.id===sh)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||day<L[em]) L[em]=day; }); });
+  try{ const Q=S.get("daisuki_ms_seat",{})||{}; Object.values(Q).forEach(W=>Object.entries(W||{}).forEach(([sh,M])=>Object.entries(M||{}).forEach(([sid,o])=>{ if(!sids.has(sid)) return; Object.entries(o||{}).forEach(([em,t])=>{ if(mcSelfAcc(em,gid)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||t<L[em]) L[em]=t; }); }))); }catch(e){}
   const res={}; SHOWS.forEach(sh=>{ res[sh.id]=Object.entries(out[sh.id]||{}).sort((a,b)=>a[1]-b[1]).map(([em,day])=>({em,day})); }); return res; }
 function mcGrantSheet(){ const gid=ui.albG; if(!gid||!isAdminAcct()) return; const V=mcVoters(gid), G=S.get(MCG,[])||[], has=(em,sh)=>G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh);
   ui.mcSel=ui.mcSel||{}; SHOWS.forEach(sh=>(V[sh.id]||[]).slice(0,3).forEach(v=>{ const k=sh.id+"|"+v.em; if(ui.mcSel[k]==null) ui.mcSel[k]=1; }));
@@ -3010,8 +3011,14 @@ function mcGrantSheet(){ const gid=ui.albG; if(!gid||!isAdminAcct()) return; con
 function mcGrantGo(){ const gid=ui.albG, G=S.get(MCG,[])||[], sel=Object.entries(ui.mcSel||{}).filter(([,on])=>on).map(([k])=>k.split("|")); let n=0;
   sel.forEach(([sh,em])=>{ if(G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh)) return; G.push({id:uid("mcg"),gid,em,sh,ts:Date.now()}); n++; });
   S.set(MCG,G); ui.mcSel=null; toast(n?`已發給 ${n} 位，他們打開 App 就會收到`:"沒有新的要發"); artAlbumsSheet(); }
+/* 11/18 公放卡週裡、在這個版本之前就投了票的粉絲：打開 App 時把自己的公放席補上（照投票那天排），前 3 位補發卡＋通知 */
+function mcHeal(){ const s=session(); if(!s||s.role!=="fan"||Date.now()-(mcHeal.t||0)<30e3) return; mcHeal.t=Date.now(); const wk=curWeek(), me=myEmail(), V=S.get(K.msMine,{})||{}, got=S.get(K.mcGot,{}); let L=null;
+  Object.entries(V).forEach(([dk,sid])=>{ const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1), so=songOf(sid); if(!day||weekKey(day)!==wk||!so||so.demo||mcWeek(so)!==wk||mcSelfAcc(me,so.gid)||got[`${wk}|${sh}|${so.gid}`]) return;
+    const seat=showSeat(sid,sh,day); if(seat>=3) return; const c=giveMcCard(so.gid,sh); if(!c) return; const g=groupOf(so.gid), x=SHOWS.find(z=>z.id===sh); L=L||S.get(K.notifs,[]);
+    L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:so.gid,text:`你是這週 ${x?x.name:""} 最早幫 ${g?g.name:""} 投票的粉絲之一，送你一張公放卡`,ts:Date.now()}); });
+  if(L){ S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); } }
 /* 粉絲那邊：打開 App 時看有沒有補發給自己的，有就給卡、通知 */
-function mcGrantRun(){ try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(), G=(S.get(MCG,[])||[]).filter(x=>x.em===me); if(!G.length) return; const got=S.get(K.mcGot,{}); let L=null;
+function mcGrantRun(){ try{ mcHeal(); }catch(e){} try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(), G=(S.get(MCG,[])||[]).filter(x=>x.em===me); if(!G.length) return; const got=S.get(K.mcGot,{}); let L=null;
   G.forEach(x=>{ if(got["g:"+x.id]) return; const c=giveMcCard(x.gid,x.sh,"g:"+x.id); if(!c) return; L=L||S.get(K.notifs,[]); const g=groupOf(x.gid), sh=SHOWS.find(z=>z.id===x.sh);
     L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:x.gid,text:`你是 ${sh?sh.name:""} 最早幫 ${g?g.name:""} 投票的粉絲之一，送你一張公放卡`,ts:Date.now()}); });
   if(L){ S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); } }catch(e){} }
@@ -5529,12 +5536,12 @@ const getMShow=()=>({songs:[],ended:[],wins:{},wtype:{},mc:{},...S.get(K.mshow,{
 function weekType(wk){ wk=wk||curWeek(); if(wk===curWeek()) return parseType(getSched().stage)||autoWeekType(wk); return getMShow().wtype[wk]||autoWeekType(wk); }
 const ranked=wk=>weekType(wk)!=="宣傳週";
 /* 11/17 公放卡只在「出道／回歸後遇到的第一個打歌週」發（通常是那個月最後一週）；過了那週就不發 */
-function mcWeek(s){ if(!s||!s.rel) return null; const w=shiftWeek(weekKey(s.rel),1); return s.rel<MS_NEW&&w<"2026-11-23"?"2026-11-23":w; }   /* 新規則前發的歌：照原本說好的 11/23 那週發 */
+function mcWeek(s){ if(!s||!s.rel) return null; const w=shiftWeek(weekKey(s.rel),1); return s.rel<MS_NEW&&w<"2026-11-16"?"2026-11-16":w; }   /* 新規則前發的歌：公放卡在功能上線這週（11/16～11/22）發，離現在最近投票的粉絲拿到（11/18 她定，不再等 11/23） */
 /* 11/17 提醒藝人補公放卡：新規則前發的歌、還在打歌、公放卡沒放 → 打開 App 時跳一次（一天最多一次，放好就不再跳） */
 function mcRemind(){ try{ const s=session(); if(!s||s.role!=="artist"||layer.innerHTML) return; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""]; if(!m) return;
   const so=getMShow().songs.find(x=>x.gid===m.group&&songRel(x)<MS_NEW&&songPhase(x)!=="end"); if(!so||mcDone(m.group)) return;
   const k="hc_mcrem_"+m.group, d=new Date().toDateString(); if(localStorage.getItem(k)===d) return; localStorage.setItem(k,d);
-  tieModal("請補上公放卡",`《${esc(so.title)}》的公放卡會在 <b>11/23 那一週</b>發給投票的粉絲。<br><br>在那之前，請到 ME → 專輯・小卡，幫每位成員上傳公放卡的正面（必放）。`,`<button class="t-mbtn main" data-a="artAlb">去上傳</button><button class="t-mbtn" data-a="tCloseLayer">晚點</button>`); }catch(e){} }   /* 公放卡：發歌後的第一個打歌週 */
+  tieModal("請補上公放卡",`《${esc(so.title)}》的公放卡在<b>這一週（11/16～11/22）</b>發給投票的粉絲。<br><br>在那之前，請到 ME → 專輯・小卡，幫每位成員上傳公放卡的正面（必放）。`,`<button class="t-mbtn main" data-a="artAlb">去上傳</button><button class="t-mbtn" data-a="tCloseLayer">晚點</button>`); }catch(e){} }   /* 公放卡：發歌後的第一個打歌週 */
 const songOf=id=>{ if(String(id).startsWith("demo_")) return MUS_DEMO().find(s=>s.id===id); const m=getMShow(); return m.songs.find(s=>s.id===id)||(m.ended||[]).find(s=>s.id===id); };
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：沒有打歌中的歌時，放 3 首示範歌，投票只記在這支手機的這次打開，不存、不上雲端 */
 const musDemo=()=>{ try{ if(ui.tourDemo) return true; const s=session(); if(s&&s.role==="artist") return typeof demoOn==="function"&&demoOn(); if(!s||s.role!=="fan") return false; const a=ACCOUNTS[s.email]||{}, m=MEMBERS[a.member||s.home||""], g=m&&groupOf(m.group), U=x=>String(x||"").toUpperCase()==="HUSSEY"; return U(a.name)||U(m&&m.name)||!!(g&&U(g.name)); }catch(e){ return false; } };
@@ -13710,8 +13717,8 @@ const showVotes=(sid,show,wk)=>{ wk=wk||curWeek(); if(String(sid).startsWith("de
 const MSQ="daisuki_ms_seat";
 /* 11/18：藝人自己（這首歌的團的成員帳號、綁了成員的粉絲帳號）投票不佔公放席 */
 const mcSelfAcc=(em,gid)=>{ const a=ACCOUNTS[String(em||"").toLowerCase()]||{}, m=MEMBERS[a.member||""]; return !!m&&m.group===gid; };
-function showSeat(sid,show){ const wk=curWeek(), me=myEmail(); if(!me) return 99; const so0=songOf(sid); if(so0&&mcSelfAcc(me,so0.gid)) return 99; const Q=S.get(MSQ,{})||{}, o={...((((Q[wk]||{})[show])||{})[sid]||{})};
-  if(!o[me]){ o[me]=Date.now(); const Q2={}; Object.keys(Q).sort().slice(-1).forEach(k=>{ if(k!==wk) Q2[k]=Q[k]; }); const W={...(Q[wk]||{})}; W[show]={...(W[show]||{}),[sid]:o}; Q2[wk]=W; S.set(MSQ,Q2); }
+function showSeat(sid,show,ts0){ const wk=curWeek(), me=myEmail(); if(!me) return 99; const so0=songOf(sid); if(so0&&mcSelfAcc(me,so0.gid)) return 99; const Q=S.get(MSQ,{})||{}, o={...((((Q[wk]||{})[show])||{})[sid]||{})};
+  if(!o[me]){ o[me]=ts0||Date.now(); const Q2={}; Object.keys(Q).sort().slice(-1).forEach(k=>{ if(k!==wk) Q2[k]=Q[k]; }); const W={...(Q[wk]||{})}; W[show]={...(W[show]||{}),[sid]:o}; Q2[wk]=W; S.set(MSQ,Q2); }
   return Object.entries(o).filter(x=>!(so0&&mcSelfAcc(x[0],so0.gid))).sort((a,b)=>a[1]-b[1]).findIndex(x=>x[0]===me); }
 function addShowVote(sid,show){ const wk=curWeek(), V=S.get(MSV2,{})||{}; V[wk]={...(V[wk]||{})}; V[wk][show]={...(V[wk][show]||{})}; V[wk][show][sid]=(V[wk][show][sid]||0)+1; S.set(MSV2,V); }
 /* 這個節目這週的分數 */

@@ -631,6 +631,7 @@ const MCG="daisuki_mc_grant";
 function mcVoters(gid){ const sids=new Set([...(getMShow().songs||[]),...(getMShow().ended||[])].filter(x=>x.gid===gid).map(x=>x.id)), out={}; const ks=new Set();
   try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){}
   ks.forEach(k=>{ const em=k.slice(k.indexOf("@")+1), V=S.get(k,{})||{}; if(typeof mcSelfAcc==="function"&&mcSelfAcc(em,gid)) return; Object.entries(V).forEach(([dk,sid])=>{ if(!sids.has(sid)) return; const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1); if(!day||!SHOWS.some(x=>x.id===sh)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||day<L[em]) L[em]=day; }); });
+  try{ const Q=S.get("daisuki_ms_seat",{})||{}; Object.values(Q).forEach(W=>Object.entries(W||{}).forEach(([sh,M])=>Object.entries(M||{}).forEach(([sid,o])=>{ if(!sids.has(sid)) return; Object.entries(o||{}).forEach(([em,t])=>{ if(mcSelfAcc(em,gid)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||t<L[em]) L[em]=t; }); }))); }catch(e){}
   const res={}; SHOWS.forEach(sh=>{ res[sh.id]=Object.entries(out[sh.id]||{}).sort((a,b)=>a[1]-b[1]).map(([em,day])=>({em,day})); }); return res; }
 function mcGrantSheet(){ const gid=ui.albG; if(!gid||!isAdminAcct()) return; const V=mcVoters(gid), G=S.get(MCG,[])||[], has=(em,sh)=>G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh);
   ui.mcSel=ui.mcSel||{}; SHOWS.forEach(sh=>(V[sh.id]||[]).slice(0,3).forEach(v=>{ const k=sh.id+"|"+v.em; if(ui.mcSel[k]==null) ui.mcSel[k]=1; }));
@@ -642,8 +643,14 @@ function mcGrantSheet(){ const gid=ui.albG; if(!gid||!isAdminAcct()) return; con
 function mcGrantGo(){ const gid=ui.albG, G=S.get(MCG,[])||[], sel=Object.entries(ui.mcSel||{}).filter(([,on])=>on).map(([k])=>k.split("|")); let n=0;
   sel.forEach(([sh,em])=>{ if(G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh)) return; G.push({id:uid("mcg"),gid,em,sh,ts:Date.now()}); n++; });
   S.set(MCG,G); ui.mcSel=null; toast(n?`已發給 ${n} 位，他們打開 App 就會收到`:"沒有新的要發"); artAlbumsSheet(); }
+/* 11/18 公放卡週裡、在這個版本之前就投了票的粉絲：打開 App 時把自己的公放席補上（照投票那天排），前 3 位補發卡＋通知 */
+function mcHeal(){ const s=session(); if(!s||s.role!=="fan"||Date.now()-(mcHeal.t||0)<30e3) return; mcHeal.t=Date.now(); const wk=curWeek(), me=myEmail(), V=S.get(K.msMine,{})||{}, got=S.get(K.mcGot,{}); let L=null;
+  Object.entries(V).forEach(([dk,sid])=>{ const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1), so=songOf(sid); if(!day||weekKey(day)!==wk||!so||so.demo||mcWeek(so)!==wk||mcSelfAcc(me,so.gid)||got[`${wk}|${sh}|${so.gid}`]) return;
+    const seat=showSeat(sid,sh,day); if(seat>=3) return; const c=giveMcCard(so.gid,sh); if(!c) return; const g=groupOf(so.gid), x=SHOWS.find(z=>z.id===sh); L=L||S.get(K.notifs,[]);
+    L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:so.gid,text:`你是這週 ${x?x.name:""} 最早幫 ${g?g.name:""} 投票的粉絲之一，送你一張公放卡`,ts:Date.now()}); });
+  if(L){ S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); } }
 /* 粉絲那邊：打開 App 時看有沒有補發給自己的，有就給卡、通知 */
-function mcGrantRun(){ try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(), G=(S.get(MCG,[])||[]).filter(x=>x.em===me); if(!G.length) return; const got=S.get(K.mcGot,{}); let L=null;
+function mcGrantRun(){ try{ mcHeal(); }catch(e){} try{ const s=session(); if(!s||s.role!=="fan") return; const me=myEmail(), G=(S.get(MCG,[])||[]).filter(x=>x.em===me); if(!G.length) return; const got=S.get(K.mcGot,{}); let L=null;
   G.forEach(x=>{ if(got["g:"+x.id]) return; const c=giveMcCard(x.gid,x.sh,"g:"+x.id); if(!c) return; L=L||S.get(K.notifs,[]); const g=groupOf(x.gid), sh=SHOWS.find(z=>z.id===x.sh);
     L.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:x.gid,text:`你是 ${sh?sh.name:""} 最早幫 ${g?g.name:""} 投票的粉絲之一，送你一張公放卡`,ts:Date.now()}); });
   if(L){ S.set(K.notifs,L.slice(0,100)); S.set(K.unread,"1"); } }catch(e){} }
