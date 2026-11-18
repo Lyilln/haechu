@@ -10473,7 +10473,7 @@ function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member
 function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
   if(String(id).startsWith("o:co_")){ const co=ofCoOf(id.slice(5)); if(!co) return null; const c=coInfo(co), pf=CO_PROF[co]||{}; return {id,u:OF_CO[co],name:pf.n||c.n,g:6,ver:true,bio:pf.bio||"",cat:pf.cat,av:c.l||"",co,of:1}; }
   if(String(id).startsWith("o:g_")){ const gid=id.slice(4), g=groupOf(gid); if(!g||g.solo) return null; return {id,u:ofGH(g),name:g.name,g:g.g||0,ver:true,bio:coInfo(coOfGid(gid)).n,av:gPhoto(gid)||"",gid,of:1}; }
-  if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:(s.co||"")+" 星探",g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
+  if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:"星探",g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
   if(id.startsWith("m:")){ const mid=id.slice(2), m=MEMBERS[mid]; if(!m) return null; const acc=Object.keys(ACCOUNTS).find(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid), du=snHandle(m.name,"m:"+mid,"artist"); return {id,u:pr.u||du,name:pr.name!=null?pr.name:"",g:m.g,ver:true,bio:pr.bio!=null?pr.bio:`${groupOf(m.group)?groupOf(m.group).name:""} 🎤`,av:pr.av||"",mid}; }   /* 藝人的 SNS 跟藝人個人帳號分開：名稱、頭貼都是 SNS 自己的，不跟著個人帳號 */
   if(id.startsWith("f:")){ const f=SNS_FANS.find(x=>x[0]===id.slice(2)); if(!f) return null; return {id,u:f[0],name:f[1],g:f[2],ver:false,bio:"🌙 每天都是追星日",av:"",fake:true}; }
   if(id.startsWith("u:")){ const e=id.slice(2), a=ACCOUNTS[e]||{}, me=id===snMeId(); const nm=adminView()?(a.name||e):me?ME.name:(S.get(K.nicks,{})[e]||a.name||e.split("@")[0]);
@@ -11624,6 +11624,9 @@ const scAcc=id=>scGet().accs.find(a=>a.id===id)||null;
 const scWho=(sc,uid)=>sc.by[uid]&&(sc.by[uid]==="o:scout"||sc.accs.some(a=>a.id===sc.by[uid]))?sc.by[uid]:"o:scout";
 function scNext(sc){ const A=sc.accs; if(!A.length) return "o:scout"; const n={}; Object.values(sc.by).forEach(v=>n[v]=(n[v]||0)+1); const min=Math.min(...A.map(a=>n[a.id]||0)), C=A.filter(a=>(n[a.id]||0)===min); return C[Math.floor(Math.random()*C.length)].id; }   /* 派最少出過任務的那幾個裡隨機一個 */
 const scSet=v=>S.set(SC_KEY,v);
+/* 11/18 跟帳號的「公司」（daisuki_acc_co，選秀也用這個）連動：帳號已經有公司＝已簽，不會再被挖；按「已簽公司」會把挖他的那家公司寫進帳號 */
+const scCoOf=uid=>((S.get("daisuki_acc_co",{})||{})[String(uid).slice(2).toLowerCase()])||"";
+const scByCo=(sc,uid)=>{ const a=sc.by[uid]&&scAcc(sc.by[uid]); return a&&a.co||""; };
 const scArtist=uid=>{ const e=uid.slice(2), a=ACCOUNTS[e]; return !!(a&&a.member&&MEMBERS[a.member]); };
 function scStat(d,uid,cfg){ const lim=Date.now()-cfg.days*864e5, P=d.posts.filter(p=>p.uid===uid), recent=P.filter(p=>p.ts>=lim), lk=P.length?P.reduce((s,p)=>s+snLikes(d,p),0)/P.length:0;
   const st={posts:recent.length,fol:snFollowers(d,uid),likes:Math.round(lk*10)/10}; st.ok=st.posts>=cfg.posts&&st.fol>=cfg.fol&&st.likes>=cfg.likes; return st; }
@@ -11632,11 +11635,11 @@ function scPick(uid,sc,d){ const me=scNext(sc); sc.by[uid]=me; const co=(scAcc(m
   sc.picked[uid]=Date.now(); }
 /* 自動挖掘：只在管理員的手機跑（不會重複私訊） */
 function scAuto(){ try{ if(!isAdminAcct()) return; if(HB_ON&&HB.ver[SC_KEY]==null&&!Object.keys(HB.ver||{}).length) return; const sc=scGet(); if(!sc.list.length) return; const d=snDB(); let n=0;
-  sc.list.forEach(x=>{ if(x.signed||sc.picked[x.uid]||scArtist(x.uid)||!snUser(x.uid)) return; if(scStat(d,x.uid,sc.cfg).ok){ scPick(x.uid,sc,d); n++; } });
+  sc.list.forEach(x=>{ if(x.signed||scCoOf(x.uid)||sc.picked[x.uid]||scArtist(x.uid)||!snUser(x.uid)) return; if(scStat(d,x.uid,sc.cfg).ok){ scPick(x.uid,sc,d); n++; } });
   if(n){ scSet(sc); if(route().p==="scout") render(); } }catch(e){} }
 setInterval(scAuto,10*60e3); setTimeout(scAuto,15e3);
 function snScoutPage(d){ if(!isAdminAcct()) return snProfile(d,"o:scout"); const sc=scGet(), c=sc.cfg, f=ui.scF||"all";
-  const rows=sc.list.map(x=>{ const u=snUser(x.uid); if(!u) return null; const s=scStat(d,x.uid,c), pk=sc.picked[x.uid], art=scArtist(x.uid), st=pk?"picked":art?"debut":x.signed?"signed":s.ok?"ok":"watch"; return {x,u,s,pk,st}; }).filter(Boolean);
+  const rows=sc.list.map(x=>{ const u=snUser(x.uid); if(!u) return null; const s=scStat(d,x.uid,c), pk=sc.picked[x.uid], art=scArtist(x.uid), st=art?"debut":x.signed||scCoOf(x.uid)?"signed":pk?"picked":s.ok?"ok":"watch"; return {x,u,s,pk,st}; }).filter(Boolean);
   const N=k=>rows.filter(r=>r.st===k).length, show=rows.filter(r=>f==="all"||r.st===f);
   const SL={watch:"觀察中",ok:"符合條件",picked:"已挖掘",signed:"已簽公司",debut:"已出道"};
   const bar=(l,v,n)=>`<div class="scx-bar ${v>=n?"ok":""}"><span>${l}</span><i><u style="width:${n?Math.min(100,v/n*100):100}%"></u></i><b>${v}<small>/${n}</small></b></div>`;
@@ -11655,7 +11658,7 @@ function snScoutPage(d){ if(!isAdminAcct()) return snProfile(d,"o:scout"); const
       return `<article class="scx-i ${st}"><div class="scx-ih"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${x.uid}">${snAv(u,46)}</button><span class="scx-who"><b>${esc(u.u)}</b><small>${esc(u.name)}</small></span><em class="scx-pill ${st}">${SL[st]}${pk?`・${ymd(pk)}`:""}</em>${pk&&snUser(scWho(sc,x.uid))?`<small class="scx-by">${esc(snUser(scWho(sc,x.uid)).u)}</small>`:""}</div>
         ${st==="debut"?"":`<div class="scx-bars">${bar("發文",s.posts,c.posts)}${bar("粉絲",s.fol,c.fol)}${bar("平均讚",s.likes,c.likes)}</div>`}
         ${x.note?`<p class="scx-note">${esc(x.note)}</p>`:""}
-        <div class="scx-act"><button class="${x.signed?"on":""}" data-a="scSigned" data-v="${x.uid}">${x.signed?"✓ 已簽公司":"已簽公司"}</button><button data-a="scNote" data-v="${x.uid}">備註</button>${pk?`<button data-a="scOpen" data-v="${x.uid}">對話${dm.length?` ${dm.length}`:""}</button>`:!art&&!x.signed?`<button class="pri" data-a="scNow" data-v="${x.uid}">挖掘</button>`:""}<button class="x" data-a="scDel" data-v="${x.uid}" aria-label="移除">×</button></div>
+        <div class="scx-act"><button class="${x.signed||scCoOf(x.uid)?"on":""}" data-a="scSigned" data-v="${x.uid}">${x.signed||scCoOf(x.uid)?`✓ 已簽${scCoOf(x.uid)?" "+esc(scCoOf(x.uid)):"公司"}`:"已簽公司"}</button><button data-a="scNote" data-v="${x.uid}">備註</button>${pk?`<button data-a="scOpen" data-v="${x.uid}">對話${dm.length?` ${dm.length}`:""}</button>`:!art&&!x.signed&&!scCoOf(x.uid)?`<button class="pri" data-a="scNow" data-v="${x.uid}">挖掘</button>`:""}<button class="x" data-a="scDel" data-v="${x.uid}" aria-label="移除">×</button></div>
         ${pk&&open?`<div class="scx-chat">${dm.slice(-12).map(m=>`<p class="${m.from===who?"me":""}">${m.mid?"📷":esc(m.text||"").replace(/\n/g,"<br>")}</p>`).join("")}<form class="sc-rf" data-v="${x.uid}"><textarea rows="1" class="ag" placeholder="輸入文字" autocomplete="off"></textarea><button type="submit">傳送</button></form></div>`:""}</article>`; }).join(""):`<div class="scx-none"><span class="scx-av">✦</span><b>${rows.length?"這裡沒有人":"名單是空的"}</b>${rows.length?"":`<button class="scx-add" data-a="scAddOpen">＋ 加入第一位</button>`}</div>`}
   </main>`; }
 function scAddSheet(){ const sc=scGet(), q=nz((ui.scQ||"").trim()), U=snAllUsers().filter(u=>u.id.startsWith("u:")&&!scArtist(u.id)&&!sc.list.some(x=>x.uid===u.id)&&(!q||nz(u.u).includes(q)||nz(u.name).includes(q))).slice(0,40);
@@ -11785,7 +11788,9 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     
     case "scAdd": { const sc=scGet(); if(!sc.list.some(x=>x.uid===t.dataset.v)) sc.list.unshift({uid:t.dataset.v,note:"",ts:Date.now()}); scSet(sc); ui.scQ=""; layer.innerHTML=""; rr(); toast("已加入名單"); scAuto(); break; }
     case "scDel": { const v=t.dataset.v; ask("從名單移除？",()=>{ const sc=scGet(); sc.list=sc.list.filter(x=>x.uid!==v); scSet(sc); rr(); }); break; }
-    case "scSigned": { const sc=scGet(), x=sc.list.find(y=>y.uid===t.dataset.v); if(x){ x.signed=!x.signed; scSet(sc); } rr(); break; }
+    case "scSigned": { const sc=scGet(), x=sc.list.find(y=>y.uid===t.dataset.v); if(!x) break; const em=String(x.uid).slice(2).toLowerCase(), M={...(S.get("daisuki_acc_co",{})||{})}, co=scByCo(sc,x.uid), on=!(x.signed||scCoOf(x.uid));
+      x.signed=on; if(on&&co&&!M[em]){ M[em]=co; S.set("daisuki_acc_co",M); toast(`已簽 ${co}，帳號的公司也改好了`); } else if(!on&&M[em]&&(!co||M[em]===co)){ delete M[em]; S.set("daisuki_acc_co",M); toast("已取消，帳號的公司也拿掉了"); } else if(on&&!co) toast("已標成已簽公司；還沒被星探私訊過，公司請到帳號管理設定");
+      scSet(sc); rr(); break; }
     case "scNote": { const sc=scGet(), x=sc.list.find(y=>y.uid===t.dataset.v); if(!x) break; tieModal("備註",`<textarea id="scNoteIn" class="a-nick-in sn-caped" rows="4" placeholder="輸入文字">${esc(x.note||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="scNoteOk" data-v="${x.uid}">儲存</button>`,"row"); break; }
     case "scNoteOk": { const sc=scGet(), x=sc.list.find(y=>y.uid===t.dataset.v); if(x){ x.note=((document.getElementById("scNoteIn")||{}).value||"").trim(); scSet(sc); } layer.innerHTML=""; rr(); break; }
     case "scNow": { const v=t.dataset.v; ask("現在就用星探帳號私訊他？",()=>{ const sc=scGet(), d=snDB(); if(sc.picked[v]) return; scPick(v,sc,d); scSet(sc); rr(); toast("已私訊"); },{danger:false}); break; }
