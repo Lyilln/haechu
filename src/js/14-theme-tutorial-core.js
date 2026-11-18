@@ -180,7 +180,7 @@ function viewCore(){
 }
 /* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
    新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
-const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["news","show","biz","wiki"]]];   /* 11/18「收藏」抽屜拿掉：小卡、簽名專輯在 ME 的「我的」 */
 const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
 const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
 function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }
@@ -270,6 +270,9 @@ function adminVodHtml(){ const gid=ui.vodG||GROUPS[0].id, vs=getVods(gid), al=ge
       <button class="btn btn-main btn-block" data-a="vodAdd">新增影片</button></div>
     ${vs.map(v=>`<div class="vd-r">${upCell("vth|"+v.id,"","16/9")}<span><b>${esc(v.title)}</b><small>${esc(vcatName(v.cat))}${v.album?`・《${esc(v.album)}》`:""}・${ymd(v.ts)}${v.link?"・有連結":""}</small></span><button class="btn btn-soft btn-sm" data-a="vodDel" data-v="${v.id}">刪除</button></div>`).join("")}</section>`; }
 const ymd=ts=>{const t=new Date(ts);return `${t.getFullYear()}.${pad(t.getMonth()+1)}.${pad(t.getDate())}`};
+/* 11/18「看」合成一頁：新聞、綜藝、代言・雜誌、SKpedia 上面切換 */
+const WATCH_T=[["news","新聞"],["show","綜藝"],["biz","代言・雜誌"],["wiki","SKpedia"]];
+function watchHead(cur){ return coreHead("看").replace(/<\/header>$/,`<nav class="wt-tabs">${WATCH_T.map(([k,n])=>`<button class="${k===cur?"on":""}" data-a="watchTab" data-v="${k}">${n}</button>`).join("")}</nav></header>`); }
 function coreHead(title){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title core-t${/[\u3400-\u9FFF\uAC00-\uD7AF]/.test(title)?" cjk":""}">${title}</div><span class="sh-sp"></span></div></header>`; }
 /* ===== 娛樂新聞 NEWS：管理員手動發＋App 自動快訊（出道、回歸、一位、三冠王、AK、PAK）。粉絲、藝人、管理員看到同一份 ===== */
 const NEWS_TAG={hr:["人事","#64748B"],tour:["世巡","#10B981"],debut:["出道","#F472B6"],cb:["回歸","#8B5CF6"],win:["一位","#F59E0B"],crown:["三冠王","#D97706"],ak:["AK","#EF4444"],pak:["PAK","#DC2626"],off:["新聞","#0EA5E9"]};

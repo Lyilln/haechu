@@ -7384,6 +7384,11 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sn-subl .sn-subr{padding:12px 16px}.sn-subr .t-pill{margin-left:4px}.sn-rest{flex:none;align-self:center;font-size:12px;font-weight:800;color:var(--ink-3);padding:5px 4px}
 .sn-subr p{white-space:pre-wrap}.sn-subr .sn-subi{margin-top:2px}
 .sn-rest{font-size:11.5px}
+/* 「看」合成一頁：上面的分頁 */
+.wt-tabs{display:flex;gap:6px;padding:4px 16px 10px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.wt-tabs::-webkit-scrollbar{display:none}
+.wt-tabs button{flex:none;padding:7px 14px;border:1px solid var(--line);border-radius:999px;background:var(--s1);color:var(--ink-2);font:inherit;font-size:14px}
+.wt-tabs button.on{background:var(--violet);border-color:var(--violet);color:#fff;font-weight:700}
 
 /* ===== 連號開獎：扭蛋機 ===== */
 .lot .tiei-body{padding-bottom:40px}

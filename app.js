@@ -6332,7 +6332,7 @@ function viewCore(){
 }
 /* ===== FEST：今天要做的事＋四個抽屜。最上面一排選藝人＝同一頁只剩她的 =====
    新玩法只要決定：屬於哪個團（gid）、放哪個抽屜（FEST_DR）、有沒有期限（festToday 裡加一筆），就會自動出現在今天、抽屜、藝人篩選 */
-const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["news","show","biz","wiki"]],["collect","🗂️","收藏",["cards","signed"]]];
+const FEST_DR=[["support","💜","應援",["promo","truck","cafe"]],["event","🎟️","活動",["fsl","concert","tour"]],["watch","📰","看",["news","show","biz","wiki"]]];   /* 11/18「收藏」抽屜拿掉：小卡、簽名專輯在 ME 的「我的」 */
 const festDrOf=k=>(FEST_DR.find(d=>d[3].includes(k))||[])[0];
 const festOff=sub=>/目前沒有|還沒有|尚未開啟|還沒排定|沒有新聞/.test(String(sub||""));
 function festSel(f){ let g=ui.festG; if(g===undefined){ try{ g=localStorage.getItem("hc_festG")||""; }catch(e){ g=""; } ui.festG=g; } if(g&&!f.includes(g)){ ui.festG=g=""; } return g; }
@@ -6422,6 +6422,9 @@ function adminVodHtml(){ const gid=ui.vodG||GROUPS[0].id, vs=getVods(gid), al=ge
       <button class="btn btn-main btn-block" data-a="vodAdd">新增影片</button></div>
     ${vs.map(v=>`<div class="vd-r">${upCell("vth|"+v.id,"","16/9")}<span><b>${esc(v.title)}</b><small>${esc(vcatName(v.cat))}${v.album?`・《${esc(v.album)}》`:""}・${ymd(v.ts)}${v.link?"・有連結":""}</small></span><button class="btn btn-soft btn-sm" data-a="vodDel" data-v="${v.id}">刪除</button></div>`).join("")}</section>`; }
 const ymd=ts=>{const t=new Date(ts);return `${t.getFullYear()}.${pad(t.getMonth()+1)}.${pad(t.getDate())}`};
+/* 11/18「看」合成一頁：新聞、綜藝、代言・雜誌、SKpedia 上面切換 */
+const WATCH_T=[["news","新聞"],["show","綜藝"],["biz","代言・雜誌"],["wiki","SKpedia"]];
+function watchHead(cur){ return coreHead("看").replace(/<\/header>$/,`<nav class="wt-tabs">${WATCH_T.map(([k,n])=>`<button class="${k===cur?"on":""}" data-a="watchTab" data-v="${k}">${n}</button>`).join("")}</nav></header>`); }
 function coreHead(title){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title core-t${/[\u3400-\u9FFF\uAC00-\uD7AF]/.test(title)?" cjk":""}">${title}</div><span class="sh-sp"></span></div></header>`; }
 /* ===== 娛樂新聞 NEWS：管理員手動發＋App 自動快訊（出道、回歸、一位、三冠王、AK、PAK）。粉絲、藝人、管理員看到同一份 ===== */
 const NEWS_TAG={hr:["人事","#64748B"],tour:["世巡","#10B981"],debut:["出道","#F472B6"],cb:["回歸","#8B5CF6"],win:["一位","#F59E0B"],crown:["三冠王","#D97706"],ak:["AK","#EF4444"],pak:["PAK","#DC2626"],off:["新聞","#0EA5E9"]};
@@ -6641,15 +6644,16 @@ function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===
 /* 世巡還沒買、還沒結束的站（一次全買打 9 折） */
 const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id]&&(s.startTs||0)+120*60e3>Date.now()); };
 function viewCoreSub(page,id){
+  if(page==="dr"&&id==="watch"){ page="news"; id=null; }
   if(page==="dr") return viewFestDr(id);
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return viewTruckFan();
-  if(page==="biz") return coreHead("代言・雜誌")+viewBizFan(id);
+  if(page==="biz") return (id?coreHead("代言・雜誌"):watchHead("biz"))+viewBizFan(id);
   if(page==="cafe") return coreHead("生日咖啡廳")+viewCafe(id);
-  if(page==="wiki") return coreHead("SKpedia")+viewWiki(id);
+  if(page==="wiki") return (id?coreHead("SKpedia"):watchHead("wiki"))+viewWiki(id);
   if(page==="isac") return coreHead("偶像運動會")+viewIsac();
-  if(page==="show") return coreHead(id?vsTitle(id):"綜藝")+viewShowFan(id);
-  if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
+  if(page==="show") return (id?coreHead(vsTitle(id)):watchHead("show"))+viewShowFan(id);
+  if(page==="news") return (id?coreHead("新聞"):watchHead("news"))+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
   if(page==="gallery") return go("fan",null,"core");
   if(page==="promo") return viewPromo();
@@ -7843,6 +7847,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "coreGo": ui.srch=null; if(t.dataset.v==="signed"){ navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break; } navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
     case "festG": ui.festG=t.dataset.v||""; try{ localStorage.setItem("hc_festG",ui.festG); }catch(e){} render(); break;
     case "festGrp": navTo("#/fan/grp?id="+encodeURIComponent(t.dataset.v)); window.scrollTo(0,0); break;
+    case "watchTab": navReplace("#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
     case "festDr": navTo("#/fan/core?p=dr&id="+t.dataset.v); window.scrollTo(0,0); break;
     case "openSns": ui.snsFrom=location.hash; navTo("#/"+(route().role||session().role)+"/sns"); window.scrollTo(0,0); break;
     case "focGo": navTo("#/artist?tab=foc&p="+t.dataset.v); window.scrollTo(0,0); break;

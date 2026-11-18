@@ -544,6 +544,7 @@ function clickAdm(a,t,e,r){ switch(a){
     case "coreGo": ui.srch=null; if(t.dataset.v==="signed"){ navTo("#/fan/core?p=signed"); window.scrollTo(0,0); break; } navTo(t.dataset.v==="sns"?"#/fan/sns":"#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
     case "festG": ui.festG=t.dataset.v||""; try{ localStorage.setItem("hc_festG",ui.festG); }catch(e){} render(); break;
     case "festGrp": navTo("#/fan/grp?id="+encodeURIComponent(t.dataset.v)); window.scrollTo(0,0); break;
+    case "watchTab": navReplace("#/fan/core?p="+t.dataset.v); window.scrollTo(0,0); break;
     case "festDr": navTo("#/fan/core?p=dr&id="+t.dataset.v); window.scrollTo(0,0); break;
     case "openSns": ui.snsFrom=location.hash; navTo("#/"+(route().role||session().role)+"/sns"); window.scrollTo(0,0); break;
     case "focGo": navTo("#/artist?tab=foc&p="+t.dataset.v); window.scrollTo(0,0); break;

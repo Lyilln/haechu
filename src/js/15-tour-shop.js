@@ -145,15 +145,16 @@ function tourBuyAsk(tid,sid){ const t=tourOf(tid), st=t&&t.stops.find(x=>x.id===
 /* 世巡還沒買、還沒結束的站（一次全買打 9 折） */
 const tourRest=t=>{ const tx=myTix(); return (t&&t.stops||[]).filter(s=>!tx[s.id]&&(s.startTs||0)+120*60e3>Date.now()); };
 function viewCoreSub(page,id){
+  if(page==="dr"&&id==="watch"){ page="news"; id=null; }
   if(page==="dr") return viewFestDr(id);
   if(page==="tour") return viewTourFan(id);
   if(page==="truck") return viewTruckFan();
-  if(page==="biz") return coreHead("代言・雜誌")+viewBizFan(id);
+  if(page==="biz") return (id?coreHead("代言・雜誌"):watchHead("biz"))+viewBizFan(id);
   if(page==="cafe") return coreHead("生日咖啡廳")+viewCafe(id);
-  if(page==="wiki") return coreHead("SKpedia")+viewWiki(id);
+  if(page==="wiki") return (id?coreHead("SKpedia"):watchHead("wiki"))+viewWiki(id);
   if(page==="isac") return coreHead("偶像運動會")+viewIsac();
-  if(page==="show") return coreHead(id?vsTitle(id):"綜藝")+viewShowFan(id);
-  if(page==="news") return coreHead("新聞")+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
+  if(page==="show") return (id?coreHead(vsTitle(id)):watchHead("show"))+viewShowFan(id);
+  if(page==="news") return (id?coreHead("新聞"):watchHead("news"))+(id?newsDetailHtml(id):newsListHtml("#/fan/core?p=news",followed(),"我追蹤的"));
   if(page==="vod") return go("fan",null,"core");
   if(page==="gallery") return go("fan",null,"core");
   if(page==="promo") return viewPromo();
