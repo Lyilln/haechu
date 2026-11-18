@@ -508,3 +508,7 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sv5-rule{position:relative;z-index:1;margin:0;padding:14px 14px 14px 32px;background:#fff;border-radius:18px;box-shadow:0 0 0 1.5px var(--l2);font-size:14px;line-height:1.65;color:#3A2233}.sv5-rule li+li{margin-top:8px}
 .sv5-sh{margin:16px 0 8px;font-size:13px;font-weight:900;color:var(--a)}
 .sv5-end{text-align:center;padding:10px 0 4px}.sv5-end small{color:#9A7F8C;font-size:12.5px;font-weight:700}.sv5-end h2{margin:4px 0 0;color:var(--a);font-size:26px;font-weight:900}
+#svfSeat .sv2-t,#svfSeat .sv2-t *{-webkit-animation:none!important;animation:none!important}
+/* 11/18 iPhone：3D 裡轉動的光碟圖案不會被圓角裁掉 → 變成八角形。圖案本身也做成圓的＋遮罩 */
+.cdx-disc{-webkit-mask-image:-webkit-radial-gradient(white,black);-webkit-backface-visibility:hidden;backface-visibility:hidden}
+.cdx-print,.cdx-print img,.cdx-print i{border-radius:50%;overflow:hidden}

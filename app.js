@@ -15712,6 +15712,9 @@ function svProfile(id){ const s=svSeason(), x=svById(id); if(!x) return `<main c
     ${svVoting()&&alive?`${svTrainee(svSeason())?"":`<button class="sv2-cta" data-a="svPick" data-v="${id}" ${svLeft()-Object.values(ui.svB||{}).reduce((a,b)=>a+b,0)>0?"":"disabled"}>${c?`已選 ${c} 票・再 PICK 一次`:`PICK ${esc(x.name)}`}</button>`}`:""}</main>${svVoting()?svBasketHtml():""}`; }
 
 /* ---------- 報名表（名字、生日、公司、照片、自我介紹） ---------- */
+/* 報名頁：點座位、挑戰、擅長只換那一塊，不整頁重畫 */
+const svfSeatHtml=f=>`${f.ch1?`<p class="svf-ch1">你要挑戰 1 號位！開播後前 2 天由國民製作人投票，決定誰坐 1 號位，坐上的人有 1 分鐘 PR 時間。請再選一個<b>備用座位</b>，沒搶到就坐那裡。</p>`:""}${svSeatHtml(svSeats(),myEmail(),f.seat)}`;
+const svfSeatUp=()=>{ const el=document.getElementById("svfSeat"); if(el) el.innerHTML=svfSeatHtml(ui.svF); else svApplyForm(); };
 function svApplyForm(){ const e=svMyEntry()||{}, f=ui.svF||(ui.svF={name:e.name||"",bd:e.bd||"",photo:e.photo||"",seat:e.seat||0,ch1:e.ch1||0,ps:e.ps||e.intro||"",sk:[...(e.sk||[])],msg:e.msg||""}), s=svSeason()||{}, co=s.demo?"":svCoOf(myEmail());
   setLayer(`<div class="tiei svf sv2 ${svTheme()}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="關閉">${I.back}</button><b>${e.id?"修改報名資料":"練習生報名"}</b><span class="sh-sp"></span></header><div class="tiei-body">
     <section class="sv2-pyr svf-hd"><div class="sv2-rib"><span>SURVIVAL PROJECT</span><span>${s.g==="b"?"男團":"女團"}第 ${s.no||1} 季・練習生報名</span></div>
@@ -15719,7 +15722,7 @@ function svApplyForm(){ const e=svMyEntry()||{}, f=ui.svF||(ui.svF={name:e.name|
     <label class="svf-l">名字</label><input id="svName" class="svf-in" maxlength="16" placeholder="選上就用這個名字出道" value="${esc(f.name)}">
     <label class="svf-l">生日 <em>2013 年（含）以前出生才能報名</em></label><input id="svBd" class="svf-in" type="date" max="2013-12-31" value="${esc(f.bd)}">
     <label class="svf-l">公司</label><p class="svf-co">${esc(co||"個人練習生")}</p>
-    <label class="svf-l">選座位 <em>1 號在最頂端，先選先贏</em></label>${f.ch1?`<p class="svf-ch1">你要挑戰 1 號位！開播後前 2 天由國民製作人投票，決定誰坐 1 號位，坐上的人有 1 分鐘 PR 時間。請再選一個<b>備用座位</b>，沒搶到就坐那裡。</p>`:""}${svSeatHtml(svSeats(),myEmail(),f.seat)}
+    <label class="svf-l">選座位 <em>1 號在最頂端，先選先贏</em></label><div id="svfSeat">${svfSeatHtml(f)}</div>
     <label class="svf-l">個性</label><textarea id="svPs" class="svf-in" rows="3" maxlength="200" placeholder="例：慢熟，熟了之後很吵">${esc(f.ps)}</textarea>
     <label class="svf-l">擅長 <em>可以選很多個</em></label><div class="chips wrap co-chips">${SV_SK.map(k=>`<button class="chip ${f.sk.includes(k)?"on":""}" data-a="svSk" data-v="${k}">${k}</button>`).join("")}</div>
     <label class="svf-l">想對國民製作人說的話</label><textarea id="svMsg" class="svf-in" rows="3" maxlength="200" placeholder="輸入文字">${esc(f.msg)}</textarea>
@@ -15758,10 +15761,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svPhoto": { svKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:4/5,max:1080}); if(!c) return;
         try{ const b=await shrinkImg(c,1080); ui.svF.photo=URL.createObjectURL(b); svApplyForm(); if((svSeason()||{}).demo) return; const url=(HB_ON&&await hbImgUrl("sv_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); ui.svF.photo=url; svApplyForm(); }catch(er){ toast("這張圖讀不出來"); } }; pickClick(inp); return; }
     case "svChSend": { const inp=document.getElementById("svChIn"), v=inp&&inp.value; if(!v||!v.trim()) return; svChatSend(s,v,t.dataset.v==="host"); rr(); setTimeout(()=>{ const l=document.getElementById("svChL"); if(l) l.scrollTop=l.scrollHeight; },60); return; }
-    case "svCh1": { svKeep(); ui.svF.ch1=ui.svF.ch1?0:1; if(ui.svF.seat===1) ui.svF.seat=0; const y=(layer.querySelector(".tiei-body")||{}).scrollTop; svApplyForm(); const b2=layer.querySelector(".tiei-body"); if(b2) b2.scrollTop=y; if(ui.svF.ch1) toast("再選一個備用座位，沒搶到就坐那裡"); return; }
+    case "svCh1": { svKeep(); ui.svF.ch1=ui.svF.ch1?0:1; if(ui.svF.seat===1) ui.svF.seat=0; svfSeatUp(); if(ui.svF.ch1) toast("再選一個備用座位，沒搶到就坐那裡"); return; }
     case "svC1": { svC1Vote(t.dataset.v); return; }
-    case "svSeat": { svKeep(); ui.svF.seat=+t.dataset.v; const y=(layer.querySelector(".tiei-body")||{}).scrollTop; svApplyForm(); const b2=layer.querySelector(".tiei-body"); if(b2) b2.scrollTop=y; return; }
-    case "svSk": { svKeep(); const L=ui.svF.sk, k=t.dataset.v, i=L.indexOf(k); if(i>=0) L.splice(i,1); else L.push(k); const y=(layer.querySelector(".tiei-body")||{}).scrollTop; svApplyForm(); const b2=layer.querySelector(".tiei-body"); if(b2) b2.scrollTop=y; return; }
+    case "svSeat": { svKeep(); ui.svF.seat=+t.dataset.v; svfSeatUp(); return; }
+    case "svSk": { svKeep(); const L=ui.svF.sk, k=t.dataset.v, i=L.indexOf(k); if(i>=0) L.splice(i,1); else L.push(k); t.classList.toggle("on",i<0); return; }
     case "svSpeak": { if(s&&s.demo){ toast("示範：練習生會在這裡寫感言"); return; } svSpeakForm(); return; }
     case "svSpeakOk": { const me=svMyEntry(), v=((document.getElementById("svSp")||{}).value||"").trim(); if(!me||!s) return; const L=(S.get(SVE,[])||[]).map(x=>x.id===me.id?{...x,sp:{...(x.sp||{}),[s.ph]:v}}:x); S.set(SVE,L); layer.innerHTML=""; rr(); toast("感言已儲存"); return; }
     case "svApplyOk": { svKeep(); const f=ui.svF; if(s&&s.demo){ ui.svF=null; layer.innerHTML=""; toast("示範：這樣就報名完成了（不會真的存）"); return; } if(!s||s.ph!=="recruit"){ toast("報名已經截止了"); return; } if(!f.name){ toast("請輸入名字"); return; } if(nameBlock&&nameBlock(f.name)) return; if(!f.bd){ toast("請選生日"); return; } if(f.bd>="2014-01-01"){ toast("報名資格：2013 年（含）以前出生"); return; } if(!f.photo||f.photo.startsWith("blob:")){ toast(f.photo?"照片還在上傳，等一下":"請放一張大頭照"); return; } if(!f.seat){ toast(f.ch1?"挑戰 1 號位也要再選一個備用座位":"請選一個座位"); return; } if(svSeats()[f.seat]&&svSeats()[f.seat].email!==myEmail()){ toast("這個座位剛剛被選走了，換一個"); return; } if(f.ps.length<5){ toast("個性再多寫一點"); return; } if(!f.sk.length){ toast("請選擅長的"); return; } if(f.msg.length<5){ toast("想對國民製作人說的話再多寫一點"); return; }
