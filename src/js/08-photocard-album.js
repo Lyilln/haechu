@@ -117,7 +117,7 @@ function drawCards(n){
   if(n===10&&!got.some(c=>+c.split(":")[1]>=2)){ const i=Math.random()*10|0; got[i]=got[i].split(":")[0]+":2"; }   // 十連保底
   const own=getCards(), meta=cardMeta(), fresh=[];
   got.forEach((c,i)=>{ if(!own[c]){ fresh.push(i); meta[c]={ts:Date.now(),no:1+(Math.random()*9999|0)}; } own[c]=(own[c]||0)+1; });
-  S.set(K.cards,own); S.set(K.cardMeta,meta);
+  S.set(K.cards,own); S.set(K.cardMeta,meta); setTimeout(serialSync,300);
   const log=S.get(K.gachaLog,[]); log.unshift({ts:Date.now(),cards:got}); S.set(K.gachaLog,log.slice(0,50));
   logSelf("core",null,`你抽了 ${n} 張 PHOTOCARD${got.some(c=>c.endsWith(":3"))?"，抽到流光卡 ✨":""}`);
   return {got,fresh};
@@ -327,7 +327,7 @@ const SHAPES=[{k:"book",n:"大本寫真書",d:"像一本書，最常見",w:19,h:
   {k:"cardbox",n:"卡片盒",d:"小小一盒，裡面主要是小卡",w:7.5,h:11,t:2},{k:"platform",n:"平台版",d:"沒有 CD，只有小卡和下載卡（數位單曲用）",w:6,h:9.2,t:.6},{k:"lp",n:"黑膠",d:"很大的正方形",w:31.5,h:31.5,t:.6},{k:"custom",n:"自己填",d:"照實際量的長寬高",w:15,h:20,t:1.5}];
 const INC=[{k:"pc",n:"隨機小卡",w:5.5,h:8.5},{k:"selfie",n:"自拍卡",w:5.5,h:8.5},{k:"unit",n:"小分隊卡",w:5.5,h:8.5},{k:"polaroid",n:"拍立得",w:5.4,h:8.6},{k:"postcard",n:"明信片",w:10,h:15},{k:"id",n:"身分證卡",w:8.6,h:5.4},
   {k:"bookmark",n:"書籤",w:5,h:15},{k:"sticker",n:"貼紙",w:9,h:12},{k:"poster",n:"折疊海報",w:14.8,h:21},{k:"lyric",n:"歌詞紙",w:12,h:12},{k:"other",n:"其他",w:10,h:10}];
-const EXR={pob:{n:"預購特典",d:"店家附送：預購期間在這家店買，每張專輯附 1 張，裝在店家的信封裡，不在專輯內；可以設定限量，送完為止",st:true},ld:{n:"Lucky Draw",d:"店家抽獎：在這家店買專輯（預購期間）就能抽，抽中的人拿這張卡、代替預購特典；張數有限，抽完就沒了",st:true},fs:{n:"簽售卡",d:"參加簽售、簽好專輯時拿到，不在專輯內"},mc:{n:"公放卡",d:"打歌期間，每個節目每週最早幫這首歌投票的前三位（就像搶到公放席去節目現場）各拿 1 張，第四位之後沒有，不在專輯內"}};
+const EXR={pob:{n:"預購特典",d:"店家附送：預購期間在這家店買，一次購買只附 1 張（買再多張專輯也一樣），裝在店家的信封裡，不在專輯內；可以設定限量，送完為止",st:true},ld:{n:"Lucky Draw",d:"店家抽獎：在這家店買專輯（預購期間）就能抽，一次購買抽 1 次，抽中的人拿這張卡、代替預購特典；張數有限，抽完就沒了",st:true},fs:{n:"簽售卡",d:"參加簽售、簽好專輯時拿到，不在專輯內"},mc:{n:"公放卡",d:"打歌期間，每個節目每週最早幫這首歌投票的前三位（就像搶到公放席去節目現場）各拿 1 張，第四位之後沒有，不在專輯內"}};
 /* 店家：每家店的預購特典、Lucky Draw 都不一樣（管理員可以新增、改名、刪除） */
 const getStores=()=>S.get(K.stores,[]);
 const storeOf=id=>getStores().find(x=>x.id===id);
@@ -400,14 +400,14 @@ const vPre=v=>Date.now()<(v.preEnd||0);
 
 /* 抽：珠光照片比較難抽到（權重 1/4）；照片夠多時一張專輯裡不重複 */
 function drawFrom(it,n){ const P=[...(it.pool||[])], out=[]; for(let k=0;k<n&&P.length;k++){ const tot=P.reduce((s,p)=>s+(p.sp?.25:1),0); let r=Math.random()*tot, i=0; for(;i<P.length;i++){ r-=P[i].sp?.25:1; if(r<=0) break; } i=Math.min(i,P.length-1); out.push(P[i]); if(P.length>1) P.splice(i,1); } return out; }
-function giveItem(ids){ const own=getCards(), meta=cardMeta(), fresh=[]; ids.forEach((c,i)=>{ if(!own[c]){ fresh.push(i); meta[c]={ts:Date.now(),no:1+(Math.random()*9999|0)}; } own[c]=(own[c]||0)+1; }); S.set(K.cards,own); S.set(K.cardMeta,meta); return fresh; }
+function giveItem(ids){ const own=getCards(), meta=cardMeta(), fresh=[]; ids.forEach((c,i)=>{ if(!own[c]){ fresh.push(i); meta[c]={ts:Date.now(),no:1+(Math.random()*9999|0)}; } own[c]=(own[c]||0)+1; }); S.set(K.cards,own); S.set(K.cardMeta,meta); setTimeout(serialSync,300); return fresh; }
 function buyAlbumV(aid,vid,qty,sid){ const a=albumOf(aid), v=a&&verOf(a,vid); if(!v) return {err:"找不到這個版本"}; qty=Math.max(1,Math.min(20,qty|0)); const cost=v.pts*qty; if(points()<cost) return {err:`積分不夠，${qty} 張要 ${fmt(cost)} 積分`};
   if(!storeOf(sid)) sid=(getStores()[0]||{}).id;
   const g=groupOf(a.gid), stn=storeOf(sid)?storeOf(sid).name:""; S.set(K.points,points()-cost); recordSale("album",{gid:a.gid,pts:cost,label:`${g.name}《${a.title}》${v.name} ×${qty}${stn?"（"+stn+"）":""}`});
   const cnt=S.get(K.albBuy,{}), opens=[], ldG=S.get(K.ldGiven,{}), exs=storeEx(a,sid), pob=exs.filter(e=>e.rule==="pob"), ld=exs.filter(e=>e.rule==="ld");
   for(let q=0;q<qty;q++){ const got=[], extra=[]; let ldTry=false, ldWin=false; v.inc.forEach(it=>drawFrom(it,it.n||1).forEach(p=>got.push(`it|${aid}|${it.id}|${p.id}`)));
     // 專輯外：店家附送（預購特典），或抽中 Lucky Draw（代替預購特典）
-    if(vPre(v)){ ld.forEach(e=>{ if((e.cap||0)-(ldG[e.id]||0)<=0||ldWin) return; ldTry=true; if(Math.random()*100<(e.odds||10)){ const p=drawFrom(e,1)[0]; if(p){ ldWin=true; ldG[e.id]=(ldG[e.id]||0)+1; extra.push(`it|${aid}|${e.id}|${p.id}`); } } });
+    if(vPre(v)&&q===0){ ld.forEach(e=>{ if((e.cap||0)-(ldG[e.id]||0)<=0||ldWin) return; ldTry=true; if(Math.random()*100<(e.odds||10)){ const p=drawFrom(e,1)[0]; if(p){ ldWin=true; ldG[e.id]=(ldG[e.id]||0)+1; extra.push(`it|${aid}|${e.id}|${p.id}`); } } });
       if(!ldWin) pob.forEach(e=>{ if(e.cap&&(e.cap-(ldG[e.id]||0))<=0) return; drawFrom(e,1).forEach(p=>{ extra.push(`it|${aid}|${e.id}|${p.id}`); if(e.cap) ldG[e.id]=(ldG[e.id]||0)+1; }); }); }
     cnt[aid]=(cnt[aid]||0)+1; opens.push({got,extra,fresh:giveItem(got),xfresh:giveItem(extra),n:cnt[aid],ldTry,ldWin}); }
   S.set(K.albBuy,cnt); S.set(K.ldGiven,ldG); const o=S.get(K.owned,{}); o[a.gid]={...(o[a.gid]||{}),album:Date.now()}; S.set(K.owned,o);
@@ -490,7 +490,7 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
   setLayer(`<div class="ph-view cv s3view" role="dialog" aria-label="收藏"><button class="ph-x" data-a="${ui.itPv===cid?"artAlb":"tCloseLayer"}" aria-label="關閉">${XI}</button>
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
     <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?` ✦ 貴卡${fxOf(o.p)!=="none"?"・"+FX_N[fxOf(o.p)]:""}`:""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
-      <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
+      <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${pv?"":serTxt(cid)}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
     <div class="cv-btns"></div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
   if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); }
