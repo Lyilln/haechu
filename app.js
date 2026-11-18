@@ -2853,7 +2853,7 @@ function openItemView(cid){ const o=parseIt(cid); if(!o) return; const own=getCa
     <div class="s3">${item3d(cid,Math.min(250,innerWidth*.6))}</div>
     <div class="cv-info"><span class="cv-tag ${o.p.sp?"t3":"t1"}">${esc(o.it.name)}${o.p.sp?" ✦ 珠光":""}</span><b>${esc(MEMBERS[o.p.mid]?MEMBERS[o.p.mid].name:g.name)}</b>
       <small>${esc(g.name)}《${esc(o.a.title)}》${o.v?"・"+esc(o.v.name):""}${mt.no?"・"+cardNo(mt.no):""}</small><small>${o.it.w} × ${o.it.h} 公分・${pv?"預覽":n?`擁有 ${n} 張`:"還沒收集到"}</small></div>
-    <div class="cv-btns">${cid.startsWith("it|mc_")?"":`<button class="btn btn-soft btn-sm" data-a="s3Flip">翻面</button>${real?`<button class="btn ${rep?"btn-soft":"btn-main"} btn-sm" data-a="cardRep" data-v="${cid}">${rep?"✓ 我的代表卡":"設為代表卡"}</button>`:""}`}</div>
+    <div class="cv-btns"></div>
     <small class="cv-tip">手指拖動，往哪轉都可以</small></div>`,"cardview");
   if(ui.s3) ui.s3.stop(); ui.s3=spin3d(layer.querySelector(".s3-obj"),layer.querySelector(".s3"),{rx:-6,ry:-18}); C3.upItem(layer.querySelector(".s3"),cid,Math.min(250,innerWidth*.6)); }
 /* 11/17 卡冊預覽：只有 HUSSEY 的帳號（粉絲端）看得到「預覽全部卡片」，把每張專輯的每張卡都當成有，用來看卡冊長怎樣；不存、不算數 */
@@ -2963,7 +2963,7 @@ function openCardView(cid){
     <div class="cv-tilt" id="cvTilt">${cardFace(cid,{big:true})}</div>
     <div class="cv-info"><span class="cv-tag t${t}">${"★".repeat(+t)} ${["","日常 NORMAL","舞台 RARE","流光 SUPER RARE"][+t]}</span><b>${esc(m.name)}</b>
       <small>${esc(g?g.name:"")}${mt.no?"・"+cardNo(mt.no):""}</small><small>${n?`${mt.ts?ymd(mt.ts)+" 首次獲得・":""}擁有 ${n} 張`:"還沒有這張卡"}</small></div>
-    <div class="cv-btns">${n?`<button class="btn ${rep?"btn-soft":"btn-main"} btn-sm" data-a="cardRep" data-v="${cid}">${rep?"✓ 我的代表卡":"設為代表卡"}</button>`:""}${touch&&!cvGyroOn?`<button class="btn btn-soft btn-sm" data-a="cardGyro">📱 傾斜手機看光澤</button>`:""}</div>
+    <div class="cv-btns">${touch&&!cvGyroOn?`<button class="btn btn-soft btn-sm" data-a="cardGyro">📱 傾斜手機看光澤</button>`:""}</div>
     <small class="cv-tip">${touch?"也可以用手指拖動卡片":"拖動卡片看看光澤"}</small></div>`,"cardview");
   cvStart();
 }
