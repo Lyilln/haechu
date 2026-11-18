@@ -361,7 +361,9 @@ function seedStores(){ if(S.get(K.seedStores,false)) return; S.set(K.seedStores,
   S.set(K.albums2,L); }
 const shapeOf=k=>SHAPES.find(x=>x.k===k)||SHAPES[5], incOf=k=>INC.find(x=>x.k===k)||INC[10];
 const uid=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,5);
-const getAlbums=()=>cbDemo()?[...cbDemoAlbs(),...S.get(K.albums2,[]).filter(a=>groupOf(a.gid))]:S.get(K.albums2,[]).filter(a=>groupOf(a.gid)&&(typeof albumOn!=="function"||route().role==="admin"||albumOn(a))).map(a=>{ (a.ex||[]).forEach(e=>{ if(e.rule==="mc"&&e.name==="打歌節目卡") e.name="公放卡"; }); return a; }).sort((a,b)=>b.ts-a.ts);
+/* 11/18：下架的專輯記在 daisuki_alb_del（大家共用），同步回來的舊資料也不會再冒出來 */
+const ALB_DEL="daisuki_alb_del", albGone=a=>!!((S.get(ALB_DEL,{})||{})[a.id]);
+const getAlbums=()=>cbDemo()?[...cbDemoAlbs(),...S.get(K.albums2,[]).filter(a=>groupOf(a.gid)&&!albGone(a))]:S.get(K.albums2,[]).filter(a=>groupOf(a.gid)&&!albGone(a)&&(typeof albumOn!=="function"||route().role==="admin"||albumOn(a))).map(a=>{ (a.ex||[]).forEach(e=>{ if(e.rule==="mc"&&e.name==="打歌節目卡") e.name="公放卡"; }); return a; }).sort((a,b)=>b.ts-a.ts);
 const albumOf=id=>String(id).startsWith("demo_")?cbDemoAlbs().find(a=>a.id===id):String(id).startsWith("mc_")?mcAlb(String(id).slice(3)):S.get(K.albums2,[]).find(a=>a.id===id);
 /* 11/17 預設公放卡：這個團的專輯裡沒有設定「公放卡」時，投票照樣拿得到一張（每位成員一款，卡面用成員的照片或顏色）。
    不是商品：不會出現在 SHOP、後台專輯清單；只在卡冊裡（有拿到才出現） */
@@ -628,7 +630,7 @@ async function cardGyro(){
 const MCG="daisuki_mc_grant";
 function mcVoters(gid){ const sids=new Set([...(getMShow().songs||[]),...(getMShow().ended||[])].filter(x=>x.gid===gid).map(x=>x.id)), out={}; const ks=new Set();
   try{ Object.keys(localStorage).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(mem||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){} try{ Object.keys(HB.ver||{}).forEach(k=>{ if(k.startsWith("daisuki_music_my_votes@")) ks.add(k); }); }catch(e){}
-  ks.forEach(k=>{ const em=k.slice(k.indexOf("@")+1), V=S.get(k,{})||{}; Object.entries(V).forEach(([dk,sid])=>{ if(!sids.has(sid)) return; const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1); if(!day||!SHOWS.some(x=>x.id===sh)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||day<L[em]) L[em]=day; }); });
+  ks.forEach(k=>{ const em=k.slice(k.indexOf("@")+1), V=S.get(k,{})||{}; if(typeof mcSelfAcc==="function"&&mcSelfAcc(em,gid)) return; Object.entries(V).forEach(([dk,sid])=>{ if(!sids.has(sid)) return; const i=dk.lastIndexOf(":"), day=Date.parse(dk.slice(0,i)), sh=dk.slice(i+1); if(!day||!SHOWS.some(x=>x.id===sh)) return; const L=out[sh]=out[sh]||{}; if(!L[em]||day<L[em]) L[em]=day; }); });
   const res={}; SHOWS.forEach(sh=>{ res[sh.id]=Object.entries(out[sh.id]||{}).sort((a,b)=>a[1]-b[1]).map(([em,day])=>({em,day})); }); return res; }
 function mcGrantSheet(){ const gid=ui.albG; if(!gid||!isAdminAcct()) return; const V=mcVoters(gid), G=S.get(MCG,[])||[], has=(em,sh)=>G.some(x=>x.gid===gid&&x.em===em&&x.sh===sh);
   ui.mcSel=ui.mcSel||{}; SHOWS.forEach(sh=>(V[sh.id]||[]).slice(0,3).forEach(v=>{ const k=sh.id+"|"+v.em; if(ui.mcSel[k]==null) ui.mcSel[k]=1; }));

@@ -234,9 +234,11 @@ const songViews=s=>{ const v=songMv(s); return v?(v.views||0):0; };
 /* 投票 */
 const showVotes=(sid,show,wk)=>{ wk=wk||curWeek(); if(String(sid).startsWith("demo_")) return 3+strHash(sid+show)%40+(((ui.dmV2||{})[show]||{})[sid]||0); return ((((S.get(MSV2,{})||{})[wk]||{})[show]||{})[sid])||0; };
 const MSQ="daisuki_ms_seat";
-function showSeat(sid,show){ const wk=curWeek(), me=myEmail(); if(!me) return 99; const Q=S.get(MSQ,{})||{}, o={...((((Q[wk]||{})[show])||{})[sid]||{})};
+/* 11/18：藝人自己（這首歌的團的成員帳號、綁了成員的粉絲帳號）投票不佔公放席 */
+const mcSelfAcc=(em,gid)=>{ const a=ACCOUNTS[String(em||"").toLowerCase()]||{}, m=MEMBERS[a.member||""]; return !!m&&m.group===gid; };
+function showSeat(sid,show){ const wk=curWeek(), me=myEmail(); if(!me) return 99; const so0=songOf(sid); if(so0&&mcSelfAcc(me,so0.gid)) return 99; const Q=S.get(MSQ,{})||{}, o={...((((Q[wk]||{})[show])||{})[sid]||{})};
   if(!o[me]){ o[me]=Date.now(); const Q2={}; Object.keys(Q).sort().slice(-1).forEach(k=>{ if(k!==wk) Q2[k]=Q[k]; }); const W={...(Q[wk]||{})}; W[show]={...(W[show]||{}),[sid]:o}; Q2[wk]=W; S.set(MSQ,Q2); }
-  return Object.entries(o).sort((a,b)=>a[1]-b[1]).findIndex(x=>x[0]===me); }
+  return Object.entries(o).filter(x=>!(so0&&mcSelfAcc(x[0],so0.gid))).sort((a,b)=>a[1]-b[1]).findIndex(x=>x[0]===me); }
 function addShowVote(sid,show){ const wk=curWeek(), V=S.get(MSV2,{})||{}; V[wk]={...(V[wk]||{})}; V[wk][show]={...(V[wk][show]||{})}; V[wk][show][sid]=(V[wk][show][sid]||0)+1; S.set(MSV2,V); }
 /* 這個節目這週的分數 */
 function showScore(sid,show,wk){ wk=wk||curWeek(); const s=songOf(sid); if(!s) return {votes:0,album:0,likes:0,views:0,total:0};

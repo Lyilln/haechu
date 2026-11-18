@@ -439,7 +439,7 @@ function clickCm(a,t,e,r){ switch(a){
     case "abClose": ui.ab=null; cancelAnimationFrame(gcRaf); layer.innerHTML=""; { const y=window.scrollY; render(); window.scrollTo(0,y); } toast("收進卡冊了 🃏"); break;
     case "goAlbums": { const f=followed(); ui.shopG=f[0]||null; ui.shopCat="album"; go("fan",null,"shop"); window.scrollTo(0,0); break; }
     case "albG": ui.albG=t.dataset.v; render(); break;
-    case "albDel": ask("要下架這張專輯嗎？已經收到的小卡會保留。",()=>{ S.set(K.albums2,S.get(K.albums2,[]).filter(a=>a.id!==t.dataset.v)); render(); if(layer.querySelector(".art-alb")) artAlbumsSheet(); toast("已下架"); },{title:"下架專輯",ok:"下架"}); break;
+    case "albDel": ask("要下架這張專輯嗎？已經收到的小卡會保留。",()=>{ S.set(ALB_DEL,{...(S.get(ALB_DEL,{})||{}),[t.dataset.v]:Date.now()}); S.set(K.albums2,S.get(K.albums2,[]).filter(a=>a.id!==t.dataset.v)); render(); if(layer.querySelector(".art-alb")) artAlbumsSheet(); toast("已下架"); },{title:"下架專輯",ok:"下架"}); break;
     case "tieIntro": if(MEMBERS[t.dataset.m]&&isSelfGid(MEMBERS[t.dataset.m].group)){ toast(selfBuyMsg()); break; } if(MEMBERS[t.dataset.m]&&groupArtists(MEMBERS[t.dataset.m].group).length===1){ tieStore(MEMBERS[t.dataset.m].group); break; } openTieIntro(t.dataset.m); break;
     case "tieIntroGo": layer.innerHTML=""; openBuySheet(t.dataset.m); break;
     case "gnOpen": openGNotice(t.dataset.v); break;
