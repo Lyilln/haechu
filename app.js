@@ -16121,37 +16121,33 @@ function condWear(cid,sid){ const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id==
   const pool=COND_W.filter(x=>!c.d.includes(x)&&(c.lv>=2||x!=="輕微彎折")), w=pool[Math.random()*pool.length|0]||COND_W[0];
   c.lv++; c.d=[...c.d,w]; c.wd=day; cp.c=c; S.set(K.serials,L); return w; }
 function condTxt(cid,sid){ const cp=condCp(cid,sid); if(!cp) return ""; const c=condOf(cp);
-  return `<small class="cv-cond l${c.lv}">卡況：<b>${COND_N[c.lv]}</b>${c.d.length?`（${c.d.map(esc).join("、")}）`:""}${c.sl?(c.out?`・已從${SLV[c.sl].n.replace(/（.*）/,"")}拿出來`:`・${SLV[c.sl].n}`):"・沒套卡套"}</small>`; }
+  return `<small class="cv-cond l${c.lv}">卡況：<b>${COND_N[c.lv]}</b>${c.d.length?`（${c.d.map(esc).join("、")}）`:""}${c.sl&&!c.out?`・${SLV[c.sl].n}`:"・沒套卡套"}</small>`; }
 /* 卡冊、市場的卡面：畫上瑕疵 */
 function condFx(cp){ const c=condOf(cp); if(!c.lv&&!c.sl) return ""; const D=c.d||[], k=[];
   if(D.some(x=>/白邊|磨損/.test(x))) k.push("edge"); if(D.includes("表面刮痕")) k.push("scr"); if(D.some(x=>/凹/.test(x))) k.push("dent"); if(D.includes("印刷線")) k.push("pl"); if(D.includes("裁切偏移")) k.push("cut"); if(D.includes("輕微彎折")) k.push("bend");
   return `<i class="pcw ${k.join(" ")} l${c.lv}"></i>${c.sl&&!c.out?`<i class="pcs s${c.sl}"></i>`:""}`; }
-/* 大圖下面的按鈕：有卡套→拿出來／放回去＋拿掉卡套（收回庫存）；沒有→用庫存裡的卡套套上，庫存沒有就去 SHOP */
-function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv();
-  if(c.sl) return `<button class="btn btn-main btn-sm" data-a="condOut" data-v="${cid}" data-s="${sid}">${c.out?"放回卡套":"從卡套拿出來"}</button><button class="btn btn-soft btn-sm" data-a="condOff" data-v="${cid}" data-s="${sid}">拿掉卡套</button>`;
-  const has=[1,2].filter(k=>I[k]>0); return has.length?has.map(k=>`<button class="btn btn-soft btn-sm" data-a="condOn" data-v="${cid}" data-s="${sid}" data-k="${k}">套${SLV[k].n}（剩 ${I[k]}）</button>`).join(""):`<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`; }
-function condOutGo(cid,sid,btn){ const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp||!cp.c||!cp.c.sl) return; if(condOutGo.on) return; condOutGo.on=1; const out=!cp.c.out;
-  cp.c={...cp.c,out:out?1:0}; S.set(K.serials,L); if(btn) btn.disabled=true;
-  const done=()=>{ condOutGo.on=0; condTileUp(cid,sid); const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
-  if(ui.s3&&ui.s3.slide){ ui.s3.slide(out,done); return; }
-  /* CSS 版（沒有 3D）：卡往上滑出、卡套淡掉；放回去反過來 */
-  const f=layer.querySelector(".s3-f"), o=layer.querySelector(".s3-obj"); if(!f||!o){ done(); return; } const c=condOf(cp);
-  if(!out&&!f.querySelector(".pcs")) f.insertAdjacentHTML("beforeend",`<i class="pcs s${c.sl}" style="opacity:0"></i>`); const p=f.querySelector(".pcs");
-  o.classList.add(out?"cso":"csi"); if(p) p.style.transition="opacity .6s"; setTimeout(()=>{ if(p) p.style.opacity=out?0:1; },out?800:0);
-  setTimeout(()=>{ o.classList.remove("cso","csi"); if(out&&p) p.remove(); done(); },1500); }
+/* 大圖下面：軟卡套／硬殼卡套兩個切換鈕。點一下套上（從庫存拿一個），再點一下拿出來（卡套收回庫存）；庫存都沒有就「去 SHOP 買卡套」 */
+function condBtns(cid,sid){ const c=condOf(condCp(cid,sid)), I=slvInv(), on=c.out?0:c.sl;
+  if(!on&&!I[1]&&!I[2]) return `<button class="btn btn-soft btn-sm" data-a="slvGoShop">去 SHOP 買卡套</button>`;
+  return [1,2].map(k=>`<button class="cv-slt ${on===k?"on":""}" data-a="condTg" data-v="${cid}" data-s="${sid}" data-k="${k}" ${on!==k&&!I[k]?"disabled":""}><b>${SLV[k].n}</b><small>${on===k?"套著・點一下拿出來":I[k]?`點一下套上・剩 ${I[k]}`:"庫存沒有"}</small></button>`).join(""); }
+function condTgGo(cid,sid,k,btn){ if(condTgGo.on) return; const L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp) return; const I=slvInv(), c={lv:0,d:[],...(cp.c||{})}, on=c.out?0:c.sl;
+  if(on===k){ /* 拿出來：播滑出來的動畫，卡套收回庫存 */ condTgGo.on=1; if(btn) btn.disabled=true;
+    const fin=()=>{ condTgGo.on=0; I[k]=(I[k]||0)+1; slvSet(I); cp.c={...c,sl:0,out:0}; S.set(K.serials,L); condTileUp(cid,sid); const v=layer.querySelector(".cv-cond"); if(v) v.outerHTML=condTxt(cid,sid); const b=layer.querySelector(".cv-btns"); if(b) b.innerHTML=condBtns(cid,sid); };
+    if(ui.s3&&ui.s3.slide){ ui.s3.slide(true,fin); return; }
+    const f=layer.querySelector(".s3-f"), o=layer.querySelector(".s3-obj"), p=f&&f.querySelector(".pcs"); if(o) o.classList.add("cso"); if(p){ p.style.transition="opacity .6s"; setTimeout(()=>{ p.style.opacity=0; },800); }
+    setTimeout(()=>{ if(o) o.classList.remove("cso"); if(p) p.remove(); fin(); },1500); return; }
+  if(!(I[k]>0)) return; if(c.sl){ I[c.sl]=(I[c.sl]||0)+1; } I[k]--;   /* 原本卡上有（含舊版「拿出來」放旁邊的）卡套 → 先收回庫存 */ slvSet(I); cp.c={...c,sl:k,out:0}; S.set(K.serials,L); condTileUp(cid,sid); ui.c3In=1; ui.cvSid=sid; openItemView(cid); }
 /* 卡冊後面那一格也要跟著換（大圖是蓋在卡冊上面的，關掉後不會重畫） */
 function condTileUp(cid,sid){ try{ const cp=condCp(cid,sid); document.querySelectorAll(`.cb-it[data-s="${sid}"]`).forEach(el=>{ const c=condOf(cp); el.querySelectorAll(".pcw,.pcs").forEach(x=>x.remove()); el.classList.remove("slv","sl1","sl2"); if(c.sl&&!c.out) el.classList.add("slv","sl"+c.sl); el.insertAdjacentHTML("beforeend",condFx(cp)); }); }catch(e){} }
 /* SHOP：收藏用品（卡套） */
 function slvShopHtml(){ const I=slvInv();
   return `<section class="slv-shop" id="slvShop"><h2>收藏用品</h2><p>小卡拿出來看會磨損，套上卡套就安全了。買了放在你的庫存，在卡冊點開小卡就能套。</p>
     ${[1,2].map(k=>`<div class="slv-it"><span class="slv-pic k${k}"><i></i></span><span class="slv-b"><b>${SLV[k].n}・${SLV[k].pk} 入</b><small>${k===1?"貼身透明袋（58×89mm），上面開口；拿出來看的磨損機率降到 1%":"硬塑膠殼，裡面已經套好一層軟卡套；不會再磨損"}</small><em>庫存 ${I[k]} 個</em></span><button class="btn btn-main btn-sm" data-a="slvBuy" data-k="${k}">${SLV[k].pp} 積分</button></div>`).join("")}</section>`; }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condOut"],[data-a="condOn"],[data-a="condOff"],[data-a="slvBuy"],[data-a="slvGoShop"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a;
-  if(a==="condOut"){ condOutGo(t.dataset.v,t.dataset.s,t); return; }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="condTg"],[data-a="slvBuy"],[data-a="slvGoShop"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a;
+  if(a==="condTg"){ condTgGo(t.dataset.v,t.dataset.s,+t.dataset.k,t); return; }
   if(a==="slvBuy"){ const k=+t.dataset.k, P=SLV[k]; if(points()<P.pp){ toast("積分不夠"); return; } S.set(K.points,points()-P.pp); const I=slvInv(); I[k]=(I[k]||0)+P.pk; slvSet(I); toast(`買了${P.n} ${P.pk} 個，到卡冊點開小卡就能套`); const y=window.scrollY; render(); window.scrollTo(0,y); return; }
   if(a==="slvGoShop"){ layer.innerHTML=""; ui.shopG=null; ui.prod=null; go("fan",null,"shop"); setTimeout(()=>{ const el=document.getElementById("slvShop"); if(el) el.scrollIntoView({block:"center"}); },400); return; }
-  const cid=t.dataset.v, sid=t.dataset.s, L=getSerials(), cp=(L[cid]||[]).find(x=>x.id===sid); if(!cp) return; const I=slvInv(), c={lv:0,d:[],...(cp.c||{})};
-  if(a==="condOn"){ const k=+t.dataset.k; if(!(I[k]>0)) return; I[k]--; slvSet(I); cp.c={...c,sl:k,out:0}; S.set(K.serials,L); condTileUp(cid,sid); ui.c3In=1; ui.cvSid=sid; openItemView(cid); return; }
-  if(a==="condOff"){ if(c.sl){ I[c.sl]=(I[c.sl]||0)+1; slvSet(I); } cp.c={...c,sl:0,out:0}; S.set(K.serials,L); condTileUp(cid,sid); toast("卡套收回庫存了"); ui.cvSid=sid; openItemView(cid); return; } },true);
+  },true);
 /* 11/18 舊的公放卡（分節目之前發的）搬進各節目：照「哪個節目拿到的」紀錄（K.mcGot：週|節目|團）放回那個節目；
    對不到的就照順序分到各節目。序號在新的節目系列裡重抽，卡況、卡套跟著走。每個人只跑一次。 */
 function mcMigrate(){ try{ const s=session(); if(!s||s.role!=="fan"||S.get(acK("daisuki_mc_mig"),0)) return false; const own=getCards(), L=getSerials(), got=S.get(K.mcGot,{})||{}; let ch=false;
