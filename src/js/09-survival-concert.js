@@ -1014,7 +1014,7 @@ function myFeedTop(){
       <div class="mf-dm-top"><span class="av mf-av" style="background:${grad(m.g)}">${mAvIn(d.id,"tie")}</span><div class="mf-dm-i"><b>${esc(m.name)} ${I.verified}</b><small>${g&&!g.solo?esc(g.name)+" · ":""}${ago(d.ts)}</small>
       <button class="mf-lock" data-a="tieIntro" data-m="${d.id}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2.5"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>立即查看是什麼內容吧！</button></div></div>
       ${dms.length>1?`<button class="mf-more" data-a="dmNext">查看其他 ${WHISPER_NAME} <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 12a8 8 0 1 1-2.3-5.7M20 4v5h-5"/></svg></button>`:""}</section>`; }
-  if(ns.length) h+=`<h2 class="mf-h">最新公告</h2><div class="hl mf-ann">${ns.map((n,i)=>{const g=groupOf(n.group);return `<button class="hl-i ${i?"":"on"} card mf-an" data-a="gnOpen" data-v="${n.id}"><span class="mf-an-ic" style="background:${grad(g.g)};color:#fff">${esc(ini(g.name))}</span><span class="mf-an-b"><b>${esc(g.name)}</b><small>${esc(n.title)}</small></span><em>${ago(n.ts)}</em></button>`}).join("")}</div>`;
+  /* 11/18「最新公告」不放 LOVE 了（她不要） */ if(ns.length&&false) h+=`<h2 class="mf-h">最新公告</h2><div class="hl mf-ann">${ns.map((n,i)=>{const g=groupOf(n.group);return `<button class="hl-i ${i?"":"on"} card mf-an" data-a="gnOpen" data-v="${n.id}"><span class="mf-an-ic" style="background:${grad(g.g)};color:#fff">${esc(ini(g.name))}</span><span class="mf-an-b"><b>${esc(g.name)}</b><small>${esc(n.title)}</small></span><em>${ago(n.ts)}</em></button>`}).join("")}</div>`;
   return h;
 }
 function openGNotice(id){ const n=getGNotices().find(x=>x.id===id); if(!n) return; const g=groupOf(n.group);

@@ -339,7 +339,7 @@ function viewFan(tab){
     const fa=followed(), f=scopeF(); let body=""; const q=srchQ("love"); if(ui.feedTab!=="discover"&&ui.feedTab!=="live") ui.feedTab="feed"; if(ui.feedTab==="live") return viewFanLive();
     if(ui.feedTab==="feed"){
       const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p)), ofs=q?[]:coPosts().filter(x=>x.src&&fa.includes(x.src.gid)&&groupOf(x.src.gid)&&albThumb(x));
-      body=(q?"":myFeedTop())+(q?"":coPinFeed())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+
+      body=(q?"":myFeedTop())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+   /* 11/18 公司官方公告不放 LOVE（在 SNS 公布就好） */
         srchLabel("love")+(posts.length||ofs.length?ofMix(posts,ofs):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
     } else if(ui.feedTab==="discover"){
       const posts=getPosts().filter(p=>!fa.includes(p.group)&&!p.hidden&&postHit(q,p)&&groupOf(p.group));

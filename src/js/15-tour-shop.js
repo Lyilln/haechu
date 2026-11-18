@@ -402,10 +402,10 @@ function viewAdmin(tab){
       return adminHead("FOC")+`<main class="page foc">
         ${focFold("wk","clock","每週",`${tl("sched","clock","賽程",esc(sc.stage))}${tl("music","mic","打歌舞台","一位・MC・歌曲")}${tl("news","news","新聞",newsSub())}`)}
         ${focFold("pd","star","檔期",`${tl("fs","star","簽售","場次與審核")}${tl("truck","truck","餐車","訂單")}${tl("show","star","綜藝","節目與錄影")}${tl("biz","cam","代言・雜誌","邀約")}${tl("cafe","gem","生日咖啡廳",cfTileSub())}`)}
-        ${focFold("big","trophy","大型活動",`${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("isac","trophy","偶像運動會",isTile())}`)}
+        ${focFold("big","trophy","大型活動",`${tl("concert","mic","演唱會",lsOn?"● 進行中":"燈光・歌曲",lsOn?"on":"")}${tl("tour","globe","世巡",pend?`${pend} 筆待審核`:"巡演",pend?"on":"")}${tl("sv","bolt","選秀","選秀宇宙")}${tl("card","gem","卡圈","扭蛋機・交易市場")}${tl("isac","trophy","偶像運動會",isTile())}`)}
         </main>`; }
-    const SEGN={sched:"賽程",music:"打歌舞台",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
-    const SEG=[["sched","賽程"],["music","打歌舞台"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["news","新聞"]];
+    const SEGN={sched:"賽程",music:"打歌舞台",vod:"影音",fs:"簽售",concert:"演唱會",tour:"世巡",truck:"餐車",show:"綜藝",biz:"代言・雜誌",sv:"選秀",card:"卡圈",news:"新聞",isac:"偶像運動會",cafe:"生日咖啡廳"};
+    const SEG=[["sched","賽程"],["music","打歌舞台"],["fs","簽售"],["concert","演唱會"],["tour","世巡"],["truck","餐車"],["show","綜藝"],["biz","代言"],["sv","選秀"],["card","卡圈"],["news","新聞"]];
     const body={sched:`      <section class="card studio"><div class="foc-cfg-h"><h3>本週階段</h3><span class="badge">即時同步中</span></div>
         <label class="field"><input id="focStage" value="${esc(st)}"></label>
         <div class="chips wrap">${STAGE_PRESETS.map(p=>`<button class="chip ${st===p?"on":""}" data-a="focPreset" data-v="${p}">${p}</button>`).join("")}</div>
@@ -417,7 +417,7 @@ function viewAdmin(tab){
 `,
       music:seg!=="music"?"":!GROUPS.length?NOG_HTML():(isUni()?"":adminAlbumHtml()+adminVodHtml())+adminMusicHtml(), vod:seg!=="vod"?"":!GROUPS.length?NOG_HTML():adminVodHtml(), fs:seg!=="fs"?"":!GROUPS.length?NOG_HTML():adminFsHtml(), news:seg!=="news"?"":newsAdminHtml(), truck:seg!=="truck"?"":truckAdminHtml(), tour:seg!=="tour"?"":!GROUPS.length?NOG_HTML():tourAdminHtml(), concert:seg!=="concert"?"":!GROUPS.length?NOG_HTML():concertAdminHtml()+concertMusicHtml()+lsAdminHtml(), sv:`      <section class="card studio"><div class="foc-cfg-h"><h3>SURVIVAL PROJECT 選秀宇宙</h3><span class="badge">${S.get(K.svOpen,false)?"開放中":"關閉中"}</span></div>
         <div class="ls-btns"><button class="btn ${S.get(K.svOpen,false)?"btn-soft":"btn-main"}" data-a="svToggle">${S.get(K.svOpen,false)?"關閉選秀宇宙":"開放選秀宇宙"}</button><button class="btn btn-soft" data-a="svPreview">預覽</button></div></section>
-      ${svAdminHtml()}${mkAdminHtml()}`}[seg]||(seg==="show"?vsAdminHtml():seg==="biz"?bzAdminHtml():seg==="isac"?isAdminHtml():seg==="cafe"?viewCafe().replace(/^<main[^>]*>|<\/main>$/g,""):"");
+      ${svAdminHtml()}`, card:mkAdminHtml()}[seg]||(seg==="show"?vsAdminHtml():seg==="biz"?bzAdminHtml():seg==="isac"?isAdminHtml():seg==="cafe"?viewCafe().replace(/^<main[^>]*>|<\/main>$/g,""):"");
     return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="focSegBack" aria-label="返回">${I.back}</button><div class="top-title">${SEGN[seg]||"FOC"}</div><span class="sh-sp"></span></div></header><main class="page foc-sub">
       ${body}
     </main>`;

@@ -91,7 +91,7 @@ function gm3Mount(host,{can,demo},T){ const wrap=host.querySelector(".gm3"), cv=
   const W=wrap.clientWidth||300, H=wrap.clientHeight||360, rm=matchMedia("(prefers-reduced-motion: reduce)").matches;
   const R=new T.WebGLRenderer({canvas:cv,alpha:true,antialias:true}); R.setPixelRatio(Math.min(2,devicePixelRatio||1)); R.setSize(W,H,false);
   const sc=new T.Scene(), cam=new T.PerspectiveCamera(30,W/H,.1,50); cam.position.set(0,1.25,8.6); cam.lookAt(0,.92,0);
-  sc.add(new T.HemisphereLight(0xffffff,0x5a3f8f,.7)); const dl=new T.DirectionalLight(0xffffff,.9); dl.position.set(2.5,4,5); sc.add(dl); const rl=new T.DirectionalLight(0xe9dcff,.45); rl.position.set(-3,2,-2); sc.add(rl);
+  sc.add(new T.HemisphereLight(0xf3eeff,0x4a3480,.55)); sc.add(new T.AmbientLight(0xffffff,.15)); const dl=new T.DirectionalLight(0xffffff,.75); dl.position.set(2.2,2.2,6); sc.add(dl); const rl=new T.DirectionalLight(0xe9dcff,.45); rl.position.set(-3,2,-2); sc.add(rl);
   const M=new T.Group(); sc.add(M);
   const paint=new T.MeshPhysicalMaterial({color:0x8843FB,roughness:.32,metalness:.1,clearcoat:1,clearcoatRoughness:.08});
   const dark=new T.MeshPhysicalMaterial({color:0x5B25B8,roughness:.4,clearcoat:.6});
@@ -100,27 +100,30 @@ function gm3Mount(host,{can,demo},T){ const wrap=host.querySelector(".gm3"), cv=
   /* 機身：圓角方塊 */
   const rr=(w,h,r)=>{ const s=new T.Shape(), x=-w/2, y=-h/2; s.moveTo(x+r,y); s.lineTo(x+w-r,y); s.quadraticCurveTo(x+w,y,x+w,y+r); s.lineTo(x+w,y+h-r); s.quadraticCurveTo(x+w,y+h,x+w-r,y+h); s.lineTo(x+r,y+h); s.quadraticCurveTo(x,y+h,x,y+h-r); s.lineTo(x,y+r); s.quadraticCurveTo(x,y,x+r,y); return s; };
   const body=new T.Mesh(new T.ExtrudeGeometry(rr(2.3,1.45,.32),{depth:1.5,bevelEnabled:true,bevelThickness:.08,bevelSize:.08,bevelSegments:4,curveSegments:10}),paint); body.position.set(0,0,-.75); M.add(body);
+  const panel=new T.Mesh(new T.ExtrudeGeometry(rr(1.9,1.05,.22),{depth:.02,bevelEnabled:false}),new T.MeshPhysicalMaterial({color:0x9C62FF,roughness:.3,clearcoat:1})); panel.position.set(0,-.05,.82); M.add(panel);
   const base=new T.Mesh(new T.CylinderGeometry(1.15,1.25,.22,40),dark); base.scale.set(1.05,1,.75); base.position.set(0,-.85,0); M.add(base);
   const collar=new T.Mesh(new T.CylinderGeometry(.92,.98,.2,40),chrome); collar.position.set(0,.86,0); M.add(collar);
   /* 玻璃罩 */
   const DY=1.8, DR=1.02;
-  const glass=new T.Mesh(new T.SphereGeometry(DR,40,28),new T.MeshPhysicalMaterial({color:0xffffff,roughness:.05,metalness:0,transparent:true,opacity:.1,clearcoat:1,clearcoatRoughness:.02,depthWrite:false})); glass.position.y=DY; M.add(glass);
-  const rim=new T.Mesh(new T.SphereGeometry(DR*1.002,40,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.12,side:T.BackSide,depthWrite:false})); rim.position.y=DY; M.add(rim);
-  const cap0=new T.Mesh(new T.SphereGeometry(.2,20,14,0,Math.PI*2,0,Math.PI/2),chrome); cap0.position.y=DY+DR-.02; M.add(cap0);
+  const glass=new T.Mesh(new T.SphereGeometry(DR,40,28),new T.MeshPhysicalMaterial({color:0xffffff,roughness:.05,metalness:0,transparent:true,opacity:.05,clearcoat:.4,clearcoatRoughness:.2,depthWrite:false})); glass.position.y=DY; M.add(glass);
+  const shine=new T.Mesh(new T.TorusGeometry(DR*.86,.035,8,40,Math.PI*.42),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.55,depthWrite:false})); shine.position.set(0,DY,DR*.42); shine.rotation.z=Math.PI*.58; M.add(shine);
+  const rim=new T.Mesh(new T.SphereGeometry(DR*1.002,40,28),new T.MeshBasicMaterial({color:0xffffff,transparent:true,opacity:.05,side:T.BackSide,depthWrite:false})); rim.position.y=DY; M.add(rim);
+  const cap0=new T.Mesh(new T.CylinderGeometry(.16,.2,.12,24),paint); cap0.position.y=DY+DR-.01; M.add(cap0); const cap1=new T.Mesh(new T.SphereGeometry(.1,16,12),paint); cap1.position.y=DY+DR+.09; M.add(cap1);
   /* 名牌 */
   const pc=document.createElement("canvas"); pc.width=256; pc.height=64; const px=pc.getContext("2d"); px.fillStyle="rgba(255,255,255,.22)"; px.beginPath(); if(px.roundRect) px.roundRect(0,0,256,64,18); else px.rect(0,0,256,64); px.fill(); px.fillStyle="#fff"; px.font="700 34px Fredoka, system-ui, sans-serif"; px.textAlign="center"; px.textBaseline="middle"; px.fillText("HAECHU",128,34);
-  const tex=new T.CanvasTexture(pc); const plate=new T.Mesh(new T.PlaneGeometry(.8,.2),new T.MeshBasicMaterial({map:tex,transparent:true})); plate.position.set(-.62,.45,.84); M.add(plate);
+  const tex=new T.CanvasTexture(pc); const plate=new T.Mesh(new T.PlaneGeometry(.8,.2),new T.MeshBasicMaterial({map:tex,transparent:true})); plate.position.set(-.6,.36,.85); M.add(plate);
   /* 把手 */
-  const knob=new T.Group(); knob.position.set(0,.05,.86); M.add(knob);
+  const knob=new T.Group(); knob.position.set(0,.02,.86); M.add(knob);
   const kd=new T.Mesh(new T.CylinderGeometry(.38,.4,.16,40),white); kd.rotation.x=Math.PI/2; knob.add(kd);
-  const kb=new T.Mesh(new T.BoxGeometry(.62,.16,.14),new T.MeshPhysicalMaterial({color:0xD7CCF0,roughness:.3,clearcoat:.6})); kb.position.z=.13; knob.add(kb);
-  const kdot=new T.Mesh(new T.SphereGeometry(.05,12,10),paint); kdot.position.set(.24,0,.21); knob.add(kdot);
+  const kr=new T.Mesh(new T.TorusGeometry(.4,.04,10,40),chrome); kr.position.z=.06; knob.add(kr);
+  const kb=new T.Mesh(new T.BoxGeometry(.6,.15,.16),new T.MeshPhysicalMaterial({color:0x6A2BE0,roughness:.25,clearcoat:1})); kb.position.z=.14; knob.add(kb);
+  const kdot=new T.Mesh(new T.SphereGeometry(.055,12,10),chrome); kdot.position.set(.23,0,.23); knob.add(kdot);
   /* 出口 */
-  const chute=new T.Mesh(new T.ExtrudeGeometry(rr(.5,.36,.1),{depth:.1,bevelEnabled:false}),new T.MeshStandardMaterial({color:0x2E1260,roughness:.7})); chute.position.set(.68,-.4,.77); M.add(chute);
+  const chute=new T.Mesh(new T.ExtrudeGeometry(rr(.5,.36,.1),{depth:.1,bevelEnabled:false}),new T.MeshStandardMaterial({color:0x2E1260,roughness:.7})); chute.position.set(.62,-.38,.82); M.add(chute);
   /* 扭蛋 */
   const COL=GM_C.map(c=>new T.Color(c)), shell=new T.MeshPhysicalMaterial({color:0xFBFAFD,roughness:.25,clearcoat:.8});
-  const mkCap=(col,r,mat)=>{ const g=new T.Group(); const top=new T.Mesh(new T.SphereGeometry(r,22,12,0,Math.PI*2,0,Math.PI/2),mat||new T.MeshPhysicalMaterial({color:col,roughness:.2,clearcoat:1,clearcoatRoughness:.1})); const bot=new T.Mesh(new T.SphereGeometry(r,22,12,0,Math.PI*2,Math.PI/2,Math.PI/2),shell); g.add(top); g.add(bot); g.userData={top,bot}; return g; };
-  const CR=.2, B=[]; for(let i=0;i<14;i++){ const g=mkCap(COL[i%COL.length],CR); g.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6); M.add(g); B.push({g,p:new T.Vector3((Math.random()-.5)*.9,-.3+Math.random()*.5,(Math.random()-.5)*.9),v:new T.Vector3(),w:new T.Vector3()}); }
+  const mkCap=(col,r,mat)=>{ const g=new T.Group(); const top=new T.Mesh(new T.SphereGeometry(r,22,12,0,Math.PI*2,0,Math.PI/2),mat||new T.MeshPhysicalMaterial({color:col,roughness:.28,clearcoat:1,clearcoatRoughness:.15,emissive:col,emissiveIntensity:.12})); const bot=new T.Mesh(new T.SphereGeometry(r,22,12,0,Math.PI*2,Math.PI/2,Math.PI/2),shell); g.add(top); g.add(bot); g.userData={top,bot}; return g; };
+  const CR=.23, B=[]; for(let i=0;i<16;i++){ const g=mkCap(COL[i%COL.length],CR); g.rotation.set(Math.random()*6,Math.random()*6,Math.random()*6); M.add(g); B.push({g,p:new T.Vector3((Math.random()-.5)*.9,-.3+Math.random()*.5,(Math.random()-.5)*.9),v:new T.Vector3(),w:new T.Vector3()}); }
   const FLOOR=-.62;   /* 罩子底下那一圈 */
   let last=null, tick=0, moved=0, shake=0, ang=0, busy=false, alive=true, tilt={x:0,y:0}, tt={x:0,y:0}, out=null, frames=0, slow=0, t0=performance.now(), lt=t0;
   const step=dt=>{ const g=-6.5*dt; B.forEach(b=>{ b.v.y+=g; if(shake>0){ b.v.x+=(Math.random()-.5)*shake*dt*9; b.v.z+=(Math.random()-.5)*shake*dt*9; b.v.y+=Math.random()*shake*dt*8; b.w.set((Math.random()-.5)*shake,(Math.random()-.5)*shake,(Math.random()-.5)*shake); }
@@ -147,9 +150,9 @@ function gm3Mount(host,{can,demo},T){ const wrap=host.querySelector(".gm3"), cv=
   wrap.addEventListener("pointerup",up); wrap.addEventListener("pointercancel",up);
   function done(){ const pz=lotDraw(demo); if(!pz){ toast("沒有可以轉的券"); return; } shake=8; sfx("whoosh");
     const big=!!pz.big, gold=new T.MeshPhysicalMaterial({color:new T.Color(GM_BIG_C),metalness:.25,roughness:.2,clearcoat:1,clearcoatRoughness:.05,emissive:new T.Color("#8a5d00"),emissiveIntensity:.55});   /* 沒有環境貼圖，金屬感太高會變黑：用亮面＋微微自發光做金色 */
-    const c=mkCap(COL[Math.random()*COL.length|0],.3,big?gold:null); c.position.set(.68,-.4,.95); M.add(c); let tm=0, opened=false, op=0;
+    const c=mkCap(COL[Math.random()*COL.length|0],.3,big?gold:null); c.position.set(.62,-.4,.98); M.add(c); let tm=0, opened=false, op=0;
     let glow=null; if(big){ glow=new T.PointLight(0xFFD36B,0,4); glow.position.set(0,-.2,1.6); M.add(glow); }
-    out=dt=>{ tm+=dt; if(!opened){ const k=Math.min(1,tm/.9), e2=1-Math.pow(1-k,3); c.position.set(.68-.68*e2,-.4-.15*Math.sin(k*Math.PI)+(-.1)*e2,.95+.9*e2); c.rotation.x+=dt*6*(1-k); c.rotation.z-=dt*4*(1-k); if(k>=1){ c.position.y=-.5+Math.abs(Math.sin(tm*3))*.04; c.rotation.x*=.9; c.rotation.z*=.9; } if(glow) glow.intensity=Math.min(1.6,tm*1.2)*(1+.25*Math.sin(tm*6)); }
+    out=dt=>{ tm+=dt; if(!opened){ const k=Math.min(1,tm/.9), e2=1-Math.pow(1-k,3); c.position.set(.62-.62*e2,-.4-.15*Math.sin(k*Math.PI)+(-.1)*e2,.95+.9*e2); c.rotation.x+=dt*6*(1-k); c.rotation.z-=dt*4*(1-k); if(k>=1){ c.position.y=-.5+Math.abs(Math.sin(tm*3))*.04; c.rotation.x*=.9; c.rotation.z*=.9; } if(glow) glow.intensity=Math.min(1.6,tm*1.2)*(1+.25*Math.sin(tm*6)); }
       else { op+=dt; const k=Math.min(1,op/.45); c.userData.top.position.y=k*.5; c.userData.top.rotation.z=k*.8; c.userData.bot.position.y=-k*.25; c.userData.top.material.transparent=true; c.userData.top.material.opacity=1-k; c.userData.bot.material=c.userData.bot.material===shell?shell.clone():c.userData.bot.material; c.userData.bot.material.transparent=true; c.userData.bot.material.opacity=1-k; if(glow) glow.intensity=2.4*(1-k*.5); } };
     const ob=host.querySelector(".gm-out"); setTimeout(()=>{ ob.innerHTML=`<small class="gm-tap">${big?"金色扭蛋！":""}點扭蛋打開</small>`; },900);
     const openIt=()=>{ if(opened) return; opened=true; sfx("flip"); const tp=ob.querySelector(".gm-tap"); if(tp) tp.remove();
