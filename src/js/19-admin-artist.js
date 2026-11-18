@@ -136,7 +136,7 @@ const artNKey=k=>k==="tie"?"n_tie":"n_feed";   /* "cm"（個人社群）和舊�
 const stageNm=mid=>(MEMBERS[mid]||{}).name||"";   /* 11/17 一律英文藝名（以前 SKpedia 填了韓文藝名會用韓文） */
 /* 11/17 名字規則（全 App）：外面一律用英文藝名（MEMBERS 的名字，管理員設定）；
    藝人自己改的「社群名稱」只在點進她的個人社群（主頁、主頁上的貼文）才顯示 → 用 artName(mid,"cm")；TIE 聊天室用自己的 TIE 名稱（"tie"） */
-function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView()) return m.name; if(k==="cm"||k==="tie") return artProf(mid)[artNKey(k)]||m.name; return m.name; }
+function artName(mid,k){ const m=MEMBERS[mid]; if(!m) return ""; if(adminView()) return m.name; if(k==="cm"||k==="live"||k==="tie") return artProf(mid)[artNKey(k)]||m.name; return m.name; }   /* 11/18 直播（粉絲端、藝人端都是）用藝人個人社群的名字 */
 /* 管理員端（管理那一段）看到的都是管理員在後台設的原本名字，不管本人怎麼改 */
 const adminView=()=>{ try{ return route().role==="admin"&&!!session()&&session().role==="admin"; }catch(e){ return false; } };
 function origName(by,fallback){ const e=String(by||"").toLowerCase(); const a=e&&ACCOUNTS[e]; return realName(e)||(a&&a.name)||fallback||"粉絲"; }
