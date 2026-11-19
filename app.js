@@ -7159,6 +7159,10 @@ function tiePhPrev(){ const p=ui.tiePh; if(!p) return; if(p.url) URL.revokeObjec
     <footer class="tph-f"><button class="tph-c" data-a="tPhCrop">${CROP_IC}<span>裁剪</span></button><button class="tph-s" data-a="tPhSend">傳送</button></footer></div>`,"tph"); }
 /* 長按訊息：複製 */
 let lpTimer=null;
+/* 11/19 App 內不能反白複製（防外流）：只有輸入框可以選字；要複製用長按選單裡的「複製」 */
+const selOk=t=>!!(t&&t.closest&&t.closest('input,textarea,[contenteditable="true"],.ac-pw,.ste-ta'));
+document.addEventListener("selectstart",e=>{ if(!selOk(e.target)) e.preventDefault(); },true);
+document.addEventListener("copy",e=>{ const a=document.activeElement; if(!selOk(a)&&!selOk(e.target)) e.preventDefault(); },true);
 function showCopyMenu(el,x,y){
   const w=getWhispers().find(v=>v.id===el.dataset.lp); if(!w) return;
   if(route().sub==="chat"){ openMsgSheet(w.id); return; }
