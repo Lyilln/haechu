@@ -1249,8 +1249,12 @@ function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",a
    :`<p class="prg-e">貼上之後這裡會一項一項列出來</p>`; }
 /* 加分前先算給管理員看：他現在有多少 ＋ 這次加的 ＝ 加完會是多少（還沒被他手機領走的加分也算進去） */
 function ptCurOf(email){ try{ const b=S.get(K.points+"@"+email,null); if(b==null) return null; const got=new Set(S.get(K.ptGot+"@"+email,[])||[]), pend=(S.get(K.ptGrants,[])||[]).filter(g=>g.to===email&&!got.has(g.id)).reduce((n,g)=>n+(+g.n||0),0); return Math.round(+b+pend); }catch(e){ return null; } }
+/* 11/19 算分數時顯示等級：照積分算（跟 ME 頁同一套：練習生最高 T5、出道的至少 R1），加完會升／會掉就提醒 */
+function lvAt(p,art){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); if(!art&&li>0){ li=0; si=4; } if(art&&li<1){ li=1; si=0; } return {li,si,k:li*10+si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li]}; }
+function ptRegLv(email,c,n){ const a=ACCOUNTS[email]||{}, art=!!a.member, A=lvAt(c,art), B=lvAt(c+n,art);
+  return `<div class="prg-lv ${B.k>A.k?"up":B.k<A.k?"dn":""}"><span>等級</span><b>${A.code} ${A.name}</b>${B.k===A.k?`<em>維持原樣</em>`:`<i>→</i><b>${B.code} ${B.name}</b><em>${B.k>A.k?"升級了！記得更新他的等級":"掉級了！記得更新他的等級"}</em>`}</div>`; }
 function ptRegMath(sum){ const P=ui.prg||{}, c=ptCurOf(P.email);
-  return c==null?`<p class="prg-t">找不到他目前的積分（他還沒在新版 App 登入過）</p>`:`<div class="prg-math"><div><span>現在</span><b>${fmt(c)} 分</b></div><div><span>＋ 這次</span><b>${fmt(sum)} 分</b></div><hr><div class="t"><span>加完</span><b>${fmt(c+sum)} 分</b></div></div>`; }
+  return c==null?`<p class="prg-t">找不到他目前的積分（他還沒在新版 App 登入過）</p>`:`<div class="prg-math"><div><span>現在</span><b>${fmt(c)} 分</b></div><div><span>＋ 這次</span><b>${fmt(sum)} 分</b></div><hr><div class="t"><span>加完</span><b>${fmt(c+sum)} 分</b></div></div>${ptRegLv(P.email,c,sum)}`; }
 function ptRegFoot(res){ const sum=res.items.reduce((n,x)=>n+(+x.give||0),0), bad=res.total!=null&&res.total!==res.claimSum, A=res.app;
   const app=A&&(A.L.length||A.share)?`<div class="prg-app"><b>App 自己加的（不用登記，只是給你對照）</b>${A.L.map(g=>`<div><span>${ptDs([g.d])}・${esc(g.why)}</span><em>${g.n<0?"−":"+"}${fmt(Math.abs(g.n))}</em></div>`).join("")}${A.share?`<div><span>分潤（粉絲花在他身上的 ${A.share.pct}%）${Object.keys(A.share.by).length?"":"・這幾天沒有"}</span><em>+${fmt(A.share.n)}</em></div>`:""}${!A.L.length&&!A.share?"":""}</div>`:"";
   return `${app}${(res.notes||[]).map(n=>`<p class="prg-t">${esc(n)}</p>`).join("")}${res.total!=null?`<p class="prg-t ${bad?"bad":""}">登記寫總共 +${fmt(res.total)}${bad?`，但各項加起來是 +${fmt(res.claimSum)}`:""}</p>`:""}${sum>0?ptRegMath(sum):""}<button class="btn btn-main btn-block" data-a="prgGo" ${sum>0?"":"disabled"}>${sum>0?`加 ${fmt(sum)} 分`:"沒有可以加的分數"}</button>`; }
