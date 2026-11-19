@@ -202,7 +202,11 @@ function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",a
     ${x.st==="ask"?`<input class="prg-in" data-i="${i}" inputmode="numeric" value="${x.give||""}" placeholder="分數">`:`<span class="prg-n">${x.give?"+"+fmt(x.give):"0"}${x.claim!=null&&x.claim!==x.give?`<s>+${fmt(x.claim)}</s>`:""}</span>`}</div>`).join("")
    :`<p class="prg-e">貼上之後這裡會一項一項列出來</p>`; }
 /* 加分前先算給管理員看：他現在有多少 ＋ 這次加的 ＝ 加完會是多少（還沒被他手機領走的加分也算進去） */
-function ptCurOf(email){ try{ const b=S.get(K.points+"@"+email,null); if(b==null) return null; const got=new Set(S.get(K.ptGot+"@"+email,[])||[]), pend=(S.get(K.ptGrants,[])||[]).filter(g=>g.to===email&&!got.has(g.id)).reduce((n,g)=>n+(+g.n||0),0); return Math.round(+b+pend); }catch(e){ return null; } }
+/* 11/19 修：有藝人身分的人（出道藝人、管理員本人）積分記在藝人積分上，不在粉絲那份 → 改讀藝人積分；email 一律小寫比對；
+   有登入過新版但還沒賺過分（沒有積分那筆）的人算 0，不再說「還沒登入過」 */
+function ptCurOf(email){ try{ email=String(email||"").toLowerCase(); const a=ACCOUNTS[email]||Object.entries(ACCOUNTS).find(([e])=>String(e).toLowerCase()===email)?.[1]||{}, m=a.member||a.home;
+  if(m&&MEMBERS[m]&&typeof pointsOf==="function") return Math.round(((pointsOf(m)||{}).net)||0);
+  let b=S.get(K.points+"@"+email,null); if(b==null){ const seen=["ptGot","online","settings","notifs","owned"].some(k=>K[k]&&S.get(K[k]+"@"+email,null)!=null); if(!seen) return null; b=0; } const got=new Set(S.get(K.ptGot+"@"+email,[])||[]), pend=(S.get(K.ptGrants,[])||[]).filter(g=>g.to===email&&!got.has(g.id)).reduce((n,g)=>n+(+g.n||0),0); return Math.round(+b+pend); }catch(e){ return null; } }
 /* 11/19 算分數時顯示等級：照積分算（跟 ME 頁同一套：練習生最高 T5、出道的至少 R1），加完會升／會掉就提醒 */
 function lvAt(p,art){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); if(!art&&li>0){ li=0; si=4; } if(art&&li<1){ li=1; si=0; } return {li,si,k:li*10+si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li]}; }
 function ptRegLv(email,c,n){ const a=ACCOUNTS[email]||{}, art=!!a.member, A=lvAt(c,art), B=lvAt(c+n,art);
