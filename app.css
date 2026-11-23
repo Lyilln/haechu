@@ -7513,6 +7513,19 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sv5-adm{margin:10px 0;padding:10px 12px;border-radius:12px;background:rgba(0,0,0,.03)}
 .sv5-prt .sv2-p{position:relative;margin:0;border-radius:0;overflow:hidden;background:linear-gradient(160deg,var(--l2),var(--a2))}
 .scx-pause{margin:0 0 12px;padding:10px 12px;border-radius:12px;background:#FFF4E5;color:#9A5B00;font-size:13px;font-weight:700;line-height:1.5}
+/* 11/23 選秀節目表、我的舞台 */
+.sv5-tl{position:relative;z-index:1;display:flex;align-items:center;margin:0 0 8px}.sv5-tl i{flex:1;height:2px;background:var(--l2);margin:0 3px}
+.sv5-tl span{flex:0 0 auto;font-size:11.5px;font-weight:800;color:#B9A8B3;padding:4px 8px;border-radius:99px;background:#fff;box-shadow:0 0 0 1px var(--l2)}
+.sv5-tl span.done{color:var(--a);background:var(--l)}.sv5-tl span.on{color:#fff;background:var(--a);box-shadow:none}
+.sv5-ms{position:relative;z-index:1;display:flex;gap:6px;margin:0 0 12px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.sv5-ms span{flex:1 0 auto;min-width:88px;padding:7px 10px;border-radius:12px;background:#fff;box-shadow:0 0 0 1px var(--l2)}
+.sv5-ms b{display:block;font-size:12.5px;color:#3A2233}.sv5-ms small{font-size:11px;color:#9A7F8C}
+.sv5-ms span.on{box-shadow:0 0 0 2px var(--a)}.sv5-ms span.on b{color:var(--a)}.sv5-ms span.end{opacity:.55}
+.sv5-mys{position:relative;z-index:1;display:flex;gap:12px;align-items:center;margin:0 0 14px;padding:12px;border-radius:18px;background:#fff;box-shadow:inset 0 0 0 2px var(--a)}
+.sv5-myt{flex:0 0 76px;height:96px;border:0;padding:0;border-radius:12px;overflow:hidden;background:var(--l)}.sv5-myt img,.sv5-myt video{width:100%;height:100%;object-fit:cover;display:block}
+.sv5-mys>div{flex:1;min-width:0}.sv5-mys small{font-size:12px;color:var(--a);font-weight:900}.sv5-mys b{display:block;font-size:16px;color:#3A2233;margin:2px 0 4px}.sv5-mys p{margin:0 0 6px;font-size:12.5px;color:#6F5A66;line-height:1.5}
+.sv5-mys button:not(.sv5-myt){display:block;width:100%;padding:10px;border:0;border-radius:12px;background:var(--a);color:#fff;font:inherit;font-weight:900}.sv5-mys button.gh{background:var(--l);color:var(--a)}
+.sv5-nov{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;border-radius:14px;background:var(--l,#FDEAF2);color:#9A7F8C;font-size:13px;text-align:center;line-height:1.6}
 
 /* ===== 連號開獎：扭蛋機 ===== */
 .lot .tiei-body{padding-bottom:40px}
@@ -7654,6 +7667,15 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .cv-slt:disabled{opacity:.4}
 .cv-tap{display:block;width:100%;text-align:center;font-size:12.5px;opacity:.85}
 .cv-slk{display:flex;gap:6px;justify-content:center;width:100%}.cv-slk button{border:0;padding:6px 12px;border-radius:99px;background:rgba(255,255,255,.14);color:inherit;font:inherit;font-size:12.5px;font-weight:700}.cv-slk button.on{background:#fff;color:#5B2A86}
+/* 11/23 扭蛋還是太擠：框放大到快滿版、機器變大，下面兩個小連結並排 */
+.lp-ov{padding:8px}
+.lp-sh{max-width:500px;padding:16px 12px 12px;max-height:calc(100vh - 16px)}
+.lp-sh h2{margin-top:2px}
+.gm3{height:min(62vh,560px)}
+.lp-gm{transform:none;margin-bottom:0}
+.lp-more{display:flex;gap:8px;align-items:flex-start;margin-top:8px}
+.lp-more details{flex:1;min-width:0;border-top:0;padding:6px 0;border-radius:12px;background:var(--s2,rgba(0,0,0,.03))}
+.lp-more details[open]{flex-basis:100%}
 
 /* ===== 交易市場 ===== */
 .tm .tiei-body{padding-bottom:40px}
