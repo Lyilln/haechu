@@ -177,12 +177,14 @@ const points=()=>S.get(K.points,0);
 const LV_TBL=[["T",[0,500,1500,3000,5000]],["R",[8000,11000,14000,17000,20000]],["E",[24000,29000,34000,39000,44000]],["D",[50000,58000,66000,74000,82000]],["C",[92000,104000,116000,128000,140000]],["B",[155000,173000,191000,209000,227000]],["A",[250000,280000,310000,340000,370000]],["S",[410000,460000,510000,560000,610000]],["L",[680000,800000,1000000]]];
 const LV_FONT={T:[0x1D5D4,0x1D7EC],R:[0x1D63C,0x1D7EC],E:[0x1D400,0x1D7CE],D:[0x1D468,0x1D7CE],C:[0x1D670,0x1D7F6],B:[0x1D538,0x1D7D8],A:[0,0x1D7CE],S:[0x1D49C,0x1D7CE],L:[0x1D4D0,0x1D7CE]};
 const lvCode=(li,si)=>{ const L=LV_TBL[li][0], f=LV_FONT[L]; return (L==="A"?"Λ":String.fromCodePoint(f[0]+L.charCodeAt(0)-65))+String.fromCodePoint(f[1]+si+1); };
-/* 11/23 財富榜：只想當粉絲的人（管理員在帳號設定裡勾），門檻跟練習生表一樣，用錢的符號當等級（一看名字就知道不是練習生）；照現在身上的積分算 */
+/* 11/23 財富榜：只想當粉絲的人（管理員在帳號設定裡勾），用錢的符號當等級（一看名字就知道不是練習生）；照現在身上的積分算 */
 const WLK="daisuki_acc_wealth", WL_SYM=["○","¢","¥","€","£","$","♦","♛","♔"], WL_NAME=["平民","存錢中","小資","中產","富裕","富豪","名流","財閥","傳奇富豪"];
+/* 財富榜自己的門檻（不跟練習生表一樣）：前面爬得快、中間變慢、最後很難；最頂用發財數字 888,888 */
+const WL_TBL=[[0,300,1000,2000,3500],[6000,8800,12000,15000,18000],[22000,26000,30000,35000,40000],[46000,52000,58000,66000,75000],[85000,96000,108000,120000,135000],[150000,168000,188000,210000,235000],[260000,290000,320000,355000,390000],[430000,480000,530000,590000,650000],[700000,888888,1288888]];
 const isWealth=em=>{ em=String(em||"").toLowerCase(); const a=ACCOUNTS[em]||{}; return !!(S.get(WLK,{})||{})[em]&&!a.member; };
 const wlCode=(li,si)=>WL_SYM[li]+String.fromCodePoint(0x1D7CE+si+1);
-function wlAt(p){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
-  return {li,si,k:li*10+si,code:wlCode(li,si),name:WL_NAME[li],wl:1,next:nx&&{code:wlCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }
+function wlAt(p){ let li=0,si=0; WL_TBL.forEach((th,i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<WL_TBL[li].length?[li,si+1]:li+1<WL_TBL.length?[li+1,0]:null;
+  return {li,si,k:li*10+si,code:wlCode(li,si),name:WL_NAME[li],wl:1,next:nx&&{code:wlCode(nx[0],nx[1]),need:Math.max(0,WL_TBL[nx[0]][nx[1]]-p)}}; }
 function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0; if(!art&&isWealth(s.email)) return {...wlAt(p),art:false};   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
   LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } }));
   if(!art&&li>0){ li=0; si=4; }   // 還沒出道：最高 T5
