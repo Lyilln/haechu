@@ -1239,7 +1239,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
 /* 管理員對照用：登記的那幾天，App 自己加給這個人的分（自動項目）＋藝人分潤（不用登記，自動算） */
 function ptRegApp(email,days){ const a=ACCOUNTS[email]||{}, mid=a.member&&MEMBERS[a.member]?a.member:"", D=new Set(days.filter(Boolean)); if(!D.size) return null;
   const inD=ts=>D.has(ymdK(ts)), skip=g=>/^(lr|rev_|ufm_|ufg_|fixdup_)/.test(g.id)||/^(LINE 登記|登記算錯|照 LINE|撤銷)/.test(g.why||"");
-  const EL=(()=>{ try{ return (S.get(K.earnLog+"@"+email,[])||[]).filter(x=>inD(x.ts)).map(x=>({d:ymdK(x.ts),why:x.why||x.k,n:x.n||0})); }catch(e){ return []; } })();
+  const EL=(()=>{ try{ const own=S.get(K.earnLog+"@"+email,null), pb=((S.get(PT_PUB,{})||{})[String(email).toLowerCase()]||{}).e; return ((own&&own.length?own:pb)||[]).filter(x=>inD(x.ts)).map(x=>({d:ymdK(x.ts),why:x.why||x.k,n:x.n||0})); }catch(e){ return []; } })();
   const L=EL.concat(ptGrants().filter(g=>inD(g.ts)&&!skip(g)&&(g.to===email||(mid&&g.mid===mid&&(g.art||String(g.id).startsWith("tqf2_"))))).map(g=>({d:ymdK(g.ts),why:g.why||"",n:g.n||0})));
   let share=null; if(mid){ const sh=revShare(); share={pct:sh,by:{}}; (S.get(K.sales,[])||[]).forEach(x=>{ if((x.type==="tie"||x.type==="truck")&&x.mid===mid&&inD(x.ts)){ const k=ymdK(x.ts); share.by[k]=(share.by[k]||0)+x.pts; } }); share.n=Math.round(Object.values(share.by).reduce((n,v)=>n+v,0)*sh/100); }
   return {L,share,mid}; }
@@ -1253,7 +1253,7 @@ function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",a
 const PT_PUB="daisuki_pt_pub";
 function ptPub(){ try{ if(typeof HB==="undefined"||!HB_ON||!HB.tok||typeof kvCas!=="function") return; const s=session(); if(!s||!s.email||s.role!=="fan"||(s.admin&&!s.uni)) return; const e=String(s.email).toLowerCase(); if(e===DEMO_FAN||uniArt()) return;
   const p=Math.round(+points()||0), cur=(S.get(PT_PUB,{})||{})[e]; if(cur&&cur.p===p&&Date.now()-(cur.t||0)<6*36e5) return; if(ptPub.busy) return; ptPub.busy=1;
-  kvCas(PT_PUB,v=>{ const o={...(v||{})}; o[e]={p,t:Date.now()}; return {v:o}; }).catch(()=>{}).then(()=>{ ptPub.busy=0; }); }catch(e){} }
+  kvCas(PT_PUB,v=>{ const o={...(v||{})}; const lim=Date.now()-14*864e5, el=(S.get(K.earnLog,[])||[]).filter(x=>x.ts>lim).slice(-120).map(x=>({k:x.k,n:x.n,why:x.why,ts:x.ts})); o[e]={p,t:Date.now(),e:el}; return {v:o}; })   /* 11/23 連 App 自動加分紀錄（14 天）一起回報，後台登記才對得到 */.catch(()=>{}).then(()=>{ ptPub.busy=0; }); }catch(e){} }
 setTimeout(ptPub,6000); setInterval(ptPub,60000);
 /* 11/19 修：有藝人身分的人（出道藝人、管理員本人）積分記在藝人積分上，不在粉絲那份 → 改讀藝人積分；email 一律小寫比對；
    有登入過新版但還沒賺過分（沒有積分那筆）的人算 0，不再說「還沒登入過」 */
@@ -2175,7 +2175,7 @@ function blobDU(blob){ return new Promise(res=>{ const r=new FileReader(); r.onl
    ・Membership、周邊算給整個團，再平均分給團裡的成員（不含官方帳號）
    ・藝人分潤比例由管理員設定
    ========================================================= */
-const revShare=()=>S.get(K.revShare,10);   // 藝人分潤：粉絲花在藝人身上的積分 10%（她 11/12 從 15% 改）
+const revShare=()=>S.get(K.revShare,3);   /* 11/23 她改成 3% */   // 藝人分潤：粉絲花在藝人身上的積分 10%（她 11/12 從 15% 改）
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
@@ -3197,7 +3197,7 @@ function ccTick(){
   const mb=document.getElementById("ccMis");
   if(mb){ if(cmd&&cmd.type==="mission"){ const el2=(Date.now()-cmd.ts)/1000, others=Math.floor(cmd.target*.86*Math.min(1,el2/28)), mine=(ui.swings||0)-(ui.misBase||0), v=Math.min(cmd.target,others+mine*12);
       mb.hidden=false; mb.querySelector("i").style.width=(v/cmd.target*100)+"%"; mb.querySelector("b").textContent=`${fmt(v)} / ${fmt(cmd.target)}・你揮了 ${mine} 下`;
-      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; S.set(K.points,points()+20); confetti(innerWidth/2,innerHeight/3); toast("任務達成！獲得 20 積分"); } }
+      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; const cc=typeof curConcert==="function"&&curConcert(), got=fanEarn("ccmis",20,{once:"ccm_"+((cc&&cc.id)||new Date().toISOString().slice(0,10)),why:"演唱會現場任務達成",quiet:1}); confetti(innerWidth/2,innerHeight/3); toast(got?"任務達成！獲得 20 積分":"任務達成！（這場的 20 積分已經領過了）"); }   /* 11/23 積分表：一場一次，記到 App 自動加分紀錄 */ }
     else mb.hidden=true; }
 }
 function concertOn(){
@@ -9556,7 +9556,7 @@ function bdRepHtml(c,mid){ const x=bdAll().find(y=>y.id===ui.bdSel&&y.up&&!y.ans
 document.addEventListener("input",e=>{ if(e.target&&e.target.id==="bdText"&&ui.bd){ ui.bd.text=e.target.value; const p=document.getElementById("bdPrev"), c=bdFind(ui.bdC); if(p&&c) p.innerHTML=bdHtml(ui.bd,c.gid); } });
 setInterval(()=>{ const w=document.getElementById("bdWall"); if(!w) return; const s=session(); if(!s||s.role!=="artist") return; const c=curConcert(); if(!c) return; if(!c.id) c.id="demo-cc"; const tl=ccTimeline(c); if(tl&&!tl.ia) return; bdSim(c); w.innerHTML=bdWallHtml(c,s.member); },4000);
 setInterval(()=>{ const s=session(); if(!s||s.role!=="fan") return; const L=bdAll(), x=L.find(y=>y.mine&&y.ans&&!y.seen); if(!x) return; x.seen=true; bdSave(L);
-  const c=bdFind(x.cid), by=MEMBERS[x.ans.by], nm=by?artName(x.ans.by,"feed"):"", msg=x.act?nm+x.ans.text:`${nm}：${x.ans.text}`; S.set(K.points,points()+30);
+  const c=bdFind(x.cid), by=MEMBERS[x.ans.by], nm=by?artName(x.ans.by,"feed"):"", msg=x.act?nm+x.ans.text:`${nm}：${x.ans.text}`; fanEarn("bdans",30,{once:"bda_"+x.id,why:"應援板被藝人回應",quiet:1});
   const d=document.createElement("div"); d.className="bd-ans"; d.innerHTML=`${bdHtml(x,c?c.gid:"",true)}<b>${esc(msg)}</b><small>被藝人回應了，+30 積分</small>`; document.body.appendChild(d); try{ confetti(innerWidth/2,innerHeight/3); }catch(e){} setTimeout(()=>d.remove(),5000); },1500);
 
 /* HAECHU｜3D、外掛工具、應援餐車、應援棒 3D */

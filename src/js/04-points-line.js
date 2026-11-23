@@ -193,7 +193,7 @@ function ptRegCheck(email,text,day0){ const R=ptRulesParse(ptRulesText()), role=
 /* 管理員對照用：登記的那幾天，App 自己加給這個人的分（自動項目）＋藝人分潤（不用登記，自動算） */
 function ptRegApp(email,days){ const a=ACCOUNTS[email]||{}, mid=a.member&&MEMBERS[a.member]?a.member:"", D=new Set(days.filter(Boolean)); if(!D.size) return null;
   const inD=ts=>D.has(ymdK(ts)), skip=g=>/^(lr|rev_|ufm_|ufg_|fixdup_)/.test(g.id)||/^(LINE 登記|登記算錯|照 LINE|撤銷)/.test(g.why||"");
-  const EL=(()=>{ try{ return (S.get(K.earnLog+"@"+email,[])||[]).filter(x=>inD(x.ts)).map(x=>({d:ymdK(x.ts),why:x.why||x.k,n:x.n||0})); }catch(e){ return []; } })();
+  const EL=(()=>{ try{ const own=S.get(K.earnLog+"@"+email,null), pb=((S.get(PT_PUB,{})||{})[String(email).toLowerCase()]||{}).e; return ((own&&own.length?own:pb)||[]).filter(x=>inD(x.ts)).map(x=>({d:ymdK(x.ts),why:x.why||x.k,n:x.n||0})); }catch(e){ return []; } })();
   const L=EL.concat(ptGrants().filter(g=>inD(g.ts)&&!skip(g)&&(g.to===email||(mid&&g.mid===mid&&(g.art||String(g.id).startsWith("tqf2_"))))).map(g=>({d:ymdK(g.ts),why:g.why||"",n:g.n||0})));
   let share=null; if(mid){ const sh=revShare(); share={pct:sh,by:{}}; (S.get(K.sales,[])||[]).forEach(x=>{ if((x.type==="tie"||x.type==="truck")&&x.mid===mid&&inD(x.ts)){ const k=ymdK(x.ts); share.by[k]=(share.by[k]||0)+x.pts; } }); share.n=Math.round(Object.values(share.by).reduce((n,v)=>n+v,0)*sh/100); }
   return {L,share,mid}; }
@@ -207,7 +207,7 @@ function ptRegRows(res){ const ic={ok:"✅",fix:"⚠️",no:"❌",ask:"✍️",a
 const PT_PUB="daisuki_pt_pub";
 function ptPub(){ try{ if(typeof HB==="undefined"||!HB_ON||!HB.tok||typeof kvCas!=="function") return; const s=session(); if(!s||!s.email||s.role!=="fan"||(s.admin&&!s.uni)) return; const e=String(s.email).toLowerCase(); if(e===DEMO_FAN||uniArt()) return;
   const p=Math.round(+points()||0), cur=(S.get(PT_PUB,{})||{})[e]; if(cur&&cur.p===p&&Date.now()-(cur.t||0)<6*36e5) return; if(ptPub.busy) return; ptPub.busy=1;
-  kvCas(PT_PUB,v=>{ const o={...(v||{})}; o[e]={p,t:Date.now()}; return {v:o}; }).catch(()=>{}).then(()=>{ ptPub.busy=0; }); }catch(e){} }
+  kvCas(PT_PUB,v=>{ const o={...(v||{})}; const lim=Date.now()-14*864e5, el=(S.get(K.earnLog,[])||[]).filter(x=>x.ts>lim).slice(-120).map(x=>({k:x.k,n:x.n,why:x.why,ts:x.ts})); o[e]={p,t:Date.now(),e:el}; return {v:o}; })   /* 11/23 連 App 自動加分紀錄（14 天）一起回報，後台登記才對得到 */.catch(()=>{}).then(()=>{ ptPub.busy=0; }); }catch(e){} }
 setTimeout(ptPub,6000); setInterval(ptPub,60000);
 /* 11/19 修：有藝人身分的人（出道藝人、管理員本人）積分記在藝人積分上，不在粉絲那份 → 改讀藝人積分；email 一律小寫比對；
    有登入過新版但還沒賺過分（沒有積分那筆）的人算 0，不再說「還沒登入過」 */

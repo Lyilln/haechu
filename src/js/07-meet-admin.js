@@ -175,7 +175,7 @@ function blobDU(blob){ return new Promise(res=>{ const r=new FileReader(); r.onl
    ・Membership、周邊算給整個團，再平均分給團裡的成員（不含官方帳號）
    ・藝人分潤比例由管理員設定
    ========================================================= */
-const revShare=()=>S.get(K.revShare,10);   // 藝人分潤：粉絲花在藝人身上的積分 10%（她 11/12 從 15% 改）
+const revShare=()=>S.get(K.revShare,3);   /* 11/23 她改成 3% */   // 藝人分潤：粉絲花在藝人身上的積分 10%（她 11/12 從 15% 改）
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};

@@ -150,7 +150,7 @@ function ccTick(){
   const mb=document.getElementById("ccMis");
   if(mb){ if(cmd&&cmd.type==="mission"){ const el2=(Date.now()-cmd.ts)/1000, others=Math.floor(cmd.target*.86*Math.min(1,el2/28)), mine=(ui.swings||0)-(ui.misBase||0), v=Math.min(cmd.target,others+mine*12);
       mb.hidden=false; mb.querySelector("i").style.width=(v/cmd.target*100)+"%"; mb.querySelector("b").textContent=`${fmt(v)} / ${fmt(cmd.target)}・你揮了 ${mine} 下`;
-      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; S.set(K.points,points()+20); confetti(innerWidth/2,innerHeight/3); toast("任務達成！獲得 20 積分"); } }
+      if(v>=cmd.target&&!ui.misDone){ ui.misDone=true; const cc=typeof curConcert==="function"&&curConcert(), got=fanEarn("ccmis",20,{once:"ccm_"+((cc&&cc.id)||new Date().toISOString().slice(0,10)),why:"演唱會現場任務達成",quiet:1}); confetti(innerWidth/2,innerHeight/3); toast(got?"任務達成！獲得 20 積分":"任務達成！（這場的 20 積分已經領過了）"); }   /* 11/23 積分表：一場一次，記到 App 自動加分紀錄 */ }
     else mb.hidden=true; }
 }
 function concertOn(){
