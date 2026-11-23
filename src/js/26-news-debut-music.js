@@ -449,7 +449,7 @@ function adminMusicHtml(){
         ${op[s.id]?`<div class="chips mu-ch"><button class="chip ${ws[s.id]?"":"on"}" data-a="muWin" data-s="${s.id}" data-v="">未公布</button>${ms.songs.map(sg=>{ const cr=crowned(sg.id,s.id,wk); return `<button class="chip ${ws[s.id]===sg.id?"on":""}" data-a="muWin" data-s="${s.id}" data-v="${sg.id}" ${cr?"disabled":""}>${esc(groupOf(sg.gid)?groupOf(sg.gid).name:"")}${cr?" 👑":""}</button>`; }).join("")}</div>`:""}</div>`; }).join("");
   const rule=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>計分方式</h3><span class="badge">固定</span></div><div class="mu5-st">基本分（每個動作）</div><div class="mu5-rule"><span>投票 1 票 <b>${MS_W.vote}</b></span><span>專輯 1 張 <b>${MS_W.album}</b></span><span>MV 愛心 1 顆 <b>${MS_W.like}</b></span><span>MV 播放 1 次 <b>${MS_W.view}</b></span></div>
 <p class="mu5-sub">每個節目再照下面的比重加減，所以同一週不同節目可能是不同人拿一位。</p>
-<table class="mu5-tb"><thead><tr><th></th><th>音源<small>MV 播放</small></th><th>專輯</th><th>投票</th><th>SNS<small>MV 愛心</small></th></tr></thead><tbody>${SHOWS.map(x=>{ const P=MS_SP[x.id]||{}; return `<tr><td>${esc(x.name)}</td>${["view","album","vote","like"].map(k=>`<td>${P[k]||0}%</td>`).join("")}</tr>`; }).join("")}</tbody></table>
+<table class="mu5-tb"><thead><tr><th></th><th>音源<small>MV 播放</small></th><th>專輯</th><th>投票</th><th>MV 讚數</th></tr></thead><tbody>${SHOWS.map(x=>{ const P=MS_SP[x.id]||{}; return `<tr><td>${esc(x.name)}</td>${["view","album","vote","like"].map(k=>`<td>${P[k]||0}%</td>`).join("")}</tr>`; }).join("")}</tbody></table>
 <ul class="mu5-ul"><li>節目播出時間一到自動結算，總分最高的拿一位。</li><li>同一首歌在同一個節目連拿三次一位（三冠王）後，不再列入那個節目的候選。</li><li>管理員手動改過的一位，自動結算不會再蓋掉。</li></ul></p></section>`;
   const mct=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>${mon.replace("-"," 年 ")} 月 MC</h3><span class="badge">每月輪替</span></div><div class="mu5-mc">${SHOWS.map(s=>`<button class="mu5-mcr" data-a="muMcEd" data-s="${s.id}" data-mon="${mon}"><b>${s.name}</b><span>${(mc[s.id]||[]).map(id=>esc(stageNm(id))).join("、")||"還沒排"}</span><i>›</i></button>`).join("")}</div></section>`;
   const songs=`<section class="card studio mu-adm"><div class="foc-cfg-h"><h3>打歌中的歌曲</h3><span class="badge">${ms.songs.length} 首</span></div>
@@ -694,11 +694,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
-  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
-  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
-  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
-  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["MV 讚數",[3]],["粉絲投票",[2]]]},
+  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["MV 讚數",[3]]]},
+  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["MV 讚數",[3]],["粉絲投票",[2]]]},
+  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋MV 讚數",[3]],["粉絲投票",[2]]]},
+  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["MV 讚數 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
 /* 照片格放什麼：音樂中心、人氣歌謠 → 專輯封面（沒有就 MV 縮圖）；THE SHOW、M COUNTDOWN、Show Champion → 結尾妖精（靜音循環）→ MV 縮圖 → 封面 */
 function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.mv.thumb)||"", img=u=>`<img src="${esc(u)}" alt="">`, cov=()=>{ const h=songCover(s.gid,s.title); return /<img/.test(h)?h:""; };
   const gen=()=>muNpcCover((groupOf(s.gid)||{}).name||"",String(songName(s)).replace(/^.*《(.*)》$/,"$1"));   /* 什麼圖都還沒上傳：跟虛擬歌手一樣生成一張封面，不放字母色塊 */

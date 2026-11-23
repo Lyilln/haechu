@@ -86,7 +86,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
-const FOC_PAGES={isac:"偶像運動會",cafe:"生日咖啡廳",show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"打歌戰況",stick:"官方應援棒",wiki:"SKpedia"};
+const FOC_PAGES={awards:"年末大賞",isac:"偶像運動會",cafe:"生日咖啡廳",show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"打歌戰況",stick:"官方應援棒",wiki:"SKpedia"};
 function isNextTxt(){ const now=Date.now(), n=IS_HOL.find(([d])=>new Date(d+"T00:00:00").getTime()-21*864e5>now); return n?`下次：${n[1]}・${+n[0].slice(5,7)}/${+n[0].slice(8)} 前後`:"—"; }
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title${/[\u3400-\u9FFF\uAC00-\uD7AF]/.test(t)?" cjk":""}">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
@@ -107,6 +107,7 @@ function viewArtistFoc(mid,p){
   if(p==="biz") return focHead("代言・雜誌")+viewBizArtist(mid,route().id);
   if(p==="cafe") return focHead("生日咖啡廳")+viewCafe(route().id||mid);
   if(p==="wiki") return focHead("SKpedia")+viewWiki(route().id||("m:"+mid));
+  if(p==="awards") return viewAwards(focHead);
   if(p==="isac") return focHead("偶像運動會")+viewIsac();
   if(p==="show") return focHead(route().id?vsTitle(route().id):"綜藝")+viewShowArtist(mid,route().id);
   if(p==="tour"){ setTimeout(trmScroll,0); return focHead("世巡")+viewTourArtist(mid); }
@@ -121,7 +122,7 @@ function viewArtistFoc(mid,p){
   const fsOn=fsAll().filter(e=>e.group===gid&&e.id!=="fsshow"&&e.status!=="done"), fsLive=fsOn.find(e=>e.status==="live");
   const tile=(a,v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="${a}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   return `<main class="page foc">
-    ${artPromoCard(mid)}<div class="foc-thr">${muThrones()}</div>
+    ${artPromoCard(mid)}${typeof awFestHtml==="function"?awFestHtml(1):""}<div class="foc-thr">${muThrones()}</div>
     ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     ${secH("cam","每天")}<div class="tiles">${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","wiki","news","SKpedia","我的百科")}${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>

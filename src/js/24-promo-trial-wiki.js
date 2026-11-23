@@ -291,11 +291,13 @@ function wkViewG2(id,ctx,P,can){ const {gid,g,mem,key,A,col,isM,isSolo,person}=c
   const info=`<table class="wk-info2${isSolo||mc?" solo":""}" style="--wc:${col}${sol}"><tr><td colspan="2" class="wk-ih2">${head}</td></tr>${person&&photo?`<tr><td colspan="2" class="wk-iph2"><span style="background-image:url('${esc(photo)}')"></span></td></tr>`:""}${infoRows}${row("連結",linkRow)}</table>${can?`<p class="wk-ie"><a data-a="wkEditS" data-v="${id}#info">[編輯]</a></p>`:""}`;
   const SS=wkSecs(ctx), fold=ui.wkFold||{}, toc=[], body=[], empty=[];
   const txt=k=>{ const v=(T[k]||"").trim(); if(!v) return ""; if(k==="tr"||k==="pre") return `<ul>${v.split("\n").filter(x=>x.trim()).map(x=>`<li>${wkTxt(x.replace(/^[-・*]\s*/,""),[],id)}</li>`).join("")}</ul>`; return `<p>${wkTxt(v,[],id)}</p>`; };
-  const secHtml=(n,k,t,lv)=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||WK_ED.has(k))?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
-    toc.push(`<a data-a="wkToK" data-v="${k}" class="lv${lv}"><span class="wk-no">${n}.</span> ${t}</a>`);
-    return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}</div></section>`; };
+  const secHtml=(n,k,t,lv,kids="")=>{ const auto=WK_AUTO.has(k)?wkAutoSec(k,ctx):"", own=txt(k), q=k==="ov"&&T.ovq?`<blockquote class="wk-q">${esc(T.ovq)}</blockquote>`:"", ed=can&&(!WK_AUTO.has(k)||WK_ED.has(k))?`<a class="wk-ed1" data-a="wkEditS" data-v="${id}#${k}">[編輯]</a>`:"";
+    /* 11/23 子標題（2.1）放進主標題（2.）的內容裡：收合主標題時子標題一起收；子標題自己也能單獨收合。藍色編號點了回到目錄 */
+    return `<section class="wk-s lv${lv} ${fold[id+k]?"fold":""}" data-k="${k}" data-fk="${esc(id+k)}"><h2><i class="wk-ar" data-a="wkFold" data-v="${id+k}">⌄</i><span class="wk-no" data-a="wkTocBack">${n}.</span> ${t}${ed}</h2><div class="wk-sc">${q}${auto}${own}${kids}</div></section>`; };
+  const tocA=(n,k,t,lv)=>toc.push(`<a data-a="wkToK" data-v="${k}" class="lv${lv}"><span class="wk-no">${n}.</span> ${t}</a>`);
   let n=0; SS.forEach(([k,t,sub])=>{ if(!wkSecOn(ctx,P,[k,t,sub])){ if(can&&(!WK_AUTO.has(k)||WK_ED.has(k))) empty.push([k,t]); (sub||[]).forEach(([k2,t2])=>{ if(can&&(!WK_AUTO.has(k2)||WK_ED.has(k2))) empty.push([k2,t2]); }); return; }
-    n++; body.push(secHtml(n,k,t,1)); let j=0; (sub||[]).forEach(([k2,t2])=>{ if(wkHas(ctx,P,k2)){ j++; body.push(secHtml(`${n}.${j}`,k2,t2,2)); } else if(can&&(!WK_AUTO.has(k2)||WK_ED.has(k2))) empty.push([k2,t2]); }); });
+    n++; tocA(n,k,t,1); let j=0; const kids=[]; (sub||[]).forEach(([k2,t2])=>{ if(wkHas(ctx,P,k2)){ j++; tocA(`${n}.${j}`,k2,t2,2); kids.push(secHtml(`${n}.${j}`,k2,t2,2)); } else if(can&&(!WK_AUTO.has(k2)||WK_ED.has(k2))) empty.push([k2,t2]); });
+    body.push(secHtml(n,k,t,1,kids.join(""))); });
   const cats=[g.name,d?new Date(d).getFullYear()+"年出道":"",isM?wkFnStrip(F.pos):isSolo?"SOLOIST":mem.length===2?"二人組":`${mem.length}人組`,wkFnStrip(F.co)].filter(Boolean);
   const H=P.hist||[];
   if(ui.wkJ&&ui.wkJ.id===id){ const k=ui.wkJ.k; ui.wkJ=null; setTimeout(()=>{ const s=document.querySelector(`.wk-s[data-k="${k}"]`); if(s) s.scrollIntoView({block:"start"}); },60); }
@@ -382,7 +384,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
   else if(a==="wkLinks"){ ui.wkLk=ui.wkLk===v?null:v; const y=window.scrollY; render(); window.scrollTo(0,y); }
   else if(a==="wkCm"){ navTo(route().role==="artist"?"#/artist?tab=foc":"#/fan/grp?id="+encodeURIComponent(v)); }
   else if(a==="wkTocT"){ ui.wkTocC=!ui.wkTocC; const y=window.scrollY; render(); window.scrollTo(0,y); }
-  else if(a==="wkToK"){ const s=document.querySelector(`.wk-s[data-k="${v}"]`); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="wkToK"){ let s=document.querySelector(`.wk-s[data-k="${v}"]`); if(!s) return; const F=[...document.querySelectorAll(".wk-s.fold")].filter(x=>x===s||x.contains(s));   /* 收起來的主標題裡的子標題：先展開再跳 */
+    if(F.length){ ui.wkFold=ui.wkFold||{}; F.forEach(x=>{ ui.wkFold[x.dataset.fk]=false; }); const y=window.scrollY; render(); window.scrollTo(0,y); s=document.querySelector(`.wk-s[data-k="${v}"]`); }
+    if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); }
+  else if(a==="wkTocBack"){ if(ui.wkTocC){ ui.wkTocC=false; const y=window.scrollY; render(); window.scrollTo(0,y); } const t=document.getElementById("wkToc"); if(t) t.scrollIntoView({behavior:"smooth",block:"start"}); }
   else if(a==="wkFn"){ document.querySelectorAll(".wk-fnpop").forEach(x=>x.remove()); const t=WKFN[+v-1]; if(!t) return; const r=e.target.getBoundingClientRect(), d=document.createElement("div"); d.className="wk-fnpop";
     d.innerHTML=`<p><b>[${v}]</b> ${wkTxt(t,[],"")}</p><button data-a="wkFnX">關閉</button>`; document.querySelector("main.wk").appendChild(d);   /* 跟 Namuwiki 一樣：從被點的字上方跳出 */
     const h=d.offsetHeight, gap=Math.min(110,Math.max(16,r.top-h-70)); if(r.top-h-gap>60) d.style.bottom=(innerHeight-r.top+gap)+"px"; else d.style.top=(r.bottom+16)+"px"; }

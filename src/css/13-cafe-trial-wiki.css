@@ -420,3 +420,10 @@ html .lvr-i .dl-vf,html .lvr-i .dl-vf svg,.dk-keep.dl-vf{color:#8843FB!important
 .wk-fbar,.wk-fbar *{box-sizing:border-box}.wk-fbar label,.wk-fbar>button{margin:0!important;align-self:center}.wk-fbar>button{display:grid;place-items:center;padding:0;line-height:1}
 main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!important}
 
+
+/* 11/23 子標題放進主標題裡；藍色編號可以點（回目錄） */
+.wk-s,.wk-toc2{scroll-margin-top:72px}
+.wk-s h2 .wk-no{cursor:pointer;-webkit-tap-highlight-color:transparent}
+.wk-sc>.wk-s.lv2:first-child h2{margin-top:6px}
+.wk-g .wk-s.lv2 h2,.wk-s.lv2 h2{font-size:20px;margin:18px 0 8px}
+.wk-s h2 .wk-ed1{margin-left:auto;font-size:13px;font-weight:700;flex:none}

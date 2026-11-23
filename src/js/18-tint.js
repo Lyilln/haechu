@@ -69,7 +69,7 @@ function thRecolor(t,v){ let st=document.getElementById("thRecolor"); if(!st){ s
   /* 11/17 前綴包在 :where() 裡＝不加權重：換色只蓋過 App 原本的顏色，不會蓋過主題自己指定的（例如淺色時的提示框、對話框） */
   const W1='html:where([data-th])', W2='html:where([data-th]:not([data-theme="dark"]))';
   const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,W1); if(/^html\b/.test(x)) return x.replace(/^html/,W2); if(x===":root") return W2; return W2+' '+x; }).join(",");
-  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast|\.mu[23]-|\.s-(?:ts|sc|mcd|mb|ink)\b|\.mcx|\.t-tr\b|\.t-rh|\.t-foot|\.t-inp|\.from-fan/.test(r.selectorText)) continue;   /* 音樂節目卡、公放卡登場：各節目有自己的品牌色，不跟著主題換；TIE 的翻譯文字用藝人選的顏色 */   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast|\.mu[23]-|\.s-(?:ts|sc|mcd|mb|ink)\b|\.mcx|\.t-tr\b|\.t-rh|\.t-foot|\.t-inp|\.from-fan|\.wk(?![a-zA-Z])|\.wkp?-/.test(r.selectorText)) continue;   /* 音樂節目卡、公放卡登場：各節目有自己的品牌色，不跟著主題換；TIE 的翻譯文字用藝人選的顏色 */   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
       for(const p2 of P){ const val=r.style.getPropertyValue(p2); if(!val||/var\(/.test(val)) continue; const nv=fix(val); if(nv!==val) d.push(`${p2}:${nv}${r.style.getPropertyPriority(p2)?"!important":""}`); }
       if(d.length) out.push(`${pre(r.selectorText)}{${d.join(";")}}`); }
     else if(r.type===4&&r.cssRules){ const b0=out.length; walk(r.cssRules); if(out.length>b0){ const inner=out.splice(b0); out.push(`@media ${r.conditionText||r.media.mediaText}{${inner.join("\n")}}`); } } } };
@@ -87,6 +87,7 @@ function thApplyCSS(){
   root.setAttribute("data-th",t.id);
   st.textContent=`${H}{--violet:${v.ac};--violet-ink:${vink};--violet-soft:${rgba(v.ac,dark?.2:.13)};--candy:linear-gradient(135deg,${mixHex(v.ac,"#ffffff",.22)} 0%,${v.ac} 100%);--bg:${v.bg};--s1:${card};--s2:${s2};--s3:${s3};--card-solid:${card};--glass:${card};--glass-pink:${card};--line:${rgba(v.ink,dark?.12:.09)};--ink:${v.ink};--ink-2:${v.sub};--ink-3:${mixHex(v.sub,v.bg,.25)}}
 ${H} .t-rh,${H} .t-foot{${TV}}
+${H} .wk{${TV};color:var(--ink)}
 ${H} .t-rh,${H} .t-foot{background:${dark?"#1B1A21":"#FFFFFF"}!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 ${H} body{background:${thPat(t,v,dark)}${v.bg}!important}
 ${H} .t-art-n b:not(.a-nick),${H} .t-acc b{color:${v.ink}!important}
