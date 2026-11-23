@@ -10,7 +10,7 @@
 const NL_ON="daisuki_npc_on", NL_POSTS="daisuki_npc_posts", NL_HIDE="daisuki_npc_hide", NL_LK="daisuki_npc_lk", NL_CMK="daisuki_npc_cm", NL_WEL="daisuki_npc_wel", NL_TIEK="daisuki_npc_tie", NL_JOIN="daisuki_npc_join";
 const NL_PRICE=100, NL_DAYS=30;
 const nlAdm=()=>{ try{ return typeof isAdminAcct==="function"&&isAdminAcct(); }catch(e){ return false; } };
-const nlOn=()=>{ try{ return nlAdm()||!!S.get(NL_ON,0); }catch(e){ return false; } };
+const nlOn=()=>true;   /* 11/24 雲秀看過沒問題：開放給大家 */
 const nlGs=()=>Object.keys(NPC_INFO).filter(G=>NL_P[G]);
 const nlIds=G=>(NL_P[G]||[]).map((_,i)=>G+"."+i);
 const nlAll=()=>nlGs().reduce((a,G)=>a.concat(nlIds(G)),[]);
@@ -39,16 +39,19 @@ const NL_C={};
 function nlGen(kind){ const now=Date.now(), b=Math.floor(now/3e5); if(NL_C[kind]&&NL_C[kind].b===b) return NL_C[kind].L;
   const today=nlDayN(now), L=[], hide=S.get(NL_HIDE,{})||{};
   nlGs().forEach(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, dmd=I.debut.slice(5), dy=+I.debut.slice(0,4);
-    nlIds(G).forEach(id=>{ const m=nlM(id), a=m.P.a, own=kind==="cm"?m.P.p:m.P.c.map(x=>x.replace(/^[mn]>/,"")), pool=own.concat(kind==="cm"?NL_POST[a]:NL_CAP[a]), off=strHash(id+kind);
-      for(let dn=today-20; dn<=today; dn++){ const md=nlMD(dn), sd=strHash(kind+id+dn), yr=new Date(dn*864e5).getUTCFullYear(); let t=null, h=10+sd%13, mi=(sd>>>5)%60;
-        if(md===nlBd(m.row)){ t=nlPick(NL_BDAY_ME,sd); h=kind==="cm"?0:21; mi=(sd>>>5)%20; }
-        else { I.mem.forEach((r,j)=>{ if(!t&&j!==m.i&&nlBd(r)===md&&sd%10<7) t=nlPick(NL_BDAY_MATE,sd).replace(/\{B\}/g,npcN(r[0])); }); if(t) h=(sd%3); }
-        if(!t&&md===dmd&&yr>dy&&(kind==="cm"||a==="lead"||solo||sd%10<4)){ t=nlPick(NL_ANNIV,sd).replace(/\{Y\}/g,yr-dy); h=kind==="cm"?0:12; }
-        if(!t&&NL_DAY[md]&&(a==="lead"||solo||sd%10<3)) t=nlPick(NL_DAY[md],sd);
-        if(!t){ const pr=kind==="cm"?(solo?.4:.2):(solo?.42:.26); if((sd%1000)/1000<pr) t=pool[(dn*7+off)%pool.length]; }
+    nlIds(G).forEach(id=>{ const m=nlM(id), a=m.P.a, tk=nlTk(id)||{L:"ko",c:[],n:[]}, fr=tk.L!=="ko", strip=x=>String(x).replace(/^[mn]>/,"").split("|").join(" "), Z=(A,B)=>A.map((o,j)=>({o,z:B[j]||o})),
+        pk=(NL_PK[G]||[])[m.i]||[], own=kind==="cm"?Z(pk,m.P.p):tk.c.map(([o,z])=>({o:strip(o),z:strip(z)})), pool=own.concat(kind==="cm"?Z(NL_POST_KO[a],NL_POST[a]):Z(NL_CAP_KO[a],NL_CAP[a])), nat=tk.n.map(([o,z])=>({o:strip(o),z:strip(z)})), off=strHash(id+kind);
+      for(let dn=today-20; dn<=today; dn++){ const md=nlMD(dn), sd=strHash(kind+id+dn), yr=new Date(dn*864e5).getUTCFullYear(); let t=null, h=10+sd%13, mi=(sd>>>5)%60, thx=false, lg="ko";
+        const pr2=(A,B,s0)=>{ const j=(s0>>>0)%A.length; return {o:A[j],z:B[j]}; };
+        if(md===nlBd(m.row)){ t=pr2(NL_BDAY_ME_KO,NL_BDAY_ME,sd); thx=true; h=kind==="cm"?0:21; mi=(sd>>>5)%20; }
+        else { I.mem.forEach((r,j)=>{ if(!t&&j!==m.i&&nlBd(r)===md&&sd%10<7){ const x=pr2(NL_BDAY_MATE_KO,NL_BDAY_MATE,sd); t={o:x.o.replace(/\{B\}/g,npcN(r[0])),z:x.z.replace(/\{B\}/g,npcN(r[0]))}; } }); if(t) h=(sd%3); }
+        if(!t&&md===dmd&&yr>dy&&(kind==="cm"||a==="lead"||solo||sd%10<4)){ const x=pr2(NL_ANNIV_KO,NL_ANNIV,sd); t={o:x.o.replace(/\{Y\}/g,yr-dy),z:x.z.replace(/\{Y\}/g,yr-dy)}; thx=true; h=kind==="cm"?0:12; }
+        if(!t&&NL_DAY[md]&&(a==="lead"||solo||sd%10<3)){ t=pr2(NL_DAY_KO[md],NL_DAY[md],sd); thx=true; }
+        if(!t){ const pr=kind==="cm"?(solo?.4:.2):(solo?.42:.26); if((sd%1000)/1000<pr){ if(fr&&nat.length&&(sd>>>9)%100<18){ t=nat[(dn+off)%nat.length]; lg=tk.L; } else t=pool[(dn*7+off)%pool.length]; } }
         if(!t) continue; const ts=nlDayTs(dn,h,mi), pid=`n${kind}_${id}_${dn}`; if(ts>now||hide[pid]) continue;
-        L.push({id:pid,mid:id,G,t:nlFill(t,id,sd),ts,base:(kind==="cm"?600:1800)+strHash(pid)%(kind==="cm"?6000:24000)}); } }); });
-  const cu=S.get(NL_POSTS,{})||{}; Object.keys(cu).forEach(k=>{ const x=cu[k]; if(!x||!nlM(x.mid)||hide[k]) return; if(x.k!=="both"&&x.k!==kind) return; if(x.ts>now) return; L.push({id:k,mid:x.mid,G:nlM(x.mid).G,t:nlFill(x.t,x.mid,0),ts:x.ts,base:(kind==="cm"?400:1200)+strHash(k)%3000,own:1}); });
+        let o=t.o, z=t.z; if(thx&&fr&&NL_THX[tk.L]){ const x=NL_THX[tk.L][(sd>>>4)%NL_THX[tk.L].length]; o+=(kind==="cm"?"\n\n":" ")+x[0]; if(x[1]!==x[0]||tk.L!=="zh") z+=(kind==="cm"?"\n\n":" ")+x[1]; }
+        L.push({id:pid,mid:id,G,t:nlFill(o,id,sd),z:nlFill(z,id,sd),lg,ts,base:(kind==="cm"?600:1800)+strHash(pid)%(kind==="cm"?6000:24000)}); } }); });
+  const cu=S.get(NL_POSTS,{})||{}; Object.keys(cu).forEach(k=>{ const x=cu[k]; if(!x||!nlM(x.mid)||hide[k]) return; if(x.k!=="both"&&x.k!==kind) return; if(x.ts>now) return; L.push({id:k,mid:x.mid,G:nlM(x.mid).G,t:nlFill(x.t,x.mid,0),z:"",ts:x.ts,base:(kind==="cm"?400:1200)+strHash(k)%3000,own:1}); });
   L.sort((a,b)=>b.ts-a.ts); NL_C[kind]={b,L}; return L; }
 const nlPost=id=>nlGen("cm").find(p=>p.id===id)||null;
 /* ---------- 社群（LOVE） ---------- */
@@ -58,10 +61,10 @@ const nlCms=()=>S.get(NL_CMK,{})||{};
 const nlLiked=pid=>(nlLikes()[pid]||[]).includes(myEmail()||"me");
 const nlLikeN=p=>p.base+(nlLikes()[p.id]||[]).length;
 const nlFans=G=>8000+strHash("fans"+G)%90000+(G&&nlJoined().includes(G)?1:0);
-function nlCard(p){ const m=nlM(p.mid); if(!m) return ""; const lk=nlLiked(p.id), cn=(nlCms()[p.id]||[]).length, long=p.t.length>90&&!(ui.nlEx&&ui.nlEx[p.id]);
+function nlCard(p){ const m=nlM(p.mid); if(!m) return ""; const lk=nlLiked(p.id), cn=(nlCms()[p.id]||[]).length, long=p.t.length>90&&!(ui.nlEx&&ui.nlEx[p.id]), hasTr=!!p.z&&p.z!==p.t, orig=hasTr&&ui.nlOrig&&ui.nlOrig[p.id], txt=hasTr&&!orig?p.z:p.t;
   return `<article class="card post nlp" id="nlp-${p.id}"><div class="post-head"><button class="av av-go nl-avb" data-a="nlGo" data-v="${esc(m.G)}" aria-label="${esc(nlGN(m.G))} 的社群">${nlAv(p.mid)}</button>
     <div class="who"><b>${esc(nlName(p.mid))} ${I.verified}</b><span>${ymdhm(p.ts)}${nlSolo(m.G)?"":`・${esc(nlGN(m.G))}`}</span></div>${nlAdm()?`<button class="uni-more" data-a="nlPMore" data-v="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>
-    <div class="post-body"><p class="post-text ${long?"clamp":""}">${esc(p.t)}</p>${long?`<button class="more" data-a="nlEx" data-v="${p.id}">展開全文</button>`:""}</div>
+    <div class="post-body"><p class="post-text ${long?"clamp":""}">${esc(txt)}</p>${hasTr?`<button class="pt-orig" data-a="nlOrig" data-v="${p.id}">${orig?"查看翻譯":`查看原文 (${NL_LANGN[p.lg]||"韓國語"})`}</button>`:""}${long?`<button class="more" data-a="nlEx" data-v="${p.id}">展開全文</button>`:""}</div>
     <div class="post-foot"><button class="act ${lk?"liked":""}" data-a="nlLike" data-v="${p.id}" aria-pressed="${lk}" aria-label="按讚">${I.heart}<span>${fmt(nlLikeN(p))}</span></button><button class="act" data-a="nlCm" data-v="${p.id}" aria-label="留言">${I.chat}<span>${fmt(cn)}</span></button></div></article>`; }
 /* LOVE 首頁「藝人動態」：有加入的虛擬歌手社群也一起出現 */
 function npcFeedItems(){ try{ if(!nlOn()) return []; const J=nlJoined(); if(!J.length) return []; const lim=Date.now()-14*864e5; return nlGen("cm").filter(p=>J.includes(p.G)&&p.ts>=lim).map(p=>({ts:p.ts,h:()=>nlCard(p)})); }catch(e){ return []; } }
@@ -76,7 +79,7 @@ function nlView(G,tab){ const NI=NPC_INFO[G]; if(!NI) return ""; const on=nlJoin
       <div class="cmx-hi"><small>${fmtW(nlFans(G))} 位成員${on?"・✓ 已加入":""}</small><b>${esc(nlGN(G))}</b>${on?`<button class="cmx-ms" data-a="nlTab" data-v="about" data-g="${esc(G)}">${esc(WHISPER_NAME)}</button>`:`<button class="cmx-ms" data-a="nlJoin" data-v="${esc(G)}">＋ 加入社群</button>`}</div></section>
     <nav class="cm-tabs cmx-tabs">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="nlTab" data-v="${k}" data-g="${esc(G)}">${l}</button>`).join("")}</nav><main class="page cm-body">${body}</main></div>`; }
 function nlAbout(G){ const I=NPC_INFO[G], adm=nlAdm(), shared=!!S.get(NL_ON,0);
-  return `${adm?`<section class="card nl-admc"><b>只有管理員看得到這一塊</b><p>${shared?"現在大家都看得到虛擬歌手的社群、SNS 和 TIE。":"現在只有你看得到虛擬歌手的社群、SNS 和 TIE。"}</p><button class="btn ${shared?"btn-soft":"btn-main"}" data-a="nlShare">${shared?"改回只有我看得到":"開放給大家"}</button></section>`:""}
+  return `
     <section class="card nl-mems">${nlIds(G).map(id=>{ const m=nlM(id), r=nlRoomOf(id), act=nlActive(id);
       return `<div class="nl-mr">${nlAv(id,"md")}<span class="nl-mi"><b>${esc(nlName(id))}</b><small>${esc(m.row[3])}・${esc(m.row[2])}</small></span>
         ${act?`<button class="nl-tb on" data-a="nlRoom" data-v="${id}">${esc(WHISPER_NAME)} 聊天</button>`:`<button class="nl-tb" data-a="nlBuy" data-v="${id}">${esc(WHISPER_NAME)}<small>${NL_PRICE} 積分</small></button>`}
@@ -146,7 +149,7 @@ function nlAvUrl(id){ if(NL_AVU[id]) return NL_AVU[id]; const m=nlM(id), c=nlCol
 const npcSnUsers=()=>nlOn()?nlAll().map(nlSnId):[];
 const nlSnFol=uid=>12000+strHash("snf"+uid)%400000;
 const nlPh=(p,k)=>{ const s=strHash(p.id+k), c=nlCol(p.G), x=s%100, y=(s>>>7)%100, x2=(s>>>14)%100; return `<div class="nl-ph" style="background:radial-gradient(circle at ${x}% ${y}%,#fff8 0,#fff0 34%),radial-gradient(circle at ${x2}% ${100-y}%,${c}cc 0,${c}00 55%),linear-gradient(${s%360}deg,${c},#2a2430)"></div>`; };
-function npcSnPosts(){ try{ if(!nlOn()) return []; return nlGen("sn").map(p=>({id:p.id,uid:nlSnId(p.mid),cap:p.t,ts:p.ts,base:p.base,npc:1,media:Array.from({length:1+strHash(p.id)%3},(_,k)=>({type:"html",h:nlPh(p,k)}))})); }catch(e){ return []; } }
+function npcSnPosts(){ try{ if(!nlOn()) return []; return nlGen("sn").map(p=>({id:p.id,uid:nlSnId(p.mid),cap:p.t,capZ:p.z,ts:p.ts,base:p.base,npc:1,media:Array.from({length:1+strHash(p.id)%3},(_,k)=>({type:"html",h:nlPh(p,k)}))})); }catch(e){ return []; } }
 /* ---------- 管理員：發文、隱藏、歡迎語 ---------- */
 function nlWrite(G){ const ids=nlIds(G); ui.nlW={G,mid:ids[0],k:"both"}; nlWriteDraw(); }
 function nlWriteDraw(){ const w=ui.nlW; if(!w) return; const old=(document.getElementById("nlWT")||{}).value||w.t||"";
@@ -159,7 +162,7 @@ function nlWelEdit(id){ ui.nlWelId=id; setLayer(`<div class="aw-mod-bg nl-mod" d
     <b class="nl-lb">原文（他傳的語言）</b><textarea id="nlWelT" maxlength="600">${esc(nlWelcome(id).o)}</textarea><b class="nl-lb">中文（按 A 看到的翻譯）</b><textarea id="nlWelZ" maxlength="600">${esc(nlWelcome(id).z)}</textarea><div class="aw-mod-b"><button class="btn btn-soft" data-a="nlClose">取消</button><button class="btn btn-main" data-a="nlWelOk">儲存</button></div></div></div>`,"nlwel"); }
 /* ---------- 點擊 ---------- */
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="nl"]'); if(!t) return; const a=t.dataset.a, v=t.dataset.v;
-  if(!/^nl(Go|Tab|Join|Like|Cm|Ex|PMore|Room|Buy|Close|No|Write|WMem|WK|WOk|Wel|WelOk|Share|Tr)$/.test(a)) return; e.stopImmediatePropagation(); if(a!=="nlNo") e.preventDefault();
+  if(!/^nl(Go|Tab|Join|Like|Cm|Ex|PMore|Room|Buy|Close|No|Write|WMem|WK|WOk|Wel|WelOk|Share|Tr|Orig|CapTr)$/.test(a)) return; e.stopImmediatePropagation(); if(a!=="nlNo") e.preventDefault();
   if(a==="nlNo"){ return; }
   if(a==="nlClose"){ layer.innerHTML=""; return; }
   if(a==="nlGo"){ layer.innerHTML=""; navTo(nlHref("npc","id="+encodeURIComponent(v))); scrollTo(0,0); return; }
@@ -168,6 +171,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="nlEx"){ ui.nlEx=ui.nlEx||{}; ui.nlEx[v]=1; render(); return; }
   if(a==="nlLike"){ const me=myEmail()||"me", on=nlLiked(v); mkEdit(NL_LK,o=>{ o=o||{}; const L=(o[v]||[]).filter(x=>x!==me); if(!on) L.push(me); o[v]=L; return {v:o}; }).then(()=>render()).catch(()=>toast("沒有按到，再試一次")); return; }
   if(a==="nlCm"){ nlCmOpen(v); return; }
+  if(a==="nlOrig"){ ui.nlOrig=ui.nlOrig||{}; ui.nlOrig[v]=!ui.nlOrig[v]; render(); return; }
+  if(a==="nlCapTr"){ ui.nlCapTr=ui.nlCapTr||{}; ui.nlCapTr[v]=!ui.nlCapTr[v]; render(); return; }
   if(a==="nlTr"){ ui.nlTr=ui.nlTr||{}; ui.nlTr[v]=1; render(); return; }
   if(a==="nlPMore"){ if(!nlAdm()) return; ask("把這則從大家的畫面上拿掉？",()=>{ mkEdit(NL_HIDE,o=>({v:{...(o||{}),[v]:1}})).then(()=>{ NL_C.cm=NL_C.sn=null; render(); toast("拿掉了"); }); }); return; }
   if(a==="nlRoom"){ layer.innerHTML=""; ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(v))); return; }
