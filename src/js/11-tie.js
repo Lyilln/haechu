@@ -46,16 +46,16 @@ function viewTieList(){
         <p>${r.active?"":"TIE 券已到期・"}${r.last?(r.last.from==="me"?"你：":"")+(stkOf(r.last.ko||r.last.text)?"貼圖":esc((r.last.ko||r.last.text).split(NICK_TK).join(nickFor(r.id)))):"還沒有新訊息"}</p></div>
       ${r.unread?`<span class="t-cnt">${r.unread}</span>`:""}${r.st.fav?`<span class="t-fav">${TI.star}</span>`:""}
     </button>`};
-  const all=fanRooms().length;
+  const nlN=typeof npcTieCount==="function"?npcTieCount():0, all=fanRooms().length+nlN, nlH=typeof npcTieRows==="function"?npcTieRows(q):"";
   return `<div class="t-glow" aria-hidden="true"></div><header class="t-lh sh-head">${srchOn("tie")?srchBar("搜尋聊天室或藝人名稱..."):`
       <div class="t-lh-side"><button data-a="shOpen" data-k="tie" aria-label="搜尋聊天室">${TI.search}</button></div><h1>${WHISPER_NAME}</h1>
       <div class="t-lh-side r"><button data-a="tListClear" aria-label="清除對話列表">${TI.trash}</button></div>`}
     </header>
     <main class="t-list">
       ${!all?`<div class="t-empty"><span class="t-empty-ico">${NAV.tie}</span><p>暫無任何 ${WHISPER_NAME} 對話</p><button class="t-pill" data-a="goSubs">前往 SHOP</button></div>`
-      :!rooms.length?srchLabel("tie")+srchEmpty("聊天室")
+      :!rooms.length&&!nlH?srchLabel("tie")+srchEmpty("聊天室")
       :`${srchLabel("tie")}${fav.length?`<span class="t-sec">我的最愛聊天室</span>${fav.map(card).join("")}`:""}
-        ${rest.length?`<span class="t-sec">最近的聊天室</span>${rest.map(card).join("")}`:""}`}
+        ${rest.length?`<span class="t-sec">最近的聊天室</span>${rest.map(card).join("")}`:""}${nlH}`}
     </main>`;
 }
 

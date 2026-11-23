@@ -1,0 +1,48 @@
+/* 虛擬歌手的社群、SNS、TIE（11/24） */
+.npa{display:grid;place-items:center;width:40px;height:40px;border-radius:50%;color:#fff;font-style:normal;font-weight:800;font-size:15px;flex:none;text-shadow:0 1px 2px rgba(0,0,0,.18)}
+.npa.md{width:46px;height:46px;font-size:17px}
+.npa.lg{width:56px;height:56px;font-size:21px;border:1px solid #fff}
+.npa.ring{width:36px;height:36px;margin:2px;font-size:14px;box-shadow:0 0 0 2px #fff,0 0 0 4px #B9A7D6}
+.npa.ex{width:62px;height:62px;border-radius:22px;font-size:22px}
+.post-head .nl-avb{padding:0;background:none;border:0;width:auto;height:auto}
+.nl-hero{min-height:230px;overflow:hidden}
+.nl-hbg{display:grid;place-items:center;overflow:hidden;max-width:100%}.nl-hbg i{font-style:normal;font-size:120px;font-weight:900;color:rgba(255,255,255,.22);letter-spacing:-.04em}
+.nl-in{flex:none;font-size:12px;font-weight:700;color:#9A93A6;padding:6px 10px}
+.ex-join.nl-j{margin:0;flex:none}
+.nl-adm{display:block;width:100%;margin:0 0 12px;padding:12px;border-radius:14px;border:1.5px dashed #CFC4E3;background:#FBF9FE;color:#6D5A8E;font-weight:700;font-size:13.5px}
+.nl-admc{padding:16px;margin-bottom:12px;border:1.5px dashed #CFC4E3;background:#FBF9FE}.nl-admc b{display:block;font-size:13px;color:#6D5A8E}.nl-admc p{margin:6px 0 12px;font-size:13.5px;color:#4A4352;line-height:1.5}
+.nl-mems{padding:6px 14px}
+.nl-mr{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F0EDF4}.nl-mr:last-child{border-bottom:0}
+.nl-mi{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.nl-mi b{font-size:15px}.nl-mi small{font-size:12px;color:#9A93A6;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.nl-tb{flex:none;display:flex;flex-direction:column;align-items:center;gap:1px;min-width:74px;padding:7px 12px;border-radius:999px;background:#8843FB;color:#fff;font-weight:800;font-size:13px;line-height:1.15}
+.nl-tb small{font-size:10.5px;font-weight:600;opacity:.85}
+.nl-tb.on{background:#F1EAFE;color:#7C3AED}
+.nl-wb{flex:none;padding:6px 10px;border-radius:999px;background:#F3F1F6;color:#6E6779;font-size:12px;font-weight:700}
+.nl-note{margin:4px 6px 14px;font-size:12.5px;color:#8E8799;line-height:1.6}
+/* 留言 */
+.nl-sw{position:fixed;inset:0;z-index:300;background:rgba(20,14,26,.42);display:flex;align-items:flex-end}
+.nl-sh{width:100%;max-height:78vh;display:flex;flex-direction:column;background:#fff;color:#1D1A22;border-radius:22px 22px 0 0;padding:8px 16px calc(env(safe-area-inset-bottom) + 10px);-webkit-animation:nlUp .25s ease both;animation:nlUp .25s ease both}
+@-webkit-keyframes nlUp{from{-webkit-transform:translateY(40px);opacity:0}to{-webkit-transform:none;opacity:1}}
+@keyframes nlUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+.nl-gr{display:block;width:38px;height:5px;border-radius:9px;background:#DDD8E3;margin:0 auto 8px}
+.nl-st{display:block;text-align:center;font-size:15px;padding-bottom:10px;border-bottom:1px solid #F0EDF4}
+.nl-cl{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:6px 0;min-height:120px}
+.nl-cr{padding:10px 0;border-bottom:1px solid #F6F4F8}.nl-cr b{font-size:13px}.nl-cr p{margin:3px 0;font-size:14.5px;line-height:1.5;white-space:pre-wrap;word-break:break-word}.nl-cr small{font-size:11.5px;color:#A49DAE}
+.nl-c0{text-align:center;color:#A49DAE;font-size:13.5px;padding:30px 0}
+.nl-cf{display:flex;gap:8px;align-items:flex-end;padding-top:8px;border-top:1px solid #F0EDF4}
+.nl-cf textarea{flex:1;min-height:40px;max-height:120px;resize:none;border:1px solid #E6E1EC;border-radius:20px;padding:9px 14px;font:inherit;font-size:16px;background:#FAF9FB;color:inherit}
+.nl-cf button{flex:none;height:40px;padding:0 16px;border-radius:20px;background:#8843FB;color:#fff;font-weight:800}
+/* 管理員的小視窗（白色） */
+.nl-mod .aw-mod{background:#fff;color:#1D1A22;box-shadow:0 30px 60px -20px rgba(0,0,0,.45)}
+.nl-mod .aw-mod h3{margin:0 0 12px;font-size:17px}
+.nl-mod textarea{width:100%;min-height:140px;border:1px solid #E6E1EC;border-radius:14px;padding:12px;font:inherit;font-size:16px;line-height:1.55;background:#FAF9FB;color:inherit;resize:vertical;box-sizing:border-box}
+.nl-tip{margin:-4px 0 10px;font-size:12.5px;color:#8E8799;line-height:1.55}
+.nl-chips{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.nl-chips button{padding:7px 12px;border-radius:999px;background:#F3F1F6;color:#5D566A;font-size:13px;font-weight:700}
+.nl-chips button.on{background:#8843FB;color:#fff}
+/* SNS 的照片（虛擬歌手沒有真的照片：用團的代表色做成像散景的畫面） */
+.nl-ph{position:absolute;inset:0}
+.snof-h .nl-ph{position:absolute;inset:0}
+html[data-theme="dark"] .nl-sh,html[data-theme="dark"] .nl-mod .aw-mod{background:#1E1B23;color:#F2EEF7}
+html[data-theme="dark"] .nl-cf textarea,html[data-theme="dark"] .nl-mod textarea{background:#2A2630;border-color:#3A3542}
+html[data-theme="dark"] .nl-mr{border-color:#2E2A35}

@@ -3736,6 +3736,8 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
+  if(r.sub==="npc"&&typeof nlView==="function"&&nlOn()&&NPC_INFO[r.id]) return paint(nlView(r.id,r.p||"feed"),false);   /* 虛擬歌手的社群、TIE（哪一端都能看） */
+  if(r.sub==="npctie"&&typeof nlRoom==="function"&&nlOn()&&nlM(r.id)){ if(hashChanged) ui.scrollChat=true; return paint(nlRoom(r.id),false); }
   if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
     try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }
   if(r.sub==="sns"){ /* SNS 的分頁列跟 App 的一樣放在頁面外面：換頁不重畫，鏡片滑過去、可以按住拖 */
@@ -4151,7 +4153,7 @@ function exploreTop(){
     <h2 class="mf-h">全部社群</h2>
     <div class="ex-cat">${[["all","全部"],["group","Group"],["solo","Solo"],["new","New"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="exCat" data-v="${k}">${l}</button>`).join("")}</div>
     <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>MEMBERS[id].name), on=fa.includes(g.id);   /* 社群外面一律顯示藝名（個人社群改的名字只在個人社群裡） */return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"feed")+" "+artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${gNew(g)?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
-    ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}`;
+    ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}${typeof npcExploreHtml==="function"?npcExploreHtml():""}`;
 }
 /* 搜尋：直接在全部社群裡篩選（不重畫，才不會收鍵盤） */
 document.addEventListener("input",e=>{ const t=e.target; if(!t.classList||!t.classList.contains("fd-in")) return; const M=S.get(K.fandom,{}); M[t.dataset.g]=t.value.trim(); S.set(K.fandom,M); });
@@ -4509,9 +4511,9 @@ function viewFan(tab){
   if(tab==="home"){
     const fa=followed(), f=scopeF(); let body=""; const q=srchQ("love"); if(ui.feedTab!=="discover"&&ui.feedTab!=="live") ui.feedTab="feed"; if(ui.feedTab==="live") return viewFanLive();
     if(ui.feedTab==="feed"){
-      const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p)), ofs=q?[]:coPosts().filter(x=>x.src&&fa.includes(x.src.gid)&&groupOf(x.src.gid)&&albThumb(x));
+      let nps=[]; const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p)), ofs=q?[]:coPosts().filter(x=>x.src&&fa.includes(x.src.gid)&&groupOf(x.src.gid)&&albThumb(x));
       body=(q?"":myFeedTop())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+   /* 11/18 公司官方公告不放 LOVE（在 SNS 公布就好） */
-        srchLabel("love")+(posts.length||ofs.length?ofMix(posts,ofs):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
+        srchLabel("love")+((nps=q?[]:npcFeedItems()),posts.length||ofs.length||nps.length?ofMix(posts,ofs,nps):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
     } else if(ui.feedTab==="discover"){
       const posts=getPosts().filter(p=>!fa.includes(p.group)&&!p.hidden&&postHit(q,p)&&groupOf(p.group));
       body=(q?"":exploreTop())+`<h2 class="mf-h">你可能也會喜歡</h2>`+srchLabel("love")+(posts.length?posts.map(p=>postCard(p)+`<button class="ex-join" data-a="gJoin" data-v="${p.group}">＋ 加入${esc(groupOf(p.group).name)}</button>`).join(""):q?srchEmpty("動態"):emptyBox(I.star,"你已經加入所有社群了","目前沒有其他社群可以推薦"));
@@ -4880,16 +4882,16 @@ function viewTieList(){
         <p>${r.active?"":"TIE 券已到期・"}${r.last?(r.last.from==="me"?"你：":"")+(stkOf(r.last.ko||r.last.text)?"貼圖":esc((r.last.ko||r.last.text).split(NICK_TK).join(nickFor(r.id)))):"還沒有新訊息"}</p></div>
       ${r.unread?`<span class="t-cnt">${r.unread}</span>`:""}${r.st.fav?`<span class="t-fav">${TI.star}</span>`:""}
     </button>`};
-  const all=fanRooms().length;
+  const nlN=typeof npcTieCount==="function"?npcTieCount():0, all=fanRooms().length+nlN, nlH=typeof npcTieRows==="function"?npcTieRows(q):"";
   return `<div class="t-glow" aria-hidden="true"></div><header class="t-lh sh-head">${srchOn("tie")?srchBar("搜尋聊天室或藝人名稱..."):`
       <div class="t-lh-side"><button data-a="shOpen" data-k="tie" aria-label="搜尋聊天室">${TI.search}</button></div><h1>${WHISPER_NAME}</h1>
       <div class="t-lh-side r"><button data-a="tListClear" aria-label="清除對話列表">${TI.trash}</button></div>`}
     </header>
     <main class="t-list">
       ${!all?`<div class="t-empty"><span class="t-empty-ico">${NAV.tie}</span><p>暫無任何 ${WHISPER_NAME} 對話</p><button class="t-pill" data-a="goSubs">前往 SHOP</button></div>`
-      :!rooms.length?srchLabel("tie")+srchEmpty("聊天室")
+      :!rooms.length&&!nlH?srchLabel("tie")+srchEmpty("聊天室")
       :`${srchLabel("tie")}${fav.length?`<span class="t-sec">我的最愛聊天室</span>${fav.map(card).join("")}`:""}
-        ${rest.length?`<span class="t-sec">最近的聊天室</span>${rest.map(card).join("")}`:""}`}
+        ${rest.length?`<span class="t-sec">最近的聊天室</span>${rest.map(card).join("")}`:""}${nlH}`}
     </main>`;
 }
 
@@ -10546,11 +10548,12 @@ function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&H
     if(Object.keys(dm).length) S.set(K.sns,{...old,dm:{}}); }   /* 舊的大包裡的私訊搬走後清掉（不然大家都讀得到） */
   S.set("daisuki_sn_mig",true); }catch(e){} }
 const SN_SNAP=new WeakMap();
-const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 不複製（太慢，滑動會卡）；snSave 用拿出來時記下的樣子比對，改到同一份也存得到 */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); try{ (d.posts||[]).forEach(x=>{ if(x&&x.of) snOfFill(x); }); }catch(e){} return d; };
+const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 不複製（太慢，滑動會卡）；snSave 用拿出來時記下的樣子比對，改到同一份也存得到 */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); try{ if(typeof npcSnPosts==="function"){ const np=npcSnPosts(); if(np.length) d.posts=d.posts.concat(np); } }catch(e){} try{ (d.posts||[]).forEach(x=>{ if(x&&x.of) snOfFill(x); }); }catch(e){} return d; };
 /* 存檔只存「這次真的改了的地方」：拿讀出來那一刻當基準，跟現在手機裡（可能剛收到別人的新限動、新貼文）合起來，
    不會因為手上拿的是舊的一份，就把別人剛發的蓋掉 */
 /* 存：跟「拿出來那時候」比，有變才存。手機裡的那份如果是同一個（直接改到的）→ 直接存；如果別人的新資料已經進來（不是同一個）→ 三方合併 */
-const snSave=d=>{ try{ const snap=SN_SNAP.get(d)||{}; Object.keys(SN_PARTS).forEach(p=>{ if(d[p]===undefined) return; const mine=JSON.stringify(d[p]); if(snap[p]!=null&&mine===snap[p]) return;
+const snSave=d=>{ const npc=d&&Array.isArray(d.posts)&&d.posts.some(x=>x&&x.npc)?d.posts.filter(x=>x&&x.npc):null; if(npc) d.posts=d.posts.filter(x=>!x||!x.npc); try{ snSave0(d); } finally { if(npc) d.posts=d.posts.concat(npc); } };   /* 虛擬歌手的貼文是照日期算出來的，不存 */
+const snSave0=d=>{ try{ const snap=SN_SNAP.get(d)||{}; Object.keys(SN_PARTS).forEach(p=>{ if(d[p]===undefined) return; const mine=JSON.stringify(d[p]); if(snap[p]!=null&&mine===snap[p]) return;
     const cur=S.get(snKey(p),null); let out=d[p];
     if(cur!=null&&cur!==d[p]&&snap[p]!=null){ const curJ=JSON.stringify(cur); if(curJ===mine){ snap[p]=mine; return; } if(curJ!==snap[p]) out=hbMerge(JSON.parse(snap[p]),d[p],cur); }
     out=hbKeep(snKey(p),out,cur); S.set(snKey(p),out); snap[p]=JSON.stringify(out); }); }catch(e){ toast("空間不夠，存不下來"); } };
@@ -10579,11 +10582,12 @@ function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU
   if(String(id).startsWith("o:g_")){ const gid=id.slice(4), g=groupOf(gid); if(!g||g.solo) return null; return {id,u:ofGH(g),name:g.name,g:g.g||0,ver:true,bio:coInfo(coOfGid(gid)).n,av:gPhoto(gid)||"",gid,of:1}; }
   if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:s.name||s.u,g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
   if(id.startsWith("m:")){ const mid=id.slice(2), m=MEMBERS[mid]; if(!m) return null; const acc=Object.keys(ACCOUNTS).find(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid), du=snHandle(m.name,"m:"+mid,"artist"); return {id,u:pr.u||du,name:pr.name!=null?pr.name:"",g:m.g,ver:true,bio:pr.bio!=null?pr.bio:`${groupOf(m.group)?groupOf(m.group).name:""} 🎤`,av:pr.av||"",mid}; }   /* 藝人的 SNS 跟藝人個人帳號分開：名稱、頭貼都是 SNS 自己的，不跟著個人帳號 */
+  if(id.startsWith("n:")) return typeof npcSnUser==="function"?npcSnUser(id):null;   /* 虛擬歌手 */
   if(id.startsWith("f:")){ const f=SNS_FANS.find(x=>x[0]===id.slice(2)); if(!f) return null; return {id,u:f[0],name:f[1],g:f[2],ver:false,bio:"🌙 每天都是追星日",av:"",fake:true}; }
   if(id.startsWith("u:")){ const e=id.slice(2), a=ACCOUNTS[e]||{}, me=id===snMeId(); const nm=adminView()?(a.name||e):me?ME.name:(S.get(K.nicks,{})[e]||a.name||e.split("@")[0]);
     return {id,u:pr.u||(a.role==="admin"&&!a.member?"haechu.official":snHandle("", "u:"+e,"haechu")),name:pr.name!=null?pr.name:nm,g:3,ver:a.role==="admin"&&!a.member&&(!pr.u||pr.u==="haechu.official"),bio:pr.bio||"",av:pr.av||"",acc:e}; }
   return null; }
-function snAllUsers(){ const L=[]; Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&!snLockOf(id)).forEach(id=>L.push("m:"+id)); snOfAccs().forEach(id=>L.push(id)); SNS_FANS.forEach(f=>L.push("f:"+f[0])); Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.role!=="artist") L.push("u:"+e); }); L.push("o:scout"); return L.map(snUser).filter(Boolean); }
+function snAllUsers(){ const L=[]; Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&!snLockOf(id)).forEach(id=>L.push("m:"+id)); snOfAccs().forEach(id=>L.push(id)); SNS_FANS.forEach(f=>L.push("f:"+f[0])); if(typeof npcSnUsers==="function") npcSnUsers().forEach(x=>L.push(x)); Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.role!=="artist") L.push("u:"+e); }); L.push("o:scout"); return L.map(snUser).filter(Boolean); }
 function snSeed(){ return; const d=snDB(); if(d.seeded&&d.seed2) return; if(d.seeded){ const now=Date.now(); d.notes=d.notes||{"f:moonlight_daily":{text:"今晚直播誰要一起看 🌙",ts:now-2*3600e3},"f:sunny.doll":{text:"小卡交換中～",ts:now-6*3600e3}}; d.seed2=true; snSave(d); return; }
   d.seed2=true; const now=Date.now(); let k=0;
   Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).forEach(mid=>{ for(let i=0;i<3;i++) d.posts.push({id:"sp"+(k++),uid:"m:"+mid,pics:Array.from({length:1+strHash(mid+i)%3},(_,j)=>mid+i+"_"+j),cap:SNS_CAPS[(strHash(mid)+i)%SNS_CAPS.length],ts:now-(i*30+strHash(mid)%20+2)*3600e3,base:300+strHash(mid+i)%4000}); });
@@ -10609,8 +10613,8 @@ const snPriv=(d,uid)=>snForcePriv(uid)||!!((d.prof[uid]||{}).priv);
 /* 私人帳號：只有追蹤他的人看得到（11/12：管理員也一樣，不再例外；出道後的舊帳號也照這個規則藏起來） */
 const snCanSee=(d,uid)=>{ const me=snMeId(); return uid===me||!snPriv(d,uid)||snFol(d,me).includes(uid); };
 const snReqd=(d,uid)=>((d.req||{})[uid]||[]).includes(snMeId());
-const snFollowers=(d,uid)=>Object.keys(d.fol).filter(k=>(d.fol[k]||[]).includes(uid)).length;
-const snLikes=(d,p)=>(d.likes[p.id]||[]).length;
+const snFollowers=(d,uid)=>Object.keys(d.fol).filter(k=>(d.fol[k]||[]).includes(uid)).length+(String(uid).startsWith("n:")&&typeof nlSnFol==="function"?nlSnFol(uid):0);
+const snLikes=(d,p)=>(d.likes[p.id]||[]).length+(p.npc?p.base||0:0);
 /* 跟 IG 一樣：帳號下面不放本名；沒追蹤的人才出現「為你推薦」＋追蹤 */
 const snSugg=(d,uid)=>{ const me=snMeId(); return uid!==me&&!String(uid).startsWith("o:")&&!snFol(d,me).includes(uid); };
 /* 「誰誰誰和其他 N 人都說讚」（N 跟愛心旁的數字對得起來）＋最多 3 個頭貼（優先顯示你追蹤的人） */
@@ -10683,7 +10687,7 @@ function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; c
     <div class="sn-meta">${snLikedBy(d,p)}${p.cap?`<p><b>${esc(u.u)}</b> ${snRich(p.cap)}</p>`:""}${(p.tags||[]).length?`<p class="sn-tagd">${si("tag","sm")} ${p.tags.map(snUser).filter(Boolean).map(x=>`<button class="sn-lnk" data-a="snsGo" data-v="profile" data-id="${x.id}">${esc(x.u)}</button>`).join("、")}</p>`:""}${cms.length?`<button class="sn-more" data-a="snCm" data-id="${p.id}">查看全部 ${fmt(cms.length)} 則留言</button>`:""}<small>${snsAgo(p.ts)}</small></div></article>`; }
 
 function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me), mode=ui.snFeed||"all";
-  const items=d.posts.filter(p=>(mode==="all"||p.uid===me||fol.includes(p.uid))&&snCanSee(d,p.uid)).map(p=>({p,ts:p.ts}));
+  const items=d.posts.filter(p=>(p.npc?fol.includes(p.uid):(mode==="all"||p.uid===me||fol.includes(p.uid)))&&snCanSee(d,p.uid)).map(p=>({p,ts:p.ts}));
   [].forEach(uid=>snRp(d,uid).forEach(x=>{ const p=d.posts.find(y=>y.id===x.id); if(p&&p.uid!==uid&&snCanSee(d,p.uid)&&snCanSee(d,uid)) items.push({p,by:uid,ts:x.ts}); }));
   items.sort((a,b)=>b.ts-a.ts);
   const sids=[...new Set(snActiveStories(d).filter(s=>s.uid!==me&&fol.includes(s.uid)).sort((a,b)=>b.ts-a.ts).map(s=>s.uid))].sort((a,b)=>snStorySeen(d,a)-snStorySeen(d,b));
@@ -10750,7 +10754,7 @@ function snProfile(d,id){ { const me0=snMeId(), u0=snUser(id||me0); if(u0&&u0.mi
   const empty=tab==="reels"?`<div class="sn-empty"><span>${si("reels2")}</span><b>還沒有 Reels</b>${mine?`<button data-a="snNewP" data-v="post">上傳影片</button>`:""}</div>`:tab==="tagged"?`<div class="sn-empty"><span>${si("tag")}</span><b>${mine?"有你的相片和影片":"還沒有相片"}</b></div>`:tab==="reposts"?`<div class="sn-empty"><span>${si("repost")}</span><b>還沒有轉發</b></div>`:tab==="saved"?`<div class="sn-empty"><span>${si("save")}</span><b>還沒有收藏</b></div>`
     :mine?`<div class="sn-empty sn-first"><span>${si("cam")}</span><b>建立第一則貼文</b><p>在這個空間傳達心意。</p><button class="sn-firstb" data-a="snCreate">建立</button></div>`:`<div class="sn-empty"><span>${si("cam")}</span><b>尚無貼文</b></div>`;
   return `<header class="sn-top">${mine?`<button class="sn-ib" data-a="snsExit" aria-label="離開">${si("x")}</button><button class="sn-ib" data-a="snCreate" aria-label="新增">${si("plusP")}</button><b class="sn-un c">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`${SN_VER}`:""}</b><button class="sn-ib" data-a="snMenu" aria-label="選單">${si("menu")}</button>`
-      :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`${SN_VER}`:""}</b><span class="sn-sp"></span>${u.id==="o:scout"&&isAdminAcct()?`<button class="sn-ib" data-a="snsGo" data-v="scout" aria-label="星探設定">${si("menu")}</button>`:isAdminAcct()&&!u.mid?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
+      :`<button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b class="sn-un">${snPriv(d,u.id)?`<i class="sn-lk">${si("lock","sm")}</i>`:""}${esc(u.u)}${u.ver?`${SN_VER}`:""}</b><span class="sn-sp"></span>${u.id==="o:scout"&&isAdminAcct()?`<button class="sn-ib" data-a="snsGo" data-v="scout" aria-label="星探設定">${si("menu")}</button>`:isAdminAcct()&&!u.mid&&!u.npc?`<button class="sn-ib" data-a="snAdmUser" data-v="${u.id}" aria-label="管理">${si("dots")}</button>`:""}`}</header>
     <section class="sn-ph"><span class="sn-pav"><button class="sn-hu" data-a="${see&&snHasStory(d,u.id)?"snStory":""}" data-v="${u.id}" data-o="1">${snAv(u,96,snHasStory(d,u.id),snStorySeen(d,u.id),snStoryCf(d,u.id))}</button>${mine?`<button class="sn-padd" data-a="snNewP" data-v="story" aria-label="新增限時動態">${si("plusP")}</button>`:""}</span><div class="sn-phr">${u.name?`<b class="sn-pnm">${esc(u.name)}</b>`:""}<div class="sn-stat"><span><b>${snN(P.length)||0}</b>貼文</span><button data-a="snFl" data-v="${u.id}" data-k="fol"><b>${snN(base+snFollowers(d,u.id))||0}</b>位粉絲</button><button data-a="snFl" data-v="${u.id}" data-k="ing"><b>${snN(snFol(d,u.id).length)||0}</b>追蹤中</button></div></div></section>
     <div class="sn-bio">${u.co?(u.cat===""?"":`<p class="sn-cat">${esc(u.cat||"娛樂公司")}</p>`):u.gid?`<p class="sn-cat">音樂家／樂團</p>`:u.id&&u.id.startsWith("m:")?`<p class="sn-cat">藝人</p>`:""}${u.bio?`<p>${esc(u.bio)}</p>`:""}${!mine?(()=>{ const mu=snFol(d,me).filter(x=>x!==u.id&&(d.fol[x]||[]).includes(u.id)).map(snUser).filter(Boolean); return mu.length?`<button class="sn-mut" data-a="snFl" data-v="${u.id}" data-k="fol"><span class="sn-lbav">${mu.slice(0,3).map(x=>snAv(x,30)).join("")}</span><span><b>${mu.slice(0,2).map(x=>esc(x.u)).join("、")}</b>${mu.length>2?`和另外 ${mu.length-2} 人`:""}都在追蹤</span></button>`:""; })():""}</div>
     <div class="sn-btns">${mine?`<button data-a="snsGo" data-v="edit">編輯個人檔案</button><button data-a="snShareMe">分享個人檔案</button><button class="sn-bi ${ui.snSugOpen===u.id?"on":""}" data-a="snSugTg" data-v="${u.id}" aria-label="探索用戶"><svg viewBox="0 0 24 24" width="17" height="17" fill="currentColor"><circle cx="9" cy="8" r="4"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z"/><path d="M19 8v6M16 11h6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>`:`<button class="${fo||snReqd(d,u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${fo?`追蹤中 ${si("chev","sm")}`:snReqd(d,u.id)?"已要求":"追蹤"}</button><button data-a="snsGo" data-v="thread" data-id="${u.id}">發訊息</button>`}</div>
@@ -14825,7 +14829,7 @@ const ofAcct=gid=>{ const g=groupOf(gid)||{}; return `<b class="ofm-n">${esc(g.n
 function ofMediaCard(x){ const t=albThumb(x); if(!t) return ""; const gid=x.src.gid;
   return `<article class="card ofm" id="post-of-${x.id}"><button class="ofm-t" data-a="ofOpen" data-v="${esc(x.id)}">${t.h}</button>
     <div class="ofm-b" data-a="ofOpen" data-v="${esc(x.id)}"><span class="ofm-h"><button class="ofm-go" data-a="ofGrp" data-v="${esc(gid)}">${ofAv(gid)}</button><span><button class="ofm-go" data-a="ofGrp" data-v="${esc(gid)}">${ofAcct(gid)}</button><small>${ofWhen(x.ts)}</small></span></span><p class="ofm-tt">${esc(albTitle(x))}</p></div>${ofBar(x.id)}</article>`; }
-function ofMix(posts,ofs){ const L=[...posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)})),...ofs.map(x=>({ts:x.ts,h:()=>ofMediaCard(x)}))].sort((a,b)=>b.ts-a.ts);
+function ofMix(posts,ofs,more){ const L=[...posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)})),...ofs.map(x=>({ts:x.ts,h:()=>ofMediaCard(x)})),...(more||[])].sort((a,b)=>b.ts-a.ts);
   setTimeout(()=>document.querySelectorAll(".ofm-t img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
   return L.map(o=>o.h()).join(""); }
 function ofOpen(id){ const all=coPosts(), x=all.find(y=>y.id===id); if(!x) return; const s=x.src, pr=s.pr||{}, gid=s.gid, cap=coCap(s.co,x.k,s,x), imgs=x.imgs||[];
@@ -16723,6 +16727,356 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="npcWkCancel"){ ui.npcWkEd=null; render(); return; }
   if(a==="npcWkSave"){ if(!isAdminAcct()) return; const b=(document.getElementById("npcWkT")||{}).value||""; mkEdit(NPCWK,o=>({v:{...(o||{}),[v]:{body:b,ts:Date.now()}}})).then(()=>{ ui.npcWkEd=null; render(); toast("存好了"); }).catch(()=>toast("沒有存到，再試一次")); return; }
 },true);
+
+/* =========================================================
+   虛擬歌手的「人設」和寫好的內容（11/24）
+   ・不用 AI：全部先寫好，照日期、時間挑出來
+   ・{F} 粉絲名、{G} 團名（撞名改過會自動換）、{X} 隨機一位團員、{N} 粉絲在 TIE 裡的暱稱
+   ・一句裡用「|」隔開＝連續傳好幾則
+   ・TIE 的話開頭寫「m>」只在早上出現、「n>」只在晚上出現
+   ・a：個性（lead 隊長型／maknae 忙內型／cool 酷酷型／goofy 搞笑吃貨型／bright 元氣型／artist 音樂人型）
+   ・e：這個人愛用的表情、w：TIE 歡迎語（每個人都不一樣）、c：他自己才會講的話、p：他自己的發文
+   ========================================================= */
+const NL_P={
+  AURAVEIL:[
+    {a:"lead",e:"🤍",w:"{N}，歡迎你來 🤍|我是{G}的隊長 Rhea。這裡是只有我們兩個的小房間|我不一定每天都能馬上回你，但我會常常來看的|不要太晚睡喔",
+      c:["剛練完高音的部分，喉嚨有點乾，在喝溫水","今天跟成員們一起吃了部隊鍋，{X}又搶走最後一塊年糕","m>早安～今天是錄音日，我要加油了","n>宿舍終於安靜下來了，大家都睡了","今天鏡子前練了好久的表情管理 哈哈","練習生的時候常常一個人留到最晚，現在身邊有她們真好"],
+      p:["今天練習結束後，五個人一起坐在練習室地板上聊了好久。\n謝謝你們一直在我們身邊，{F}。\n我們會一步一步，把更好的舞台帶給你們 🤍","最近天氣變冷了，大家出門記得圍圍巾。\n我們隊長的叮嚀，要聽喔！"]},
+    {a:"goofy",e:"🍓",w:"哇！{N}來了！！🍓|我是 Siena～歡迎歡迎|我很常講一些奇怪的話，請不要被嚇到 哈哈哈|今天吃飯了嗎？",
+      c:["我發現便利商店出了新的草莓牛奶！！！","{X}說我吃飯的聲音很大聲…真的嗎…","今天在走廊跌倒了 沒人看到吧 應該沒有吧","n>半夜好想吃炸雞喔…忍住…忍住…","剛剛在車上睡著還流口水，被拍下來了 救命"],
+      p:["今天的戰利品：草莓蛋糕一塊、草莓牛奶兩瓶、草莓夾心餅乾一盒 🍓\n是的我今天就是草莓日","{F}～你們今天吃了什麼好吃的？留言告訴我！我要參考 🍓"]},
+    {a:"cool",e:"🖤",w:"來了啊。|我是 Juno|不太會說好聽話，但很高興你在這裡|嗯。歡迎",
+      c:["寫了新的 rap 詞","今天練舞練到很晚","剛下雨了","在聽歌","n>睡不著。在寫東西"],
+      p:["今天的練習室。","寫詞寫到天亮。\n很快就會給你們聽。"]},
+    {a:"bright",e:"✨",w:"{N}！！！歡迎光臨 ✨✨|我是主舞 Elle！|我話很多喔，準備好了嗎 哈哈|以後的每一天都請多多指教！！",
+      c:["今天新編的那段舞超帥的！！好想快點給你們看","我剛剛跳到汗水都滴到地板上了 哈哈","m>早安早安早安！！今天也是充滿能量的一天 ✨","{X}今天幫我綁了頭髮，超可愛的","短影音挑戰又被成員們笑了，因為我太認真了 哈哈"],
+      p:["今天的練習影片偷偷放一小段給你們 ✨\n（其實是因為我太滿意了 哈哈）","{F}！！今天也謝謝你們！！\n我們明天也一起加油！！✨✨"]},
+    {a:"maknae",e:"🐰",w:"{N}～～ 🐰|我是忙內 Noa！|姐姐們都說我很黏人…你會不會覺得我很煩 🥺|常常來找我玩喔！",
+      c:["姐姐們今天又把我當小孩子了啦 🥺","剛剛 Rhea 姐姐買了糖餅給我吃 嘿嘿","m>好睏…早上起不來…","我今天第一次自己一個人去錄音室！有點緊張","n>{F}你們也還沒睡嗎？我也是"],
+      p:["今天是被姐姐們寵愛的一天 🐰\n謝謝姐姐們，也謝謝{F}！","我的新髮色你們喜歡嗎？🥺\n姐姐們都說很適合我 嘿嘿"]}
+  ],
+  ODDLINE:[
+    {a:"lead",e:"🎸",w:"{N}，歡迎。|我是{G}的 Kyle|我們是靠舞台說話的樂團，但在這裡就輕鬆聊吧|有空就來坐坐",
+      c:["今天合奏的時候 Seb 的貝斯斷弦了，全場安靜三秒","m>早上的錄音室特別安靜，我很喜歡","剛寫好一段副歌，在想要不要拿去給成員聽","今天主唱的部分錄了十幾次 終於滿意了","n>收工了。手指都是繭"],
+      p:["今天的合奏室，四個人的聲音終於對上了。\n每次這種時候都覺得，組這個樂團真好。\n{F}，下次的演出也等著我們吧 🎸","演出結束後回到宿舍，耳朵還在嗡嗡響。\n謝謝今天來的每一個人。"]},
+    {a:"artist",e:"🌙",w:"……你好，{N}。|我是 Dohwan，彈吉他的|我不太擅長聊天，大部分時間都在練琴|但我會看你傳的東西的",
+      c:["今天換了新的弦，聲音很亮","寫了一段 riff，還沒想好要放哪","n>凌晨的吉他聲最好聽，但會被 Kyle 罵 哈","最近在聽很多七〇年代的唱片","手指有點痛，今天練太久了"],
+      p:["新的 riff。\n只有十秒，猜猜會用在哪首歌。","深夜的練團室。\n只剩我跟音箱。"]},
+    {a:"cool",e:"🎵",w:"喔，{N}。|Seb。貝斯手|歡迎",
+      c:["弦斷了","今天的低音很穩","在吃泡麵","n>練完了","Ian 又在吵"],
+      p:["今天的 setlist。","低音是樂團的心跳。\n記住了。"]},
+    {a:"goofy",e:"🥁",w:"哦哦哦{N}！！！🥁|我是鼓手 Ian！！{G}最吵的就是我！|有任何無聊的事都可以跟我說，我最喜歡聊天了！|來，擊個掌！",
+      c:["今天鼓棒飛出去打到 Dohwan 哥 對不起哥","我剛剛發現宿舍冰箱裡有人藏布丁！是誰！","哈哈哈哈哈 Kyle 哥唱歌唱到破音","n>我餓了。誰陪我吃宵夜","今天鼓打太大力，耳塞都掉了"],
+      p:["今日鼓棒陣亡數：2 🥁\n（第三支也快不行了）","{F}～今天演出的時候你們喊得比我的鼓還大聲！！\n最喜歡你們了！！"]}
+  ],
+  PRISMA9:[
+    {a:"lead",e:"💗",w:"{N}，你好呀 💗|我是{G}的隊長 Yeon|九個人很吵很熱鬧，但每一個你都要好好認識喔|有我在，放心吧",
+      c:["九個人要排好隊形真的好難 哈哈","今天幫 Bin 檢查作業，發現我也忘記怎麼算了","m>大家起床了沒！早上點名！","剛剛宿舍的洗衣機又滿了，九個人的衣服真的好多","n>大家都睡了，我在整理明天的行程"],
+      p:["今天九個人一起吃飯，光點菜就花了二十分鐘 哈哈\n但這就是我們最幸福的時間 💗","不管是哪一位成員的{F}，都是我們全部人的{F}。\n今天也謝謝你們 💗"]},
+    {a:"bright",e:"🎤",w:"{N}～！歡迎來到我的房間 🎤|我是主唱 Hari！|我最喜歡唱歌和聊天了，兩個一起最好！|有想聽的歌就跟我說！",
+      c:["今天的高音一次就過了！！好開心","剛剛在浴室唱歌被成員們錄下來了 哈哈","m>早安～～我今天的聲音狀態超好的！","喉糖吃完了…要去買了","{X}今天跟我合唱，好好聽！"],
+      p:["浴室演唱會不定期開唱中 🎤\n（今天的曲目是我們的出道曲）","喉嚨保養中…今天的我是蜂蜜柚子茶人 🍯"]},
+    {a:"cool",e:"🖤",w:"{N}。|我是 Mina|跳舞比說話擅長|但會回你的。偶爾",
+      c:["鏡子前練了三個小時","今天的動作改了","n>腳好痛","在看舞蹈影片","嗯，今天還不錯"],
+      p:["練習。","今天的 freestyle。\n還差一點。"]},
+    {a:"goofy",e:"🍜",w:"{N}來了來了！！🍜|我是 Coco！主 Rap 但其實最擅長的是吃！|有好吃的店一定要推薦給我喔！！|我們會很合得來的",
+      c:["我今天吃了三碗拉麵 不要告訴經紀人","剛剛 rap 太快咬到舌頭了","{X}偷吃我的零食被我抓到了！","n>宵夜時間到了吧？是吧？","我在研究新的泡麵吃法，加起司超好吃"],
+      p:["Coco 的美食日記 Day.？？\n今天是辣炒年糕＋起司 🍜\n（算了我不記天數了）","rap 練完肚子好餓 🍜\n{F}你們吃了沒！"]},
+    {a:"goofy",e:"🎀",w:"呀～{N}！🎀|我是 Riri，在團裡負責…氣氛！還有領舞！|我很常笑，笑點很低，請多包涵 哈哈|以後一起玩喔",
+      c:["我剛剛笑到從椅子上掉下來 哈哈哈哈","今天錄綜藝的時候又笑場了","{X}今天講了一個超冷的笑話 但我笑了","m>早安！今天的頭髮炸開了","練舞的時候忘記動作，直接自己編了一段 哈哈"],
+      p:["今天的我：笑了大概一百次 🎀\n今天的你：有笑嗎？","練習室的日常，猜猜鏡子裡有幾個人在偷吃東西 🎀"]},
+    {a:"bright",e:"🌼",w:"{N}！你好你好 🌼|我是 Dami～|我最喜歡收到訊息了，所以要多傳給我喔！|今天也要開開心心的！",
+      c:["今天天氣好好，我在陽台曬太陽 🌼","剛剛買了新的指甲油，粉紅色的！","m>早安～今天也是晴天嗎？","{X}今天幫我拍照，拍得超好看","練習結束後跟成員們去散步了"],
+      p:["今天的天空好藍 🌼\n{F}有抬頭看嗎？","新的指甲顏色～ 🌼\n你們喜歡哪一個顏色？"]},
+    {a:"bright",e:"⚡",w:"{N}！！！你好！！！⚡|Sol 在這裡！！|我是領 Rap，也是團裡體力最好的！|一起充滿能量吧！！",
+      c:["今天跑了五公里！！","剛剛 rap 的時候有一段超順的！！","m>早安！！！我已經運動完了！","{X}說我太吵了 但我覺得還好吧？","n>還不想睡！！但明天要早起…"],
+      p:["晨跑完成 ⚡\n今天也是滿電的 Sol！","今天的 rap 練習！！\n越來越順了！！⚡⚡"]},
+    {a:"maknae",e:"🍑",w:"{N}～歡迎你 🍑|我是 Aya|我很怕生…可是會慢慢變熟的！|可以常常跟我聊天嗎",
+      c:["今天姐姐們帶我去吃了桃子冰沙 🍑","我剛剛自己練了一首新歌，有點害羞","m>早安…我還在被窩裡","Bin 今天一直纏著我玩","n>宿舍的燈都關了，我偷偷在被子裡看手機"],
+      p:["桃子季節 🍑\n今天吃了好多好多","第一次在這裡發文，有點緊張…\n{F}，謝謝你們 🍑"]},
+    {a:"maknae",e:"🐣",w:"{N}！！！🐣|我是{G}最小的 Bin！|姐姐們都很照顧我，現在換{F}照顧我了 嘿嘿|要常常來喔！",
+      c:["今天又被姐姐們捏臉了 🐣","我考試考完了！！自由了！！","m>好睏…學校好遠…","Yeon 姐姐今天幫我檢查作業，結果她也不會 哈哈","n>我還不想睡，可是姐姐們說要睡了"],
+      p:["忙內的日常：被捏臉、被餵食、被抱抱 🐣\n今天也很幸福","今天的作業寫完了！！\n獎勵自己一個冰淇淋 🐣"]}
+  ],
+  KIRAZ:[
+    {a:"artist",e:"🍒",w:"{N}，歡迎來到我的小房間 🍒|我是 KIRAZ|寫歌的時候常常一個人，有你在這裡，好像就沒那麼安靜了|我想到什麼就會跟你說",
+      c:["今天在咖啡廳寫了半首歌","m>早上的光很適合寫詞","剛剛彈琴彈到忘記時間","最近一直在想下一張專輯要說什麼故事","n>深夜寫的歌，早上起來看總是有點害羞","製作人哥哥說這次的 demo 很好，開心"],
+      p:["今天的工作室。\n一杯咖啡、一台琴、一本寫滿字的筆記本 🍒\n下一首歌，正在慢慢長大。","{F}，謝謝你們聽我的歌。\n每一首都是寫給你們的信。"]}
+  ],
+  MELLOWMOON:[
+    {a:"artist",e:"🌙",w:"{N}，晚上好 🌙|我是{G}的 Haru|我們的歌都很適合在晚上聽，所以我也喜歡在晚上跟你聊天|今天過得還好嗎",
+      c:["Sena 今天彈了一段新的和弦，很好聽","n>月亮今天好圓","剛寫完一段旋律，在等 Sena 填詞","最近一直在聽雨聲寫歌","錄音的時候不小心笑場，重錄了"],
+      p:["今天的月亮 🌙\n很適合寫歌的夜晚。","{F}，最近有好好睡覺嗎？\n睡不著的時候，聽我們的歌吧。"]},
+    {a:"artist",e:"🎹",w:"{N}，你好 🎹|我是 Sena，在{G}彈琴和唱歌|Haru 說我話太少，所以我決定在這裡多說一點|請多多指教",
+      c:["今天練了三個小時的琴","Haru 又把歌詞寫到一半就睡著了","m>早上泡了一杯熱可可","最近學了一首很難的曲子","n>琴房的燈還亮著"],
+      p:["琴房的午後 🎹","新的和弦，舊的心情。\n很快見面。"]}
+  ],
+  NOVELLE:[
+    {a:"lead",e:"🌊",w:"{N}，歡迎。🌊|我是{G}的隊長 Jiho|六個人裡面我最常看手機，所以應該會常常來|有什麼想說的都可以跟我說",
+      c:["今天的練習我很滿意，成員們都很努力","Haneul 今天又在練習室睡著了 哈","m>早安。今天要拍外景","剛寫完新歌的 rap 詞，在給成員們聽","n>宿舍點名完畢，全員到齊"],
+      p:["六個人，一個方向。\n今天的練習也辛苦了 🌊\n{F}，我們會帶著你們的心意繼續走下去。","隊長的報告：今天大家都有好好吃飯。\n{F}也要好好吃飯喔。"]},
+    {a:"artist",e:"☁️",w:"{N}，你好。☁️|我是 Taeo，負責唱歌|我平常很安靜，但看到你的訊息會很開心|慢慢聊吧",
+      c:["今天的錄音很順利","m>早上的嗓子有點啞，在喝溫水","最近在學作曲","{X}今天在車上一直唱歌，我也跟著唱了","n>今天的天空有很多雲"],
+      p:["雲很多的一天 ☁️","今天錄的這段，好像是我唱過最好的一次。\n很想快點讓你們聽到。"]},
+    {a:"bright",e:"🔥",w:"{N}！！Welcome！！🔥|我是 Lucas，主舞！|我中文…不對，我說話很快，跟不上就說喔 哈哈|一起嗨起來吧！！",
+      c:["今天的新舞超難但超帥！！","剛剛跳到鞋子飛出去 哈哈哈","m>Good morning！！🔥","{X}今天學我跳舞，跳得好好笑","n>還在練習室，還不想回去"],
+      p:["今天的練習 🔥🔥\n汗水是不會騙人的！","{F}！！今天也 fighting！！🔥"]},
+    {a:"goofy",e:"🍙",w:"哦，{N}～🍙|我是 Wooj，在{G}負責唱歌和…讓大家笑|今天吃了什麼？我先說我吃了三個飯糰|以後也請多指教",
+      c:["我今天發明了一種新的飯糰吃法","剛剛 Ren 偷喝我的飲料","m>早安…我要先吃早餐才能開機","n>宵夜吃了泡麵，明天臉會腫吧…","今天錄音的時候肚子叫了 被收音了"],
+      p:["Wooj 推薦：便利商店的鮪魚美乃滋飯糰 🍙\n是永遠的第一名","今天的我也很努力（吃）了 🍙"]},
+    {a:"goofy",e:"🦊",w:"{N}！我是 Ren 🦊|領舞兼副 Rap，兼{G}的整人專家|我會傳很多奇怪的東西給你，不要封鎖我喔 哈哈|歡迎～",
+      c:["我剛剛把 Wooj 哥的鞋帶綁在一起了 哈哈","今天整人失敗，被抓到了","m>早安～我今天的髮型很狂野","n>大家都睡了，我在想明天要整誰","{X}今天被我嚇到叫出來 哈哈哈"],
+      p:["今日整人成功紀錄：1 🦊\n（對象保密）","練習室的鏡子是最誠實的朋友。\n今天也一起努力了 🦊"]},
+    {a:"maknae",e:"🐶",w:"{N}～～ 🐶|我是{G}的忙內 Haneul！名字是天空的意思☁️|哥哥們都說我是小狗…你覺得呢？|要常常來找我玩喔！！",
+      c:["哥哥們今天又不讓我吃宵夜 🥺","我剛剛在練習室睡著了 哈哈","m>早安～哥哥們叫我起床好幾次了","Jiho 哥買了炸雞給我！！","n>{F}在做什麼？我還不想睡"],
+      p:["今天的天空 ☁️🐶\n跟我的名字一樣","忙內的特權：可以撒嬌 🐶\n哥哥們今天也辛苦了！"]}
+  ],
+  "ROSÉVA":[
+    {a:"lead",e:"🌹",w:"{N}，歡迎來到這裡 🌹|我是{G}的隊長 Ari|我們四個人都很不一樣，但都很喜歡你|請多指教",
+      c:["今天四個人一起去吃了早午餐","m>早安，今天的陽光很好","剛錄完新歌，大家都很滿意","Yena 今天又在撒嬌了 哈","n>今天辛苦了，晚安"],
+      p:["今天的我們 🌹\n四個人，一朵花。","謝謝{F}，讓我們的每一天都有意義。\n今天也晚安 🌹"]},
+    {a:"cool",e:"🖤",w:"……{N}。|Vee|我話不多|但會看",
+      c:["寫了新的詞","在錄音室","n>還沒睡","今天的 beat 不錯","嗯"],
+      p:["錄音室。","新的詞。\n還不能給你們看。"]},
+    {a:"cool",e:"🌘",w:"{N}，你好。🌘|我是 Lune|我喜歡安靜的地方，這裡剛好|偶爾來聊聊吧",
+      c:["今天跳舞跳了很久","n>月亮很漂亮","在看書","練習室只剩我一個","今天的動作終於練好了"],
+      p:["月光下的練習室 🌘","今天的 freestyle。\n用身體說話。"]},
+    {a:"maknae",e:"🌷",w:"{N}～歡迎！🌷|我是忙內 Yena！|姐姐們都很酷，所以可愛的部分就交給我了 嘿嘿|要常常來喔～",
+      c:["Vee 姐姐今天對我笑了！！很少見！！","我剛剛跟 Lune 姐姐一起練舞，她好厲害","m>早安～～ 🌷","n>姐姐們都睡了，我好無聊","今天買了一束鬱金香放在宿舍"],
+      p:["宿舍的鬱金香開了 🌷","忙內的任務：讓姐姐們笑 🌷\n今天成功了三次！"]}
+  ],
+  HYUNE:[
+    {a:"artist",e:"🌿",w:"{N}，你來了。🌿|我是 HYUNE|這裡沒有舞台、沒有燈光，就只是我們|想到什麼，我會慢慢告訴你",
+      c:["今天在山上散步，想到一段旋律","m>早上煮了一壺茶","最近在讀一本詩集","工作室的植物又長高了","n>深夜的鋼琴聲，是我最誠實的時候"],
+      p:["今天的散步 🌿\n風很溫柔。","寫歌的人，其實是在寫信。\n收信人是你們。"]}
+  ]
+};
+
+/* 各個性共用的話（TIE 回覆用）：跟粉絲傳的內容無關，就是他自己想說的 */
+const NL_CHAT={
+  lead:["今天大家都很努力，我很驕傲","剛開完會，下一次活動的內容好期待","m>早安，今天也要好好吃早餐","n>今天辛苦了，早點睡","{X}今天狀態很好","最近天氣變化很大，不要感冒了","剛跟經紀人聊完行程，有點緊湊但會加油","今天的練習比預定的晚結束了 哈","我們的歌最近在聽嗎？","今天在車上看到很漂亮的夕陽","n>剛洗完澡，終於可以休息了","練習室的暖氣壞了，大家擠在一起取暖 哈哈","今天吃了好吃的牛肉湯","m>今天的行程從很早開始","{X}今天又遲到了五分鐘 哈哈","剛剛在整理衣櫃，發現好多以前的衣服","今天也在想要怎樣才能給你們更好的舞台","下雨天的練習室很安靜","n>明天也見","我現在在喝熱茶|好暖"],
+  maknae:["我今天被誇獎了！！","剛剛吃了好吃的冰淇淋 🍦","m>好睏喔…","n>我睡不著…","{X}今天幫我買了零食 嘿嘿","今天練習的時候差點哭了，可是忍住了！","我想養小狗…","今天被罵了一下下…但沒關係！","哥哥姐姐們都好忙，都沒人陪我玩","剛剛看了一部好好笑的影片 哈哈哈","我學會一個新的舞了！","今天的午餐超好吃","n>在被窩裡滑手機中","m>還在床上…再五分鐘…","今天下雨了，我沒帶傘 🥺","{X}說我長高了！真的嗎！","我現在在吃餅乾","今天好冷喔","嘿嘿|沒事|就是想傳訊息","我剛剛在想你們在做什麼"],
+  cool:["嗯","在練習","剛吃飽","n>還醒著","m>早","今天累","在聽歌","下雨了","{X}很吵","在車上","還不錯","今天的晚餐是泡麵","剛洗完澡","在看電影","今天跳得還行","剛起床","天氣冷","在等錄音","嗯…","喝咖啡中"],
+  goofy:["我剛剛想到一個超好笑的笑話 但忘了","今天吃了兩份午餐 哈哈","{X}今天又被我笑到","肚子好餓","n>宵夜！宵夜！","m>早安～我已經在想午餐要吃什麼了","我剛剛把手機掉進洗手台了 還好沒事","今天錄音的時候打嗝了 哈哈哈","我發現一家超好吃的炸雞店","剛剛在練習室跳了一段奇怪的舞 大家都笑了","今天的天氣適合吃火鍋","我是不是變胖了…算了不管了","{X}在睡覺，我在旁邊吃東西","今天的我很帥（自己說）","剛剛被經紀人抓到在吃零食","我現在在喝珍奶","今天練習的時候褲子破了 哈哈哈哈","我想吃辣炒年糕","哈哈哈哈哈哈|不好意思|剛剛看到好笑的東西","今天又是吃飽飽的一天"],
+  bright:["今天也超級開心！！","剛剛練習完！！","m>早安！！！今天也要加油！！","n>今天好充實！！","{X}今天好可愛","我剛剛在跳舞的時候超投入的！","今天的天氣超好！！","剛吃完超好吃的午餐！","我在練新的歌！！","今天收到好多好多的禮物！謝謝！","剛剛跟成員們玩遊戲，我贏了！！","我現在超有能量的！！","今天拍照拍了好多張！","n>還不想睡！！","m>我起得超早！！","今天的練習好累可是好開心！！","剛剛在車上一直唱歌 哈哈","我好喜歡今天的舞台妝！","今天的心情是一百分！！","哇|我剛剛看到彩虹了！！"],
+  artist:["今天寫了一段歌詞","剛錄完音","m>早上的光很漂亮","n>深夜是寫歌的時間","最近在聽很老的歌","今天的和聲錄得很好","在工作室","剛剛想到一段旋律，趕快記下來","今天的雨聲很好聽","在喝咖啡","最近在讀書","今天彈琴彈了很久","n>今天的月亮很亮","剛整理完新歌的 demo","下一首歌，快好了","今天在想，音樂到底是什麼","在散步","剛剛把一首歌從頭改了","今天很安靜","n>晚安"]
+};
+/* 社群發文（像 LOVE 的藝人動態） */
+const NL_POST={
+  lead:["今天的練習也辛苦了。\n我們會繼續努力，{F}也要好好照顧自己。","跟成員們一起度過的每一天，都是珍貴的回憶。\n謝謝{F}讓這一切成為可能。","最近變冷了，出門記得多穿一件。\n隊長的叮嚀 🤍","今天開了很長的會，下一次的活動真的很期待。\n很快就會告訴你們！","{G}的大家今天都很棒。\n{F}也辛苦了。","晚安，{F}。\n明天也一起加油吧。"],
+  maknae:["今天的我也很努力了！！\n可以誇獎我嗎 🥺","哥哥姐姐們都在練習，我偷偷發文 嘿嘿","今天吃了好吃的東西，好幸福！","{F}～～我好想你們！","今天學了新的東西，好開心！","晚安～做個好夢 🌙"],
+  cool:["練習。","今天。","{F}。\n謝謝。","收工。","新的東西，快好了。","晚安。"],
+  goofy:["今天的午餐：超級滿足 😋","我剛剛在練習室做了一件很好笑的事…\n但我不能說 哈哈哈","{X}今天的表情包又更新了 哈哈","吃飽了才有力氣練習！\n{F}也要好好吃飯！","今天的我：吃了、練了、笑了。\n完美的一天。","宵夜誘惑中…{F}救我"],
+  bright:["今天也是充滿能量的一天！！\n{F}也要開心喔！！","練習完的自拍 ✨\n汗水是勳章！","今天好開心！！因為想到{F}了！！","新的挑戰，我準備好了！！","{G}今天也閃閃發亮！！","謝謝今天也在的{F}！！明天見！！"],
+  artist:["今天在工作室待了一整天。\n有一首新歌，正在慢慢長大。","有時候一段旋律，會在最不經意的時候出現。\n今天就是這樣的一天。","謝謝你們聽我們的音樂。\n每一個音符都想傳達給你們。","雨天的工作室。\n很適合寫歌。","深夜的一段旋律。\n不知道會變成什麼樣的歌。","今天的天空，好像一首還沒寫完的歌。"]
+};
+/* SNS 短文（像 IG 的貼文說明） */
+const NL_CAP={
+  lead:["today 🤍","練習完 ✔️","with {G}","晚安 {F}","今天的天氣","behind 📸"],
+  maknae:["嘿嘿 🫶","今天的我","好吃 😋","被拍了","🥺🥺","午安～"],
+  cool:[".","📷","—","🖤","…","today"],
+  goofy:["吃 😋","what is this 哈哈","今日菜單","我 帥","{X} 你在幹嘛","🍗🍗🍗"],
+  bright:["✨✨✨","今天也超開心！！","practice 🔥","sunny day ☀️","{F} 看這裡！！","energy 100%"],
+  artist:["studio","今天的光","🎧","new demo","walk 🌿","night"]
+};
+/* 特別的日子（節日、生日、出道紀念日） */
+const NL_DAY={
+  "01-01":["新年快樂！今年也請多多指教 🎍","{F}，新的一年也一起走下去吧。新年快樂！"],
+  "02-14":["情人節快樂 💌 今天的巧克力是要送給{F}的！","Happy Valentine's Day，{F}。"],
+  "10-31":["Happy Halloween 🎃 今天的造型你們猜得到是什麼嗎？","不給糖就搗蛋！{F}～ 🎃"],
+  "12-24":["平安夜快樂 🎄 今天有好好跟喜歡的人在一起嗎？","Merry Christmas Eve，{F} 🎄"],
+  "12-25":["聖誕節快樂！🎄 你們收到什麼禮物了？","Merry Christmas！今年也謝謝{F} 🎁"],
+  "12-31":["今年最後一天了。謝謝{F}一整年都在。明年見 🌙","{YR} 年，辛苦了。明年也一起吧。"]
+};
+const NL_BDAY_ME=["謝謝大家的生日祝福！！今天真的太幸福了 🎂\n{F}，我最愛你們了","又長大一歲了。\n謝謝{F}一直在我身邊。今年也請多指教 🎂","生日快樂（給自己）🎂\n其實最想說的是：謝謝你們。"];
+const NL_BDAY_MATE=["{B}，生日快樂！！🎂 今天你是主角！","祝我們的{B}生日快樂 🎉 一直開心下去吧","{B}，生日快樂。今年也一起加油 🎂","今天是{B}的生日！！大家快來祝福{B} 🎉"];
+const NL_ANNIV=["{G}出道 {Y} 週年 🎉\n謝謝{F}陪我們走到今天。之後也請一起走下去。","今天是我們出道 {Y} 週年的日子。\n每一天都是因為有{F}，才閃閃發亮。","{Y} 週年快樂！！{F}，我們永遠在一起 🎉"];
+
+/* =========================================================
+   虛擬歌手的社群、SNS、TIE（11/24）
+   ・社群：每團一個（像 LOVE），照日期自動出現寫好的發文；粉絲可以按讚、留言
+   ・SNS：每位成員一個帳號，照日期自動發文；首頁只看得到有追蹤的人
+   ・TIE：一位 100 積分、30 天。他不會主動傳；粉絲傳訊息，他才「看心情」回，
+     回的是他自己想說的話（不是回答粉絲）。歡迎語每個人都不一樣，管理員可以改
+   ・先只開給管理員看；管理員在社群的 Artist 分頁可以開放給大家
+   ・積分不會分給任何人（不是真的藝人）
+   ========================================================= */
+const NL_ON="daisuki_npc_on", NL_POSTS="daisuki_npc_posts", NL_HIDE="daisuki_npc_hide", NL_LK="daisuki_npc_lk", NL_CMK="daisuki_npc_cm", NL_WEL="daisuki_npc_wel", NL_TIEK="daisuki_npc_tie", NL_JOIN="daisuki_npc_join";
+const NL_PRICE=100, NL_DAYS=30;
+const nlAdm=()=>{ try{ return typeof isAdminAcct==="function"&&isAdminAcct(); }catch(e){ return false; } };
+const nlOn=()=>{ try{ return nlAdm()||!!S.get(NL_ON,0); }catch(e){ return false; } };
+const nlGs=()=>Object.keys(NPC_INFO).filter(G=>NL_P[G]);
+const nlIds=G=>(NL_P[G]||[]).map((_,i)=>G+"."+i);
+const nlAll=()=>nlGs().reduce((a,G)=>a.concat(nlIds(G)),[]);
+function nlM(id){ const s=String(id||""), k=s.lastIndexOf("."); if(k<0) return null; const G=s.slice(0,k), i=+s.slice(k+1), I=NPC_INFO[G], P=(NL_P[G]||[])[i]; if(!I||!P||!I.mem[i]) return null; return {id:s,G,i,I,P,row:I.mem[i]}; }
+const nlName=id=>{ const m=nlM(id); return m?npcN(m.row[0]):""; };
+const nlGN=G=>npcN(G);
+const nlFan=G=>String((NPC_INFO[G]||{}).fan||"").split("（")[0];
+const nlCol=G=>(NPC_INFO[G]||{}).col||"#9A8FB0";
+const nlSolo=G=>((NPC_INFO[G]||{}).mem||[]).length===1;
+const nlBg=(G,i)=>`linear-gradient(${135+(i||0)*23}deg,${nlCol(G)},${nlCol(G)}88)`;
+const nlAv=(id,cls="")=>{ const m=nlM(id); if(!m) return ""; return `<i class="npa ${cls}" style="background:${nlBg(m.G,m.i)}">${esc(String(nlName(id)).slice(0,1).toUpperCase())}</i>`; };
+const nlGAv=(G,cls="")=>`<i class="npa ${cls}" style="background:${nlBg(G,0)}">${esc(String(nlGN(G)).slice(0,1))}</i>`;
+const nlHref=(sub,q)=>"#/"+(((session()||{}).role)||"fan")+"/"+sub+"?"+q;
+const nlPick=(L,s)=>L[(s>>>0)%L.length];
+const nlNick=id=>{ const r=nlRoomOf(id); return (r&&r.nick)||ME.name||"你"; };
+function nlFill(t,id,seed){ const m=nlM(id); if(!m) return String(t||""); const mates=m.I.mem.map((r,j)=>j).filter(j=>j!==m.i), xi=mates.length?mates[((seed||0)>>>3)%mates.length]:-1;
+  let s=String(t).replace(/\{F\}/g,nlFan(m.G)).replace(/\{G\}/g,nlGN(m.G)).replace(/\{X\}/g,xi>=0?npcN(m.I.mem[xi][0]):"製作人哥哥").replace(/\{N\}/g,nlNick(id)).replace(/\{YR\}/g,String(new Date().getFullYear()));
+  m.I.mem.forEach(r=>{ const nn=npcN(r[0]); if(nn!==r[0]) s=s.split(r[0]).join(nn); }); return s; }
+/* ---------- 日期 ---------- */
+const nlDayN=ts=>{ const d=new Date(ts); return Math.floor(Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())/864e5); };
+const nlDayTs=(dn,h,mi)=>{ const u=new Date(dn*864e5); return new Date(u.getUTCFullYear(),u.getUTCMonth(),u.getUTCDate(),h,mi).getTime(); };
+const nlMD=dn=>{ const u=new Date(dn*864e5); return String(u.getUTCMonth()+1).padStart(2,"0")+"-"+String(u.getUTCDate()).padStart(2,"0"); };
+const nlBd=row=>String(row[2]||"").slice(5).replace(".","-");
+/* ---------- 自動發文：kind = cm（社群）／sn（SNS） ---------- */
+const NL_C={};
+function nlGen(kind){ const now=Date.now(), b=Math.floor(now/3e5); if(NL_C[kind]&&NL_C[kind].b===b) return NL_C[kind].L;
+  const today=nlDayN(now), L=[], hide=S.get(NL_HIDE,{})||{};
+  nlGs().forEach(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, dmd=I.debut.slice(5), dy=+I.debut.slice(0,4);
+    nlIds(G).forEach(id=>{ const m=nlM(id), a=m.P.a, own=kind==="cm"?m.P.p:m.P.c.map(x=>x.replace(/^[mn]>/,"")), pool=own.concat(kind==="cm"?NL_POST[a]:NL_CAP[a]), off=strHash(id+kind);
+      for(let dn=today-20; dn<=today; dn++){ const md=nlMD(dn), sd=strHash(kind+id+dn), yr=new Date(dn*864e5).getUTCFullYear(); let t=null, h=10+sd%13, mi=(sd>>>5)%60;
+        if(md===nlBd(m.row)){ t=nlPick(NL_BDAY_ME,sd); h=kind==="cm"?0:21; mi=(sd>>>5)%20; }
+        else { I.mem.forEach((r,j)=>{ if(!t&&j!==m.i&&nlBd(r)===md&&sd%10<7) t=nlPick(NL_BDAY_MATE,sd).replace(/\{B\}/g,npcN(r[0])); }); if(t) h=(sd%3); }
+        if(!t&&md===dmd&&yr>dy&&(kind==="cm"||a==="lead"||solo||sd%10<4)){ t=nlPick(NL_ANNIV,sd).replace(/\{Y\}/g,yr-dy); h=kind==="cm"?0:12; }
+        if(!t&&NL_DAY[md]&&(a==="lead"||solo||sd%10<3)) t=nlPick(NL_DAY[md],sd);
+        if(!t){ const pr=kind==="cm"?(solo?.4:.2):(solo?.42:.26); if((sd%1000)/1000<pr) t=pool[(dn*7+off)%pool.length]; }
+        if(!t) continue; const ts=nlDayTs(dn,h,mi), pid=`n${kind}_${id}_${dn}`; if(ts>now||hide[pid]) continue;
+        L.push({id:pid,mid:id,G,t:nlFill(t,id,sd),ts,base:(kind==="cm"?600:1800)+strHash(pid)%(kind==="cm"?6000:24000)}); } }); });
+  const cu=S.get(NL_POSTS,{})||{}; Object.keys(cu).forEach(k=>{ const x=cu[k]; if(!x||!nlM(x.mid)||hide[k]) return; if(x.k!=="both"&&x.k!==kind) return; if(x.ts>now) return; L.push({id:k,mid:x.mid,G:nlM(x.mid).G,t:nlFill(x.t,x.mid,0),ts:x.ts,base:(kind==="cm"?400:1200)+strHash(k)%3000,own:1}); });
+  L.sort((a,b)=>b.ts-a.ts); NL_C[kind]={b,L}; return L; }
+const nlPost=id=>nlGen("cm").find(p=>p.id===id)||null;
+/* ---------- 社群（LOVE） ---------- */
+const nlJoined=()=>{ const L=S.get(acK(NL_JOIN),[]); return Array.isArray(L)?L.filter(G=>NPC_INFO[G]):[]; };
+const nlLikes=()=>S.get(NL_LK,{})||{};
+const nlCms=()=>S.get(NL_CMK,{})||{};
+const nlLiked=pid=>(nlLikes()[pid]||[]).includes(myEmail()||"me");
+const nlLikeN=p=>p.base+(nlLikes()[p.id]||[]).length;
+const nlFans=G=>8000+strHash("fans"+G)%90000+(G&&nlJoined().includes(G)?1:0);
+function nlCard(p){ const m=nlM(p.mid); if(!m) return ""; const lk=nlLiked(p.id), cn=(nlCms()[p.id]||[]).length, long=p.t.length>90&&!(ui.nlEx&&ui.nlEx[p.id]);
+  return `<article class="card post nlp" id="nlp-${p.id}"><div class="post-head"><button class="av av-go nl-avb" data-a="nlGo" data-v="${esc(m.G)}" aria-label="${esc(nlGN(m.G))} 的社群">${nlAv(p.mid)}</button>
+    <div class="who"><b>${esc(nlName(p.mid))} ${I.verified}</b><span>${ymdhm(p.ts)}${nlSolo(m.G)?"":`・${esc(nlGN(m.G))}`}</span></div>${nlAdm()?`<button class="uni-more" data-a="nlPMore" data-v="${p.id}" aria-label="管理這則">⋯</button>`:""}</div>
+    <div class="post-body"><p class="post-text ${long?"clamp":""}">${esc(p.t)}</p>${long?`<button class="more" data-a="nlEx" data-v="${p.id}">展開全文</button>`:""}</div>
+    <div class="post-foot"><button class="act ${lk?"liked":""}" data-a="nlLike" data-v="${p.id}" aria-pressed="${lk}" aria-label="按讚">${I.heart}<span>${fmt(nlLikeN(p))}</span></button><button class="act" data-a="nlCm" data-v="${p.id}" aria-label="留言">${I.chat}<span>${fmt(cn)}</span></button></div></article>`; }
+/* LOVE 首頁「藝人動態」：有加入的虛擬歌手社群也一起出現 */
+function npcFeedItems(){ try{ if(!nlOn()) return []; const J=nlJoined(); if(!J.length) return []; const lim=Date.now()-14*864e5; return nlGen("cm").filter(p=>J.includes(p.G)&&p.ts>=lim).map(p=>({ts:p.ts,h:()=>nlCard(p)})); }catch(e){ return []; } }
+/* LOVE 探索：虛擬歌手的社群 */
+function npcExploreHtml(){ try{ if(!nlOn()) return ""; const J=nlJoined();
+  return `<h2 class="mf-h">虛擬歌手</h2><div class="ex-list">${nlGs().map(G=>{ const I=NPC_INFO[G]; return `<div class="ex-g"><button class="ex-gi" data-a="nlGo" data-v="${esc(G)}">${nlGAv(G,"ex")}<span><b>${esc(nlGN(G))}</b><small>${esc(I.mem.map(r=>npcN(r[0])).slice(0,5).join("・"))}</small></span></button>${J.includes(G)?`<span class="nl-in">已加入</span>`:`<button class="ex-join nl-j" data-a="nlJoin" data-v="${esc(G)}">加入</button>`}</div>`; }).join("")}</div>`; }catch(e){ return ""; } }
+function nlView(G,tab){ const NI=NPC_INFO[G]; if(!NI) return ""; const on=nlJoined().includes(G), adm=nlAdm(); setTimeout(cmTopSync,0);
+  const tabs=[["feed","Feed"],["about","Artist"]], P=nlGen("cm").filter(p=>p.G===G).slice(0,60);
+  const body=tab==="about"?nlAbout(G):`${adm?`<button class="nl-adm" data-a="nlWrite" data-v="${esc(G)}">＋ 用 ${esc(nlGN(G))} 的帳號發文（管理員）</button>`:""}${P.length?P.map(nlCard).join(""):emptyBox(I.star||"",`還沒有動態`,"過幾天再來看看吧")}`;
+  return `<div class="gcm cmx nlc" style="--gt:${nlCol(G)}"><header class="cmx-top" id="cmTop"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><b class="cmx-tt">${esc(nlGN(G))}</b><span class="cmx-r"></span></header>
+    <section class="cmx-hero nl-hero" style="background:${nlBg(G,1)}"><span class="cmx-hbg nl-hbg"><i>${esc(String(nlGN(G)).slice(0,1))}</i></span><span class="cmx-shade"></span>
+      <div class="cmx-hi"><small>${fmtW(nlFans(G))} 位成員${on?"・✓ 已加入":""}</small><b>${esc(nlGN(G))}</b>${on?`<button class="cmx-ms" data-a="nlTab" data-v="about" data-g="${esc(G)}">${esc(WHISPER_NAME)}</button>`:`<button class="cmx-ms" data-a="nlJoin" data-v="${esc(G)}">＋ 加入社群</button>`}</div></section>
+    <nav class="cm-tabs cmx-tabs">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="nlTab" data-v="${k}" data-g="${esc(G)}">${l}</button>`).join("")}</nav><main class="page cm-body">${body}</main></div>`; }
+function nlAbout(G){ const I=NPC_INFO[G], adm=nlAdm(), shared=!!S.get(NL_ON,0);
+  return `${adm?`<section class="card nl-admc"><b>只有管理員看得到這一塊</b><p>${shared?"現在大家都看得到虛擬歌手的社群、SNS 和 TIE。":"現在只有你看得到虛擬歌手的社群、SNS 和 TIE。"}</p><button class="btn ${shared?"btn-soft":"btn-main"}" data-a="nlShare">${shared?"改回只有我看得到":"開放給大家"}</button></section>`:""}
+    <section class="card nl-mems">${nlIds(G).map(id=>{ const m=nlM(id), r=nlRoomOf(id), act=nlActive(id);
+      return `<div class="nl-mr">${nlAv(id,"md")}<span class="nl-mi"><b>${esc(nlName(id))}</b><small>${esc(m.row[3])}・${esc(m.row[2])}</small></span>
+        ${act?`<button class="nl-tb on" data-a="nlRoom" data-v="${id}">${esc(WHISPER_NAME)} 聊天</button>`:`<button class="nl-tb" data-a="nlBuy" data-v="${id}">${esc(WHISPER_NAME)}<small>${NL_PRICE} 積分</small></button>`}
+        ${adm?`<button class="nl-wb" data-a="nlWel" data-v="${id}">歡迎語</button>`:""}</div>`; }).join("")}</section>
+    <p class="nl-note">${esc(WHISPER_NAME)} 券一位 ${NL_PRICE} 積分，可以用 ${NL_DAYS} 天。你傳訊息之後，他有空、有心情的時候才會回你，內容是他當下想跟你分享的事。</p>
+    <section class="card cm-card"><button class="cm-go" data-a="wkGo" data-v="n:${esc(G)}">在 SKpedia 看 ${esc(nlGN(G))} <span>→</span></button></section>`; }
+/* 留言 */
+function nlCmOpen(pid){ const p=nlPost(pid); if(!p) return; const L=nlCms()[pid]||[];
+  setLayer(`<div class="nl-sw" data-a="nlClose"><div class="nl-sh" data-a="nlNo" role="dialog" aria-label="留言"><i class="nl-gr"></i><b class="nl-st">留言</b>
+    <div class="nl-cl">${L.length?L.map(c=>`<div class="nl-cr"><b>${esc(c.n||"粉絲")}</b><p>${esc(c.t)}</p><small>${ago(c.ts)}</small></div>`).join(""):`<p class="nl-c0">還沒有留言，第一個留言給 ${esc(nlName(p.mid))} 吧</p>`}</div>
+    <form class="nl-cf" id="nlCmF" data-v="${pid}"><textarea rows="1" class="ag" id="nlCmIn" maxlength="200" placeholder="留言給 ${esc(nlName(p.mid))}"></textarea><button type="submit">送出</button></form></div></div>`,"nlcm"); }
+/* ---------- TIE ---------- */
+const nlRooms=()=>{ const o=S.get(acK(NL_TIEK),{}); return o&&typeof o==="object"?o:{}; };
+const nlRoomOf=id=>nlRooms()[id]||null;
+const nlActive=id=>{ const r=nlRoomOf(id); return !!(r&&r.until>Date.now()); };
+const nlSaveRoom=(id,fn)=>{ const o=nlRooms(); o[id]=fn(o[id]||{msgs:[],used:[]}); S.set(acK(NL_TIEK),o); };
+const nlWelcome=id=>{ const w=(S.get(NL_WEL,{})||{})[id]; return w||((nlM(id)||{}).P||{}).w||""; };
+const nlShown=r=>(r&&r.msgs||[]).filter(x=>x.ts<=Date.now());
+const nlUnread=id=>{ const r=nlRoomOf(id); return r?nlShown(r).filter(x=>x.f==="a"&&x.ts>(r.read||0)).length:0; };
+function nlRoomList(){ if(!nlOn()) return []; const o=nlRooms(); return Object.keys(o).filter(id=>nlM(id)).map(id=>{ const r=o[id], sh=nlShown(r); return {id,r,last:sh[sh.length-1]||null,active:r.until>Date.now(),un:nlUnread(id)}; }).sort((a,b)=>((b.last||{}).ts||0)-((a.last||{}).ts||0)); }
+/* TIE 列表裡的虛擬歌手聊天室 */
+function npcTieRows(q){ try{ let L=nlRoomList(); if(q) L=L.filter(x=>hit(q,nlName(x.id),nlGN(nlM(x.id).G),x.last&&x.last.t)); if(!L.length) return "";
+  return `<span class="t-sec">虛擬歌手</span>${L.map(x=>`<button class="t-room ${x.active?"":"off"}" data-a="nlRoom" data-v="${x.id}">${nlAv(x.id,"lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${esc(nlName(x.id))}</b>${x.active?"":`<span class="t-exp">已到期</span>`}</span><span class="t-room-t">${x.last?ago(x.last.ts):""}</span></div><p>${x.last?(x.last.f==="me"?"你：":"")+esc(nlFill(x.last.t,x.id,0)):"還沒有新訊息"}</p></div>${x.un?`<span class="t-cnt">${x.un}</span>`:""}</button>`).join("")}`; }catch(e){ return ""; } }
+const npcTieCount=()=>{ try{ return nlRoomList().length; }catch(e){ return 0; } };
+function nlBuy(id){ const m=nlM(id); if(!m) return; const act=nlActive(id);
+  ask(`${act?"延長":"購買"} ${nlName(id)} 的 ${WHISPER_NAME} 券？\n${NL_PRICE} 積分，可以用 ${NL_DAYS} 天。`,()=>{ if(points()<NL_PRICE){ toast("積分不足，先補充積分吧"); return; }
+    S.set(K.points,points()-NL_PRICE); try{ recordSale("npctie",{pts:NL_PRICE,label:`${WHISPER_NAME} 券・${nlName(id)}（${NL_DAYS} 天）`}); }catch(e){}
+    const now=Date.now(); nlSaveRoom(id,r=>{ const first=!r.since; r.since=r.since||now; r.until=Math.max(r.until||0,now)+NL_DAYS*864e5; r.msgs=r.msgs||[];
+      if(first) nlWelcome(id).split("|").filter(Boolean).forEach((t,k)=>r.msgs.push({id:"w"+now+k,f:"a",t:t,ts:now+800+k*1500,wel:1})); return r; });
+    toast(act?"已延長 "+NL_DAYS+" 天":"購買完成"); ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(id))); },{title:WHISPER_NAME,ok:`用 ${NL_PRICE} 積分購買`,danger:false}); }
+/* 粉絲傳了訊息：他看心情決定要不要回、什麼時候回、回幾則；回的是他自己想說的（不看粉絲說了什麼） */
+function nlReplyPlan(id,r){ const now=Date.now(); if((r.msgs||[]).some(x=>x.f==="a"&&x.ts>now)) return;   /* 已經決定要回了：多傳幾則也不會多回 */
+  const m=nlM(id), sd=strHash(id+now), mood=(sd%100)/100; if(mood>.62) return;   /* 有時候就是不回 */
+  const delay=(2+Math.floor(Math.pow(((sd>>>7)%1000)/1000,2)*150))*6e4, at=now+delay, hr=new Date(at).getHours(), tm=hr>=5&&hr<11?"m":hr>=21||hr<4?"n":"";
+  const used=r.used||[], pool=m.P.c.concat(NL_CHAT[m.P.a]).filter(x=>{ const k=/^([mn])>/.exec(x); return (!k||k[1]===tm)&&!used.includes(x); });
+  const L=pool.length?pool:m.P.c.concat(NL_CHAT[m.P.a]).filter(x=>!/^[mn]>/.test(x)), n=1+((sd>>>11)%10<6?0:(sd>>>11)%10<9?1:2);
+  let t=at; for(let k=0;k<n;k++){ const x=L[(sd>>>(k*3+2))%L.length]; used.push(x); x.replace(/^[mn]>/,"").split("|").forEach((s,j)=>{ r.msgs.push({id:"a"+t+"_"+k+"_"+j,f:"a",t:nlFill(s,id,sd+k),ts:t}); t+=4000+((sd>>>k)%40)*1000; }); }
+  r.used=used.slice(-40); }
+function nlSend(id,text){ const t=String(text||"").trim(); if(!t||!nlActive(id)) return; nlSaveRoom(id,r=>{ r.msgs.push({id:"m"+Date.now(),f:"me",t,ts:Date.now()}); nlReplyPlan(id,r); r.msgs=r.msgs.slice(-400); return r; }); ui.nlDraft=""; ui.scrollChat=true; render(); }
+function nlRoom(id){ const m=nlM(id), r=nlRoomOf(id); if(!m) return ""; const act=nlActive(id), sh=r?nlShown(r):[], days=r&&r.since?Math.max(1,Math.floor((Date.now()-r.since)/864e5)+1):1;
+  if(r){ if(sh.some(x=>x.f==="a"&&x.ts>(r.read||0))) nlSaveRoom(id,x=>{ x.read=Date.now(); return x; }); const nx=(r.msgs||[]).filter(x=>x.ts>Date.now()).map(x=>x.ts).sort((a,b)=>a-b)[0]; clearTimeout(ui.nlT); if(nx&&nx-Date.now()<20*6e4) ui.nlT=setTimeout(()=>{ if(location.hash.includes("npctie")) render(); },nx-Date.now()+300); }
+  let last=""; const body=sh.map(w=>{ const d=dayLabel(w.ts); let sep=""; if(d!==last){ sep=`<div class="t-day"><span>${d}</span></div>`; last=d; }
+    if(w.f==="me") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-b me">${esc(w.t)}</div></div>`;
+    return sep+`<div class="t-art">${nlAv(id,"ring")}<div class="t-art-c"><div class="t-art-n"><b>${esc(nlName(id))}</b></div><div class="t-bw"><div class="t-b">${esc(nlFill(w.t,id,0))}</div><span class="t-side"><span class="t-tm">${timeHM(w.ts)}</span></span></div></div></div>`; }).join("");
+  const dr=ui.nlDraft||"";
+  return `<div class="t-bgl t-default"></div><header class="t-rh sh-head"><div class="t-rh-row"><button class="t-ib" data-a="back" aria-label="返回">${TI.back}</button><h3>${esc(nlName(id))}</h3><div class="t-rh-r"></div></div>
+      ${act?`<div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tieHeart()}<span>+${days}</span></div>`:`<button class="t-sub t-again" data-a="nlBuy" data-v="${id}">💜 我們是不是可以再見呢？</button>`}</header>
+    <main class="t-msgs nl-msgs">${body||`<p class="t-none">還沒有訊息</p>`}<div id="chat-end"></div></main>
+    ${act?`<form class="t-foot" id="nlForm" data-v="${id}"><div class="t-inp"><textarea rows="1" class="ag" id="nlIn" maxlength="300" autocomplete="off" aria-label="輸入訊息">${esc(dr)}</textarea></div><button class="t-send ${dr.trim()?"on":""}" type="submit" aria-label="送出">${TI.send}</button></form>`
+      :`<div class="t-foot t-expired-in" data-a="nlBuy" data-v="${id}"><div class="t-inp off"></div><span class="t-send">${TI.send}</span></div>`}`; }
+/* 有新回覆時提醒（不在聊天室裡才提醒） */
+setInterval(()=>{ try{ if(!session()||!nlOn()) return; const o=nlRooms(), now=Date.now(), seen=ui.nlSeen||(ui.nlSeen=now); let who=null;
+  Object.keys(o).forEach(id=>{ (o[id].msgs||[]).forEach(x=>{ if(x.f==="a"&&!x.wel&&x.ts>seen&&x.ts<=now) who=id; }); }); ui.nlSeen=now;
+  if(who&&!location.hash.includes("npctie?id="+encodeURIComponent(who))&&!location.hash.includes("npctie?id="+who)){ toast(`${nlName(who)} 傳了 ${WHISPER_NAME} 訊息`); if(/tab=whisper/.test(location.hash)&&!layer.innerHTML) render(); } }catch(e){} },45000);
+/* ---------- SNS ---------- */
+const nlSnId=id=>"n:"+id;
+const nlSnHandle=id=>{ const m=nlM(id); if(!m) return ""; const a=String(npcN(m.row[0])).toLowerCase().replace(/[^a-z0-9]+/g,""), g=String(nlGN(m.G)).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,""); return nlSolo(m.G)?(g||a)+".official":(a||"artist")+"."+g; };
+function npcSnUser(uid){ const id=String(uid).slice(2), m=nlM(id); if(!m||!nlOn()) return null; return {id:uid,u:nlSnHandle(id),name:nlName(id),g:strHash(m.G)%6,ver:true,bio:`${nlSolo(m.G)?"":nlGN(m.G)+" "}${m.row[3].split("、")[0]} 🎤`,av:nlAvUrl(id),npc:1}; }
+/* SNS 頭像：團的代表色＋名字第一個字（做成小圖） */
+const NL_AVU={};
+function nlAvUrl(id){ if(NL_AVU[id]) return NL_AVU[id]; const m=nlM(id), c=nlCol(m.G), ch=String(nlName(id)).slice(0,1).toUpperCase().replace(/[<&>"']/g,"");
+  return NL_AVU[id]="data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".55"/><stop offset="1" stop-color="${c}"/></linearGradient></defs><rect width="100" height="100" fill="#fff"/><rect width="100" height="100" fill="url(#g)"/><text x="50" y="50" dy=".35em" text-anchor="middle" font-family="-apple-system,Helvetica,Arial,sans-serif" font-weight="800" font-size="42" fill="#fff">${ch}</text></svg>`); }
+const npcSnUsers=()=>nlOn()?nlAll().map(nlSnId):[];
+const nlSnFol=uid=>12000+strHash("snf"+uid)%400000;
+const nlPh=(p,k)=>{ const s=strHash(p.id+k), c=nlCol(p.G), x=s%100, y=(s>>>7)%100, x2=(s>>>14)%100; return `<div class="nl-ph" style="background:radial-gradient(circle at ${x}% ${y}%,#fff8 0,#fff0 34%),radial-gradient(circle at ${x2}% ${100-y}%,${c}cc 0,${c}00 55%),linear-gradient(${s%360}deg,${c},#2a2430)"></div>`; };
+function npcSnPosts(){ try{ if(!nlOn()) return []; return nlGen("sn").map(p=>({id:p.id,uid:nlSnId(p.mid),cap:p.t,ts:p.ts,base:p.base,npc:1,media:Array.from({length:1+strHash(p.id)%3},(_,k)=>({type:"html",h:nlPh(p,k)}))})); }catch(e){ return []; } }
+/* ---------- 管理員：發文、隱藏、歡迎語 ---------- */
+function nlWrite(G){ const ids=nlIds(G); ui.nlW={G,mid:ids[0],k:"both"}; nlWriteDraw(); }
+function nlWriteDraw(){ const w=ui.nlW; if(!w) return; const old=(document.getElementById("nlWT")||{}).value||w.t||"";
+  setLayer(`<div class="aw-mod-bg nl-mod" data-a="nlClose"><div class="aw-mod" data-a="nlNo"><h3>用虛擬歌手的帳號發文</h3>
+    <div class="nl-chips">${nlIds(w.G).map(id=>`<button class="${w.mid===id?"on":""}" data-a="nlWMem" data-v="${id}">${esc(nlName(id))}</button>`).join("")}</div>
+    <div class="nl-chips">${[["both","社群＋SNS"],["cm","只發社群"],["sn","只發 SNS"]].map(([k,l])=>`<button class="${w.k===k?"on":""}" data-a="nlWK" data-v="${k}">${l}</button>`).join("")}</div>
+    <textarea id="nlWT" maxlength="500" placeholder="要說的話（{F} 會換成粉絲名）">${esc(old)}</textarea>
+    <div class="aw-mod-b"><button class="btn btn-soft" data-a="nlClose">取消</button><button class="btn btn-main" data-a="nlWOk">發文</button></div></div></div>`,"nlw"); }
+function nlWelEdit(id){ ui.nlWelId=id; setLayer(`<div class="aw-mod-bg nl-mod" data-a="nlClose"><div class="aw-mod" data-a="nlNo"><h3>${esc(nlName(id))} 的 ${esc(WHISPER_NAME)} 歡迎語</h3><p class="nl-tip">第一次買券的粉絲會收到。用「|」隔開就是分成好幾則傳；{N} 會換成粉絲的名字。</p>
+    <textarea id="nlWelT" maxlength="600">${esc(nlWelcome(id))}</textarea><div class="aw-mod-b"><button class="btn btn-soft" data-a="nlClose">取消</button><button class="btn btn-main" data-a="nlWelOk">儲存</button></div></div></div>`,"nlwel"); }
+/* ---------- 點擊 ---------- */
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="nl"]'); if(!t) return; const a=t.dataset.a, v=t.dataset.v;
+  if(!/^nl(Go|Tab|Join|Like|Cm|Ex|PMore|Room|Buy|Close|No|Write|WMem|WK|WOk|Wel|WelOk|Share)$/.test(a)) return; e.stopImmediatePropagation(); if(a!=="nlNo") e.preventDefault();
+  if(a==="nlNo"){ return; }
+  if(a==="nlClose"){ layer.innerHTML=""; return; }
+  if(a==="nlGo"){ layer.innerHTML=""; navTo(nlHref("npc","id="+encodeURIComponent(v))); scrollTo(0,0); return; }
+  if(a==="nlTab"){ const G=t.dataset.g; location.replace(nlHref("npc","id="+encodeURIComponent(G)+(v==="about"?"&p=about":""))); return; }
+  if(a==="nlJoin"){ const J=nlJoined(); if(!J.includes(v)){ J.push(v); S.set(acK(NL_JOIN),J); toast(`已加入 ${nlGN(v)} 的社群`); } render(); return; }
+  if(a==="nlEx"){ ui.nlEx=ui.nlEx||{}; ui.nlEx[v]=1; render(); return; }
+  if(a==="nlLike"){ const me=myEmail()||"me", on=nlLiked(v); mkEdit(NL_LK,o=>{ o=o||{}; const L=(o[v]||[]).filter(x=>x!==me); if(!on) L.push(me); o[v]=L; return {v:o}; }).then(()=>render()).catch(()=>toast("沒有按到，再試一次")); return; }
+  if(a==="nlCm"){ nlCmOpen(v); return; }
+  if(a==="nlPMore"){ if(!nlAdm()) return; ask("把這則從大家的畫面上拿掉？",()=>{ mkEdit(NL_HIDE,o=>({v:{...(o||{}),[v]:1}})).then(()=>{ NL_C.cm=NL_C.sn=null; render(); toast("拿掉了"); }); }); return; }
+  if(a==="nlRoom"){ layer.innerHTML=""; ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(v))); return; }
+  if(a==="nlBuy"){ nlBuy(v); return; }
+  if(a==="nlWrite"){ if(nlAdm()) nlWrite(v); return; }
+  if(a==="nlWMem"){ ui.nlW.t=(document.getElementById("nlWT")||{}).value||""; ui.nlW.mid=v; nlWriteDraw(); return; }
+  if(a==="nlWK"){ ui.nlW.t=(document.getElementById("nlWT")||{}).value||""; ui.nlW.k=v; nlWriteDraw(); return; }
+  if(a==="nlWOk"){ const w=ui.nlW, tx=((document.getElementById("nlWT")||{}).value||"").trim(); if(!w||!tx){ toast("先寫要說的話"); return; } const k="nown_"+Date.now();
+    mkEdit(NL_POSTS,o=>({v:{...(o||{}),[k]:{mid:w.mid,k:w.k,t:tx,ts:Date.now()}}})).then(()=>{ ui.nlW=null; layer.innerHTML=""; NL_C.cm=NL_C.sn=null; render(); toast("發好了"); }).catch(()=>toast("沒有發出去，再試一次")); return; }
+  if(a==="nlWel"){ if(nlAdm()) nlWelEdit(v); return; }
+  if(a==="nlWelOk"){ const id=ui.nlWelId, tx=((document.getElementById("nlWelT")||{}).value||"").trim(); if(!id||!tx){ toast("歡迎語不能是空的"); return; }
+    mkEdit(NL_WEL,o=>({v:{...(o||{}),[id]:tx}})).then(()=>{ layer.innerHTML=""; toast("存好了"); }).catch(()=>toast("沒有存到，再試一次")); return; }
+  if(a==="nlShare"){ if(!nlAdm()) return; const on=!!S.get(NL_ON,0); ask(on?"改回只有你看得到？":"開放給大家？大家會在 LOVE 探索、SNS、TIE 看到虛擬歌手。",()=>{ mkEdit(NL_ON,()=>({v:on?0:1})).then(()=>{ render(); toast(on?"改回只有你看得到":"已開放給大家"); }); },{danger:false}); return; }
+},true);
+document.addEventListener("submit",e=>{ const f=e.target;
+  if(f.id==="nlForm"){ e.preventDefault(); const i=document.getElementById("nlIn"); nlSend(f.dataset.v,i&&i.value); return; }
+  if(f.id==="nlCmF"){ e.preventDefault(); const pid=f.dataset.v, i=document.getElementById("nlCmIn"), tx=(i&&i.value||"").trim(); if(!tx) return;
+    const c={e:myEmail()||"me",n:ME.name||"粉絲",t:tx,ts:Date.now()}; mkEdit(NL_CMK,o=>{ o=o||{}; o[pid]=(o[pid]||[]).concat([c]).slice(-300); return {v:o}; }).then(()=>{ nlCmOpen(pid); render(); }).catch(()=>toast("沒有送出，再試一次")); }
+},true);
+document.addEventListener("input",e=>{ if(e.target&&e.target.id==="nlIn"){ ui.nlDraft=e.target.value; const b=document.querySelector("#nlForm .t-send"); if(b) b.classList.toggle("on",!!e.target.value.trim()); } });
 
 /* ===== 舊 iPhone（iOS 15）看不懂 color-mix：build.py 自動整理清單，由 cmxPoly() 補上算好的顏色 ===== */
 const CMX_RULES=[[".ob-n", "", "background", "color-mix(in srgb,var(--ink) 18%,transparent)"], [".ux-empty span", "", "background", "color-mix(in srgb,var(--accent,#8B5CF6) 10%,transparent)"], ["html[data-theme] body header.top", "", "background", "color-mix(in srgb,var(--bg) 88%,transparent)"], ["html[data-theme] body .nav-in", "", "background", "color-mix(in srgb,var(--s1) 92%,transparent)"], [".foc-pill", "", "background", "color-mix(in srgb,#6D8DF5 16%,transparent)"], [".foc-ms2 span.on", "", "background", "color-mix(in srgb,var(--accent,#8B5CF6) 14%,transparent)"], [".foc-ms2 span.on", "", "border-color", "color-mix(in srgb,var(--accent,#8B5CF6) 40%,transparent)"], ["html[data-theme] body .t-lh", "", "background", "color-mix(in srgb,var(--bg) 82%,transparent)"], ["html[data-theme] body .t-search:not(.in)", "", "background", "color-mix(in srgb,var(--bg) 95%,transparent)"], [".ap-cell small", "", "background", "color-mix(in srgb,var(--s1) 85%,transparent)"], [".sto-av", "", "background", "linear-gradient(140deg,var(--c),color-mix(in srgb,var(--c) 55%,#1a1424))"], [".sto-av", "", "box-shadow", "0 4px 14px color-mix(in srgb,var(--c) 35%,transparent)"], [".cm-shade", "", "background", "linear-gradient(180deg,transparent 30%,color-mix(in srgb,var(--gt) 70%,#000 30%) 100%)"], [".cm-chips button.on", "", "background", "color-mix(in srgb,var(--gt) 72%,#1B1626)"], [".ofd-tag", "", "background", "color-mix(in srgb,var(--ink) 8%,transparent)"], [".ofd>.ofm-bar", "", "border-top", "1px solid color-mix(in srgb,var(--ink) 10%,transparent)"], [".cmx-hbg", "", "background", "linear-gradient(160deg,color-mix(in srgb,var(--gt) 55%,#fff),var(--gt))"], [".ap2-bar", "", "background", "color-mix(in srgb,var(--bg) 70%,transparent)"], [".me-hero", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--gt) 70%,#000) 0%,var(--gt) 100%)"], [".yv-th", "", "background", "linear-gradient(135deg,color-mix(in srgb,var(--gt) 60%,#fff),var(--gt))"], [".t-spin", "", "border-color", "color-mix(in srgb,var(--violet,#A47BFF) 22%,transparent)!important"], [".snof-card", "", "background", "radial-gradient(120% 90% at 50% 0%,color-mix(in srgb,var(--c) 70%,#000),#0b0910)"], [".sn-nav", "", "background", "color-mix(in srgb,var(--b) 82%,transparent)"], [".sn-nav", "", "border", ".5px solid color-mix(in srgb,var(--t) 10%,transparent)"], [".ia-ban", "", "background", "color-mix(in srgb,var(--s1,#fff) 88%,transparent)"], [".tr-n", "", "background", "color-mix(in srgb,var(--gt,#8843FB) 14%,transparent)"], [".nw-tag", "", "background", "color-mix(in srgb,var(--c) 14%,transparent)"], [".nw-ph", "", "background", "linear-gradient(135deg,var(--gt),color-mix(in srgb,var(--gt) 55%,#fff))"], [".nw-gs span", "", "background", "color-mix(in srgb,var(--gt) 12%,transparent)"], [".cal-btn", "", "background", "color-mix(in srgb,currentColor 10%,transparent)"], [".cal-x", "", "background", "color-mix(in srgb,var(--accent,#c06) 14%,transparent)"], [".sn-sh.srt .srt-g", "", "background", "color-mix(in srgb,var(--sn-t,#fff) 7%,transparent)"], [".pta-r.on", "", "background", "color-mix(in srgb,var(--violet) 10%,transparent)"], [".lsf-seg button.cur", "", "background", "color-mix(in srgb,var(--c) 22%,transparent)"], [".lsf-b", "", "background", "color-mix(in srgb,var(--c) 10%,transparent)"], [".sn-nav button.on:last-child", "", "background", "color-mix(in srgb,var(--t) 9%,transparent)"], [".sn-pick", "", "border", "1.5px dashed color-mix(in srgb,var(--t,#fff) 22%,transparent)"], [".sn-pick", "", "background", "color-mix(in srgb,var(--t,#fff) 5%,transparent)"], [".sn-next:disabled", "", "background", "color-mix(in srgb,var(--t,#fff) 12%,transparent)"], [".sn-next:disabled", "", "color", "color-mix(in srgb,var(--t,#fff) 45%,transparent)!important"], [".sn-aud button", "", "border", "1px solid color-mix(in srgb,var(--t,#fff) 22%,transparent)"], [".sn-aud button.on", "", "background", "color-mix(in srgb,var(--t,#fff) 12%,transparent)"], [".sn-aud .cf.on", "", "background", "color-mix(in srgb,#1CD14F 16%,transparent)"], [".sn-tagr", "", "border-top", ".5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important"], [".sn-tagr", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#fff) 14%,transparent)!important"], [".fp-reps", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 8%,transparent)"], [".pre-bn button", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 12%,var(--card,#fff))"], [".sn-fb", "", "background", "color-mix(in srgb,var(--t,#000) 8%,transparent)"], [".sn-musb", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#000) 14%,transparent)"], [".sn-musr", "", "border-bottom", ".5px solid color-mix(in srgb,var(--t,#000) 14%,transparent)"], [".smp-pl", "", "box-shadow", "0 6px 18px color-mix(in srgb,var(--violet,#8843FB) 40%,transparent)"], [".smp-sh.l", "", "background", "linear-gradient(90deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))"], [".smp-sh.r", "", "background", "linear-gradient(270deg,var(--s2) 30%,color-mix(in srgb,var(--s2) 55%,transparent))"], [".smp-win", "", "box-shadow", "0 0 0 999px color-mix(in srgb,var(--s2) 55%,transparent),0 0 18px color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)"], [".smp-win em", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 30%,transparent)"], [".stk-pan", "", "border-top", "1px solid color-mix(in srgb,currentColor 10%,transparent)"], [".stk-tabs button.on", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 14%,transparent)"], [".stk-grid button:active", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 12%,transparent)"], [".stk-grab", "", "background", "color-mix(in srgb,currentColor 20%,transparent)"], ["#stkDock", "", "border-top", "1px solid color-mix(in srgb,currentColor 8%,transparent)"], [".vs-hero", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--glass) 82%,transparent),var(--glass)),var(--vg)"], [".vs-pick button.on", "", "background", "color-mix(in srgb,var(--accent,#8843FB) 14%,transparent)"], [".scx-num button.on", "", "background", "color-mix(in srgb,#7C5CFF 22%,transparent)"], [".cfs-awn", "", "background", "repeating-linear-gradient(90deg,var(--ac) 0 18px,color-mix(in srgb,var(--ac) 55%,#fff) 18px 36px)"], [".fya", "", "background", "radial-gradient(120% 90% at 50% 110%,color-mix(in srgb,var(--c1) 55%,#000) 0%,#07050d 62%)"], [".fya.ph::after", "", "background", "linear-gradient(115deg,color-mix(in srgb,var(--c1) 38%,transparent) 0%,transparent 42%,transparent 60%,color-mix(in srgb,var(--c2) 40%,transparent) 100%)"], [".fya-mono", "", "filter", "drop-shadow(0 0 28px color-mix(in srgb,var(--c2) 70%,transparent))"], [".fya-beam", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--c1) 55%,transparent),transparent 75%)"], [".fya-beam.b3", "", "background", "linear-gradient(180deg,color-mix(in srgb,var(--c2) 55%,transparent),transparent 75%)"], [".pr-auto::after", "", "background", "linear-gradient(160deg,color-mix(in srgb,var(--c) 40%,transparent),transparent 60%)"], ["html[data-th] body .toast,html[data-th] .toast", "", "background", "color-mix(in srgb,var(--s1) 88%,transparent)!important"], [".mur-trk .mt-p i", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 45%,transparent)"], [".mur-trk .mt-on i", "", "box-shadow", "0 0 0 3px color-mix(in srgb,var(--violet,#8843FB) 22%,transparent)"], [".sn-gb", "", "background", "color-mix(in srgb,var(--t) 8%,transparent)"], [".sn-dmhead button", "", "background", "color-mix(in srgb,var(--t) 10%,transparent)"], [".pd-c.lp-on", "", "background", "color-mix(in srgb,var(--violet,#8843FB) 10%,transparent)"], [".sn-pvh", "", "background", "color-mix(in srgb,var(--b,#000) 78%,transparent)!important"]];

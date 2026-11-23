@@ -338,9 +338,9 @@ function viewFan(tab){
   if(tab==="home"){
     const fa=followed(), f=scopeF(); let body=""; const q=srchQ("love"); if(ui.feedTab!=="discover"&&ui.feedTab!=="live") ui.feedTab="feed"; if(ui.feedTab==="live") return viewFanLive();
     if(ui.feedTab==="feed"){
-      const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p)), ofs=q?[]:coPosts().filter(x=>x.src&&fa.includes(x.src.gid)&&groupOf(x.src.gid)&&albThumb(x));
+      let nps=[]; const posts=getPosts().filter(p=>fa.includes(p.group)&&MEMBERS[p.member]&&!p.hidden&&postHit(q,p)), ofs=q?[]:coPosts().filter(x=>x.src&&fa.includes(x.src.gid)&&groupOf(x.src.gid)&&albThumb(x));
       body=(q?"":myFeedTop())+(q?"":`<h2 class="mf-h">藝人動態</h2>`)+   /* 11/18 公司官方公告不放 LOVE（在 SNS 公布就好） */
-        srchLabel("love")+(posts.length||ofs.length?ofMix(posts,ofs):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
+        srchLabel("love")+((nps=q?[]:npcFeedItems()),posts.length||ofs.length||nps.length?ofMix(posts,ofs,nps):q?srchEmpty("動態"):(followed().length?emptyBox(I.star,"還沒有動態","你追蹤的藝人發文後會出現在這裡"):emptyBox(I.star,"還沒有加入社群","到「探索」找喜歡的藝人，加入他們的社群吧",`<button class="btn btn-main" data-a="ft" data-v="discover">去探索</button>`)));
     } else if(ui.feedTab==="discover"){
       const posts=getPosts().filter(p=>!fa.includes(p.group)&&!p.hidden&&postHit(q,p)&&groupOf(p.group));
       body=(q?"":exploreTop())+`<h2 class="mf-h">你可能也會喜歡</h2>`+srchLabel("love")+(posts.length?posts.map(p=>postCard(p)+`<button class="ex-join" data-a="gJoin" data-v="${p.group}">＋ 加入${esc(groupOf(p.group).name)}</button>`).join(""):q?srchEmpty("動態"):emptyBox(I.star,"你已經加入所有社群了","目前沒有其他社群可以推薦"));

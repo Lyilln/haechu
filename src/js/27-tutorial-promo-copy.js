@@ -424,7 +424,7 @@ const ofAcct=gid=>{ const g=groupOf(gid)||{}; return `<b class="ofm-n">${esc(g.n
 function ofMediaCard(x){ const t=albThumb(x); if(!t) return ""; const gid=x.src.gid;
   return `<article class="card ofm" id="post-of-${x.id}"><button class="ofm-t" data-a="ofOpen" data-v="${esc(x.id)}">${t.h}</button>
     <div class="ofm-b" data-a="ofOpen" data-v="${esc(x.id)}"><span class="ofm-h"><button class="ofm-go" data-a="ofGrp" data-v="${esc(gid)}">${ofAv(gid)}</button><span><button class="ofm-go" data-a="ofGrp" data-v="${esc(gid)}">${ofAcct(gid)}</button><small>${ofWhen(x.ts)}</small></span></span><p class="ofm-tt">${esc(albTitle(x))}</p></div>${ofBar(x.id)}</article>`; }
-function ofMix(posts,ofs){ const L=[...posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)})),...ofs.map(x=>({ts:x.ts,h:()=>ofMediaCard(x)}))].sort((a,b)=>b.ts-a.ts);
+function ofMix(posts,ofs,more){ const L=[...posts.map(p=>({ts:p.ts||0,h:()=>postCard(p)})),...ofs.map(x=>({ts:x.ts,h:()=>ofMediaCard(x)})),...(more||[])].sort((a,b)=>b.ts-a.ts);
   setTimeout(()=>document.querySelectorAll(".ofm-t img[data-mid]:not([data-hyd])").forEach(async el=>{ el.dataset.hyd="1"; const u=await mediaSrc(el.dataset.mid); if(u) el.src=u; }),0);
   return L.map(o=>o.h()).join(""); }
 function ofOpen(id){ const all=coPosts(), x=all.find(y=>y.id===id); if(!x) return; const s=x.src, pr=s.pr||{}, gid=s.gid, cap=coCap(s.co,x.k,s,x), imgs=x.imgs||[];
