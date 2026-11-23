@@ -271,7 +271,7 @@ function scPick(uid,sc,d,co0){ const me=scNext(sc,co0); sc.by[uid]=me; const co=
 /* 自動挖掘：只在管理員的手機跑（不會重複私訊） */
 /* 不能挖的人：已出道、已簽公司（帳號有公司或名單勾了）、已經挖過、正在參加選秀 */
 /* 11/18 選秀節目進行中（招募～決賽）：星探全部暫停，誰都不私訊；節目結束後再恢復 */
-const scPause=()=>{ try{ const s=typeof svReal==="function"&&svReal(); return !!(s&&["recruit","r1","r2","final"].includes(s.ph)); }catch(e){ return false; } };
+const scPause=()=>{ try{ const s=typeof svReal==="function"&&svReal(); return !!(s&&["recruit","r1","r2","pr","final"].includes(s.ph)); }catch(e){ return false; } };
 const scBlock=(sc,uid)=>{ const x=sc.list.find(y=>y.uid===uid); return scArtist(uid)||!!scCoOf(uid)||!!(x&&x.signed)||!!sc.picked[uid]||(typeof svInShow==="function"&&svInShow(String(uid).slice(2))); };
 /* 自動挖掘：只在管理員的手機跑。每位粉絲都看（不用先加名單）→ 哪幾家公司的條件達到了 → 派出最少挖過人的那家，私訊後自動放進名單 */
 function scAuto(){ try{ if(!isAdminAcct()||ui.svDemo||scPause()) return; if(HB_ON&&HB.ver[SC_KEY]==null&&!Object.keys(HB.ver||{}).length) return; const sc=scGet(), C=scCos(sc); if(!C.length) return; const d=snDB(); let n=0;
