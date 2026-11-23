@@ -48,8 +48,8 @@ function awAlbN(gid,title,from){ return (S.get(K.sales,[])||[]).filter(x=>x.type
 /* 打歌成績：MV 播放＋MV 讚數×5＋一位×300 */
 function awSongM(s){ try{ return (songViews(s)||0)+(songMvLikes(s)||0)*5+songStats(s.id).wins.length*300; }catch(e){ return 0; } }
 /* 虛擬歌手：打歌節目裡今年拿過一位的先入圍，不夠 4 組再補；成績落在真藝人中位數的 50%～110%，一位一樣 +300 */
-function awNpcs(y,base,amax){ const W=getMShow().npcWin||{}, wins={}; Object.keys(W).filter(wk=>String(wk).startsWith(String(y))).forEach(wk=>Object.values(W[wk]||{}).forEach(o=>{ if(o&&o.name) wins[o.name]=(wins[o.name]||0)+1; }));
-  const L=(typeof NPC_SONGS!=="undefined"?NPC_SONGS:[]).slice().sort((a,b)=>(wins[b[0]]||0)-(wins[a[0]]||0)||strHash(y+a[0])%97-strHash(y+b[0])%97).slice(0,4);
+function awNpcs(y,base,amax){ const W=getMShow().npcWin||{}, wins={}; Object.keys(W).filter(wk=>String(wk).startsWith(String(y))).forEach(wk=>Object.values(W[wk]||{}).forEach(o=>{ if(o&&o.name){ const nm=npcN(o.name); wins[nm]=(wins[nm]||0)+1; } }));
+  const L=npcSongs().slice().sort((a,b)=>(wins[b[0]]||0)-(wins[a[0]]||0)||strHash(y+a[0])%97-strHash(y+b[0])%97).slice(0,4);
   return L.map(([n,t])=>{ const h=strHash("awn"+y+n), r=(h%1000)/1000, r2=((h>>>10)%1000)/1000; return {n,t,m:Math.round(base*(.5+.6*r))+(wins[n]||0)*300,a:Math.round(amax*(.3+.7*r2)),nw:h%3===0,al:["1st Mini","Single","1st Album","2nd Mini"][h%4]+` 〈${t}〉`}; }); }
 function awPool(){ if(awDemo()) return awDemoPool(); const y=awYear(), from=+new Date(y,0,1), to=awCfg().relTo, m=getMShow();
   const songs=[...m.songs,...(m.ended||[])].filter(s=>groupOf(s.gid)&&songRel(s)>=from&&songRel(s)<to);

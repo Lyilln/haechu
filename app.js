@@ -1511,6 +1511,25 @@ const isWealth=em=>{ em=String(em||"").toLowerCase(); const a=ACCOUNTS[em]||{}; 
 const wlCode=(li,si)=>WL_SYM[li]+String.fromCodePoint(0x1D7CE+si+1);
 function wlAt(p){ let li=0,si=0; WL_TBL.forEach((th,i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<WL_TBL[li].length?[li,si+1]:li+1<WL_TBL.length?[li+1,0]:null;
   return {li,si,k:li*10+si,code:wlCode(li,si),name:WL_NAME[li],wl:1,next:nx&&{code:wlCode(nx[0],nx[1]),need:Math.max(0,WL_TBL[nx[0]][nx[1]]-p)}}; }
+/* 11/23 虛擬歌手／虛擬團體／虛擬練習生的名字，絕對不能跟真人帳號撞名（帳號、暱稱、本名、藝名、團名都不行）。
+   本名只有管理員手機看得到，所以由管理員的手機檢查，撞到就換成備用名字，存在共用的對照表，大家看到的都一樣 */
+const NPCRN="daisuki_npc_ren";
+const npcN=n=>{ try{ return ((S.get(NPCRN,{})||{})[n])||n; }catch(e){ return n; } };
+const NPC_SPARE_G=["LUNAREE","VELOUR","STELLINE","CIELO","OPALINE","FLEURIE","ZEPHYRA","AMBERLY","SOLARA","NOCTELLE","IRISEA","MAREVIE","CANDELA","SYLVÉ","ORCHIDA","LYRAE"];
+const NPC_SPARE_P={g:["芷涵","沛恩","禾希","晏寧","書瑤","嵐音","允熙","若綺","湘妍","霏恩","卉晴","沁瑜","語喬","采蘋","昕柔","靖雯"],b:["牧辰","禹哲","澄安","奕勳","昀澤","赫宇","嘉祐","泓彥","聿恆","柏翰","晏廷","睿哲","秉澄","皓允","敘白","知衡"]};
+const npcKey=x=>String(x||"").toLowerCase().replace(/\s+/g,"");
+function npcTaken(){ const T=new Set(), add=x=>{ const k=npcKey(x); if(k) T.add(k); };
+  try{ Object.keys(ACCOUNTS).forEach(em=>{ const a=ACCOUNTS[em]||{}; add(a.user); add(String(em).split("@")[0]); const nm=String(a.name||""); add(nm); add(nm.replace(/^\S+\s+/,"")); }); }catch(e){}
+  try{ Object.values(REAL||{}).forEach(add); }catch(e){}
+  try{ Object.keys(MEMBERS).forEach(m=>{ const x=MEMBERS[m]||{}; if(x.npc) return; ["name","en","kname","stage","real"].forEach(f=>add(x[f])); try{ const P=artProf(m)||{}; Object.keys(P).forEach(k=>{ if(/name|nick|^cm$|^live$|^tie$/i.test(k)&&typeof P[k]==="string") add(P[k]); }); }catch(e){} }); }catch(e){}
+  try{ (GROUPS||[]).forEach(g=>{ if(g&&!g.npc){ add(g.name); add(g.en); add(g.kname); } }); }catch(e){}
+  return T; }
+function npcRenSync(){ try{ if(typeof isAdminAcct!=="function"||!isAdminAcct()) return; if(HB_ON&&!HB.pulled) return; const T=npcTaken(), M={...(S.get(NPCRN,{})||{})};
+  const orig=[...(typeof NPC_SONGS!=="undefined"?NPC_SONGS.map(x=>[x[0],"grp"]):[]),...(typeof SV_NPC_G!=="undefined"?SV_NPC_G.map(x=>[x[1],"g"]):[]),...(typeof SV_NPC_B!=="undefined"?SV_NPC_B.map(x=>[x[1],"b"]):[])];
+  let ch=false; const used=new Set(orig.map(([o])=>npcKey(M[o]||o)));
+  orig.forEach(([o,kind])=>{ const cur=M[o]||o; if(!T.has(npcKey(cur))) return; const pool=kind==="grp"?NPC_SPARE_G:NPC_SPARE_P[kind], nx=pool.find(x=>!T.has(npcKey(x))&&!used.has(npcKey(x))); if(!nx) return; used.add(npcKey(nx)); M[o]=nx; ch=true; });
+  if(ch) S.set(NPCRN,M); }catch(e){} }
+setTimeout(npcRenSync,8000); setInterval(npcRenSync,120000);
 function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0; if(!art&&isWealth(s.email)) return {...wlAt(p),art:false};   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
   LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } }));
   if(!art&&li>0){ li=0; si=4; }   // 還沒出道：最高 T5
@@ -5545,16 +5564,17 @@ function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r
 const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
 const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
 const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];
+const npcSongs=()=>NPC_SONGS.map(([g,t])=>[npcN(g),t]);   /* 撞名的換成備用名字 */
 /* 虛擬對手：分數照這週已經過了多少慢慢長上去，節目播出時到最終分數 */
 function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length; if(!n||n>=MSA.MIN) return [];
   const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
   /* 虛擬歌手的分數跟著真的歌走（社群人數少，分數不能高到追不上）：預估本週真歌的最高分，虛擬歌手落在它的 55%～125% */
   const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.5,prog));   /* 11/23 一週剛開始時不要高估（以前最多估成 4 倍） */
-  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.4+.55*r);   /* 11/23 她說虛擬歌手太難超過：改成真歌最高分的 40%～95%，真歌跟上進度就贏得過；要贏還是得投票、按讚 */ return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=npcSongs()[(h+k*3)%npcSongs().length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.4+.55*r);   /* 11/23 她說虛擬歌手太難超過：改成真歌最高分的 40%～95%，真歌跟上進度就贏得過；要贏還是得投票、按讚 */ return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
 /* 11/17 粉絲也可以投虛擬歌手：票跟真的歌記在同一本帳（"npc:團名"），一票的分數也一樣 */
 function npcVotePts(name,show,wk){ try{ const sid="npc:"+name, v=musDemoOn()?(((ui.dmV2||{})[show]||{})[sid]||0):showVotes(sid,show,wk); return Math.round(v*msW(show).vote); }catch(e){ return 0; } }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
-const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
+const npcWon=(show,wk)=>{ const o=((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null; return o&&o.name?{...o,name:npcN(o.name)}:o; };
 const MSP={win:2000,five:5000,ak:10000,pak:15000};
 function wkDate(wk){ const [y,m,d]=wk.split("-").map(Number); return new Date(y,m-1,d); }
 function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }
@@ -14324,8 +14344,8 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   const intro=cf.top5?`<div class="mrv-top5"><div class="mrv-t5p"><h3>TOP ${Math.min(5,pool.length)}</h3><div>${pool.slice(0,5).map(c=>`<div class="mrv-tl">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small></div>`).join("")}</div></div><b class="mrv-who">WHO'S<br>CHAMPION?</b></div>`:"";
   /* MC 字卡：本月被選上的 MC（藝人名字）；沒有就請虛擬團體的成員或 SOLOIST 主持。點字卡＝推進下一步 */
   const mon=monthKey(showEndTs(show,wk)), MCI=((getMShow().mc||{})[mon]||{})[show]||[], NPN=["Jiwoo","Hana","Yuna","Seri","Rina","Doyun","Minseo","Haeun"], h0=strHash(show+mon);
-  const mcs=MCI.filter(m=>MEMBERS[m]).map(m=>artName(m,"feed")); if(!mcs.length){ const [g1]=NPC_SONGS[h0%NPC_SONGS.length], [g2]=NPC_SONGS[(h0>>>3)%NPC_SONGS.length]; mcs.push(`${g1} ${NPN[h0%NPN.length]}`); if(g2!==g1) mcs.push(`${g2} ${NPN[(h0>>>5)%NPN.length]}`); }
-  if(mcs.length<2){ const ug=new Set(mcs.map(x=>x.split(" ")[0])), g=NPC_SONGS.map(x=>x[0]).find((x,i)=>!ug.has(x)&&i>=h0%NPC_SONGS.length)||NPC_SONGS.map(x=>x[0]).find(x=>!ug.has(x)); mcs.push(`${g} ${NPN[(h0>>>7)%NPN.length]}`); }   /* 打歌節目一定是兩位 MC：只排了一位就補一位虛擬團體成員 */
+  const mcs=MCI.filter(m=>MEMBERS[m]).map(m=>artName(m,"feed")); if(!mcs.length){ const [g1]=npcSongs()[h0%npcSongs().length], [g2]=npcSongs()[(h0>>>3)%npcSongs().length]; mcs.push(`${g1} ${NPN[h0%NPN.length]}`); if(g2!==g1) mcs.push(`${g2} ${NPN[(h0>>>5)%NPN.length]}`); }
+  if(mcs.length<2){ const ug=new Set(mcs.map(x=>x.split(" ")[0])), g=npcSongs().map(x=>x[0]).find((x,i)=>!ug.has(x)&&i>=h0%npcSongs().length)||npcSongs().map(x=>x[0]).find(x=>!ug.has(x)); mcs.push(`${g} ${NPN[(h0>>>7)%NPN.length]}`); }   /* 打歌節目一定是兩位 MC：只排了一位就補一位虛擬團體成員 */
   const mcMine=!!(wc0=>wc0&&MCI.some(m=>MEMBERS[m]&&MEMBERS[m].group===wc0.gid))(C.find(c=>(C.some(x=>x.win)?c.win:c.T===Math.max(...C.map(y=>y.T))))||C[0]);   /* MC 的團拿一位：流程一樣，只是獎盃從 MC 字卡傳過去 */
   const wc=C.find(c=>(C.some(x=>x.win)?c.win:c.T===best))||C[0], shn=(SHOWS.find(x=>x.id===show)||{}).name||cf.t||"";
   const rl=l=>l.replace(/\s*\d+%$/,""), wn2=c=>`${c.art}《${c.name}》`;
@@ -15457,10 +15477,11 @@ const SV_KEEP={r1:15,r2:10}, SV_MIN=10, SV_N=24, SV_DEB=7, SV_LTD=548;   /* 一�
 /* 虛擬練習生（女團第一季用；之後男團再加一份） */
 const SV_NPC_G=[["n1","夏恩","Lumière Ent."],["n2","采律","Bloom Note"],["n3","雅琳","Starlit"],["n4","知秀","Velvet Moon"],["n5","若晴","Prism Works"],["n6","敏書","Aurora Lab"],["n7","詩妍","Cloud Nine"],["n8","晨熙","Blue Wave"],["n9","苡安","Neon Peak"],["n10","采昀","Zenith Arts"],["n11","佳恩","Moonlit Ent."],["n12","語彤","Star Horizon"],["n13","芮希","Petal & Co."],["n14","海音","Lumière Ent."],["n15","星語","Bloom Note"],["n16","沐晴","Velvet Moon"],["n17","以寧","Prism Works"],["n18","瑞恩","Aurora Lab"],["n19","知恩","Starlit"],["n20","芷寧","Cloud Nine"],["n21","安娜","Neon Peak"],["n22","娜妍","Zenith Arts"],["n23","采媛","Blue Wave"],["n24","瑟琪","Moonlit Ent."]];
 const SV_NPC_B=[["m1","星宇","Star Horizon"],["m2","光賢","Neon Peak"],["m3","夏澄","Zenith Arts"],["m4","承恩","Blue Wave"],["m5","子安","Moonlit Ent."],["m6","時溫","Aurora Lab"],["m7","若川","Prism Works"],["m8","一然","Cloud Nine"],["m9","宇辰","Lumière Ent."],["m10","泰民","Bloom Note"],["m11","昊宇","Velvet Moon"],["m12","知勳","Starlit"],["m13","俊熙","Prism Works"],["m14","在允","Aurora Lab"],["m15","以恆","Cloud Nine"],["m16","承澤","Neon Peak"],["m17","道允","Zenith Arts"],["m18","海潤","Blue Wave"],["m19","瑞俊","Moonlit Ent."],["m20","晨宇","Star Horizon"],["m21","時延","Lumière Ent."],["m22","昇珉","Bloom Note"],["m23","圭賢","Velvet Moon"],["m24","嘉允","Starlit"]];
+const svNpcL=g=>(g==="g"?SV_NPC_G:SV_NPC_B).map(([id,n,c])=>[id,npcN(n),c]);   /* 虛擬練習生撞到真人名字就換備用名字 */
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：假的一季，五個階段可以切換看；投票、報名都只在這次打開有效，不存 */
 const svDemoOk=()=>{ try{ const x=session(); return !!x&&x.role==="fan"&&(String(x.email||"").toLowerCase()==="husay"||(typeof isHussey==="function"&&isHussey())||sbxOn()); }catch(e){ return false; } };   /* 11/18：正式站的帳號 email 不是 husay，改用 isHussey() 認 */
 const SV_DEMO_N=["Yuna","Chaewon","Sieun","Hana","Ririka","Mina","Seoyeon","Nako","Jiwoo","Aria","Haeun","Rin"];
-function svDemoSeason(){ const ph=ui.svDemo, now=Date.now(), E=SV_DEMO_N.map((n,i)=>"dm"+i), all=[...E,...SV_NPC_G.slice(0,SV_N-E.length).map(x=>x[0])];
+function svDemoSeason(){ const ph=ui.svDemo, now=Date.now(), E=SV_DEMO_N.map((n,i)=>"dm"+i), all=[...E,...svNpcL("g").slice(0,SV_N-E.length).map(x=>x[0])];
   return {id:"demo",demo:1,no:ui.svDemoNo||1,g:"g",ph,t0:now-2*864e5,end:now+(ph==="prep"?20:ph==="final"?5:ph==="recruit"?4:11)*864e5,npcN:SV_N-E.length,prepW:3,keep:{r1:all.filter((x,i)=>i%8!==7).slice(0,15),r2:E.slice(0,10)},debut:E.slice(0,7),rk:{r1:all,r2:E.slice(0,10),final:E.slice(0,10)},ann:{}}; }
 const svReal=()=>{ const x=S.get(SVS,null); return x&&x.ph!=="x"?x:null; };   /* 取消的季留一個 ph:"x" 的記號，同步回來才不會又冒出來 */
 /* 公司：管理員建帳號時設定（daisuki_acc_co），本人不能自己選；沒設定＝個人練習生 */
@@ -15477,7 +15498,7 @@ const SVNP="daisuki_sv_npcph";   /* 虛擬練習生的照片（管理員一次�
 const SV_BIG=["HYBE","SM","JYP","YG"];
 const svNpcCo=i=>{ const C=(typeof SK_COS!=="undefined"?SK_COS:[]), B=C.filter(c=>SV_BIG.includes(c)), Sm=C.filter(c=>!SV_BIG.includes(c)); if(B.length&&(i===4||i===13)) return B[(i===4?0:1)%B.length]; return Sm.length?Sm[i%Sm.length]:"個人練習生"; };
 function svAll(){ const s=svSeason(); if(!s) return []; const R=svEntries().map(e=>({...e,real:1,co:s.demo?e.co:svCoOf(e.email)}));
-  if(s.ph==="recruit") return R; const P=(s.g==="g"?SV_NPC_G:SV_NPC_B).slice(0,Math.max(0,(s.npcN!=null?s.npcN:SV_N-R.length))).map(([id,name],i)=>({id,real:0,name,co:svNpcCo(i),photo:((S.get(SVNP,{})||{})[id])||""}));
+  if(s.ph==="recruit") return R; const P=(s.g==="g"?svNpcL("g"):svNpcL("b")).slice(0,Math.max(0,(s.npcN!=null?s.npcN:SV_N-R.length))).map(([id,name],i)=>({id,real:0,name,co:svNpcCo(i),photo:((S.get(SVNP,{})||{})[id])||""}));
   return [...R,...P]; }
 const svVoting=()=>{ const s=svSeason(); return !!s&&["r1","r2","pr","final"].includes(s.ph); };
 const svFinal=()=>{ const s=svSeason(); return !!s&&s.ph==="final"; };
@@ -15984,7 +16005,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svTab": { ui.svTab=t.dataset.v; rr(); return; }
     case "svMore": { ui.svMore=1; rr(); return; }
     case "svDemoT": { ui.svDemoT=t.dataset.v?1:0; ui.svTab="rk"; rr(); return; }
-    case "svNpcPh": { if(!isAdminAcct()) return; const g=t.dataset.v, L=g==="g"?SV_NPC_G:SV_NPC_B, inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.multiple=true;
+    case "svNpcPh": { if(!isAdminAcct()) return; const g=t.dataset.v, L=g==="g"?svNpcL("g"):svNpcL("b"), inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.multiple=true;
       inp.onchange=async()=>{ const F=[...(inp.files||[])].slice(0,L.length); if(!F.length) return; const M={...(S.get(SVNP,{})||{})}; let k=0; toast(`上傳中…（${F.length} 張）`);
         for(let i=0;i<L.length&&k<F.length;i++){ const id=L[i][0]; if(M[id]&&!ui.svNpcAll) continue; try{ const b=await shrinkImg(F[k++],900), url=HB_ON&&!(s&&s.demo)?await hbImgUrl("svnpc_"+id+"_"+Date.now().toString(36)+".jpg",b):URL.createObjectURL(b); if(url) M[id]=url; }catch(er){} }
         S.set(SVNP,M); rr(); toast(`已放好 ${k} 張`); }; pickClick(inp); return; }
@@ -16294,8 +16315,8 @@ function awAlbN(gid,title,from){ return (S.get(K.sales,[])||[]).filter(x=>x.type
 /* 打歌成績：MV 播放＋MV 讚數×5＋一位×300 */
 function awSongM(s){ try{ return (songViews(s)||0)+(songMvLikes(s)||0)*5+songStats(s.id).wins.length*300; }catch(e){ return 0; } }
 /* 虛擬歌手：打歌節目裡今年拿過一位的先入圍，不夠 4 組再補；成績落在真藝人中位數的 50%～110%，一位一樣 +300 */
-function awNpcs(y,base,amax){ const W=getMShow().npcWin||{}, wins={}; Object.keys(W).filter(wk=>String(wk).startsWith(String(y))).forEach(wk=>Object.values(W[wk]||{}).forEach(o=>{ if(o&&o.name) wins[o.name]=(wins[o.name]||0)+1; }));
-  const L=(typeof NPC_SONGS!=="undefined"?NPC_SONGS:[]).slice().sort((a,b)=>(wins[b[0]]||0)-(wins[a[0]]||0)||strHash(y+a[0])%97-strHash(y+b[0])%97).slice(0,4);
+function awNpcs(y,base,amax){ const W=getMShow().npcWin||{}, wins={}; Object.keys(W).filter(wk=>String(wk).startsWith(String(y))).forEach(wk=>Object.values(W[wk]||{}).forEach(o=>{ if(o&&o.name){ const nm=npcN(o.name); wins[nm]=(wins[nm]||0)+1; } }));
+  const L=npcSongs().slice().sort((a,b)=>(wins[b[0]]||0)-(wins[a[0]]||0)||strHash(y+a[0])%97-strHash(y+b[0])%97).slice(0,4);
   return L.map(([n,t])=>{ const h=strHash("awn"+y+n), r=(h%1000)/1000, r2=((h>>>10)%1000)/1000; return {n,t,m:Math.round(base*(.5+.6*r))+(wins[n]||0)*300,a:Math.round(amax*(.3+.7*r2)),nw:h%3===0,al:["1st Mini","Single","1st Album","2nd Mini"][h%4]+` 〈${t}〉`}; }); }
 function awPool(){ if(awDemo()) return awDemoPool(); const y=awYear(), from=+new Date(y,0,1), to=awCfg().relTo, m=getMShow();
   const songs=[...m.songs,...(m.ended||[])].filter(s=>groupOf(s.gid)&&songRel(s)>=from&&songRel(s)<to);

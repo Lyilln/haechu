@@ -26,16 +26,17 @@ function songPhase(s,at){ if(!s||s.demo) return "act"; const r=songRel(s); if(!r
 const songWeekNo=(s,at)=>{ const r=songRel(s); return r?Math.floor(((at||Date.now())-r)/MDAY/7)+1:0; };
 const songActIn=(s,show,wk)=>songPhase(s,showEndTs(show,wk))==="act";
 const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA9","Sugar Rush"],["KIRAZ","Moonwalk"],["MELLOWMOON","Paper Hearts"],["NOVELLE","Blue Signal"],["ROSÉVA","Last Train"],["HYUNE","Daydream"]];
+const npcSongs=()=>NPC_SONGS.map(([g,t])=>[npcN(g),t]);   /* 撞名的換成備用名字 */
 /* 虛擬對手：分數照這週已經過了多少慢慢長上去，節目播出時到最終分數 */
 function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length; if(!n||n>=MSA.MIN) return [];
   const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
   /* 虛擬歌手的分數跟著真的歌走（社群人數少，分數不能高到追不上）：預估本週真歌的最高分，虛擬歌手落在它的 55%～125% */
   const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.5,prog));   /* 11/23 一週剛開始時不要高估（以前最多估成 4 倍） */
-  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.4+.55*r);   /* 11/23 她說虛擬歌手太難超過：改成真歌最高分的 40%～95%，真歌跟上進度就贏得過；要贏還是得投票、按讚 */ return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=npcSongs()[(h+k*3)%npcSongs().length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.4+.55*r);   /* 11/23 她說虛擬歌手太難超過：改成真歌最高分的 40%～95%，真歌跟上進度就贏得過；要贏還是得投票、按讚 */ return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
 /* 11/17 粉絲也可以投虛擬歌手：票跟真的歌記在同一本帳（"npc:團名"），一票的分數也一樣 */
 function npcVotePts(name,show,wk){ try{ const sid="npc:"+name, v=musDemoOn()?(((ui.dmV2||{})[show]||{})[sid]||0):showVotes(sid,show,wk); return Math.round(v*msW(show).vote); }catch(e){ return 0; } }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
-const npcWon=(show,wk)=>((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null;
+const npcWon=(show,wk)=>{ const o=((getMShow().npcWin||{})[wk||curWeek()]||{})[show]||null; return o&&o.name?{...o,name:npcN(o.name)}:o; };
 const MSP={win:2000,five:5000,ak:10000,pak:15000};
 function wkDate(wk){ const [y,m,d]=wk.split("-").map(Number); return new Date(y,m-1,d); }
 function weekKey(ts){ const d=new Date(ts); d.setHours(0,0,0,0); d.setDate(d.getDate()-((d.getDay()+6)%7)); return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`; }

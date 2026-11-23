@@ -15,10 +15,11 @@ const SV_KEEP={r1:15,r2:10}, SV_MIN=10, SV_N=24, SV_DEB=7, SV_LTD=548;   /* 一�
 /* 虛擬練習生（女團第一季用；之後男團再加一份） */
 const SV_NPC_G=[["n1","夏恩","Lumière Ent."],["n2","采律","Bloom Note"],["n3","雅琳","Starlit"],["n4","知秀","Velvet Moon"],["n5","若晴","Prism Works"],["n6","敏書","Aurora Lab"],["n7","詩妍","Cloud Nine"],["n8","晨熙","Blue Wave"],["n9","苡安","Neon Peak"],["n10","采昀","Zenith Arts"],["n11","佳恩","Moonlit Ent."],["n12","語彤","Star Horizon"],["n13","芮希","Petal & Co."],["n14","海音","Lumière Ent."],["n15","星語","Bloom Note"],["n16","沐晴","Velvet Moon"],["n17","以寧","Prism Works"],["n18","瑞恩","Aurora Lab"],["n19","知恩","Starlit"],["n20","芷寧","Cloud Nine"],["n21","安娜","Neon Peak"],["n22","娜妍","Zenith Arts"],["n23","采媛","Blue Wave"],["n24","瑟琪","Moonlit Ent."]];
 const SV_NPC_B=[["m1","星宇","Star Horizon"],["m2","光賢","Neon Peak"],["m3","夏澄","Zenith Arts"],["m4","承恩","Blue Wave"],["m5","子安","Moonlit Ent."],["m6","時溫","Aurora Lab"],["m7","若川","Prism Works"],["m8","一然","Cloud Nine"],["m9","宇辰","Lumière Ent."],["m10","泰民","Bloom Note"],["m11","昊宇","Velvet Moon"],["m12","知勳","Starlit"],["m13","俊熙","Prism Works"],["m14","在允","Aurora Lab"],["m15","以恆","Cloud Nine"],["m16","承澤","Neon Peak"],["m17","道允","Zenith Arts"],["m18","海潤","Blue Wave"],["m19","瑞俊","Moonlit Ent."],["m20","晨宇","Star Horizon"],["m21","時延","Lumière Ent."],["m22","昇珉","Bloom Note"],["m23","圭賢","Velvet Moon"],["m24","嘉允","Starlit"]];
+const svNpcL=g=>(g==="g"?SV_NPC_G:SV_NPC_B).map(([id,n,c])=>[id,npcN(n),c]);   /* 虛擬練習生撞到真人名字就換備用名字 */
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：假的一季，五個階段可以切換看；投票、報名都只在這次打開有效，不存 */
 const svDemoOk=()=>{ try{ const x=session(); return !!x&&x.role==="fan"&&(String(x.email||"").toLowerCase()==="husay"||(typeof isHussey==="function"&&isHussey())||sbxOn()); }catch(e){ return false; } };   /* 11/18：正式站的帳號 email 不是 husay，改用 isHussey() 認 */
 const SV_DEMO_N=["Yuna","Chaewon","Sieun","Hana","Ririka","Mina","Seoyeon","Nako","Jiwoo","Aria","Haeun","Rin"];
-function svDemoSeason(){ const ph=ui.svDemo, now=Date.now(), E=SV_DEMO_N.map((n,i)=>"dm"+i), all=[...E,...SV_NPC_G.slice(0,SV_N-E.length).map(x=>x[0])];
+function svDemoSeason(){ const ph=ui.svDemo, now=Date.now(), E=SV_DEMO_N.map((n,i)=>"dm"+i), all=[...E,...svNpcL("g").slice(0,SV_N-E.length).map(x=>x[0])];
   return {id:"demo",demo:1,no:ui.svDemoNo||1,g:"g",ph,t0:now-2*864e5,end:now+(ph==="prep"?20:ph==="final"?5:ph==="recruit"?4:11)*864e5,npcN:SV_N-E.length,prepW:3,keep:{r1:all.filter((x,i)=>i%8!==7).slice(0,15),r2:E.slice(0,10)},debut:E.slice(0,7),rk:{r1:all,r2:E.slice(0,10),final:E.slice(0,10)},ann:{}}; }
 const svReal=()=>{ const x=S.get(SVS,null); return x&&x.ph!=="x"?x:null; };   /* 取消的季留一個 ph:"x" 的記號，同步回來才不會又冒出來 */
 /* 公司：管理員建帳號時設定（daisuki_acc_co），本人不能自己選；沒設定＝個人練習生 */
@@ -35,7 +36,7 @@ const SVNP="daisuki_sv_npcph";   /* 虛擬練習生的照片（管理員一次�
 const SV_BIG=["HYBE","SM","JYP","YG"];
 const svNpcCo=i=>{ const C=(typeof SK_COS!=="undefined"?SK_COS:[]), B=C.filter(c=>SV_BIG.includes(c)), Sm=C.filter(c=>!SV_BIG.includes(c)); if(B.length&&(i===4||i===13)) return B[(i===4?0:1)%B.length]; return Sm.length?Sm[i%Sm.length]:"個人練習生"; };
 function svAll(){ const s=svSeason(); if(!s) return []; const R=svEntries().map(e=>({...e,real:1,co:s.demo?e.co:svCoOf(e.email)}));
-  if(s.ph==="recruit") return R; const P=(s.g==="g"?SV_NPC_G:SV_NPC_B).slice(0,Math.max(0,(s.npcN!=null?s.npcN:SV_N-R.length))).map(([id,name],i)=>({id,real:0,name,co:svNpcCo(i),photo:((S.get(SVNP,{})||{})[id])||""}));
+  if(s.ph==="recruit") return R; const P=(s.g==="g"?svNpcL("g"):svNpcL("b")).slice(0,Math.max(0,(s.npcN!=null?s.npcN:SV_N-R.length))).map(([id,name],i)=>({id,real:0,name,co:svNpcCo(i),photo:((S.get(SVNP,{})||{})[id])||""}));
   return [...R,...P]; }
 const svVoting=()=>{ const s=svSeason(); return !!s&&["r1","r2","pr","final"].includes(s.ph); };
 const svFinal=()=>{ const s=svSeason(); return !!s&&s.ph==="final"; };
@@ -542,7 +543,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svTab": { ui.svTab=t.dataset.v; rr(); return; }
     case "svMore": { ui.svMore=1; rr(); return; }
     case "svDemoT": { ui.svDemoT=t.dataset.v?1:0; ui.svTab="rk"; rr(); return; }
-    case "svNpcPh": { if(!isAdminAcct()) return; const g=t.dataset.v, L=g==="g"?SV_NPC_G:SV_NPC_B, inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.multiple=true;
+    case "svNpcPh": { if(!isAdminAcct()) return; const g=t.dataset.v, L=g==="g"?svNpcL("g"):svNpcL("b"), inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.multiple=true;
       inp.onchange=async()=>{ const F=[...(inp.files||[])].slice(0,L.length); if(!F.length) return; const M={...(S.get(SVNP,{})||{})}; let k=0; toast(`上傳中…（${F.length} 張）`);
         for(let i=0;i<L.length&&k<F.length;i++){ const id=L[i][0]; if(M[id]&&!ui.svNpcAll) continue; try{ const b=await shrinkImg(F[k++],900), url=HB_ON&&!(s&&s.demo)?await hbImgUrl("svnpc_"+id+"_"+Date.now().toString(36)+".jpg",b):URL.createObjectURL(b); if(url) M[id]=url; }catch(er){} }
         S.set(SVNP,M); rr(); toast(`已放好 ${k} 張`); }; pickClick(inp); return; }

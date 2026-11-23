@@ -185,6 +185,25 @@ const isWealth=em=>{ em=String(em||"").toLowerCase(); const a=ACCOUNTS[em]||{}; 
 const wlCode=(li,si)=>WL_SYM[li]+String.fromCodePoint(0x1D7CE+si+1);
 function wlAt(p){ let li=0,si=0; WL_TBL.forEach((th,i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<WL_TBL[li].length?[li,si+1]:li+1<WL_TBL.length?[li+1,0]:null;
   return {li,si,k:li*10+si,code:wlCode(li,si),name:WL_NAME[li],wl:1,next:nx&&{code:wlCode(nx[0],nx[1]),need:Math.max(0,WL_TBL[nx[0]][nx[1]]-p)}}; }
+/* 11/23 虛擬歌手／虛擬團體／虛擬練習生的名字，絕對不能跟真人帳號撞名（帳號、暱稱、本名、藝名、團名都不行）。
+   本名只有管理員手機看得到，所以由管理員的手機檢查，撞到就換成備用名字，存在共用的對照表，大家看到的都一樣 */
+const NPCRN="daisuki_npc_ren";
+const npcN=n=>{ try{ return ((S.get(NPCRN,{})||{})[n])||n; }catch(e){ return n; } };
+const NPC_SPARE_G=["LUNAREE","VELOUR","STELLINE","CIELO","OPALINE","FLEURIE","ZEPHYRA","AMBERLY","SOLARA","NOCTELLE","IRISEA","MAREVIE","CANDELA","SYLVÉ","ORCHIDA","LYRAE"];
+const NPC_SPARE_P={g:["芷涵","沛恩","禾希","晏寧","書瑤","嵐音","允熙","若綺","湘妍","霏恩","卉晴","沁瑜","語喬","采蘋","昕柔","靖雯"],b:["牧辰","禹哲","澄安","奕勳","昀澤","赫宇","嘉祐","泓彥","聿恆","柏翰","晏廷","睿哲","秉澄","皓允","敘白","知衡"]};
+const npcKey=x=>String(x||"").toLowerCase().replace(/\s+/g,"");
+function npcTaken(){ const T=new Set(), add=x=>{ const k=npcKey(x); if(k) T.add(k); };
+  try{ Object.keys(ACCOUNTS).forEach(em=>{ const a=ACCOUNTS[em]||{}; add(a.user); add(String(em).split("@")[0]); const nm=String(a.name||""); add(nm); add(nm.replace(/^\S+\s+/,"")); }); }catch(e){}
+  try{ Object.values(REAL||{}).forEach(add); }catch(e){}
+  try{ Object.keys(MEMBERS).forEach(m=>{ const x=MEMBERS[m]||{}; if(x.npc) return; ["name","en","kname","stage","real"].forEach(f=>add(x[f])); try{ const P=artProf(m)||{}; Object.keys(P).forEach(k=>{ if(/name|nick|^cm$|^live$|^tie$/i.test(k)&&typeof P[k]==="string") add(P[k]); }); }catch(e){} }); }catch(e){}
+  try{ (GROUPS||[]).forEach(g=>{ if(g&&!g.npc){ add(g.name); add(g.en); add(g.kname); } }); }catch(e){}
+  return T; }
+function npcRenSync(){ try{ if(typeof isAdminAcct!=="function"||!isAdminAcct()) return; if(HB_ON&&!HB.pulled) return; const T=npcTaken(), M={...(S.get(NPCRN,{})||{})};
+  const orig=[...(typeof NPC_SONGS!=="undefined"?NPC_SONGS.map(x=>[x[0],"grp"]):[]),...(typeof SV_NPC_G!=="undefined"?SV_NPC_G.map(x=>[x[1],"g"]):[]),...(typeof SV_NPC_B!=="undefined"?SV_NPC_B.map(x=>[x[1],"b"]):[])];
+  let ch=false; const used=new Set(orig.map(([o])=>npcKey(M[o]||o)));
+  orig.forEach(([o,kind])=>{ const cur=M[o]||o; if(!T.has(npcKey(cur))) return; const pool=kind==="grp"?NPC_SPARE_G:NPC_SPARE_P[kind], nx=pool.find(x=>!T.has(npcKey(x))&&!used.has(npcKey(x))); if(!nx) return; used.add(npcKey(nx)); M[o]=nx; ch=true; });
+  if(ch) S.set(NPCRN,M); }catch(e){} }
+setTimeout(npcRenSync,8000); setInterval(npcRenSync,120000);
 function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0; if(!art&&isWealth(s.email)) return {...wlAt(p),art:false};   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
   LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } }));
   if(!art&&li>0){ li=0; si=4; }   // 還沒出道：最高 T5

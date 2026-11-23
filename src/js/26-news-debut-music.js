@@ -740,8 +740,8 @@ function muRevealOpen(show,wk){ const cf=MUR[show]; if(!cf) return; wk=wk||curWe
   const intro=cf.top5?`<div class="mrv-top5"><div class="mrv-t5p"><h3>TOP ${Math.min(5,pool.length)}</h3><div>${pool.slice(0,5).map(c=>`<div class="mrv-tl">${ph(c)}<b>${esc(c.name)}</b><small>${esc(c.art)}</small></div>`).join("")}</div></div><b class="mrv-who">WHO'S<br>CHAMPION?</b></div>`:"";
   /* MC 字卡：本月被選上的 MC（藝人名字）；沒有就請虛擬團體的成員或 SOLOIST 主持。點字卡＝推進下一步 */
   const mon=monthKey(showEndTs(show,wk)), MCI=((getMShow().mc||{})[mon]||{})[show]||[], NPN=["Jiwoo","Hana","Yuna","Seri","Rina","Doyun","Minseo","Haeun"], h0=strHash(show+mon);
-  const mcs=MCI.filter(m=>MEMBERS[m]).map(m=>artName(m,"feed")); if(!mcs.length){ const [g1]=NPC_SONGS[h0%NPC_SONGS.length], [g2]=NPC_SONGS[(h0>>>3)%NPC_SONGS.length]; mcs.push(`${g1} ${NPN[h0%NPN.length]}`); if(g2!==g1) mcs.push(`${g2} ${NPN[(h0>>>5)%NPN.length]}`); }
-  if(mcs.length<2){ const ug=new Set(mcs.map(x=>x.split(" ")[0])), g=NPC_SONGS.map(x=>x[0]).find((x,i)=>!ug.has(x)&&i>=h0%NPC_SONGS.length)||NPC_SONGS.map(x=>x[0]).find(x=>!ug.has(x)); mcs.push(`${g} ${NPN[(h0>>>7)%NPN.length]}`); }   /* 打歌節目一定是兩位 MC：只排了一位就補一位虛擬團體成員 */
+  const mcs=MCI.filter(m=>MEMBERS[m]).map(m=>artName(m,"feed")); if(!mcs.length){ const [g1]=npcSongs()[h0%npcSongs().length], [g2]=npcSongs()[(h0>>>3)%npcSongs().length]; mcs.push(`${g1} ${NPN[h0%NPN.length]}`); if(g2!==g1) mcs.push(`${g2} ${NPN[(h0>>>5)%NPN.length]}`); }
+  if(mcs.length<2){ const ug=new Set(mcs.map(x=>x.split(" ")[0])), g=npcSongs().map(x=>x[0]).find((x,i)=>!ug.has(x)&&i>=h0%npcSongs().length)||npcSongs().map(x=>x[0]).find(x=>!ug.has(x)); mcs.push(`${g} ${NPN[(h0>>>7)%NPN.length]}`); }   /* 打歌節目一定是兩位 MC：只排了一位就補一位虛擬團體成員 */
   const mcMine=!!(wc0=>wc0&&MCI.some(m=>MEMBERS[m]&&MEMBERS[m].group===wc0.gid))(C.find(c=>(C.some(x=>x.win)?c.win:c.T===Math.max(...C.map(y=>y.T))))||C[0]);   /* MC 的團拿一位：流程一樣，只是獎盃從 MC 字卡傳過去 */
   const wc=C.find(c=>(C.some(x=>x.win)?c.win:c.T===best))||C[0], shn=(SHOWS.find(x=>x.id===show)||{}).name||cf.t||"";
   const rl=l=>l.replace(/\s*\d+%$/,""), wn2=c=>`${c.art}《${c.name}》`;
