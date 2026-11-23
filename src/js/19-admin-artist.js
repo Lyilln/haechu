@@ -180,12 +180,13 @@ function artCmList(mid){ const ps=new Set(getPosts().filter(p=>p.member===mid).m
     if(c.author==="artist"&&c.member===mid&&!own) L.push({fan:null,text:c.text,ts:c.ts,postId:c.postId,cid:c.id,id:c.id}); });   /* 團體：在其他團員貼文底下的留言也算 */
   return L; }
 const ymdhm=ts=>{ const d=new Date(ts), z=n=>String(n).padStart(2,"0"); return `${z(d.getMonth()+1)}. ${z(d.getDate())}. ${z(d.getHours())}:${z(d.getMinutes())}`; };
-function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"cm");
+function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), mates=own?groupArtists(M.group).filter(x=>x!==mid):[], tab=["cm","media"].includes(ui.mpTab)||(own&&ui.mpTab==="lt")||(mates.length&&ui.mpTab==="mates")?ui.mpTab:"post", old=!!ui.mpOld, b=getBdays()[mid]||M.bday, fo=(S.get(K.mFollow,{}))[mid], nm=artName(mid,"cm");
   let posts=getPosts().filter(x=>x.member===mid&&(own||!x.hidden)); const med=artMedia(posts); if(old) posts=[...posts].reverse();
   let cms=artCmList(mid).sort((a,b)=>b.ts-a.ts); if(old) cms.reverse();
   const evs=getEvents().filter(e=>e.member===mid);
   const body=tab==="cm"?(cms.length?cms.map(x=>`<button class="card ap2-cmc" data-a="openPost" data-id="${x.postId}" data-c="${x.cid||""}"><span class="ap2-cl"></span>${x.fan?`<span class="ap2-cq"><b>${esc(shownName(x.fan))}${x.fan.author==="artist"?`<span class="ap2-vf">${I.verified}</span>`:""}</b><em>${esc(x.fan.text)}</em></span>`:""}<span class="ap2-ch"><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<div class="ux-empty"><span>💬</span><b>還沒有留言</b></div>`):false?(cms.length?cms.map(x=>`<button class="card ap2-cm" data-a="comments" data-id="${x.postId}">${x.fan?`<span class="ap2-cq"><b>${esc(x.fan.name)}</b>${trPlain("acq:"+(x.id||x.postId+":"+x.ts),x.fan.text,"")}</span>`:""}<span class="ap2-ch"><span class="ap2-cav" style="background:${grad(M.g)}">${mAvIn(mid)}</span><b>${esc(nm)}</b><span class="ap2-vf">${I.verified}</span><small>${ymdhm(x.ts)}</small></span>${trPlain("ac:"+(x.id||x.postId+":"+x.ts),x.text,"ap2-ct")}</button>`).join(""):`<p class="me-none">還沒有留言</p>`)
     :tab==="media"?(()=>{ const lv=meetOf(l=>l.member===mid), vs=vsecHtml(M.group,own); return (lv.length?`<div class="cm-sh"><h3>MEET</h3></div>${meetCards(lv)}`:"")+vs||`<p class="me-none">還沒有直播或影片</p>`; })()
+    :tab==="mates"?(()=>{ let L=getPosts().filter(x=>mates.includes(x.member)&&!x.hidden).sort((a,b)=>b.ts-a.ts); if(old) L=L.reverse(); return L.length?L.map(x=>postCard(x,{prof:true})).join(""):`<p class="me-none">團員還沒有貼文</p>`; })()   /* 11/23 同團成員的貼文（像 Weverse：點進去可以留言、回覆；別團看不到） */
     :tab==="lt"&&own?ltTab(M.group)   /* 11/17 粉絲信放在藝人自己的主頁上（以前只在 ME 裡，太難找） */
     :tab==="party"?(evs.length?evs.map(e=>eventCard(e,{artist:own})).join(""):`<p class="me-none">還沒有 Party</p>`)
     :(posts.length?posts.map(x=>postCard(x,{mine:own,prof:true})).join(""):`<p class="me-none">還沒有貼文</p>`);   // 個人社群：點貼文任何地方進貼文、頭貼不再重進個人社群
@@ -197,7 +198,7 @@ function artProfileHtml(mid,own){ const M=MEMBERS[mid], p=artProf(mid), tab=["cm
       ${b?`<small class="ap2-bd">🎂 ${esc(String(b).replace("-","月"))}日</small>`:""}
       <h2 class="ap2-n">${esc(nm)}<span class="ap2-vf">${I.verified}</span></h2>
       ${own?`<button class="ap2-fo" data-a="artProfEdit">編輯個人檔案</button>`:`<button class="ap2-fo ${fo?"on":""}" data-a="mFollow" data-v="${mid}">${fo?"✓ 正在追蹤":"＋ 追蹤"}</button>`}</div></section>
-  <nav class="ap2-tabs" style="grid-template-columns:repeat(${own?4:3},minmax(0,1fr))">${[["post","貼文"],["cm","留言"],["media",mediaName(M.group)],...(own?[["lt",ltNewN(mid)?`粉絲信 <i class="lt-dot" aria-label="${ltNewN(mid)} 封新信"></i>`:"粉絲信"]]:[])].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
+  <nav class="ap2-tabs" style="grid-template-columns:repeat(${(own?4:3)+(mates.length?1:0)},minmax(0,1fr))">${[["post","貼文"],...(mates.length?[["mates","團員"]]:[]),["cm","留言"],["media",mediaName(M.group)],...(own?[["lt",ltNewN(mid)?`粉絲信 <i class="lt-dot" aria-label="${ltNewN(mid)} 封新信"></i>`:"粉絲信"]]:[])].map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="mpTab" data-v="${k}">${l}</button>`).join("")}</nav>
   <main class="page ap2-body">${tab!=="media"&&tab!=="lt"?`<button class="ap2-sort" data-a="mpSort">${old?"按舊到新排序":"按新到舊排序"}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>`:""}${body}</main>`; }
 function apBarSync(){ const b=document.getElementById("apBar"), h=document.getElementById("apHero"); if(!b||!h) return; const bb=parseFloat(getComputedStyle(b).top)||0, d=h.getBoundingClientRect().bottom-(bb+b.offsetHeight);
   b.classList.toggle("on",d<=1);   /* 背景照片整個滑到標題列下面才換成小標題列（以前提早 90px，名字和「編輯個人檔案」會從底下透出來） */
@@ -335,9 +336,9 @@ function openArtNotifs(){ const mid=session().member; if(!mid) return; const L=a
 /* SNS：輪播滑動時更新 1/3 和下面的點點 */
 document.addEventListener("scroll",e=>{ const c=e.target; if(!c||!c.classList||!c.classList.contains("sn-car")) return; const n=c.children.length, i=Math.round(c.scrollLeft/Math.max(1,c.clientWidth)); const m=c.parentElement, cnt=m&&m.querySelector(".sn-cnt"); if(cnt) cnt.textContent=`${i+1}/${n}`; const dots=m&&m.nextElementSibling; if(dots&&dots.classList.contains("sn-dots")) snDotsSet(dots,i); },true);
 /* 藝人在自己的動態下留言（不是回覆某位粉絲） */
-function addArtistComment(postId,text){ const p=getPosts().find(x=>x.id===postId); if(!p) return; const m=MEMBERS[p.member];
-  const c={id:"c"+Date.now(),postId,author:"artist",member:p.member,by:myEmail(),name:m.name,g:m.g,text,ts:Date.now(),reply:null};
-  S.set(K.comments,[...S.get(K.comments,[]),c]); try{ feedPush({kind:"acomment",member:p.member,host:p.member,group:p.group,text:text.slice(0,80),postId:p.id,commentId:c.id,color:null},"g:"+p.group); }catch(e){} return c; }
+function addArtistComment(postId,text,who){ const p=getPosts().find(x=>x.id===postId); if(!p) return; who=who&&MEMBERS[who]?who:p.member; const m=MEMBERS[who];
+  const c={id:"c"+Date.now(),postId,author:"artist",member:who,by:myEmail(),name:m.name,g:m.g,text,ts:Date.now(),reply:null};
+  S.set(K.comments,[...S.get(K.comments,[]),c]); try{ feedPush({kind:"acomment",member:who,host:p.member,group:p.group,text:text.slice(0,80),postId:p.id,commentId:c.id,color:null},"g:"+p.group); }catch(e){} return c; }
 
 /* ---------- 新手教學 ---------- */
 /* 教學內容在 js/40-新手教學內容.js */

@@ -584,7 +584,7 @@ function renderComments(first=false){
   if(!p||!MEMBERS[p.member]){ ui.sheet=null; layer.innerHTML=""; return toast("這則動態已被刪除"); }
   const m=MEMBERS[p.member], g=groupOf(p.group), role=session().role, isArtist=role==="artist"&&session().member===p.member;
   const SNm=o=>shownName(o,p.group);   /* 社群裡顯示「這個社群」的暱稱（每個社群各自一個） */
-  const list=[...getComments(postId),...(FP?(FP.rep||[]).map(r=>({id:r.id,postId,author:"artist",member:r.mid,text:r.text,ts:r.ts})):[])].sort((a,b)=>a.ts-b.ts), liked=likedSet().has(p.id), canWrite=role==="fan"||isArtist;
+  const list=[...getComments(postId),...(FP?(FP.rep||[]).map(r=>({id:r.id,postId,author:"artist",member:r.mid,text:r.text,ts:r.ts})):[])].sort((a,b)=>a.ts-b.ts), liked=likedSet().has(p.id), sameG=role==="artist"&&MEMBERS[session().member]&&MEMBERS[session().member].group===p.group, canWrite=role==="fan"||isArtist||sameG;   /* 11/23 跟 Weverse 一樣：同團的成員可以在彼此的貼文留言、回覆（別團不行） */
   const who=c=>c.author==="artist"?`${esc(artName(c.member&&MEMBERS[c.member]?c.member:p.member,"feed"))}${I.verified}`:`${esc(SNm(c))}${role!=="fan"&&cmMember(c)?`<span class="ms-badge">💎</span>`:""}`;
   const av=c=>c.author==="artist"?(()=>{ const am=c.member&&MEMBERS[c.member]?c.member:p.member; return `<span class="pd-av" style="background:${grad(MEMBERS[am].g)}">${mAvIn(am)}</span>`; })():cmWhoAv(c,p.group,"pd-av",c.g);
   const more=c=>c.author==="artist"||isMeC(c)?"":canModerate()?`<button class="pd-more" data-a="amC" data-c="${c.id}" aria-label="管理">${PDI.more}</button>`:role==="fan"?`<button class="pd-more" data-a="pdRep" data-c="${c.id}" aria-label="更多">${PDI.more}</button>`:"";

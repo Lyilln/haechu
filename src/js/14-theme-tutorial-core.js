@@ -86,7 +86,7 @@ window.addEventListener("resize",()=>{ if(ui.coach&&ui.coach.i>=0) coachShow(); 
 
 /* ---------- 藝人：FOC ---------- */
 /* 藝人 FOC：上面是這週的狀況，下面分成「現場／舞台／社群」三區，每一格點進去是自己的頁面（跟粉絲的 CORE 一樣） */
-const FOC_PAGES={awards:"年末大賞",isac:"偶像運動會",cafe:"生日咖啡廳",show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"打歌戰況",stick:"官方應援棒",wiki:"SKpedia"};
+const FOC_PAGES={survival:"選秀",awards:"年末大賞",isac:"偶像運動會",cafe:"生日咖啡廳",show:"綜藝",biz:"代言・雜誌",tour:"世巡",truck:"應援餐車",news:"新聞",concert:"演唱會",sign:"簽售",honor:"打歌戰況",stick:"官方應援棒",wiki:"SKpedia"};
 function isNextTxt(){ const now=Date.now(), n=IS_HOL.find(([d])=>new Date(d+"T00:00:00").getTime()-21*864e5>now); return n?`下次：${n[1]}・${+n[0].slice(5,7)}/${+n[0].slice(8)} 前後`:"—"; }
 function focHead(t){ return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title${/[\u3400-\u9FFF\uAC00-\uD7AF]/.test(t)?" cjk":""}">${t}</div><span class="sh-sp"></span></div></header>`; }
 function viewArtistFoc(mid,p){
@@ -108,6 +108,7 @@ function viewArtistFoc(mid,p){
   if(p==="cafe") return focHead("生日咖啡廳")+viewCafe(route().id||mid);
   if(p==="wiki") return focHead("SKpedia")+viewWiki(route().id||("m:"+mid));
   if(p==="awards") return viewAwards(focHead);
+  if(p==="survival") return viewSurvival(route().id);
   if(p==="isac") return focHead("偶像運動會")+viewIsac();
   if(p==="show") return focHead(route().id?vsTitle(route().id):"綜藝")+viewShowArtist(mid,route().id);
   if(p==="tour"){ setTimeout(trmScroll,0); return focHead("世巡")+viewTourArtist(mid); }
@@ -122,7 +123,7 @@ function viewArtistFoc(mid,p){
   const fsOn=fsAll().filter(e=>e.group===gid&&e.id!=="fsshow"&&e.status!=="done"), fsLive=fsOn.find(e=>e.status==="live");
   const tile=(a,v,ic,n,sub,cls="")=>`<button class="tile ${cls}" data-a="${a}" data-v="${v}">${hi(ic)}<b>${n}</b><small>${sub}</small></button>`;
   return `<main class="page foc">
-    ${artPromoCard(mid)}${typeof awFestHtml==="function"?awFestHtml(1):""}<div class="foc-thr">${muThrones()}</div>
+    ${artPromoCard(mid)}${typeof awFestHtml==="function"?awFestHtml(1):""}${(()=>{ try{ if(!svFestShow(1)) return ""; const lk=!svOpen(); return `<button class="fz-sv ${lk?"lock":""}" data-a="${lk?"coreLocked":"focGo"}" data-v="survival"><span>🏆</span><b>選秀</b><small>${svTileSub()}</small><i>›</i></button>`; }catch(e){ return ""; } })()}<div class="foc-thr">${muThrones()}</div>
     ${mine?`<button class="btn btn-main btn-block st-enter" data-a="stOn">🎤 進入演唱會現場</button>`:""}
     ${secH("cam","每天")}<div class="tiles">${tile("focGo","news","news","新聞",newsSub())}</div>
     ${secH("star","檔期")}<div class="tiles">${tile("focGo","wiki","news","SKpedia","我的百科")}${tile("focGo","show","star","綜藝",vsArtSub(mid),vsArtTodo(mid)?"on":"")}${tile("focGo","biz","cam","代言・雜誌",bzArtSub(mid),bzArtTodo(mid)?"on":"")}${tile("focGo","cafe","star","生日咖啡廳",(()=>{ const w=cfWindow(mid); return !w?"還沒設定生日":w.open?"● 營業中":`${w.diff-CF_DAYS} 天後開店`; })(),(cfWindow(mid)||{}).open?"on":"")}${tile("focGo","sign","pen","簽售",fsLive?"● 簽售中":fsOn.length?`${fsOn.length} 場進行中`:"目前沒有")}${tile("focGo","truck","truck","應援餐車",tkArtNew(mid)?"餐車到了！":`收到 ${getTrucks().filter(t=>t.mid===mid&&tkState(t)==="done").length} 台`)}</div>
@@ -170,7 +171,7 @@ function viewCore(){
   const now=[ls?`<button class="now" data-a="concertOn"><em>LIVE NOW</em><b>${esc(lg.name)}・${esc(ls.title)}</b><small>演唱會進行中・到 ${fsWhen(ls.endTs).split(" ")[1]}</small><span>進場揮應援棒</span></button>`:"",
     fsLive?`<button class="now" data-a="coreGo" data-v="fsl"><em>簽售進行中</em><b>${esc(fsLive.title)}</b><small>${esc(groupOf(fsLive.group).name)}</small><span>進簽售室</span></button>`:""].filter(Boolean);
   const T=[["cards","card","小卡",`卡冊 ${have} / ${pool.length*3}`],["promo","bolt","打歌舞台",(()=>{ const nx=ranked(curWeek())?SHOWS.filter(x=>!showEnded(x.id)).sort((a,b)=>showEndTs(a.id)-showEndTs(b.id))[0]:null; return nx?`${esc(weekType())}・${esc(nx.name)} ${muLeft(showEndTs(nx.id)-Date.now())}`:esc(weekType()); })()],["concert","mic","演唱會",ls?"進行中":nc?evWhen(nc.startTs):"還沒有排定"],
-    ["sns","cam",SNS_NAME,"個人帳號與貼文"],["survival","trophy","選秀",svOpen()?svTileSub():"尚未開啟"],["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()],["wiki","news","SKpedia","藝人百科"]];
+    ["sns","cam",SNS_NAME,"個人帳號與貼文"],...(svFestShow()||!svArtAcct()?[["survival","trophy","選秀",svOpen()?svTileSub():"尚未開啟"]]:[]),["fsl","pen","簽售",fsLive?"進行中":fsOpen?`報名到 ${fsWhen(fsOpen.closeTs).split(" ")[0]}`:"目前沒有"],["news","news","新聞",newsSub()],["show","star","綜藝",vsFanSub()],["biz","cam","代言・雜誌",bzFanSub()],["cafe","star","生日咖啡廳",cfTileSub()],["truck","truck","應援餐車",(()=>{ const n=getTrucks().filter(t=>followed().includes(t.gid)&&!tkFunded(t)).length; return n?`${n} 台在集資`:"送一台給喜歡的藝人"; })()],["tour","globe","世巡",(()=>{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)); return t?esc(groupOf(t.gid).name+"・"+t.title):"目前沒有"; })()],["wiki","news","SKpedia","藝人百科"]];
   const show=t=>!q||nz(t[2]+t[3]).includes(q)||CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]]&&CORE_SECTIONS[{cards:"card",fsl:"meet",concert:"live"}[t[0]]||t[0]].toLowerCase().includes(q);
   const tiles=T.filter(show);
   if(!q){ ui.festT=T; return fanHeader(false,"core","搜尋小卡、打歌、演唱會...")+`<main class="page core fz">${preBanner()}${festHome(f)}</main>`; }   /* 不搜尋：今天＋四個抽屜（上面一排可以只看某位藝人） */
@@ -195,7 +196,7 @@ function festToday(gids,one){ const L=[], now=Date.now(), inG=g=>gids.includes(g
   try{ cfOpenNow().filter(x=>inG(MEMBERS[x.m].group)).slice(0,3).forEach(x=>L.push({k:"cafe",t:"營業中",c:"g",b:`${MEMBERS[x.m].name} 生日咖啡廳`,s:gn(MEMBERS[x.m].group),v:"cafe",o:5})); }catch(e){}
   try{ const n=getTrucks().filter(t=>!tkFunded(t)&&MEMBERS[t.mid]&&inG(MEMBERS[t.mid].group)).length; if(n) L.push({k:"truck",t:"集資中",c:"y",b:"應援餐車",s:`${n} 台在集資`,v:"truck",o:6}); }catch(e){}
   try{ const t=toursShown().find(x=>x.status==="approved"&&!wtDone(x)&&inG(x.gid)); if(t&&tourStops(t).some(st=>stopState(st)==="live")) L.push({k:"tour",t:"進行中",c:"r",b:`${gn(t.gid)}・${t.title}`,s:"世巡這一站開演了",v:"tour",o:1}); }catch(e){}
-  try{ if(!one&&svOpen()&&svVoting()&&svLeft()>0&&!svTrainee(svSeason())) L.push({k:"survival",t:`還有 ${svLeft()} 票`,c:"",b:"選秀投票",s:svFinal()?"決賽每天 1 票":"每天 3 票",v:"survival",o:7}); }catch(e){}
+  try{ if(!one&&svOpen()&&svVoting()&&svLeft()>0&&!svTrainee(svSeason())&&svFestShow()) L.push({k:"survival",t:`還有 ${svLeft()} 票`,c:"",b:"選秀投票",s:svFinal()?"決賽每天 1 票":"每天 3 票",v:"survival",o:7}); }catch(e){}
   try{ const n=lotReady().length; if(n) L.push({k:"lot",t:"開獎中",c:"r",b:"扭蛋機",s:`你有 ${n} 張券・24:00 結束`,a:"lotOpen",o:-1}); }catch(e){}
   return L.sort((a,b)=>a.o-b.o||(a.end||9e15)-(b.end||9e15)); }
 function festHead(gid){ const g=groupOf(gid); if(!g) return ""; const av=xvGAv(gid);

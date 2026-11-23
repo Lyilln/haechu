@@ -156,7 +156,7 @@ function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.s
   layer.querySelectorAll("video[data-awmid]").forEach(async el=>{ try{ const u=el.dataset.awmid&&await mediaSrc(el.dataset.awmid); if(u) el.src=u; }catch(e){} });
   if(s.t==="drum"){ clearTimeout(ui.awT); ui.awT=setTimeout(()=>{ if(ui.awS===S0&&S0.st[S0.i]===s){ S0.i++; awShowDraw(); } },2200); }
   if(s.t==="win"){ try{ sfx("t3"); }catch(e){} setTimeout(()=>{ try{ const cat=awCatOf(s.k); confetti(innerWidth/2,innerHeight*.35,{cols:["#FFD86B","#F5C542","#FFF3C4","#FFFFFF","#E8B923"]}); if(cat.ds) setTimeout(()=>confetti(innerWidth*.3,innerHeight*.3,{cols:["#FFD86B","#FFFFFF","#F5C542"]}),450); }catch(e){} },120); } }
-function awSave(fn){ return kvCas(AWK,o=>{ const n={...(o||{})}; if(n.y!==awYear()){ n.y=awYear(); n.sp={}; n.st={}; n.res={}; } fn(n); return {v:n}; }); }
+function awSave(fn){ return mkEdit(AWK,o=>{ const n={...(o||{})}; if(n.y!==awYear()){ n.y=awYear(); n.sp={}; n.st={}; n.res={}; } fn(n); return {v:n}; }); }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="aw"]'); if(!t) return; const a=t.dataset.a; if(!/^aw(Vc|Vote|Speech|SpOk|Judge|Show|ShowX|Next|DemoPh|DemoA|Open|Cer|How|Stage)$/.test(a)) return; e.stopImmediatePropagation();
   const keep=()=>{ const y=scrollY; render(); scrollTo(0,y); };
   if(a==="awVc"){ ui.awVc=t.dataset.v; keep(); return; }
@@ -171,10 +171,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     if(!awDemo()&&(s.role!=="fan"||awMyGid())){ toast(awMyGid()?"入圍藝人用評審票，不參加粉絲投票":"切到粉絲端才能投票"); return; }
     if(awDemo()){ const V=awVotes(); ((V.f[cat]=V.f[cat]||{}).me=V.f[cat].me||{})[awToday()]=id; toast("投好了！明天再來"); keep(); return; }
     const me=myEmail(), d=awToday(), y0=awYear(); t.disabled=true;
-    kvCas(AWV,v=>{ const o={...(v||{})}, Y=o[y0]={...(o[y0]||{})}, F=Y.f={...(Y.f||{})}, C=F[cat]={...(F[cat]||{})}, M=C[me]={...(C[me]||{})}; if(M[d]) return false; M[d]=id; return {v:o}; }).then(()=>{ toast("投好了！明天再來"); keep(); }).catch(()=>{ t.disabled=false; toast("沒有投出去，再試一次"); }); return; }
+    mkEdit(AWV,v=>{ const o={...(v||{})}, Y=o[y0]={...(o[y0]||{})}, F=Y.f={...(Y.f||{})}, C=F[cat]={...(F[cat]||{})}, M=C[me]={...(C[me]||{})}; if(M[d]) return false; M[d]=id; return {v:o}; }).then(()=>{ toast("投好了！明天再來"); keep(); }).catch(()=>{ t.disabled=false; toast("沒有投出去，再試一次"); }); return; }
   if(a==="awJudge"){ const cat=t.dataset.c, id=t.dataset.v, mid=awMyMid(); if(!mid) return;
     if(awDemo()){ const V=awVotes(); (V.j[cat]=V.j[cat]||{})[mid]=id; keep(); toast("評審票投好了，投票期間可以改"); return; }
-    const y0=awYear(); kvCas(AWV,v=>{ const o={...(v||{})}, Y=o[y0]={...(o[y0]||{})}, J=Y.j={...(Y.j||{})}; J[cat]={...(J[cat]||{}),[mid]:id}; return {v:o}; }).then(()=>{ toast("評審票投好了，投票期間可以改"); keep(); }).catch(()=>toast("沒有送出，再試一次")); return; }
+    const y0=awYear(); mkEdit(AWV,v=>{ const o={...(v||{})}, Y=o[y0]={...(o[y0]||{})}, J=Y.j={...(Y.j||{})}; J[cat]={...(J[cat]||{}),[mid]:id}; return {v:o}; }).then(()=>{ toast("評審票投好了，投票期間可以改"); keep(); }).catch(()=>toast("沒有送出，再試一次")); return; }
   if(a==="awStage"){ const k=t.dataset.c+"|"+awMyGid(), v=t.dataset.v;
     if(awDemo()){ ui.awSt={...(ui.awSt||{}),[k]:v}; keep(); return; }
     awSave(n=>{ n.st={...(n.st||{}),[k]:v}; }).then(()=>{ toast(v?"舞台選好了，典禮上會播":"取消舞台"); keep(); }).catch(()=>toast("沒有存到，再試一次")); return; }

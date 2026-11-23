@@ -34,7 +34,7 @@ function navReplace(h){ ui.navUi=performance.now(); ui.navFwd=performance.now();
    ・navTo(h)：進到下一頁（取代原本的 location.hash=h）
    ・navFire(h)：換到那頁，並照常發出 hashchange（各頁的收尾都靠它） */
 function navFire(h){ ui.navUi=performance.now(); h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h){ navSet(); render(); return; } const o=location.href; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h||location.pathname+location.search); }catch(e){ location.hash=h; return; } window.dispatchEvent(new HashChangeEvent("hashchange",{oldURL:o,newURL:location.href})); }
-function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h) return; NAV_BASE++; ui.navFwd=performance.now(); navFire(h); }   /* navFwd：往前走的新頁，不要放回以前在這頁滑到的位置 */
+function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(/^#\/fan\/core\?p=survival/.test(h)&&session()&&session().role==="artist") h=h.replace("#/fan/core?p=survival","#/artist?tab=foc&p=survival");   /* 藝人端的選秀頁裡的連結留在藝人端 */ if(location.hash===h) return; NAV_BASE++; ui.navFwd=performance.now(); navFire(h); }   /* navFwd：往前走的新頁，不要放回以前在這頁滑到的位置 */
 function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
 function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
   if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去

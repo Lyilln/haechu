@@ -93,11 +93,15 @@ document.addEventListener("submit",e=>{
     return; }
   if(e.target.id==="cform"){ e.preventDefault();
     const text=(ui.cDraft||"").trim(); if(!text||!ui.sheet) return; ui.cDraft="";
-    if(ui.sheet.cid){ const L=S.get(K.comments,[]), c=L.find(x=>x.id===ui.sheet.cid); if(!c) return; const p0=getPosts().find(x=>x.id===c.postId), art=session().role==="artist"&&p0&&session().member===p0.member;
+    if(ui.sheet.cid){ const L=S.get(K.comments,[]), c=L.find(x=>x.id===ui.sheet.cid); if(!c) return; const p0=getPosts().find(x=>x.id===c.postId), art=session().role==="artist"&&p0&&session().member===p0.member, me0=session().member, mate=session().role==="artist"&&p0&&!art&&MEMBERS[me0]&&MEMBERS[me0].group===p0.group;
+      if(mate){ c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",member:me0,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
       if(art){ if(!c.reply){ const {reached}=replyComment(c.id,text); renderComments(); toast(reached?"已回覆，粉絲收到通知了":"已回覆"); return; }
         c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); toast("已回覆"); return; }
       if(meBlocked()||banBlock(text)){ ui.cDraft=text; return; }
       c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"me",by:myEmail(),name:myCmNick(postGid(c.postId)),g:ME.g,text,ts:Date.now()}]; S.set(K.comments,L); renderComments(); { const l=document.getElementById("csl"); if(l) l.scrollTop=l.scrollHeight; } toast("已回覆"); return; }
+    { const p0=getPosts().find(x=>x.id===ui.sheet.postId), me0=session().member;   /* 同團成員在別人的貼文：留言、回覆都記成自己（不是貼文主人） */
+      if(session().role==="artist"&&p0&&p0.member!==me0&&MEMBERS[me0]&&MEMBERS[me0].group===p0.group){ if(ui.sheet.replyTo){ const L=S.get(K.comments,[]), c=L.find(x=>x.id===ui.sheet.replyTo); if(c){ c.reps=[...(c.reps||[]),{id:"r"+Date.now(),author:"artist",member:me0,text,ts:Date.now()}]; S.set(K.comments,L); } ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true); toast("已回覆"); return; }
+        const c=addArtistComment(ui.sheet.postId,text,me0); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; } }
     if(session().role==="artist"&&!ui.sheet.replyTo){ const c=addArtistComment(ui.sheet.postId,text); ui.sheet.focusC=c&&c.id; renderComments(true); toast("已留言"); return; }
     if(session().role==="artist"){
       const {c,reached}=replyComment(ui.sheet.replyTo,text); ui.sheet.replyTo=null; ui.sheet.focusC=c&&c.id; renderComments(true);

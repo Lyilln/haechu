@@ -161,7 +161,7 @@ function viewCoreSub(page,id){
   if(page==="concert") return coreHead("演唱會")+`<main class="page">${ccFanPage()}</main>`;
   if(page==="fsl") return coreHead("簽售")+`<main class="page">${fsFanCards()}</main>`;
   if(page==="cards") return viewCards();
-  if(page==="survival") return viewSurvival(id);
+  if(page==="survival") return svArtAcct()?coreHead("選秀")+`<main class="page"><p class="me-none">你的選秀在藝人端的 FOC 裡</p></main>`:viewSurvival(id);
   if(page==="awards") return viewAwards();
   if(page==="stubs") return viewStubs();
   if(page==="fansign") return viewFsFanRoom(id);
