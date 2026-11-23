@@ -93,7 +93,9 @@ const nlRooms=()=>{ const o=S.get(acK(NL_TIEK),{}); return o&&typeof o==="object
 const nlRoomOf=id=>nlRooms()[id]||null;
 const nlActive=id=>{ const r=nlRoomOf(id); return !!(r&&r.until>Date.now()); };
 const nlSaveRoom=(id,fn)=>{ const o=nlRooms(); o[id]=fn(o[id]||{msgs:[],used:[]}); S.set(acK(NL_TIEK),o); };
-const nlWelcome=id=>{ const w=(S.get(NL_WEL,{})||{})[id]; return w||((nlM(id)||{}).P||{}).w||""; };
+/* 歡迎語：{o 原文, z 中文}；管理員改過的優先 */
+const nlTk=id=>{ const m=nlM(id); return m&&(NL_TK[m.G]||[])[m.i]||null; };
+const nlWelcome=id=>{ const w=(S.get(NL_WEL,{})||{})[id]; if(w&&typeof w==="object"&&w.o) return {o:w.o,z:w.z||w.o}; if(typeof w==="string"&&w) return {o:w,z:w}; const t=nlTk(id); return t?{o:t.w[0],z:t.w[1]}:{o:"",z:""}; };
 const nlShown=r=>(r&&r.msgs||[]).filter(x=>x.ts<=Date.now());
 const nlUnread=id=>{ const r=nlRoomOf(id); return r?nlShown(r).filter(x=>x.f==="a"&&x.ts>(r.read||0)).length:0; };
 function nlRoomList(){ if(!nlOn()) return []; const o=nlRooms(); return Object.keys(o).filter(id=>nlM(id)).map(id=>{ const r=o[id], sh=nlShown(r); return {id,r,last:sh[sh.length-1]||null,active:r.until>Date.now(),un:nlUnread(id)}; }).sort((a,b)=>((b.last||{}).ts||0)-((a.last||{}).ts||0)); }
@@ -105,22 +107,24 @@ function nlBuy(id){ const m=nlM(id); if(!m) return; const act=nlActive(id);
   ask(`${act?"延長":"購買"} ${nlName(id)} 的 ${WHISPER_NAME} 券？\n${NL_PRICE} 積分，可以用 ${NL_DAYS} 天。`,()=>{ if(points()<NL_PRICE){ toast("積分不足，先補充積分吧"); return; }
     S.set(K.points,points()-NL_PRICE); try{ recordSale("npctie",{pts:NL_PRICE,label:`${WHISPER_NAME} 券・${nlName(id)}（${NL_DAYS} 天）`}); }catch(e){}
     const now=Date.now(); nlSaveRoom(id,r=>{ const first=!r.since; r.since=r.since||now; r.until=Math.max(r.until||0,now)+NL_DAYS*864e5; r.msgs=r.msgs||[];
-      if(first) nlWelcome(id).split("|").filter(Boolean).forEach((t,k)=>r.msgs.push({id:"w"+now+k,f:"a",t:t,ts:now+800+k*1500,wel:1})); return r; });
+      if(first){ const W=nlWelcome(id), O=W.o.split("|"), Z=W.z.split("|"); O.forEach((t,k)=>{ if(t.trim()) r.msgs.push({id:"w"+now+k,f:"a",t:t,z:Z[k]||"",ts:now+800+k*1500,wel:1}); }); } return r; });
     toast(act?"已延長 "+NL_DAYS+" 天":"購買完成"); ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(id))); },{title:WHISPER_NAME,ok:`用 ${NL_PRICE} 積分購買`,danger:false}); }
 /* 粉絲傳了訊息：他看心情決定要不要回、什麼時候回、回幾則；回的是他自己想說的（不看粉絲說了什麼） */
 function nlReplyPlan(id,r){ const now=Date.now(); if((r.msgs||[]).some(x=>x.f==="a"&&x.ts>now)) return;   /* 已經決定要回了：多傳幾則也不會多回 */
   const m=nlM(id), sd=strHash(id+now), mood=(sd%100)/100; if(mood>.62) return;   /* 有時候就是不回 */
   const delay=(2+Math.floor(Math.pow(((sd>>>7)%1000)/1000,2)*150))*6e4, at=now+delay, hr=new Date(at).getHours(), tm=hr>=5&&hr<11?"m":hr>=21||hr<4?"n":"";
-  const used=r.used||[], pool=m.P.c.concat(NL_CHAT[m.P.a]).filter(x=>{ const k=/^([mn])>/.exec(x); return (!k||k[1]===tm)&&!used.includes(x); });
-  const L=pool.length?pool:m.P.c.concat(NL_CHAT[m.P.a]).filter(x=>!/^[mn]>/.test(x)), n=1+((sd>>>11)%10<6?0:(sd>>>11)%10<9?1:2);
-  let t=at; for(let k=0;k<n;k++){ const x=L[(sd>>>(k*3+2))%L.length]; used.push(x); x.replace(/^[mn]>/,"").split("|").forEach((s,j)=>{ r.msgs.push({id:"a"+t+"_"+k+"_"+j,f:"a",t:nlFill(s,id,sd+k),ts:t}); t+=4000+((sd>>>k)%40)*1000; }); }
+  const tk=nlTk(id), foreign=tk&&tk.L!=="ko", strip=x=>String(x).replace(/^[mn]>/,""), tmOk=x=>{ const k=/^([mn])>/.exec(x); return !k||k[1]===tm; };
+  const own=(tk?tk.c:[]).map(([o,z])=>({o,z})).concat(NL_CHAT_KO[m.P.a].map((o,j)=>({o,z:NL_CHAT[m.P.a][j]}))), nat=(tk?tk.n:[]).map(([o,z])=>({o,z}));
+  const used=r.used||[], fresh=L=>L.filter(x=>tmOk(x.o)&&!used.includes(x.o)), n=1+((sd>>>11)%10<6?0:(sd>>>11)%10<9?1:2);
+  let t=at; for(let k=0;k<n;k++){ const s2=sd>>>(k*3+2), useNat=nat.length&&(s2%100)<(foreign?22:8), P0=useNat&&fresh(nat).length?fresh(nat):fresh(own), P1=P0.length?P0:own.filter(x=>tmOk(x.o)), P=P1.length?P1:own, x=P[s2%P.length];
+    used.push(x.o); const O=strip(x.o).split("|"), Z=strip(x.z).split("|"); O.forEach((s,j)=>{ r.msgs.push({id:"a"+t+"_"+k+"_"+j,f:"a",t:nlFill(s,id,sd+k),z:nlFill(Z[j]||"",id,sd+k),ts:t}); t+=4000+((sd>>>k)%40)*1000; }); }
   r.used=used.slice(-40); }
 function nlSend(id,text){ const t=String(text||"").trim(); if(!t||!nlActive(id)) return; nlSaveRoom(id,r=>{ r.msgs.push({id:"m"+Date.now(),f:"me",t,ts:Date.now()}); nlReplyPlan(id,r); r.msgs=r.msgs.slice(-400); return r; }); ui.nlDraft=""; ui.scrollChat=true; render(); }
 function nlRoom(id){ const m=nlM(id), r=nlRoomOf(id); if(!m) return ""; const act=nlActive(id), sh=r?nlShown(r):[], days=r&&r.since?Math.max(1,Math.floor((Date.now()-r.since)/864e5)+1):1;
   if(r){ if(sh.some(x=>x.f==="a"&&x.ts>(r.read||0))) nlSaveRoom(id,x=>{ x.read=Date.now(); return x; }); const nx=(r.msgs||[]).filter(x=>x.ts>Date.now()).map(x=>x.ts).sort((a,b)=>a-b)[0]; clearTimeout(ui.nlT); if(nx&&nx-Date.now()<20*6e4) ui.nlT=setTimeout(()=>{ if(location.hash.includes("npctie")) render(); },nx-Date.now()+300); }
   let last=""; const body=sh.map(w=>{ const d=dayLabel(w.ts); let sep=""; if(d!==last){ sep=`<div class="t-day"><span>${d}</span></div>`; last=d; }
     if(w.f==="me") return sep+`<div class="t-me"><div class="t-meta"><span>${timeHM(w.ts)}</span></div><div class="t-b me">${esc(w.t)}</div></div>`;
-    return sep+`<div class="t-art">${nlAv(id,"ring")}<div class="t-art-c"><div class="t-art-n"><b>${esc(nlName(id))}</b></div><div class="t-bw"><div class="t-b">${esc(nlFill(w.t,id,0))}</div><span class="t-side"><span class="t-tm">${timeHM(w.ts)}</span></span></div></div></div>`; }).join("");
+    return sep+`<div class="t-art">${nlAv(id,"ring")}<div class="t-art-c"><div class="t-art-n"><b>${esc(nlName(id))}</b></div><div class="t-bw">${(()=>{ const o=nlFill(w.t,id,0), z=w.z?nlFill(w.z,id,0):"", can=!!z&&z!==o, on=can&&ui.nlTr&&ui.nlTr[w.id]; return `<div class="t-b">${esc(o)}${on?`<div class="t-tr">${esc(z)}</div>`:""}</div><span class="t-side">${can&&!on?`<button class="t-abtn" data-a="nlTr" data-v="${esc(w.id)}" aria-label="翻譯">A</button>`:""}<span class="t-tm">${timeHM(w.ts)}</span></span>`; })()}</div></div></div>`; }).join("");
   const dr=ui.nlDraft||"";
   return `<div class="t-bgl t-default"></div><header class="t-rh sh-head"><div class="t-rh-row"><button class="t-ib" data-a="back" aria-label="返回">${TI.back}</button><h3>${esc(nlName(id))}</h3><div class="t-rh-r"></div></div>
       ${act?`<div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tieHeart()}<span>+${days}</span></div>`:`<button class="t-sub t-again" data-a="nlBuy" data-v="${id}">💜 我們是不是可以再見呢？</button>`}</header>
@@ -151,11 +155,11 @@ function nlWriteDraw(){ const w=ui.nlW; if(!w) return; const old=(document.getEl
     <div class="nl-chips">${[["both","社群＋SNS"],["cm","只發社群"],["sn","只發 SNS"]].map(([k,l])=>`<button class="${w.k===k?"on":""}" data-a="nlWK" data-v="${k}">${l}</button>`).join("")}</div>
     <textarea id="nlWT" maxlength="500" placeholder="要說的話（{F} 會換成粉絲名）">${esc(old)}</textarea>
     <div class="aw-mod-b"><button class="btn btn-soft" data-a="nlClose">取消</button><button class="btn btn-main" data-a="nlWOk">發文</button></div></div></div>`,"nlw"); }
-function nlWelEdit(id){ ui.nlWelId=id; setLayer(`<div class="aw-mod-bg nl-mod" data-a="nlClose"><div class="aw-mod" data-a="nlNo"><h3>${esc(nlName(id))} 的 ${esc(WHISPER_NAME)} 歡迎語</h3><p class="nl-tip">第一次買券的粉絲會收到。用「|」隔開就是分成好幾則傳；{N} 會換成粉絲的名字。</p>
-    <textarea id="nlWelT" maxlength="600">${esc(nlWelcome(id))}</textarea><div class="aw-mod-b"><button class="btn btn-soft" data-a="nlClose">取消</button><button class="btn btn-main" data-a="nlWelOk">儲存</button></div></div></div>`,"nlwel"); }
+function nlWelEdit(id){ ui.nlWelId=id; setLayer(`<div class="aw-mod-bg nl-mod" data-a="nlClose"><div class="aw-mod" data-a="nlNo"><h3>${esc(nlName(id))} 的 ${esc(WHISPER_NAME)} 歡迎語</h3><p class="nl-tip">第一次買券的粉絲會收到。用「|」隔開就是分成好幾則傳（原文和中文的「|」要一樣多）；{N} 會換成粉絲的名字。</p>
+    <b class="nl-lb">原文（他傳的語言）</b><textarea id="nlWelT" maxlength="600">${esc(nlWelcome(id).o)}</textarea><b class="nl-lb">中文（按 A 看到的翻譯）</b><textarea id="nlWelZ" maxlength="600">${esc(nlWelcome(id).z)}</textarea><div class="aw-mod-b"><button class="btn btn-soft" data-a="nlClose">取消</button><button class="btn btn-main" data-a="nlWelOk">儲存</button></div></div></div>`,"nlwel"); }
 /* ---------- 點擊 ---------- */
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="nl"]'); if(!t) return; const a=t.dataset.a, v=t.dataset.v;
-  if(!/^nl(Go|Tab|Join|Like|Cm|Ex|PMore|Room|Buy|Close|No|Write|WMem|WK|WOk|Wel|WelOk|Share)$/.test(a)) return; e.stopImmediatePropagation(); if(a!=="nlNo") e.preventDefault();
+  if(!/^nl(Go|Tab|Join|Like|Cm|Ex|PMore|Room|Buy|Close|No|Write|WMem|WK|WOk|Wel|WelOk|Share|Tr)$/.test(a)) return; e.stopImmediatePropagation(); if(a!=="nlNo") e.preventDefault();
   if(a==="nlNo"){ return; }
   if(a==="nlClose"){ layer.innerHTML=""; return; }
   if(a==="nlGo"){ layer.innerHTML=""; navTo(nlHref("npc","id="+encodeURIComponent(v))); scrollTo(0,0); return; }
@@ -164,6 +168,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="nlEx"){ ui.nlEx=ui.nlEx||{}; ui.nlEx[v]=1; render(); return; }
   if(a==="nlLike"){ const me=myEmail()||"me", on=nlLiked(v); mkEdit(NL_LK,o=>{ o=o||{}; const L=(o[v]||[]).filter(x=>x!==me); if(!on) L.push(me); o[v]=L; return {v:o}; }).then(()=>render()).catch(()=>toast("沒有按到，再試一次")); return; }
   if(a==="nlCm"){ nlCmOpen(v); return; }
+  if(a==="nlTr"){ ui.nlTr=ui.nlTr||{}; ui.nlTr[v]=1; render(); return; }
   if(a==="nlPMore"){ if(!nlAdm()) return; ask("把這則從大家的畫面上拿掉？",()=>{ mkEdit(NL_HIDE,o=>({v:{...(o||{}),[v]:1}})).then(()=>{ NL_C.cm=NL_C.sn=null; render(); toast("拿掉了"); }); }); return; }
   if(a==="nlRoom"){ layer.innerHTML=""; ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(v))); return; }
   if(a==="nlBuy"){ nlBuy(v); return; }
@@ -173,8 +178,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="nlWOk"){ const w=ui.nlW, tx=((document.getElementById("nlWT")||{}).value||"").trim(); if(!w||!tx){ toast("先寫要說的話"); return; } const k="nown_"+Date.now();
     mkEdit(NL_POSTS,o=>({v:{...(o||{}),[k]:{mid:w.mid,k:w.k,t:tx,ts:Date.now()}}})).then(()=>{ ui.nlW=null; layer.innerHTML=""; NL_C.cm=NL_C.sn=null; render(); toast("發好了"); }).catch(()=>toast("沒有發出去，再試一次")); return; }
   if(a==="nlWel"){ if(nlAdm()) nlWelEdit(v); return; }
-  if(a==="nlWelOk"){ const id=ui.nlWelId, tx=((document.getElementById("nlWelT")||{}).value||"").trim(); if(!id||!tx){ toast("歡迎語不能是空的"); return; }
-    mkEdit(NL_WEL,o=>({v:{...(o||{}),[id]:tx}})).then(()=>{ layer.innerHTML=""; toast("存好了"); }).catch(()=>toast("沒有存到，再試一次")); return; }
+  if(a==="nlWelOk"){ const id=ui.nlWelId, tx=((document.getElementById("nlWelT")||{}).value||"").trim(), zx=((document.getElementById("nlWelZ")||{}).value||"").trim()||tx; if(!id||!tx){ toast("歡迎語不能是空的"); return; }
+    mkEdit(NL_WEL,o=>({v:{...(o||{}),[id]:{o:tx,z:zx}}})).then(()=>{ layer.innerHTML=""; toast("存好了"); }).catch(()=>toast("沒有存到，再試一次")); return; }
   if(a==="nlShare"){ if(!nlAdm()) return; const on=!!S.get(NL_ON,0); ask(on?"改回只有你看得到？":"開放給大家？大家會在 LOVE 探索、SNS、TIE 看到虛擬歌手。",()=>{ mkEdit(NL_ON,()=>({v:on?0:1})).then(()=>{ render(); toast(on?"改回只有你看得到":"已開放給大家"); }); },{danger:false}); return; }
 },true);
 document.addEventListener("submit",e=>{ const f=e.target;
