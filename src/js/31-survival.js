@@ -226,7 +226,7 @@ function viewSurvival(id){ const s=svSeason(), th=svTheme(), hd=(route().role===
   if(!s) return hd+`<main class="page sv2 ${th}">${pre}${svHero("下一季準備中","",svPyr([0,1,2,3,4,5],(x,i)=>`<div class="sv2-t svx-e"><span class="sv2-p"><i class="sv2-sil"></i></span><b>${i+1}位</b><span>？</span></div>`),"《COMING SOON》")}${svDemoOk()?`<button class="sv2-cta" data-a="svDemo" data-v="recruit">看示範</button>`:""}</main>`;
   if(id) return hd+svProfile(id);
   const dm=s.demo?`<div class="sv3-dm">${[["recruit","招募"],["r1","第一輪"],["a:r1","第一次發表"],["r2","第二輪"],["a:r2","第二次發表"],["final","決賽"],["a:final","出道發表"],["prep","出道準備"],["","結束示範"]].map(([k,l])=>`<button class="${k===s.ph?"on":""} ${k[0]==="a"?"an":""}" data-a="svDemo" data-v="${k}">${l}</button>`).join("")}<span class="sv3-dmv">看誰的畫面：</span><button class="${ui.svDemoT?"":"on"}" data-a="svDemoT" data-v="">投票的粉絲</button><button class="${ui.svDemoT?"on":""}" data-a="svDemoT" data-v="1">參賽的練習生</button></div>`:"";
-  const sv5v=(String(location.hash).match(/[?&]v=(\w+)/)||[])[1], sub=sv5v&&svSubHtml(s,sv5v); return hd+`<main class="page sv2 ${th}">${s.demo?"":pre}${sub?sub:s.ph==="recruit"?svRecruitHtml(s):svVoting()?svVoteHtml(s):svAfterHtml(s)}${dm}${!s.demo&&!sub&&svDemoOk()?`<button class="sv2-cta sv-dmgo" data-a="svDemo" data-v="recruit">看示範（只有你看得到，不會影響這一季）</button>`:""}</main>${svVoting()?svBasketHtml():""}`; }
+  const sv5v=(String(location.hash).match(/[?&]v=(\w+)/)||[])[1], tabbed=svVoting()&&(!sv5v||["st","rk","pick"].includes(sv5v)), sub=!tabbed&&sv5v&&svSubHtml(s,sv5v); return hd+`<main class="page sv2 ${th} ${tabbed?"sv6":""}">${s.demo?"":pre}${tabbed?svTabsHtml(s,sv5v||"wk"):sub?sub:s.ph==="recruit"?svRecruitHtml(s):svVoting()?svVoteHtml(s):svAfterHtml(s)}${dm}${!s.demo&&!sub&&svDemoOk()?`<button class="sv2-cta sv-dmgo" data-a="svDemo" data-v="recruit">看示範（只有你看得到，不會影響這一季）</button>`:""}</main>${svVoting()?svBasketHtml()||(tabbed?svPickBar(s,sv5v||"wk"):""):""}`; }
 const svCd=s=>svLeftTxt((s.end||0)-Date.now());
 const svBase=()=>{ const d=new Date(); d.setMinutes(0,0,0); return `${d.getMonth()+1}/${d.getDate()} ${pad(d.getHours())}:00 基準`; };
 const svSeats=()=>{ const M={}; [...svEntries()].sort((a,b)=>(a.ts||0)-(b.ts||0)).forEach(e=>{ if(e.seat&&!M[e.seat]) M[e.seat]=e; }); return M; };
@@ -254,7 +254,7 @@ function svC1(s){ const E=svEntries(), M=svSeats(), hold=M[1]||null, npc=svAll()
 function svC1Vote(id){ const s=svSeason(); if(!s||s.ph!=="r1") return; if(svTrainee(s)){ toast("參賽的練習生不能投票"); return; } const c=svC1(s); if(c.done){ toast("1 號位對決已經結束了"); return; }
   if(s.demo){ ui.svC1V={...(ui.svC1V||{}),[id]:((ui.svC1V||{})[id]||0)+1}; ui.svC1Done=1; render(); toast("示範：投完直接看結果"); return; }
   const mine=S.get(acK("daisuki_sv_c1"),{})||{}; if(mine[s.id]){ toast("你已經投過了"); return; } mine[s.id]=id; S.set(acK("daisuki_sv_c1"),mine);
-  const A={...(S.get(SVC1,{})||{})}; A[s.id]={...(A[s.id]||{})}; A[s.id][id]=(A[s.id][id]||0)+1; S.set(SVC1,A); render(); toast("投好了"); }
+  mkEdit(SVC1,v=>{ const A={...(v||{})}; A[s.id]={...(A[s.id]||{})}; A[s.id][id]=(A[s.id][id]||0)+1; return {v:A}; }).then(()=>{ render(); toast("投好了"); }).catch(()=>{ delete mine[s.id]; S.set(acK("daisuki_sv_c1"),mine); toast("沒有投出去，再試一次"); }); }
 /* 開場座位：誰坐哪裡 */
 function svOpenSeats(s){ const E=svEntries(), c=svC1(s), out={}; E.forEach(e=>{ if(e.seat) out[e.seat]=e; }); let lost=null;
   if(c.win&&c.hold&&c.win.id!==c.hold.id){ const back=c.win.seat; out[1]=c.win; if(back&&out[back]&&out[back].id===c.win.id) out[back]=c.hold; else lost=c.hold; }
@@ -336,6 +336,22 @@ function svVoteHtml(s){ const rk=svRank(), all=svAll(), my=svMine(), T=id=>all.f
     +svGrBn(s)+svC1Bn(s)+svHost(s,svHostTxt(s))+pyr
     +svEnt5([["rk","全部排名",hid?"排名保密中":`${rk.length} 位練習生`],["st",fin?"看決賽舞台":"看舞台",lv?"這個任務的現場票投了":"投現場票（還有 1 張）"]])+svHow5(); }
 
+/* ===== 11/23 投票期的頁面：像追一集節目，上面四個分頁（本週／舞台／排名／練習生），PICK 固定在最下面 ===== */
+const SV_TABS=[["wk","本週"],["st","舞台"],["rk","排名"],["pick","練習生"]];
+function svTabsHtml(s,v){ const tr=svTrainee(s);
+  const nav=`<nav class="sv6-tabs">${SV_TABS.map(([k,n])=>`<button class="${k===v?"on":""}" data-a="uniGo" data-v="#/fan/core?p=survival${k==="wk"?"":"&v="+k}">${n}</button>`).join("")}</nav>`;
+  const rk=svRank(), all=svAll(), my=svMine(), T=id=>all.find(x=>x.id===id)||{id}, fin=s.ph==="final", hid=svHid(s);
+  const body=v==="st"?svStageHtml(s):v==="rk"?(hid?svHidPyr(s,my,tr):svPyr5(fin?"出道組在誰手上？":"現在的排名",rk.slice(0,fin?SV_DEB:6),(id,i)=>svTile(T(id),`${i+1}位`,null,!tr&&my[id]||tr&&tr.id===id)))+svRkList(s,false):v==="pick"?svRkList(s,!tr):svWeekHtml(s);
+  return nav+`<div class="sv6-body">${body}</div>`; }
+function svWeekHtml(s){ const m=svMsNow(s), tr=svTrainee(s), rk=svRank(), all=svAll(), hid=svHid(s), t0=svPhT0(s), end=m?t0+m.d[1]*864e5:0;
+  const ep=m?`<section class="sv6-ep"><small>${SV_PH[s.ph]}・第 ${svDayN(s)} 天</small><h2>${esc(m.t)}</h2><p>${esc(m.how)}</p><div class="sv6-chips"><span class="on">交舞台到 ${svMd(end-864e5)}</span><span>${SV_ANN[s.ph]} 還有 ${svCd(s)}</span></div></section>`:"";
+  const me=tr?svTrio([[hid?"保密":`${rk.indexOf(tr.id)+1} 位`,"我現在的排名"],[svGrade(tr)||"－","我的等級"],[`${svDaysL(s)} 天`,SV_ANN[s.ph]]])+svTodoTr(s,tr):"";
+  const St=m?svStages(s.ph,m.k).slice().sort((a,b)=>svLive(b)-svLive(a)||svHash(a.id)-svHash(b.id)):[], lv=m&&svMyLv()[s.id+m.k];
+  const stg=m?`<section class="sv6-sec"><div class="sv6-sh"><b>這週的舞台</b><button data-a="uniGo" data-v="#/fan/core?p=survival&v=st">${St.length?`${St.length} 位已交 ›`:"看舞台 ›"}</button></div>${St.length?`<div class="sv3-sg sv6-sg">${St.slice(0,4).map((x,i)=>{ const t=all.find(y=>y.id===x.tid)||{}; return `<button class="sv3-st ${lv===x.id?"me":""}" data-a="svStage" data-v="${x.id}"><span class="sv3-sp">${x.url?(x.kind==="v"?`<video src="${esc(x.url)}#t=0.1" muted playsinline preload="metadata"></video><i class="sv3-play"></i>`:`<img src="${esc(x.url)}" alt="">`):svPh(t)}${i<3&&svLive(x)?`<em>${i+1}</em>`:""}</span><b>${esc(t.name||"")}</b><small>${esc(x.team||x.pos||"")}${x.team||x.pos?"・":""}♥ ${fmt(svLive(x))}</small></button>`; }).join("")}</div>${tr?"":`<p class="sv6-tip">${lv?"這個任務的現場票投了 ✓":"點舞台進去，這個任務可以投 1 張現場票"}</p>`}`:`<p class="sv6-none">還沒有人交舞台</p>`}</section>`:"";
+  return ep+me+svGrBn(s)+svC1Bn(s)+stg+svHost(s,svHostTxt(s))+svHow5(); }
+function svPickBar(s,v){ if(svTrainee(s)||v==="pick") return ""; const L=svLeft(), fin=s.ph==="final", rk=svRank();
+  return `<div class="sv6-pk ${svTheme()}"><div><b>${L?`今天還能 PICK ${L} 票`:"今天投完了"}</b><small>${L?(fin?`選出 ${SV_DEB} 位出道組`:s.ph==="r2"?`剩 ${rk.length} 位，${SV_KEEP.r2} 位晉級`:`${rk.length} 位練習生，${SV_KEEP.r1} 位晉級`):"明天再來"}</small></div><button data-a="uniGo" data-v="#/fan/core?p=survival&v=${L?"pick":"rk"}">${L?"去 PICK":"看排名"}</button></div>`; }
+
 /* ===== 11/18 等級評價：自動算，管理員不能改（粉絲現場票 60%＋練習生互評 40%）；第二輪排名保密 ===== */
 const SVPR="daisuki_sv_peer", SV_GRK=["lv","th"];   /* lv＝等級評價、th＝主題曲（重新評價） */
 const SV_GRQ=[.1,.2,.25,.25];                        /* A 10%、B 20%、C 25%、D 25%、其他 F */
@@ -388,7 +404,7 @@ function svHidPyr(s,my,tr){ const rk=svRank(), all=svAll(), x=all.find(t=>t.id==
 
 /* 點進去的頁面 */
 function svRkList(s,pick){ const sc=svScores(), rk=svRank(), all=svAll(), B=ui.svB||{}, tr=svTrainee(s), cut=s.ph==="r1"?SV_KEEP.r1:s.ph==="r2"?SV_KEEP.r2:SV_DEB, T=id=>all.find(x=>x.id===id)||{id};
-  const hid=svHid(s), h11=rk[svHidN()-1], row=(id,i)=>{ const x=T(id), c=B[id]||0; if(hid) i=id===h11?svHidN()-1:-1; return `<div class="sv2-row ${tr&&tr.id===id?"me":""}" data-a="uniGo" data-v="#/fan/core?p=survival&id=${id}"><span class="sv2-rk">${i<0?"？":i+1+"位"}</span><span class="sv2-av">${svPh(x)}</span><div class="sv2-nm"><b>${esc(x.name)}${svGrB(x,"ln")}</b><small>${esc(x.co||"個人練習生")}${i<0?"":`・${fmt(sc[id]||0)} 票`}</small></div>${tr?"":`<button class="sv2-pk ${c?"on":""}" data-a="svPick" data-v="${id}">${c?`已選 ${c}`:"PICK"}</button>`}</div>`; };
+  const hid=svHid(s), h11=rk[svHidN()-1], row=(id,i)=>{ const x=T(id), c=B[id]||0; if(hid) i=id===h11?svHidN()-1:-1; return `<div class="sv2-row ${tr&&tr.id===id?"me":""}" data-a="uniGo" data-v="#/fan/core?p=survival&id=${id}"><span class="sv2-rk">${i<0?"？":i+1+"位"}</span><span class="sv2-av">${svPh(x)}</span><div class="sv2-nm"><b>${esc(x.name)}${svGrB(x,"ln")}</b><small>${esc(x.co||"個人練習生")}${i<0?"":`・${fmt(sc[id]||0)} 票`}</small></div>${tr||!pick?"":`<button class="sv2-pk ${c?"on":""}" data-a="svPick" data-v="${id}">${c?`已選 ${c}`:"PICK"}</button>`}</div>`; };
   return (pick&&!tr?`<p class="sv5-tip">今天還能投 <b>${svLeft()}</b> 票。按 PICK 選人，選好按下面的「送出」才算。</p>`:"")
     +(hid?`<p class="sv5-tip">第二輪排名保密，照名字排。只公開第 ${svHidN()} 名，第二次排名發表才揭曉。</p><div class="sv3-rl">${rk.slice().sort((a,b)=>String(T(a).name).localeCompare(String(T(b).name))).map(row).join("")}</div>`:"")
     +(hid?"":`<div class="sv3-rl">${rk.slice(0,cut).map(row).join("")}</div>`

@@ -7533,6 +7533,31 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .sv5-mys>div{flex:1;min-width:0}.sv5-mys small{font-size:12px;color:var(--a);font-weight:900}.sv5-mys b{display:block;font-size:16px;color:#3A2233;margin:2px 0 4px}.sv5-mys p{margin:0 0 6px;font-size:12.5px;color:#6F5A66;line-height:1.5}
 .sv5-mys button:not(.sv5-myt){display:block;width:100%;padding:10px;border:0;border-radius:12px;background:var(--a);color:#fff;font:inherit;font-weight:900}.sv5-mys button.gh{background:var(--l);color:var(--a)}
 .sv5-nov{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:160px;border-radius:14px;background:var(--l,#FDEAF2);color:#9A7F8C;font-size:13px;text-align:center;line-height:1.6}
+/* 11/23 選秀投票期：四個分頁＋PICK 列 */
+.sv6{padding-top:0}
+.sv6-tabs{position:-webkit-sticky;position:sticky;top:var(--top-h,56px);z-index:20;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));margin:0 -16px 14px;padding:0 8px;background:var(--bg);border-bottom:1px solid var(--line)}
+.sv6-tabs button{border:0;background:none;font:inherit;font-size:14px;color:var(--ink-3);padding:12px 0 10px;cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px}
+.sv6-tabs button.on{color:var(--ink);font-weight:700;border-bottom-color:var(--a)}
+.sv6-body{display:flex;flex-direction:column;gap:14px;padding-bottom:110px}
+.sv6-ep{padding:18px 16px;border-radius:20px;background:var(--l);border:1px solid var(--l2)}
+.sv6-ep small{font-size:12px;color:var(--a);font-weight:700;letter-spacing:.04em}
+.sv6-ep h2{margin:4px 0 6px;font-size:22px;color:var(--ink)}
+.sv6-ep p{margin:0;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.sv6-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:12px}
+.sv6-chips span{font-size:12px;padding:5px 11px;border-radius:999px;background:var(--s1);color:var(--ink-2);border:1px solid var(--line)}
+.sv6-chips span.on{background:var(--a);color:#fff;border-color:var(--a);font-weight:700}
+.sv6-sec{display:flex;flex-direction:column;gap:10px}
+.sv6-sh{display:flex;align-items:baseline;justify-content:space-between}
+.sv6-sh b{font-size:17px}
+.sv6-sh button{border:0;background:none;font:inherit;font-size:13px;color:var(--a);font-weight:700;cursor:pointer}
+.sv6-sg{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.sv6-tip,.sv6-none{margin:0;font-size:12.5px;color:var(--ink-3);text-align:center}
+.sv6-none{padding:24px 0;border:1px dashed var(--line);border-radius:16px}
+.sv6-pk{position:fixed;left:12px;right:12px;bottom:calc(var(--nav-h,64px) + env(safe-area-inset-bottom,0px) + 10px);z-index:40;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 18px;border-radius:999px;background:var(--s1);box-shadow:0 0 0 1.5px var(--l2),0 12px 30px -10px rgba(0,0,0,.25)}
+.sv6-pk.g{--a:#FF4F9A;--l2:#FFD6E8}.sv6-pk.b{--a:#2E7BEF;--l2:#CFE2FF}
+.sv6-pk>div{flex:1;min-width:0;display:flex;flex-direction:column}
+.sv6-pk b{font-size:14px;color:var(--ink)}.sv6-pk small{font-size:12px;color:var(--ink-3)}
+.sv6-pk button{border:0;border-radius:999px;padding:11px 20px;background:var(--a);color:#fff;font:inherit;font-weight:700;font-size:14px;cursor:pointer;flex:none}
 
 /* ===== 連號開獎：扭蛋機 ===== */
 .lot .tiei-body{padding-bottom:40px}
@@ -7917,3 +7942,4 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 .aws-vt{margin:0;font-size:13px;color:rgba(255,243,196,.75)}
 .aws-host{align-items:center}
 .aws-noms{justify-items:center}
+.foc-ev2{display:flex;flex-direction:column;gap:10px;margin-top:10px}.foc-ev2:empty{display:none}
