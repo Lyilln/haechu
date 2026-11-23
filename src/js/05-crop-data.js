@@ -178,7 +178,7 @@ const LV_TBL=[["T",[0,500,1500,3000,5000]],["R",[8000,11000,14000,17000,20000]],
 const LV_FONT={T:[0x1D5D4,0x1D7EC],R:[0x1D63C,0x1D7EC],E:[0x1D400,0x1D7CE],D:[0x1D468,0x1D7CE],C:[0x1D670,0x1D7F6],B:[0x1D538,0x1D7D8],A:[0,0x1D7CE],S:[0x1D49C,0x1D7CE],L:[0x1D4D0,0x1D7CE]};
 const lvCode=(li,si)=>{ const L=LV_TBL[li][0], f=LV_FONT[L]; return (L==="A"?"Λ":String.fromCodePoint(f[0]+L.charCodeAt(0)-65))+String.fromCodePoint(f[1]+si+1); };
 /* 11/23 財富榜：只想當粉絲的人（管理員在帳號設定裡勾），門檻跟練習生表一樣，用錢的符號當等級（一看名字就知道不是練習生）；照現在身上的積分算 */
-const WLK="daisuki_acc_wealth", WL_SYM=["○","¢","¥","€","£","$","♦","♛","💎"], WL_NAME=["平民","存錢中","小資","中產","富裕","富豪","名流","財閥","傳奇富豪"];
+const WLK="daisuki_acc_wealth", WL_SYM=["○","¢","¥","€","£","$","♦","♛","◈"], WL_NAME=["平民","存錢中","小資","中產","富裕","富豪","名流","財閥","傳奇富豪"];
 const isWealth=em=>{ em=String(em||"").toLowerCase(); const a=ACCOUNTS[em]||{}; return !!(S.get(WLK,{})||{})[em]&&!a.member; };
 const wlCode=(li,si)=>WL_SYM[li]+String.fromCodePoint(0x1D7CE+si+1);
 function wlAt(p){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
