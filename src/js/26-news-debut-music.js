@@ -694,11 +694,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
-  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS（MV 按讚）",[3]]]},
-  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
-  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["SNS（MV 按讚）",[3]],["粉絲投票",[2]]]},
-  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%（MV 按讚）",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
+  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
+  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
+  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
+  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
 /* 照片格放什麼：音樂中心、人氣歌謠 → 專輯封面（沒有就 MV 縮圖）；THE SHOW、M COUNTDOWN、Show Champion → 結尾妖精（靜音循環）→ MV 縮圖 → 封面 */
 function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.mv.thumb)||"", img=u=>`<img src="${esc(u)}" alt="">`, cov=()=>{ const h=songCover(s.gid,s.title); return /<img/.test(h)?h:""; };
   const gen=()=>muNpcCover((groupOf(s.gid)||{}).name||"",String(songName(s)).replace(/^.*《(.*)》$/,"$1"));   /* 什麼圖都還沒上傳：跟虛擬歌手一樣生成一張封面，不放字母色塊 */

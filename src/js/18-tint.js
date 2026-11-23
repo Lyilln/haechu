@@ -187,6 +187,8 @@ function thBuy(id){ const t=thById(id); if(!t) return;
   if(t.price) S.set(K.points,points()-t.price);
   S.set(acK(K.thOwned),[...new Set([...S.get(acK(K.thOwned),[]),id])]);
   recordSale("theme",{gid:t.scope==="member"?null:t.gid,mid:t.scope==="member"?t.mid:null,pts:t.price||0,label:`主題・${t.name}`});
+  /* 11/23 主題賣出：粉絲付的積分直接全額給藝人（藝人主題給那位；團體主題全團平分），不走 3% 分潤 */
+  if(t.price){ try{ const ids=t.scope==="member"&&t.mid?[t.mid]:(typeof groupArtists==="function"?groupArtists(t.gid):[]); if(ids.length){ const L=S.get(K.ptGrants,[])||[], each=Math.floor(t.price/ids.length), now=Date.now(), b=myEmail()||"me"; ids.forEach((mid,i)=>L.push({id:`ths_${t.id}_${b}_${now.toString(36)}_${i}`,to:"art:"+mid,mid,n:each,art:1,why:`主題「${t.name}」賣出`.slice(0,30),by:"auto",ts:now})); S.set(K.ptGrants,L.slice(-3000)); } }catch(e){} }
   layer.innerHTML=""; render();
   iosAlert("下載完成",`要現在套用「${esc(t.name)}」嗎？`,`<button data-a="tCloseLayer">稍後</button><button data-a="thUse" data-v="${id}">套用</button>`); }
 function thUse(id){ S.set(acK(K.thCur),id||""); layer.innerHTML=""; applyTheme(); render(); }

@@ -2179,7 +2179,7 @@ const revShare=()=>S.get(K.revShare,3);   /* 11/23 她改成 3% */   // 藝人�
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
-  sales.forEach(x=>{ byType[x.type]=(byType[x.type]||0)+x.pts; if(x.gid) byGroup[x.gid]=(byGroup[x.gid]||0)+x.pts;
+  sales.forEach(x=>{ byType[x.type]=(byType[x.type]||0)+x.pts; if(x.type==="theme") return;   /* 主題的錢已經全額直接給藝人，不再算分潤 */ if(x.gid) byGroup[x.gid]=(byGroup[x.gid]||0)+x.pts;
     if((x.type==="tie"||x.type==="truck")&&x.mid){ byMember[x.mid]=(byMember[x.mid]||0)+x.pts; }
     else if(x.gid){ const ids=groupArtists(x.gid); ids.forEach(id=>{ byMember[id]=(byMember[id]||0)+x.pts/Math.max(1,ids.length); }); } });
   const total=Object.values(byType).reduce((a,b)=>a+b,0);
@@ -8589,6 +8589,8 @@ function thBuy(id){ const t=thById(id); if(!t) return;
   if(t.price) S.set(K.points,points()-t.price);
   S.set(acK(K.thOwned),[...new Set([...S.get(acK(K.thOwned),[]),id])]);
   recordSale("theme",{gid:t.scope==="member"?null:t.gid,mid:t.scope==="member"?t.mid:null,pts:t.price||0,label:`主題・${t.name}`});
+  /* 11/23 主題賣出：粉絲付的積分直接全額給藝人（藝人主題給那位；團體主題全團平分），不走 3% 分潤 */
+  if(t.price){ try{ const ids=t.scope==="member"&&t.mid?[t.mid]:(typeof groupArtists==="function"?groupArtists(t.gid):[]); if(ids.length){ const L=S.get(K.ptGrants,[])||[], each=Math.floor(t.price/ids.length), now=Date.now(), b=myEmail()||"me"; ids.forEach((mid,i)=>L.push({id:`ths_${t.id}_${b}_${now.toString(36)}_${i}`,to:"art:"+mid,mid,n:each,art:1,why:`主題「${t.name}」賣出`.slice(0,30),by:"auto",ts:now})); S.set(K.ptGrants,L.slice(-3000)); } }catch(e){} }
   layer.innerHTML=""; render();
   iosAlert("下載完成",`要現在套用「${esc(t.name)}」嗎？`,`<button data-a="tCloseLayer">稍後</button><button data-a="thUse" data-v="${id}">套用</button>`); }
 function thUse(id){ S.set(acK(K.thCur),id||""); layer.innerHTML=""; applyTheme(); render(); }
@@ -14250,11 +14252,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
-  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS（MV 按讚）",[3]]]},
-  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
-  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["SNS（MV 按讚）",[3]],["粉絲投票",[2]]]},
-  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%（MV 按讚）",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
+  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
+  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
+  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
+  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
 /* 照片格放什麼：音樂中心、人氣歌謠 → 專輯封面（沒有就 MV 縮圖）；THE SHOW、M COUNTDOWN、Show Champion → 結尾妖精（靜音循環）→ MV 縮圖 → 封面 */
 function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.mv.thumb)||"", img=u=>`<img src="${esc(u)}" alt="">`, cov=()=>{ const h=songCover(s.gid,s.title); return /<img/.test(h)?h:""; };
   const gen=()=>muNpcCover((groupOf(s.gid)||{}).name||"",String(songName(s)).replace(/^.*《(.*)》$/,"$1"));   /* 什麼圖都還沒上傳：跟虛擬歌手一樣生成一張封面，不放字母色塊 */

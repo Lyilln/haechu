@@ -179,7 +179,7 @@ const revShare=()=>S.get(K.revShare,3);   /* 11/23 她改成 3% */   // 藝人�
 const groupArtists=gid=>Object.entries(MEMBERS).filter(([id,m])=>m.group===gid&&!m.official).map(([id])=>id);
 function revenueOf(sinceTs=0){
   const sales=S.get(K.sales,[]).filter(x=>x.ts>=sinceTs), byType={tie:0,membership:0,merch:0,gacha:0}, byMember={}, byGroup={};
-  sales.forEach(x=>{ byType[x.type]=(byType[x.type]||0)+x.pts; if(x.gid) byGroup[x.gid]=(byGroup[x.gid]||0)+x.pts;
+  sales.forEach(x=>{ byType[x.type]=(byType[x.type]||0)+x.pts; if(x.type==="theme") return;   /* 主題的錢已經全額直接給藝人，不再算分潤 */ if(x.gid) byGroup[x.gid]=(byGroup[x.gid]||0)+x.pts;
     if((x.type==="tie"||x.type==="truck")&&x.mid){ byMember[x.mid]=(byMember[x.mid]||0)+x.pts; }
     else if(x.gid){ const ids=groupArtists(x.gid); ids.forEach(id=>{ byMember[id]=(byMember[id]||0)+x.pts/Math.max(1,ids.length); }); } });
   const total=Object.values(byType).reduce((a,b)=>a+b,0);
