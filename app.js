@@ -5540,8 +5540,8 @@ const NPC_SONGS=[["AURAVEIL","Glass Garden"],["ODDLINE","Midnight Bus"],["PRISMA
 function npcRivals(show,wk){ wk=wk||curWeek(); const n=showRank(show,wk).length; if(!n||n>=MSA.MIN) return [];
   const h=strHash(wk+"|"+show), start=wkDate(wk).getTime(), end=showEndTs(show,wk), prog=Math.max(0,Math.min(1,(Date.now()-start)/Math.max(1,end-start)));
   /* 虛擬歌手的分數跟著真的歌走（社群人數少，分數不能高到追不上）：預估本週真歌的最高分，虛擬歌手落在它的 55%～125% */
-  const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.25,prog));
-  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.55+.7*r); return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
+  const R=showRank(show,wk), cur=Math.max(0,...R.map(x=>(x.sc&&x.sc.total)||0)), proj=Math.max(300,cur/Math.max(.5,prog));   /* 11/23 一週剛開始時不要高估（以前最多估成 4 倍） */
+  return Array.from({length:MSA.MIN-n},(_,k)=>{ const [g,t]=NPC_SONGS[(h+k*3)%NPC_SONGS.length], r=((h>>>(k*4+1))%1000)/1000, fin=proj*(.4+.55*r);   /* 11/23 她說虛擬歌手太難超過：改成真歌最高分的 40%～95%，真歌跟上進度就贏得過；要贏還是得投票、按讚 */ return {npc:1,name:g,title:t,total:Math.round(fin*(.12+.88*prog))+npcVotePts(g,show,wk)}; }).sort((a,b)=>b.total-a.total); }
 /* 11/17 粉絲也可以投虛擬歌手：票跟真的歌記在同一本帳（"npc:團名"），一票的分數也一樣 */
 function npcVotePts(name,show,wk){ try{ const sid="npc:"+name, v=musDemoOn()?(((ui.dmV2||{})[show]||{})[sid]||0):showVotes(sid,show,wk); return Math.round(v*msW(show).vote); }catch(e){ return 0; } }
 const npcTop=(show,wk)=>npcRivals(show,wk)[0]||null;
@@ -5629,7 +5629,8 @@ function gnAuto(gid,title,body,key,ts){ try{ if(!gid||!groupOf(gid)) return; let
 const gnOfMid=mid=>(MEMBERS[mid]||{}).group||"";
 function muNotify(text,gid){ gnAuto(gid,text,"",(ui.gnWk||weekKey(Date.now()))+"|"+text,ui.gnTs);   /* 同一週同一句只發一次 */ const list=S.get(K.notifs,[]); list.unshift({id:"n"+Date.now()+Math.random().toString(36).slice(2,5),kind:"core",direct:true,group:gid,text,ts:Date.now()}); S.set(K.notifs,list.slice(0,100)); if(!gid||followed().includes(gid)) S.set(K.unread,"1"); }
 function setWinner(show,sid,wk0,manual){
-  const ms=getMShow(), wk=wk0||ui.muWk||curWeek(); const before=sid?songStats(sid):null; if(manual){ ms.manual={...(ms.manual||{})}; ms.manual[wk]={...(ms.manual[wk]||{}),[show]:1}; }   /* 管理員手動改過：自動結算不再動它 */
+  const ms=getMShow(), wk=wk0||ui.muWk||curWeek(); const before=sid?songStats(sid):null; if(manual&&sid){ ms.manual={...(ms.manual||{})}; ms.manual[wk]={...(ms.manual[wk]||{}),[show]:1}; }   /* 管理員手動改過：自動結算不再動它 */
+  if(!sid){ ["manual","fin","rk","npcWin"].forEach(k=>{ if(ms[k]&&ms[k][wk]&&ms[k][wk][show]!=null){ ms[k]={...ms[k]}; ms[k][wk]={...ms[k][wk]}; delete ms[k][wk][show]; } }); setTimeout(()=>{ try{ msAutoSettle(); }catch(e){} },300); }   /* 11/23 管理員把一位拿掉＝交回自動結算，照分數重新算（之前留著「手動」記號，粉絲端就一直顯示沒有一位） */
   ms.wins[wk]={...(ms.wins[wk]||{})}; if(sid) ms.wins[wk][show]=sid; else delete ms.wins[wk][show]; ms.wtype[wk]=weekType(wk); S.set(K.mshow,ms);
   if(!sid) return; const s=songOf(sid), sh=SHOWS.find(x=>x.id===show), after=songStats(sid); ui.gnWk=wk; ui.gnTs=Math.min(Date.now(),showEndTs(show,wk)); try{
   muNotify(`🏆 ${sh.name} 一位：${songName(s)}！`,s.gid);
@@ -13811,6 +13812,8 @@ function muRankShown(show,wk,ended){ const R=showRank(show,wk), F=ended&&muFin(s
   return {R:R.map(x=>({...x,sc:{...x.sc,total:F.r[x.s.id]!=null?F.r[x.s.id]:x.sc.total}})).sort((a,b)=>b.sc.total-a.sc.total),N:F.n||[]}; }
 /* 自動結算：管理員的手機每分鐘看一次 */
 function msAutoSettle(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null)) return; const ms=getMShow(); if(!ms.songs.length) return; let n=0;
+  /* 11/23 舊資料修復：管理員手動改過、後來又把一位拿掉 → 只剩「手動」記號、沒有一位 → 拿掉記號，交回自動結算 */
+  { const m=getMShow(); let fx=false; [shiftWeek(curWeek(),-1),curWeek()].forEach(wk=>{ const man=(m.manual||{})[wk]||{}, W=m.wins[wk]||{}; Object.keys(man).forEach(sh=>{ if(!W[sh]&&!((m.npcWin||{})[wk]||{})[sh]){ m.manual={...m.manual}; m.manual[wk]={...m.manual[wk]}; delete m.manual[wk][sh]; fx=true; } }); }); if(fx) S.set(K.mshow,m); }
   /* 舊版 App（節目還叫 MUSIC BANK、星期五結算）會提早開一位：節目還沒結束、也不是管理員手動定的 → 收回，等播出時間到再正式結算 */
   { const wk=curWeek(), m=getMShow(), W=m.wins[wk]||{}, man=(m.manual||{})[wk]||{}, bad=SHOWS.filter(sh=>(W[sh.id]||((m.npcWin||{})[wk]||{})[sh.id])&&!man[sh.id]&&!showEnded(sh.id,wk));
     if(bad.length){ const G={...gnGone()}; bad.forEach(sh=>{ const sid=W[sh.id], s=sid&&songOf(sid);
@@ -14247,11 +14250,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
-  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
-  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
-  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
-  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
+  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS（MV 按讚）",[3]]]},
+  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
+  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["SNS（MV 按讚）",[3]],["粉絲投票",[2]]]},
+  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%（MV 按讚）",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
 /* 照片格放什麼：音樂中心、人氣歌謠 → 專輯封面（沒有就 MV 縮圖）；THE SHOW、M COUNTDOWN、Show Champion → 結尾妖精（靜音循環）→ MV 縮圖 → 封面 */
 function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.mv.thumb)||"", img=u=>`<img src="${esc(u)}" alt="">`, cov=()=>{ const h=songCover(s.gid,s.title); return /<img/.test(h)?h:""; };
   const gen=()=>muNpcCover((groupOf(s.gid)||{}).name||"",String(songName(s)).replace(/^.*《(.*)》$/,"$1"));   /* 什麼圖都還沒上傳：跟虛擬歌手一樣生成一張封面，不放字母色塊 */

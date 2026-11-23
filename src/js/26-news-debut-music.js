@@ -256,6 +256,8 @@ function muRankShown(show,wk,ended){ const R=showRank(show,wk), F=ended&&muFin(s
   return {R:R.map(x=>({...x,sc:{...x.sc,total:F.r[x.s.id]!=null?F.r[x.s.id]:x.sc.total}})).sort((a,b)=>b.sc.total-a.sc.total),N:F.n||[]}; }
 /* 自動結算：管理員的手機每分鐘看一次 */
 function msAutoSettle(){ try{ if(!isAdminAcct()) return; if(HB_ON&&(HB.ver[K.mshow]==null)) return; const ms=getMShow(); if(!ms.songs.length) return; let n=0;
+  /* 11/23 舊資料修復：管理員手動改過、後來又把一位拿掉 → 只剩「手動」記號、沒有一位 → 拿掉記號，交回自動結算 */
+  { const m=getMShow(); let fx=false; [shiftWeek(curWeek(),-1),curWeek()].forEach(wk=>{ const man=(m.manual||{})[wk]||{}, W=m.wins[wk]||{}; Object.keys(man).forEach(sh=>{ if(!W[sh]&&!((m.npcWin||{})[wk]||{})[sh]){ m.manual={...m.manual}; m.manual[wk]={...m.manual[wk]}; delete m.manual[wk][sh]; fx=true; } }); }); if(fx) S.set(K.mshow,m); }
   /* 舊版 App（節目還叫 MUSIC BANK、星期五結算）會提早開一位：節目還沒結束、也不是管理員手動定的 → 收回，等播出時間到再正式結算 */
   { const wk=curWeek(), m=getMShow(), W=m.wins[wk]||{}, man=(m.manual||{})[wk]||{}, bad=SHOWS.filter(sh=>(W[sh.id]||((m.npcWin||{})[wk]||{})[sh.id])&&!man[sh.id]&&!showEnded(sh.id,wk));
     if(bad.length){ const G={...gnGone()}; bad.forEach(sh=>{ const sid=W[sh.id], s=sid&&songOf(sid);
@@ -692,11 +694,11 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
    ・Show! 音樂中心：白底三張卡，每張卡有封面、歌名、自己的細項
    ・人氣歌謠：上面三組封面，下面藍色表格，左邊寫項目和比重，最後跳「1位」
    分數照實（A）：每一項就是 App 裡真的數據照比重換算，不補、不平均 */
-const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
-  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS",[3]]]},
-  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數",[3]],["粉絲投票",[2]]]},
-  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["影片＋SNS",[3]],["粉絲投票",[2]]]},
-  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
+const MUR={ts:{n:3,max:10000,rows:[["音源＋專輯分數",[0,1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
+  sc:{n:2,max:10000,top5:1,rows:[["音源",[0]],["專輯",[1]],["粉絲投票",[2]],["SNS（MV 按讚）",[3]]]},
+  mcd:{n:2,max:11000,rows:[["音源分數",[0]],["專輯分數",[1]],["SNS 分數（MV 按讚）",[3]],["粉絲投票",[2]]]},
+  mb:{n:3,max:10000,rows:[["音源＋專輯",[0,1]],["SNS（MV 按讚）",[3]],["粉絲投票",[2]]]},
+  ink:{n:3,max:11000,win1:1,rows:[["音源 55%",[0]],["SNS 20%（MV 按讚）",[3]],["投票 15%",[2]],["專輯 10%",[1]]]}};
 /* 照片格放什麼：音樂中心、人氣歌謠 → 專輯封面（沒有就 MV 縮圖）；THE SHOW、M COUNTDOWN、Show Champion → 結尾妖精（靜音循環）→ MV 縮圖 → 封面 */
 function muRevealPic(s,show,wk){ const own=albCov(s.gid,s.title), mvT=(s.mv&&s.mv.thumb)||"", img=u=>`<img src="${esc(u)}" alt="">`, cov=()=>{ const h=songCover(s.gid,s.title); return /<img/.test(h)?h:""; };
   const gen=()=>muNpcCover((groupOf(s.gid)||{}).name||"",String(songName(s)).replace(/^.*《(.*)》$/,"$1"));   /* 什麼圖都還沒上傳：跟虛擬歌手一樣生成一張封面，不放字母色塊 */
