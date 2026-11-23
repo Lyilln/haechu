@@ -107,7 +107,7 @@ function openNoticeList(gid){ const g=groupOf(gid), nt=ui.cmNt||"c", ns=cmNotice
   setLayer(`<div class="tiei" style="--gt:${gTheme(gid)}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="返回">${I.back}</button><b>${esc(g.name)} 公告</b><span class="sh-sp"></span></header>
     <div class="tiei-body">${ntChips(nt,"cmNtL")}${ns.length?ns.map(n=>`<button class="cm-nrow" ${ntAttr(n)}><b>${esc(n.title)}</b><small>${ymd(n.ts)}</small></button>`).join(""):`<p class="me-none">還沒有公告</p>`}</div></div>`,"nl"); }
 /* 粉絲信：以前只存在寫信的人手機裡，藝人收不到 → 改存共用的一份；舊信由寫信的人的 App 自動補上去 */
-function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(HB_ON&&HB.ver[K.fanLettersAll]==null) return; const mine=S.get(K.fanLetters,[])||[]; if(!mine.length) return; const all=S.get(K.fanLettersAll,[])||[], ids=new Set(all.map(x=>x.id)), add=mine.filter(x=>x&&x.id&&!ids.has(x.id)).map(x=>({...x,by:x.by||myEmail()})); if(add.length) S.set(K.fanLettersAll,[...all,...add]);
+function ltSync(){ try{ const s=session(); if(!s||s.role==="artist") return; if(HB_ON&&HB.ver[K.fanLettersAll]==null&&!HB.pulled) return;   /* 11/23 修：雲端還沒有「全部的信」這份時，以前永遠等不到 → 大家的舊信都沒放上去 */ const mine=S.get(K.fanLetters,[])||[]; if(!mine.length) return; const all=S.get(K.fanLettersAll,[])||[], ids=new Set(all.map(x=>x.id)), add=mine.filter(x=>x&&x.id&&!ids.has(x.id)).map(x=>({...x,by:x.by||myEmail()})); if(add.length) S.set(K.fanLettersAll,[...all,...add]);
     let H={}; try{ H=JSON.parse(localStorage.getItem("hc_lt_hn")||"{}")||{}; }catch(e){} let ch=0; const me=myEmail();
     all.filter(l=>l&&l.by===me&&l.heart).forEach(l=>Object.keys(l.heart).forEach(mid=>{ const k=l.id+"|"+mid; if(H[k]||!MEMBERS[mid]) return; H[k]=1; ch=1; pushNotification({kind:"letter",member:mid,group:l.gid,text:`${artName(mid,"feed")} 讀了你的粉絲信 💜`}); }));
     if(ch) try{ localStorage.setItem("hc_lt_hn",JSON.stringify(H)); }catch(e){} }catch(e){} }
@@ -157,8 +157,8 @@ function viewCmWrite(gid){ const g=groupOf(gid), hide=!!ui.cwHide;
     <footer class="cw-f"><button class="sw ${hide?"on":""}" role="switch" data-a="cwHide" aria-checked="${hide}"></button><span>Hide from Artists<small>開啟後藝人看不到這則貼文</small></span></footer></div>`; }
 /* 粉絲信清單（11/17）：社群上面多一個「Letter」分頁，預設看「全部」＝大家寫給這個團的信（半公開，照 Weverse）；
    ME 裡的粉絲信分頁預設看「我的」。兩邊用同一個清單 */
-function ltList(gid,all){ const A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(A.map(x=>[x.id,x])), mine=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts), L=all?A.filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts):mine.map(l=>byId.get(l.id)||l);
-  return `<div class="lt-sw"><button class="${all?"":"on"}" data-a="ltAll" data-v="">我的</button><button class="${all?"on":""}" data-a="ltAll" data-v="1">全部</button><span>這個月還能寫 ${Math.max(0,LT_MAX-ltMineMonth())} 封</span></div>`+(L.length?L.map(l=>ltCard(l,{from:all})).join(""):`<p class="cmx-empty">${all?"這個團還沒有人寫粉絲信。":"尚未有撰寫的粉絲信。"}</p>`); }
+function ltList(gid,all,act="ltAll"){ const A=(S.get(K.fanLettersAll,[])||[]), byId=new Map(A.map(x=>[x.id,x])), mine=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts), L=all?A.filter(l=>l&&!l.del&&l.gid===gid).sort((a,b)=>b.ts-a.ts):mine.map(l=>byId.get(l.id)||l);
+  return `<div class="lt-sw"><button class="${all?"":"on"}" data-a="${act}" data-v="">我的</button><button class="${all?"on":""}" data-a="${act}" data-v="1">全部</button><span>這個月還能寫 ${Math.max(0,LT_MAX-ltMineMonth())} 封</span></div>`+(L.length?L.map(l=>ltCard(l,{from:all})).join(""):`<p class="cmx-empty">${all?"這個團還沒有人寫粉絲信。":"尚未有撰寫的粉絲信。"}</p>`); }
 /* 11/17 Letter 分頁：這個團的藝人一進來先看「寫給我的」（新信標示、點了已讀、💜），也能切到「全部」；粉絲照舊 */
 function ltTab(gid){ const s=session()||{}, mid=s.member, mine=s.role==="artist"&&MEMBERS[mid]&&MEMBERS[mid].group===gid;
   if(!mine) return `${s.role==="fan"?`<button class="btn btn-main btn-block lt-wbtn" data-a="cmLetterTo" data-v="${gid}">寫粉絲信</button>`:""}${ltList(gid,ui.ltAll!==false)}`;
@@ -169,7 +169,7 @@ function viewCmMe(gid){ const g=groupOf(gid), P=cmProf(gid), tab=ui.cmMeTab||"po
   const posts=S.get(K.fanPosts,[]).filter(p=>p.gid===gid&&isMine(p)).sort((a,b)=>b.ts-a.ts), gp=new Set(getPosts().filter(p=>p.group===gid).map(p=>p.id)), cms=S.get(K.comments,[]).filter(c=>isMeC(c)&&gp.has(c.postId)).sort((a,b)=>b.ts-a.ts), lts=S.get(K.fanLetters,[]).filter(l=>l.gid===gid).sort((a,b)=>b.ts-a.ts);
   const fol=grpMembers(gid).filter(m=>(S.get(K.mFollow,{}))[m]).length, bms=S.get(K.bm,[]).length;
   const list=tab==="post"?(posts.length?posts.map(fanCard).join(""):`<p class="cmx-empty">尚未發表貼文。</p>`):tab==="cm"?(cms.length?cms.map(c=>`<section class="card fp">${trT("c:"+c.id,c.text,"")}<small class="fp-sm">${ago(c.ts)}</small></section>`).join(""):`<p class="cmx-empty">尚未發表留言。</p>`)
-    :ltList(gid,!!ui.ltAll);
+    :ltList(gid,!!ui.ltAllMe,"ltAllMe");   /* ME 跟社群分開記，ME 點「我的」不會讓社群也變成只看自己的 */
   return `<div class="gcm cmx-me" style="--gt:${gTheme(gid)}"><header class="cmx-top"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><span></span></header>
     <section class="me-hero" ${bg?`style="background-image:linear-gradient(transparent,rgba(0,0,0,.45)),url(${bg})"`:""}>${cmAvatar(gid,"big")}<small>${ymd(P.joined)} 已加入</small><b>${esc(P.nick)}</b>${P.intro&&!P.hide?`<p>${esc(P.intro)}</p>`:""}
       <div class="me-st"><span><b>${fol}</b>正在追蹤</span><span><b>0</b>追蹤者</span><span><b>${bms}</b>收藏集</span></div><button class="me-ed" data-a="cmGo" data-v="meEdit">編輯個人簡介</button></section>
