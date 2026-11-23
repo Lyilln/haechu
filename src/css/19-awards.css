@@ -191,3 +191,31 @@ html[data-theme="dark"] .aw .aw-cd b,html[data-theme="dark"] .aw .aw-h b,html[da
 html[data-theme="dark"] .aw .aw-vi,html[data-theme="dark"] .aw .aw-sp,html[data-theme="dark"] .aw .aw-jv button{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#fff}
 html[data-theme="dark"] .aw .aw-cat,html[data-theme="dark"] .aw .aw-rw,html[data-theme="dark"] .aw .aw-h.sub{border-color:rgba(255,255,255,.08)}
 .aw .aw-enter,.aw .aw-enter b,.aw .aw-enter>i,html[data-theme="dark"] .aw .aw-enter b{color:#1a0f1f!important}
+.pg-info p{margin:0 0 10px;font-size:14px;line-height:1.7;color:var(--ink-2);text-align:left}.pg-info p:last-child{margin:0}.pg-info b{color:var(--ink)}
+/* 11/23 第二版：只顯示當下那一場、開場滿屏、感言視窗 */
+.aw-fz-t b{font-size:12px;margin:1px 0;letter-spacing:.1em}
+.aw-hero h1{font-size:30px;letter-spacing:.04em;margin-bottom:6px}
+.aw-hero-p{position:relative;margin:0 0 14px;font-size:13px;color:rgba(255,255,255,.75)}
+.aw-hero .aw-enter{position:relative;margin-top:14px}
+.aw>.aw-enter{margin-top:-2px}
+.aws-sp0 .aws-open h1{font-size:34px}
+.aws-sp0-d{margin:0;font-size:16px;font-weight:700;color:#fff}
+.aws-sp0-c{margin:0;font-size:13px;color:rgba(255,255,255,.7)}
+.aws-sp0-st{padding:10px 18px;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.18);font-size:15px;font-weight:700;color:var(--c3)}
+.aws-sp0 .aws-btn{min-width:160px;margin-top:10px}
+.aw-mod-bg{position:fixed;inset:0;z-index:300;background:rgba(10,4,14,.55);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;padding:16px 12px calc(env(safe-area-inset-bottom) + 16px)}
+.aw-mod{width:100%;max-width:440px;border-radius:26px;padding:22px 18px 16px;background:linear-gradient(170deg,var(--d1),var(--d2) 70%,var(--d3));color:#fff;box-shadow:0 0 0 1px rgba(255,255,255,.1),0 30px 60px -20px rgba(0,0,0,.6);-webkit-animation:awsIn .3s ease both;animation:awsIn .3s ease both}
+.aw-mod-h{display:flex;flex-direction:column;gap:4px;text-align:center}
+.aw-mod-h small{font-size:11px;letter-spacing:.14em;color:var(--c2);font-weight:700}
+.aw-mod-h b{font-size:22px}
+.aw-mod-p{margin:10px 0 14px;font-size:13px;line-height:1.6;color:rgba(255,255,255,.7);text-align:center}
+.aw-mod-ta{position:relative}
+.aw-mod-ta textarea{display:block;width:100%;box-sizing:border-box;min-height:150px;padding:14px 14px 30px;border-radius:16px;border:1px solid rgba(255,255,255,.16);background:rgba(255,255,255,.06);color:#fff;font:inherit;font-size:15px;line-height:1.7;text-align:left;resize:none;outline:none;-webkit-user-select:text;user-select:text}
+.aw-mod-ta textarea:focus{border-color:var(--c1)}
+.aw-mod-ta textarea::placeholder{color:rgba(255,255,255,.35)}
+.aw-mod-ta span{position:absolute;right:12px;bottom:10px;font-size:11px;color:rgba(255,255,255,.45)}
+.aw-mod-b{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;margin-top:14px}
+.aw-mod-b button{border:0;border-radius:999px;padding:13px 0;font:inherit;font-size:15px;font-weight:700;cursor:pointer}
+.aw-mod-b .gh{background:rgba(255,255,255,.1);color:#fff}
+.aw-mod-b .pr{background:linear-gradient(90deg,var(--c1),var(--c2));color:#1a0f1f}
+.aw-mod-b button{display:flex!important;align-items:center;justify-content:center;width:100%;min-width:0;margin:0;text-align:center}

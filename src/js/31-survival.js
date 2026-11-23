@@ -225,7 +225,7 @@ function svCam(t,lab,line,st){ const s=svSeason(), L=layer.querySelector(".svx")
 const svFcOut=()=>{ const c=layer.querySelector(".svx-fc"); if(c){ c.classList.add("out"); setTimeout(()=>c.remove(),420); } };
 
 /* ---------- 頁面 ---------- */
-function viewSurvival(id){ const s=svSeason(), th=svTheme(), hd=(route().role==="artist"?focHead:coreHead)(id?"練習生":"選秀");
+function viewSurvival(id){ const s=svSeason(), th=svTheme(), hd=(route().role==="artist"?focHead:coreHead)(id?"練習生":"選秀",id?"":"survival");
   const pre=svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`;
   if(!s) return hd+`<main class="page sv2 ${th}">${pre}${svHero("下一季準備中","",svPyr([0,1,2,3,4,5],(x,i)=>`<div class="sv2-t svx-e"><span class="sv2-p"><i class="sv2-sil"></i></span><b>${i+1}位</b><span>？</span></div>`),"《COMING SOON》")}${svDemoOk()?`<button class="sv2-cta" data-a="svDemo" data-v="recruit">看示範</button>`:""}</main>`;
   if(id) return hd+svProfile(id);
