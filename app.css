@@ -6768,6 +6768,7 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 .prg-lv.dn{background:#FDECEE}.prg-lv.dn em{color:#D9465A;font-weight:800}
 .me-lv.wl span em{font-style:normal;font-size:11px;font-weight:700;margin-left:6px;padding:2px 7px;border-radius:999px;background:linear-gradient(90deg,#F5C542,#FFE59A);color:#5a4208;vertical-align:2px}
 .prg-cp{display:block;width:100%;margin-top:8px;padding:9px 12px;border:1px dashed var(--line);border-radius:12px;background:var(--s2);font:inherit;font-size:13px;font-weight:700;color:var(--ink);cursor:pointer;text-align:left}
+.fc-bar em.hd{background:#2B2129;color:#fff;letter-spacing:.04em}
 
 /* SNS 動畫節奏（照 motion-design 規則統一）：一條主曲線、一條彈簧、一條退場；三種快慢
    要整體調快調慢，改這幾個數字就好 */

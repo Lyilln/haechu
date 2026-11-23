@@ -208,7 +208,7 @@ function svPvClose(id){ const s=svSeason(), V=svPv(id); svPrepSet(P=>{ const p=(
 const svDbClean=f=>{ const o=JSON.parse(JSON.stringify(f||{})); delete o.busy; Object.keys(o).forEach(k=>{ if(typeof o[k]==="string"&&o[k].startsWith("blob:")) o[k]=""; }); return o; };
 
 /* 名次卡：叫到名字時跳出來（像節目的名次圖）。每一季換一種設計（三角／稜鏡／X），有跟上一次發表比的名次變化 */
-function svFc(t,i,st,sp){ const s=svSeason(), L=layer.querySelector(".svx"); if(!s||!L) return; const d=svTheme()==="b"?1:0,   /* 11/18：女團從頭到尾粉紅；男團藍；不用 X 的設計 */ prev=st==="r2"?(s.rk||{}).r1:st==="final"?(s.rk||{}).r2:null, pi=prev?prev.indexOf(t.id):-1, ch=prev?(pi<0?`<em class="up">NEW</em>`:pi>i?`<em class="up">▲ ${pi-i}</em>`:pi<i?`<em class="dn">▼ ${i-pi}</em>`:`<em>－</em>`):"";
+function svFc(t,i,st,sp){ const s=svSeason(), L=layer.querySelector(".svx"); if(!s||!L) return; const d=svTheme()==="b"?1:0,   /* 11/18：女團從頭到尾粉紅；男團藍；不用 X 的設計 */ prev=st==="r2"?(s.rk||{}).r1:st==="final"?(s.rk||{}).r2:null, pi=prev?prev.indexOf(t.id):-1, ch=st==="r2"?`<em class="hd">升降保密</em>`:prev?(pi<0?`<em class="up">NEW</em>`:pi>i?`<em class="up">▲ ${pi-i}</em>`:pi<i?`<em class="dn">▼ ${i-pi}</em>`:`<em>－</em>`):"";
   const age=t.bd?Math.floor((Date.now()-new Date(t.bd).getTime())/315576e5):0, v=(svScores(st)||{})[t.id], ttl={r1:"第一次排名發表",r2:"第二次排名發表",final:"出道組發表"}[st], old=L.querySelector(".svx-fc"); if(old) old.remove();
   const crown='<svg viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 14h20M3 12 1.5 3l6 4.5L12 1l4.5 6.5 6-4.5L21 12z"/></svg>';
   L.insertAdjacentHTML("beforeend",`<div class="svx-fc d${d}"><div class="fc-in"><div class="fc-ph">${t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil"></i>`}</div><i class="fc-sh"></i>
@@ -403,7 +403,7 @@ function svPeerHtml(s){ const me=svTrainee(s), m=svMsNow(s); if(!me||!m||!SV_GRK
     +`<button class="sv2-cta" data-a="svPrOk" ${n>=need&&need?"":"disabled"}>${done?"更新互評":"交出互評"}（已評 ${n} 位）</button>`; }
 
 /* 第二輪：排名保密，只公開晉級線下一位（第 11 名） */
-const svHid=s=>!!s&&s.ph==="r2";
+const svHid=s=>false;   /* 11/24 第二輪平常照樣看得到排名；保密改在「第二次排名發表」那一刻（名次升降不公開） */
 const svHidN=()=>SV_KEEP.r2+1;
 function svHidPyr(s,my,tr){ const rk=svRank(), all=svAll(), x=all.find(t=>t.id===rk[svHidN()-1]);
   const q=(id,i)=>`<div class="sv2-t"><span class="sv3-av"><span class="sv2-p"><i class="sv2-sil"></i></span></span><b>？</b><span>？</span></div>`;
@@ -604,10 +604,12 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
   else if(x.t==="stg"){ const y=svStages(s.ph).find(z=>z.id===x.id)||{}, t=svById(y.tid)||{}, lv=m&&svMyLv()[s.id+m.k], idx=S0.st.filter(z=>z.t==="stg").findIndex(z=>z.id===x.id)+1, tot=S0.st.filter(z=>z.t==="stg").length;
     b=`<div class="aws-cat"><small>STAGE ${idx} / ${tot}</small><b>${esc(t.name||"")}</b>${y.team||y.pos?`<span class="svsh-tag">${esc(y.team||y.pos)}</span>`:""}</div><div class="aws-v">${y.url?(y.kind==="v"?`<video src="${esc(y.url)}" playsinline webkit-playsinline controls preload="metadata"></video>`:`<img class="svsh-img" src="${esc(y.url)}" alt="">`):`<div class="svsh-nov">${svPh(t)}</div>`}</div>${y.cap?`<p class="svsh-how">${esc(y.cap)}</p>`:""}${tr||!svVoting()?"":`<button class="aws-btn ${lv?"off":""}" data-a="svLv" data-v="${y.id}" ${lv?"disabled":""}>${lv===y.id?"♥ 投了這個舞台":lv?"這個任務投過現場票了":"♥ 投現場票"}</button>`}`; }
   else if(x.t==="end"){ const L=svLeft(); b=`<div class="aws-open"><small>${SV_PH[s.ph]}</small><h1><i>SEE YOU</i>NEXT EPISODE</h1></div>${tr?host("練習生們，這週也辛苦了！別忘了在期限前交舞台，排名發表見。")+`<button class="aws-btn" data-a="svShX">回選秀</button>`:host(L?`國民製作人，今天還有 ${L} 票！快去選出你的練習生吧。`:"今天的票都投完了，明天見！")+`<button class="aws-btn" data-a="svShGo">${L?"去 PICK":"看排名"}</button>`}`; }
-  setLayer(`<div class="aws svsh aw-c-${svTheme()==="g"?"svg":"svb"}" data-a="svShN">${prog}<button class="aws-x" data-a="svShX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${b}</div>${x.t!=="end"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`); }
+  setLayer(`<div class="aws svsh aw-c-${svTheme()==="g"?"svg":"svb"}" data-a="svShN"><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${b}</div>${x.t!=="end"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`); }
 document.addEventListener("click",e=>{ const t0=e.target.closest&&e.target.closest("[data-a]"); if(!t0||!/^svSh/.test(t0.dataset.a)) return; const t=t0, a=t.dataset.a; e.stopImmediatePropagation();   /* 裡面的其他按鈕（投現場票、交舞台）交給原本的處理 */
   if(a==="svSh"){ svSh(); return; }
   if(a==="svShX"){ ui.svSh=null; layer.innerHTML=""; return; }
   if(a==="svShGo"){ ui.svSh=null; layer.innerHTML=""; navTo((route().role==="artist"?"#/artist?tab=foc&p=survival":"#/fan/core?p=survival")+"&v="+(svLeft()?"pick":"rk")); return; }
   if(a==="svShN"){ if(e.target.closest("video,.aws-v")) return; const S0=ui.svSh; if(!S0) return; if(S0.i<S0.st.length-1){ S0.i++; svShDraw(); } return; }
 },true);
+
+window.addEventListener("hashchange",()=>{ if(ui.svSh){ ui.svSh=null; layer.innerHTML=""; } });

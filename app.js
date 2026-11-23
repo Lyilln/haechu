@@ -15678,7 +15678,7 @@ function svPvClose(id){ const s=svSeason(), V=svPv(id); svPrepSet(P=>{ const p=(
 const svDbClean=f=>{ const o=JSON.parse(JSON.stringify(f||{})); delete o.busy; Object.keys(o).forEach(k=>{ if(typeof o[k]==="string"&&o[k].startsWith("blob:")) o[k]=""; }); return o; };
 
 /* 名次卡：叫到名字時跳出來（像節目的名次圖）。每一季換一種設計（三角／稜鏡／X），有跟上一次發表比的名次變化 */
-function svFc(t,i,st,sp){ const s=svSeason(), L=layer.querySelector(".svx"); if(!s||!L) return; const d=svTheme()==="b"?1:0,   /* 11/18：女團從頭到尾粉紅；男團藍；不用 X 的設計 */ prev=st==="r2"?(s.rk||{}).r1:st==="final"?(s.rk||{}).r2:null, pi=prev?prev.indexOf(t.id):-1, ch=prev?(pi<0?`<em class="up">NEW</em>`:pi>i?`<em class="up">▲ ${pi-i}</em>`:pi<i?`<em class="dn">▼ ${i-pi}</em>`:`<em>－</em>`):"";
+function svFc(t,i,st,sp){ const s=svSeason(), L=layer.querySelector(".svx"); if(!s||!L) return; const d=svTheme()==="b"?1:0,   /* 11/18：女團從頭到尾粉紅；男團藍；不用 X 的設計 */ prev=st==="r2"?(s.rk||{}).r1:st==="final"?(s.rk||{}).r2:null, pi=prev?prev.indexOf(t.id):-1, ch=st==="r2"?`<em class="hd">升降保密</em>`:prev?(pi<0?`<em class="up">NEW</em>`:pi>i?`<em class="up">▲ ${pi-i}</em>`:pi<i?`<em class="dn">▼ ${i-pi}</em>`:`<em>－</em>`):"";
   const age=t.bd?Math.floor((Date.now()-new Date(t.bd).getTime())/315576e5):0, v=(svScores(st)||{})[t.id], ttl={r1:"第一次排名發表",r2:"第二次排名發表",final:"出道組發表"}[st], old=L.querySelector(".svx-fc"); if(old) old.remove();
   const crown='<svg viewBox="0 0 24 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M2 14h20M3 12 1.5 3l6 4.5L12 1l4.5 6.5 6-4.5L21 12z"/></svg>';
   L.insertAdjacentHTML("beforeend",`<div class="svx-fc d${d}"><div class="fc-in"><div class="fc-ph">${t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil"></i>`}</div><i class="fc-sh"></i>
@@ -15873,7 +15873,7 @@ function svPeerHtml(s){ const me=svTrainee(s), m=svMsNow(s); if(!me||!m||!SV_GRK
     +`<button class="sv2-cta" data-a="svPrOk" ${n>=need&&need?"":"disabled"}>${done?"更新互評":"交出互評"}（已評 ${n} 位）</button>`; }
 
 /* 第二輪：排名保密，只公開晉級線下一位（第 11 名） */
-const svHid=s=>!!s&&s.ph==="r2";
+const svHid=s=>false;   /* 11/24 第二輪平常照樣看得到排名；保密改在「第二次排名發表」那一刻（名次升降不公開） */
 const svHidN=()=>SV_KEEP.r2+1;
 function svHidPyr(s,my,tr){ const rk=svRank(), all=svAll(), x=all.find(t=>t.id===rk[svHidN()-1]);
   const q=(id,i)=>`<div class="sv2-t"><span class="sv3-av"><span class="sv2-p"><i class="sv2-sil"></i></span></span><b>？</b><span>？</span></div>`;
@@ -16074,13 +16074,15 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
   else if(x.t==="stg"){ const y=svStages(s.ph).find(z=>z.id===x.id)||{}, t=svById(y.tid)||{}, lv=m&&svMyLv()[s.id+m.k], idx=S0.st.filter(z=>z.t==="stg").findIndex(z=>z.id===x.id)+1, tot=S0.st.filter(z=>z.t==="stg").length;
     b=`<div class="aws-cat"><small>STAGE ${idx} / ${tot}</small><b>${esc(t.name||"")}</b>${y.team||y.pos?`<span class="svsh-tag">${esc(y.team||y.pos)}</span>`:""}</div><div class="aws-v">${y.url?(y.kind==="v"?`<video src="${esc(y.url)}" playsinline webkit-playsinline controls preload="metadata"></video>`:`<img class="svsh-img" src="${esc(y.url)}" alt="">`):`<div class="svsh-nov">${svPh(t)}</div>`}</div>${y.cap?`<p class="svsh-how">${esc(y.cap)}</p>`:""}${tr||!svVoting()?"":`<button class="aws-btn ${lv?"off":""}" data-a="svLv" data-v="${y.id}" ${lv?"disabled":""}>${lv===y.id?"♥ 投了這個舞台":lv?"這個任務投過現場票了":"♥ 投現場票"}</button>`}`; }
   else if(x.t==="end"){ const L=svLeft(); b=`<div class="aws-open"><small>${SV_PH[s.ph]}</small><h1><i>SEE YOU</i>NEXT EPISODE</h1></div>${tr?host("練習生們，這週也辛苦了！別忘了在期限前交舞台，排名發表見。")+`<button class="aws-btn" data-a="svShX">回選秀</button>`:host(L?`國民製作人，今天還有 ${L} 票！快去選出你的練習生吧。`:"今天的票都投完了，明天見！")+`<button class="aws-btn" data-a="svShGo">${L?"去 PICK":"看排名"}</button>`}`; }
-  setLayer(`<div class="aws svsh aw-c-${svTheme()==="g"?"svg":"svb"}" data-a="svShN">${prog}<button class="aws-x" data-a="svShX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${b}</div>${x.t!=="end"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`); }
+  setLayer(`<div class="aws svsh aw-c-${svTheme()==="g"?"svg":"svb"}" data-a="svShN"><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${b}</div>${x.t!=="end"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`); }
 document.addEventListener("click",e=>{ const t0=e.target.closest&&e.target.closest("[data-a]"); if(!t0||!/^svSh/.test(t0.dataset.a)) return; const t=t0, a=t.dataset.a; e.stopImmediatePropagation();   /* 裡面的其他按鈕（投現場票、交舞台）交給原本的處理 */
   if(a==="svSh"){ svSh(); return; }
   if(a==="svShX"){ ui.svSh=null; layer.innerHTML=""; return; }
   if(a==="svShGo"){ ui.svSh=null; layer.innerHTML=""; navTo((route().role==="artist"?"#/artist?tab=foc&p=survival":"#/fan/core?p=survival")+"&v="+(svLeft()?"pick":"rk")); return; }
   if(a==="svShN"){ if(e.target.closest("video,.aws-v")) return; const S0=ui.svSh; if(!S0) return; if(S0.i<S0.st.length-1){ S0.i++; svShDraw(); } return; }
 },true);
+
+window.addEventListener("hashchange",()=>{ if(ui.svSh){ ui.svSh=null; layer.innerHTML=""; } });
 
 /* ===== 11/18 小卡序號：每一張卡都是獨立的一筆，有自己的序號 =====
    K.cards 還是記「這種卡有幾張」（其他畫面照舊用）；K.serials 記每一張：{cid:[{id,n,ts}]}，張數永遠跟 K.cards 一樣。
@@ -16457,7 +16459,7 @@ const awSay=(who,t)=>`<div class="aws-say"><div><small>${esc(who)}</small><p>${t
 function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.st[S0.i], P=awPool(), W=awWinners(), c=awCfg(), sp=awDemo()?(ui.awSp||{}):c.sp, prog=`<div class="aws-pg"><i style="width:${Math.round(S0.i/(S0.st.length-1)*100)}%"></i></div>`;
   const find=(k,id)=>awList(P,awCatOf(k).kind).find(x=>x.id===id), H=awHosts(cer.k);
   let body="";
-  if(s.t==="open") body=`<div class="aws-open"><small>${c.y}</small><h1><i>HAECHU</i>${cer.sn}</h1></div>${awSay(H[0],`各位粉絲，晚安！歡迎來到 ${c.y} ${cer.n}！`)}${awSay(H[1],`今晚要頒出${cer.cats.map(k=>`「${awCatOf(k).n}」`).join("、")}。那麼，典禮正式開始！`)}`;
+  if(s.t==="open") body=`<div class="aws-open"><small>${c.y}</small><h1><i>年末大賞</i>${cer.sn}</h1></div>${awSay(H[0],`各位粉絲，晚安！歡迎來到 ${c.y} ${cer.n}！`)}${awSay(H[1],`今晚要頒出${cer.cats.map(k=>`「${awCatOf(k).n}」`).join("、")}。那麼，典禮正式開始！`)}`;
   else if(s.t==="end") body=`<div class="aws-open"><h1><i>SEE YOU</i>NEXT YEAR</h1></div>${awSay(H[0],`${cer.n} 到這裡結束了，恭喜所有得獎者！`)}${awSay(H[1],"也謝謝每一位支持的粉絲，我們明年見！")}<button class="aws-btn" data-a="awShowX">離開典禮</button>`;
   else if(s.t==="perf"){ const P0=awPool().acts.find(x=>x.gid===s.g)||{}, nm=(groupOf(s.g)||{}).name||P0.name||"", v=s.v&&vodOf(s.v);
     body=`<div class="aws-cat"><small>STAGE</small><b>${esc(nm)}</b></div>${v?`<div class="aws-v"><video data-awmid="${esc(v.mid||"")}" playsinline webkit-playsinline controls preload="metadata"></video></div><p class="aws-vt">${esc(v.title||"")}</p>`:`<div class="aws-v ph"><span>🎤</span><p>入圍藝人選的舞台影片會在這裡播</p></div>`}${awSay(H[0],`接下來，請欣賞 ${esc(nm)} 的舞台！`)}`; }
@@ -16467,7 +16469,7 @@ function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.s
     else if(s.t==="noms") body=head+awSay(pr[0],"入圍的是……")+`<div class="aws-noms">${L.length?L.map((x,i)=>`<div class="aws-nom" style="-webkit-animation-delay:${i*.18}s;animation-delay:${i*.18}s">${awCov4(x)}${awNm(x)}</div>`).join(""):`<p class="aws-none">今年沒有入圍者，從缺</p>`}</div>`;
     else if(s.t==="drum") body=head+`<div class="aws-drum">${awSay(pr[1],cat.top?`「${cat.n}」的得主是……`:`${c.y} ${cat.n}，得獎的是……`)}<div class="aws-dots"><i></i><i></i><i></i></div></div>`;
     else if(s.t==="win") body=head+(win.length?`<div class="aws-win">${win.map(x=>`<div class="aws-wc">${awCov4(x)}${awNm(x)}</div>`).join("")}</div>${awSay(pr[0],`恭喜 ${win.map(x=>esc(x.art||x.name)).join("、")}！`)}${win.filter(x=>!x.npc).map(x=>{ const t=sp[x.gid+"|"+s.k]; return `<div class="aws-sp"><small>得獎感言・${esc(x.art||x.name)}</small><p>${t?esc(t):awDemo()?"（入圍藝人事先寫好的得獎感言會出現在這裡）":"謝謝一直支持我們的粉絲！這個獎是大家一起拿到的！"}</p></div>`; }).join("")}`:`<p class="aws-none">從缺</p>`); }
-  setLayer(`<div class="aws aw-c-${cer.k} ${s.t==="win"?"lit":""}" data-a="awNext">${prog}<button class="aws-x" data-a="awShowX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${body}</div>${s.t!=="end"&&s.t!=="drum"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`);
+  setLayer(`<div class="aws aw-c-${cer.k} ${s.t==="win"?"lit":""}" data-a="awNext"><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${body}</div>${s.t!=="end"&&s.t!=="drum"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`);
   layer.querySelectorAll("video[data-awmid]").forEach(async el=>{ try{ const u=el.dataset.awmid&&await mediaSrc(el.dataset.awmid); if(u) el.src=u; }catch(e){} });
   clearTimeout(ui.awT); if(s.t!=="end"&&!(s.t==="perf"&&s.v)) ui.awT=setTimeout(()=>{ if(ui.awS===S0&&S0.st[S0.i]===s&&S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } },s.t==="drum"?2400:s.t==="win"?6000:4000);   /* 不點也會自己往下走（得獎畫面多停一下讓大家看感言；有影片的舞台等看完自己點） */
   if(s.t==="win"){ try{ sfx("t3"); }catch(e){} setTimeout(()=>{ try{ const cs=getComputedStyle(layer.querySelector(".aws")), a=cs.getPropertyValue("--c1").trim()||"#FFD86B", b=cs.getPropertyValue("--c2").trim()||"#FFFFFF", cat=awCatOf(s.k); confetti(innerWidth/2,innerHeight*.35,{cols:[a,b,"#FFFFFF",a,b]}); if(cat.ds) setTimeout(()=>confetti(innerWidth*.3,innerHeight*.3,{cols:[a,b,"#FFFFFF"]}),450); }catch(e){} },120); } }
@@ -16504,6 +16506,8 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
 },true);
 /* 每一場典禮開始的那一刻把那場的結果定下來（管理員的手機算，之後分數再變也不會改） */
 setInterval(()=>{ try{ if(!isAdminAcct()) return; const c=awCfg(); const todo=awCers().filter(x=>Date.now()>=x.at&&x.cats.some(k=>!c.res[k])); if(!todo.length) return; const R={...c.res}; todo.forEach(x=>x.cats.forEach(k=>{ if(!R[k]) R[k]=awPick(k); })); const o=S.get(AWK,{})||{}; S.set(AWK,{...o,res:R}); }catch(e){} },60000);
+
+window.addEventListener("hashchange",()=>{ if(ui.awS){ clearTimeout(ui.awT); ui.awS=null; layer.innerHTML=""; } });   /* 典禮中途用手機返回就離開 */
 
 /* =========================================================
    虛擬歌手的 SKpedia（11/24）
