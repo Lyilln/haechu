@@ -5874,6 +5874,20 @@ main.wk:has(.wk-ed) .wk-side,main.wk:has(.wk-ed) .wk-pillname{display:none!impor
 .wk-sc>.wk-s.lv2:first-child h2{margin-top:6px}
 .wk-g .wk-s.lv2 h2,.wk-s.lv2 h2{font-size:20px;margin:18px 0 8px}
 .wk-s h2 .wk-ed1{margin-left:auto;font-size:13px;font-weight:700;flex:none}
+/* 11/24 虛擬歌手的文件 */
+.wkn-info{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px;border:2px solid var(--wc)}
+.wkn-info th{background:var(--wc);color:#fff;padding:12px;font-size:18px;text-align:center}
+.wkn-info th small{display:block;font-size:12px;font-weight:400;opacity:.85}
+.wkn-info td{padding:8px 10px;border-top:1px solid var(--wkb,#ccc);vertical-align:top;color:var(--wkt)}
+.wkn-info td:first-child{width:72px;font-weight:700;text-align:center;background:var(--wkbg2,rgba(0,0,0,.03))}
+.wkn-info td small{color:var(--wkm,#888)}
+.wkn-sep{height:6px}
+.wkn .wk-sc p{margin:0 0 8px;line-height:1.75}
+.wkn .wk-sc ul{margin:0 0 8px;padding-left:20px;line-height:1.75}
+.wkn .wk-doc-t{display:flex;align-items:baseline;gap:10px}
+.wkn-tip{font-size:12px;color:var(--wkm,#888)}
+.wkn-ta{display:block;width:100%;box-sizing:border-box;min-height:60vh;padding:12px;border:1px solid var(--wkb,#ccc);border-radius:8px;font:inherit;font-size:14px;line-height:1.7;-webkit-user-select:text;user-select:text;background:var(--wkbg,#fff);color:var(--wkt)}
+.wkn-btns{display:flex;gap:8px;justify-content:flex-end;margin-top:10px}
 
 /* HAECHU｜打歌、管理員打歌 */
 /* ===== 打歌（改版）：王座、五個節目模塊（每個長不一樣）、規則三張卡 ===== */
@@ -7997,3 +8011,24 @@ html[data-theme="dark"] .aw .aw-cat,html[data-theme="dark"] .aw .aw-rw,html[data
 .aw-mod-b .gh{background:rgba(255,255,255,.1);color:#fff}
 .aw-mod-b .pr{background:linear-gradient(90deg,var(--c1),var(--c2));color:#1a0f1f}
 .aw-mod-b button{display:flex!important;align-items:center;justify-content:center;width:100%;min-width:0;margin:0;text-align:center}
+/* 11/24 選秀本週節目（沿用典禮的全螢幕） */
+.aw-c-svg{--c1:#FF4F9A;--c2:#FFB3D1;--c3:#FFE3EF;--d1:#2A0A1C;--d2:#4A1233;--d3:#6E1D4C;--tx:#FFF0F6}
+.aw-c-svb{--c1:#2E7BEF;--c2:#8FC1FF;--c3:#DCEBFF;--d1:#061529;--d2:#0C2A52;--d3:#133E78;--tx:#EEF5FF}
+.svsh-how{margin:0;font-size:14px;line-height:1.7;color:rgba(255,255,255,.85);max-width:360px}
+.svsh-ok{margin:0;font-size:13px;color:var(--c2);font-weight:700}
+.svsh-tag{margin-top:4px;font-size:12px;padding:3px 10px;border-radius:999px;background:rgba(255,255,255,.12);color:#fff}
+.svsh-img{display:block;width:100%;max-height:52vh;object-fit:contain;background:#000}
+.svsh-nov{aspect-ratio:3/4;max-height:46vh;margin:0 auto;display:flex;align-items:center;justify-content:center}
+.svsh-nov>*{width:100%;height:100%}
+.svsh-pr{display:flex;flex-direction:column;align-items:center;gap:10px;max-width:340px}
+.svsh-ph{width:120px;height:120px;border-radius:50%;overflow:hidden;box-shadow:0 0 0 3px var(--c1),0 0 40px var(--c1)}
+.svsh-ph>*{width:100%;height:100%;object-fit:cover}
+.svsh-pr p{margin:0;font-size:14px;line-height:1.7;color:#fff}
+.aws-btn.off{opacity:.55}
+.sv6-play{display:flex;align-items:center;gap:12px;width:100%;padding:14px 16px;border:0;border-radius:20px;background:linear-gradient(120deg,#4A1233,#FF4F9A);color:#fff;font:inherit;text-align:left;cursor:pointer;box-shadow:0 10px 24px -10px #FF4F9A}
+.sv2.b .sv6-play{background:linear-gradient(120deg,#0C2A52,#2E7BEF);box-shadow:0 10px 24px -10px #2E7BEF}
+.sv6-play>span{width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex:none}
+.sv6-play>div{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.sv6-play b{font-size:16px}.sv6-play small{font-size:12px;opacity:.85}
+.sv6-play>i{font-style:normal;font-size:22px}
+.aws-v{position:relative}.svsh-nov{position:relative;overflow:hidden;width:100%;aspect-ratio:4/3;max-height:46vh;background:linear-gradient(160deg,#FFD6E8,#FF9CC6)}.svsh-ph{position:relative}

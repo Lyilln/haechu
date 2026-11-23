@@ -190,7 +190,7 @@ function wlAt(p){ let li=0,si=0; WL_TBL.forEach((th,i)=>th.forEach((v,j)=>{ if(p
 const NPCRN="daisuki_npc_ren";
 const npcN=n=>{ try{ return ((S.get(NPCRN,{})||{})[n])||n; }catch(e){ return n; } };
 const NPC_SPARE_G=["LUNAREE","VELOUR","STELLINE","CIELO","OPALINE","FLEURIE","ZEPHYRA","AMBERLY","SOLARA","NOCTELLE","IRISEA","MAREVIE","CANDELA","SYLVÉ","ORCHIDA","LYRAE"];
-const NPC_SPARE_P={g:["芷涵","沛恩","禾希","晏寧","書瑤","嵐音","允熙","若綺","湘妍","霏恩","卉晴","沁瑜","語喬","采蘋","昕柔","靖雯"],b:["牧辰","禹哲","澄安","奕勳","昀澤","赫宇","嘉祐","泓彥","聿恆","柏翰","晏廷","睿哲","秉澄","皓允","敘白","知衡"]};
+const NPC_SPARE_P={en:["Arin","Celine","Dahye","Evie","Faye","Gaeul","Hyeri","Iris","Jia","Kaia","Lumi","Mirae","Nari","Ona","Pia","Rina","Seol","Tae","Una","Vivi","Wren","Yuri","Zia"],g:["芷涵","沛恩","禾希","晏寧","書瑤","嵐音","允熙","若綺","湘妍","霏恩","卉晴","沁瑜","語喬","采蘋","昕柔","靖雯"],b:["牧辰","禹哲","澄安","奕勳","昀澤","赫宇","嘉祐","泓彥","聿恆","柏翰","晏廷","睿哲","秉澄","皓允","敘白","知衡"]};
 const npcKey=x=>String(x||"").toLowerCase().replace(/\s+/g,"");
 function npcTaken(){ const T=new Set(), add=x=>{ const k=npcKey(x); if(k) T.add(k); };
   try{ Object.keys(ACCOUNTS).forEach(em=>{ const a=ACCOUNTS[em]||{}; add(a.user); add(String(em).split("@")[0]); const nm=String(a.name||""); add(nm); add(nm.replace(/^\S+\s+/,"")); }); }catch(e){}
@@ -199,7 +199,7 @@ function npcTaken(){ const T=new Set(), add=x=>{ const k=npcKey(x); if(k) T.add(
   try{ (GROUPS||[]).forEach(g=>{ if(g&&!g.npc){ add(g.name); add(g.en); add(g.kname); } }); }catch(e){}
   return T; }
 function npcRenSync(){ try{ if(typeof isAdminAcct!=="function"||!isAdminAcct()) return; if(HB_ON&&!HB.pulled) return; const T=npcTaken(), M={...(S.get(NPCRN,{})||{})};
-  const orig=[...(typeof NPC_SONGS!=="undefined"?NPC_SONGS.map(x=>[x[0],"grp"]):[]),...(typeof SV_NPC_G!=="undefined"?SV_NPC_G.map(x=>[x[1],"g"]):[]),...(typeof SV_NPC_B!=="undefined"?SV_NPC_B.map(x=>[x[1],"b"]):[])];
+  const orig=[...(typeof NPC_SONGS!=="undefined"?NPC_SONGS.map(x=>[x[0],"grp"]):[]),...(typeof SV_NPC_G!=="undefined"?SV_NPC_G.map(x=>[x[1],"g"]):[]),...(typeof SV_NPC_B!=="undefined"?SV_NPC_B.map(x=>[x[1],"b"]):[]),...(typeof NPC_INFO!=="undefined"?Object.values(NPC_INFO).flatMap(I=>I.mem.length>1?I.mem.map(m=>[m[0],"en"]):[]):[])];
   let ch=false; const used=new Set(orig.map(([o])=>npcKey(M[o]||o)));
   orig.forEach(([o,kind])=>{ const cur=M[o]||o; if(!T.has(npcKey(cur))) return; const pool=kind==="grp"?NPC_SPARE_G:NPC_SPARE_P[kind], nx=pool.find(x=>!T.has(npcKey(x))&&!used.has(npcKey(x))); if(!nx) return; used.add(npcKey(nx)); M[o]=nx; ch=true; });
   if(ch) S.set(NPCRN,M); }catch(e){} }

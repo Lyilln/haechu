@@ -171,11 +171,11 @@ const WK_KEY="daisuki_wiki";
 
 const wkAll=()=>S.get(WK_KEY,{})||{};
 const wkPage=id=>wkAll()[id]||{};
-const wkOk=id=>{ if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
+const wkOk=id=>{ if(String(id||"").startsWith("n:")) return typeof NPC_INFO!=="undefined"&&!!NPC_INFO[id.slice(2)]; if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
 const wkFanView=()=>!["artist","admin"].includes(route().role)||((session()||{}).role==="fan");   /* 粉絲端只能看：不顯示編輯、修改時間、還沒寫的段落 */
 function wkCanEdit(id){ try{ if(wkFanView()) return false; if(isAdminAcct()) return true; const s=session(); if(!s||s.role!=="artist") return false; const me=s.member||uniMe();
     if(id.startsWith("m:")) return id.slice(2)===me; if(id.startsWith("g:")) return !!MEMBERS[me]&&MEMBERS[me].group===id.slice(2); }catch(e){} return false; }
-const wkName=id=>id.startsWith("g:")?(groupOf(id.slice(2))||{}).name||"":(MEMBERS[id.slice(2)]||{}).name||"";
+const wkName=id=>id.startsWith("n:")?npcWkName(id):id.startsWith("g:")?(groupOf(id.slice(2))||{}).name||"":(MEMBERS[id.slice(2)]||{}).name||"";
 const wkHash=id=>(route().role==="artist"?"#/artist?tab=foc&p=wiki":route().role==="admin"?"#/admin?tab=wiki":"#/fan/core?p=wiki")+"&id="+(id?encodeURIComponent(id):"home");   /* 首頁用 id=home（藝人端沒 id 會直接開自己的頁） */
 /* 名字找頁：[[名字]] 用 */
 
@@ -345,7 +345,7 @@ function wkIds(){ return [...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),
 addEventListener("scroll",()=>{ const p=document.querySelector(".wk-pillname"); if(p) p.classList.toggle("on",window.scrollY>320); },{passive:true});
 /* 首頁：大搜尋框＋最近修改＋全部藝人 */
 function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
-  const ids=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m"&&groupOf(MEMBERS[k].group)).map(k=>"m:"+k)];
+  const ids=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),...(typeof npcWkList==="function"?npcWkList():[]),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m"&&groupOf(MEMBERS[k].group)).map(k=>"m:"+k)];
   const hit=q?ids.filter(id=>nz(wkName(id)).includes(q)):[];
   const recent=Object.keys(all).filter(id=>all[id].ts&&ids.includes(id)).sort((a,b)=>all[b].ts-all[a].ts).slice(0,10);
   return `<div class="wk-home"><div class="wk-logo">SK<b>pedia</b></div>
@@ -368,7 +368,7 @@ function wkHc1(u){ if(!u||WKHC[u]!==undefined) return;
     r/=n; g/=n; b/=n; const L=(.299*r+.587*g+.114*b)/255; WKHC[u]=[`rgb(${r|0},${g|0},${b|0})`,L>.6?"#1D1A24":"#fff"];
     document.querySelectorAll(`[data-src="${CSS.escape(u)}"]`).forEach(el=>{ el.style.setProperty("--hc",WKHC[u][0]); el.style.setProperty("--hct",WKHC[u][1]); });
     document.querySelectorAll(`[data-hsrc="${CSS.escape(u)}"]`).forEach(el=>el.style.setProperty("--hc",WKHC[u][0])); }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
-function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?wkViewG(id):wkHome()}${wkFloat(ok?id:null)}</main>`; }
+function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?(id.startsWith("n:")?npcWkView(id):wkViewG(id)):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; navTo(wkHash(v)); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }
