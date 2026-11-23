@@ -425,12 +425,12 @@ const artistNav=a=>navBar([["home","LOVE",NAV.love],["live","MEET",NAV.meet],["w
 const NK={tour:["TOUR","#10B981"],news:["NEWS","#0EA5E9"],core:["FEST","#F472B6"],post:["POST","#C7AEFF"],comment:["COMMENT","#93C5FD"],live:["LIVE","#FB7185"],whisper:[WHISPER_NAME,"#8843FB"],event:["EVENT","#F59E0B"]};
 function notifMsg(n){
   if(n.self) return n.text;
-  const m=MEMBERS[n.member], nm=m?artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":"feed"):"";
+  const m=MEMBERS[n.member], nm=m?artName(n.member,n.kind==="live"?"live":n.kind==="whisper"?"tie":["acomment","post","comment"].includes(n.kind)?"cm":"feed"):"";   /* 11/23 社群裡的貼文／留言通知用他們在社群改過的名字 */
   if(n.kind==="core") return (nm?nm+" ":"")+n.text;
   if(n.kind==="news") return "📰 "+n.text;
   if(n.kind==="tour") return `✈️ ${nm}：${n.text}`;
   if(n.kind==="bday") return `🎂 今天是 ${nm} 的生日。留下生日祝福吧！`;
-  if(n.kind==="acomment"){ const hm=MEMBERS[n.host]?artName(n.host,"feed"):nm; return `💬 ${nm}在 ${hm} 的貼文中發表了留言：${n.text}`; }
+  if(n.kind==="acomment"){ const hm=MEMBERS[n.host]?artName(n.host,"cm"):nm; return `💬 ${nm}在 ${hm} 的貼文中發表了留言：${n.text}`; }
   if(n.kind==="live"&&n.guest){ const gn=MEMBERS[n.guest]?artName(n.guest,"live"):""; return `🔴 ${gn}已參與${nm}的直播：${n.text}`; }
   return {post:`📝 ${nm}發表了貼文：${n.text}`,comment:`💬 ${nm}回覆了你的留言：${n.text}`,live:n.liveReply?`💬 ${nm}${n.text}`:`🔴 ${nm}已開始直播：${n.text}`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${String(n.text||"").split(NICK_TK).join(nickFor(n.member)).split("{愛稱}").join(nickFor(n.member))}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
 }
