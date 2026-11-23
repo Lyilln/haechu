@@ -308,7 +308,7 @@ const svRecMe=s=>s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry();
 function svRecruitHtml(s){ const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
   return svSt5("練習生招募中",`截止 <b>還有 ${svCd(s)}</b>`)+svTl(s)
     +(me?svCard5("你已經報名了",`坐在 ${me.seat||"?"} 號位${me.ch1?"・挑戰 1 號位中":""}`,"誰報名了，要等節目開播才會公開。截止前資料都可以改。",`<button data-a="svApply">修改報名資料</button>`)
-      :svHero5("已經報名",`${E.length} 位`,"誰報名了，開播才公開",art?"":`<button data-a="svApply">我也要報名（當練習生）</button>`))
+      :svHero5("已經報名",`${E.length} 位`,"誰報名了，開播才公開",art||isWealth(myEmail())?"":`<button data-a="svApply">我也要報名（當練習生）</button>`))
     +svHost(s,svHostTxt(s))
     +`<section class="sv5-pyr"><h4>座位・1 號在最頂端</h4>${svSeatHtml(svSeats(),me&&me.email)}</section>`+svHow5(); }
 
@@ -509,7 +509,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
       mkEdit(SVV,v=>{ const o={...(v||{})}; o[sid0]={...(o[sid0]||{})}; o[sid0][ph0]={...(o[sid0][ph0]||{})}; Object.entries(B0).forEach(([id,c])=>{ o[sid0][ph0][id]=(o[sid0][ph0][id]||0)+c; }); return {v:o}; }).then(()=>svSent(s,B0,n)).catch(()=>{ ui.svB=B0; t.disabled=false; rr(); toast("票沒有送出去，再按一次"); }); return; }
     case "svDemo": { const v=t.dataset.v||""; if(v[0]==="a"){ const st=v.slice(2); ui.svDemoNo=(ui.svDemoNo||0)%3+1; ui.svDemo={r1:"r2",r2:"pr",final:"prep"}[st]; ui.svB={}; rr(); svReveal(st); return; } ui.svDemo=v||null; ui.svB={}; ui.svDU=0; ui.svDV={}; rr(); window.scrollTo(0,0); return; }
     case "svxSkip": { ui.svxT=0; ui.svxDone&&ui.svxDone(); return; }
-    case "svApply": { if(s&&s.demo){ ui.svF=null; svApplyForm(); return; } if((session()||{}).role!=="fan"||svIsArtist(myEmail())){ toast("藝人的帳號不能報名選秀"); return; } ui.svF=null; svApplyForm(); return; }
+    case "svApply": { if(s&&s.demo){ ui.svF=null; svApplyForm(); return; } if((session()||{}).role!=="fan"||svIsArtist(myEmail())){ toast("藝人的帳號不能報名選秀"); return; } if(isWealth(myEmail())){ toast("財富榜的帳號不參加選秀"); return; } ui.svF=null; svApplyForm(); return; }
     case "svPhoto": { svKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:4/5,max:1080}); if(!c) return;
         try{ const b=await shrinkImg(c,1080); ui.svF.photo=URL.createObjectURL(b); svApplyForm(); if((svSeason()||{}).demo) return; const url=(HB_ON&&await hbImgUrl("sv_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); ui.svF.photo=url; svApplyForm(); }catch(er){ toast("這張圖讀不出來"); } }; pickClick(inp); return; }
     case "svChSend": { const inp=document.getElementById("svChIn"), v=inp&&inp.value; if(!v||!v.trim()) return; svChatSend(s,v,t.dataset.v==="host"); rr(); setTimeout(()=>{ const l=document.getElementById("svChL"); if(l) l.scrollTop=l.scrollHeight; },60); return; }

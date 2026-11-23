@@ -109,7 +109,7 @@ function viewAwards(head){ head=head||coreHead; if(!awFestShow()) return head("�
   const hero=`<section class="aw-hero"><div class="aw-hero-glow"></div><div class="aw-beams"><i></i><i></i><i></i></div><small>${c.y}</small><h1><i>HAECHU</i>AWARDS</h1><div class="aw-hero-st">${st}</div></section>`;
   const tabs=`<nav class="aw-cers">${C.map(x=>`<button class="aw-c-${x.k} ${x.k===cer.k?"on":""}" data-a="awCer" data-v="${x.k}"><i></i><b>${x.sn}</b><small>${awMd(x.at)}</small></button>`).join("")}</nav>`;
   const shown=awShown(cer), myIn=gid&&cer.cats.some(k=>awNoms(k).some(x=>x.gid===gid));
-  const cerCard=`<section class="aw-cer"><small>學 ${cer.ref}</small><b>${cer.n}</b><p>${awMd(cer.at)} 20:00・${cer.cats.map(k=>awCatOf(k).n).join("・")}</p>${shown?`<button class="aw-enter" data-a="awShow" data-v="${cer.k}"><span>🎬</span><b>${n<cer.at+3*3600e3?"進場看頒獎典禮":"重看頒獎典禮"}</b><i>›</i></button>`:`<div class="aw-cd"><span>典禮倒數</span><b>${awLeft(cer.at-n)}</b></div>`}</section>`;
+  const cerCard=`<section class="aw-cer"><b>${cer.n}</b><p>${awMd(cer.at)} 20:00・${cer.cats.map(k=>awCatOf(k).n).join("・")}</p>${shown?`<button class="aw-enter" data-a="awShow" data-v="${cer.k}"><span>🎬</span><b>${n<cer.at+3*3600e3?"進場看頒獎典禮":"重看頒獎典禮"}</b><i>›</i></button>`:`<div class="aw-cd"><span>典禮倒數</span><b>${awLeft(cer.at-n)}</b></div>`}</section>`;
   const fvCats=cer.cats.filter(k=>awCatOf(k).fv);
   return head("年末大賞")+`<main class="page aw aw-c-${cer.k}">${hero}${tabs}${cerCard}${shown?awResHtml(cer):""}${awVoting()&&fvCats.length?awVoteHtml(fvCats):""}${myIn&&!shown?awArtHtml(gid,cer):""}${shown?"":awNomsHtml(cer)}${awDemoBar()}</main>`; }
 
@@ -141,8 +141,7 @@ function awSteps(cer){ const c=awCfg(), stg=awDemo()?(ui.awSt||{}):c.st, gs=[...
   const perf=gs.map(g=>{ const v=stg[cer.k+"|"+g]&&vodOf(stg[cer.k+"|"+g]); return v?{t:"perf",g,v:v.id}:awDemo()&&!String(g).startsWith("npc:")?{t:"perf",g}:null; }).filter(Boolean);
   const N=cer.cats.length, st=[{t:"open"}]; cer.cats.forEach((k,i)=>{ if(i===N-1) perf.slice(N-1).forEach(p=>st.push(p)); else if(perf[i]) st.push(perf[i]); st.push({t:"intro",k},{t:"noms",k},{t:"drum",k},{t:"win",k}); }); st.push({t:"end"}); return st; }
 function awShow(k){ const cer=awCers().find(x=>x.k===k); if(!cer) return; ui.awS={cer,i:0,st:awSteps(cer)}; awShowDraw(); }
-const awAv=n=>`<span class="aws-av">${esc(String(n||"").slice(0,1))}</span>`;
-const awSay=(who,t)=>`<div class="aws-say">${awAv(who)}<div><small>${esc(who)}</small><p>${t}</p></div></div>`;
+const awSay=(who,t)=>`<div class="aws-say"><div><small>${esc(who)}</small><p>${t}</p></div></div>`;   /* 不放頭貼：只寫名字 */
 function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.st[S0.i], P=awPool(), W=awWinners(), c=awCfg(), sp=awDemo()?(ui.awSp||{}):c.sp, prog=`<div class="aws-pg"><i style="width:${Math.round(S0.i/(S0.st.length-1)*100)}%"></i></div>`;
   const find=(k,id)=>awList(P,awCatOf(k).kind).find(x=>x.id===id), H=AW_HOST[cer.k]||awPres(cer.k,cer.cats[cer.cats.length-1]);
   let body="";
@@ -152,13 +151,13 @@ function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.s
     body=`<div class="aws-cat"><small>STAGE</small><b>${esc(nm)}</b></div>${v?`<div class="aws-v"><video data-awmid="${esc(v.mid||"")}" playsinline webkit-playsinline controls preload="metadata"></video></div><p class="aws-vt">${esc(v.title||"")}</p>`:`<div class="aws-v ph"><span>🎤</span><p>入圍藝人選的舞台影片會在這裡播</p></div>`}${awSay(H[0],`接下來，請欣賞 ${esc(nm)} 的舞台！`)}`; }
   else { const cat=awCatOf(s.k), L=awNoms(s.k), win=(W[s.k]||[]).map(id=>find(s.k,id)).filter(Boolean), pr=awPres(cer.k,s.k);
     const head=`<div class="aws-cat ${cat.ds?"ds":""}">${cat.ds?`<em>DAESANG</em>`:""}<small>${cat.en}</small><b>${cat.n}</b></div>`;
-    if(s.t==="intro") body=head+`<div class="aws-pre">${pr.map(n=>`<span>${awAv(n)}<b>${esc(n)}</b></span>`).join("")}</div>`+awSay(pr[0],cat.ds?`大家好！很榮幸能來頒發今晚的大賞——「${cat.n}」。`:`大家好！接下來由我們來頒發「${cat.n}」。`)+awSay(pr[1],cat.ds?"這一座獎的份量，大家都知道吧？":"今年的入圍者真的都很精彩。");
+    if(s.t==="intro") body=head+`<div class="aws-pre"><small>頒獎人</small><b>${pr.map(esc).join("・")}</b></div>`+awSay(pr[0],cat.ds?`大家好！很榮幸能來頒發今晚的大賞——「${cat.n}」。`:`大家好！接下來由我們來頒發「${cat.n}」。`)+awSay(pr[1],cat.ds?"這一座獎的份量，大家都知道吧？":"今年的入圍者真的都很精彩。");
     else if(s.t==="noms") body=head+awSay(pr[0],"入圍的是……")+`<div class="aws-noms">${L.length?L.map((x,i)=>`<div class="aws-nom" style="-webkit-animation-delay:${i*.18}s;animation-delay:${i*.18}s">${awCov4(x)}${awNm(x)}</div>`).join(""):`<p class="aws-none">今年沒有入圍者，從缺</p>`}</div>`;
     else if(s.t==="drum") body=head+`<div class="aws-drum">${awSay(pr[1],cat.top?`「${cat.n}」的得主是……`:`${c.y} ${cat.n}，得獎的是……`)}<div class="aws-dots"><i></i><i></i><i></i></div></div>`;
     else if(s.t==="win") body=head+(win.length?`<div class="aws-win">${win.map(x=>`<div class="aws-wc">${awCov4(x)}${awNm(x)}</div>`).join("")}</div>${awSay(pr[0],`恭喜 ${win.map(x=>esc(x.art||x.name)).join("、")}！`)}${win.filter(x=>!x.npc).map(x=>{ const t=sp[x.gid+"|"+s.k]; return `<div class="aws-sp"><small>得獎感言・${esc(x.art||x.name)}</small><p>${t?esc(t):awDemo()?"（入圍藝人事先寫好的得獎感言會出現在這裡）":"謝謝一直支持我們的粉絲！這個獎是大家一起拿到的！"}</p></div>`; }).join("")}`:`<p class="aws-none">從缺</p>`); }
-  setLayer(`<div class="aws aw-c-${cer.k} ${s.t==="win"?"lit":""}" data-a="awNext">${prog}<button class="aws-x" data-a="awShowX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${body}</div>${s.t!=="end"&&s.t!=="drum"?`<p class="aws-tap">${S0.i?"點左邊回上一步・點右邊繼續":"點一下繼續"}</p>`:""}</div>`);
+  setLayer(`<div class="aws aw-c-${cer.k} ${s.t==="win"?"lit":""}" data-a="awNext">${prog}<button class="aws-x" data-a="awShowX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${body}</div>${s.t!=="end"&&s.t!=="drum"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`);
   layer.querySelectorAll("video[data-awmid]").forEach(async el=>{ try{ const u=el.dataset.awmid&&await mediaSrc(el.dataset.awmid); if(u) el.src=u; }catch(e){} });
-  if(s.t==="drum"){ clearTimeout(ui.awT); ui.awT=setTimeout(()=>{ if(ui.awS===S0&&S0.st[S0.i]===s){ S0.i++; awShowDraw(); } },2400); }
+  clearTimeout(ui.awT); if(s.t!=="end"&&!(s.t==="perf"&&s.v)) ui.awT=setTimeout(()=>{ if(ui.awS===S0&&S0.st[S0.i]===s&&S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } },s.t==="drum"?2400:s.t==="win"?6000:4000);   /* 不點也會自己往下走（得獎畫面多停一下讓大家看感言；有影片的舞台等看完自己點） */
   if(s.t==="win"){ try{ sfx("t3"); }catch(e){} setTimeout(()=>{ try{ const cs=getComputedStyle(layer.querySelector(".aws")), a=cs.getPropertyValue("--c1").trim()||"#FFD86B", b=cs.getPropertyValue("--c2").trim()||"#FFFFFF", cat=awCatOf(s.k); confetti(innerWidth/2,innerHeight*.35,{cols:[a,b,"#FFFFFF",a,b]}); if(cat.ds) setTimeout(()=>confetti(innerWidth*.3,innerHeight*.3,{cols:[a,b,"#FFFFFF"]}),450); }catch(e){} },120); } }
 function awSave(fn){ return mkEdit(AWK,o=>{ const n={...(o||{})}; if(n.y!==awYear()){ n.y=awYear(); n.sp={}; n.st={}; n.res={}; } fn(n); return {v:n}; }); }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="aw"]'); if(!t) return; const a=t.dataset.a; if(!/^aw(Vc|Vote|Speech|SpOk|Judge|Show|ShowX|Next|DemoPh|DemoA|Open|Cer|How|Stage)$/.test(a)) return; e.stopImmediatePropagation();
@@ -170,7 +169,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="awDemoA"){ ui.awDemoA=!!t.dataset.v; keep(); return; }
   if(a==="awShow"){ awShow(t.dataset.v); return; }
   if(a==="awShowX"){ e.preventDefault(); clearTimeout(ui.awT); ui.awS=null; layer.innerHTML=""; return; }
-  if(a==="awNext"){ if(e.target.closest("video,.aws-v,.aws-btn")) return; const S0=ui.awS; if(!S0) return; const s=S0.st[S0.i]; if(S0.i>0&&e.clientX<innerWidth*.3){ clearTimeout(ui.awT); S0.i--; if(S0.st[S0.i].t==="drum") S0.i--; awShowDraw(); return; } if(s.t==="drum"||s.t==="end") return; if(S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } return; }   /* 點左邊三分之一回上一步（跳過「得獎的是……」），其他地方繼續 */
+  if(a==="awNext"){ if(e.target.closest("video,.aws-v,.aws-btn")) return; const S0=ui.awS; if(!S0) return; const s=S0.st[S0.i]; if(s.t==="drum"||s.t==="end") return; if(S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } return; }
   if(a==="awVote"){ const cat=t.dataset.c, id=t.dataset.v; if(awMyFan(cat)) return; const s=session()||{};
     if(!awDemo()&&(s.role!=="fan"||awMyGid())){ toast(awMyGid()?"入圍藝人用評審票，不參加粉絲投票":"切到粉絲端才能投票"); return; }
     if(awDemo()){ const V=awVotes(); ((V.f[cat]=V.f[cat]||{}).me=V.f[cat].me||{})[awToday()]=id; toast("投好了！明天再來"); keep(); return; }

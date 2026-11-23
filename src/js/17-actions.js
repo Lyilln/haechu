@@ -588,16 +588,16 @@ function clickAdm(a,t,e,r){ switch(a){
     case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
-    case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), rn=((document.getElementById("acReal")||{}).value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim(), co=((document.getElementById("acCo")||{}).value||"");
+    case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), rn=((document.getElementById("acReal")||{}).value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim(), co=((document.getElementById("acCo")||{}).value||""), wl=!!((document.getElementById("acWl")||{}).value);
       if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!rn){ toast("請輸入本名"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       const key=un.toLowerCase(); if(acctKey(un)){ toast("這個帳號已經有人用了"); break; }
-      ui.acBusy=true; ui.acDraft={un,rn,nm,pw,co}; lsRerender();
+      ui.acBusy=true; ui.acDraft={un,rn,nm,pw,co,wl}; lsRerender();
       const role="fan";   // 只建一般帳號（不再從這裡新增管理員）
       acCall({action:"create",username:key,name:nm,password:pw,role}).then(async r=>{ ui.acBusy=false;
         if(r.error){ lsRerender(); toast(r.error); return; }
         if(r.local){ ACCOUNTS[key]={user:un,pw,role,name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
         else { try{ await hbLoadProfiles(); }catch(e){} }
-        await setNote(key,{real_name:rn,pw}); if(co) S.set("daisuki_acc_co",{...(S.get("daisuki_acc_co",{})||{}),[key]:co}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
+        await setNote(key,{real_name:rn,pw}); if(co) S.set("daisuki_acc_co",{...(S.get("daisuki_acc_co",{})||{}),[key]:co}); if(wl) S.set(WLK,{...(S.get(WLK,{})||{}),[key]:1}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
     
     case "calClr": { const c={...(ui.calF||{})}; delete c[t.dataset.v]; ui.calF=c; const y=scrollY; render(); scrollTo(0,y); break; }
     case "calAll": { ui.calAll={...(ui.calAll||{}),[t.dataset.v]:!(ui.calAll||{})[t.dataset.v]}; const y=scrollY; render(); scrollTo(0,y); break; }
@@ -606,13 +606,14 @@ function clickAdm(a,t,e,r){ switch(a){
       tieModal(esc(acctUser(k)),"",`<div class="acm-info">${row("帳號",esc(acctUser(k)))}${row("密碼",pw?`<span class="ac-pw">${esc(pw)}</span>`:`<span class="acm-mute">下次登入後顯示</span>`)}${row("身分",ROLE_ZH[a.role]||"粉絲")}${row("暱稱",esc(a.name||""))}</div>
         <label class="acm-f"><span>本名</span><input id="acRealIn" maxlength="20" autocomplete="off" placeholder="只有管理員看得到" value="${esc(realName(k))}"></label>
         <label class="acm-f"><span>公司</span><select id="acCoIn" class="svco-sel"><option value="">沒有（個人練習生）</option>${SK_COS.map(c=>`<option ${((S.get("daisuki_acc_co",{})||{})[k]||"")===c?"selected":""}>${esc(c)}</option>`).join("")}</select></label>
+        ${a.member?"":`<label class="acm-f"><span>等級表</span><select id="acWlIn" class="svco-sel"><option value="">練習生</option><option value="1" ${(S.get(WLK,{})||{})[k]?"selected":""}>財富榜（粉絲）</option></select></label>`}
         <label class="acm-f"><span>重設密碼</span><input id="acNewPw" maxlength="40" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="不改就留空"></label>
         <div class="acm-btns"><button class="t-mbtn main" data-a="acEditOk">儲存</button>${self?"":`<button class="t-mbtn danger" data-a="acDel" data-v="${esc(k)}">刪除帳號</button>`}<button class="t-mbtn" data-a="tCloseLayer">取消</button></div>`,"acm"); break; }
     case "acDel": { const k=t.dataset.v; ui.acFor=k; tieModal(`刪除 ${esc(acctUser(k))}？`,"刪掉之後這個帳號就不能登入了，他的個人資料也會一起刪掉，不能復原。",`<button class="t-mbtn danger" data-a="acDelOk">刪除</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "acDelOk": { const k=ui.acFor; if(!k||k===String((session()||{}).email||"").toLowerCase()) break; layer.innerHTML="";
       acCall({action:"delete",username:k}).then(async r=>{ if(r.error){ toast(r.error); return; } const a=ACCOUNTS[k]; if(a&&a.member&&!HB_ON) unbindArtist(k); delete ACCOUNTS[k]; if(r.local) saveRoster(x=>{ if(x.accounts) delete x.accounts[k]; }); try{ delete REAL[k]; delete PWS[k]; }catch(e){} if(!HB_ON) await setNote(k,{real_name:"",pw:""}); lsRerender(); toast(`已刪除 ${acctUser(k)}`); }); break; }
     case "acEditOk": { const k=ui.acFor, rn=((document.getElementById("acRealIn")||{}).value||"").trim(), np=((document.getElementById("acNewPw")||{}).value||"").trim();
-      if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } const coIn=document.getElementById("acCoIn"); if(coIn){ const M={...(S.get("daisuki_acc_co",{})||{})}; if(coIn.value) M[k]=coIn.value; else delete M[k]; S.set("daisuki_acc_co",M); } layer.innerHTML="";
+      if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } const wlIn=document.getElementById("acWlIn"); if(wlIn){ const W={...(S.get(WLK,{})||{})}; if(wlIn.value) W[k]=1; else delete W[k]; S.set(WLK,W); } const coIn=document.getElementById("acCoIn"); if(coIn){ const M={...(S.get("daisuki_acc_co",{})||{})}; if(coIn.value) M[k]=coIn.value; else delete M[k]; S.set("daisuki_acc_co",M); } layer.innerHTML="";
       (async()=>{ if(np){ const r=await acCall({action:"reset",username:k,password:np}); if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]) ACCOUNTS[k].pw=np; }
         const ok=await setNote(k,np?{real_name:rn,pw:np}:{real_name:rn}); lsRerender(); toast(np?(ok?"已儲存，新密碼是「"+np+"」":"新密碼「"+np+"」設好了，但後台沒記下來（請跑第六段 SQL）"):(ok?"已儲存":"沒存到後台（請跑第五、六段 SQL）")); })(); break; }
     

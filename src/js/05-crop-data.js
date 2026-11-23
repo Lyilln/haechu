@@ -177,7 +177,13 @@ const points=()=>S.get(K.points,0);
 const LV_TBL=[["T",[0,500,1500,3000,5000]],["R",[8000,11000,14000,17000,20000]],["E",[24000,29000,34000,39000,44000]],["D",[50000,58000,66000,74000,82000]],["C",[92000,104000,116000,128000,140000]],["B",[155000,173000,191000,209000,227000]],["A",[250000,280000,310000,340000,370000]],["S",[410000,460000,510000,560000,610000]],["L",[680000,800000,1000000]]];
 const LV_FONT={T:[0x1D5D4,0x1D7EC],R:[0x1D63C,0x1D7EC],E:[0x1D400,0x1D7CE],D:[0x1D468,0x1D7CE],C:[0x1D670,0x1D7F6],B:[0x1D538,0x1D7D8],A:[0,0x1D7CE],S:[0x1D49C,0x1D7CE],L:[0x1D4D0,0x1D7CE]};
 const lvCode=(li,si)=>{ const L=LV_TBL[li][0], f=LV_FONT[L]; return (L==="A"?"Λ":String.fromCodePoint(f[0]+L.charCodeAt(0)-65))+String.fromCodePoint(f[1]+si+1); };
-function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0;   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
+/* 11/23 財富榜：只想當粉絲的人（管理員在帳號設定裡勾），門檻跟練習生表一樣，用錢的符號當等級（一看名字就知道不是練習生）；照現在身上的積分算 */
+const WLK="daisuki_acc_wealth", WL_SYM=["○","¢","¥","€","£","$","♦","♛","💎"], WL_NAME=["平民","存錢中","小資","中產","富裕","富豪","名流","財閥","傳奇富豪"];
+const isWealth=em=>{ em=String(em||"").toLowerCase(); const a=ACCOUNTS[em]||{}; return !!(S.get(WLK,{})||{})[em]&&!a.member; };
+const wlCode=(li,si)=>WL_SYM[li]+String.fromCodePoint(0x1D7CE+si+1);
+function wlAt(p){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
+  return {li,si,k:li*10+si,code:wlCode(li,si),name:WL_NAME[li],wl:1,next:nx&&{code:wlCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }
+function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0; if(!art&&isWealth(s.email)) return {...wlAt(p),art:false};   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
   LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } }));
   if(!art&&li>0){ li=0; si=4; }   // 還沒出道：最高 T5
   if(art&&li<1){ li=1; si=0; }    // 出道後：至少 R1
@@ -185,7 +191,7 @@ function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&
   /* 等級照現在的積分即時算：積分花掉低於門檻，等級（字母和數字）都會往下掉（粉絲、藝人一樣） */
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
   return {li,si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],art,next:nx&&(!art&&nx[0]>0?null:{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)})}; }
-function lvLine(){ try{ const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return artLvLine(s0.member);   /* 藝人端：等級照藝人積分算 */ if(uniArt()) return `<div class="me-lv"><small>${fmt(points())} 積分</small></div>`;   /* 有藝人身分的人在粉絲端：只看積分，等級看藝人端 */ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${fmt(p)} 積分・${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:!v.art?(adm?"最高等級":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
+function lvLine(){ try{ const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return artLvLine(s0.member);   /* 藝人端：等級照藝人積分算 */ if(uniArt()) return `<div class="me-lv"><small>${fmt(points())} 積分</small></div>`;   /* 有藝人身分的人在粉絲端：只看積分，等級看藝人端 */ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; if(v.wl) return `<div class="me-lv wl"><b>${v.code}</b><span>${v.name}<em>財富榜</em></span><small>${fmt(p)} 積分・${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:"最高等級"}</small></div>`; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${fmt(p)} 積分・${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:!v.art?(adm?"最高等級":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
 /* 藝人帳號的等級：用藝人自己的積分收入（分潤後實得）算，出道後至少 R1 */
 function artLevel(mid){ const me=(session()||{}).member===mid, p=Math.max(0,me?points():((pointsOf(mid)||{}).net||0)); let li=1,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v&&i>=1){ li=i; si=j; } }));
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null; return {li,si,p,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],next:nx&&{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }

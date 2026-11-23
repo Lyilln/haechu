@@ -139,7 +139,7 @@
 .aws-say{display:flex;gap:10px;align-items:flex-start;text-align:left;width:100%;max-width:360px;-webkit-animation:awsIn .45s .15s ease both;animation:awsIn .45s .15s ease both}
 .aws-say+.aws-say{-webkit-animation-delay:.6s;animation-delay:.6s}
 .aws-av{width:36px;height:36px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:800;color:#1a0f1f;background:linear-gradient(135deg,var(--c1),var(--c2));box-shadow:0 0 0 2px rgba(255,255,255,.15)}
-.aws-say>div{flex:1;min-width:0;padding:10px 14px;border-radius:4px 18px 18px 18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
+.aws-say>div{flex:1;min-width:0;padding:10px 14px;border-radius:18px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12)}
 .aws-say small{display:block;font-size:11px;color:var(--c2);font-weight:700;letter-spacing:.04em;margin-bottom:2px}
 .aws-say p{margin:0;font-size:15px;line-height:1.6;color:#fff}
 .aws-cat{display:flex;flex-direction:column;align-items:center;gap:4px}
@@ -147,10 +147,9 @@
 .aws-cat small{font-size:11px;letter-spacing:.22em;color:var(--c2)}
 .aws-cat b{font-size:28px;color:#fff}
 .aws-cat.ds b{font-size:32px;text-shadow:0 0 26px var(--c1)}
-.aws-pre{display:flex;gap:22px;justify-content:center}
-.aws-pre span{display:flex;flex-direction:column;align-items:center;gap:6px}
-.aws-pre .aws-av{width:58px;height:58px;font-size:22px}
-.aws-pre b{font-size:15px;color:#fff}
+.aws-pre{display:flex;flex-direction:column;align-items:center;gap:4px}
+.aws-pre small{font-size:11px;letter-spacing:.3em;color:var(--c2)}
+.aws-pre b{font-size:20px;color:#fff}
 .aws-noms{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:12px;width:100%;justify-items:center}
 .aws-nom{display:flex;flex-direction:column;align-items:center;gap:4px;-webkit-animation:awsIn .5s ease both;animation:awsIn .5s ease both}
 .aws-nom .aw-cv,.aws-wc .aw-cv{width:96px;height:96px;border-radius:14px;box-shadow:0 0 0 1px rgba(255,255,255,.2)}
@@ -182,3 +181,13 @@
 .aws-v.ph{aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;background:rgba(255,255,255,.05)}
 .aws-v.ph span{font-size:34px}.aws-v.ph p{margin:0;font-size:13px;color:rgba(255,255,255,.6)}
 .aws-vt{margin:0;font-size:13px;color:rgba(255,255,255,.75)}
+
+/* 深色模式：卡片換成那場典禮自己的深色（不是一般的灰） */
+html[data-theme="dark"] .aw .aw-card,html[data-theme="dark"] .aw .aw-cer{background:linear-gradient(165deg,var(--d1),var(--d2));border-color:rgba(255,255,255,.08);color:#fff}
+html[data-theme="dark"] .aw .aw-cers button{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.1);color:rgba(255,255,255,.75)}
+html[data-theme="dark"] .aw .aw-cers button.on{border-color:var(--c1);background:linear-gradient(160deg,var(--d2),var(--d3));color:#fff}
+html[data-theme="dark"] .aw .aw-cd,html[data-theme="dark"] .aw .aw-hows{background:rgba(255,255,255,.06)}
+html[data-theme="dark"] .aw .aw-cd b,html[data-theme="dark"] .aw .aw-h b,html[data-theme="dark"] .aw .aw-ch b,html[data-theme="dark"] .aw .aw-cer>b{color:#fff}
+html[data-theme="dark"] .aw .aw-vi,html[data-theme="dark"] .aw .aw-sp,html[data-theme="dark"] .aw .aw-jv button{background:rgba(255,255,255,.05);border-color:rgba(255,255,255,.1);color:#fff}
+html[data-theme="dark"] .aw .aw-cat,html[data-theme="dark"] .aw .aw-rw,html[data-theme="dark"] .aw .aw-h.sub{border-color:rgba(255,255,255,.08)}
+.aw .aw-enter,.aw .aw-enter b,.aw .aw-enter>i,html[data-theme="dark"] .aw .aw-enter b{color:#1a0f1f!important}

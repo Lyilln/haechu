@@ -1262,8 +1262,8 @@ function ptCurOf(email){ try{ email=String(email||"").toLowerCase(); const a=ACC
   let b=S.get(K.points+"@"+email,null); if(b==null){ const pb=(S.get(PT_PUB,{})||{})[email]; if(pb&&pb.p!=null){ const after=(S.get(K.ptGrants,[])||[]).filter(g=>g.to===email&&(g.ts||0)>(pb.t||0)).reduce((n,g)=>n+(+g.n||0),0); return Math.round(pb.p+after); } }   /* 公開表：他上次回報的積分＋之後才給他的分 */ if(b==null){ const seen=["ptGot","online","settings","notifs","owned"].some(k=>K[k]&&S.get(K[k]+"@"+email,null)!=null); if(!seen) return null; b=0; } const got=new Set(S.get(K.ptGot+"@"+email,[])||[]), pend=(S.get(K.ptGrants,[])||[]).filter(g=>g.to===email&&!got.has(g.id)).reduce((n,g)=>n+(+g.n||0),0); return Math.round(+b+pend); }catch(e){ return null; } }
 /* 11/19 算分數時顯示等級：照積分算（跟 ME 頁同一套：練習生最高 T5、出道的至少 R1），加完會升／會掉就提醒 */
 function lvAt(p,art){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); if(!art&&li>0){ li=0; si=4; } if(art&&li<1){ li=1; si=0; } return {li,si,k:li*10+si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li]}; }
-function ptRegLv(email,c,n){ const a=ACCOUNTS[email]||{}, art=!!a.member, A=lvAt(c,art), B=lvAt(c+n,art);
-  return `<div class="prg-lv ${B.k>A.k?"up":B.k<A.k?"dn":""}"><span>等級</span><b>${A.code} ${A.name}</b>${B.k===A.k?`<em>維持原樣</em>`:`<i>→</i><b>${B.code} ${B.name}</b><em>${B.k>A.k?"升級了！記得更新他的等級":"掉級了！記得更新他的等級"}</em>`}</div>`; }
+function ptRegLv(email,c,n){ const a=ACCOUNTS[email]||{}, art=!!a.member, wl=isWealth(email), A=wl?wlAt(c):lvAt(c,art), B=wl?wlAt(c+n):lvAt(c+n,art), nm=String(a.name||"").replace(/^\S+\s+/,m=>/[\u{1D400}-\u{1D7FF}○¢¥€£$♦♛💎Λ]/u.test(m)?"":m).trim();   /* 名字前面原本的等級碼拿掉，換成新的 */
+  return `<div class="prg-lv ${B.k>A.k?"up":B.k<A.k?"dn":""}"><span>${wl?"財富榜":"等級"}</span><b>${A.code} ${A.name}</b>${B.k===A.k?`<em>維持原樣</em>`:`<i>→</i><b>${B.code} ${B.name}</b><em>${B.k>A.k?"升級了！記得更新他的名字":"掉級了！記得更新他的名字"}</em>`}${B.k!==A.k&&nm?`<button class="prg-cp" data-a="prgCopy" data-v="${esc(B.code+" "+nm)}">複製新名字：${esc(B.code+" "+nm)}</button>`:""}</div>`; }
 function ptRegMath(sum){ const P=ui.prg||{}, c=ptCurOf(P.email);
   return c==null?`<p class="prg-t">找不到他目前的積分：他打開更新後的 App 一次，這裡就會出現</p>`:`<div class="prg-math"><div><span>現在</span><b>${fmt(c)} 分</b></div><div><span>＋ 這次</span><b>${fmt(sum)} 分</b></div><hr><div class="t"><span>加完</span><b>${fmt(c+sum)} 分</b></div></div>${ptRegLv(P.email,c,sum)}`; }
 function ptRegFoot(res){ const sum=res.items.reduce((n,x)=>n+(+x.give||0),0), bad=res.total!=null&&res.total!==res.claimSum, A=res.app;
@@ -1289,6 +1289,7 @@ document.addEventListener("change",e=>{ if(e.target.id==="prgD") ptRegRun(); });
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a;
   if(a==="prgOpen"){ e.stopImmediatePropagation(); ptRegOpen(t.dataset.v); return; }
   if(a==="prgSync"){ e.stopImmediatePropagation(); ptRegSync(); return; }
+  if(a==="prgCopy"){ e.stopImmediatePropagation(); const v=t.dataset.v||""; try{ navigator.clipboard.writeText(v).then(()=>toast("新名字複製好了"),()=>toast(v)); }catch(er){ toast(v); } return; }
   if(a==="prgGo"){ e.stopImmediatePropagation(); const P=ui.prg; if(!P||!P.res||P.sync) return; const by=myEmail(), now=Date.now(), L=S.get(K.ptGrants,[])||[]; let sum=0, n=0;
     P.res.items.forEach((x,i)=>{ const v=Math.round(+x.give||0); if(!x.r||v<=0) return; sum+=v; n++; L.push({id:"lr"+now.toString(36)+i+Math.random().toString(36).slice(2,5),to:P.email,n:v,why:`LINE 登記・${x.r.name}`.slice(0,30),by,ts:now,reg:{d:x.d,ds:x.ds||[x.d],k:x.r.name,n:v}}); });
     if(!sum){ toast("沒有可以加的分數"); return; } S.set(K.ptGrants,L.slice(-3000)); layer.innerHTML=""; ui.prg=null; toast(`已加 ${fmt(sum)} 分給 ${acctUser(P.email)}（${n} 項）`); lsRerender(); return; }
@@ -1502,7 +1503,13 @@ const points=()=>S.get(K.points,0);
 const LV_TBL=[["T",[0,500,1500,3000,5000]],["R",[8000,11000,14000,17000,20000]],["E",[24000,29000,34000,39000,44000]],["D",[50000,58000,66000,74000,82000]],["C",[92000,104000,116000,128000,140000]],["B",[155000,173000,191000,209000,227000]],["A",[250000,280000,310000,340000,370000]],["S",[410000,460000,510000,560000,610000]],["L",[680000,800000,1000000]]];
 const LV_FONT={T:[0x1D5D4,0x1D7EC],R:[0x1D63C,0x1D7EC],E:[0x1D400,0x1D7CE],D:[0x1D468,0x1D7CE],C:[0x1D670,0x1D7F6],B:[0x1D538,0x1D7D8],A:[0,0x1D7CE],S:[0x1D49C,0x1D7CE],L:[0x1D4D0,0x1D7CE]};
 const lvCode=(li,si)=>{ const L=LV_TBL[li][0], f=LV_FONT[L]; return (L==="A"?"Λ":String.fromCodePoint(f[0]+L.charCodeAt(0)-65))+String.fromCodePoint(f[1]+si+1); };
-function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0;   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
+/* 11/23 財富榜：只想當粉絲的人（管理員在帳號設定裡勾），門檻跟練習生表一樣，用錢的符號當等級（一看名字就知道不是練習生）；照現在身上的積分算 */
+const WLK="daisuki_acc_wealth", WL_SYM=["○","¢","¥","€","£","$","♦","♛","💎"], WL_NAME=["平民","存錢中","小資","中產","富裕","富豪","名流","財閥","傳奇富豪"];
+const isWealth=em=>{ em=String(em||"").toLowerCase(); const a=ACCOUNTS[em]||{}; return !!(S.get(WLK,{})||{})[em]&&!a.member; };
+const wlCode=(li,si)=>WL_SYM[li]+String.fromCodePoint(0x1D7CE+si+1);
+function wlAt(p){ let li=0,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } })); const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
+  return {li,si,k:li*10+si,code:wlCode(li,si),name:WL_NAME[li],wl:1,next:nx&&{code:wlCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }
+function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return {...artLevel(s0.member),art:true}; } const s=session()||{}, a=ACCOUNTS[s.email]||{}, art=!!(a.member||s.home)&&!(s.uni&&s.role==="fan"), p=points(); let li=0,si=0; if(!art&&isWealth(s.email)) return {...wlAt(p),art:false};   /* 管理員切到粉絲：那是另一個粉絲身分，不套出道的 R1 */
   LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v){ li=i; si=j; } }));
   if(!art&&li>0){ li=0; si=4; }   // 還沒出道：最高 T5
   if(art&&li<1){ li=1; si=0; }    // 出道後：至少 R1
@@ -1510,7 +1517,7 @@ function myLevel(){ { const s0=session()||{}; if(s0.role==="artist"&&s0.member&&
   /* 等級照現在的積分即時算：積分花掉低於門檻，等級（字母和數字）都會往下掉（粉絲、藝人一樣） */
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null;
   return {li,si,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],art,next:nx&&(!art&&nx[0]>0?null:{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)})}; }
-function lvLine(){ try{ const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return artLvLine(s0.member);   /* 藝人端：等級照藝人積分算 */ if(uniArt()) return `<div class="me-lv"><small>${fmt(points())} 積分</small></div>`;   /* 有藝人身分的人在粉絲端：只看積分，等級看藝人端 */ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${fmt(p)} 積分・${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:!v.art?(adm?"最高等級":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
+function lvLine(){ try{ const s0=session()||{}; if(s0.role==="artist"&&s0.member&&MEMBERS[s0.member]) return artLvLine(s0.member);   /* 藝人端：等級照藝人積分算 */ if(uniArt()) return `<div class="me-lv"><small>${fmt(points())} 積分</small></div>`;   /* 有藝人身分的人在粉絲端：只看積分，等級看藝人端 */ const v=myLevel(), p=points(), s=session()||{}, adm=s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"; if(v.wl) return `<div class="me-lv wl"><b>${v.code}</b><span>${v.name}<em>財富榜</em></span><small>${fmt(p)} 積分・${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:"最高等級"}</small></div>`; return `<div class="me-lv"><b>${v.code}</b><span>${v.name}</span><small>${fmt(p)} 積分・${v.next?`再 ${fmt(v.next.need)} 積分升到 ${v.next.code}`:!v.art?(adm?"最高等級":p>=8000?"積分夠了，可以申請出道":`積分到 8,000 就能申請出道`):"最高等級"}</small></div>`; }catch(e){ return ""; } }
 /* 藝人帳號的等級：用藝人自己的積分收入（分潤後實得）算，出道後至少 R1 */
 function artLevel(mid){ const me=(session()||{}).member===mid, p=Math.max(0,me?points():((pointsOf(mid)||{}).net||0)); let li=1,si=0; LV_TBL.forEach(([,th],i)=>th.forEach((v,j)=>{ if(p>=v&&i>=1){ li=i; si=j; } }));
   const nx=si+1<LV_TBL[li][1].length?[li,si+1]:li+1<LV_TBL.length?[li+1,0]:null; return {li,si,p,code:lvCode(li,si),name:["練習生","新人","新銳","人氣","實力","當紅","王牌","巨星","傳奇"][li],next:nx&&{code:lvCode(nx[0],nx[1]),need:Math.max(0,LV_TBL[nx[0]][1][nx[1]]-p)}}; }
@@ -2401,7 +2408,7 @@ const dbEms=x=>[x.email,...(x.mems||[]).map(m=>m.email)].filter(Boolean);
 const dbMids=x=>x.mids?Object.values(x.mids):(x.mid?[x.mid]:[]);
 const myDebut=()=>{ const em=myEmail(); return em?getDebut().filter(x=>dbEms(x).includes(em)&&x.status!=="gone").sort((a,b)=>b.ts-a.ts)[0]||null:null; };
 function debutSync(){ try{ const s=session(), d=myDebut(); const mid=d&&((d.mids||{})[s&&s.email]||d.mid); if(!s||s.home||!d||d.status!=="ok"||!mid||!MEMBERS[mid]) return; const a=ACCOUNTS[s.email]; if(a&&!a.member) ACCOUNTS[s.email]={...a,role:a.role==="admin"?"admin":"artist",member:mid}; SS.set({...s,home:mid}); }catch(e){} }
-function debutRow(){ const s=session(); if(!s||isAdminAcct()||s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="pre"?`預告中・D-${dLeft(d.day)}`:d&&d.status==="no"?"未通過":points()<LV_TBL[1][1][0]?"到 R1 才能申請":"";
+function debutRow(){ const s=session(); if(!s||isWealth(s.email)||isAdminAcct()||s.uni||s.admin||(ACCOUNTS[s.email]||{}).role==="admin"||s.home||(ACCOUNTS[s.email]||{}).member) return ""; const d=myDebut(), st=d&&d.status==="wait"?"審核中":d&&d.status==="pre"?`預告中・D-${dLeft(d.day)}`:d&&d.status==="no"?"未通過":points()<LV_TBL[1][1][0]?"到 R1 才能申請":"";
   return `<div class="section-h">出道</div><section class="card"><button class="list-btn" data-a="debutAsk">${I.star}申請出道<span class="r">${st}</span></button></section>`; }
 function debutAdmHtml(){ const L=getDebut().filter(x=>x.status!=="gone").sort((a,b)=>b.ts-a.ts), W=L.filter(x=>x.status==="wait"), H=L.filter(x=>x.status!=="wait");
   const row=x=>{ const st=x.status==="ok"?["ok","已出道"]:x.status==="pre"?["pre",`預告中・${mdTxt(x.day)} 出道`]:x.status==="no"?["no","未通過"]:["wait",`審核中・想在 ${mdTxt(x.day)} 出道`], pr=x.pr||{};
@@ -7926,16 +7933,16 @@ function clickAdm(a,t,e,r){ switch(a){
     case "appReload": { try{ navSave&&navSave(); }catch(e){} location.replace(location.pathname+"?v="+encodeURIComponent(ui.verNew||Date.now().toString(36))+location.hash); break; }   /* 帶新版本號重新載入，才不會拿到瀏覽器暫存的舊版 */
     case "pushToggle": if(ui.pushOn) pushDisable(); else pushEnable(); break;
     case "maintToggle": { const on=maintOn(); ask(on?"要結束維修，讓大家可以登入嗎？":"要開始維修嗎？除了管理員，大家都不能登入，正在用的人也會被登出。",()=>{ S.set(K.maint,{on:!on,ts:Date.now()}); lsRerender(); toast(on?"維修結束":"維修中"); },{title:on?"結束維修":"開始維修",ok:on?"結束":"開始",danger:!on}); break; }
-    case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), rn=((document.getElementById("acReal")||{}).value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim(), co=((document.getElementById("acCo")||{}).value||"");
+    case "acCreate": { const un=(document.getElementById("acUser").value||"").trim(), rn=((document.getElementById("acReal")||{}).value||"").trim(), nm=(document.getElementById("acName").value||"").trim(), pw=(document.getElementById("acPw").value||"").trim(), co=((document.getElementById("acCo")||{}).value||""), wl=!!((document.getElementById("acWl")||{}).value);
       if(!un||/[\s@\/\\]/.test(un)||un.length>20){ toast("帳號不能有空白、@、/，最多 20 個字"); break; } if(!rn){ toast("請輸入本名"); break; } if(!nm){ toast("請輸入暱稱"); break; } if(nameBlock(nm)||nameBlock(un)) break; if(pw.length<4){ toast("密碼至少要 4 個字"); break; }
       const key=un.toLowerCase(); if(acctKey(un)){ toast("這個帳號已經有人用了"); break; }
-      ui.acBusy=true; ui.acDraft={un,rn,nm,pw,co}; lsRerender();
+      ui.acBusy=true; ui.acDraft={un,rn,nm,pw,co,wl}; lsRerender();
       const role="fan";   // 只建一般帳號（不再從這裡新增管理員）
       acCall({action:"create",username:key,name:nm,password:pw,role}).then(async r=>{ ui.acBusy=false;
         if(r.error){ lsRerender(); toast(r.error); return; }
         if(r.local){ ACCOUNTS[key]={user:un,pw,role,name:nm}; saveRoster(x=>{ x.accounts=x.accounts||{}; x.accounts[key]=ACCOUNTS[key]; }); }
         else { try{ await hbLoadProfiles(); }catch(e){} }
-        await setNote(key,{real_name:rn,pw}); if(co) S.set("daisuki_acc_co",{...(S.get("daisuki_acc_co",{})||{}),[key]:co}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
+        await setNote(key,{real_name:rn,pw}); if(co) S.set("daisuki_acc_co",{...(S.get("daisuki_acc_co",{})||{}),[key]:co}); if(wl) S.set(WLK,{...(S.get(WLK,{})||{}),[key]:1}); ui.acDraft=null; render(); toast(`已建立 ${un}`); }); break; }
     
     case "calClr": { const c={...(ui.calF||{})}; delete c[t.dataset.v]; ui.calF=c; const y=scrollY; render(); scrollTo(0,y); break; }
     case "calAll": { ui.calAll={...(ui.calAll||{}),[t.dataset.v]:!(ui.calAll||{})[t.dataset.v]}; const y=scrollY; render(); scrollTo(0,y); break; }
@@ -7944,13 +7951,14 @@ function clickAdm(a,t,e,r){ switch(a){
       tieModal(esc(acctUser(k)),"",`<div class="acm-info">${row("帳號",esc(acctUser(k)))}${row("密碼",pw?`<span class="ac-pw">${esc(pw)}</span>`:`<span class="acm-mute">下次登入後顯示</span>`)}${row("身分",ROLE_ZH[a.role]||"粉絲")}${row("暱稱",esc(a.name||""))}</div>
         <label class="acm-f"><span>本名</span><input id="acRealIn" maxlength="20" autocomplete="off" placeholder="只有管理員看得到" value="${esc(realName(k))}"></label>
         <label class="acm-f"><span>公司</span><select id="acCoIn" class="svco-sel"><option value="">沒有（個人練習生）</option>${SK_COS.map(c=>`<option ${((S.get("daisuki_acc_co",{})||{})[k]||"")===c?"selected":""}>${esc(c)}</option>`).join("")}</select></label>
+        ${a.member?"":`<label class="acm-f"><span>等級表</span><select id="acWlIn" class="svco-sel"><option value="">練習生</option><option value="1" ${(S.get(WLK,{})||{})[k]?"selected":""}>財富榜（粉絲）</option></select></label>`}
         <label class="acm-f"><span>重設密碼</span><input id="acNewPw" maxlength="40" autocomplete="new-password" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="不改就留空"></label>
         <div class="acm-btns"><button class="t-mbtn main" data-a="acEditOk">儲存</button>${self?"":`<button class="t-mbtn danger" data-a="acDel" data-v="${esc(k)}">刪除帳號</button>`}<button class="t-mbtn" data-a="tCloseLayer">取消</button></div>`,"acm"); break; }
     case "acDel": { const k=t.dataset.v; ui.acFor=k; tieModal(`刪除 ${esc(acctUser(k))}？`,"刪掉之後這個帳號就不能登入了，他的個人資料也會一起刪掉，不能復原。",`<button class="t-mbtn danger" data-a="acDelOk">刪除</button><button class="t-mbtn" data-a="tCloseLayer">取消</button>`); break; }
     case "acDelOk": { const k=ui.acFor; if(!k||k===String((session()||{}).email||"").toLowerCase()) break; layer.innerHTML="";
       acCall({action:"delete",username:k}).then(async r=>{ if(r.error){ toast(r.error); return; } const a=ACCOUNTS[k]; if(a&&a.member&&!HB_ON) unbindArtist(k); delete ACCOUNTS[k]; if(r.local) saveRoster(x=>{ if(x.accounts) delete x.accounts[k]; }); try{ delete REAL[k]; delete PWS[k]; }catch(e){} if(!HB_ON) await setNote(k,{real_name:"",pw:""}); lsRerender(); toast(`已刪除 ${acctUser(k)}`); }); break; }
     case "acEditOk": { const k=ui.acFor, rn=((document.getElementById("acRealIn")||{}).value||"").trim(), np=((document.getElementById("acNewPw")||{}).value||"").trim();
-      if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } const coIn=document.getElementById("acCoIn"); if(coIn){ const M={...(S.get("daisuki_acc_co",{})||{})}; if(coIn.value) M[k]=coIn.value; else delete M[k]; S.set("daisuki_acc_co",M); } layer.innerHTML="";
+      if(np&&np.length<4){ toast("密碼至少要 4 個字"); break; } const wlIn=document.getElementById("acWlIn"); if(wlIn){ const W={...(S.get(WLK,{})||{})}; if(wlIn.value) W[k]=1; else delete W[k]; S.set(WLK,W); } const coIn=document.getElementById("acCoIn"); if(coIn){ const M={...(S.get("daisuki_acc_co",{})||{})}; if(coIn.value) M[k]=coIn.value; else delete M[k]; S.set("daisuki_acc_co",M); } layer.innerHTML="";
       (async()=>{ if(np){ const r=await acCall({action:"reset",username:k,password:np}); if(r.error){ toast(r.error); return; } if(r.local&&ACCOUNTS[k]) ACCOUNTS[k].pw=np; }
         const ok=await setNote(k,np?{real_name:rn,pw:np}:{real_name:rn}); lsRerender(); toast(np?(ok?"已儲存，新密碼是「"+np+"」":"新密碼「"+np+"」設好了，但後台沒記下來（請跑第六段 SQL）"):(ok?"已儲存":"沒存到後台（請跑第五、六段 SQL）")); })(); break; }
     
@@ -8479,7 +8487,7 @@ function thRecolor(t,v){ let st=document.getElementById("thRecolor"); if(!st){ s
   /* 11/17 前綴包在 :where() 裡＝不加權重：換色只蓋過 App 原本的顏色，不會蓋過主題自己指定的（例如淺色時的提示框、對話框） */
   const W1='html:where([data-th])', W2='html:where([data-th]:not([data-theme="dark"]))';
   const pre=sel=>sel.split(",").map(x=>{ x=x.trim(); if(/^html\[data-theme="dark"\]/.test(x)) return x.replace(/^html/,W1); if(/^html\b/.test(x)) return x.replace(/^html/,W2); if(x===":root") return W2; return W2+' '+x; }).join(",");
-  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast|\.mu[23]-|\.s-(?:ts|sc|mcd|mb|ink)\b|\.mcx|\.t-tr\b|\.t-rh|\.t-foot|\.t-inp|\.from-fan|\.wk(?![a-zA-Z])|\.wkp?-/.test(r.selectorText)) continue;   /* 音樂節目卡、公放卡登場：各節目有自己的品牌色，不跟著主題換；TIE 的翻譯文字用藝人選的顏色 */   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
+  const out=[]; const walk=rules=>{ for(const r of rules){ if(r.type===1){ if(/data-th\b|\[data-th\]|\.th-cov|\.th-keep|\.a-nick|\.nick-me|\.toast|\.mu[23]-|\.s-(?:ts|sc|mcd|mb|ink)\b|\.mcx|\.t-tr\b|\.t-rh|\.t-foot|\.t-inp|\.from-fan|\.wk(?![a-zA-Z])|\.wkp?-|\.aws?-|\.aw(?![a-zA-Z-])/.test(r.selectorText)) continue;   /* 音樂節目卡、公放卡登場：各節目有自己的品牌色，不跟著主題換；TIE 的翻譯文字用藝人選的顏色 */   /* 主題的預覽圖（例如「基本」）是那個主題自己的顏色，不跟著目前的主題變 */ const d=[];
       for(const p2 of P){ const val=r.style.getPropertyValue(p2); if(!val||/var\(/.test(val)) continue; const nv=fix(val); if(nv!==val) d.push(`${p2}:${nv}${r.style.getPropertyPriority(p2)?"!important":""}`); }
       if(d.length) out.push(`${pre(r.selectorText)}{${d.join(";")}}`); }
     else if(r.type===4&&r.cssRules){ const b0=out.length; walk(r.cssRules); if(out.length>b0){ const inner=out.splice(b0); out.push(`@media ${r.conditionText||r.media.mediaText}{${inner.join("\n")}}`); } } } };
@@ -9066,6 +9074,7 @@ function viewAccounts(){ hbProfilesNow(); const L=Object.entries(ACCOUNTS).sort(
       <span class="fld-lab">本名（只有管理員看得到）</span><label class="field">${I.user}<input id="acReal" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).rn||"")}"></label>
       <span class="fld-lab">暱稱（大家看到的名字，本人之後可以改）</span><label class="field">${I.heart}<input id="acName" maxlength="20" placeholder="輸入文字" value="${esc((ui.acDraft||{}).nm||"")}"></label>
       <span class="fld-lab">公司（照填單時選的；沒選就留空＝選秀裡的個人練習生）</span><label class="field"><select id="acCo" class="svco-sel"><option value="">沒有（個人練習生）</option>${SK_COS.map(c=>`<option ${((ui.acDraft||{}).co||"")===c?"selected":""}>${esc(c)}</option>`).join("")}</select></label>
+      <span class="fld-lab">等級表（只想當粉絲、不出道的選財富榜）</span><label class="field"><select id="acWl" class="svco-sel"><option value="">練習生</option><option value="1" ${(ui.acDraft||{}).wl?"selected":""}>財富榜（粉絲）</option></select></label>
       <span class="fld-lab">密碼</span><label class="field">${I.lock}<input id="acPw" maxlength="40" autocapitalize="none" autocorrect="off" spellcheck="false" placeholder="輸入文字" value="${esc((ui.acDraft||{}).pw||"")}"></label>
       <button class="btn btn-main btn-block" data-a="acCreate" ${ui.acBusy?"disabled":""}>${ui.acBusy?"建立中…":"建立帳號"}</button></section>
     <div class="section-h">全部帳號<span class="muted">${L.length} 個</span>${calPick("ac")}</div>
@@ -11705,7 +11714,7 @@ function scPick(uid,sc,d,co0){ const me=scNext(sc,co0); sc.by[uid]=me; const co=
 /* 不能挖的人：已出道、已簽公司（帳號有公司或名單勾了）、已經挖過、正在參加選秀 */
 /* 11/18 選秀節目進行中（招募～決賽）：星探全部暫停，誰都不私訊；節目結束後再恢復 */
 const scPause=()=>{ try{ const s=typeof svReal==="function"&&svReal(); return !!(s&&["recruit","r1","r2","pr","final"].includes(s.ph)); }catch(e){ return false; } };
-const scBlock=(sc,uid)=>{ const x=sc.list.find(y=>y.uid===uid); return scArtist(uid)||!!scCoOf(uid)||!!(x&&x.signed)||!!sc.picked[uid]||(typeof svInShow==="function"&&svInShow(String(uid).slice(2))); };
+const scBlock=(sc,uid)=>{ const x=sc.list.find(y=>y.uid===uid); return isWealth(String(uid).slice(2))||scArtist(uid)||!!scCoOf(uid)||!!(x&&x.signed)||!!sc.picked[uid]||(typeof svInShow==="function"&&svInShow(String(uid).slice(2))); };
 /* 自動挖掘：只在管理員的手機跑。每位粉絲都看（不用先加名單）→ 哪幾家公司的條件達到了 → 派出最少挖過人的那家，私訊後自動放進名單 */
 function scAuto(){ try{ if(!isAdminAcct()||ui.svDemo||scPause()) return; if(HB_ON&&HB.ver[SC_KEY]==null&&!Object.keys(HB.ver||{}).length) return; const sc=scGet(), C=scCos(sc); if(!C.length) return; const d=snDB(); let n=0;
   const cnt={}; Object.values(sc.by).forEach(id=>{ const a=scAcc(id); if(a) cnt[a.co]=(cnt[a.co]||0)+1; });
@@ -15739,7 +15748,7 @@ const svRecMe=s=>s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry();
 function svRecruitHtml(s){ const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
   return svSt5("練習生招募中",`截止 <b>還有 ${svCd(s)}</b>`)+svTl(s)
     +(me?svCard5("你已經報名了",`坐在 ${me.seat||"?"} 號位${me.ch1?"・挑戰 1 號位中":""}`,"誰報名了，要等節目開播才會公開。截止前資料都可以改。",`<button data-a="svApply">修改報名資料</button>`)
-      :svHero5("已經報名",`${E.length} 位`,"誰報名了，開播才公開",art?"":`<button data-a="svApply">我也要報名（當練習生）</button>`))
+      :svHero5("已經報名",`${E.length} 位`,"誰報名了，開播才公開",art||isWealth(myEmail())?"":`<button data-a="svApply">我也要報名（當練習生）</button>`))
     +svHost(s,svHostTxt(s))
     +`<section class="sv5-pyr"><h4>座位・1 號在最頂端</h4>${svSeatHtml(svSeats(),me&&me.email)}</section>`+svHow5(); }
 
@@ -15940,7 +15949,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
       mkEdit(SVV,v=>{ const o={...(v||{})}; o[sid0]={...(o[sid0]||{})}; o[sid0][ph0]={...(o[sid0][ph0]||{})}; Object.entries(B0).forEach(([id,c])=>{ o[sid0][ph0][id]=(o[sid0][ph0][id]||0)+c; }); return {v:o}; }).then(()=>svSent(s,B0,n)).catch(()=>{ ui.svB=B0; t.disabled=false; rr(); toast("票沒有送出去，再按一次"); }); return; }
     case "svDemo": { const v=t.dataset.v||""; if(v[0]==="a"){ const st=v.slice(2); ui.svDemoNo=(ui.svDemoNo||0)%3+1; ui.svDemo={r1:"r2",r2:"pr",final:"prep"}[st]; ui.svB={}; rr(); svReveal(st); return; } ui.svDemo=v||null; ui.svB={}; ui.svDU=0; ui.svDV={}; rr(); window.scrollTo(0,0); return; }
     case "svxSkip": { ui.svxT=0; ui.svxDone&&ui.svxDone(); return; }
-    case "svApply": { if(s&&s.demo){ ui.svF=null; svApplyForm(); return; } if((session()||{}).role!=="fan"||svIsArtist(myEmail())){ toast("藝人的帳號不能報名選秀"); return; } ui.svF=null; svApplyForm(); return; }
+    case "svApply": { if(s&&s.demo){ ui.svF=null; svApplyForm(); return; } if((session()||{}).role!=="fan"||svIsArtist(myEmail())){ toast("藝人的帳號不能報名選秀"); return; } if(isWealth(myEmail())){ toast("財富榜的帳號不參加選秀"); return; } ui.svF=null; svApplyForm(); return; }
     case "svPhoto": { svKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:4/5,max:1080}); if(!c) return;
         try{ const b=await shrinkImg(c,1080); ui.svF.photo=URL.createObjectURL(b); svApplyForm(); if((svSeason()||{}).demo) return; const url=(HB_ON&&await hbImgUrl("sv_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); ui.svF.photo=url; svApplyForm(); }catch(er){ toast("這張圖讀不出來"); } }; pickClick(inp); return; }
     case "svChSend": { const inp=document.getElementById("svChIn"), v=inp&&inp.value; if(!v||!v.trim()) return; svChatSend(s,v,t.dataset.v==="host"); rr(); setTimeout(()=>{ const l=document.getElementById("svChL"); if(l) l.scrollTop=l.scrollHeight; },60); return; }
@@ -16344,7 +16353,7 @@ function viewAwards(head){ head=head||coreHead; if(!awFestShow()) return head("�
   const hero=`<section class="aw-hero"><div class="aw-hero-glow"></div><div class="aw-beams"><i></i><i></i><i></i></div><small>${c.y}</small><h1><i>HAECHU</i>AWARDS</h1><div class="aw-hero-st">${st}</div></section>`;
   const tabs=`<nav class="aw-cers">${C.map(x=>`<button class="aw-c-${x.k} ${x.k===cer.k?"on":""}" data-a="awCer" data-v="${x.k}"><i></i><b>${x.sn}</b><small>${awMd(x.at)}</small></button>`).join("")}</nav>`;
   const shown=awShown(cer), myIn=gid&&cer.cats.some(k=>awNoms(k).some(x=>x.gid===gid));
-  const cerCard=`<section class="aw-cer"><small>學 ${cer.ref}</small><b>${cer.n}</b><p>${awMd(cer.at)} 20:00・${cer.cats.map(k=>awCatOf(k).n).join("・")}</p>${shown?`<button class="aw-enter" data-a="awShow" data-v="${cer.k}"><span>🎬</span><b>${n<cer.at+3*3600e3?"進場看頒獎典禮":"重看頒獎典禮"}</b><i>›</i></button>`:`<div class="aw-cd"><span>典禮倒數</span><b>${awLeft(cer.at-n)}</b></div>`}</section>`;
+  const cerCard=`<section class="aw-cer"><b>${cer.n}</b><p>${awMd(cer.at)} 20:00・${cer.cats.map(k=>awCatOf(k).n).join("・")}</p>${shown?`<button class="aw-enter" data-a="awShow" data-v="${cer.k}"><span>🎬</span><b>${n<cer.at+3*3600e3?"進場看頒獎典禮":"重看頒獎典禮"}</b><i>›</i></button>`:`<div class="aw-cd"><span>典禮倒數</span><b>${awLeft(cer.at-n)}</b></div>`}</section>`;
   const fvCats=cer.cats.filter(k=>awCatOf(k).fv);
   return head("年末大賞")+`<main class="page aw aw-c-${cer.k}">${hero}${tabs}${cerCard}${shown?awResHtml(cer):""}${awVoting()&&fvCats.length?awVoteHtml(fvCats):""}${myIn&&!shown?awArtHtml(gid,cer):""}${shown?"":awNomsHtml(cer)}${awDemoBar()}</main>`; }
 
@@ -16376,8 +16385,7 @@ function awSteps(cer){ const c=awCfg(), stg=awDemo()?(ui.awSt||{}):c.st, gs=[...
   const perf=gs.map(g=>{ const v=stg[cer.k+"|"+g]&&vodOf(stg[cer.k+"|"+g]); return v?{t:"perf",g,v:v.id}:awDemo()&&!String(g).startsWith("npc:")?{t:"perf",g}:null; }).filter(Boolean);
   const N=cer.cats.length, st=[{t:"open"}]; cer.cats.forEach((k,i)=>{ if(i===N-1) perf.slice(N-1).forEach(p=>st.push(p)); else if(perf[i]) st.push(perf[i]); st.push({t:"intro",k},{t:"noms",k},{t:"drum",k},{t:"win",k}); }); st.push({t:"end"}); return st; }
 function awShow(k){ const cer=awCers().find(x=>x.k===k); if(!cer) return; ui.awS={cer,i:0,st:awSteps(cer)}; awShowDraw(); }
-const awAv=n=>`<span class="aws-av">${esc(String(n||"").slice(0,1))}</span>`;
-const awSay=(who,t)=>`<div class="aws-say">${awAv(who)}<div><small>${esc(who)}</small><p>${t}</p></div></div>`;
+const awSay=(who,t)=>`<div class="aws-say"><div><small>${esc(who)}</small><p>${t}</p></div></div>`;   /* 不放頭貼：只寫名字 */
 function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.st[S0.i], P=awPool(), W=awWinners(), c=awCfg(), sp=awDemo()?(ui.awSp||{}):c.sp, prog=`<div class="aws-pg"><i style="width:${Math.round(S0.i/(S0.st.length-1)*100)}%"></i></div>`;
   const find=(k,id)=>awList(P,awCatOf(k).kind).find(x=>x.id===id), H=AW_HOST[cer.k]||awPres(cer.k,cer.cats[cer.cats.length-1]);
   let body="";
@@ -16387,13 +16395,13 @@ function awShowDraw(){ const S0=ui.awS; if(!S0) return; const cer=S0.cer, s=S0.s
     body=`<div class="aws-cat"><small>STAGE</small><b>${esc(nm)}</b></div>${v?`<div class="aws-v"><video data-awmid="${esc(v.mid||"")}" playsinline webkit-playsinline controls preload="metadata"></video></div><p class="aws-vt">${esc(v.title||"")}</p>`:`<div class="aws-v ph"><span>🎤</span><p>入圍藝人選的舞台影片會在這裡播</p></div>`}${awSay(H[0],`接下來，請欣賞 ${esc(nm)} 的舞台！`)}`; }
   else { const cat=awCatOf(s.k), L=awNoms(s.k), win=(W[s.k]||[]).map(id=>find(s.k,id)).filter(Boolean), pr=awPres(cer.k,s.k);
     const head=`<div class="aws-cat ${cat.ds?"ds":""}">${cat.ds?`<em>DAESANG</em>`:""}<small>${cat.en}</small><b>${cat.n}</b></div>`;
-    if(s.t==="intro") body=head+`<div class="aws-pre">${pr.map(n=>`<span>${awAv(n)}<b>${esc(n)}</b></span>`).join("")}</div>`+awSay(pr[0],cat.ds?`大家好！很榮幸能來頒發今晚的大賞——「${cat.n}」。`:`大家好！接下來由我們來頒發「${cat.n}」。`)+awSay(pr[1],cat.ds?"這一座獎的份量，大家都知道吧？":"今年的入圍者真的都很精彩。");
+    if(s.t==="intro") body=head+`<div class="aws-pre"><small>頒獎人</small><b>${pr.map(esc).join("・")}</b></div>`+awSay(pr[0],cat.ds?`大家好！很榮幸能來頒發今晚的大賞——「${cat.n}」。`:`大家好！接下來由我們來頒發「${cat.n}」。`)+awSay(pr[1],cat.ds?"這一座獎的份量，大家都知道吧？":"今年的入圍者真的都很精彩。");
     else if(s.t==="noms") body=head+awSay(pr[0],"入圍的是……")+`<div class="aws-noms">${L.length?L.map((x,i)=>`<div class="aws-nom" style="-webkit-animation-delay:${i*.18}s;animation-delay:${i*.18}s">${awCov4(x)}${awNm(x)}</div>`).join(""):`<p class="aws-none">今年沒有入圍者，從缺</p>`}</div>`;
     else if(s.t==="drum") body=head+`<div class="aws-drum">${awSay(pr[1],cat.top?`「${cat.n}」的得主是……`:`${c.y} ${cat.n}，得獎的是……`)}<div class="aws-dots"><i></i><i></i><i></i></div></div>`;
     else if(s.t==="win") body=head+(win.length?`<div class="aws-win">${win.map(x=>`<div class="aws-wc">${awCov4(x)}${awNm(x)}</div>`).join("")}</div>${awSay(pr[0],`恭喜 ${win.map(x=>esc(x.art||x.name)).join("、")}！`)}${win.filter(x=>!x.npc).map(x=>{ const t=sp[x.gid+"|"+s.k]; return `<div class="aws-sp"><small>得獎感言・${esc(x.art||x.name)}</small><p>${t?esc(t):awDemo()?"（入圍藝人事先寫好的得獎感言會出現在這裡）":"謝謝一直支持我們的粉絲！這個獎是大家一起拿到的！"}</p></div>`; }).join("")}`:`<p class="aws-none">從缺</p>`); }
-  setLayer(`<div class="aws aw-c-${cer.k} ${s.t==="win"?"lit":""}" data-a="awNext">${prog}<button class="aws-x" data-a="awShowX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${body}</div>${s.t!=="end"&&s.t!=="drum"?`<p class="aws-tap">${S0.i?"點左邊回上一步・點右邊繼續":"點一下繼續"}</p>`:""}</div>`);
+  setLayer(`<div class="aws aw-c-${cer.k} ${s.t==="win"?"lit":""}" data-a="awNext">${prog}<button class="aws-x" data-a="awShowX" aria-label="離開">✕</button><div class="aws-beams"><i></i><i></i><i></i></div><div class="aws-in">${body}</div>${s.t!=="end"&&s.t!=="drum"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`);
   layer.querySelectorAll("video[data-awmid]").forEach(async el=>{ try{ const u=el.dataset.awmid&&await mediaSrc(el.dataset.awmid); if(u) el.src=u; }catch(e){} });
-  if(s.t==="drum"){ clearTimeout(ui.awT); ui.awT=setTimeout(()=>{ if(ui.awS===S0&&S0.st[S0.i]===s){ S0.i++; awShowDraw(); } },2400); }
+  clearTimeout(ui.awT); if(s.t!=="end"&&!(s.t==="perf"&&s.v)) ui.awT=setTimeout(()=>{ if(ui.awS===S0&&S0.st[S0.i]===s&&S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } },s.t==="drum"?2400:s.t==="win"?6000:4000);   /* 不點也會自己往下走（得獎畫面多停一下讓大家看感言；有影片的舞台等看完自己點） */
   if(s.t==="win"){ try{ sfx("t3"); }catch(e){} setTimeout(()=>{ try{ const cs=getComputedStyle(layer.querySelector(".aws")), a=cs.getPropertyValue("--c1").trim()||"#FFD86B", b=cs.getPropertyValue("--c2").trim()||"#FFFFFF", cat=awCatOf(s.k); confetti(innerWidth/2,innerHeight*.35,{cols:[a,b,"#FFFFFF",a,b]}); if(cat.ds) setTimeout(()=>confetti(innerWidth*.3,innerHeight*.3,{cols:[a,b,"#FFFFFF"]}),450); }catch(e){} },120); } }
 function awSave(fn){ return mkEdit(AWK,o=>{ const n={...(o||{})}; if(n.y!==awYear()){ n.y=awYear(); n.sp={}; n.st={}; n.res={}; } fn(n); return {v:n}; }); }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="aw"]'); if(!t) return; const a=t.dataset.a; if(!/^aw(Vc|Vote|Speech|SpOk|Judge|Show|ShowX|Next|DemoPh|DemoA|Open|Cer|How|Stage)$/.test(a)) return; e.stopImmediatePropagation();
@@ -16405,7 +16413,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="awDemoA"){ ui.awDemoA=!!t.dataset.v; keep(); return; }
   if(a==="awShow"){ awShow(t.dataset.v); return; }
   if(a==="awShowX"){ e.preventDefault(); clearTimeout(ui.awT); ui.awS=null; layer.innerHTML=""; return; }
-  if(a==="awNext"){ if(e.target.closest("video,.aws-v,.aws-btn")) return; const S0=ui.awS; if(!S0) return; const s=S0.st[S0.i]; if(S0.i>0&&e.clientX<innerWidth*.3){ clearTimeout(ui.awT); S0.i--; if(S0.st[S0.i].t==="drum") S0.i--; awShowDraw(); return; } if(s.t==="drum"||s.t==="end") return; if(S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } return; }   /* 點左邊三分之一回上一步（跳過「得獎的是……」），其他地方繼續 */
+  if(a==="awNext"){ if(e.target.closest("video,.aws-v,.aws-btn")) return; const S0=ui.awS; if(!S0) return; const s=S0.st[S0.i]; if(s.t==="drum"||s.t==="end") return; if(S0.i<S0.st.length-1){ S0.i++; awShowDraw(); } return; }
   if(a==="awVote"){ const cat=t.dataset.c, id=t.dataset.v; if(awMyFan(cat)) return; const s=session()||{};
     if(!awDemo()&&(s.role!=="fan"||awMyGid())){ toast(awMyGid()?"入圍藝人用評審票，不參加粉絲投票":"切到粉絲端才能投票"); return; }
     if(awDemo()){ const V=awVotes(); ((V.f[cat]=V.f[cat]||{}).me=V.f[cat].me||{})[awToday()]=id; toast("投好了！明天再來"); keep(); return; }
