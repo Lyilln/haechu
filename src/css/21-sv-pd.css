@@ -90,3 +90,7 @@ main.svpend{visibility:hidden}
 .svsh-mont>*{width:auto!important;flex:0 0 88px}
 .aws.svsh .svsh-mont .svsh-ph{width:80px!important;height:80px!important;flex:none}
 .svsh-co b{font-size:34px!important;letter-spacing:.04em}
+.svsh-wh{margin:10px 0;display:flex;flex-direction:column;align-items:center;gap:6px}
+.svsh-wh small{background:#2B2129;color:#fff;font-size:11px;font-weight:900;letter-spacing:.1em;padding:3px 10px}
+.svsh-wh p{margin:0;background:#fff;color:#2B2129;font-size:13.5px;font-weight:800;padding:5px 12px;border-radius:14px 14px 14px 2px;box-shadow:0 4px 12px -6px rgba(120,20,70,.3)}
+.svsh-wh p:nth-child(even){align-self:flex-end;border-radius:14px 14px 2px 14px}

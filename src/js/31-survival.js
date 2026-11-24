@@ -627,11 +627,11 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
   if(!tr&&s.ph==="r1"){ const G=s.demo?svGrDemo(s):s.grade||{}, ids=Object.keys(G);
     if(ids.length){ /* 11/24 照 PD 第一集：先一間公司一間公司入場（公司本身就是看點），之後也照公司順序上台評價 */
       const coOf=id=>svCoName(svById(id)||{}), cos=[...new Set(ids.map(coOf))].sort((a,b)=>(a==="個人練習生")-(b==="個人練習生")||svHash(s.id+a)-svHash(s.id+b));
-      cos.forEach(co=>st.push({t:"co",co,ids:ids.filter(id=>coOf(id)===co)})); const pi=st.findIndex(z=>z.t==="pr"); if(pi>=0) st.push(st.splice(pi,1)[0]);
-      ids.sort((a,b)=>cos.indexOf(coOf(a))-cos.indexOf(coOf(b))||svHash(s.id+"ev"+a)-svHash(s.id+"ev"+b)); st.push({t:"evo"}); const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, LV=svStages("r1","lv"), mont=[];
+      cos.forEach(co=>st.push({t:"co",co,ids:ids.filter(id=>coOf(id)===co)}));
+      ids.sort((a,b)=>cos.indexOf(coOf(a))-cos.indexOf(coOf(b))||svHash(s.id+"ev"+a)-svHash(s.id+"ev"+b)); st.push({t:"evo"}); const pi=st.findIndex(z=>z.t==="pr"); if(pi>=0) st.push(st.splice(pi,1)[0]); const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, LV=svStages("r1","lv"), mont=[];
       ids.forEach((id,i)=>{ const t=svById(id)||{}, y=LV.find(z=>z.tid===id), fr=t.real&&!s.demo?(y&&y.ts?(y.ts-t0)/Math.max(1,t1-t0):1):-1, r=(Math.imul(svHash(id+"ev"+s.id),2654435761)>>>16)%100;
         const ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";
-        if(ed==="mont") mont.push(id); else if(ed!=="none") st.push({t:"ev",id,ed,lt:fr>.75,p:0},{t:"ev",id,ed,lt:fr>.75,p:1}); });
+        const c1=!st.some(z=>z.t==="ev"&&coOf(z.id)===coOf(id)); if(ed==="mont") mont.push(id); else if(ed!=="none") st.push({t:"ev",id,ed,lt:fr>.75,p:0,c1},{t:"ev",id,ed,lt:fr>.75,p:1}); });
       if(mont.length) st.splice(Math.min(st.length,2+2*Math.floor((st.length-1)/4)),0,{t:"evm",ids:mont.slice(0,9)});
       st.push({t:"gr"}); const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); } }   /* 等級評價播完才公布這週的主題曲任務 */
   /* 11/24 節目剪輯：不是每個人都有一樣的鏡頭。有人整段播（focus）、有人被惡剪（evil）、有人只在合集閃過（mont）、有人完全沒鏡頭。照季＋任務固定，大家看到的一樣 */
@@ -644,6 +644,16 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
   st.push({t:"end"}); return st; }
 const svShOpenTx=(s,m)=>s.ph==="r1"&&m&&m.k!=="lv"&&svDayN(s)<=7?"國民製作人們，歡迎收看 SURVIVAL PROJECT！練習生們一個一個走進來了，今天會是誰讓你記住呢？":`國民製作人們，歡迎回來！${m?`這週的任務是「${esc(m.t)}」，`:""}一起看看練習生們這一週怎麼樣了。`;
 const SV_MSTV={th:"等級出來了，接下來是主題曲！練習生們照班級練習，主題曲 C 位會是誰呢？",gb:"這週是組別對決！同一首歌兩組對決，贏的那組，每個人都有加分。",po:"這週是 Position 評價！Vocal、Rap、Dance，練習生們要挑戰自己最擅長的部分。",co:"這週是概念評價！全新的歌、全新的概念，誰能抓住大家的目光？",pr:"決賽前，給每個人一分鐘！這週是 1 分鐘 PR。",de:"最後的舞台！出道組就在今天決定。"};
+/* 11/24 入場和上台前的竊竊私語：看公司有不有名，練習生、導師的反應不一樣 */
+const svCoTier=co=>/^(HYBE|SM|JYP|YG)/i.test(co)?"big":co==="個人練習生"?"solo":/BLUE HOUR/i.test(co)?"mid":"small";
+const SV_WH={big:["（全場一陣騷動）「是 {co} 欸……」","「大公司來了……」","「她們一定很強吧。」","（後排有人站起來看）","「完了，是 {co}。」"],
+  mid:["「{co}……有聽過。」","「是那個團的公司吧？」","（有人點點頭）"],
+  small:["「{co}？那是哪裡？」","（全場安靜了一下）","「第一次聽到……」","「好像是新公司。」"],
+  solo:["「個人練習生……好勇敢。」","「一個人來的欸。」","（大家互看了一眼）"]};
+const SV_WHM={big:["導師：「期待一下。」","導師們互看了一眼"],mid:["導師：「好，開始吧。」"],small:["導師在名單上找了一下名字","導師：「沒聽過的公司，更要好好看。」"],solo:["導師：「一個人準備很辛苦吧。」"]};
+function svWh(s,co,n,k){ const tr=svCoTier(co), L=SV_WH[tr], M=SV_WHM[tr], h=svHash(s.id+co+(k||"")), out=[];
+  for(let i=0;i<n;i++) out.push(L[(h+i*7)%L.length].replace("{co}",co)); if(k) out.push(M[h%M.length]);
+  return `<div class="svsh-wh">${k?`<small>下一組：${esc(co)}</small>`:""}${out.map(t=>`<p>${esc(t)}</p>`).join("")}</div>`; }
 const svCoName=t=>t.co||svCoOf(t.email)||"個人練習生";
 const svShMed=(y,t)=>y&&y.url?(y.kind==="v"?`<video src="${esc(y.url)}" playsinline webkit-playsinline controls autoplay preload="metadata"></video>`:`<img class="svsh-img" src="${esc(y.url)}" alt="">`):`<div class="svsh-nov">${svPh(t||{})}</div>`;
 const SV_INT={focus:["其實上台前手一直在抖。","我想讓大家知道，我不只有這樣。","今天連平常的一半都沒發揮出來……","這首歌對我來說很重要。","腦袋裡只想著，不要出錯。","我等這個舞台等了好久。","被叫到名字的時候，腿都軟了。","我會證明自己的。"],
@@ -659,11 +669,11 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
   else if(x.t==="pr"){ const c=svC1(s), w=c.win||{}, y=svStages("r1","lv").find(z=>z.tid===w.id)||{};
     b=`<div class="aws-cat"><small>1 分鐘 PR</small><b>${esc(w.name||"")}</b><span class="svsh-tag">${esc(w.co||svCoOf(w.email)||"個人練習生")}</span></div><div class="aws-v">${svShMed(y,w)}</div><div class="svsh-tmr"><i></i><b id="svPrT">1:00</b></div>${w.msg?`<p class="svsh-int"><small>${esc(w.name||"")}</small>「${esc(w.msg)}」</p>`:""}${host(`1 號位的主人是 ${esc(w.name||"")}。接下來的一分鐘，是她的時間。`)}`; }
   else if(x.t==="co"){ const L=x.ids.map(id=>svById(id)).filter(Boolean), solo=x.co==="個人練習生";
-    b=`<div class="aws-cat svsh-co"><small>${solo?"INDIVIDUAL TRAINEE":"ENTERTAINMENT"}</small><b>${esc(x.co)}</b></div><div class="svsh-mont fast">${L.map(t=>`<span><i class="svsh-ph">${svPh(t)}</i><b>${esc(t.name||"")}</b></span>`).join("")}</div>${host(solo?`沒有公司的個人練習生，${L.length} 位。`:`${esc(x.co)} 的練習生，${L.length} 位入場！`)}`; }
-  else if(x.t==="evo") b=`<div class="aws-cat"><small>EPISODE 1</small><b>等級評價</b></div><p class="svsh-how">${[...svAlive("r1")].length} 位練習生，一個人一個舞台。</p>${host("第一個任務，等級評價！練習生們要在導師面前表演，國民製作人，一起看看吧。")}`;
+    b=`<div class="aws-cat svsh-co"><small>${solo?"INDIVIDUAL TRAINEE":"ENTERTAINMENT"}</small><b>${esc(x.co)}</b></div><div class="svsh-mont fast">${L.map(t=>`<span><i class="svsh-ph">${svPh(t)}</i><b>${esc(t.name||"")}</b></span>`).join("")}</div>${svWh(s,x.co,2)}`; }
+  else if(x.t==="evo") b=`<div class="aws-cat"><small>EPISODE 1</small><b>等級評價</b></div><p class="svsh-how">${[...svAlive("r1")].length} 位練習生，全部入座。</p>${host("大家好，我是國民製作人代表。從今天起，誰能出道，由國民製作人決定。第一個任務——等級評價！")}`;
   else if(x.t==="ev"){ const t=svById(x.id)||{}, y=svStages("r1","lv").find(z=>z.tid===x.id)||{}, g=svGrade(t)||((s.demo?svGrDemo(s):s.grade||{})[x.id]), cm=svGrCm(s,t), ev=x.ed==="evil";
     if(!x.p){ const EP=ev&&x.lt&&svHash(x.id+"lt")%100<75?SV_ED.late:(SV_ED[x.ed]||SV_ED.focus), ec=EP[svHash(s.id+x.id+"c")%EP.length], it=y.iv?y.iv:t.real&&t.msg&&!ev?t.msg:SV_INT[ev?"evil":"focus"][svHash(x.id+"it")%SV_INT[ev?"evil":"focus"].length];
-      b=`<div class="aws-cat ${ev?"svsh-evil":""}"><small>${ev?"⋯⋯":"等級評價"}</small><b>${esc(t.name||"")}</b><span class="svsh-tag">${esc(t.co||svCoOf(t.email)||"個人練習生")}</span></div><div class="aws-v">${svShMed(y,t)}</div><p class="svsh-cut ${ev?"ev":""}">${esc(ec)}</p><p class="svsh-int"><small>後採訪</small>「${esc(it)}」</p><button class="svsh-skip" data-a="svShSkip">跳過，直接看等級結果 ›</button>`; }
+      b=`${x.c1?svWh(s,svCoName(t),1,"ev"):""}<div class="aws-cat ${ev?"svsh-evil":""}"><small>${ev?"⋯⋯":"等級評價"}</small><b>${esc(t.name||"")}</b><span class="svsh-tag">${esc(t.co||svCoOf(t.email)||"個人練習生")}</span></div><div class="aws-v">${svShMed(y,t)}</div><p class="svsh-cut ${ev?"ev":""}">${esc(ec)}</p><p class="svsh-int"><small>後採訪</small>「${esc(it)}」</p><button class="svsh-skip" data-a="svShSkip">跳過，直接看等級結果 ›</button>`; }
     else b=`<div class="aws-cat ${ev?"svsh-evil":""}"><small>${esc(cm.n)}</small><b>${esc(t.name||"")}</b></div><p class="svsh-crit">「${esc(cm.t)}」</p><div class="svsh-stamp g${g}"><i>${g}</i><small>${g} 班</small></div>`; }
   else if(x.t==="evm") b=`<div class="aws-cat"><small>等級評價</small><b>還有這些練習生</b></div><div class="svsh-mont fast">${x.ids.map(id=>{ const t=svById(id)||{}, g=svGrade(t)||((s.demo?svGrDemo(s):s.grade||{})[id]); return `<span><i class="svsh-ph">${svPh(t)}</i><em class="sv3-gr g${g}">${g}</em><b>${esc(t.name||"")}</b></span>`; }).join("")}</div>${host("其他練習生的等級，也一口氣公布！")}`;
   else if(x.t==="stg"){ const y=svStages(s.ph).find(z=>z.id===x.id)||{}, t=svById(y.tid)||{}, lv=m&&svMyLv()[s.id+m.k], idx=S0.st.filter(z=>z.t==="stg").findIndex(z=>z.id===x.id)+1, tot=S0.st.filter(z=>z.t==="stg").length;
