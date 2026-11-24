@@ -3778,6 +3778,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   if(s.role==="artist"&&r.tab==="live"){ const hl=myLive(s.member); if(hl){ hostSig=""; return paint(viewHostRoom(hl),false); } }
   if(s.role==="artist"&&r.tab==="foc"&&r.p==="fansign"){ const v=viewFsDesk(r.id); if(v) return paint(v,false); }
   if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); artReadSet(Date.now()); const mid0=s.member, RB=S.get(K.tieReadBy,{})||{}; if(mid0&&getWhispers().some(w=>w.member===mid0&&w.from!=="artist"&&w.ts>(RB[mid0]||0))){ S.set(K.tieReadBy,{...RB,[mid0]:Date.now()}); } return paint(v,false); }
+  if(s.role==="artist"&&r.tab==="foc"&&r.p==="survival") return paint(viewArtist("foc"),false);   /* 選秀全屏，不放底下導航（跟粉絲端一樣） */
   if(s.role==="artist") return paint(viewArtist(r.tab||"home"),true,artistNav(r.tab||"home"));
   return paint(viewAdmin(r.tab||"home"),true,adminNav(r.tab||"home"));
 }
@@ -16324,7 +16325,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
       cos.forEach(co=>st.push({t:"co",co,ids:ids.filter(id=>coOf(id)===co)}));
       ids.sort((a,b)=>cos.indexOf(coOf(a))-cos.indexOf(coOf(b))||svHash(s.id+"ev"+a)-svHash(s.id+"ev"+b)); st.push({t:"evo"}); const pi=st.findIndex(z=>z.t==="pr"); if(pi>=0) st.push(st.splice(pi,1)[0]); const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, LV=svStages("r1","lv"), mont=[];
       ids.forEach((id,i)=>{ const t=svById(id)||{}, y=LV.find(z=>z.tid===id), fr=t.real&&!s.demo?(y&&y.ts?(y.ts>t1?.5:(y.ts-t0)/Math.max(1,t1-t0)):1):-1, r=(Math.imul(svHash(id+"ev"+s.id),2654435761)>>>16)%100;
-        const ed=t.real&&!s.demo&&!y?"evil":t.real&&!s.demo?(fr>.75?"evil":fr<.4?(r<75?"focus":"mont"):r<50?"focus":r<75?"evil":"mont"):fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";   /* 11/24 真人有交就一定有鏡頭（整段／惡剪／合集），不會完全沒鏡頭 */
+        const ed=t.real&&!s.demo&&!y?"evil":t.real&&!s.demo?(fr>.75?"evil":fr<.4?"focus":r<70?"focus":"evil"):fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";   /* 11/24 真人有交就一定有鏡頭（整段／惡剪／合集），不會完全沒鏡頭 */
         if(!st.some(z=>z.t==="nx"&&z.co===coOf(id))){ if(mont.length) st.push({t:"evm",ids:mont.splice(0)}); st.push({t:"nx",co:coOf(id)}); } if(ed==="mont") mont.push(id); else if(ed!=="none") st.push({t:"ev",id,ed,lt:fr>.75,p:0},{t:"ev",id,ed,lt:fr>.75,p:1}); });
       if(mont.length) st.push({t:"evm",ids:mont.splice(0)});   /* 11/24 合集放在那間公司的評價最後，不會插在別人的表演和講評中間 */
       st.push({t:"gr"}); const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); } }   /* 等級評價播完才公布這週的主題曲任務 */
@@ -16334,7 +16335,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
   if(pm&&pm.k!=="lv"){ const L=svStages(pv.ph,pm.k).slice().sort((a,b)=>svHash(s.id+a.id)-svHash(s.id+b.id)), mont=[];
     const P0=((s.t0s||{})[pv.ph]||svPhT0(s)), t0=P0+pm.d[0]*864e5, t1=P0+pm.d[1]*864e5; const m=pm;
     L.forEach((x,i)=>{ const r=(Math.imul(svHash(x.tid+"ed"+s.id+m.k),2654435761)>>>16)%100, t=svById(x.tid)||{}, fr=t.real&&x.ts?(x.ts-t0)/Math.max(1,t1-t0):-1;
-      let ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none"; if(t.real&&ed==="none") ed=fr>.75?"evil":"mont";
+      let ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none"; if(t.real&&!s.demo&&(ed==="none"||ed==="mont")) ed=fr>.75?"evil":"focus";   /* 11/24 真人有交一定整段播＋後採訪，不會只在合集閃過 */
       if((s.ph==="final"||s.ph==="pr"||pv.ph==="pr")&&ed==="evil") ed="focus"; if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75&&ed==="evil",ph:pv.ph}); });   /* 決賽前後不惡剪 */
     if(mont.length){ const fi=st.findIndex(z=>z.t==="stg"), nS=st.filter(z=>z.t==="stg").length; st.splice(fi<0?st.length:fi+Math.ceil(nS/2),0,{t:"mont",ids:mont.slice(0,6),ph:pv.ph}); }   /* 合集放在舞台們的中間，不會插進候補介紹 */
     const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); }
@@ -16433,7 +16434,7 @@ let svPdBusy=0;
 function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(); if(!s||s.demo||s.ph==="recruit") return []; const all=svAll(), out=[];
     const MS=k=>{ for(const ph in SV_MS) { const m=(SV_MS[ph]||[]).find(x=>x.k===k); if(m) return m.t; } return ""; };
     const med=(y,t)=>y.url?(y.kind==="v"?{type:"html",h:`<video src="${esc(y.url)}" playsinline webkit-playsinline controls preload="metadata" style="width:100%;height:100%;object-fit:cover;background:#000;${svFp(y)}"></video>`}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
-    svStages().filter(y=>y&&!y.del&&y.sid===s.id).forEach(y=>{ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
+    ["r1","r2","pr","final"].flatMap(p=>svStages(p)).filter(y=>y&&!y.del&&!y.v&&y.url&&y.sid===s.id).forEach(y=>{   /* 11/24 原本拿不到任何舞台（沒給階段），官方帳號一直沒有舞台貼文 */ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
       out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.ts||Date.now(),base:svHash(y.id+"lk")%60,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
     /* 開播：每位練習生的公式照＋名字（3:4，真人照片不切到臉） */
@@ -16458,7 +16459,7 @@ function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) retu
 function svSnPrep(){ const lk=svSnLock(), d=snDB(), me=snUser(snMeId()), to=snUser(lk.as), L=(d.posts||[]).filter(p=>p.uid===lk.as&&p.by===snMeId()).sort((a,b)=>b.ts-a.ts);
   return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page sn-prep">
     <section class="card sn-prep-h">${snAv(me,72)}<b>${esc(me.u)}</b>${me.name?`<small>${esc(me.name)}</small>`:""}<p>${lk.as==="o:pd"?"節目播出期間，個人帳號暫停使用":"出道組的團體帳號開通了"}</p></section>
-    <section class="card"><button class="list-btn" data-a="snsGo" data-v="edit">${I.edit||""}先設定個人檔案<span class="r">開通前只有你看得到</span></button>${to?`<button class="list-btn" data-a="snsGo" data-v="new">${I.star||""}發文到 ${esc(to.u)}<span class="r">${esc(to.name)}</span></button><button class="list-btn" data-a="snsGo" data-v="profile" data-id="${lk.as}">${I.star||""}看 ${esc(to.u)}<span class="r">›</span></button>`:""}</section>
+    <section class="card">${to?`<button class="list-btn" data-a="snsGo" data-v="new">${I.star||""}發文到 ${esc(to.u)}<span class="r">${esc(to.name)}</span></button><button class="list-btn" data-a="snsGo" data-v="profile" data-id="${lk.as}">${I.star||""}看 ${esc(to.u)}<span class="r">›</span></button>`:""}</section>
     ${L.length?`<div class="section-h">我發的貼文</div><section class="card sn-subl">${L.map(x=>`<div class="sn-subr"><span class="sn-subth"></span><span><b>${esc(String(x.cap||"").slice(0,40)||"（沒有文字）")}</b><small>${ago(x.ts)}</small></span><em class="ok">已發布</em></div>`).join("")}</section>`:""}
   </main>`; }
 /* 11/24 新聞聯動（照 PD 播出時的新聞爆點）：首播、大公司登場、等級評價、C 位、排名發表、惡剪爭議、退出節目、出道組誕生。

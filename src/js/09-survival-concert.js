@@ -702,6 +702,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   if(s.role==="artist"&&r.tab==="live"){ const hl=myLive(s.member); if(hl){ hostSig=""; return paint(viewHostRoom(hl),false); } }
   if(s.role==="artist"&&r.tab==="foc"&&r.p==="fansign"){ const v=viewFsDesk(r.id); if(v) return paint(v,false); }
   if(s.role==="artist"&&r.tab==="whisper"){ const v=viewTieArtist(s.member); artReadSet(Date.now()); const mid0=s.member, RB=S.get(K.tieReadBy,{})||{}; if(mid0&&getWhispers().some(w=>w.member===mid0&&w.from!=="artist"&&w.ts>(RB[mid0]||0))){ S.set(K.tieReadBy,{...RB,[mid0]:Date.now()}); } return paint(v,false); }
+  if(s.role==="artist"&&r.tab==="foc"&&r.p==="survival") return paint(viewArtist("foc"),false);   /* 選秀全屏，不放底下導航（跟粉絲端一樣） */
   if(s.role==="artist") return paint(viewArtist(r.tab||"home"),true,artistNav(r.tab||"home"));
   return paint(viewAdmin(r.tab||"home"),true,adminNav(r.tab||"home"));
 }

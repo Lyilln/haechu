@@ -823,7 +823,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
       cos.forEach(co=>st.push({t:"co",co,ids:ids.filter(id=>coOf(id)===co)}));
       ids.sort((a,b)=>cos.indexOf(coOf(a))-cos.indexOf(coOf(b))||svHash(s.id+"ev"+a)-svHash(s.id+"ev"+b)); st.push({t:"evo"}); const pi=st.findIndex(z=>z.t==="pr"); if(pi>=0) st.push(st.splice(pi,1)[0]); const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, LV=svStages("r1","lv"), mont=[];
       ids.forEach((id,i)=>{ const t=svById(id)||{}, y=LV.find(z=>z.tid===id), fr=t.real&&!s.demo?(y&&y.ts?(y.ts>t1?.5:(y.ts-t0)/Math.max(1,t1-t0)):1):-1, r=(Math.imul(svHash(id+"ev"+s.id),2654435761)>>>16)%100;
-        const ed=t.real&&!s.demo&&!y?"evil":t.real&&!s.demo?(fr>.75?"evil":fr<.4?(r<75?"focus":"mont"):r<50?"focus":r<75?"evil":"mont"):fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";   /* 11/24 真人有交就一定有鏡頭（整段／惡剪／合集），不會完全沒鏡頭 */
+        const ed=t.real&&!s.demo&&!y?"evil":t.real&&!s.demo?(fr>.75?"evil":fr<.4?"focus":r<70?"focus":"evil"):fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";   /* 11/24 真人有交就一定有鏡頭（整段／惡剪／合集），不會完全沒鏡頭 */
         if(!st.some(z=>z.t==="nx"&&z.co===coOf(id))){ if(mont.length) st.push({t:"evm",ids:mont.splice(0)}); st.push({t:"nx",co:coOf(id)}); } if(ed==="mont") mont.push(id); else if(ed!=="none") st.push({t:"ev",id,ed,lt:fr>.75,p:0},{t:"ev",id,ed,lt:fr>.75,p:1}); });
       if(mont.length) st.push({t:"evm",ids:mont.splice(0)});   /* 11/24 合集放在那間公司的評價最後，不會插在別人的表演和講評中間 */
       st.push({t:"gr"}); const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); } }   /* 等級評價播完才公布這週的主題曲任務 */
@@ -833,7 +833,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
   if(pm&&pm.k!=="lv"){ const L=svStages(pv.ph,pm.k).slice().sort((a,b)=>svHash(s.id+a.id)-svHash(s.id+b.id)), mont=[];
     const P0=((s.t0s||{})[pv.ph]||svPhT0(s)), t0=P0+pm.d[0]*864e5, t1=P0+pm.d[1]*864e5; const m=pm;
     L.forEach((x,i)=>{ const r=(Math.imul(svHash(x.tid+"ed"+s.id+m.k),2654435761)>>>16)%100, t=svById(x.tid)||{}, fr=t.real&&x.ts?(x.ts-t0)/Math.max(1,t1-t0):-1;
-      let ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none"; if(t.real&&ed==="none") ed=fr>.75?"evil":"mont";
+      let ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none"; if(t.real&&!s.demo&&(ed==="none"||ed==="mont")) ed=fr>.75?"evil":"focus";   /* 11/24 真人有交一定整段播＋後採訪，不會只在合集閃過 */
       if((s.ph==="final"||s.ph==="pr"||pv.ph==="pr")&&ed==="evil") ed="focus"; if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75&&ed==="evil",ph:pv.ph}); });   /* 決賽前後不惡剪 */
     if(mont.length){ const fi=st.findIndex(z=>z.t==="stg"), nS=st.filter(z=>z.t==="stg").length; st.splice(fi<0?st.length:fi+Math.ceil(nS/2),0,{t:"mont",ids:mont.slice(0,6),ph:pv.ph}); }   /* 合集放在舞台們的中間，不會插進候補介紹 */
     const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); }

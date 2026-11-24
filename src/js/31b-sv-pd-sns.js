@@ -7,7 +7,7 @@ let svPdBusy=0;
 function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(); if(!s||s.demo||s.ph==="recruit") return []; const all=svAll(), out=[];
     const MS=k=>{ for(const ph in SV_MS) { const m=(SV_MS[ph]||[]).find(x=>x.k===k); if(m) return m.t; } return ""; };
     const med=(y,t)=>y.url?(y.kind==="v"?{type:"html",h:`<video src="${esc(y.url)}" playsinline webkit-playsinline controls preload="metadata" style="width:100%;height:100%;object-fit:cover;background:#000;${svFp(y)}"></video>`}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
-    svStages().filter(y=>y&&!y.del&&y.sid===s.id).forEach(y=>{ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
+    ["r1","r2","pr","final"].flatMap(p=>svStages(p)).filter(y=>y&&!y.del&&!y.v&&y.url&&y.sid===s.id).forEach(y=>{   /* 11/24 原本拿不到任何舞台（沒給階段），官方帳號一直沒有舞台貼文 */ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
       out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.ts||Date.now(),base:svHash(y.id+"lk")%60,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
     /* 開播：每位練習生的公式照＋名字（3:4，真人照片不切到臉） */
@@ -32,7 +32,7 @@ function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) retu
 function svSnPrep(){ const lk=svSnLock(), d=snDB(), me=snUser(snMeId()), to=snUser(lk.as), L=(d.posts||[]).filter(p=>p.uid===lk.as&&p.by===snMeId()).sort((a,b)=>b.ts-a.ts);
   return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page sn-prep">
     <section class="card sn-prep-h">${snAv(me,72)}<b>${esc(me.u)}</b>${me.name?`<small>${esc(me.name)}</small>`:""}<p>${lk.as==="o:pd"?"節目播出期間，個人帳號暫停使用":"出道組的團體帳號開通了"}</p></section>
-    <section class="card"><button class="list-btn" data-a="snsGo" data-v="edit">${I.edit||""}先設定個人檔案<span class="r">開通前只有你看得到</span></button>${to?`<button class="list-btn" data-a="snsGo" data-v="new">${I.star||""}發文到 ${esc(to.u)}<span class="r">${esc(to.name)}</span></button><button class="list-btn" data-a="snsGo" data-v="profile" data-id="${lk.as}">${I.star||""}看 ${esc(to.u)}<span class="r">›</span></button>`:""}</section>
+    <section class="card">${to?`<button class="list-btn" data-a="snsGo" data-v="new">${I.star||""}發文到 ${esc(to.u)}<span class="r">${esc(to.name)}</span></button><button class="list-btn" data-a="snsGo" data-v="profile" data-id="${lk.as}">${I.star||""}看 ${esc(to.u)}<span class="r">›</span></button>`:""}</section>
     ${L.length?`<div class="section-h">我發的貼文</div><section class="card sn-subl">${L.map(x=>`<div class="sn-subr"><span class="sn-subth"></span><span><b>${esc(String(x.cap||"").slice(0,40)||"（沒有文字）")}</b><small>${ago(x.ts)}</small></span><em class="ok">已發布</em></div>`).join("")}</section>`:""}
   </main>`; }
 /* 11/24 新聞聯動（照 PD 播出時的新聞爆點）：首播、大公司登場、等級評價、C 位、排名發表、惡剪爭議、退出節目、出道組誕生。
