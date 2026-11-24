@@ -60,3 +60,20 @@
 .aws.svsh.evil{background:#1d1a1c!important;filter:grayscale(1) contrast(1.1)}
 .aws.svsh.evil .aws-cat b,.aws.svsh.evil .aws-cat small{color:#fff;background:none}
 .aws.svsh.evil .svsh-cut{background:#000;color:#eee;border-left-color:#555;font-family:serif}
+/* 等級評價那集、1 分鐘 PR、後採訪 */
+.svsh-tmr{position:relative;height:22px;margin:10px 0 4px;background:var(--k3);overflow:hidden}
+.svsh-tmr i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--k);transition:width .5s linear}
+.svsh-tmr b{position:relative;display:block;text-align:center;font-size:12px;font-weight:900;line-height:22px;color:#2B2129;letter-spacing:.1em}
+.svsh-int{margin:10px 0 0;background:#2B2129;color:#fff;padding:8px 12px;font-size:13.5px;font-weight:700;line-height:1.6;text-align:left}
+.svsh-int small{display:block;font-size:10px;letter-spacing:.14em;color:var(--k2);font-weight:900}
+.svsh-skip{display:block;margin:12px auto 0;background:none;border:0;color:#8B7A85;font-size:12px;font-weight:800;text-decoration:underline}
+.svsh-crit{margin:18px 0 0;background:#fff;border-left:6px solid var(--k);padding:14px 16px;font-size:17px;font-weight:800;line-height:1.7;color:#2B2129;text-align:left}
+.svsh-stamp{margin:26px auto 0;width:120px;height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;transform:rotate(-8deg);animation:svStamp .45s cubic-bezier(.2,1.6,.4,1) both;color:#fff;background:var(--k)}
+.svsh-stamp i{font-style:italic;font-weight:900;font-size:64px;line-height:1}.svsh-stamp small{font-size:12px;font-weight:900;letter-spacing:.2em}
+.svsh-stamp.gB{background:#FF8A00}.svsh-stamp.gC{background:#F2B705}.svsh-stamp.gD{background:#28B463}.svsh-stamp.gF{background:#8A8A95}
+@keyframes svStamp{0%{transform:scale(2.4) rotate(-8deg);opacity:0}100%{transform:scale(1) rotate(-8deg);opacity:1}}
+.svsh-mont.fast>*{animation:svWhoosh .35s ease-out both}
+.svsh-mont.fast>*:nth-child(2){animation-delay:.08s}.svsh-mont.fast>*:nth-child(3){animation-delay:.16s}.svsh-mont.fast>*:nth-child(4){animation-delay:.24s}.svsh-mont.fast>*:nth-child(5){animation-delay:.32s}.svsh-mont.fast>*:nth-child(6){animation-delay:.4s}.svsh-mont.fast>*:nth-child(7){animation-delay:.48s}.svsh-mont.fast>*:nth-child(8){animation-delay:.56s}.svsh-mont.fast>*:nth-child(9){animation-delay:.64s}
+@keyframes svWhoosh{0%{transform:translateX(120%);opacity:0}100%{transform:none;opacity:1}}
+/* 自動開播前先把頁面藏起來，不會閃一下 */
+main.svpend{visibility:hidden}

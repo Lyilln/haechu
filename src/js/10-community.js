@@ -432,7 +432,7 @@ function notifMsg(n){
   if(n.kind==="bday") return `🎂 今天是 ${nm} 的生日。留下生日祝福吧！`;
   if(n.kind==="acomment"){ const hm=MEMBERS[n.host]?artName(n.host,"cm"):nm; return `💬 ${nm}在 ${hm} 的貼文中發表了留言：${n.text}`; }
   if(n.kind==="live"&&n.guest){ const gn=MEMBERS[n.guest]?artName(n.guest,"live"):""; return `🔴 ${gn}已參與${nm}的直播：${n.text}`; }
-  return {post:`📝 ${nm}發表了貼文：${n.text}`,comment:`💬 ${nm}回覆了你的留言：${n.text}`,live:n.liveReply?`💬 ${nm}${n.text}`:`🔴 ${nm}已開始直播：${n.text}`,whisper:`${nm} 傳了 ${WHISPER_NAME} 給你：${String(n.text||"").split(NICK_TK).join(nickFor(n.member)).split("{愛稱}").join(nickFor(n.member))}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
+  return {post:`📝 ${nm}發表了貼文：${n.text}`,comment:`💬 ${nm}回覆了你的留言：${n.text}`,live:n.liveReply?`💬 ${nm}${n.text}`:`🔴 ${nm}已開始直播：${n.text}`,whisper:`${(()=>{ try{ return (tieSet(n.member)||{}).chatName||nm; }catch(e){ return nm; } })()} 傳了 ${WHISPER_NAME} 給你：${String(n.text||"").split(NICK_TK).join(nickFor(n.member)).split("{愛稱}").join(nickFor(n.member))}`,event:`${nm} 公布了新活動：${n.text}`}[n.kind]||n.text;
 }
 /* 出道／回歸預告：出道日、回歸日一到就從置頂公告和 FEST 橫幅拿掉（管理員的公告紀錄還在） */
 function annPre(a){ const t=String(a.text||""); if(a.pre==="db"||/出道預告｜/.test(t)){ const x=getDebut().find(y=>(a.ref&&y.id===a.ref)||y.annId===a.id)||getDebut().find(y=>t.includes(`「${y.name}」`)); return {k:"db",day:x&&x.status==="pre"?x.day:0,rel:x&&x.status==="pre"?dbRelAt(x):0}; }
