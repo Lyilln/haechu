@@ -39,8 +39,9 @@ function svSnPrep(){ const lk=svSnLock(), d=snDB(), me=snUser(snMeId()), to=snUs
    在管理員的手機上算，同一件事只發一則 */
 function svNews(s,key,title,body,img){ const done=s.newsDone||{}; if(done[key]) return false; const n={id:"nw"+Date.now()+key.length,title,body,img:img||"",gids:[],ts:Date.now(),pd:1};
   S.set(K.news,[n,...getNewsM()].slice(0,200)); try{ feedPush({kind:"news",group:"",text:title.slice(0,80),newsId:n.id,direct:true},"all"); }catch(e){} S.set(SVS,{...svReal(),newsDone:{...done,[key]:Date.now()}}); return true; }
+const svAirTx=s=>{ const d=new Date(svPhT0(s)), h=d.getHours()%12||12, m=d.getMinutes(); return ["一","二","三","四","五","六","七","八","九","十","十一","十二"][h-1]+"點"+(m===30?"半":m?m+"分":""); };
 function svNewsTick(){ const s=svReal(); if(!s||s.demo||!isAdminAcct()) return; const all=svAll(), N=id=>(all.find(t=>t.id===id)||{}).name||"", ph=s.ph, he=t=>s.g==="b"?t.replace(/她/g,"他"):t;
-  if(ph!=="recruit"&&svVoting()){ if(svNews(s,"air","《PRODUCE DAY》今晚六點首播！"+all.length+" 位練習生正式登場",he(`${all.length} 位練習生在今晚六點的首播中依序入場、坐上金字塔座位。坐上 1 號位的練習生將獲得 1 分鐘 PR 的機會。`))) return;
+  if(ph!=="recruit"&&svVoting()){ if(svNews(s,"air","《PRODUCE DAY》今晚"+svAirTx(s)+"首播！"+all.length+" 位練習生正式登場",he(`${all.length} 位練習生在今晚${svAirTx(s)}的首播中依序入場、坐上金字塔座位。坐上 1 號位的練習生將獲得 1 分鐘 PR 的機會。`))) return;
     const big=[...new Set(all.map(t=>svCoName(t)).filter(c=>svCoTier(c)==="big"))]; if(big.length&&svNews(s,"big",`${big.join("、")} 練習生登場，全場一陣騷動`,he(`首播入場時，${big.join("、")} 的練習生一出現，現場練習生紛紛竊竊私語。她們會在等級評價拿到什麼等級，成為觀眾關注的焦點。`))) return; }
   const G=s.grade||{}, A=Object.keys(G).filter(id=>G[id]==="A"), F=Object.keys(G).filter(id=>G[id]==="F");
   if((s.grPub||{}).lv&&svNews(s,"glv",`等級評價結果出爐…A 班只有 ${A.length} 位，F 班多達 ${F.length} 位`,he(`A 班：${A.map(N).join("、")||"—"}。導師們的毒舌評語也引發討論。`))) return;

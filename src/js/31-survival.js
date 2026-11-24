@@ -100,14 +100,19 @@ function svOutUndo2(){ const s=svReal(); if(!s||s.outUndo2||!isAdminAcct()) retu
     if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); Object.keys(nd).filter(k=>k!=="air").forEach(k=>delete nd[k]); } }catch(e){}
   const chk={...(s.outChk||{})}; delete chk.r1lv; S.set(SVS,{...s,out:s.ph==="r1"?[]:(s.out||[]),outChk:chk,newsDone:nd,outUndo:1,outUndo2:1});
   const P=(svReal().grPub)||{}; if(P.lv&&!P.th){ const s2=svReal(), g=svGrPub(s2,"lv"); S.set(SVS,{...g,grPub:{...P}}); } }
-function svGrTick(){ try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+/* 11/24 18:00 那一集當作播出失誤：退回「招募結束、等開播」，18:30 重新開播；自動發的新聞、通知、等級、棄賽全部收回（只做一次） */
+function svReAir(){ const s=svReal(); if(!s||s.reair1||!isAdminAcct()||s.ph!=="r1") return; const t1=(s.t0s||{}).r1||s.t0, at=new Date(t1); at.setHours(18,30,0,0); if(Date.now()-t1>6*36e5) return;
+  try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
+  const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
+  S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:at.getTime(),grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},reair1:1,airN:(s.airN||0)+1,outUndo:1,outUndo2:1}); }
+function svGrTick(){ try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
   const L2=L.map(x=>{ if(!x||!x.ltd||x.ltdOff||x.status!=="ok") return x; const st=x.day||x.appr||x.ts||now; if(now<st+x.ltd*864e5) return x; dbEms(x).forEach(e=>{ try{ unbindArtist(e); }catch(er){} }); ch=1; return {...x,ltdOff:now}; });
   if(ch){ S.set(K.debut,L2); feedPush&&feedPush({kind:"core",self:true,text:"限定團體活動期間結束，團員帳號已變回一般粉絲帳號"}); } }
 function svAdvance(force){ return svRealDo(()=>svAdvance0(force)); }
-function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
+function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ const now=s.end&&s.end<=Date.now()&&Date.now()-s.end<864e5?s.end:Date.now(); s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
   const reals=svEntries();
   if(s.ph==="recruit"){ if(reals.length<SV_MIN&&!force){ s.end=now+7*864e5; s.ext=(s.ext||0)+1; S.set(SVS,s); return "ext"; }   /* 真人不夠：延長招募（粉絲只會看到倒數變長） */
     s.npcN=Math.max(0,SV_N-reals.length); nx("r1",SV_DUR.r1); S.set(SVS,s); return "r1"; }
@@ -285,11 +290,11 @@ const svFcOut=()=>{ const c=layer.querySelector(".svx-fc"); if(c){ c.classList.a
 /* ---------- 頁面 ---------- */
 /* 11/24 節目播出條：取代 App 標題列（返回、ⓘ 照舊），左上 ON AIR、節目名、現在是第幾天、下一次發表倒數 */
 function svAutoSh(s){
-  try{ const shk=s.id+s.ph+((svMsNow(s)||{}).k||""); if(ui.svShK!==shk){ ui.svShK=shk; ui.svShIn=0; }   /* 換輪、換任務（示範切換也是）就重新開播 */
+  try{ const shk=s.id+(s.airN||"")+s.ph+((svMsNow(s)||{}).k||""); if(ui.svShK!==shk){ ui.svShK=shk; ui.svShIn=0; }   /* 換輪、換任務（示範切換也是）就重新開播 */
     const seenK=acK("daisuki_sv_shseen"), seen=S.get(seenK,{})||{}; if(!s.demo&&seen[shk]) ui.svShIn=1;   /* 11/24 一集每個人只會自動播一次（示範才可以一直重看） */
     if(!ui.svShIn){ ui.svShIn=1; if(!s.demo){ seen[shk]=Date.now(); S.set(seenK,seen); } setTimeout(()=>{ if(!ui.svSh&&!layer.innerHTML){ svSh(); } const mn=document.querySelector("main.svpend"); if(mn) mn.classList.remove("svpend"); },0); } }catch(e){}   /* 11/24 粉絲一進選秀＝節目開播，直接全螢幕播（按返回才回到頁面）；練習生照舊每個任務播一次 */
 }
-function svOnAir(s,hd){ if(route().role==="artist") return hd; const m=svMsNow(s), ph=SV_PH[s.ph]||"", nx=SV_ANN[s.ph];
+function svOnAir(s,hd){ if(route().role==="artist") return hd; const m=svMsNow(s), ph=s.reair1&&s.ph==="recruit"&&!s.demo?"即將開播":SV_PH[s.ph]||"", nx=SV_ANN[s.ph];
   return `<header class="top core-top svair ${svTheme()}"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="svair-t"><b>PRODUCE DAY</b><span>${esc(m?m.t:ph)}</span></div><button class="icon-btn" data-a="pgInfo" data-v="survival" aria-label="玩法說明"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
     <div class="svair-tk"><em>${svVoting()?"ON AIR":"NOW"}</em><span>${esc(ph)}${svVoting()?`・第 ${svDayN(s)} 天`:""}</span>${nx&&svVoting()?`<span>${esc(nx)} ${svCd(s)}</span>`:""}</div></header>`; }
 function viewSurvival(id){ const s=svSeason(), th=svTheme(), hd=(route().role==="artist"?focHead:coreHead)(id?"練習生":"選秀",id?"":"survival");
@@ -374,7 +379,8 @@ const svHow5=()=>`<button class="sv5-how" data-a="uniGo" data-v="#/fan/core?p=su
 const svBack5=t=>`<div class="sv5-bk"><b>${t}</b></div>`;   /* 上面的返回鍵就能回去，不另外放「回選秀」 */
 const svRecMe=s=>s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry();
 
-function svRecruitHtml(s){ const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
+function svRecruitHtml(s){ if(s.reair1&&!s.demo){ const at=new Date(s.end), hm=`${at.getHours()%12||12}:${String(at.getMinutes()).padStart(2,"0")}`; return `<section class="sv6-ep"><small>PRODUCE DAY・第一輪</small><h2>今晚 ${hm} 首播</h2><p>${svEntries().length} 位練習生，報名已截止。開播後直接在這裡看節目。</p></section>`; }
+  const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
   return svSt5("練習生招募中",`截止 <b>還有 ${svCd(s)}</b>`)
     +(me?(()=>{ const lv=s.demo?(ui.svDemoSt||{}).lv:svStages("r1","lv").find(x=>x.tid===me.id), chk=`<div class="sv5-chk"><span class="ok">① 報名・選座位 ✓</span><span class="${lv?"ok":""}">② 導師面前表演${lv?" ✓":""}</span><span>③ 開播公布等級</span></div>`;
       return lv?svCard5("你已經報名了",`坐在 ${me.seat||"?"} 號位・表演交了`,"開播當天導師直接公布 A～F 等級。截止前表演和資料都可以換。",`<button data-a="svUp">換表演</button>`,chk+`<button class="sv5-sub" data-a="svApply">修改報名資料</button>`)
@@ -426,7 +432,7 @@ function svWeekHtml(s){ const m=svMsNow(s), tr=svTrainee(s), rk=svRank(), all=sv
   const play=`<button class="sv6-play" data-a="svSh"><span>▶</span><div><b>看本週節目</b><small>主持人帶你看這週的任務和每一位的舞台</small></div><i>›</i></button>`;
   return ep+(tr?play+me+svGrBn(s)+svC1Bn(s):svTodoFan(s))+stg+svHost(s,svHostTxt(s))+svHow5(); }
 /* 11/24 粉絲「今天要做的事」：一次只叫你做一件，做完自動換下一件（看節目 → 看舞台投現場票 → PICK） */
-const svShK=s=>{ const m=svMsNow(s); return s.id+s.ph+(m?m.k:""); };
+const svShK=s=>{ const m=svMsNow(s); return s.id+(s.airN||"")+s.ph+(m?m.k:""); };
 const svFanNext=s=>{ const m=svMsNow(s); if(!s.demo&&S.get(acK("daisuki_sv_shw"),"")!==svShK(s)) return "sh"; if(m&&!svMyLv()[s.id+m.k]&&svStages(s.ph,m.k).length) return "st"; return svLeft()?"pick":"done"; };
 function svTodoFan(s){ const m=svMsNow(s), L=svLeft(), lv=m&&svMyLv()[s.id+m.k], sh=s.demo||S.get(acK("daisuki_sv_shw"),"")===svShK(s), nx=svFanNext(s), fin=s.ph==="final", rk=svRank();
   const st=[["看本週節目",sh],...(m?[["看舞台・投現場票",!!lv]]:[]),[fin?"PICK 出道組":"PICK",!L]];
@@ -622,7 +628,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svSk": { svKeep(); const L=ui.svF.sk, k=t.dataset.v, i=L.indexOf(k); if(i>=0) L.splice(i,1); else L.push(k); t.classList.toggle("on",i<0); return; }
     case "svSpeak": { if(s&&s.demo){ toast("示範：練習生會在這裡寫感言"); return; } svSpeakForm(); return; }
     case "svSpeakOk": { const me=svMyEntry(), v=((document.getElementById("svSp")||{}).value||"").trim(); if(!me||!s) return; mkEdit(SVE,o=>({v:(Array.isArray(o)?o:[]).map(x=>x.id===me.id?{...x,sp:{...(x.sp||{}),[s.ph]:v}}:x)})).then(()=>{ layer.innerHTML=""; rr(); toast("感言已儲存"); }).catch(()=>toast("沒有存到，再試一次")); return; }
-    case "svApplyOk": { svKeep(); const f=ui.svF; if(s&&s.demo){ ui.svF=null; layer.innerHTML=""; toast("示範：這樣就報名完成了（不會真的存）"); return; } if(!s||s.ph!=="recruit"){ toast("報名已經截止了"); return; } if(!f.name){ toast("請輸入名字"); return; } if(nameBlock&&nameBlock(f.name)) return; if(!f.bd){ toast("請選生日"); return; } if(f.bd>="2014-01-01"){ toast("報名資格：2013 年（含）以前出生"); return; } if(!f.photo||f.photo.startsWith("blob:")){ toast(f.photo?"照片還在上傳，等一下":"請放一張大頭照"); return; } if(!f.seat){ toast(f.ch1?"挑戰 1 號位也要再選一個備用座位":"請選一個座位"); return; } if(svSeats()[f.seat]&&svSeats()[f.seat].email!==myEmail()){ toast("這個座位剛剛被選走了，換一個"); return; } if(f.ps.length<5){ toast("個性再多寫一點"); return; } if(!f.sk.length){ toast("請選擅長的"); return; } if(f.msg.length<5){ toast("想對國民製作人說的話再多寫一點"); return; }
+    case "svApplyOk": { svKeep(); const f=ui.svF; if(s&&s.demo){ ui.svF=null; layer.innerHTML=""; toast("示範：這樣就報名完成了（不會真的存）"); return; } if(!s||s.ph!=="recruit"||s.reair1){ toast("報名已經截止了"); return; } if(!f.name){ toast("請輸入名字"); return; } if(nameBlock&&nameBlock(f.name)) return; if(!f.bd){ toast("請選生日"); return; } if(f.bd>="2014-01-01"){ toast("報名資格：2013 年（含）以前出生"); return; } if(!f.photo||f.photo.startsWith("blob:")){ toast(f.photo?"照片還在上傳，等一下":"請放一張大頭照"); return; } if(!f.seat){ toast(f.ch1?"挑戰 1 號位也要再選一個備用座位":"請選一個座位"); return; } if(svSeats()[f.seat]&&svSeats()[f.seat].email!==myEmail()){ toast("這個座位剛剛被選走了，換一個"); return; } if(f.ps.length<5){ toast("個性再多寫一點"); return; } if(!f.sk.length){ toast("請選擅長的"); return; } if(f.msg.length<5){ toast("想對國民製作人說的話再多寫一點"); return; }
       if(svEntries().some(x=>x.email!==myEmail()&&x.name.toLowerCase()===f.name.toLowerCase())||GROUPS.some(g=>g.name.toLowerCase()===f.name.toLowerCase())){ toast("這個名字已經有人用了"); return; }
       const me=myEmail(), row={name:f.name,bd:f.bd,photo:f.photo,seat:f.seat,ch1:f.ch1?1:0,ps:f.ps,sk:f.sk,msg:f.msg}, nid=uid("sve"), had=(S.get(SVE,[])||[]).some(x=>x.sid===s.id&&x.email===me&&!x.out);
       mkEdit(SVE,v=>{ const L=[...(Array.isArray(v)?v:[])], i=L.findIndex(x=>x.sid===s.id&&x.email===me&&!x.out); if(i>=0) L[i]={...L[i],...row,edited:Date.now()}; else L.push({id:nid,sid:s.id,email:me,ts:Date.now(),...row}); return {v:L}; }).then(()=>{ ui.svF=null; layer.innerHTML=""; rr(); toast(had?"已儲存":"報名完成，招募結束後開始投票"); }).catch(()=>toast("沒有送出去，再按一次")); return; }
