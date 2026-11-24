@@ -147,3 +147,21 @@ html[data-theme] .t-modal.sv3-tm .t-mbtn{background:#F8F4F6;color:#2B2129}
 html[data-theme] .t-modal.sv3-tm .t-mbtn.main{background:#FF4F9A;color:#fff}
 html[data-theme] .t-modal.sv3-tm .t-mbtn.main:disabled{background:#F1EAEE;color:#A0929B}
 html[data-theme] .t-modal.sv3-tm p.sv3-tag,html[data-theme] .t-modal.sv3-tm p.sv3-lv{color:#FF4F9A}
+
+/* 11/24 舞台列表：照 SKpedia 三欄、纖長 */
+.sv2 .sv3-sg,.sv2 .sv3-sg.sv6-sg{grid-template-columns:repeat(3,1fr)!important;gap:6px}
+.sv2 .sv3-st{border-radius:10px;padding:0 0 6px;gap:1px}
+.sv2 .sv3-sp{aspect-ratio:3/4}
+.sv2 .sv3-sp img,.sv2 .sv3-sp video{object-position:50% 25%}
+.sv2 .sv3-st b{font-size:12.5px;padding:0 7px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sv2 .sv3-st small{font-size:10.5px;padding:0 7px}
+.sv2 .sv3-sp em{width:19px;height:19px;font-size:10.5px;left:5px;top:5px}.sv2 .sv3-play{width:20px;height:20px;right:5px;bottom:5px}.sv2 .sv3-play:after{left:7.5px;top:5px;border-width:5px;border-left-width:7px}
+/* 下週預告 */
+.svnx .aws-in{padding-bottom:20px}
+.svnx-r{position:relative;width:100%;aspect-ratio:3/4;max-height:50vh;margin:10px auto 0}
+.svnx-c{position:absolute;inset:0;opacity:0;transition:opacity .25s}.svnx-c.on{opacity:1}
+.svnx-c .aws-v{height:100%;margin:0!important}.svnx-c .aws-v video,.svnx-c .aws-v img,.svnx-c .svsh-nov{width:100%;height:100%!important;max-height:none!important;object-fit:cover;object-position:50% 25%}
+.svnx-c.on .aws-v{animation:svnxZ 2.3s linear}
+@keyframes svnxZ{from{transform:scale(1.06)}to{transform:scale(1)}}
+.svnx-t{margin:12px 0 0;font-size:14px;font-weight:800;color:#2B2129;text-align:center}
+.svnx .svx-a{position:static;margin-top:14px;display:flex;gap:10px;width:100%}
+.svnx .svx-a button{flex:1;padding:13px;border:0;font:inherit;font-weight:900;font-size:14.5px}.svnx .svx-a .m{background:var(--k,#FF4F9A);color:#fff}.svnx .svx-a .s{background:#fff;color:#2B2129;box-shadow:inset 0 0 0 1.5px #2B2129}
