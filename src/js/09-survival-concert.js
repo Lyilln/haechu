@@ -784,12 +784,12 @@ function paint(html,hasNav,navHtml=""){
   const pc=pa&&!anPa&&!matchMedia("(prefers-reduced-motion: reduce)").matches?" pg-"+(fixedPage&&pa!=="op"?"op":pa)+(fixedPage&&pa==="push"?" pg-tpush":""):"";
   // 導覽列不要每次重畫：同一組分頁就保留原本的玻璃列，只把鏡片滑過去（才不會卡）
   const oldSn=root.querySelector(".sn-nav2"), oldNav=root.querySelector(":scope > .nav"), tmp=document.createElement("div"); if(hasNav) tmp.innerHTML=navHtml; const newNav=tmp.firstElementChild;
-  const sig=n=>n?n.className+(n.querySelector(".nav-lens")?"L":"")+[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v+"|"+b.querySelector(".nav-ico").innerHTML.length).join(","):"";
+  const sig=n=>n?n.className+(n.querySelector(".nav-lens")?"L":"")+[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v).join(","):"";   /* 11/24 圖示（選中／沒選中、紅點）不同不算換了一條導覽列，才不會整條重畫讓光圈跳過去 */
   if(hasNav&&oldNav&&newNav&&sig(oldNav)===sig(newNav)){
     const app=root.querySelector(":scope > .app"); const box=document.createElement("div"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`;
     if(app&&ui._syncPaint&&!pgChg){ try{ morphNode(app,box.firstElementChild); }catch(e){ const a2=root.querySelector(":scope > .app"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`; if(a2) a2.replaceWith(box.firstElementChild); } }
     else if(app) app.replaceWith(box.firstElementChild); else root.prepend(box.firstElementChild);
-    const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+    const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(b.innerHTML!==nb[k].innerHTML) b.innerHTML=nb[k].innerHTML; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ const f0=parseFloat(L.style.getPropertyValue("--i")); L.classList.remove("go"); L.style.setProperty("--i",i); L.style.setProperty("--f",i); if(!(f0!==i&&navTapped()&&AN.lens(L,f0,i))) L.style.transform=""; }
   } else if(!hasNav&&!oldNav&&ui._syncPaint&&!pgChg&&root.querySelector(":scope > .app")&&root.children.length===1){ const box=document.createElement("div"); box.innerHTML=`<div class="app no-nav${pc}">${html}</div>`; try{ morphNode(root.querySelector(":scope > .app"),box.firstElementChild); }catch(e){ root.innerHTML=box.innerHTML; } }
   else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;

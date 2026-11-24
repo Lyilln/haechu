@@ -3860,12 +3860,12 @@ function paint(html,hasNav,navHtml=""){
   const pc=pa&&!anPa&&!matchMedia("(prefers-reduced-motion: reduce)").matches?" pg-"+(fixedPage&&pa!=="op"?"op":pa)+(fixedPage&&pa==="push"?" pg-tpush":""):"";
   // 導覽列不要每次重畫：同一組分頁就保留原本的玻璃列，只把鏡片滑過去（才不會卡）
   const oldSn=root.querySelector(".sn-nav2"), oldNav=root.querySelector(":scope > .nav"), tmp=document.createElement("div"); if(hasNav) tmp.innerHTML=navHtml; const newNav=tmp.firstElementChild;
-  const sig=n=>n?n.className+(n.querySelector(".nav-lens")?"L":"")+[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v+"|"+b.querySelector(".nav-ico").innerHTML.length).join(","):"";
+  const sig=n=>n?n.className+(n.querySelector(".nav-lens")?"L":"")+[...n.querySelectorAll(".nav-btn")].map(b=>b.dataset.v).join(","):"";   /* 11/24 圖示（選中／沒選中、紅點）不同不算換了一條導覽列，才不會整條重畫讓光圈跳過去 */
   if(hasNav&&oldNav&&newNav&&sig(oldNav)===sig(newNav)){
     const app=root.querySelector(":scope > .app"); const box=document.createElement("div"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`;
     if(app&&ui._syncPaint&&!pgChg){ try{ morphNode(app,box.firstElementChild); }catch(e){ const a2=root.querySelector(":scope > .app"); box.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>`; if(a2) a2.replaceWith(box.firstElementChild); } }
     else if(app) app.replaceWith(box.firstElementChild); else root.prepend(box.firstElementChild);
-    const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
+    const nb=[...newNav.querySelectorAll(".nav-btn")]; [...oldNav.querySelectorAll(".nav-btn")].forEach((b,k)=>{ b.className=nb[k].className; if(b.innerHTML!==nb[k].innerHTML) b.innerHTML=nb[k].innerHTML; if(nb[k].hasAttribute("aria-current")) b.setAttribute("aria-current","page"); else b.removeAttribute("aria-current"); });
     const L=oldNav.querySelector(".nav-lens"), i=nb.findIndex(b=>b.classList.contains("on")); if(L&&i>=0){ const f0=parseFloat(L.style.getPropertyValue("--i")); L.classList.remove("go"); L.style.setProperty("--i",i); L.style.setProperty("--f",i); if(!(f0!==i&&navTapped()&&AN.lens(L,f0,i))) L.style.transform=""; }
   } else if(!hasNav&&!oldNav&&ui._syncPaint&&!pgChg&&root.querySelector(":scope > .app")&&root.children.length===1){ const box=document.createElement("div"); box.innerHTML=`<div class="app no-nav${pc}">${html}</div>`; try{ morphNode(root.querySelector(":scope > .app"),box.firstElementChild); }catch(e){ root.innerHTML=box.innerHTML; } }
   else root.innerHTML=`<div class="app ${hasNav?"":"no-nav"}${pc}">${html}</div>${hasNav?navHtml:""}`;
@@ -15742,7 +15742,8 @@ function svStages(ph,mk){ const s=svSeason(); if(!s) return []; if(s.demo){ if(!
   const real=(S.get(SVST,[])||[]).filter(x=>x.sid===s.id&&x.ph===ph&&(!mk||x.mk===mk)&&!x.del);
   return real.concat(svVStages(s,ph,mk)); }
 /* 11/24 虛擬練習生也有舞台（放公式照），任務開始就有；不搶現場票前三名的加分 */
-function svLvOpen(s,mk){ if(!s||s.demo) return {ok:true,n:0,N:0}; const A=svAlive(s.ph), R=svAll().filter(t=>t.real&&A.has(t.id)), sub=new Set(svStages(s.ph,mk).filter(x=>!x.v).map(x=>x.tid)), n=R.filter(t=>sub.has(t.id)).length; return {ok:n*2>R.length,n,N:R.length}; }
+function svLvOpen(s,mk){ return {ok:true,n:0,N:0};   /* 11/24 「真人過半才開放」取消，改回原本隨時可以投 */
+  if(!s||s.demo) return {ok:true,n:0,N:0}; const A=svAlive(s.ph), R=svAll().filter(t=>t.real&&A.has(t.id)), sub=new Set(svStages(s.ph,mk).filter(x=>!x.v).map(x=>x.tid)), n=R.filter(t=>sub.has(t.id)).length; return {ok:n*2>R.length,n,N:R.length}; }
 function svVStages(s,ph,mk){ try{ if(!s||s.demo||s.ph==="recruit"||ph==="recruit") return []; const P0=(s.t0s||{})[ph]; if(!P0) return []; const now=Date.now(), key=[s.id,ph,mk||"",Math.floor(now/6e4)].join("|"); if(svVStages.c&&svVStages.c.k===key) return svVStages.c.v;
   const alive=svAlive(ph), V=svAll().filter(t=>!t.real&&alive.has(t.id)), out=[];
   svMsList(ph).filter(m=>(!mk||m.k===mk)&&m.k!=="lv"&&P0+m.d[0]*864e5<=now).forEach(m=>V.forEach(t=>{ const h=svHash(s.id+ph+m.k+t.id); out.push({id:"vs_"+ph+m.k+"_"+t.id,sid:s.id,ph,mk:m.k,tid:t.id,v:1,url:t.photo||"",kind:"i",ts:P0+m.d[0]*864e5+(h%600)*6e4,team:m.team?["A 組","B 組"][h%2]:"",pos:m.pos?["Vocal","Dance","Rap"][h%3]:""}); }));

@@ -240,7 +240,8 @@ function svStages(ph,mk){ const s=svSeason(); if(!s) return []; if(s.demo){ if(!
   const real=(S.get(SVST,[])||[]).filter(x=>x.sid===s.id&&x.ph===ph&&(!mk||x.mk===mk)&&!x.del);
   return real.concat(svVStages(s,ph,mk)); }
 /* 11/24 虛擬練習生也有舞台（放公式照），任務開始就有；不搶現場票前三名的加分 */
-function svLvOpen(s,mk){ if(!s||s.demo) return {ok:true,n:0,N:0}; const A=svAlive(s.ph), R=svAll().filter(t=>t.real&&A.has(t.id)), sub=new Set(svStages(s.ph,mk).filter(x=>!x.v).map(x=>x.tid)), n=R.filter(t=>sub.has(t.id)).length; return {ok:n*2>R.length,n,N:R.length}; }
+function svLvOpen(s,mk){ return {ok:true,n:0,N:0};   /* 11/24 「真人過半才開放」取消，改回原本隨時可以投 */
+  if(!s||s.demo) return {ok:true,n:0,N:0}; const A=svAlive(s.ph), R=svAll().filter(t=>t.real&&A.has(t.id)), sub=new Set(svStages(s.ph,mk).filter(x=>!x.v).map(x=>x.tid)), n=R.filter(t=>sub.has(t.id)).length; return {ok:n*2>R.length,n,N:R.length}; }
 function svVStages(s,ph,mk){ try{ if(!s||s.demo||s.ph==="recruit"||ph==="recruit") return []; const P0=(s.t0s||{})[ph]; if(!P0) return []; const now=Date.now(), key=[s.id,ph,mk||"",Math.floor(now/6e4)].join("|"); if(svVStages.c&&svVStages.c.k===key) return svVStages.c.v;
   const alive=svAlive(ph), V=svAll().filter(t=>!t.real&&alive.has(t.id)), out=[];
   svMsList(ph).filter(m=>(!mk||m.k===mk)&&m.k!=="lv"&&P0+m.d[0]*864e5<=now).forEach(m=>V.forEach(t=>{ const h=svHash(s.id+ph+m.k+t.id); out.push({id:"vs_"+ph+m.k+"_"+t.id,sid:s.id,ph,mk:m.k,tid:t.id,v:1,url:t.photo||"",kind:"i",ts:P0+m.d[0]*864e5+(h%600)*6e4,team:m.team?["A 組","B 組"][h%2]:"",pos:m.pos?["Vocal","Dance","Rap"][h%3]:""}); }));
