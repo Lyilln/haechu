@@ -15527,7 +15527,9 @@ const svReal=()=>{ const x=S.get(SVS,null); return x&&x.ph!=="x"?x:null; };   /*
 const SV_CO="daisuki_acc_co", svCoOf=em=>((S.get(SV_CO,{})||{})[String(em||"").toLowerCase()])||"";
 const svIsArtist=em=>{ const a=ACCOUNTS[String(em||"").toLowerCase()]||{}; return a.role==="artist"||!!a.member; };
 const SV_SK=["Vocal","Dance","Rap","Visual"];
-const svSeason=()=>ui.svDemo&&svDemoOk()?svDemoSeason():svReal();
+const svSeason=()=>ui.svDemo&&!ui.svRealCtx&&svDemoOk()?svDemoSeason():svReal();
+/* 11/24 後台自動跑的東西（開播、棄賽、等級、新聞、發表）一律用真的這一季算，不管管理員當下是不是開著示範 */
+const svRealDo=fn=>{ const o=ui.svRealCtx; ui.svRealCtx=1; const g=ui.svGrD; ui.svGrD=null; try{ return fn(); } finally{ ui.svRealCtx=o; ui.svGrD=g; } };
 const svOpen=()=>sbxOn()||svDemoOk()||!!S.get(K.svOpen,false)||String((session()||{}).email||"").toLowerCase()==="husay";
 const svTheme=()=>{ const s=svSeason(); return s&&s.g?(s.g==="g"?"g":"b"):S.get("daisuki_sv_theme","g")==="b"?"b":"g"; };
 const svDemoSp=i=>Object.fromEntries(["r1","r2","final"].map(st=>{ const P=SV_SP_P[st], L=k=>P[k].length; return [st,P[0][(i*3+1)%L(0)]+P[1][(i*5+4)%L(1)]+P[2][(i*7+2)%L(2)]]; }));
@@ -15578,7 +15580,8 @@ const svLeftTxt=ms=>{ ms=Math.max(0,ms); const d=Math.floor(ms/864e5), h=Math.fl
 /* 11/24 節目時間一律晚上六點：開季對齊到 18:00，之後每段照整天算，所以全部都是六點 */
 const svAt18=t=>{ const d=new Date(t); d.setHours(18,0,0,0); return d.getTime()<t-36e5?d.getTime()+864e5:d.getTime(); };
 /* ---------- 時間到了 → 公布（只在管理員的手機上算，大家看到的才會一樣） ---------- */
-function svTick(){ try{ svLtdTick(); }catch(e){} try{ const s0=svReal(), n0=(S.get("daisuki_sv_doneN",0)||0)+1; if(s0&&s0.ph!=="done"&&s0.no!==n0&&isAdminAcct()) S.set(SVS,{...s0,no:n0}); }catch(e){} try{ svGrTick(); }catch(e){} try{ const s=svReal(); if(!s||!isAdminAcct()||!s.end||Date.now()<s.end) return; svAdvance(false); }catch(e){} }
+function svTick(){ return svRealDo(svTick0); }
+function svTick0(){ try{ svLtdTick(); }catch(e){} try{ const s0=svReal(), n0=(S.get("daisuki_sv_doneN",0)||0)+1; if(s0&&s0.ph!=="done"&&s0.no!==n0&&isAdminAcct()) S.set(SVS,{...s0,no:n0}); }catch(e){} try{ svGrTick(); }catch(e){} try{ const s=svReal(); if(!s||!isAdminAcct()||!s.end||Date.now()<s.end) return; svAdvance(false); }catch(e){} }
 /* 等級：任務交件期限一到，管理員的手機自動公布（等級評價→主題曲重新評價） */
 function svOutTick(){ const s=svReal(); if(!s||!isAdminAcct()||!svVoting()) return; const d=(Date.now()-svPhT0(s))/864e5, chk=s.outChk||{};
   for(const m of svMsList(s.ph)){ const key=s.ph+m.k; if(m.k==="lv"||d<m.d[1]||chk[key]) continue;   /* 11/24 等級評價沒交不算棄賽（照樣上節目，導師給低等級） */ const has=new Set(svStages(m.k==="lv"?"r1":s.ph,m.k).map(x=>x.tid)), out=[...svAlive()].filter(id=>{ const t=svById(id)||{}; return t.real&&!has.has(id); });
@@ -15591,13 +15594,21 @@ function svOutUndo(){ const s=svReal(); if(!s||s.outUndo||!isAdminAcct()) return
   const only=bad&&!Object.keys(chk).length, out=only?[]:(s.out||[]), nd={...(s.newsDone||{})}; if(only) Object.keys(nd).filter(k=>/^out/.test(k)).forEach(k=>delete nd[k]);
   if(only){ try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd&&/宣布退出/.test(n.title||"")).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){} }
   S.set(SVS,{...s,out,outChk:chk,newsDone:nd,outUndo:1}); if(only&&(s.grPub||{}).lv&&!(s.grPub||{}).th){ const s2=svReal(); const g=svGrPub(s2,"lv"); S.set(SVS,{...g,grPub:{...(s2.grPub||{}),lv:(s2.grPub||{}).lv}}); } }   /* 等級也重算，被漏掉的人補上等級 */
-function svGrTick(){ try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+/* 11/24 第二次修正：上一次誤判是因為管理員開著示範，系統拿示範的舞台去比 → 真人交過的都沒被看到。
+   棄賽全部撤回、等級用真的舞台重算、用示範名字發出去的節目新聞撤掉重發（只做一次） */
+function svOutUndo2(){ const s=svReal(); if(!s||s.outUndo2||!isAdminAcct()) return; const DN=new RegExp(SV_DEMO_N.join("|")), nd={...(s.newsDone||{})};
+  try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd&&(/宣布退出/.test(n.title||"")||DN.test((n.title||"")+(n.body||"")))).map(n=>n.id));
+    if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); Object.keys(nd).filter(k=>k!=="air").forEach(k=>delete nd[k]); } }catch(e){}
+  const chk={...(s.outChk||{})}; delete chk.r1lv; S.set(SVS,{...s,out:s.ph==="r1"?[]:(s.out||[]),outChk:chk,newsDone:nd,outUndo:1,outUndo2:1});
+  const P=(svReal().grPub)||{}; if(P.lv&&!P.th){ const s2=svReal(), g=svGrPub(s2,"lv"); S.set(SVS,{...g,grPub:{...P}}); } }
+function svGrTick(){ try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
   const L2=L.map(x=>{ if(!x||!x.ltd||x.ltdOff||x.status!=="ok") return x; const st=x.day||x.appr||x.ts||now; if(now<st+x.ltd*864e5) return x; dbEms(x).forEach(e=>{ try{ unbindArtist(e); }catch(er){} }); ch=1; return {...x,ltdOff:now}; });
   if(ch){ S.set(K.debut,L2); feedPush&&feedPush({kind:"core",self:true,text:"限定團體活動期間結束，團員帳號已變回一般粉絲帳號"}); } }
-function svAdvance(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
+function svAdvance(force){ return svRealDo(()=>svAdvance0(force)); }
+function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
   const reals=svEntries();
   if(s.ph==="recruit"){ if(reals.length<SV_MIN&&!force){ s.end=now+7*864e5; s.ext=(s.ext||0)+1; S.set(SVS,s); return "ext"; }   /* 真人不夠：延長招募（粉絲只會看到倒數變長） */
     s.npcN=Math.max(0,SV_N-reals.length); nx("r1",SV_DUR.r1); S.set(SVS,s); return "r1"; }
