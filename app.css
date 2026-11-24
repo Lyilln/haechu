@@ -8239,16 +8239,17 @@ main.svpend{visibility:hidden}
 .svsh-path b{font-size:18px;font-weight:900;color:var(--k)}
 .svsh-mont .svsh-rk{position:absolute;top:-6px;left:6px;font-style:italic;font-weight:900;font-size:22px;color:var(--k);text-shadow:0 2px 0 #fff}
 
-/* 電視字幕（疊在畫面上） */
+/* 電視字幕（PD 系列：粗白字＋粉色描邊、左下名牌） */
 .aws.svsh .aws-v.svsub{position:relative}
-.svsh-tv{position:absolute;left:0;right:0;bottom:12px;padding:0 10px;display:flex;flex-direction:column;align-items:center;gap:6px;pointer-events:none;z-index:2}
-.aws-v.svvid .svsh-tv{bottom:52px}
-.aws.svsh .svsh-tv p{margin:0;opacity:0;animation:svTvIn .35s ease forwards;text-align:center;max-width:94%}
-.aws.svsh .svsh-tv .svsh-cut{background:var(--k);color:#fff;border:0;padding:4px 10px;font-size:14px;font-weight:900;transform:skewX(-6deg);box-shadow:3px 3px 0 #2B2129}
-.aws.svsh.evil .svsh-tv .svsh-cut{background:rgba(0,0,0,.78);color:#eee;box-shadow:none;transform:none;font-family:serif;font-weight:700}
-.aws.svsh .svsh-tv .svsh-int{background:none;padding:0;color:#fff;font-size:15px;font-weight:800;line-height:1.45;text-shadow:-1.5px -1.5px 0 #000,1.5px -1.5px 0 #000,-1.5px 1.5px 0 #000,1.5px 1.5px 0 #000,0 2px 6px rgba(0,0,0,.6)}
-.aws.svsh .svsh-tv .svsh-int small{display:inline;margin-right:6px;font-size:11px;letter-spacing:0;color:#FFE45C;font-weight:900}
+.svsh-tv{position:absolute;inset:0;padding:12px 10px;display:flex;flex-direction:column;justify-content:space-between;align-items:center;pointer-events:none;z-index:2}
+.aws-v.svvid .svsh-tv{bottom:44px}
+.aws.svsh .svsh-tv p{margin:0;opacity:0;animation:svTvIn .3s ease forwards;text-align:center;max-width:96%}
+.aws.svsh .svsh-tv .svsh-cut{margin-top:8%;background:none;border:0;padding:0;font-size:21px;font-weight:900;letter-spacing:-.02em;line-height:1.3;color:#fff;transform:rotate(-3deg);
+  text-shadow:2px 0 0 #FF3D8B,-2px 0 0 #FF3D8B,0 2px 0 #FF3D8B,0 -2px 0 #FF3D8B,2px 2px 0 #FF3D8B,-2px -2px 0 #FF3D8B,2px -2px 0 #FF3D8B,-2px 2px 0 #FF3D8B,4px 4px 0 #2B2129;animation-name:svTvPop}
+.aws.svsh.evil .svsh-tv .svsh-cut{transform:none;font-family:serif;font-size:17px;font-weight:700;color:#ddd;background:rgba(0,0,0,.82);padding:5px 12px;text-shadow:none;animation-name:svTvIn}
+.aws.svsh .svsh-tv .svsh-int{margin-top:auto;align-self:stretch;max-width:none;background:none;padding:0;color:#fff;font-size:16px;font-weight:900;line-height:1.45;
+  text-shadow:2px 0 0 #2B2129,-2px 0 0 #2B2129,0 2px 0 #2B2129,0 -2px 0 #2B2129,2px 2px 0 #2B2129,-2px -2px 0 #2B2129,2px -2px 0 #2B2129,-2px 2px 0 #2B2129}
+.aws.svsh .svsh-tv .svsh-int small{display:table;margin:0 0 6px;padding:3px 9px 3px 7px;background:#fff;color:#2B2129;font-size:13px;font-weight:900;letter-spacing:0;text-shadow:none;border-left:5px solid #FF3D8B;transform:skewX(-8deg);box-shadow:3px 3px 0 #FF3D8B}
+.aws.svsh .svsh-tv .svsh-int small i{display:block;font-style:normal;font-size:9.5px;font-weight:800;color:#FF3D8B;letter-spacing:.04em}
 @keyframes svTvIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-.aws.svsh .svsh-tv .svsh-cut{animation-name:svTvIn2}
-@keyframes svTvIn2{from{opacity:0;transform:skewX(-6deg) translateX(-14px)}to{opacity:1;transform:skewX(-6deg)}}
-.aws.svsh.evil .svsh-tv .svsh-cut{animation-name:svTvIn}
+@keyframes svTvPop{0%{opacity:0;transform:rotate(-3deg) scale(.4)}70%{opacity:1;transform:rotate(-3deg) scale(1.12)}100%{opacity:1;transform:rotate(-3deg) scale(1)}}
