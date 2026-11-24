@@ -21,7 +21,7 @@ function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(
       out.push({id:"pdc_gr_"+id,uid:"o:pd",npc:1,ts:svPhT0(s)+(2+i)*36e5,base:30+svHash(id)%40,cap:`[等級評價] ${t.name}，${G[id]} 班\n\n#PRODUCEDAY #等級評價`,media:[card("等級評價・"+G[id]+" 班",t.name,cm.n+"：「"+cm.t+"」")]}); }); }catch(e){}
     return out; }catch(e){ return []; } finally{ svPdBusy=0; } }
 /* 瀏覽：每個帳號每則只算一次 */
-function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,o=>{ o=o||{}; o[pid]=(o[pid]||0)+1; return o; }); }catch(e){} }
+function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,v=>{ const o={...(v||{})}; o[pid]=(o[pid]||0)+1; return {v:o}; }); }catch(e){} }
 let svSnsC=null;
 function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) return out; if(svSnsC&&svSnsC.t>Date.now()-3e4&&svSnsC.ph===ph&&svSnsC.sid===s.id) return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(svSnsC.b[k]||0)]));
     const d=snDB(), V=S.get(SVPDV,{})||{}, E={}; (d.posts||[]).filter(p=>p.pdStage&&p.pdPh===ph).forEach(p=>{ E[p.pdTid]=(E[p.pdTid]||0)+(d.likes[p.id]||[]).length+(V[p.id]||0); });
