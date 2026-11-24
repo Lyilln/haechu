@@ -3741,7 +3741,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   thRotTick(); thSync();
   if(r.sub==="npc"&&typeof npcGid==="function"&&NPC_INFO[r.id]){ location.replace("#/"+r.role+"/grp?id="+npcGid(r.id)); return; }   /* 虛擬歌手的社群、TIE（哪一端都能看） */
   if(r.sub==="npctie"&&typeof nlRoom==="function"&&nlOn()&&nlM(r.id)){ if(hashChanged) ui.scrollChat=true; return paint(nlRoom(r.id),false); }
-  if(r.sub==="sns"&&s.role!=="artist"&&r.p!=="edit"&&r.p!=="new"&&r.p!=="profile"&&typeof svSnLock==="function"&&svSnLock()) return paint(svSnPrep(),false);   /* 11/24 參賽中的練習生 */
+  if(r.sub==="sns"&&s.role!=="artist"&&!["edit","new","profile","post","reels","tag","explore","fl","sug"].includes(r.p)&&typeof svSnLock==="function"&&svSnLock()) return paint(svSnPrep(),false);   /* 11/24 參賽中的練習生 */
   if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
     try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }
   if(r.sub==="sns"){ /* SNS 的分頁列跟 App 的一樣放在頁面外面：換頁不重畫，鏡片滑過去、可以按住拖 */
