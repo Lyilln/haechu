@@ -10860,7 +10860,7 @@ function snShowStory(){ const st=ui.snStory; if(!st) return; const d=snDB(); con
   if(s.vid){ const v=layer.querySelector(".sn-svid"); if(v){ if(v.dataset.pmid) mediaSrc(v.dataset.pmid).then(u=>{ if(u&&!v.poster) v.poster=u; }); stGet(s.mid,v,u=>{ if(!v.isConnected) return; const w=v.closest(".sn-simg"); v.onplaying=()=>{ v.classList.add("on"); if(w) w.classList.add("sn-sok"); };   /* 真的開始播才顯示（之前先放封面＋轉圈，不會黑一下） */ v.onloadedmetadata=()=>{ if(ui.snStory!==st) return; const bar=layer.querySelector(".sn-sbar u.run"); if(bar){ bar.classList.remove("run"); bar.style.width="0%"; }   /* 灰條照影片實際播到哪裡跑（卡住就停、播完才換下一則） */
       const tick=()=>{ if(ui.snStory!==st||!v.isConnected) return; if(bar&&isFinite(v.duration)&&v.duration>0) bar.style.width=Math.min(100,v.currentTime/v.duration*100)+"%"; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
       clearTimeout(ui.snStT); const sec=isFinite(v.duration)&&v.duration>0?Math.min(61,v.duration):15; ui.snStT=setTimeout(()=>{ if(ui.snStory===st&&v.isConnected&&v.paused&&!document.querySelector(".sn-stpop")){ st.si++; snShowStory(); } },(sec+20)*1000); };
-    v.onended=()=>{ if(ui.snStory===st&&!document.querySelector(".sn-stpop")){ clearTimeout(ui.snStT); st.si++; snShowStory(); } }; v.src=u; v.muted=ui.snMute!==false; v.play().catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>{}); }); }); }
+    v.onended=()=>{ if(ui.snStory===st&&!document.querySelector(".sn-stpop")){ clearTimeout(ui.snStT); st.si++; snShowStory(); } }; v.src=u; v.muted=!!(s.mus&&s.mus.mid); v.play().catch(()=>{ v.muted=true; v.play().catch(()=>snVidTap(v)); }); }); }
     { const bar=layer.querySelector(".sn-sbar u.run"); if(bar) bar.style.setProperty("--ps","paused"); }   /* 影片：長度讀到之前先停住，讀到後照影片長度跑 */
     ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },Math.max(3,Math.min(61,s.vid.dur||15))*1000+4000); return; }
   ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },5000); }
@@ -11273,7 +11273,10 @@ function snVidScan(){ const L=document.querySelectorAll("video.sn-vid:not([data-
   if(!snVio&&"IntersectionObserver" in window) snVio=new IntersectionObserver(es=>es.forEach(e=>{ const v=e.target; if(e.isIntersecting&&e.intersectionRatio>=.6) snVidOn(v); else { if(!v.paused){ ui.snVT[v.dataset.vmid]=v.currentTime; v.pause(); } } }),{threshold:[0,.6]});
   L.forEach(v=>{ v.dataset.ob="1"; v.muted=ui.snMute!==false; if(v.dataset.pmid) mediaSrc(v.dataset.pmid).then(u=>{ if(u&&!v.poster) v.poster=u; }); v.addEventListener("timeupdate",()=>{ ui.snVT[v.dataset.vmid]=v.currentTime; }); if(snVio) snVio.observe(v); else snVidOn(v); }); }
 async function snVidOn(v){ if(!v.isConnected) return; if(!v.src){ v.closest(".sn-sl,.sn-rbg")?.classList.add("vload"); const u=await mediaSrc(v.dataset.vmid); v.closest(".sn-sl,.sn-rbg")?.classList.remove("vload"); if(!u||!v.isConnected){ v.closest(".sn-sl,.sn-rbg")?.classList.add("gone"); return; } v.src=u; const t=ui.snVT[v.dataset.vmid]; if(t) try{ v.currentTime=t; }catch(e){} }
-  v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>{}); }); }
+  v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>snVidTap(v)); }); }
+/* 播不出來（省電模式擋自動播放、網路斷掉）：先秀第一格，加一顆 ▶ 讓人點 */
+function snVidTap(v){ const w=v.closest(".sn-sl,.sn-rbg,.sn-simg"); if(!w||w.querySelector(".sn-vtap")) return; try{ if(!v.currentTime) v.currentTime=.1; }catch(e){} const b=document.createElement("button"); b.className="sn-vtap"; b.setAttribute("aria-label","播放"); b.innerHTML="▶"; b.onclick=ev=>{ ev.stopPropagation(); b.remove(); v.muted=ui.snMute!==false; v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); }); }; w.appendChild(b); }
+document.addEventListener("error",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")||!v.src) return; if(!v.dataset.rt){ v.dataset.rt="1"; const t=v.currentTime; setTimeout(()=>{ try{ v.load(); if(t) v.currentTime=t; }catch(_){} snVidOn(v); },800); } else snVidTap(v); },true);
 new MutationObserver(()=>{ cancelAnimationFrame(snVidScan._r); snVidScan._r=requestAnimationFrame(snVidScan); }).observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) document.querySelectorAll("video.sn-vid").forEach(v=>v.pause()); });
 
@@ -11292,11 +11295,11 @@ async function snAddVideo(f){ const dr=ui.snDraft; if(!dr) return;
   const pb=await vidPoster(v), id="snv"+Date.now(), pid=id+"p"; if(pb) await MDB.put(pid,pb);
   dr.media.push({mid:id,type:"video",w:v.videoWidth,h:v.videoHeight,dur:Math.round(dur*10)/10,poster:pb?pid:"",url,file:f}); render(); if(dr.mode==="story") stEdOpen(); }
 /* 壓縮：畫到 canvas 再用 MediaRecorder 錄下來（聲音用 WebAudio 接出來） */
-function vidMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return ""; return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } })||""; }
+function vidMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return ""; return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4;codecs=avc1","video/mp4"].find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } })||""; }
 async function vidCompress(f,prog){ const mime=vidMime(), c=document.createElement("canvas"); if(!mime||!c.captureStream) throw new Error("norec");
   const url=URL.createObjectURL(f), v=await vidLoad(url,false); const W=v.videoWidth, H=v.videoHeight, dur=v.duration, k=Math.min(1,1280/Math.max(W,H));
   c.width=Math.round(W*k/2)*2; c.height=Math.round(H*k/2)*2; const x=c.getContext("2d"), cs=c.captureStream(30); let ac=null;
-  try{ const AC=window.AudioContext||window.webkitAudioContext; ac=new AC(); await ac.resume(); const src=ac.createMediaElementSource(v), dst=ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(t=>cs.addTrack(t)); }catch(e){ v.muted=true; }
+  try{ const AC=window.AudioContext||window.webkitAudioContext; ac=new AC(); await ac.resume(); const src=ac.createMediaElementSource(v), dst=ac.createMediaStreamDestination(); src.connect(dst); const at=dst.stream.getAudioTracks(); at.forEach(t=>cs.addTrack(t)); if(!at.length) throw 0; }catch(e){ v.muted=true; if(ac) ac.close().catch(()=>{}); URL.revokeObjectURL(url); throw new Error("noaudio"); }
   const vb=Math.round(Math.max(7e5,Math.min(2.5e6,8e6*8/Math.max(dur,1)-128e3)));
   const rec=new MediaRecorder(cs,{mimeType:mime,videoBitsPerSecond:vb,audioBitsPerSecond:96000}), ch=[];
   rec.ondataavailable=e=>{ if(e.data&&e.data.size) ch.push(e.data); };
@@ -11306,7 +11309,7 @@ async function vidCompress(f,prog){ const mime=vidMime(), c=document.createEleme
   try{ await v.play(); }catch(e){ run=false; try{ rec.stop(); }catch(_){} if(ac) ac.close().catch(()=>{}); URL.revokeObjectURL(url); throw new Error("play"); }
   draw(); await new Promise(r=>{ v.onended=r; v.onpause=()=>{ if(v.ended) r(); }; setTimeout(r,(dur+8)*1000); });
   run=false; try{ rec.stop(); }catch(e){} await stopped; if(ac) ac.close().catch(()=>{}); URL.revokeObjectURL(url); cs.getTracks().forEach(t=>t.stop());
-  const b=new Blob(ch,{type:mime.split(";")[0]}); if(b.size<2000) throw new Error("empty"); return b; }
+  const b=new Blob(ch,{type:mime.split(";")[0]}); if(b.size<2000) throw new Error("empty"); const ck=URL.createObjectURL(b); try{ const t=await vidLoad(ck); if(!t.videoWidth) throw 0; }catch(e){ throw new Error("bad"); } finally{ URL.revokeObjectURL(ck); } return b; }
 /* 按「分享」：需要的話壓縮，存起來（會上傳到 R2） */
 async function snVidReady(m){ if(!m||m.type!=="video"||!m.file) return true; const f=m.file, mov=/quicktime|hevc/i.test(f.type)||/\.mov$/i.test(f.name||"");
   let b=f; if(f.size>SN_VKEEP||mov){
@@ -16804,9 +16807,9 @@ AURAVEIL:`== 概要
 * 舉辦首次亞洲巡迴「Behind the Veil」，走訪首爾、東京、大阪、曼谷、台北。
 * 年末在 MAMA AWARDS 獲得「最佳舞蹈表演（女子團體）」。
 === 2023 年
-* 3 月起 Siena 因健康問題暫停活動三個月，其餘四人以四人體制發行迷你三輯《Quiet》，舞台上留著 Siena 的位置。
-* 6 月 Siena 回歸，五人在出道 3 週年演唱會上重新合體。
+* 3 月起 Siena 因健康問題暫停活動，其餘四人以四人體制發行迷你三輯《Quiet》，舞台上留著 Siena 的位置。
 === 2024 年
+* 3 月 Siena 結束一年的休養，五人在出道 4 週年演唱會上重新合體。
 * 全員與公司續約。同年在日本發行首張日文單曲《ヴェール》，登上公信榜週榜前段。
 * 參加多個海外音樂節，第一次站上北美舞台。
 === 2025 年
@@ -17394,7 +17397,7 @@ const NL_P={
       p:["今日鼓棒陣亡數：2 🥁\n（第三支也快不行了）","{F}～今天演出的時候你們喊得比我的鼓還大聲！！\n最喜歡你們了！！"]}
   ],
   PRISMA9:[
-    {a:"lead",e:"💗",w:"{N}，你好呀 💗|我是{G}的隊長 Yeon|九個人很吵很熱鬧，但每一個你都要好好認識喔|有我在，放心吧",
+    {a:"lead",e:"💗",w:"{N}，你好呀 💗|我是{G}的隊長 Yeon|九個人很吵很熱鬧，但每個都要記住喔|有我在，放心吧",
       c:["九個人要排好隊形真的好難 哈哈","今天幫 Bin 檢查作業，發現我也忘記怎麼算了","m>大家起床了沒！早上點名！","剛剛宿舍的洗衣機又滿了，九個人的衣服真的好多","n>大家都睡了，我在整理明天的行程"],
       p:["今天九個人一起吃飯，光點菜就花了二十分鐘 哈哈\n但這就是我們最幸福的時間 💗","不管是哪一位成員的{F}，都是我們全部人的{F}。\n今天也謝謝你們 💗"]},
     {a:"bright",e:"🎤",w:"{N}～！歡迎來到我的房間 🎤|我是主唱 Hari！|我最喜歡唱歌和聊天了，兩個一起最好！|有想聽的歌就跟我說！",
@@ -17487,12 +17490,12 @@ const NL_CHAT={
 };
 /* 社群發文（像 LOVE 的藝人動態） */
 const NL_POST={
-  lead:["今天的練習也辛苦了。\n我們會繼續努力，{F}也要好好照顧自己。","跟成員們一起度過的每一天，都是珍貴的回憶。\n謝謝{F}讓這一切成為可能。","最近變冷了，出門記得多穿一件。\n隊長的叮嚀 🤍","今天開了很長的會，下一次的活動真的很期待。\n很快就會告訴你們！","{G}的大家今天都很棒。\n{F}也辛苦了。","晚安，{F}。\n明天也一起加油吧。"],
+  lead:["練習結束！！今天大家真的辛苦了 我們{G} 👏\n{F}吃飯了嗎？","跟成員們在吃宵夜 嘿嘿\n{F}也去吃點好吃的","最近變冷了，出門記得多穿一件。\n隊長的叮嚀 🤍","今天開了很長的會，下一次的活動真的很期待。\n很快就會告訴你們！","{G}今天的舞台怎麼樣？？\n留言跟我說 我等你們","晚安，{F}。\n明天也一起加油吧。"],
   maknae:["今天的我也很努力了！！\n可以誇獎我嗎 🥺","哥哥姐姐們都在練習，我偷偷發文 嘿嘿","今天吃了好吃的東西，好幸福！","{F}～～我好想你們！","今天學了新的東西，好開心！","晚安～做個好夢 🌙"],
   cool:["練習。","今天。","{F}。\n謝謝。","收工。","新的東西，快好了。","晚安。"],
   goofy:["今天的午餐：超級滿足 😋","我剛剛在練習室做了一件很好笑的事…\n但我不能說 哈哈哈","{X}今天的表情包又更新了 哈哈","吃飽了才有力氣練習！\n{F}也要好好吃飯！","今天的我：吃了、練了、笑了。\n完美的一天。","宵夜誘惑中…{F}救我"],
-  bright:["今天也是充滿能量的一天！！\n{F}也要開心喔！！","練習完的自拍 ✨\n汗水是勳章！","今天好開心！！因為想到{F}了！！","新的挑戰，我準備好了！！","{G}今天也閃閃發亮！！","謝謝今天也在的{F}！！明天見！！"],
-  artist:["今天在工作室待了一整天。\n有一首新歌，正在慢慢長大。","有時候一段旋律，會在最不經意的時候出現。\n今天就是這樣的一天。","謝謝你們聽我們的音樂。\n每一個音符都想傳達給你們。","雨天的工作室。\n很適合寫歌。","深夜的一段旋律。\n不知道會變成什麼樣的歌。","今天的天空，好像一首還沒寫完的歌。"]
+  bright:["今天也充電完成！！\n{F}今天也加油！！","練習完的自拍 ✨\n滿身汗但心情超好！！","今天好開心！！因為想到{F}了！！","新的挑戰，我準備好了！！","{G}今天也閃閃發亮！！","謝謝今天也在的{F}！！明天見！！"],
+  artist:["今天一整天都在工作室。\n新歌一點一點在做","洗澡洗到一半想到旋律，趕快錄起來 哈哈","謝謝你們聽我們的歌。\n最近最常聽哪一首？","雨天的工作室。\n很適合寫歌。","深夜的一段旋律。\n不知道會變成什麼樣的歌。","今天的天空好漂亮。大家有看到嗎？"]
 };
 /* SNS 短文（像 IG 的貼文說明） */
 const NL_CAP={
@@ -17555,7 +17558,7 @@ const NL_TK={
       n:[["好想喝珍奶喔…韓國的都不夠甜","好想喝珍奶喔…韓國的都不夠甜"],["n>好想吃鹽酥雞 我要哭了","好想吃鹽酥雞 我要哭了"],["剛剛跟我媽視訊，她說我變瘦了 才怪","剛剛跟我媽視訊，她說我變瘦了 才怪"],["Kyle 教我英文，我教他說「靠北」，他不知道是什麼意思 哈哈","Kyle 教我英文，我教他說「靠北」，他不知道是什麼意思 哈哈"]]}
   ],
   PRISMA9:[
-    {L:"ko",w:["{N}, 안녕 💗|{G}의 리더 Yeon이에요|아홉 명이라 시끄럽고 북적북적하지만, 한 명 한 명 잘 알아가 줘요|제가 있으니까 걱정 마요","{N}，你好呀 💗|我是{G}的隊長 Yeon|九個人很吵很熱鬧，但每一個你都要好好認識喔|有我在，放心吧"],
+    {L:"ko",w:["{N}, 안녕 💗|{G}의 리더 Yeon이에요|아홉 명이라 시끄럽고 북적북적하지만, 한 명 한 명 잘 알아가 줘요|제가 있으니까 걱정 마요","{N}，你好呀 💗|我是{G}的隊長 Yeon|九個人很吵很熱鬧，但每個都要記住喔|有我在，放心吧"],
       c:[["아홉 명 대형 맞추는 거 진짜 어려워요 ㅎㅎ","九個人要排好隊形真的好難 哈哈"],["오늘 Bin 숙제 봐주다가 나도 푸는 법 까먹은 거 알았어요","今天幫 Bin 檢查作業，發現我也忘記怎麼算了"],["m>다들 일어났어?! 아침 점호!","大家起床了沒！早上點名！"],["숙소 세탁기 또 꽉 찼어요. 아홉 명 빨래 진짜 많아","剛剛宿舍的洗衣機又滿了，九個人的衣服真的好多"],["n>다들 자고 저는 내일 스케줄 정리 중","大家都睡了，我在整理明天的行程"]],
       n:[["Coco랑 Riri 둘이 중국어로 싸우는데 하나도 못 알아들어요 ㅋㅋ","Coco 跟 Riri 兩個用中文吵架，我一句都聽不懂 哈哈"]]},
     {L:"ko",w:["{N}~! 내 방에 온 걸 환영해요 🎤|메인보컬 Hari예요!|노래랑 수다를 제일 좋아해요, 둘 다 하면 최고!|듣고 싶은 노래 있으면 말해줘요!","{N}～！歡迎來到我的房間 🎤|我是主唱 Hari！|我最喜歡唱歌和聊天了，兩個一起最好！|有想聽的歌就跟我說！"],
@@ -17686,12 +17689,12 @@ const NL_PK={
   HYUNE:[["오늘의 산책 🌿\n바람이 다정했어요.","노래를 쓰는 사람은 사실 편지를 쓰는 거예요.\n받는 사람은 여러분이고요."]]
 };
 const NL_POST_KO={
-  lead:["오늘 연습도 수고했어요.\n우리는 계속 노력할게요, {F}도 자기 자신 잘 챙겨요.","멤버들이랑 보내는 하루하루가 다 소중한 추억이에요.\n이 모든 걸 가능하게 해준 {F} 고마워요.","요즘 추워졌어요, 나갈 때 한 겹 더 입어요.\n리더의 잔소리 🤍","오늘 회의가 길었는데, 다음 활동 정말 기대돼요.\n곧 알려줄게요!","{G} 다들 오늘 최고였어요.\n{F}도 수고했어요.","잘 자요, {F}.\n내일도 같이 힘내요."],
+  lead:["연습 끝!! 오늘 다들 진짜 고생했다 우리 {G} 👏\n{F}는 밥 먹었어요?","멤버들이랑 야식 먹는 중 ㅎㅎ\n{F}도 맛있는 거 먹어요","요즘 추워졌어요, 나갈 때 한 겹 더 입어요.\n리더의 잔소리 🤍","오늘 회의가 길었는데, 다음 활동 정말 기대돼요.\n곧 알려줄게요!","{G} 오늘 무대 어땠어요??\n댓글로 알려줘요 기다릴게요","잘 자요, {F}.\n내일도 같이 힘내요."],
   maknae:["오늘도 열심히 했어요!!\n칭찬해 줄 수 있어요? 🥺","형 언니들 다 연습 중이라 몰래 글 써요 헤헤","오늘 맛있는 거 먹어서 너무 행복해요!","{F}~~ 보고 싶어요!","오늘 새로운 거 배웠어요, 너무 좋아!","잘 자요~ 좋은 꿈 꿔요 🌙"],
   cool:["연습.","오늘.","{F}.\n고마워.","끝.","새로운 거, 곧.","잘 자."],
   goofy:["오늘의 점심: 대만족 😋","방금 연습실에서 엄청 웃긴 일 했는데…\n말 못 해요 ㅋㅋㅋ","{X} 오늘 표정 짤 또 업데이트됨 ㅋㅋ","배불러야 연습할 힘이 나요!\n{F}도 밥 잘 챙겨 먹어요!","오늘의 나: 먹고, 연습하고, 웃었다.\n완벽한 하루.","야식의 유혹 중… {F} 살려줘"],
-  bright:["오늘도 에너지 가득한 하루!!\n{F}도 행복해야 해요!!","연습 끝나고 셀카 ✨\n땀은 훈장!","오늘 너무 좋아!! {F} 생각나서!!","새로운 도전, 준비됐어요!!","{G} 오늘도 반짝반짝!!","오늘도 와줘서 고마워요 {F}!! 내일 봐요!!"],
-  artist:["오늘 하루 종일 작업실에 있었어요.\n새 노래 하나가 천천히 자라고 있어요.","가끔 멜로디는 전혀 생각지 못한 순간에 찾아와요.\n오늘이 그런 날이었어요.","우리 음악 들어줘서 고마워요.\n음표 하나하나 다 전하고 싶어요.","비 오는 날의 작업실.\n곡 쓰기 딱 좋아요.","새벽의 멜로디 하나.\n어떤 노래가 될지 모르겠어요.","오늘 하늘은 아직 다 못 쓴 노래 같아요."]
+  bright:["오늘도 에너지 충전 완료!!\n{F} 오늘 하루도 화이팅!!","연습 끝나고 셀카 ✨\n땀범벅이지만 기분 최고!!","오늘 너무 좋아!! {F} 생각나서!!","새로운 도전, 준비됐어요!!","{G} 오늘도 반짝반짝!!","오늘도 와줘서 고마워요 {F}!! 내일 봐요!!"],
+  artist:["오늘 하루 종일 작업실.\n새 노래 조금씩 만들고 있어요","샤워하다가 멜로디 떠올라서 급하게 녹음함 ㅋㅋ","우리 노래 들어줘서 고마워요.\n요즘 제일 많이 듣는 곡 뭐예요?","비 오는 날의 작업실.\n곡 쓰기 딱 좋아요.","새벽의 멜로디 하나.\n어떤 노래가 될지 모르겠어요.","오늘 하늘 진짜 예쁘다. 다들 봤어요?"]
 };
 const NL_CAP_KO={
   lead:["today 🤍","연습 끝 ✔️","with {G}","잘 자요 {F}","오늘의 날씨","behind 📸"],
@@ -17716,7 +17719,7 @@ const NL_ANNIV_KO=["{G} 데뷔 {Y}주년 🎉\n오늘까지 함께해 준 {F} �
 const NL_THX={
   ja:[["いつも本当にありがとう。大好きだよ！","一直以來真的很謝謝你們。最喜歡你們了！"],["日本の{F}も、ありがとう🫶","日本的{F}也謝謝你們 🫶"]],
   th:[["ขอบคุณทุกคนมากๆ นะคะ รักทุกคน 💕","真的很謝謝大家，愛你們 💕"],["{F} ที่ไทยด้วยนะ ขอบคุณค่ะ","泰國的{F}也是，謝謝你們"]],
-  en:[["Thank you so much for always being there. Love you all!","謝謝你們一直都在。愛你們！"],["To {F} around the world — thank you 🤍","給世界各地的{F}——謝謝你們 🤍"]],
+  en:[["Thank you so much for always being there. Love you all!","謝謝你們一直都在。愛你們！"],["To {F} around the world — thank you 🤍","謝謝世界各地的{F} 🤍"]],
   zh:[["謝謝台灣的{F}！好想你們！","謝謝台灣的{F}！好想你們！"],["真的很謝謝大家，我會繼續努力的！","真的很謝謝大家，我會繼續努力的！"]],
   zhs:[["谢谢中国的{F}！爱你们！","謝謝中國的{F}！愛你們！"],["真的谢谢大家，我会继续加油的！","真的謝謝大家，我會繼續加油的！"]],
   yue:[["多謝香港嘅{F}！好掛住你哋！","謝謝香港的{F}！好想你們！"],["真係好多謝大家，我會繼續努力㗎！","真的很謝謝大家，我會繼續努力的！"]]
@@ -17761,11 +17764,14 @@ const nlMD=dn=>{ const u=new Date(dn*864e5); return String(u.getUTCMonth()+1).pa
 const nlBd=row=>String(row[2]||"").slice(5).replace(".","-");
 /* ---------- 自動發文：kind = cm（社群）／sn（SNS） ---------- */
 const NL_C={};
+/* 偶像不會在貼文、SNS 發負面的東西（累、痛、心情不好、睡不著、想哭…） */
+const NL_NEG=/痛|累|心情不好|難過|不舒服|生病|感冒|哭|煩|失眠|睡不著|傷心|壓力|不開心|아프|아파|우울|피곤|힘들|속상|슬프|짜증|잠이 안|감기|울었|울고|울 것|눈물|기분이 안|tired|sad|hurt|sick/i;
+const nlPos=x=>!NL_NEG.test(x.z||"")&&!NL_NEG.test(x.o||"");
 function nlGen(kind){ const now=Date.now(), b=Math.floor(now/3e5); if(NL_C[kind]&&NL_C[kind].b===b) return NL_C[kind].L;
   const today=nlDayN(now), L=[], hide=S.get(NL_HIDE,{})||{};
   nlGs().forEach(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, dmd=I.debut.slice(5), dy=+I.debut.slice(0,4);
     nlIds(G).forEach(id=>{ const m=nlM(id), a=m.P.a, tk=nlTk(id)||{L:"ko",c:[],n:[]}, fr=tk.L!=="ko", strip=x=>String(x).replace(/^[mn]>/,"").split("|").join(" "), Z=(A,B)=>A.map((o,j)=>({o,z:B[j]||o})),
-        pk=(NL_PK[G]||[])[m.i]||[], own=kind==="cm"?Z(pk,m.P.p):tk.c.map(([o,z])=>({o:strip(o),z:strip(z)})), pool=own.concat(kind==="cm"?Z(NL_POST_KO[a],NL_POST[a]):Z(NL_CAP_KO[a],NL_CAP[a])), nat=tk.n.map(([o,z])=>({o:strip(o),z:strip(z)})), off=strHash(id+kind);
+        pk=(NL_PK[G]||[])[m.i]||[], own=(kind==="cm"?Z(pk,m.P.p):tk.c.map(([o,z])=>({o:strip(o),z:strip(z)}))).filter(nlPos), pool=own.concat(kind==="cm"?Z(NL_POST_KO[a],NL_POST[a]):Z(NL_CAP_KO[a],NL_CAP[a])), nat=tk.n.map(([o,z])=>({o:strip(o),z:strip(z)})).filter(nlPos), off=strHash(id+kind);
       for(let dn=today-20; dn<=today; dn++){ const md=nlMD(dn), sd=strHash(kind+id+dn), yr=new Date(dn*864e5).getUTCFullYear(); let t=null, h=10+sd%13, mi=(sd>>>5)%60, thx=false, lg="ko";
         const pr2=(A,B,s0)=>{ const j=(s0>>>0)%A.length; return {o:A[j],z:B[j]}; };
         if(md===nlBd(m.row)){ t=pr2(NL_BDAY_ME_KO,NL_BDAY_ME,sd); thx=true; h=kind==="cm"?0:21; mi=(sd>>>5)%20; }
@@ -17852,9 +17858,9 @@ function nlBuy(id){ const m=nlM(id); if(!m) return; const act=nlActive(id);
       if(first){ const W=nlWelcome(id), O=W.o.split("|"), Z=W.z.split("|"); O.forEach((t,k)=>{ if(t.trim()) r.msgs.push({id:"w"+now+k,f:"a",t:t,z:Z[k]||"",ts:now+800+k*1500,wel:1}); }); } return r; });
     toast(act?"已延長 "+NL_DAYS+" 天":"購買完成"); ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(id))); },{title:WHISPER_NAME,ok:`用 ${NL_PRICE} 積分購買`,danger:false}); }
 /* 粉絲傳了訊息：他看心情決定要不要回、什麼時候回、回幾則；回的是他自己想說的（不看粉絲說了什麼） */
-function nlReplyPlan(id,r){ const now=Date.now(); if((r.msgs||[]).some(x=>x.f==="a"&&x.ts>now)) return;   /* 已經決定要回了：多傳幾則也不會多回 */
-  const m=nlM(id), sd=strHash(id+now), mood=(sd%100)/100; if(mood>.62) return;   /* 有時候就是不回 */
-  const delay=(2+Math.floor(Math.pow(((sd>>>7)%1000)/1000,2)*150))*6e4, at=now+delay, hr=new Date(at).getHours(), tm=hr>=5&&hr<11?"m":hr>=21||hr<4?"n":"";
+function nlReplyPlan(id,r,at0){ const now=Date.now(); if(!at0&&(r.msgs||[]).some(x=>x.f==="a"&&x.ts>now)) return;   /* 已經決定要回了：多傳幾則也不會多回 */
+  const m=nlM(id), sd=strHash(id+(at0||now)), mood=(sd%100)/100; if(!at0&&mood>.35) return;   /* 粉絲傳了也不一定理，看心情 */
+  const delay=(30+Math.floor(Math.pow(((sd>>>7)%1000)/1000,2)*330))*6e4, at=at0||now+delay, hr=new Date(at).getHours(), tm=hr>=5&&hr<11?"m":hr>=21||hr<4?"n":"";
   const tk=nlTk(id), foreign=tk&&tk.L!=="ko", strip=x=>String(x).replace(/^[mn]>/,""), tmOk=x=>{ const k=/^([mn])>/.exec(x); return !k||k[1]===tm; };
   const own=(tk?tk.c:[]).map(([o,z])=>({o,z})).concat(NL_CHAT_KO[m.P.a].map((o,j)=>({o,z:NL_CHAT[m.P.a][j]}))), nat=(tk?tk.n:[]).map(([o,z])=>({o,z}));
   const used=r.used||[], fresh=L=>L.filter(x=>tmOk(x.o)&&!used.includes(x.o)), n=1+((sd>>>11)%10<6?0:(sd>>>11)%10<9?1:2);
@@ -18002,6 +18008,11 @@ function npcTieTick(){ try{ const s=session(); if(!s||!s.email) return; const me
     if(seen[mid]==null){ seen[mid]=((subs()[mid]||{}).since)||0; sch=true; }
     if(last>seen[mid]){ seen[mid]=last; sch=true; if(!Q.some(x=>x.mid===mid)){ const r={msgs:[],used:(S.get(acK(NPC_SEEN+"_u"),{})||{})[mid]||[]}; nlReplyPlan(npcOldOf(mid),r);
         r.msgs.forEach(x=>Q.push({mid,ko:x.t,zh:x.z,ts:x.ts})); const U=S.get(acK(NPC_SEEN+"_u"),{})||{}; U[mid]=(r.used||[]).slice(-40); S.set(acK(NPC_SEEN+"_u"),U); qch=true; } } });
+  /* 自己想傳就傳：每天看心情 0～3 次，時間隨機（不是粉絲傳了才回） */
+  { const D=S.get(acK(NPC_SEEN+"_d"),{})||{}, td=new Date(now).toDateString(), U=S.get(acK(NPC_SEEN+"_u"),{})||{}; let dch=false;
+    Object.keys(subs()).filter(isNpcM).forEach(mid=>{ if(!isActive(mid)||D[mid]===td) return; D[mid]=td; dch=true; const h0=strHash(mid+td), n=h0%10<2?0:h0%10<6?1:h0%10<9?2:3, d0=new Date(now); d0.setHours(0,0,0,0);
+      for(let k=0;k<n;k++){ const hk=strHash(mid+td+k), t=d0.getTime()+(10+hk%15)*36e5+((hk>>>6)%60)*6e4; if(t<=now) continue; const r={msgs:[],used:U[mid]||[]}; nlReplyPlan(npcOldOf(mid),r,t); r.msgs.forEach(x=>Q.push({mid,ko:x.t,zh:x.z,ts:x.ts})); U[mid]=(r.used||[]).slice(-40); qch=true; } });
+    if(dch){ S.set(acK(NPC_SEEN+"_d"),D); S.set(acK(NPC_SEEN+"_u"),U); } }
   const due=Q.filter(x=>x.ts<=now); if(due.length){ const add=due.map((x,i)=>{ const zh=x.zh||x.ko; return {id:"npcw"+x.ts+"_"+i+Math.random().toString(36).slice(2,5),member:x.mid,from:"artist",to:me,text:zh,...(x.ko&&x.ko!==zh?{ko:x.ko}:{}),ts:x.ts}; });
     S.set(K.whispers,[...S.get(K.whispers,[]),...add]); { const R=S.get(K.tieReadBy,{})||{}; add.forEach(x=>{ R[x.member]=Math.max(R[x.member]||0,x.ts); }); S.set(K.tieReadBy,R); }   /* 他回了＝讀過了 */ const last=add[add.length-1], m=MEMBERS[last.member]; try{ pushNotification({kind:"whisper",member:last.member,group:m.group,text:last.ko||last.text,color:null,direct:true}); }catch(e){}
     S.set(acK(NPC_Q),Q.filter(x=>x.ts>now)); qch=false; if(location.hash.includes("chat")||location.hash.includes("whisper")) try{ render(); }catch(e){} }
@@ -18024,7 +18035,7 @@ const NPC_MWK={
       life:["2008 年起當了 6 年練習生，先後待過兩間公司，2018 年轉到 JYP 後被選為 {G} 的隊長。","出道後一直擔任主唱，2022 年正規一輯《Behind the Veil》的高音段落被評為「團的招牌」。","2023 年 Siena 暫停活動期間，代替她站上主舞位置的一部分段落，被稱讚「隊長撐住了整個回歸」。","2025 年參與迷你四輯《Frost》的作詞，第一次以作詞家身分登記。"],
       tr:["宿舍裡負責煮飯，成員最喜歡她做的部隊鍋。","粉絲稱她「霧藍色的聲音」。","忙內 Noa 幾乎每天跑到她房間睡。"]},
     {mbti:"ENFP",hobby:"吃草莓、逛便利商店",nick:"草莓、詩音",edu:"東京某高中 畢業",
-      life:["在東京的公開甄選被選上，2017 年隻身來到首爾，當時一句韓文都不會。","練習生時期靠 Rhea 和 Elle 學韓文，出道一年後就能在綜藝裡用韓文吐槽。","2023 年因健康問題暫停活動三個月，6 月回歸時在出道 3 週年演唱會上哭著說「謝謝大家等我」。","2024 年日本出道後，負責日本活動的主持和翻譯。"],
+      life:["在東京的公開甄選被選上，2017 年隻身來到首爾，當時一句韓文都不會。","練習生時期靠 Rhea 和 Elle 學韓文，出道一年後就能在綜藝裡用韓文吐槽。","2023 年 3 月因健康問題暫停活動，休養一年後在出道 4 週年演唱會回歸，哭著說「謝謝大家等我」。","2024 年日本出道後，負責日本活動的主持和翻譯。"],
       tr:["草莓狂熱者，生日咖啡廳每年都是草莓主題。","在走廊跌倒是日常，被成員稱為「人間平衡感測器」。","跟 Elle 吵架時會自動切換成英文。"]},
     {mbti:"ISTP",hobby:"寫詞、聽 Hip-hop、拍底片",nick:"冰塊、Juno 姐",edu:"首爾某高中 畢業",
       life:["地下饒舌圈出身，高中時在小型演出場地表演，被星探看到後進入公司。","{G} 大部分歌曲的 rap 詞由她親自寫，2021 年起正式登記為作詞家。","2025 年《Frost》的冷調電子風格據說是她提議的。"],

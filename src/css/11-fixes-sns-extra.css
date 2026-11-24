@@ -450,3 +450,4 @@ html.sn-vshrink .sn-top.clear{opacity:0;pointer-events:none;transition:opacity v
 /* 限動影片：開始播之前先顯示封面，不黑屏 */
 .sn-simg .sn-spo{position:absolute;inset:0;width:100%;height:100%;object-fit:contain}
 .sn-simg .sn-svid{position:relative;z-index:1;opacity:0;background:transparent}.sn-simg .sn-svid.on{opacity:1}
+.sn-vtap{position:absolute;left:50%;top:50%;width:64px;height:64px;margin:-32px 0 0 -32px;border-radius:50%;border:0;background:rgba(0,0,0,.5);color:#fff;font-size:26px;padding:0 0 0 5px;z-index:3}

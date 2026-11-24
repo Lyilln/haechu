@@ -333,7 +333,7 @@ function snShowStory(){ const st=ui.snStory; if(!st) return; const d=snDB(); con
   if(s.vid){ const v=layer.querySelector(".sn-svid"); if(v){ if(v.dataset.pmid) mediaSrc(v.dataset.pmid).then(u=>{ if(u&&!v.poster) v.poster=u; }); stGet(s.mid,v,u=>{ if(!v.isConnected) return; const w=v.closest(".sn-simg"); v.onplaying=()=>{ v.classList.add("on"); if(w) w.classList.add("sn-sok"); };   /* 真的開始播才顯示（之前先放封面＋轉圈，不會黑一下） */ v.onloadedmetadata=()=>{ if(ui.snStory!==st) return; const bar=layer.querySelector(".sn-sbar u.run"); if(bar){ bar.classList.remove("run"); bar.style.width="0%"; }   /* 灰條照影片實際播到哪裡跑（卡住就停、播完才換下一則） */
       const tick=()=>{ if(ui.snStory!==st||!v.isConnected) return; if(bar&&isFinite(v.duration)&&v.duration>0) bar.style.width=Math.min(100,v.currentTime/v.duration*100)+"%"; requestAnimationFrame(tick); }; requestAnimationFrame(tick);
       clearTimeout(ui.snStT); const sec=isFinite(v.duration)&&v.duration>0?Math.min(61,v.duration):15; ui.snStT=setTimeout(()=>{ if(ui.snStory===st&&v.isConnected&&v.paused&&!document.querySelector(".sn-stpop")){ st.si++; snShowStory(); } },(sec+20)*1000); };
-    v.onended=()=>{ if(ui.snStory===st&&!document.querySelector(".sn-stpop")){ clearTimeout(ui.snStT); st.si++; snShowStory(); } }; v.src=u; v.muted=ui.snMute!==false; v.play().catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>{}); }); }); }
+    v.onended=()=>{ if(ui.snStory===st&&!document.querySelector(".sn-stpop")){ clearTimeout(ui.snStT); st.si++; snShowStory(); } }; v.src=u; v.muted=!!(s.mus&&s.mus.mid); v.play().catch(()=>{ v.muted=true; v.play().catch(()=>snVidTap(v)); }); }); }
     { const bar=layer.querySelector(".sn-sbar u.run"); if(bar) bar.style.setProperty("--ps","paused"); }   /* 影片：長度讀到之前先停住，讀到後照影片長度跑 */
     ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },Math.max(3,Math.min(61,s.vid.dur||15))*1000+4000); return; }
   ui.snStT=setTimeout(()=>{ if(ui.snStory===st){ st.si++; snShowStory(); } },5000); }
@@ -746,7 +746,10 @@ function snVidScan(){ const L=document.querySelectorAll("video.sn-vid:not([data-
   if(!snVio&&"IntersectionObserver" in window) snVio=new IntersectionObserver(es=>es.forEach(e=>{ const v=e.target; if(e.isIntersecting&&e.intersectionRatio>=.6) snVidOn(v); else { if(!v.paused){ ui.snVT[v.dataset.vmid]=v.currentTime; v.pause(); } } }),{threshold:[0,.6]});
   L.forEach(v=>{ v.dataset.ob="1"; v.muted=ui.snMute!==false; if(v.dataset.pmid) mediaSrc(v.dataset.pmid).then(u=>{ if(u&&!v.poster) v.poster=u; }); v.addEventListener("timeupdate",()=>{ ui.snVT[v.dataset.vmid]=v.currentTime; }); if(snVio) snVio.observe(v); else snVidOn(v); }); }
 async function snVidOn(v){ if(!v.isConnected) return; if(!v.src){ v.closest(".sn-sl,.sn-rbg")?.classList.add("vload"); const u=await mediaSrc(v.dataset.vmid); v.closest(".sn-sl,.sn-rbg")?.classList.remove("vload"); if(!u||!v.isConnected){ v.closest(".sn-sl,.sn-rbg")?.classList.add("gone"); return; } v.src=u; const t=ui.snVT[v.dataset.vmid]; if(t) try{ v.currentTime=t; }catch(e){} }
-  v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>{}); }); }
+  v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>snVidTap(v)); }); }
+/* 播不出來（省電模式擋自動播放、網路斷掉）：先秀第一格，加一顆 ▶ 讓人點 */
+function snVidTap(v){ const w=v.closest(".sn-sl,.sn-rbg,.sn-simg"); if(!w||w.querySelector(".sn-vtap")) return; try{ if(!v.currentTime) v.currentTime=.1; }catch(e){} const b=document.createElement("button"); b.className="sn-vtap"; b.setAttribute("aria-label","播放"); b.innerHTML="▶"; b.onclick=ev=>{ ev.stopPropagation(); b.remove(); v.muted=ui.snMute!==false; v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); }); }; w.appendChild(b); }
+document.addEventListener("error",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")||!v.src) return; if(!v.dataset.rt){ v.dataset.rt="1"; const t=v.currentTime; setTimeout(()=>{ try{ v.load(); if(t) v.currentTime=t; }catch(_){} snVidOn(v); },800); } else snVidTap(v); },true);
 new MutationObserver(()=>{ cancelAnimationFrame(snVidScan._r); snVidScan._r=requestAnimationFrame(snVidScan); }).observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) document.querySelectorAll("video.sn-vid").forEach(v=>v.pause()); });
 
@@ -765,11 +768,11 @@ async function snAddVideo(f){ const dr=ui.snDraft; if(!dr) return;
   const pb=await vidPoster(v), id="snv"+Date.now(), pid=id+"p"; if(pb) await MDB.put(pid,pb);
   dr.media.push({mid:id,type:"video",w:v.videoWidth,h:v.videoHeight,dur:Math.round(dur*10)/10,poster:pb?pid:"",url,file:f}); render(); if(dr.mode==="story") stEdOpen(); }
 /* 壓縮：畫到 canvas 再用 MediaRecorder 錄下來（聲音用 WebAudio 接出來） */
-function vidMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return ""; return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4;codecs=avc1","video/mp4","video/webm;codecs=vp9,opus","video/webm;codecs=vp8,opus","video/webm"].find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } })||""; }
+function vidMime(){ if(!window.MediaRecorder||!MediaRecorder.isTypeSupported) return ""; return ["video/mp4;codecs=avc1.42E01E,mp4a.40.2","video/mp4;codecs=avc1","video/mp4"].find(m=>{ try{ return MediaRecorder.isTypeSupported(m); }catch(e){ return false; } })||""; }
 async function vidCompress(f,prog){ const mime=vidMime(), c=document.createElement("canvas"); if(!mime||!c.captureStream) throw new Error("norec");
   const url=URL.createObjectURL(f), v=await vidLoad(url,false); const W=v.videoWidth, H=v.videoHeight, dur=v.duration, k=Math.min(1,1280/Math.max(W,H));
   c.width=Math.round(W*k/2)*2; c.height=Math.round(H*k/2)*2; const x=c.getContext("2d"), cs=c.captureStream(30); let ac=null;
-  try{ const AC=window.AudioContext||window.webkitAudioContext; ac=new AC(); await ac.resume(); const src=ac.createMediaElementSource(v), dst=ac.createMediaStreamDestination(); src.connect(dst); dst.stream.getAudioTracks().forEach(t=>cs.addTrack(t)); }catch(e){ v.muted=true; }
+  try{ const AC=window.AudioContext||window.webkitAudioContext; ac=new AC(); await ac.resume(); const src=ac.createMediaElementSource(v), dst=ac.createMediaStreamDestination(); src.connect(dst); const at=dst.stream.getAudioTracks(); at.forEach(t=>cs.addTrack(t)); if(!at.length) throw 0; }catch(e){ v.muted=true; if(ac) ac.close().catch(()=>{}); URL.revokeObjectURL(url); throw new Error("noaudio"); }
   const vb=Math.round(Math.max(7e5,Math.min(2.5e6,8e6*8/Math.max(dur,1)-128e3)));
   const rec=new MediaRecorder(cs,{mimeType:mime,videoBitsPerSecond:vb,audioBitsPerSecond:96000}), ch=[];
   rec.ondataavailable=e=>{ if(e.data&&e.data.size) ch.push(e.data); };
@@ -779,7 +782,7 @@ async function vidCompress(f,prog){ const mime=vidMime(), c=document.createEleme
   try{ await v.play(); }catch(e){ run=false; try{ rec.stop(); }catch(_){} if(ac) ac.close().catch(()=>{}); URL.revokeObjectURL(url); throw new Error("play"); }
   draw(); await new Promise(r=>{ v.onended=r; v.onpause=()=>{ if(v.ended) r(); }; setTimeout(r,(dur+8)*1000); });
   run=false; try{ rec.stop(); }catch(e){} await stopped; if(ac) ac.close().catch(()=>{}); URL.revokeObjectURL(url); cs.getTracks().forEach(t=>t.stop());
-  const b=new Blob(ch,{type:mime.split(";")[0]}); if(b.size<2000) throw new Error("empty"); return b; }
+  const b=new Blob(ch,{type:mime.split(";")[0]}); if(b.size<2000) throw new Error("empty"); const ck=URL.createObjectURL(b); try{ const t=await vidLoad(ck); if(!t.videoWidth) throw 0; }catch(e){ throw new Error("bad"); } finally{ URL.revokeObjectURL(ck); } return b; }
 /* 按「分享」：需要的話壓縮，存起來（會上傳到 R2） */
 async function snVidReady(m){ if(!m||m.type!=="video"||!m.file) return true; const f=m.file, mov=/quicktime|hevc/i.test(f.type)||/\.mov$/i.test(f.name||"");
   let b=f; if(f.size>SN_VKEEP||mov){

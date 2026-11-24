@@ -36,11 +36,14 @@ const nlMD=dn=>{ const u=new Date(dn*864e5); return String(u.getUTCMonth()+1).pa
 const nlBd=row=>String(row[2]||"").slice(5).replace(".","-");
 /* ---------- 自動發文：kind = cm（社群）／sn（SNS） ---------- */
 const NL_C={};
+/* 偶像不會在貼文、SNS 發負面的東西（累、痛、心情不好、睡不著、想哭…） */
+const NL_NEG=/痛|累|心情不好|難過|不舒服|生病|感冒|哭|煩|失眠|睡不著|傷心|壓力|不開心|아프|아파|우울|피곤|힘들|속상|슬프|짜증|잠이 안|감기|울었|울고|울 것|눈물|기분이 안|tired|sad|hurt|sick/i;
+const nlPos=x=>!NL_NEG.test(x.z||"")&&!NL_NEG.test(x.o||"");
 function nlGen(kind){ const now=Date.now(), b=Math.floor(now/3e5); if(NL_C[kind]&&NL_C[kind].b===b) return NL_C[kind].L;
   const today=nlDayN(now), L=[], hide=S.get(NL_HIDE,{})||{};
   nlGs().forEach(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, dmd=I.debut.slice(5), dy=+I.debut.slice(0,4);
     nlIds(G).forEach(id=>{ const m=nlM(id), a=m.P.a, tk=nlTk(id)||{L:"ko",c:[],n:[]}, fr=tk.L!=="ko", strip=x=>String(x).replace(/^[mn]>/,"").split("|").join(" "), Z=(A,B)=>A.map((o,j)=>({o,z:B[j]||o})),
-        pk=(NL_PK[G]||[])[m.i]||[], own=kind==="cm"?Z(pk,m.P.p):tk.c.map(([o,z])=>({o:strip(o),z:strip(z)})), pool=own.concat(kind==="cm"?Z(NL_POST_KO[a],NL_POST[a]):Z(NL_CAP_KO[a],NL_CAP[a])), nat=tk.n.map(([o,z])=>({o:strip(o),z:strip(z)})), off=strHash(id+kind);
+        pk=(NL_PK[G]||[])[m.i]||[], own=(kind==="cm"?Z(pk,m.P.p):tk.c.map(([o,z])=>({o:strip(o),z:strip(z)}))).filter(nlPos), pool=own.concat(kind==="cm"?Z(NL_POST_KO[a],NL_POST[a]):Z(NL_CAP_KO[a],NL_CAP[a])), nat=tk.n.map(([o,z])=>({o:strip(o),z:strip(z)})).filter(nlPos), off=strHash(id+kind);
       for(let dn=today-20; dn<=today; dn++){ const md=nlMD(dn), sd=strHash(kind+id+dn), yr=new Date(dn*864e5).getUTCFullYear(); let t=null, h=10+sd%13, mi=(sd>>>5)%60, thx=false, lg="ko";
         const pr2=(A,B,s0)=>{ const j=(s0>>>0)%A.length; return {o:A[j],z:B[j]}; };
         if(md===nlBd(m.row)){ t=pr2(NL_BDAY_ME_KO,NL_BDAY_ME,sd); thx=true; h=kind==="cm"?0:21; mi=(sd>>>5)%20; }
@@ -127,9 +130,9 @@ function nlBuy(id){ const m=nlM(id); if(!m) return; const act=nlActive(id);
       if(first){ const W=nlWelcome(id), O=W.o.split("|"), Z=W.z.split("|"); O.forEach((t,k)=>{ if(t.trim()) r.msgs.push({id:"w"+now+k,f:"a",t:t,z:Z[k]||"",ts:now+800+k*1500,wel:1}); }); } return r; });
     toast(act?"已延長 "+NL_DAYS+" 天":"購買完成"); ui.scrollChat=true; navTo(nlHref("npctie","id="+encodeURIComponent(id))); },{title:WHISPER_NAME,ok:`用 ${NL_PRICE} 積分購買`,danger:false}); }
 /* 粉絲傳了訊息：他看心情決定要不要回、什麼時候回、回幾則；回的是他自己想說的（不看粉絲說了什麼） */
-function nlReplyPlan(id,r){ const now=Date.now(); if((r.msgs||[]).some(x=>x.f==="a"&&x.ts>now)) return;   /* 已經決定要回了：多傳幾則也不會多回 */
-  const m=nlM(id), sd=strHash(id+now), mood=(sd%100)/100; if(mood>.62) return;   /* 有時候就是不回 */
-  const delay=(2+Math.floor(Math.pow(((sd>>>7)%1000)/1000,2)*150))*6e4, at=now+delay, hr=new Date(at).getHours(), tm=hr>=5&&hr<11?"m":hr>=21||hr<4?"n":"";
+function nlReplyPlan(id,r,at0){ const now=Date.now(); if(!at0&&(r.msgs||[]).some(x=>x.f==="a"&&x.ts>now)) return;   /* 已經決定要回了：多傳幾則也不會多回 */
+  const m=nlM(id), sd=strHash(id+(at0||now)), mood=(sd%100)/100; if(!at0&&mood>.35) return;   /* 粉絲傳了也不一定理，看心情 */
+  const delay=(30+Math.floor(Math.pow(((sd>>>7)%1000)/1000,2)*330))*6e4, at=at0||now+delay, hr=new Date(at).getHours(), tm=hr>=5&&hr<11?"m":hr>=21||hr<4?"n":"";
   const tk=nlTk(id), foreign=tk&&tk.L!=="ko", strip=x=>String(x).replace(/^[mn]>/,""), tmOk=x=>{ const k=/^([mn])>/.exec(x); return !k||k[1]===tm; };
   const own=(tk?tk.c:[]).map(([o,z])=>({o,z})).concat(NL_CHAT_KO[m.P.a].map((o,j)=>({o,z:NL_CHAT[m.P.a][j]}))), nat=(tk?tk.n:[]).map(([o,z])=>({o,z}));
   const used=r.used||[], fresh=L=>L.filter(x=>tmOk(x.o)&&!used.includes(x.o)), n=1+((sd>>>11)%10<6?0:(sd>>>11)%10<9?1:2);

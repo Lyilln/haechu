@@ -67,6 +67,11 @@ function npcTieTick(){ try{ const s=session(); if(!s||!s.email) return; const me
     if(seen[mid]==null){ seen[mid]=((subs()[mid]||{}).since)||0; sch=true; }
     if(last>seen[mid]){ seen[mid]=last; sch=true; if(!Q.some(x=>x.mid===mid)){ const r={msgs:[],used:(S.get(acK(NPC_SEEN+"_u"),{})||{})[mid]||[]}; nlReplyPlan(npcOldOf(mid),r);
         r.msgs.forEach(x=>Q.push({mid,ko:x.t,zh:x.z,ts:x.ts})); const U=S.get(acK(NPC_SEEN+"_u"),{})||{}; U[mid]=(r.used||[]).slice(-40); S.set(acK(NPC_SEEN+"_u"),U); qch=true; } } });
+  /* 自己想傳就傳：每天看心情 0～3 次，時間隨機（不是粉絲傳了才回） */
+  { const D=S.get(acK(NPC_SEEN+"_d"),{})||{}, td=new Date(now).toDateString(), U=S.get(acK(NPC_SEEN+"_u"),{})||{}; let dch=false;
+    Object.keys(subs()).filter(isNpcM).forEach(mid=>{ if(!isActive(mid)||D[mid]===td) return; D[mid]=td; dch=true; const h0=strHash(mid+td), n=h0%10<2?0:h0%10<6?1:h0%10<9?2:3, d0=new Date(now); d0.setHours(0,0,0,0);
+      for(let k=0;k<n;k++){ const hk=strHash(mid+td+k), t=d0.getTime()+(10+hk%15)*36e5+((hk>>>6)%60)*6e4; if(t<=now) continue; const r={msgs:[],used:U[mid]||[]}; nlReplyPlan(npcOldOf(mid),r,t); r.msgs.forEach(x=>Q.push({mid,ko:x.t,zh:x.z,ts:x.ts})); U[mid]=(r.used||[]).slice(-40); qch=true; } });
+    if(dch){ S.set(acK(NPC_SEEN+"_d"),D); S.set(acK(NPC_SEEN+"_u"),U); } }
   const due=Q.filter(x=>x.ts<=now); if(due.length){ const add=due.map((x,i)=>{ const zh=x.zh||x.ko; return {id:"npcw"+x.ts+"_"+i+Math.random().toString(36).slice(2,5),member:x.mid,from:"artist",to:me,text:zh,...(x.ko&&x.ko!==zh?{ko:x.ko}:{}),ts:x.ts}; });
     S.set(K.whispers,[...S.get(K.whispers,[]),...add]); { const R=S.get(K.tieReadBy,{})||{}; add.forEach(x=>{ R[x.member]=Math.max(R[x.member]||0,x.ts); }); S.set(K.tieReadBy,R); }   /* 他回了＝讀過了 */ const last=add[add.length-1], m=MEMBERS[last.member]; try{ pushNotification({kind:"whisper",member:last.member,group:m.group,text:last.ko||last.text,color:null,direct:true}); }catch(e){}
     S.set(acK(NPC_Q),Q.filter(x=>x.ts>now)); qch=false; if(location.hash.includes("chat")||location.hash.includes("whisper")) try{ render(); }catch(e){} }
