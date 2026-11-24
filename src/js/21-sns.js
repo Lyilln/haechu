@@ -123,7 +123,7 @@ const snPic=(seed,g,cls="")=>`<span class="sn-pic ${cls}" style="background:${gr
 const snIsVid=p=>!!(p&&p.media&&p.media.some(m=>m.type==="video"));
 /* 照片／影片比例跟 IG 一樣：照第一張的原比例，最寬 1.91:1、最高 4:5（MV 這種 16:9 不會被裁成直的） */
 const SN_AR={}, snArClamp=r=>Math.max(.8,Math.min(1.91,r));
-function snArStyle(p){ const m=p.media&&p.media[0]; if(!m||m.type==="html") return ""; const k=m.mid||m.url, r=SN_AR[k]||(m.w&&m.h?snArClamp(m.w/m.h):0); return r&&Math.abs(r-.8)>.01?` style="aspect-ratio:${r.toFixed(4)}"`:""; }
+function snArStyle(p){ if(p.ar) return ` style="aspect-ratio:${p.ar}"`; const m=p.media&&p.media[0]; if(!m||m.type==="html") return ""; const k=m.mid||m.url, r=SN_AR[k]||(m.w&&m.h?snArClamp(m.w/m.h):0); return r&&Math.abs(r-.8)>.01?` style="aspect-ratio:${r.toFixed(4)}"`:""; }
 function snArSeen(el,w,h){ try{ if(!w||!h) return; const sl=el.closest(".sn-sl"), car=el.closest(".sn-car"); if(!sl||!car||car.firstElementChild!==sl) return; const k=el.dataset.vmid||el.dataset.mid||el.getAttribute("src"), r=snArClamp(w/h); if(k) SN_AR[k]=r;
   const cur=parseFloat(car.style.aspectRatio)||.8; if(Math.abs(cur-r)<.01) return; const sn=car.closest(".sn"), b0=car.getBoundingClientRect(), h0=b0.height; car.style.aspectRatio=r.toFixed(4); const dh=car.getBoundingClientRect().height-h0;
   if(sn&&dh&&b0.bottom<=(sn.getBoundingClientRect().top+60)) sn.scrollTop+=dh; }catch(e){} }   /* 比例改了：如果這則在畫面上面（已經滑過去），把捲動位置一起補回去，畫面才不會跳 */

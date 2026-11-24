@@ -79,7 +79,10 @@ function svTick(){ try{ svLtdTick(); }catch(e){} try{ const s0=svReal(), n0=(S.g
 function svOutTick(){ const s=svReal(); if(!s||!isAdminAcct()||!svVoting()) return; const d=(Date.now()-svPhT0(s))/864e5, chk=s.outChk||{};
   for(const m of svMsList(s.ph)){ const key=s.ph+m.k; if(d<m.d[1]||chk[key]) continue; const has=new Set(svStages(m.k==="lv"?"r1":s.ph,m.k).map(x=>x.tid)), out=[...svAlive()].filter(id=>{ const t=svById(id)||{}; return t.real&&!has.has(id); });
     S.set(SVS,{...s,out:[...new Set([...(s.out||[]),...out])],outChk:{...chk,[key]:Date.now()}}); return; } }
-function svGrTick(){ try{ svOutTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+/* 11/24 進行中的這一季也對齊到晚上六點（每個時間點改成同一天的 18:00，只做一次） */
+function svAt18Fix(){ const s=svReal(); if(!s||s.at18||!isAdminAcct()) return; const f=t=>{ if(!t) return t; const d=new Date(t); d.setHours(18,0,0,0); return d.getTime(); }, mp=o=>o?Object.fromEntries(Object.entries(o).map(([k,v])=>[k,typeof v==="number"?f(v):v])):o;
+  S.set(SVS,{...s,t0:f(s.t0),end:f(s.end),t0s:mp(s.t0s),ends:mp(s.ends),at18:1}); }
+function svGrTick(){ try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
@@ -661,8 +664,6 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
       const ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none";
       if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75}); });
     if(mont.length) st.splice(Math.min(st.length,3+Math.floor(st.length/2)),0,{t:"mont",ids:mont.slice(0,6)}); }
-  /* 這一輪有人沒交舞台＝棄賽：節目裡留一段「空著的位置」 */
-  try{ if(!s.demo&&s.out&&s.out.length){ const R=s.outChk||{}, cur=Object.keys(R).filter(k=>k.startsWith(s.ph)).length; if(cur) s.out.slice(-6).forEach(id=>st.splice(st.length,0,{t:"qt",id})); } }catch(e){}
   st.push({t:"end"}); return st; }
 /* 這一集的首播：任務開始那天晚上六點。首播一小時內在看＝LIVE，其他時間都是重播 */
 const svShLive=s=>{ if(s.demo) return true; const m=svMsNow(s), air=svPhT0(s)+((m&&m.d[0])||0)*864e5; return Date.now()>=air&&Date.now()<air+36e5; };

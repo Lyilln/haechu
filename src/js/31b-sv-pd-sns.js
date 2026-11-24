@@ -10,6 +10,10 @@ function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(
     svStages().filter(y=>y&&!y.del&&y.sid===s.id).forEach(y=>{ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
       out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.ts||Date.now(),base:svHash(y.id+"lk")%60,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
+    /* 開播：每位練習生的公式照＋名字（3:4，真人照片不切到臉） */
+    const t1=svPhT0(s)+60*6e4; svAll().forEach((t,i)=>{ out.push({id:"pdp_"+t.id,uid:"o:pd",npc:1,ar:"3/4",ts:((s.t0s||{}).r1||t1)+i*6e4,base:50+svHash(t.id+"pf")%120,
+      cap:`[PRODUCE DAY] ${t.name}\n${svCoName(t)}\n\n#PRODUCEDAY #${String(t.name||"").replace(/\s+/g,"")}`,
+      media:[{type:"html",h:`<div style="width:100%;height:100%;background:#FFE3EF;display:flex;align-items:flex-start;justify-content:center;overflow:hidden">${t.photo?`<img src="${esc(t.photo)}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%">`:svPh(t)}</div>`}]}); });
     /* 節目片段 */
     const card=(top,big,line)=>({type:"html",h:`<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:22px;background:#FFF5F9;font-family:inherit"><b style="align-self:flex-start;background:#F0408F;color:#fff;font-size:12px;padding:3px 10px;letter-spacing:.1em">${esc(top)}</b><b style="font-size:26px;color:#F0408F">${esc(big)}</b><p style="margin:0;background:#2B2129;color:#fff;padding:10px 12px;font-size:14px;line-height:1.6">${esc(line)}</p></div>`});
     try{ const c=s.ph==="r1"?svC1(s):null, w=c&&c.win; if(w&&w.msg) out.push({id:"pdc_pr_"+s.id,uid:"o:pd",npc:1,ts:svPhT0(s)+36e5,base:80,cap:`[1 分鐘 PR] 1 號位的主人，${w.name}\n\n#PRODUCEDAY #1分鐘PR`,media:[card("1 分鐘 PR",w.name,"「"+w.msg+"」")]}); }catch(e){}
@@ -31,3 +35,18 @@ function svSnPrep(){ const lk=svSnLock(), d=snDB(), me=snUser(snMeId()), to=snUs
     <section class="card"><button class="list-btn" data-a="snsGo" data-v="edit">${I.edit||""}先設定個人檔案<span class="r">開通前只有你看得到</span></button>${to?`<button class="list-btn" data-a="snsGo" data-v="new">${I.star||""}發文到 ${esc(to.u)}<span class="r">${esc(to.name)}</span></button><button class="list-btn" data-a="snsGo" data-v="profile" data-id="${lk.as}">${I.star||""}看 ${esc(to.u)}<span class="r">›</span></button>`:""}</section>
     ${L.length?`<div class="section-h">我發的貼文</div><section class="card sn-subl">${L.map(x=>`<div class="sn-subr"><span class="sn-subth"></span><span><b>${esc(String(x.cap||"").slice(0,40)||"（沒有文字）")}</b><small>${ago(x.ts)}</small></span><em class="ok">已發布</em></div>`).join("")}</section>`:""}
   </main>`; }
+/* 11/24 新聞聯動（照 PD 播出時的新聞爆點）：首播、大公司登場、等級評價、C 位、排名發表、惡剪爭議、退出節目、出道組誕生。
+   在管理員的手機上算，同一件事只發一則 */
+function svNews(s,key,title,body,img){ const done=s.newsDone||{}; if(done[key]) return false; const n={id:"nw"+Date.now()+key.length,title,body,img:img||"",gids:[],ts:Date.now(),pd:1};
+  S.set(K.news,[n,...getNewsM()].slice(0,200)); try{ feedPush({kind:"news",group:"",text:title.slice(0,80),newsId:n.id,direct:true},"all"); }catch(e){} S.set(SVS,{...svReal(),newsDone:{...done,[key]:Date.now()}}); return true; }
+function svNewsTick(){ const s=svReal(); if(!s||s.demo||!isAdminAcct()) return; const all=svAll(), N=id=>(all.find(t=>t.id===id)||{}).name||"", ph=s.ph, he=t=>s.g==="b"?t.replace(/她/g,"他"):t;
+  if(ph!=="recruit"&&svVoting()){ if(svNews(s,"air","《PRODUCE DAY》今晚六點首播！"+all.length+" 位練習生正式登場",he(`${all.length} 位練習生在今晚六點的首播中依序入場、坐上金字塔座位。坐上 1 號位的練習生將獲得 1 分鐘 PR 的機會。`))) return;
+    const big=[...new Set(all.map(t=>svCoName(t)).filter(c=>svCoTier(c)==="big"))]; if(big.length&&svNews(s,"big",`${big.join("、")} 練習生登場，全場一陣騷動`,he(`首播入場時，${big.join("、")} 的練習生一出現，現場練習生紛紛竊竊私語。她們會在等級評價拿到什麼等級，成為觀眾關注的焦點。`))) return; }
+  const G=s.grade||{}, A=Object.keys(G).filter(id=>G[id]==="A"), F=Object.keys(G).filter(id=>G[id]==="F");
+  if((s.grPub||{}).lv&&svNews(s,"glv",`等級評價結果出爐…A 班只有 ${A.length} 位，F 班多達 ${F.length} 位`,he(`A 班：${A.map(N).join("、")||"—"}。導師們的毒舌評語也引發討論。`))) return;
+  if(s.grCen&&svNews(s,"cen",`主題曲 C 位是 ${N(s.grCen)}！由練習生們投票選出`,he(`A 班練習生中，${N(s.grCen)} 獲得最多練習生的支持，將站上主題曲 C 位。`))) return;
+  if((s.out||[]).length){ for(const id of s.out){ if(svNews(s,"out"+id,`${N(id)} 宣布退出《PRODUCE DAY》`,he(`節目方表示，${N(id)} 因個人因素決定退出節目，往後的播出將不會再出現她的舞台。`))) return; } }
+  try{ const ep=svShSteps(s).filter(x=>x.ed==="evil"&&x.p!==1), x=ep[0]; if(x){ const tid=x.t==="stg"?((svStages().find(y=>y.id===x.id)||{}).tid):x.id; if(tid&&svNews(s,"ev"+ph+((svMsNow(s)||{}).k||"")+tid,`${N(tid)} 惡剪爭議？網友：「剪得太狠了吧」`,he(`最新一集播出後，${N(tid)} 的畫面引發熱議，有網友認為是節目惡意剪輯，也有人認為「態度本來就有問題」。`))) return; } }catch(e){}
+  const K0=s.keep||{}; if(K0.r1&&K0.r1.length&&svNews(s,"rk1",`第一次排名發表！1 位是 ${N(svRank("r1")[0])}`,`前 ${K0.r1.length} 位晉級第二輪，其他練習生在這裡結束了旅程。`)) return;
+  if(K0.r2&&K0.r2.length&&svNews(s,"rk2",`第二次排名發表！${K0.r2.length} 位練習生進入決賽`,"出道組會是誰？決賽前最後一週，排名全部保密。")) return;
+  if(s.debut&&s.debut.length&&svNews(s,"deb",`出道組誕生！${s.debut.length} 位練習生組成限定團`,`${s.debut.map(N).join("、")}，將由 OVERTONE Entertainment 負責接下來的活動。`)) return; }
