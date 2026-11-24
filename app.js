@@ -15920,7 +15920,7 @@ const svBack5=t=>`<div class="sv5-bk"><b>${t}</b></div>`;   /* 上面的返回�
 const svRecMe=s=>s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry();
 
 function svRecruitHtml(s){ const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
-  if(s.reair1&&!s.demo){ const at=new Date(s.end), hm=`${at.getHours()%12||12}:${String(at.getMinutes()).padStart(2,"0")}`, card=`<section class="sv6-ep"><small>PRODUCE DAY・第一輪</small><h2>今晚 ${hm} 首播</h2><p>${E.length} 位練習生，報名已截止。${me?`開播前表演和報名資料都還能修改（還有 ${svCd(s)}）。`:"開播後直接在這裡看節目。"}</p></section>`; const rh=svDemoOk()?`<button class="sv2-cta" data-a="svReh">搶先預演開播後的節目（測試用・只有你看得到）</button>`:""; if(!me) return card+rh; return card+svRecMeCard(s,me)+rh; }
+  if(s.reair1&&!s.demo){ const at=new Date(s.end), hm=`${at.getHours()%12||12}:${String(at.getMinutes()).padStart(2,"0")}`, card=`<section class="sv6-ep"><small>PRODUCE DAY・第一輪</small><h2>今晚 ${hm} 首播</h2><p>${E.length} 位練習生，報名已截止。${me?`開播前表演和報名資料都還能修改（還有 ${svCd(s)}）。`:"開播後直接在這裡看節目。"}</p></section>`; const rh="";   /* 11/24 預演測完了，按鈕拿掉（正在預演的話上面還是有「結束」可以清空） */ if(!me) return card+rh; return card+svRecMeCard(s,me)+rh; }
   return svSt5("練習生招募中",`截止 <b>還有 ${svCd(s)}</b>`)
     +(me?svRecMeCard(s,me)
       :svHero5("已經報名",`${E.length} 位`,"誰報名了，開播才公開",art||isWealth(myEmail())?"":`<button data-a="svApply">我也要報名（當練習生）</button>`))
