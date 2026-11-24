@@ -3739,6 +3739,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   thRotTick(); thSync();
   if(r.sub==="npc"&&typeof npcGid==="function"&&NPC_INFO[r.id]){ location.replace("#/"+r.role+"/grp?id="+npcGid(r.id)); return; }   /* 虛擬歌手的社群、TIE（哪一端都能看） */
   if(r.sub==="npctie"&&typeof nlRoom==="function"&&nlOn()&&nlM(r.id)){ if(hashChanged) ui.scrollChat=true; return paint(nlRoom(r.id),false); }
+  if(r.sub==="sns"&&s.role!=="artist"&&r.p!=="edit"&&r.p!=="new"&&r.p!=="profile"&&typeof svSnLock==="function"&&svSnLock()) return paint(svSnPrep(),false);   /* 11/24 參賽中的練習生 */
   if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
     try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }
   if(r.sub==="sns"){ /* SNS 的分頁列跟 App 的一樣放在頁面外面：換頁不重畫，鏡片滑過去、可以按住拖 */
@@ -10549,7 +10550,7 @@ function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&H
     if(Object.keys(dm).length) S.set(K.sns,{...old,dm:{}}); }   /* 舊的大包裡的私訊搬走後清掉（不然大家都讀得到） */
   S.set("daisuki_sn_mig",true); }catch(e){} }
 const SN_SNAP=new WeakMap();
-const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 不複製（太慢，滑動會卡）；snSave 用拿出來時記下的樣子比對，改到同一份也存得到 */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); try{ if(typeof npcSnPosts==="function"){ const np=npcSnPosts(); if(np.length) d.posts=d.posts.concat(np); } }catch(e){} try{ (d.posts||[]).forEach(x=>{ if(x&&x.of) snOfFill(x); }); }catch(e){} return d; };
+const snDB=()=>{ snMigrate(); const d={}, snap={}; Object.keys(SN_PARTS).forEach(p=>{ const v=S.get(snKey(p),null); d[p]=v==null?JSON.parse(JSON.stringify(SN_PARTS[p])):p==="posts"&&Array.isArray(v)?v.filter(x=>x&&!x.del):v;   /* 不複製（太慢，滑動會卡）；snSave 用拿出來時記下的樣子比對，改到同一份也存得到 */   /* 已刪除的貼文記號：畫面上當作沒有 */ snap[p]=JSON.stringify(d[p]); }); SN_SNAP.set(d,snap); try{ if(typeof npcSnPosts==="function"){ const np=npcSnPosts(); if(np.length) d.posts=d.posts.concat(np); } }catch(e){} try{ if(typeof svPdPosts==="function"){ const pp=svPdPosts(); if(pp.length) d.posts=d.posts.concat(pp); } }catch(e){} try{ (d.posts||[]).forEach(x=>{ if(x&&x.of) snOfFill(x); }); }catch(e){} return d; };
 /* 存檔只存「這次真的改了的地方」：拿讀出來那一刻當基準，跟現在手機裡（可能剛收到別人的新限動、新貼文）合起來，
    不會因為手上拿的是舊的一份，就把別人剛發的蓋掉 */
 /* 存：跟「拿出來那時候」比，有變才存。手機裡的那份如果是同一個（直接改到的）→ 直接存；如果別人的新資料已經進來（不是同一個）→ 三方合併 */
@@ -10697,7 +10698,7 @@ function snCapHtml0(p,u){ const k="sn:"+p.id; let z="";
   return `<p><b>${esc(u.u)}</b> ${on?esc(z):snRich(p.cap)}</p>${z?`<button class="sn-more" data-a="nlCapTr" data-v="${p.id}">${on?"查看原文":"查看翻譯"}</button>`:""}`; }
 function snTagsHtml(p){ if(!(p.tags||[]).length) return ""; const T=(p.tags||[]).filter(id=>!(p.tagPos||{})[id]).map(snUser).filter(Boolean);   /* 有位置的名牌畫在那張照片上（snSlTags）；舊貼文沒有位置的才自動排 */ 
   return `<button class="sn-tagi" data-a="snTagTg" data-id="${p.id}" aria-label="標註的人">${si("user","sm")}</button>${!T.length?"":`<div class="sn-tagl">${T.map((x,i)=>{ const h=strHash(p.id+x.id), l=26+h%48, t=Math.round(22+(i+.5)*(58/T.length)-3+((h>>>8)%7)); return `<button class="sn-tagb" style="left:${l}%;top:${t}%" data-a="snsGo" data-v="profile" data-id="${x.id}">${esc(x.u)}</button>`; }).join("")}</div>`}`; }
-function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
+function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; if(p.pdStage) svPdSeen(p.id); const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
   return `<article class="sn-post" id="snp-${p.id}" ${p.mus&&p.mus.mid?`data-mus="${esc(p.mus.mid)}" data-pid="${p.id}"`:""}>${bu?`<div class="sn-rpby">${si("repost","sm")}<b>${esc(bu.id===me?"你":bu.u)}</b> 已轉發</div>`:""}<header><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,38,snHasStory(d,u.id),snStorySeen(d,u.id))}<span class="sn-pu"><b>${esc(u.u)}${u.ver?`${SN_VER}`:""}</b>${p.mus&&p.mus.mid?`<small>${snMusTag(p.mus,"p:"+p.id,p.uid)}</small>`:p.loc?`<small>${esc(p.loc)}</small>`:snSugg(d,u.id)?`<small>為你推薦</small>`:""}</span></button>${snSugg(d,u.id)?`<button class="sn-fb" data-a="snFollow" data-v="${u.id}">追蹤</button>`:""}<button class="sn-ib sn-pm" data-a="snMore" data-id="${p.id}" aria-label="更多">${si("menu2")}</button></header>
     <div class="sn-media${p.alb?" sn-cdm":""}">${p.alb?cdBox(p.alb.gid,snAlbTitle(p.alb)):`<div class="sn-car" data-a="snTap" data-id="${p.id}"${snArStyle(p)}>${Array.from({length:n},(_,i)=>`<div class="sn-sl">${snMedia(p,u,i)}${snSlTags(p,i)}</div>`).join("")}</div>`}${n>1?`<em class="sn-cnt">1/${n}</em>`:""}<i class="sn-heart">${si("heart")}</i>${snRpAvs(d,p)}${snTagsHtml(p)}${p.mus&&p.mus.mid?`<button class="sn-mbtn" data-a="snMusTg" data-k="p:${p.id}" data-v="${esc(p.mus.mid)}" aria-label="聲音"><i class="off">${si("mute","sm")}</i><i class="onn">${si("sound","sm")}</i></button>`:""}</div>
     ${n>1?snDotsHtml(n):""}
@@ -10791,7 +10792,7 @@ function snEdit(d){ const me=snMeId(), u=snUser(me);
     <div class="sn-edf"><button class="sn-prv ${snForcePriv(me)?"lock":""}" data-a="snPrivT"><span>私人帳號${snForcePriv(me)?`<small>出道後，舊帳號只能是私人帳號</small>`:""}</span><i class="sn-sw ${snPriv(d,me)?"on":""}"></i></button></div>`; }
 function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":route().id==="sub"?"sub":"post"}), n=dr.media.length, subU=dr.mode==="sub"?snUser(snSubTo((session()||{}).member)):null;
   return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":dr.mode==="sub"?"投稿":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n||dr.alb?"":"disabled"}>${dr.mode==="sub"?"送出":"分享"}</button></header>
-    ${(()=>{ const lk=!subU&&svSnLock(); return lk?`<div class="sn-subto">${snAv(snUser(lk.as),28)}<span>會用 <b>${esc(lk.name)}</b> 的帳號發布（下面寫上你的名字）。${lk.as==="o:pd"?"節目播出期間，個人帳號暫停使用，落選後就會打開。":"出道組的團體帳號開通了。"}</span></div>`:""; })()}
+    ${(()=>{ const lk=!subU&&svSnLock(); return lk?`<div class="sn-subto">${snAv(snUser(lk.as),28)}<span>會用 <b>${esc(lk.name)}</b> 的帳號發布（下面寫上你的名字）。${lk.as==="o:pd"?"節目播出期間，個人帳號暫停使用。":"出道組的團體帳號開通了。"}</span></div>`:""; })()}
     ${subU?`<div class="sn-subto">${snAv(subU,28)}<span>投稿到 <b>${esc(subU.u)}</b>，公司審核後會用官方帳號發布（會加上你的名字）</span></div>`:""}${isAdminAcct()&&dr.mode==="post"?`<label class="sn-asr"><span>發文身分</span><select id="snAs"><option value="">自己（${esc(snUser(snMeId()).u)}）</option>${snOfAccs().map(snUser).filter(Boolean).map(x=>`<option value="${esc(x.id)}" ${dr.as===x.id?"selected":""}>${esc(x.u)}（${esc(x.name)}）</option>`).join("")}</select></label>`:""}
     ${dr.mode==="post"&&!n&&snAlbSongs().length?(dr.alb?`<div class="sn-media sn-cdm">${cdBox(dr.alb.gid,dr.alb.title)}</div><button class="sn-albpick" data-a="snAlbPick">💿 換一張專輯<small>改回照片：點這裡選「不用專輯」</small></button>`:`<button class="sn-albpick" data-a="snAlbPick">💿 發專輯貼文<small>貼文會是一個會轉的 CD 盒</small></button>`):""}
     ${dr.alb&&!n?"":n?`<div class="sn-media"><div class="sn-car">${dr.media.map(x=>`<div class="sn-sl">${x.type==="video"?`<video class="sn-img" src="${x.url||""}" playsinline muted loop autoplay></video><em class="sn-vdur">${fmtDur(x.dur)}</em>`:`<img class="sn-img" data-mid="${x.mid}" alt="">`}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}</div>`:`<label class="sn-pick">${si("cam")}<b>從相簿選擇</b><small>${dr.mode==="story"?`一張照片或 ${SN_VMAX} 秒內的影片`:`最多 10 張・影片 ${SN_VMAX} 秒內`}</small><input type="file" accept="image/*,video/*" ${dr.mode==="story"?"":"multiple"} id="snFile"></label>`}
@@ -15555,7 +15556,7 @@ function svScores(ph){ const s=svSeason(); if(!s) return {}; ph=ph||s.ph; const 
   const t0=(s.t0s||{})[ph]||s.t0||Date.now(), days=Math.max(1,Math.ceil((Math.min(Date.now(),(s.ends||{})[ph]||Date.now())-t0)/864e5));
   const VP=ph==='final'&&!s.demo?(((S.get(SVV,{})||{})[s.id]||{}).pr||{}):{}, BP=ph==='final'?svBenefit('pr'):{};   /* 決賽：PR 週的票和加分票一起帶進來 */
   all.forEach(t=>{ if(!live.has(t.id)) return; out[t.id]=t.real?(V[t.id]||0)+(B[t.id]||0)+(BN[t.id]||0)+(VP[t.id]||0)+(BP[t.id]||0):Math.round(days*(2+svHash(t.id+ph)%6)+avg*(.25+svHash(ph+t.id)%55/100))+(B[t.id]||0); });
-  return out; }
+  return typeof svSnsBonus==="function"?svSnsBonus(s,ph,out):out; }
 /* 這一輪還在比的人 */
 function svAlive(ph){ const s=svSeason(); if(!s) return new Set(); ph=ph||s.ph; const K0=s.keep||{};
   if(ph==="r1"||ph==="recruit") return new Set(svAll().map(t=>t.id)); if(ph==="r2") return new Set(K0.r1||[]); if(ph==="pr"||ph==="final") return new Set(K0.r2||[]); return new Set(K0.r2||[]); }
@@ -16207,6 +16208,40 @@ document.addEventListener("click",e=>{ const t0=e.target.closest&&e.target.close
 window.addEventListener("hashchange",()=>{ if(ui.svSh){ ui.svSh=null; layer.innerHTML=""; } });
 addEventListener("hashchange",()=>{ if(!/p=survival/.test(location.hash)) ui.svShIn=0; });   /* 離開選秀主頁再回來，就再開播一次 */
 addEventListener("popstate",e=>{ if(ui.svSh&&!(e.state&&e.state.svsh)){ ui.svSh=null; layer.innerHTML=""; } });   /* 節目中按返回＝關掉節目回到選秀頁 */
+
+/* 11/24 PRODUCE DAY 官方 SNS：
+   ・播出期間，每一個交上來的舞台都自動發到 produceday.official
+   ・節目片段（1 分鐘 PR、等級評價名場面）也自動擷取發文
+   ・SNS 上舞台的瀏覽＋按讚，加起來佔票數的 3% */
+const SV_SNSW=.03, SVPDV="daisuki_sv_pdview";
+let svPdBusy=0;
+function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(); if(!s||s.demo||s.ph==="recruit") return []; const all=svAll(), out=[];
+    const MS=k=>{ for(const ph in SV_MS) { const m=(SV_MS[ph]||[]).find(x=>x.k===k); if(m) return m.t; } return ""; };
+    const med=(y,t)=>y.url?(y.kind==="v"?{type:"html",h:`<video src="${esc(y.url)}" playsinline webkit-playsinline controls preload="metadata" style="width:100%;height:100%;object-fit:cover;background:#000"></video>`}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
+    svStages().filter(y=>y&&!y.del&&y.sid===s.id).forEach(y=>{ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
+      out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.ts||Date.now(),base:svHash(y.id+"lk")%60,
+        cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
+    /* 節目片段 */
+    const card=(top,big,line)=>({type:"html",h:`<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:22px;background:#FFF5F9;font-family:inherit"><b style="align-self:flex-start;background:#F0408F;color:#fff;font-size:12px;padding:3px 10px;letter-spacing:.1em">${esc(top)}</b><b style="font-size:26px;color:#F0408F">${esc(big)}</b><p style="margin:0;background:#2B2129;color:#fff;padding:10px 12px;font-size:14px;line-height:1.6">${esc(line)}</p></div>`});
+    try{ const c=s.ph==="r1"?svC1(s):null, w=c&&c.win; if(w&&w.msg) out.push({id:"pdc_pr_"+s.id,uid:"o:pd",npc:1,ts:svPhT0(s)+36e5,base:80,cap:`[1 分鐘 PR] 1 號位的主人，${w.name}\n\n#PRODUCEDAY #1分鐘PR`,media:[card("1 分鐘 PR",w.name,"「"+w.msg+"」")]}); }catch(e){}
+    try{ const G=s.grade||{}; Object.keys(G).filter(id=>G[id]==="A"||G[id]==="F").sort((a,b)=>svHash(a+"cl")-svHash(b+"cl")).slice(0,4).forEach((id,i)=>{ const t=all.find(x=>x.id===id); if(!t) return; const cm=svGrCm(s,t);
+      out.push({id:"pdc_gr_"+id,uid:"o:pd",npc:1,ts:svPhT0(s)+(2+i)*36e5,base:30+svHash(id)%40,cap:`[等級評價] ${t.name}，${G[id]} 班\n\n#PRODUCEDAY #等級評價`,media:[card("等級評價・"+G[id]+" 班",t.name,cm.n+"：「"+cm.t+"」")]}); }); }catch(e){}
+    return out; }catch(e){ return []; } finally{ svPdBusy=0; } }
+/* 瀏覽：每個帳號每則只算一次 */
+function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,o=>{ o=o||{}; o[pid]=(o[pid]||0)+1; return o; }); }catch(e){} }
+let svSnsC=null;
+function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) return out; if(svSnsC&&svSnsC.t>Date.now()-3e4&&svSnsC.ph===ph&&svSnsC.sid===s.id) return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(svSnsC.b[k]||0)]));
+    const d=snDB(), V=S.get(SVPDV,{})||{}, E={}; (d.posts||[]).filter(p=>p.pdStage&&p.pdPh===ph).forEach(p=>{ E[p.pdTid]=(E[p.pdTid]||0)+(d.likes[p.id]||[]).length+(V[p.id]||0); });
+    const tE=Object.values(E).reduce((a,b)=>a+b,0), tV=Object.values(out).reduce((a,b)=>a+b,0), b={};
+    if(tE&&tV) Object.keys(out).forEach(id=>{ b[id]=Math.round(tV*SV_SNSW/(1-SV_SNSW)*(E[id]||0)/tE); });
+    svSnsC={t:Date.now(),ph,sid:s.id,b}; return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(b[k]||0)])); }catch(e){ return out; } }
+/* 參賽中的練習生點 SNS：跟藝人還沒開通時一樣的頁面（照 Veres 那時候），可以先設定個人檔案、用節目官方帳號發文 */
+function svSnPrep(){ const lk=svSnLock(), d=snDB(), me=snUser(snMeId()), to=snUser(lk.as), L=(d.posts||[]).filter(p=>p.uid===lk.as&&p.by===snMeId()).sort((a,b)=>b.ts-a.ts);
+  return `<header class="top core-top"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="top-title">SNS</div><span class="sh-sp"></span></div></header><main class="page sn-prep">
+    <section class="card sn-prep-h">${snAv(me,72)}<b>${esc(me.u)}</b>${me.name?`<small>${esc(me.name)}</small>`:""}<p>${lk.as==="o:pd"?"節目播出期間，個人帳號暫停使用":"出道組的團體帳號開通了"}</p></section>
+    <section class="card"><button class="list-btn" data-a="snsGo" data-v="edit">${I.edit||""}先設定個人檔案<span class="r">開通前只有你看得到</span></button>${to?`<button class="list-btn" data-a="snsGo" data-v="new">${I.star||""}發文到 ${esc(to.u)}<span class="r">${esc(to.name)}</span></button><button class="list-btn" data-a="snsGo" data-v="profile" data-id="${lk.as}">${I.star||""}看 ${esc(to.u)}<span class="r">›</span></button>`:""}</section>
+    ${L.length?`<div class="section-h">我發的貼文</div><section class="card sn-subl">${L.map(x=>`<div class="sn-subr"><span class="sn-subth"></span><span><b>${esc(String(x.cap||"").slice(0,40)||"（沒有文字）")}</b><small>${ago(x.ts)}</small></span><em class="ok">已發布</em></div>`).join("")}</section>`:""}
+  </main>`; }
 
 /* ===== 11/18 小卡序號：每一張卡都是獨立的一筆，有自己的序號 =====
    K.cards 還是記「這種卡有幾張」（其他畫面照舊用）；K.serials 記每一張：{cid:[{id,n,ts}]}，張數永遠跟 K.cards 一樣。
