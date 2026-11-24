@@ -96,3 +96,10 @@ main.svpend{visibility:hidden}
 .svsh-wh p:nth-child(even){align-self:flex-end;border-radius:14px 14px 2px 14px}
 .sv5-cv{display:flex!important;align-items:center;gap:12px;text-align:left;width:100%;font:inherit;background:#fff}.sv5-cv>div{flex:1;display:flex;flex-direction:column}.sv5-cv.on{border-color:var(--a)!important;box-shadow:0 0 0 2px var(--a)}.sv5-cv em{font-style:normal;color:var(--a);font-weight:900}
 .sn-by{margin:2px 0 0;font-size:12.5px;color:var(--mut,#8e8e8e);font-weight:600}
+/* 表演頁不要那麼擠 */
+.aws.svsh .svsh-nov,.aws.svsh .aws-v img,.aws.svsh .aws-v video{max-height:42vh}
+.aws.svsh .aws-v{margin:8px 0}
+.aws.svsh .svsh-cut{margin-top:6px}
+.aws.svsh .svsh-int{margin-top:8px}
+.aws.svsh .svsh-skip{margin-top:8px;position:relative;z-index:2}
+.aws.svsh .aws-tap{position:relative;z-index:1}
