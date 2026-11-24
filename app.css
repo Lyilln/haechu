@@ -7004,6 +7004,8 @@ html[data-theme="dark"] .wkg-logo.lg-dk,html[data-theme="dark"] .wkg-cap2 img.lg
 /* 11/18：SNS 是 IG 的樣子，換主題時字的顏色不跟著變 */
 html .sn,html[data-th] .sn,html[data-th] .sn-shw,html[data-th] .sn-sh{--ink:var(--t,#000);--ink-2:var(--s,#737373);--ink-3:var(--s,#737373)}
 
+.sn-sh.cm .sn-cl>*{flex:none}.sn-sh.cm .sn-cl .sn-capb{margin:0 -16px;padding-left:16px;padding-right:16px}.sn-sh.cm .sn-cl .sn-sort{align-self:flex-start;margin:0}.sn-sh.cm>.sn-grab{margin-bottom:8px}
+
 /* HAECHU｜活動頁共用外觀（xv-）：簽售、世巡、演唱會、綜藝、代言・雜誌、偶像運動會 */
 .xv .xv-hero:first-child{margin-top:2px}
 .xv-hero,.dk-keep-xv{position:relative;overflow:hidden;border-radius:22px;padding:18px;color:#fff;background:linear-gradient(135deg,#7C4DFF,#B388FF);box-shadow:0 14px 30px -18px rgba(90,50,200,.6)}
