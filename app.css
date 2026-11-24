@@ -8288,3 +8288,9 @@ html[data-theme] .t-modal.sv3-tm p.sv3-tag,html[data-theme] .t-modal.sv3-tm p.sv
 .svnx .svx-a button{flex:1;padding:13px;border:0;font:inherit;font-weight:900;font-size:14.5px}.svnx .svx-a .m{background:var(--k,#FF4F9A);color:#fff}.svnx .svx-a .s{background:#fff;color:#2B2129;box-shadow:inset 0 0 0 1.5px #2B2129}
 
 .svsh-x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;z-index:5;width:34px;height:34px;border:0;border-radius:50%;background:rgba(43,33,41,.08);color:#2B2129;display:grid;place-items:center;font-size:15px;padding:0}.svsh-x svg{width:18px;height:18px}
+/* 11/24 真人上傳的照片／影片：整張放進去，不裁切（不會切到臉）；頭像類的往上對齊 */
+.aws.svsh .aws-v img.svsh-img,.aws.svsh .aws-v video{object-fit:contain!important;width:100%;height:auto;max-height:42vh;background:#1a1016}
+.aws.svsh .aws-v:has(.svsh-img),.aws.svsh .aws-v.svvid{background:#1a1016}
+.aws.svsh .svsh-nov img,.aws.svsh .svsh-ph img,.fc-ph img,.svsh-mont img{object-position:50% 18%!important}
+.sv2 .sv3-sp img,.sv2 .sv3-sp video{object-position:50% 18%}
+.svnx-c .aws-v img.svsh-img,.svnx-c .aws-v video{object-fit:contain!important;background:#1a1016}

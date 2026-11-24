@@ -232,17 +232,19 @@ function svStageView(id){ const s=svSeason(), x=svStages(s.ph).find(y=>y.id===id
 /* 11/24 招募期交的是「等級評價」舞台（算在第一輪） */
 const svUpMs=s=>s.ph==="recruit"?{ph:"r1",m:SV_MS.r1[0]}:{ph:s.ph,m:svMsNow(s)};
 /* 11/24 舞台上傳：影片原檔直接傳（超過 45MB 分段傳，沒有上限），有進度 %；登入過期會自動換 token 再傳 */
+/* 傳完確認雲端真的有這個檔（大小對得上），不對就當失敗重傳 */
+async function svMediaOk(u,n){ for(let i=0;i<3;i++){ try{ const r=await fetch(u,{method:"HEAD",cache:"no-store"}); if(r.ok){ const L=+(r.headers.get("Content-Length")||0); if(!L||!n||Math.abs(L-n)<16) return true; return false; } }catch(e){} await new Promise(r=>setTimeout(r,1200)); } return false; }
 async function svMediaUp(id,blob,on){ if(!HB_ON) return URL.createObjectURL(blob);
   const ct=blob.type||(/\.mov$/.test(id)?"video/quicktime":/\.mp4$/.test(id)?"video/mp4":"image/jpeg"), pub=MEDIA_URL+"/media/"+encodeURIComponent(id);
-  if(MEDIA_URL&&blob.size>45*1024*1024){ hbUploadBig.on=p=>on&&on(p); try{ const ok=await hbUploadBig(id,blob.type?blob:new Blob([blob],{type:ct})); if(ok&&on) on(100); return ok?pub:null; } finally{ hbUploadBig.on=null; } }
-  if(MEDIA_URL){ for(let i=0;i<3;i++){ const st=await new Promise(res=>{ try{ const x=new XMLHttpRequest(); x.open("PUT",pub); x.setRequestHeader("Authorization","Bearer "+HB.tok); x.setRequestHeader("Content-Type",ct);
+  if(MEDIA_URL&&blob.size>45*1024*1024){ hbUploadBig.on=p=>on&&on(p); try{ const ok=await hbUploadBig(id,blob.type?blob:new Blob([blob],{type:ct})); if(ok&&!(await svMediaOk(pub,blob.size))) return null; if(ok&&on) on(100); return ok?pub:null; } finally{ hbUploadBig.on=null; } }
+  if(MEDIA_URL){ for(let i=0;i<3;i++){ let st=await new Promise(res=>{ try{ const x=new XMLHttpRequest(); x.open("PUT",pub); x.setRequestHeader("Authorization","Bearer "+HB.tok); x.setRequestHeader("Content-Type",ct);
         x.upload.onprogress=e=>{ if(e.lengthComputable&&on) on(Math.min(99,Math.round(e.loaded/e.total*100))); }; x.onload=()=>res(x.status); x.onerror=()=>res(0); x.ontimeout=()=>res(0); x.timeout=10*60e3; x.send(blob); }catch(e){ res(0); } });
-      if(st>=200&&st<300||st===409){ on&&on(100); return pub; } if(st===401){ try{ await hbRefresh(); }catch(e){} } else await new Promise(r=>setTimeout(r,1500*(i+1))); } }
+      if(st>=200&&st<300||st===409){ if(await svMediaOk(pub,blob.size)){ on&&on(100); return pub; } st=0; } if(st===401){ try{ await hbRefresh(); }catch(e){} } else await new Promise(r=>setTimeout(r,1500*(i+1))); } }
   return await hbImgUrl(id,blob); }
 function svUpForm(){ const s=svSeason(), {ph:uph,m}=svUpMs(s), me=s.demo?(svTrainee(s)||svRecMe(s)):svMyEntry(), my=svStages(uph,m.k).find(x=>x.tid===me.id)||{}, f=ui.svU||(ui.svU={url:my.url||"",kind:my.kind||"",cap:my.cap||"",team:my.team||"",pos:my.pos||"",iv:my.iv||""});
   setLayer(`<div class="tiei svf sv2 ${svTheme()}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="關閉">${I.back}</button><b>交舞台・${esc(m.t)}</b><span class="sh-sp"></span></header><div class="tiei-body">
     <p class="sv3-how">${esc(m.how)}</p>
-    <button class="sv3-upm" data-a="svUpPick">${f.busy?`<b>${f.busy}</b>`:f.url?(f.kind==="v"?`<video src="${esc(f.url)}" muted playsinline controls></video>`:`<img src="${esc(f.url)}" alt="">`):`<b>＋ 影片或照片</b>`}</button>
+    <button class="sv3-upm" data-a="svUpPick">${f.busy?`<b>${f.busy}</b>`:f.url?(f.kind==="v"?`<video src="${esc(f.pv||f.url)}#t=0.5" muted playsinline webkit-playsinline controls preload="metadata"></video>`:`<img src="${esc(f.url)}" alt="">`):`<b>＋ 影片或照片</b>`}</button>
     ${m.team?`<label class="svf-l">組名</label><input id="svUt" class="svf-in" maxlength="20" placeholder="例：A 組、PICK ME 組" value="${esc(f.team)}">`:""}
     ${m.pos?`<label class="svf-l">位置</label><div class="chips wrap co-chips">${["Vocal","Dance","Rap"].map(k=>`<button class="chip ${f.pos===k?"on":""}" data-a="svUpPos" data-v="${k}">${k}</button>`).join("")}</div>`:""}
     <label class="svf-l">舞台說明</label><textarea id="svUc" class="svf-in" rows="3" maxlength="200" placeholder="唱了什麼歌、想讓大家看到什麼">${esc(f.cap)}</textarea><label class="svf-l">後採訪 <em>選填・節目裡會放這段，像在後台受訪</em></label><textarea id="svUi" class="svf-in" rows="2" maxlength="80" placeholder="例：上台前手一直在抖">${esc(f.iv||"")}</textarea>
@@ -677,7 +679,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svUpPick": { svUKeep(); const f=ui.svU; if(f.busy) return; const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*,image/*"; inp.onchange=async()=>{ const fl=inp.files&&inp.files[0]; if(!fl) return; const v=/^video/.test(fl.type);
         try{ f.busy="上傳中… 0%"; svUpForm(); const b=v?fl:await shrinkImg(fl,1600), ext=v?(/quicktime/i.test(fl.type)||/\.mov$/i.test(fl.name||"")?".mov":".mp4"):".jpg";
           const url=await svMediaUp("svs_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+ext,b,p=>{ f.busy=`上傳中… ${p}%`; const el=document.querySelector(".sv3-upm b"); if(el) el.textContent=f.busy; });
-          f.busy=""; if(!url){ toast("上傳失敗，網路好一點再試一次"); svUpForm(); return; } f.url=url; f.kind=v?"v":"i"; svUpForm(); }catch(er){ f.busy=""; toast("這個檔案讀不出來"); svUpForm(); } }; pickClick(inp); return; }
+          f.busy=""; if(!url){ toast("上傳失敗，網路好一點再試一次"); svUpForm(); return; } f.url=url; f.kind=v?"v":"i"; try{ f.pv=URL.createObjectURL(b); }catch(e){} svUpForm(); toast("上傳完成 ✓"); }catch(er){ f.busy=""; toast("這個檔案讀不出來"); svUpForm(); } }; pickClick(inp); return; }
     case "svUpOk": { svUKeep(); const f=ui.svU, me=s&&s.demo?(svTrainee(s)||svRecMe(s)):svMyEntry(), {ph:uph,m}=svUpMs(s); if(!f||!me||!m) return; if(f.busy){ toast("還在上傳，等一下"); return; } if(!f.url){ toast("請放影片或照片"); return; } if(m.team&&!f.team){ toast("請填組名"); return; } if(m.pos&&!f.pos){ toast("請選位置"); return; }
       if(s.demo){ ui.svDemoSt={...(ui.svDemoSt||{}),[m.k]:{url:f.url,kind:f.kind,cap:f.cap,team:f.team,pos:f.pos}}; ui.svU=null; layer.innerHTML=""; rr(); toast("示範：舞台交出去了（只在你的手機）"); return; }
       const row={url:f.url,kind:f.kind,cap:f.cap,team:f.team,pos:f.pos,iv:f.iv||"",ts:Date.now()}, nid=uid("svs");
