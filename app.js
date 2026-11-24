@@ -15613,7 +15613,12 @@ function svReAir2(){ const s=svReal(); if(!s||!s.reair1||s.reair2||!isAdminAcct(
       const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1; S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair2:1}); }
     else S.set(SVS,{...s,t0:A,t0s:{...(s.t0s||{}),r1:A},at18:1,reair2:1}); return; }
   S.set(SVS,{...s,reair2:1}); }
-function svGrTick(){ try{ svReAir2(); }catch(e){} try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+/* 11/24 再延一次：20:00 才開播（影片修好再播），18:30 那集收回（只做一次） */
+function svReAir3(){ const s=svReal(); if(!s||s.reair3||!isAdminAcct()) return; const at=new Date(); at.setHours(20,0,0,0); const A=at.getTime(); if(Date.now()>=A){ S.set(SVS,{...s,reair3:1}); return; }
+  try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
+  const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
+  S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair1:1,reair2:1,reair3:1,airN:(s.airN||0)+1}); }
+function svGrTick(){ try{ svReAir3(); }catch(e){} try{ svReAir2(); }catch(e){} try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
@@ -15726,7 +15731,7 @@ function svStageHtml(s){ const L=svMsList(s.ph); if(!L.length) return ""; const 
 /* 練習生：我的任務 */
 /* 參賽者本人：示範裡切到「練習生畫面」才算 */
 const svTrainee=s=>{ const me=s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry(); return me&&svVoting()&&svAlive().has(me.id)?me:null; };
-function svStageView(id){ const s=svSeason(), x=svStages(s.ph).find(y=>y.id===id); if(!x) return; const t=svById(x.tid)||{}, m=svMsList(s.ph).find(y=>y.k===x.mk)||{}, lv=svMyLv()[s.id+x.mk];
+function svStageView(id){ const s=svSeason(), x=svStages(s.ph).find(y=>y.id===id); if(!x) return; if(isAdminAcct()&&x.url&&/^https/.test(x.url)) setTimeout(async()=>{ try{ const r=await fetch(x.url.split("#")[0],{method:"HEAD",cache:"no-store"}); const el=document.querySelector(".sv3-tm .t-mb"); if(el) el.insertAdjacentHTML("beforebegin",`<p class="svv-dg">管理員診斷：${r.status}・${esc(r.headers.get("Content-Type")||"?")}・${Math.round((+r.headers.get("Content-Length")||0)/1048576*10)/10}MB・${esc(x.url.split("/").pop())}</p>`); }catch(e){ const el=document.querySelector(".sv3-tm .t-mb"); if(el) el.insertAdjacentHTML("beforebegin",`<p class="svv-dg">管理員診斷：連不到檔案（${esc(String(e&&e.message||e))}）</p>`); } },300); const t=svById(x.tid)||{}, m=svMsList(s.ph).find(y=>y.k===x.mk)||{}, lv=svMyLv()[s.id+x.mk];
   tieModal(`${esc(t.name||"")}・${esc(m.t||"")}`,`${x.url?`<div class="sv3-fr">${x.kind==="v"?`<video class="sv3-vid" style="${svFp(x)}" src="${esc(x.url)}" controls playsinline></video>`:`<img class="sv3-vid" style="${svFp(x)}" src="${esc(x.url)}" alt="">`}</div>`:`<div class="sv3-vid sv5-nov">${s.demo?"示範舞台沒有影片<br><small>真的練習生交的影片、照片會在這裡播放</small>":"這個舞台沒有影片"}</div>`}${x.team||x.pos?`<p class="sv3-tag">${esc(x.team||x.pos)}</p>`:""}${x.cap?`<p class="fy-info">${esc(x.cap)}</p>`:""}
     ${(x.cm||[]).map(c=>`<div class="sv3-cm"><b>${esc(c.n)}</b><span>${esc(c.t)}</span></div>`).join("")}<p class="sv3-lv">♥ 現場票 ${fmt(svLive(x))}</p>`,
     `${isAdminAcct()&&!s.demo?`<button class="t-mbtn" data-a="svCm" data-v="${x.id}">導師評語</button>`:""}<button class="t-mbtn" data-a="tCloseLayer">關閉</button>${svVoting()&&!svTrainee(s)?`<button class="t-mbtn main" data-a="svLv" data-v="${x.id}" ${lv?"disabled":""}>${lv===x.id?"已投這個舞台":lv?"這個任務投過了":"投現場票"}</button>`:""}`,"sv3-tm"); }
@@ -15735,6 +15740,12 @@ const svUpMs=s=>s.ph==="recruit"?{ph:"r1",m:SV_MS.r1[0]}:{ph:s.ph,m:svMsNow(s)};
 /* 11/24 舞台上傳：影片原檔直接傳（超過 45MB 分段傳，沒有上限），有進度 %；登入過期會自動換 token 再傳 */
 /* 傳完確認雲端真的有這個檔（大小對得上），不對就當失敗重傳 */
 /* 11/24 舞台畫面一律 3:4：照片上傳時就裁成 3:4；影片不重新轉檔，記下練習生挑的取景（位置＋放大），播的時候照這個裁 */
+/* 11/24 舞台影片播不出來（直接串流失敗）→ 自動改成整支下載到手機再播（SNS 一直都是這樣播的） */
+const SV_VB={};
+document.addEventListener("error",async e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)) return; const src=v.currentSrc||v.getAttribute("src")||""; if(!/\/media\/svs_/.test(src)||v.dataset.svb) return; v.dataset.svb="1";
+  const u=src.split("#")[0], frag=src.includes("#")?"#"+src.split("#")[1]:"";
+  try{ if(!SV_VB[u]) SV_VB[u]=fetch(u).then(r=>r.ok?r.blob():null).then(b=>b&&b.size?URL.createObjectURL(b.type&&b.type!=="application/octet-stream"?b:new Blob([b],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"})):null).catch(()=>null);
+    const ob=await SV_VB[u]; if(ob&&v.isConnected){ v.src=ob+frag; v.load(); } else if(v.isConnected){ const w=v.parentElement; if(w&&!w.querySelector(".svv-err")){ const p=document.createElement("p"); p.className="svv-err"; p.textContent="影片讀不到，請練習生重新上傳"; w.appendChild(p); } } }catch(er){} },true);
 const svFp=y=>{ const p=y&&y.fp; return p?`object-fit:cover;object-position:${p.x}% ${p.y}%;transform:scale(${p.z||1});transform-origin:${p.x}% ${p.y}%;`:""; };
 async function svMediaOk(u,n){ for(let i=0;i<3;i++){ try{ const r=await fetch(u,{method:"HEAD",cache:"no-store"}); if(r.ok){ const L=+(r.headers.get("Content-Length")||0); if(!L||!n||Math.abs(L-n)<16) return true; return false; } }catch(e){} await new Promise(r=>setTimeout(r,1200)); } return false; }
 async function svMediaUp(id,blob,on){ if(!HB_ON) return URL.createObjectURL(blob);
