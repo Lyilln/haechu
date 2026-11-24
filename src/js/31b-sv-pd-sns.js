@@ -6,7 +6,7 @@ const SV_SNSW=.03, SVPDV="daisuki_sv_pdview";
 let svPdBusy=0;
 function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(); if(!s||s.demo||s.ph==="recruit") return []; const all=svAll(), out=[];
     const MS=k=>{ for(const ph in SV_MS) { const m=(SV_MS[ph]||[]).find(x=>x.k===k); if(m) return m.t; } return ""; };
-    const med=(y,t)=>y.url?(y.kind==="v"?{type:"video",url:y.url,st:svFp(y),pu:t.photo||""}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
+    const med=(y,t)=>y.url?(y.kind==="v"?{type:"video",url:y.url,st:svFp(y)}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
     ["r1","r2","pr","final"].flatMap(p=>svStages(p)).filter(y=>y&&!y.del&&!y.v&&y.url&&y.sid===s.id).forEach(y=>{   /* 11/24 原本拿不到任何舞台（沒給階段），官方帳號一直沒有舞台貼文 */ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
       const P0=(s.t0s||{})[y.ph], mm=svMsList(y.ph).find(m=>m.k===y.mk), ms0=P0&&mm?(y.ph==="r1"&&s.airAt&&mm.d[0]===0?s.airAt:P0+mm.d[0]*864e5):0; out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.mk==="lv"?Math.min(y.ts||0,(s.airAt||P0||Date.now())-60e3):Math.max(y.ts||0,ms0+10*60e3+Math.floor((y.ts||0)/1e3)%6e5),base:0,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
