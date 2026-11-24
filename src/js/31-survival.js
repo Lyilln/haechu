@@ -645,7 +645,6 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svUp": { ui.svU=null; svUpForm(); return; }   /* 11/23 示範也打得開（交了只存在這支手機，不會送出） */
     case "svUpPos": { svUKeep(); ui.svU.pos=t.dataset.v; svUpForm(); return; }
     case "svUpPick": { svUKeep(); const f=ui.svU; if(f.busy) return; const inp=document.createElement("input"); inp.type="file"; inp.accept="video/*,image/*"; inp.onchange=async()=>{ const fl=inp.files&&inp.files[0]; if(!fl) return; const v=/^video/.test(fl.type);
-        if(v&&fl.size>400*1048576){ toast("影片太大了（最多 400MB），剪短一點再上傳"); return; }
         try{ f.busy="上傳中… 0%"; svUpForm(); const b=v?fl:await shrinkImg(fl,1600), ext=v?(/quicktime/i.test(fl.type)||/\.mov$/i.test(fl.name||"")?".mov":".mp4"):".jpg";
           const url=await svMediaUp("svs_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5)+ext,b,p=>{ f.busy=`上傳中… ${p}%`; const el=document.querySelector(".sv3-upm b"); if(el) el.textContent=f.busy; });
           f.busy=""; if(!url){ toast("上傳失敗，網路好一點再試一次"); svUpForm(); return; } f.url=url; f.kind=v?"v":"i"; svUpForm(); }catch(er){ f.busy=""; toast("這個檔案讀不出來"); svUpForm(); } }; pickClick(inp); return; }
