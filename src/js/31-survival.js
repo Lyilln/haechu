@@ -650,6 +650,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
 function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.push({t:"ms"});
   try{ const c=s.ph==="r1"?svC1(s):null; if(c&&c.win) st.push({t:"pr"}); }catch(e){}
   /* 11/24 等級評價那集：先一位一位看表演（虛擬練習生放照片）→ 導師講評、給等級。一樣套剪輯：整段播／惡剪／合集咻一下／沒鏡頭。可以跳過 */
+  /* 11/24 決賽：先回顧一路走來，再一位一位介紹出道組候補，最後才是決賽舞台 */
+  if(s.ph==="final"){ const fin=[...svAlive("final")]; if(fin.length){ st.push({t:"rc",k:"meet"}); if(s.grCen||s.demo) st.push({t:"rc",k:"cen"}); st.push({t:"rc",k:"r1"},{t:"rc",k:"r2"});
+      fin.sort((a,b)=>svHash(s.id+"cd"+a)-svHash(s.id+"cd"+b)).forEach((id,i)=>st.push({t:"cand",id,i:i+1,n:fin.length}));
+      const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); } }
   if(!tr&&s.ph==="r1"){ const G=s.demo?svGrDemo(s):s.grade||{}, ids=Object.keys(G);
     if(ids.length){ /* 11/24 照 PD 第一集：先一間公司一間公司入場（公司本身就是看點），之後也照公司順序上台評價 */
       const coOf=id=>svCoName(svById(id)||{}), cos=[...new Set(ids.map(coOf))].sort((a,b)=>(a==="個人練習生")-(b==="個人練習生")||svHash(s.id+a)-svHash(s.id+b));
@@ -705,6 +709,13 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
   else if(x.t==="co"){ const L=x.ids.map(id=>svById(id)).filter(Boolean), solo=x.co==="個人練習生";
     b=`<div class="aws-cat svsh-co"><small>${solo?"INDIVIDUAL TRAINEE":"ENTERTAINMENT"}</small><b>${esc(x.co)}</b></div><div class="svsh-mont fast">${L.map(t=>`<span><i class="svsh-ph">${svPh(t)}</i><b>${esc(t.name||"")}</b></span>`).join("")}</div>${svWh(s,x.co,2)}`; }
   else if(x.t==="qt"){ const t=svById(x.id)||{}; b=`<div class="aws-cat svsh-evil"><small>⋯⋯</small><b>${esc(t.name||"")}</b></div><div class="aws-v"><div class="svsh-nov">${svPh(t)}</div></div><p class="svsh-cut ev">${esc(svHe(s,["（她的位置，空著）","（舞台上，沒有她）","（名牌被收了起來）"][svHash(x.id)%3]))}</p>${host("沒有交舞台的練習生，就沒有舞台。")}`; }
+  else if(x.t==="rc"){ const fin=[...svAlive("final")], all=svAll(), T=id=>all.find(t=>t.id===id)||{}, G0=s.grade0||s.grade||(s.demo?svGrDemo(s):{}), tile=(id,tag)=>{ const t=T(id); return `<span><i class="svsh-ph">${svPh(t)}</i>${tag||""}<b>${esc(t.name||"")}</b></span>`; };
+    if(x.k==="meet") b=`<div class="aws-cat"><small>回顧</small><b>第一次見面</b></div><div class="svsh-mont fast">${fin.map(id=>tile(id,G0[id]?`<em class="sv3-gr g${G0[id]}">${G0[id]}</em>`:"")).join("")}</div>${host(svHe(s,"還記得第一次見面嗎？那時候的她們，坐在金字塔不同的位置，拿到不同的等級。"))}`;
+    else if(x.k==="cen"){ const c=s.grCen||(s.demo?Object.keys(G0).find(id=>G0[id]==="A"):""); b=`<div class="aws-cat"><small>回顧</small><b>主題曲 C 位</b></div><div class="svsh-mont">${c?tile(c):""}</div>${host(`主題曲的 C 位，是練習生們一起投出來的 ${esc(T(c).name||"")}。`)}`; }
+    else if(x.k==="r1"){ const r=svRank("r1"), k1=(s.keep||{}).r1||[]; b=`<div class="aws-cat"><small>回顧</small><b>第一次排名發表</b></div><div class="svsh-mont">${r.slice(0,3).map((id,i)=>tile(id,`<em class="svsh-rk">${i+1}</em>`)).join("")}</div>${host(`第一次排名發表，1 位是 ${esc(T(r[0]).name||"")}。${k1.length?`那天，${k1.length} 位練習生留了下來。`:""}`)}`; }
+    else b=`<div class="aws-cat"><small>回顧</small><b>第二次排名發表</b></div><div class="svsh-mont fast">${fin.map(id=>tile(id)).join("")}</div>${host(`然後，只剩下 ${fin.length} 位。今天，出道組就要誕生了。`)}`; }
+  else if(x.t==="cand"){ const t=svById(x.id)||{}, G0=s.grade0||s.grade||(s.demo?svGrDemo(s):{}), g0=G0[x.id], r1=svRank("r1").indexOf(x.id)+1, sp=(t.sp||{}).r2||(t.real?t.msg:"")||SV_INT.focus[svHash(x.id+"cd")%SV_INT.focus.length];
+    b=`<div class="aws-cat"><small>出道組候補 ${x.i}／${x.n}</small><b>${esc(t.name||"")}</b><span class="svsh-tag">${esc(svCoName(t))}</span></div><div class="aws-v"><div class="svsh-nov">${svPh(t)}</div></div><div class="svsh-path">${g0?`<span>等級評價<b>${g0}</b></span>`:""}${r1?`<span>第一次排名<b>${r1} 位</b></span>`:""}<span>決賽<b>?</b></span></div><p class="svsh-int"><small>後採訪</small>「${esc(sp)}」</p>`; }
   else if(x.t==="nx") b=`<div class="aws-cat svsh-co"><small>NEXT</small><b>${esc(x.co)}</b></div>${svWh(s,x.co,2,"ev")}`;
   else if(x.t==="evo") b=`<div class="aws-cat"><small>EPISODE 1</small><b>等級評價</b></div><p class="svsh-how">${[...svAlive("r1")].length} 位練習生，全部入座。</p>${host("大家好，我是國民製作人代表。從今天起，誰能出道，由國民製作人決定。第一個任務——等級評價！")}`;
   else if(x.t==="ev"){ const t=svById(x.id)||{}, y=svStages("r1","lv").find(z=>z.tid===x.id)||{}, g=svGrade(t)||((s.demo?svGrDemo(s):s.grade||{})[x.id]), cm=svGrCm(s,t), ev=x.ed==="evil";

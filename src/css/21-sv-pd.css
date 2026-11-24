@@ -112,3 +112,7 @@ main.svpend{visibility:hidden}
 .svsh-tmr{width:100%;max-width:340px;margin-left:auto;margin-right:auto}
 .svsh-rib em{width:max-content;font-style:normal;font-size:10.5px;font-weight:900;letter-spacing:.12em;padding:3px 10px;background:#2B2129;color:#fff}
 .svsh-rib em.live{background:#E11D48;animation:svairB 1.6s ease-in-out infinite}
+.svsh-path{display:flex;justify-content:center;gap:6px;margin:8px 0 0}
+.svsh-path span{display:flex;flex-direction:column;align-items:center;background:#fff;border-left:4px solid var(--k);padding:5px 12px;font-size:11px;font-weight:800;color:#8B7A85}
+.svsh-path b{font-size:18px;font-weight:900;color:var(--k)}
+.svsh-mont .svsh-rk{position:absolute;top:-6px;left:6px;font-style:italic;font-weight:900;font-size:22px;color:var(--k);text-shadow:0 2px 0 #fff}
