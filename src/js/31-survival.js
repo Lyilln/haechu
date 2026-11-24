@@ -271,7 +271,7 @@ async function svMediaUp(id,blob,on){ if(!HB_ON) return URL.createObjectURL(blob
         x.upload.onprogress=e=>{ if(e.lengthComputable&&on) on(Math.min(99,Math.round(e.loaded/e.total*100))); }; x.onload=()=>res(x.status); x.onerror=()=>res(0); x.ontimeout=()=>res(0); x.timeout=10*60e3; x.send(blob); }catch(e){ res(0); } });
       if(st>=200&&st<300||st===409){ if(await svMediaOk(pub,blob.size)){ on&&on(100); return pub; } st=0; } if(st===401){ try{ await hbRefresh(); }catch(e){} } else await new Promise(r=>setTimeout(r,1500*(i+1))); } }
   return await hbImgUrl(id,blob); }
-function svUpForm(){ const s=svSeason(), {ph:uph,m}=svUpMs(s), me=s.demo?(svTrainee(s)||svRecMe(s)):svMyEntry(), my=svStages(uph,m.k).find(x=>x.tid===me.id)||{}, f=ui.svU||(ui.svU={url:my.url||"",kind:my.kind||"",fp:my.fp||null,cap:my.cap||"",team:my.team||"",pos:my.pos||"",iv:my.iv||""});
+function svUpForm(){ if(ui.svU&&ui.svU.kind==="v"&&!ui.svU.fp) ui.svU.fp={x:50,y:50,z:1}; const s=svSeason(), {ph:uph,m}=svUpMs(s), me=s.demo?(svTrainee(s)||svRecMe(s)):svMyEntry(), my=svStages(uph,m.k).find(x=>x.tid===me.id)||{}, f=ui.svU||(ui.svU={url:my.url||"",kind:my.kind||"",fp:my.fp||(my.kind==="v"?{x:50,y:50,z:1}:null),cap:my.cap||"",team:my.team||"",pos:my.pos||"",iv:my.iv||""});
   setLayer(`<div class="tiei svf sv2 ${svTheme()}"><header class="tiei-top"><button class="icon-btn" data-a="tCloseLayer" aria-label="關閉">${I.back}</button><b>交舞台・${esc(m.t)}</b><span class="sh-sp"></span></header><div class="tiei-body">
     <p class="sv3-how">${esc(m.how)}</p>
     <button class="sv3-upm ${f.url&&!f.busy&&f.kind==="v"?"hid":""}" data-a="svUpPick">${f.busy?`<b>${f.busy}</b>`:f.url?(f.kind==="v"?"":`<img src="${esc(f.pv||f.url)}" alt="">`):`<b>＋ 影片或照片（3:4）</b>`}</button>${f.url&&!f.busy&&f.kind==="v"?`<div class="svfr" id="svFr"><video style="${svFp(f)}" src="${esc(f.pv||f.url)}#t=0.5" muted playsinline webkit-playsinline loop autoplay preload="auto"></video><i class="svfr-g"></i></div><p class="svfr-h">用手指拖曳挑要的畫面（3:4），下面可以放大</p><input type="range" id="svFz" class="svfr-z" min="1" max="2.5" step="0.05" value="${(f.fp&&f.fp.z)||1}"><button class="sv5-sub" data-a="svUpPick">換一支影片</button>`:""}
@@ -886,8 +886,8 @@ setInterval(()=>{ try{ if(!isAdminAcct()||document.hidden) return; const s=svRea
 
 /* 交舞台：影片取景（拖曳＝移動，滑桿＝放大） */
 (function(){ let d=null; const ap=()=>{ const f=ui.svU, v=document.querySelector("#svFr video"); if(f&&v) v.setAttribute("style",svFp(f)); };
-  document.addEventListener("pointerdown",e=>{ const fr=e.target.closest&&e.target.closest("#svFr"); if(!fr||!ui.svU||!ui.svU.fp) return; d={x:e.clientX,y:e.clientY,p:{...ui.svU.fp},w:fr.clientWidth,h:fr.clientHeight}; try{ fr.setPointerCapture(e.pointerId); }catch(er){} e.preventDefault(); });
+  document.addEventListener("pointerdown",e=>{ const fr=e.target.closest&&e.target.closest("#svFr"); if(!fr||!ui.svU) return; if(!ui.svU.fp) ui.svU.fp={x:50,y:50,z:1}; d={x:e.clientX,y:e.clientY,p:{...ui.svU.fp},w:fr.clientWidth,h:fr.clientHeight}; try{ fr.setPointerCapture(e.pointerId); }catch(er){} e.preventDefault(); });
   document.addEventListener("pointermove",e=>{ if(!d||!ui.svU) return; const k=1/Math.max(1,d.p.z); ui.svU.fp.x=Math.max(0,Math.min(100,d.p.x-(e.clientX-d.x)/d.w*100*k)); ui.svU.fp.y=Math.max(0,Math.min(100,d.p.y-(e.clientY-d.y)/d.h*100*k)); ap(); });
   addEventListener("pointerup",()=>{ d=null; }); addEventListener("pointercancel",()=>{ d=null; });
-  document.addEventListener("input",e=>{ if(e.target&&e.target.id==="svFz"&&ui.svU&&ui.svU.fp){ ui.svU.fp.z=+e.target.value; ap(); } });
+  document.addEventListener("input",e=>{ if(e.target&&e.target.id==="svFz"&&ui.svU){ if(!ui.svU.fp) ui.svU.fp={x:50,y:50,z:1}; ui.svU.fp.z=+e.target.value; ap(); } });
 })();
