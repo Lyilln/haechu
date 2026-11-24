@@ -193,7 +193,7 @@ function openTieAgree(member,enter){ const nm="ARTIST";   /* 照 Bubble：同意
 /* ---------- TIE 券：獨立頁面（像 bubble）→ 購買使用券 → 選擇 ARTIST ---------- */
 const TIE_PEND="daisuki_tie_pend";   /* 買了、還沒選藝人的券：{gid:{n,ts,days}} */
 const tiePl=()=>PLANS.find(x=>x.id===ui.tstPlan)||PLANS.find(x=>x.id==="d30");   /* 訂閱長度：7 天／30 天／365 天 */
-const tieUnit=(gid,pl)=>groupArtists(gid).every(tieFree)?0:(pl||tiePl()).pts;
+const tieUnit=(gid,pl)=>groupArtists(gid).every(tieFree)?0:(typeof npcTieP==="function"&&npcTieP(gid,pl))||(pl||tiePl()).pts;   /* 虛擬歌手：30 天 100 積分 */
 const tieBundle=(gid,n,pl)=>{ const u=tieUnit(gid,pl), full=u*n; return {full,pts:n<2?full:Math.round(full*(1-Math.min(.2,.04*(n-1)))/100)*100}; };
 const tiePrice=(gid,n)=>{ const b=tieBundle(gid,n), pl=tiePl(); return `${b.pts<b.full?`<s>${fmt(b.full)}</s>`:""}<b>${b.pts?fmt(b.pts):"免費"}</b>${b.pts?`<small>積分/${pl.name.replace(/\s/g,"")}</small>`:""}`; };
 const tiePlChips=()=>`<div class="tst-pl" role="tablist" aria-label="訂閱長度">${PLANS.map(x=>`<button class="${tiePl().id===x.id?"on":""}" data-a="tstPlan" data-v="${x.id}">${x.name}</button>`).join("")}</div>`;

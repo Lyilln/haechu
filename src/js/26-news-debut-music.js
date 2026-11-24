@@ -120,7 +120,7 @@ function dfDebutSong(gid){ const m=getMShow(), L=[...m.songs,...(m.ended||[])].f
 function dfOpen(gid){ const x=getDf().find(y=>y.gid===gid), so=dfDebutSong(gid), v=so&&songMv(so), day=dfDebutDay(gid)||(so&&songRel(so)?dayStart(songRel(so)):0);
   const fy0=so?JSON.parse(JSON.stringify(fairyClips(so.id)||{})):{};
   ui.dbF={cb:true,fill:true,adm:true,gid,sid:so?so.id:"",base:x?JSON.parse(JSON.stringify(x)):null,title:x?x.title:(so?so.title:""),rtype:x?x.rtype||"":"",date:day?ymdIn(day):"",day,teaser:x?x.teaser||"":"",tx:x?[...(x.teasers||[])]:[],txP:[],mv:v&&v.mid?{mid:v.mid}:null,mvt:x?x.mvt||null:null,pr:{...(x?promoLoad(x.pr):promoLoad(null)),fy:{...fy0,...((x&&x.pr&&x.pr.fy)||{})}},mPrev:"",mtPrev:"",busy:""}; cbrForm(); }
-function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&&dfDebutSong(g.id)&&!getDebut().some(d=>d.gid===g.id&&d.status==="ok"));
+function dfForm(){ const f=ui.dbF, gid=f.gid, G=GROUPS.filter(g=>g.id!=="tdm_g"&&!g.npc&&dfDebutSong(g.id)&&!getDebut().some(d=>d.gid===g.id&&d.status==="ok"));
   dbPage("補出道資料","cbrDfSave",f,[
     ["藝人","選要補資料的 SOLOIST／團（要先有出道曲）",G.length?`<div class="chips wrap">${G.map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrDfGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`:`<p class="dbx-d">還沒有已經出道的團</p>`],
     ["作品","出道專輯和出道曲。核准後記得到 ME → 專輯・小卡 放公放卡（必放）",dbWorkF(f,"cbTitle","出道曲")],
@@ -133,7 +133,7 @@ function cbrForm(){ const f=ui.dbF; if(!f||!f.cb) return; if(f.fill) return dfFo
   const tx=[1,2,3].map(i=>{ const u=f.txP[i-1]||f.tx[i-1]; return `<button class="db-slot t sm" data-a="dbTeaser" data-i="${i}" aria-label="Teaser 照片 ${i+1}">${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}</button>`; }).join("");
   const amin=f.adm?dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN):min;
   dbPage(f.adm?"新增回歸":f.editId?"修改回歸申請":"回歸申請","cbrSend",f,[
-    ...(f.adm?[["藝人","要回歸的 SOLOIST／團",`<div class="chips wrap">${GROUPS.filter(g=>g.id!=="tdm_g").map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrAdmGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`]]:[]),
+    ...(f.adm?[["藝人","要回歸的 SOLOIST／團",`<div class="chips wrap">${GROUPS.filter(g=>g.id!=="tdm_g"&&!g.npc).map(g=>`<button class="chip ${gid===g.id?"on":""}" data-a="cbrAdmGid" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>`]]:[]),
     ["作品","這次回歸的專輯和主打歌。核准後記得到 ME → 專輯・小卡 放公放卡（必放）",dbWorkF(f,"cbTitle","主打歌")],
     ["宣傳排程",f.adm?"儲存後照日期自動發；只有歌名是必填，其他有放才會發":"核准後會照日期自動發；回歸前 7 天開始",dbPromoF(f,`<span class="fs-f-lab">回歸日</span><input id="dbDate" class="a-nick-in" type="date" min="${ymdIn(f.adm?amin:min)}" value="${esc(f.date&&ymdTs(f.date)>=(f.adm?amin:min)?f.date:ymdIn(f.adm?amin:min))}">`)],
     ["結尾妖精","打歌時每週每個節目會揭曉一位",dbFairyF(f)],
@@ -156,7 +156,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     if(!ui.dbF||!ui.dbF.cb||ui.dbF.gid!==gid||ui.dbF.editId) ui.dbF={cb:true,gid,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrEdit"){ const x=getCbr().find(y=>y.id===t.dataset.v); if(!x) return; ui.dbF={cb:true,editId:x.id,gid:x.gid,title:x.title,rtype:x.rtype||"",date:ymdIn(x.day),teaser:x.teaser||"",tx:[...(x.teasers||[])],txP:[],mv:x.mv,mvt:x.mvt,pr:promoLoad(x.pr),mPrev:"",mtPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrRel"){ dbKeep(); const f=ui.dbF; if(!f) return; f.rtype=f.rtype===t.dataset.v?"":t.dataset.v; cbrForm(); return; }
-  if(a==="cbrDfNew"){ if(!isAdminAcct()) return; const g=GROUPS.find(x=>x.id!=="tdm_g"&&dfDebutSong(x.id)&&!getDebut().some(d=>d.gid===x.id&&d.status==="ok")); if(!g){ toast("還沒有已經出道的團"); return; } const sg=selfGroup(); dfOpen(sg&&dfDebutSong(sg)&&!getDebut().some(d=>d.gid===sg&&d.status==="ok")?sg:g.id); return; }
+  if(a==="cbrDfNew"){ if(!isAdminAcct()) return; const g=GROUPS.find(x=>x.id!=="tdm_g"&&!x.npc&&dfDebutSong(x.id)&&!getDebut().some(d=>d.gid===x.id&&d.status==="ok")); if(!g){ toast("還沒有已經出道的團"); return; } const sg=selfGroup(); dfOpen(sg&&dfDebutSong(sg)&&!getDebut().some(d=>d.gid===sg&&d.status==="ok")?sg:g.id); return; }
   if(a==="cbrDfGid"){ if(ui.dbF&&ui.dbF.fill) dfOpen(t.dataset.v); return; }
   if(a==="cbrDfSave"){ dbKeep(); const f=ui.dbF; if(!f||!f.fill||f.busy) return; const title=String(f.title||"").trim(); if(!title){ toast("請輸入出道曲"); return; } if(!f.day){ toast("找不到出道日"); return; }
     const all=S.get(DF_KEY,[])||[], cur=all.find(x=>x&&x.gid===f.gid), mine={id:"df_"+f.gid,gid:f.gid,title,rtype:f.rtype||"",day:f.day,appr:f.day-PRE_ANN,teaser:f.teaser||"",teasers:(f.tx||[]).filter(Boolean),mvt:f.mvt||null,pr:promoClean(f.pr),ts:Date.now()};
@@ -165,7 +165,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     S.set(DF_KEY,[...all.filter(x=>x&&x.gid!==f.gid),rec]);
     try{ const fy=(rec.pr||{}).fy||{}; if(f.sid&&Object.keys(fy).length){ const F=S.get(FAIRY_KEY,{})||{}, k="clip|"+f.sid; F[k]={...(F[k]||{}),...Object.fromEntries(Object.entries(fy).map(([m,r])=>{ const o={...r}; delete o._pv; return [m,o]; }))}; S.set(FAIRY_KEY,F); } }catch(e){}
     ui.dbF=null; layer.innerHTML=""; try{ OFM.t=0; OFS=0; }catch(e){} toast("已補上出道資料"); render(); return; }
-  if(a==="cbrAdmNew"){ if(!isAdminAcct()) return; const g0=GROUPS.find(g=>g.id!=="tdm_g"); if(!g0){ toast("還沒有藝人"); return; } ui.dbF={cb:true,adm:true,gid:g0.id,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
+  if(a==="cbrAdmNew"){ if(!isAdminAcct()) return; const g0=GROUPS.find(g=>g.id!=="tdm_g"&&!g.npc); if(!g0){ toast("還沒有藝人"); return; } ui.dbF={cb:true,adm:true,gid:g0.id,title:"",teaser:"",tPrev:"",mv:null,mPrev:"",busy:""}; cbrForm(); return; }
   if(a==="cbrAdmGid"){ dbKeep(); const f=ui.dbF; if(!f||!f.adm) return; f.gid=t.dataset.v; cbrForm(); return; }
   if(a==="cbrSend"&&ui.dbF&&ui.dbF.adm){ dbKeep(); const f=ui.dbF; if(!isAdminAcct()) return; if(f.busy){ toast(f.busy); return; } const ti=(f.title||"").trim(), gid=f.gid, g=groupOf(gid); if(!g){ toast("請選藝人"); return; } if(!ti){ toast("請輸入歌名"); return; }
     const min=dayStart(grpFresh(gid)?Date.now():Date.now()+PRE_MIN); { const d0=ymdTs(f.date); if(!d0||d0<min) f.date=ymdIn(min); } const day=ymdTs(f.date);

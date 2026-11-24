@@ -67,9 +67,9 @@ function nlCard(p){ const m=nlM(p.mid); if(!m) return ""; const lk=nlLiked(p.id)
     <div class="post-body"><p class="post-text ${long?"clamp":""}">${esc(txt)}</p>${hasTr?`<button class="pt-orig" data-a="nlOrig" data-v="${p.id}">${orig?"查看翻譯":`查看原文 (${NL_LANGN[p.lg]||"韓國語"})`}</button>`:""}${long?`<button class="more" data-a="nlEx" data-v="${p.id}">展開全文</button>`:""}</div>
     <div class="post-foot"><button class="act ${lk?"liked":""}" data-a="nlLike" data-v="${p.id}" aria-pressed="${lk}" aria-label="按讚">${I.heart}<span>${fmt(nlLikeN(p))}</span></button><button class="act" data-a="nlCm" data-v="${p.id}" aria-label="留言">${I.chat}<span>${fmt(cn)}</span></button></div></article>`; }
 /* LOVE 首頁「藝人動態」：有加入的虛擬歌手社群也一起出現 */
-function npcFeedItems(){ try{ if(!nlOn()) return []; const J=nlJoined(); if(!J.length) return []; const lim=Date.now()-14*864e5; return nlGen("cm").filter(p=>J.includes(p.G)&&p.ts>=lim).map(p=>({ts:p.ts,h:()=>nlCard(p)})); }catch(e){ return []; } }
+function npcFeedItems(){ return []; try{ if(!nlOn()) return []; const J=nlJoined(); if(!J.length) return []; const lim=Date.now()-14*864e5; return nlGen("cm").filter(p=>J.includes(p.G)&&p.ts>=lim).map(p=>({ts:p.ts,h:()=>nlCard(p)})); }catch(e){ return []; } }
 /* LOVE 探索：跟其他社群排在一起（不特別標出來） */
-function npcExRows(cat){ try{ if(!nlOn()) return []; const J=nlJoined(), now=Date.now();
+function npcExRows(cat){ return []; try{ if(!nlOn()) return []; const J=nlJoined(), now=Date.now();
   return nlGs().filter(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, nw=now-new Date(I.debut).getTime()<120*864e5; return !cat||cat==="all"||(cat==="solo"?solo:cat==="group"?!solo:nw); }).map(G=>{ const I=NPC_INFO[G], ms=I.mem.map(r=>npcN(r[0])), on=J.includes(G);
     return `<div class="ex-g" data-q="${esc(nz(nlGN(G)+" "+ms.join(" ")))}"><button class="ex-gi" data-a="nlGo" data-v="${esc(G)}">${nlGAv(G,"ex")}<span><b>${esc(nlGN(G))}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="nlGo" data-v="${esc(G)}">前往</button>`:`<button class="ex-btn" data-a="nlJoin" data-v="${esc(G)}">加入</button>`}</div>`; }); }catch(e){ return []; } }
 function nlView(G,tab){ const NI=NPC_INFO[G]; if(!NI) return ""; const on=nlJoined().includes(G), adm=nlAdm(); setTimeout(cmTopSync,0);
@@ -83,10 +83,10 @@ function nlView(G,tab){ const NI=NPC_INFO[G]; if(!NI) return ""; const on=nlJoin
 function nlProd(id){ const m=nlM(id); if(!m) return ""; const act=nlActive(id), r=nlRoomOf(id), left=act?Math.max(1,Math.ceil((r.until-Date.now())/864e5)):0, c=nlCol(m.G);
   return `<button class="wsp-pc" data-a="${act?"nlRoom":"nlBuy"}" data-v="${id}"><span class="wsp-th"><span class="tkt" style="--c0:${c};--c1:${c}99"><span class="tkt-ph"><b class="tkt-ini">${esc(String(nlName(id)).slice(0,1).toUpperCase())}</b><small>HAECHU</small></span><span class="tkt-st"><b>${esc(WHISPER_NAME)}</b><span class="tkt-nm">${esc(nlName(id))}</span><i class="tkt-bar"></i></span></span></span><span class="wsp-nm">${esc(WHISPER_NAME)} 券・${esc(nlName(id))}</span><span class="wsp-pr"><b>${NL_PRICE}</b> 積分</span>${act?`<em class="wsp-tag on">運行中・剩餘 ${left} 天</em>`:""}</button>`; }
 /* SHOP：有加入的團也出現（跟其他團一樣一團一區） */
-function npcShopSecs(q){ try{ if(!nlOn()) return ""; const G=q?nlGs().filter(g=>nz(nlGN(g)+" "+NPC_INFO[g].mem.map(r=>npcN(r[0])).join(" ")).includes(q)):nlJoined(); if(!G.length) return "";
+function npcShopSecs(q){ return ""; try{ if(!nlOn()) return ""; const G=q?nlGs().filter(g=>nz(nlGN(g)+" "+NPC_INFO[g].mem.map(r=>npcN(r[0])).join(" ")).includes(q)):nlJoined(); if(!G.length) return "";
   if(q) return G.flatMap(nlIds).map(nlProd).join("");
   return G.map(g=>`<section class="wsp-sec"><button class="wsp-now" data-a="nlGo" data-v="${esc(g)}" style="background:${nlBg(g,1)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(nlGN(g))} ›</b></button><div class="wsp-row">${nlIds(g).map(nlProd).join("")}</div></section>`).join(""); }catch(e){ return ""; } }
-const npcShopMy=()=>{ try{ return nlOn()?nlJoined().map(g=>`<button class="ws-lg" data-a="nlGo" data-v="${esc(g)}"><i style="background:${nlBg(g,1)}"><span>${esc(nlGN(g))}</span></i><small>${esc(nlGN(g))}</small></button>`).join(""):""; }catch(e){ return ""; } };
+const npcShopMy=()=>{ return ""; try{ return nlOn()?nlJoined().map(g=>`<button class="ws-lg" data-a="nlGo" data-v="${esc(g)}"><i style="background:${nlBg(g,1)}"><span>${esc(nlGN(g))}</span></i><small>${esc(nlGN(g))}</small></button>`).join(""):""; }catch(e){ return ""; } };
 /* Home：像其他社群的 Home（Shop、About、SKpedia） */
 function nlHome(G){ const ids=nlIds(G), P=nlGen("cm").filter(p=>p.G===G)[0];
   return `${P?`${cmSec("Now")}${nlCard(P)}`:""}<div class="cm-sh"><h3>Shop</h3><button data-a="nlTab" data-v="shop" data-g="${esc(G)}">查看更多 ›</button></div><div class="wsp-row nl-hrow">${ids.map(nlProd).join("")}</div>
@@ -117,9 +117,9 @@ const nlShown=r=>(r&&r.msgs||[]).filter(x=>x.ts<=Date.now());
 const nlUnread=id=>{ const r=nlRoomOf(id); return r?nlShown(r).filter(x=>x.f==="a"&&x.ts>(r.read||0)).length:0; };
 function nlRoomList(){ if(!nlOn()) return []; const o=nlRooms(); return Object.keys(o).filter(id=>nlM(id)).map(id=>{ const r=o[id], sh=nlShown(r); return {id,r,last:sh[sh.length-1]||null,active:r.until>Date.now(),un:nlUnread(id)}; }).sort((a,b)=>((b.last||{}).ts||0)-((a.last||{}).ts||0)); }
 /* TIE 列表裡的虛擬歌手聊天室 */
-function npcTieRows(q){ try{ let L=nlRoomList(); if(q) L=L.filter(x=>hit(q,nlName(x.id),nlGN(nlM(x.id).G),x.last&&x.last.t)); if(!L.length) return "";
+function npcTieRows(q){ return ""; try{ let L=nlRoomList(); if(q) L=L.filter(x=>hit(q,nlName(x.id),nlGN(nlM(x.id).G),x.last&&x.last.t)); if(!L.length) return "";
   return `${(typeof fanRooms==="function"&&fanRooms().length)?"":`<span class="t-sec">最近的聊天室</span>`}${L.map(x=>`<button class="t-room ${x.active?"":"off"}" data-a="nlRoom" data-v="${x.id}">${nlAv(x.id,"lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${esc(nlName(x.id))}</b>${x.active?"":`<span class="t-exp">已到期</span>`}</span><span class="t-room-t">${x.last?ago(x.last.ts):""}</span></div><p>${x.last?(x.last.f==="me"?"你：":"")+esc(nlFill(x.last.t,x.id,0)):"還沒有新訊息"}</p></div>${x.un?`<span class="t-cnt">${x.un}</span>`:""}</button>`).join("")}`; }catch(e){ return ""; } }
-const npcTieCount=()=>{ try{ return nlRoomList().length; }catch(e){ return 0; } };
+const npcTieCount=()=>{ return 0; try{ return nlRoomList().length; }catch(e){ return 0; } };
 function nlBuy(id){ const m=nlM(id); if(!m) return; const act=nlActive(id);
   ask(`${act?"延長":"購買"} ${nlName(id)} 的 ${WHISPER_NAME} 券？\n${NL_PRICE} 積分，可以用 ${NL_DAYS} 天。`,()=>{ if(points()<NL_PRICE){ toast("積分不足，先補充積分吧"); return; }
     S.set(K.points,points()-NL_PRICE); try{ recordSale("npctie",{pts:NL_PRICE,label:`${WHISPER_NAME} 券・${nlName(id)}（${NL_DAYS} 天）`}); }catch(e){}
@@ -155,15 +155,15 @@ setInterval(()=>{ try{ if(!session()||!nlOn()) return; const o=nlRooms(), now=Da
 /* ---------- SNS ---------- */
 const nlSnId=id=>"n:"+id;
 const nlSnHandle=id=>{ const m=nlM(id); if(!m) return ""; const a=String(npcN(m.row[0])).toLowerCase().replace(/[^a-z0-9]+/g,""), g=String(nlGN(m.G)).toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9]+/g,""); return nlSolo(m.G)?(g||a)+".official":(a||"artist")+"."+g; };
-function npcSnUser(uid){ const id=String(uid).slice(2), m=nlM(id); if(!m||!nlOn()) return null; return {id:uid,u:nlSnHandle(id),name:nlName(id),g:strHash(m.G)%6,ver:true,bio:`${nlSolo(m.G)?"":nlGN(m.G)+" "}${m.row[3].split("、")[0]} 🎤`,av:nlAvUrl(id),npc:1}; }
+function npcSnUser(uid){ return null;  const id=String(uid).slice(2), m=nlM(id); if(!m||!nlOn()) return null; return {id:uid,u:nlSnHandle(id),name:nlName(id),g:strHash(m.G)%6,ver:true,bio:`${nlSolo(m.G)?"":nlGN(m.G)+" "}${m.row[3].split("、")[0]} 🎤`,av:nlAvUrl(id),npc:1}; }
 /* SNS 頭像：團的代表色＋名字第一個字（做成小圖） */
 const NL_AVU={};
 function nlAvUrl(id){ if(NL_AVU[id]) return NL_AVU[id]; const m=nlM(id), c=nlCol(m.G), ch=String(nlName(id)).slice(0,1).toUpperCase().replace(/[<&>"']/g,"");
   return NL_AVU[id]="data:image/svg+xml,"+encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".55"/><stop offset="1" stop-color="${c}"/></linearGradient></defs><rect width="100" height="100" fill="#fff"/><rect width="100" height="100" fill="url(#g)"/><text x="50" y="50" dy=".35em" text-anchor="middle" font-family="-apple-system,Helvetica,Arial,sans-serif" font-weight="800" font-size="42" fill="#fff">${ch}</text></svg>`); }
-const npcSnUsers=()=>nlOn()?nlAll().map(nlSnId):[];
-const nlSnFol=uid=>12000+strHash("snf"+uid)%400000;
+const npcSnUsers=()=>[];
+const nlSnFol=uid=>12000+strHash("snf"+uid)%400000;   /* 11/24 改成 m: 帳號 */
 const nlPh=(p,k)=>{ const s=strHash(p.id+k), c=nlCol(p.G), x=s%100, y=(s>>>7)%100, x2=(s>>>14)%100; return `<div class="nl-ph" style="background:radial-gradient(circle at ${x}% ${y}%,#fff8 0,#fff0 34%),radial-gradient(circle at ${x2}% ${100-y}%,${c}cc 0,${c}00 55%),linear-gradient(${s%360}deg,${c},#2a2430)"></div>`; };
-function npcSnPosts(){ try{ if(!nlOn()) return []; return nlGen("sn").map(p=>({id:p.id,uid:nlSnId(p.mid),cap:p.t,capZ:p.z,ts:p.ts,base:p.base,npc:1,media:Array.from({length:1+strHash(p.id)%3},(_,k)=>({type:"html",h:nlPh(p,k)}))})); }catch(e){ return []; } }
+function npcSnPosts(){ try{ if(!nlOn()) return []; return nlGen("sn").map(p=>({id:p.id,uid:"m:"+npcMidOld(p.mid),cap:p.t,capZ:p.z,ts:p.ts,base:p.base,npc:1,media:Array.from({length:1+strHash(p.id)%3},(_,k)=>({type:"html",h:nlPh(p,k)}))})); }catch(e){ return []; } }
 /* ---------- 管理員：發文、隱藏、歡迎語 ---------- */
 function nlWrite(G){ const ids=nlIds(G); ui.nlW={G,mid:ids[0],k:"both"}; nlWriteDraw(); }
 function nlWriteDraw(){ const w=ui.nlW; if(!w) return; const old=(document.getElementById("nlWT")||{}).value||w.t||"";

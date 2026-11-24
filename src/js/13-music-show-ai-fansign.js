@@ -539,7 +539,7 @@ function adminFsHtml(){
     <label class="foc-lab">簽名福利</label>
     <div class="chips"><button class="chip ${cr.toSign!==false?"on":""}" data-a="fsTo" data-v="1">To 簽（附粉絲名字）</button><button class="chip ${cr.toSign===false?"on":""}" data-a="fsTo" data-v="0">盲簽（只簽名）</button></div>
     <label class="foc-lab">哪一團（只有歌曲活動期的團能開）</label>
-    <div class="chips wrap">${GROUPS.map(g=>{ const ok=fsActiveGroup(g.id); return `<button class="chip ${gsel===g.id?"on":""}" data-a="fsGid" data-v="${g.id}" ${ok?"":"disabled"}>${esc(g.name)}${ok?"":"・非活動期"}</button>`; }).join("")}</div>
+    <div class="chips wrap">${GROUPS.filter(g=>!g.npc).map(g=>{ const ok=fsActiveGroup(g.id); return `<button class="chip ${gsel===g.id?"on":""}" data-a="fsGid" data-v="${g.id}" ${ok?"":"disabled"}>${esc(g.name)}${ok?"":"・非活動期"}</button>`; }).join("")}</div>
     <span class="fld-lab">簽售名稱</span><label class="field"><input id="fsTitle" placeholder="輸入文字" value="${esc(cr.title||"")}"></label>
     <label class="foc-lab">簽售開始（開始前 5 天截止報名並抽籤）</label><label class="field"><input id="fsStartAt" type="datetime-local" value="${cr.start||d(Date.now()+6*864e5)}"></label>
     <label class="foc-lab">${type==="solo"?"每位成員抽幾名":"總共抽幾名"}</label><div class="chips">${[3,5,10,20].map(n=>`<button class="chip ${(cr.quota||10)===n?"on":""}" data-a="fsQuota" data-v="${n}">${n} 名</button>`).join("")}</div>

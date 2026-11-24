@@ -447,7 +447,7 @@ function concertMusicHtml(){
   const songs=[...ms.songs,...(ms.ended||[])].filter(s=>s.gid===gid);
   return `<section class="card studio"><div class="foc-cfg-h"><h3>演唱會音樂・應援詞</h3><span class="badge">節奏遊戲</span></div>
     
-    <div class="chips wrap">${GROUPS.map(x=>`<button class="chip ${x.id===gid?"on":""}" data-a="cmGroup" data-v="${x.id}">${esc(x.name)}</button>`).join("")}</div>
+    <div class="chips wrap">${GROUPS.filter(x=>!x.npc).map(x=>`<button class="chip ${x.id===gid?"on":""}" data-a="cmGroup" data-v="${x.id}">${esc(x.name)}</button>`).join("")}</div>
     ${songs.length?songs.map(s=>{ const t=T[s.id]; return `<div class="cm-row"><div class="cm-i"><b>《${esc(s.title)}》</b><small>${t?`${fmtDur(t.dur)}・${t.bpm?"BPM "+t.bpm:"<em class='cm-warn'>還沒對拍子</em>"}・應援詞 ${(t.chant||[]).length} 句`:"還沒有音樂"}</small></div>
       <div class="cm-b"><label class="btn btn-soft btn-sm cm-up">${t?"換音樂":"上傳音樂"}<input type="file" class="cm-file" accept="audio/*,video/*,.mp3,.m4a,.wav,.aac,.mp4,.mov" data-sid="${s.id}"></label><label class="btn btn-soft btn-sm cm-up">從相簿選影片<input type="file" class="cm-file" accept="video/*" data-sid="${s.id}"></label>${t?`<button class="btn btn-soft btn-sm" data-a="cmTap" data-v="${s.id}">對拍子</button><button class="btn btn-soft btn-sm" data-a="cmChant" data-v="${s.id}">錄應援詞</button><button class="btn btn-soft btn-sm" data-a="secOpen" data-v="${s.id}">燈光段落</button><button class="btn btn-main btn-sm" data-a="cmTry" data-v="${s.id}">試玩</button>`:""}</div>
       ${t&&t.bpm?`<div class="cm-adj"><span>拍子速度</span><button data-a="cmBpm" data-v="${s.id}" data-d="-0.5">−</button><b>${t.bpm}</b><button data-a="cmBpm" data-v="${s.id}" data-d="0.5">＋</button><span>拍子位置</span><button data-a="cmOff" data-v="${s.id}" data-d="-0.03">提早</button><button data-a="cmOff" data-v="${s.id}" data-d="0.03">延後</button></div>`:""}</div>`; }).join("")
@@ -661,7 +661,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
-  if(r.sub==="npc"&&typeof nlView==="function"&&nlOn()&&NPC_INFO[r.id]) return paint(nlView(r.id,r.p||"home"),false);   /* 虛擬歌手的社群、TIE（哪一端都能看） */
+  if(r.sub==="npc"&&typeof npcGid==="function"&&NPC_INFO[r.id]){ location.replace("#/"+r.role+"/grp?id="+npcGid(r.id)); return; }   /* 虛擬歌手的社群、TIE（哪一端都能看） */
   if(r.sub==="npctie"&&typeof nlRoom==="function"&&nlOn()&&nlM(r.id)){ if(hashChanged) ui.scrollChat=true; return paint(nlRoom(r.id),false); }
   if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
     try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }
@@ -931,7 +931,7 @@ function postCard(p,{mine=false,prof=false}={}){
   </article>`;
 }
 /* 貼文翻譯（照 Weverse）：韓文、日文、英文的貼文直接顯示中文翻譯，下面「查看原文」；翻好的存在共用的 K.postTr，大家共用不重翻 */
-const postLang=t=>{ const s=String(t||""); if(hasHangul(s)) return "韓國語"; if(/[\u3040-\u30ff]/.test(s)) return "日本語"; if(/[A-Za-z]{3,}/.test(s)&&!/\p{Script=Han}/u.test(s)) return "English"; return ""; };
+const postLang=t=>{ const s=String(t||""); if(hasHangul(s)) return "韓國語"; if(/[\u3040-\u30ff]/.test(s)) return "日本語"; if(/[\u0e00-\u0e7f]/.test(s)) return "泰語"; if(/[A-Za-z]{3,}/.test(s)&&!/\p{Script=Han}/u.test(s)) return "English"; return ""; };
 const postTrGet=id=>(S.get(K.postTr,{})||{})[id]||"";
 const ptrBusy=new Set();
 function postTrNeed(p){ if(!p||!p.text||postTrGet(p.id)||ptrBusy.has(p.id)||!postLang(p.text)) return; ptrBusy.add(p.id);

@@ -123,7 +123,7 @@ const artProf=mid=>{ const p=(S.get(K.artProf,{})[mid])||{}; return PREV[mid]?{.
 const gPhotoMap=()=>({...(S.get(K.gPhoto,{})||{}),...GPREV});
 /* 成員的 Teaser 照（管理員在「藝人與團」放）：About 用。SOLO 用出道／回歸照；社群頭貼只在個人社群裡出現 */
 const MPREV={};
-function mPhoto(mid){ const m=MEMBERS[mid]; if(!m) return ""; const g=groupOf(m.group); if(g&&g.solo) return gPhoto(g.id); return MPREV[mid]||(S.get(K.mPhoto,{})||{})[mid]||""; }
+function mPhoto(mid){ const m=MEMBERS[mid]; if(!m) return ""; const g=groupOf(m.group); if(g&&g.solo) return gPhoto(g.id); return MPREV[mid]||(S.get(K.mPhoto,{})||{})[mid]||(m.npc&&typeof npcAv==="function"?npcAv(mid):""); }
 const teaserIn=mid=>{ const u=mPhoto(mid), m=MEMBERS[mid]; return u?`<span class="av-img av-bgi" role="img" aria-label="${esc(m?m.name:"")}" style="background-image:url('${u}')"></span>`:esc(ini(m?m.name:"")); };
 /* 上傳完、雲端那張也載入好了，才換掉預覽（不會閃一下） */
 function imgSwap(url,done){ if(!url||url.startsWith("data:")){ done(); return; } const im=new Image(); let ok=false; const fin=()=>{ if(ok) return; ok=true; done(); }; im.onload=fin; im.onerror=fin; setTimeout(fin,15000); im.src=url; }
@@ -158,7 +158,7 @@ async function squareImg(blob,max){ try{ const u=URL.createObjectURL(blob), im=a
 const tieProf=mid=>{ const p=artProf(mid); return {avatar:p.av_tie||p.avatar||"",cover:p.cover_tie||p.cover||"",bio:p.bio_tie!=null?p.bio_tie:(p.bio||"")}; };
 /* 名字第一個字（花體字也轉回一般字，不會變成「?」） */
 const ini=x=>([...String(x||"").normalize("NFKC").trim()][0]||"").toUpperCase();
-const mAvIn=(mid,pl)=>{ const m=MEMBERS[mid], u=pl==="tie"?tieProf(mid).avatar:(artProf(mid).avatar||mPhoto(mid)); /* 個人社群頭貼沒換過：用 Teaser 照 */ return u?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${u}')"></span>`:(m?"H":""); };
+const mAvIn=(mid,pl)=>{ const m=MEMBERS[mid], u=(pl==="tie"?tieProf(mid).avatar:(artProf(mid).avatar||mPhoto(mid)))||(m&&m.npc?mPhoto(mid):""); /* 個人社群頭貼沒換過：用 Teaser 照 */ return u?`<span class="av-img av-bgi" role="img" aria-label="頭貼" style="background-image:url('${u}')"></span>`:(m?"H":""); };
 const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);

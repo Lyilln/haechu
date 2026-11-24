@@ -85,7 +85,7 @@ function pushNotification({kind,member,group,text,postId,color,commentId,direct=
 }
 
 /* ===== 貼文 ===== */
-const likeN=p=>p&&Array.isArray(p.likedBy)?p.likedBy.length:(p&&p.likes||0);
+const likeN=p=>(p&&Array.isArray(p.likedBy)?p.likedBy.length:(p&&p.likes||0))+(p&&p.npcBase||0);
 const getPosts=()=>S.get(K.posts,[]).sort((a,b)=>b.ts-a.ts);
 const POST_TAGS=["日常","幕後花絮","劇透","互動問答"];
 function createPost(memberId,text,color,tag,media,vis,pw,poll){
@@ -231,7 +231,8 @@ function buyTie(mid,days,pts){
   const c=S.get(K.tieCleared,{}); c[mid]=now-1; S.set(K.tieCleared,c);              // 舊紀錄先收起來
   const r=S.get(K.wRead,{}); r[mid]=now; S.set(K.wRead,r);
   const text=welcomeOf(mid);
-  S.set(K.whispers,[...S.get(K.whispers,[]),{id:"wel"+now+Math.random().toString(36).slice(2,5),member:mid,from:"artist",welcome:true,to:myEmail(),text,ts:now+1}]);
+  if(MEMBERS[mid]&&MEMBERS[mid].npc&&typeof npcWelcomeMsgs==="function") S.set(K.whispers,[...S.get(K.whispers,[]),...npcWelcomeMsgs(mid,now)]);   /* 虛擬歌手：他自己寫的歡迎語（韓文＋翻譯） */
+  else S.set(K.whispers,[...S.get(K.whispers,[]),{id:"wel"+now+Math.random().toString(36).slice(2,5),member:mid,from:"artist",welcome:true,to:myEmail(),text,ts:now+1}]);
   const m=MEMBERS[mid]; pushNotification({kind:"whisper",member:mid,group:m.group,text,color:null,direct:true});
   return {type:rec?"again":"new"};
 }

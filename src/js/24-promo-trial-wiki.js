@@ -180,8 +180,9 @@ const wkHash=id=>(route().role==="artist"?"#/artist?tab=foc&p=wiki":route().role
 /* 名字找頁：[[名字]] 用 */
 
 /* 不用任何特殊寫法（她 10/28：藝人不會用 wiki 語法）：文字裡出現其他藝人或團的名字，自動變成藍色連結 */
-function wkTxt(t,notes,self){ let h=esc(t||""); const names=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>[g.name,"g:"+g.id]),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m").map(k=>[MEMBERS[k].name,"m:"+k])].filter(([n,id])=>n&&n.length>=2&&id!==self).sort((a,b)=>b[0].length-a[0].length);
-  if(names.length){ const re=new RegExp(names.map(([n])=>esc(n).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|"),"g"), map=new Map(names.map(([n,id])=>[esc(n),id])); h=h.replace(re,m=>`<a class="wk-ln" data-a="wkGo" data-v="${map.get(m)}">${m}</a>`); }
+function wkTxt(t,notes,self){ let h=esc(t||""); const names=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>[g.name,"g:"+g.id]),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m").map(k=>[MEMBERS[k].name,"m:"+k]),...GROUPS.filter(g=>g.npc&&typeof NPC_CHEM!=="undefined"&&NPC_CHEM[g.npc]).map(g=>[g.name+"/成員間的化學反應","n:"+g.npc+"/chem"])].filter(([n,id])=>n&&n.length>=2&&id!==self).sort((a,b)=>b[0].length-a[0].length);
+  /* 英文名字前後不能接英文字母（Sol 不會把 Solo 連起來） */
+  if(names.length){ const re=new RegExp("(^|[^A-Za-z0-9])("+names.map(([n])=>esc(n).replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|")+")(?![A-Za-z0-9])","g"), map=new Map(names.map(([n,id])=>[esc(n),id])); h=h.replace(re,(m,pre,n)=>`${pre}<a class="wk-ln" data-a="wkGo" data-v="${map.get(n)}">${n}</a>`); }
   return h.replace(/\n/g,"<br>"); }
 /* 自動資料 */
 function wkAuto(gid){ const ms=getMShow(); let songs=[...(ms.songs||[]),...(ms.ended||[])].filter(s=>s.gid===gid); const wins={};
@@ -345,7 +346,7 @@ function wkIds(){ return [...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),
 addEventListener("scroll",()=>{ const p=document.querySelector(".wk-pillname"); if(p) p.classList.toggle("on",window.scrollY>320); },{passive:true});
 /* 首頁：大搜尋框＋最近修改＋全部藝人 */
 function wkHome(){ const q=nz(ui.wkQ||""), all=wkAll();
-  const ids=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),...(typeof npcWkList==="function"?npcWkList():[]),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m"&&groupOf(MEMBERS[k].group)).map(k=>"m:"+k)];
+  const ids=[...GROUPS.filter(g=>g.id!=="tdm_g").map(g=>"g:"+g.id),...Object.keys(MEMBERS).filter(k=>!MEMBERS[k].official&&k!=="tdm_m"&&groupOf(MEMBERS[k].group)).map(k=>"m:"+k)];
   const hit=q?ids.filter(id=>nz(wkName(id)).includes(q)):[];
   const recent=Object.keys(all).filter(id=>all[id].ts&&ids.includes(id)).sort((a,b)=>all[b].ts-all[a].ts).slice(0,10);
   return `<div class="wk-home"><div class="wk-logo">SK<b>pedia</b></div>
@@ -368,7 +369,8 @@ function wkHc1(u){ if(!u||WKHC[u]!==undefined) return;
     r/=n; g/=n; b/=n; const L=(.299*r+.587*g+.114*b)/255; WKHC[u]=[`rgb(${r|0},${g|0},${b|0})`,L>.6?"#1D1A24":"#fff"];
     document.querySelectorAll(`[data-src="${CSS.escape(u)}"]`).forEach(el=>{ el.style.setProperty("--hc",WKHC[u][0]); el.style.setProperty("--hct",WKHC[u][1]); });
     document.querySelectorAll(`[data-hsrc="${CSS.escape(u)}"]`).forEach(el=>el.style.setProperty("--hc",WKHC[u][0])); }catch(e){} }; im.src=u; }   /* 成員頁：抓到團體照顏色後換框線色 */
-function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } const ok=id&&wkOk(id); return `<main class="page wk">${ok?(id.startsWith("n:")?npcWkView(id):wkViewG(id)):wkHome()}${wkFloat(ok?id:null)}</main>`; }
+function viewWiki(id){ setTimeout(wkHeroCol,0); setTimeout(wkDraftApply,0); if(id&&id.startsWith("m:")){ const m=MEMBERS[id.slice(2)]; if(m&&groupOf(m.group).solo) id="g:"+m.group; } if(id&&id.startsWith("n:")&&id.indexOf("/")<0&&typeof npcGid==="function") id="g:"+npcGid(id.slice(2));   /* 虛擬歌手的團體頁＝真的團體頁 */
+  const ok=id&&wkOk(id); return `<main class="page wk">${ok?(id.startsWith("n:")?npcWkView(id):wkViewG(id)):wkHome()}${wkFloat(ok?id:null)}</main>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t||!/^wk[A-Z]/.test(t.dataset.a)) return; const a=t.dataset.a, v=t.dataset.v;
   if(a==="wkGo"){ ui.wkEd=null; ui.wkH=null; ui.wkNb=null; navTo(wkHash(v)); window.scrollTo(0,0); }
   else if(a==="wkEdit"){ ui.wkEd=v; render(); ui.wkSnap=wkFormVal(); window.scrollTo(0,0); }

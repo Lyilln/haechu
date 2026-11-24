@@ -12,7 +12,7 @@ function domColor(img){ const c=document.createElement("canvas"); c.width=24; c.
   s=Math.max(s,.38); l=Math.min(Math.max(l,.38),.52); return `hsl(${Math.round(h*360)},${Math.round(s*100)}%,${Math.round(l*100)}%)`; }
 const grpHash=(gid,p,m)=>`#/fan/grp?id=${encodeURIComponent(gid)}${p&&p!=="home"?"&p="+p:""}${m?"&m="+encodeURIComponent(m):""}`;
 /* 社群人數：真的有加入這個社群的帳號數 */
-const gFans=gid=>{ if(HB_ON) return +(HB.fans[gid]||0); let n=0; try{ Object.keys(localStorage).filter(k=>k===K.fanArtists||k.startsWith(K.fanArtists+"@")).forEach(k=>{ try{ if((JSON.parse(localStorage.getItem(k))||[]).includes(gid)) n++; }catch(e){} }); }catch(e){} return n; };
+const gFans=gid=>{ const nb=(typeof isNpcG==="function"&&isNpcG(gid))?8000+strHash("fans"+gid)%90000:0; if(nb) return nb+(HB_ON?+(HB.fans[gid]||0):0); if(HB_ON) return +(HB.fans[gid]||0); let n=0; try{ Object.keys(localStorage).filter(k=>k===K.fanArtists||k.startsWith(K.fanArtists+"@")).forEach(k=>{ try{ if((JSON.parse(localStorage.getItem(k))||[]).includes(gid)) n++; }catch(e){} }); }catch(e){} return n; };
 const fmtW=n=>n>=10000?(n/10000).toFixed(n>=100000?0:1).replace(/\.0$/,"")+" 萬":fmt(n);
 /* ===== 社群頁 v2（照 Weverse 影片）：封面照到最上面、捲動後上方才出現團名列、右下「＋」發表、右上「⋮」查看更多 ===== */
 const XI='<svg class="xi" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6.5 6.5l11 11M17.5 6.5l-11 11"/></svg>';

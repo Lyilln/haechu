@@ -212,7 +212,7 @@ function reportWho(r){ if(r.who) return r.who; const c=S.get(K.comments,[]).find
    ========================================================= */
 function viewRoster(){ hbProfilesNow();
   const r=S.get(K.roster,{groups:[],members:{},accounts:{}}), acc=Object.entries(ACCOUNTS).filter(([e,a])=>a.member);
-  const gsel=groupOf(ui.rsGroup)&&!groupOf(ui.rsGroup).solo?ui.rsGroup:(GROUPS.find(g=>!g.solo)||{}).id, gc=ui.rsColor??0;
+  const gsel=groupOf(ui.rsGroup)&&!groupOf(ui.rsGroup).solo?ui.rsGroup:(GROUPS.find(g=>!g.solo&&!g.npc)||{}).id, gc=ui.rsColor??0;
   return adminHead("ARTISTS")+`<main class="page roster">
     <button class="rev-back" data-a="tab" data-v="me">‹ 回到 ME</button>
     <section class="card studio" id="rsNew">
@@ -224,15 +224,15 @@ function viewRoster(){ hbProfilesNow();
       ${ui.rsType==="solo"?`<span class="fld-lab">用哪個帳號登入</span><label class="field">${I.user}<select id="rsAcc" class="rs-sel">${fanAccOpts()}</select></label>
       <span class="fld-lab">生日（月-日，可以之後再填）</span><label class="field">🎂<input id="rsBday" maxlength="5" placeholder="輸入文字"></label>`:""}
       <button class="btn btn-main btn-block" data-a="rgAdd">${ui.rsType==="solo"?"建立個人藝人":"建立團體"}</button></section>
-    ${GROUPS.some(g=>!g.solo)?`<section class="card studio"><h3>新增團體成員</h3>
-      <div class="chips wrap">${GROUPS.filter(g=>!g.solo).map(g=>`<button class="chip ${gsel===g.id?"on":""}" data-a="rsGroup" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
+    ${GROUPS.some(g=>!g.solo&&!g.npc)?`<section class="card studio"><h3>新增團體成員</h3>
+      <div class="chips wrap">${GROUPS.filter(g=>!g.solo&&!g.npc).map(g=>`<button class="chip ${gsel===g.id?"on":""}" data-a="rsGroup" data-v="${g.id}">${esc(g.name)}</button>`).join("")}</div>
       <span class="fld-lab">藝人名稱</span><label class="field">${I.user}<input id="rmName" maxlength="16" placeholder="輸入文字"></label>
       <span class="fld-lab">用哪個帳號登入</span><label class="field">${I.user}<select id="rmEmail" class="rs-sel">${fanAccOpts()}</select></label>
       <span class="fld-lab">生日（月-日，可以之後再填）</span><label class="field">🎂<input id="rmBday" maxlength="5" placeholder="輸入文字"></label>
       <button class="btn btn-main btn-block" data-a="rmAdd">新增藝人</button>
 </section>`:""}
-    <div class="section-h">目前的團與藝人<span class="muted">${GROUPS.length} 團</span></div>
-    ${GROUPS.map(g=>{const ms=Object.entries(MEMBERS).filter(([id,m])=>m.group===g.id&&!m.official), custom=r.groups.some(x=>x.id===g.id);
+    <div class="section-h">目前的團與藝人<span class="muted">${GROUPS.filter(g=>!g.npc).length} 團</span></div>
+    ${GROUPS.filter(g=>!g.npc).map(g=>{const ms=Object.entries(MEMBERS).filter(([id,m])=>m.group===g.id&&!m.official), custom=r.groups.some(x=>x.id===g.id);
       return `<section class="card rs-g"><div class="rev-gh"><span class="rs-th g-ico" style="background:${grad(g.g)}">${gIcoIn(g)}</span><b>${esc(g.name)}</b>${g.solo?`<span class="badge">SOLOIST</span>`:""}<button class="btn btn-soft btn-sm rs-ed" data-a="rgEdit" data-v="${g.id}">編輯</button>${custom?`<button class="del" data-a="rgDel" data-v="${g.id}">刪除</button>`:""}</div>
       <label class="rs-fd"><span>粉絲名</span><input class="fd-in" data-g="${g.id}" maxlength="16" value="${esc((S.get(K.fandom,{}))[g.id]||"")}" placeholder="輸入文字"></label>
       ${ms.map(([id,m])=>{const a=acc.find(([e,x])=>x.member===id);return `<div class="rs-m"><span class="av sm" style="background:${grad(m.g)}">${esc(ini(m.name))}</span><b>${esc(m.name)}</b><small>${a?esc(acctUser(a[0])+(realName(a[0])?"・"+realName(a[0]):"")):"還沒有登入帳號"}</small>
