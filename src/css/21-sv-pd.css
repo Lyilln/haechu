@@ -1,0 +1,10 @@
+/* 11/24 選秀加 PD101／48 的味道（版面不動）：發表卡那套白粉標籤、方形等級牌、斜體大名次 */
+.sv6-ep{position:relative;padding-top:40px;overflow:hidden}
+.sv6-ep:before{content:"SURVIVAL PROJECT";position:absolute;left:0;top:12px;padding:3px 12px 3px 14px;background:var(--a);color:#fff;font-size:10px;font-weight:900;letter-spacing:.14em}
+.sv6-ep h2{font-weight:900;letter-spacing:.02em}
+.sv3-gr{border-radius:3px;font-style:italic;font-weight:900}
+.sv3-gr.big{border-radius:6px}.sv3-grp .sv3-gr.big{border-radius:8px}
+.sv2-rk{font-style:italic;font-weight:900;font-size:19px;letter-spacing:-.04em}
+.sv3-rl .sv2-rk{font-size:17px}
+.sv5-todo{border-radius:6px;box-shadow:none;border:2px solid var(--a);border-left-width:6px}
+.sv5-todo>small{display:inline-block;background:var(--a);color:#fff;padding:2px 8px;font-weight:900;letter-spacing:.06em}
