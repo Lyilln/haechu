@@ -8288,12 +8288,18 @@ html[data-theme] .t-modal.sv3-tm p.sv3-tag,html[data-theme] .t-modal.sv3-tm p.sv
 .svnx .svx-a button{flex:1;padding:13px;border:0;font:inherit;font-weight:900;font-size:14.5px}.svnx .svx-a .m{background:var(--k,#FF4F9A);color:#fff}.svnx .svx-a .s{background:#fff;color:#2B2129;box-shadow:inset 0 0 0 1.5px #2B2129}
 
 .svsh-x{position:fixed;top:calc(env(safe-area-inset-top,0px) + 10px);right:12px;z-index:5;width:34px;height:34px;border:0;border-radius:50%;background:rgba(43,33,41,.08);color:#2B2129;display:grid;place-items:center;font-size:15px;padding:0}.svsh-x svg{width:18px;height:18px}
-/* 11/24 真人上傳的照片／影片：整張放進去，不裁切（不會切到臉）；頭像類的往上對齊 */
-.aws.svsh .aws-v img.svsh-img,.aws.svsh .aws-v video{object-fit:contain!important;width:100%;height:auto;max-height:42vh;background:#1a1016}
-.aws.svsh .aws-v:has(.svsh-img),.aws.svsh .aws-v.svvid{background:#1a1016}
+/* 11/24 舞台畫面一律 3:4（照片上傳時裁好、影片照練習生挑的取景） */
+.aws.svsh .aws-v:has(> video),.aws.svsh .aws-v:has(> .svsh-img){aspect-ratio:3/4;width:min(100%,40vh);margin-left:auto!important;margin-right:auto!important;overflow:hidden;background:#1a1016}
+.aws.svsh .aws-v > video,.aws.svsh .aws-v > img.svsh-img{width:100%!important;height:100%!important;max-height:none!important;object-fit:cover;display:block}
 .aws.svsh .svsh-nov img,.aws.svsh .svsh-ph img,.fc-ph img,.svsh-mont img{object-position:50% 18%!important}
-.sv2 .sv3-sp img,.sv2 .sv3-sp video{object-position:50% 18%}
-.svnx-c .aws-v img.svsh-img,.svnx-c .aws-v video{object-fit:contain!important;background:#1a1016}
-/* 照片框跟著照片大小（3:4 的照片剛好塞滿，不會有黑邊） */
-.aws.svsh .aws-v:has(> .svsh-img){width:fit-content;max-width:100%;margin-left:auto!important;margin-right:auto!important;background:none}
-.aws.svsh .aws-v > img.svsh-img{width:auto!important;max-width:100%;height:auto!important;max-height:52vh;display:block}
+.svnx-c .aws-v{aspect-ratio:auto!important;width:100%!important}
+.svnx-c .aws-v video,.svnx-c .aws-v img.svsh-img{object-fit:cover}
+.sv3-upm.hid{display:none!important}
+.sv3-upm img{aspect-ratio:3/4;width:100%;object-fit:cover}
+.svfr{position:relative;width:min(100%,56vh);aspect-ratio:3/4;margin:0 auto;overflow:hidden;border-radius:14px;background:#1a1016;touch-action:none;cursor:grab}
+.svfr video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none}
+.svfr-g{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent 33%,rgba(255,255,255,.35) 33.3%,transparent 33.6%,transparent 66.4%,rgba(255,255,255,.35) 66.6%,transparent 67%),linear-gradient(0deg,transparent 33%,rgba(255,255,255,.35) 33.3%,transparent 33.6%,transparent 66.4%,rgba(255,255,255,.35) 66.6%,transparent 67%)}
+.svfr-h{margin:8px 0 2px;font-size:12.5px;color:#6E5F69;text-align:center}
+.svfr-z{display:block;width:100%;accent-color:#FF4F9A}
+.sv3-fr{aspect-ratio:3/4;width:min(100%,46vh);margin:0 auto;overflow:hidden;border-radius:12px;background:#1a1016}
+.sv3-fr .sv3-vid{width:100%!important;height:100%!important;max-height:none!important;object-fit:cover;display:block;margin:0!important;border-radius:0!important}
