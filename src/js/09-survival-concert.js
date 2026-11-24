@@ -661,7 +661,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
-  if(r.sub==="npc"&&typeof nlView==="function"&&nlOn()&&NPC_INFO[r.id]) return paint(nlView(r.id,r.p||"feed"),false);   /* 虛擬歌手的社群、TIE（哪一端都能看） */
+  if(r.sub==="npc"&&typeof nlView==="function"&&nlOn()&&NPC_INFO[r.id]) return paint(nlView(r.id,r.p||"home"),false);   /* 虛擬歌手的社群、TIE（哪一端都能看） */
   if(r.sub==="npctie"&&typeof nlRoom==="function"&&nlOn()&&nlM(r.id)){ if(hashChanged) ui.scrollChat=true; return paint(nlRoom(r.id),false); }
   if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
     try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }

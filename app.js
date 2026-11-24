@@ -3736,7 +3736,7 @@ function render(){ try{ window.__hcZ&&__hcZ(); }catch(e){} try{ albImgApply(); }
   if(s.uni&&s.role==="artist"&&!uniMe()) return paint(viewNoArtist(),true,"");
   if(s.uni&&s.role==="artist"&&s.member!==uniMe()){ SS.set({...s,member:uniMe()}); return render(); }
   thRotTick(); thSync();
-  if(r.sub==="npc"&&typeof nlView==="function"&&nlOn()&&NPC_INFO[r.id]) return paint(nlView(r.id,r.p||"feed"),false);   /* 虛擬歌手的社群、TIE（哪一端都能看） */
+  if(r.sub==="npc"&&typeof nlView==="function"&&nlOn()&&NPC_INFO[r.id]) return paint(nlView(r.id,r.p||"home"),false);   /* 虛擬歌手的社群、TIE（哪一端都能看） */
   if(r.sub==="npctie"&&typeof nlRoom==="function"&&nlOn()&&nlM(r.id)){ if(hashChanged) ui.scrollChat=true; return paint(nlRoom(r.id),false); }
   if(r.sub==="sns"&&s.role==="artist"&&snLockOf(s.member)&&r.p!=="edit"&&!(r.p==="new"&&r.id==="sub")){ const L=snLockOf(s.member), dl=Math.max(1,Math.ceil((L.until-Date.now())/864e5));   /* 還沒開通：可以先設定個人檔案、投稿到官方帳號；到時間自動開通 */
     try{ snOfSync(); }catch(e){} const h=paint(snPrepPage(s.member,dl),false); setTimeout(()=>{ try{ hydrateMedia(document.querySelector(".sn-prep")||document); }catch(e){} },0); return h; }
@@ -6799,17 +6799,17 @@ function viewShop(){
   const ban=f.flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own&&!isSelfGid(p.gid)).slice(0,2)).slice(0,6);
   const mine=Object.keys(subs()).filter(id=>MEMBERS[id]);
   return fanHeader(false,"shop","搜尋商品、團名...")+`<main class="page">${srchLabel("shop")}
-    ${q?(all.length?`<div class="wsp-grid">${all.map(prodCard).join("")}</div>`:srchEmpty("商品")):`
+    ${q?((all.length||(typeof npcShopSecs==="function"&&npcShopSecs(q)))?`<div class="wsp-grid">${all.map(prodCard).join("")}${typeof npcShopSecs==="function"?npcShopSecs(q):""}</div>`:srchEmpty("商品")):`
     ${ban.length?`<div class="ws-hero" id="spBan">${ban.map(p=>{const g=groupOf(p.gid), C=GRADS[g.g%GRADS.length];return `<button class="ws-sl" data-a="pOpen" data-v="${p.id}" style="--wl:${mixHex(C[0],"#ffffff",.78)};--wd:${mixHex(C[0],"#17141f",.74)}"><span class="ws-art">${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span><b>${esc(p.name)}</b><small>HAECHU SHOP ${p.pre?"現正預購中！":"現正販售中！"}</small></button>`}).join("")}</div>
     <div class="ws-pg"><span class="ws-track"><i id="spThumb" style="width:${100/ban.length}%"></i></span><span class="ws-cnt"><b id="spCnt">01</b><i></i>${String(ban.length).padStart(2,"0")}</span><button class="ws-plus" data-a="wsPlus" aria-label="看更多">＋</button></div>`:""}
     <section class="ws-pts"><span>我的積分</span><b>${fmt(points())}<i>✦</i></b>${demoOn()?`<button data-a="addPts">示範：補充積分</button>`:""}</section>
     <section class="ws-my"><h2>My Artist</h2>
-      ${f.length?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}">${gPhoto(gid)?`<span class="ws-lgp" role="img" aria-label="${esc(g.name)}" style="background-image:url('${esc(gPhoto(gid))}')"></span>`:`<span>${esc(g.name)}</span>`}</i><small>${esc(g.name)}</small></button>`:""}).join("")}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
+      ${f.length||(typeof npcShopMy==="function"&&npcShopMy())?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}">${gPhoto(gid)?`<span class="ws-lgp" role="img" aria-label="${esc(g.name)}" style="background-image:url('${esc(gPhoto(gid))}')"></span>`:`<span>${esc(g.name)}</span>`}</i><small>${esc(g.name)}</small></button>`:""}).join("")}${typeof npcShopMy==="function"?npcShopMy():""}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
       <button class="ws-find" data-a="shOpen" data-k="shop">${I.search||"🔍"}<b>藝人</b></button></section>
     ${thShopCard()}
     ${slvShopHtml()}
     ${f.map(gid=>{const g=groupOf(gid); if(!g) return ""; return `<section class="wsp-sec"><button class="wsp-now" data-a="shopG" data-v="${gid}" style="background:${grad(g.g)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(g.name)} ›</b></button>
-      <div class="wsp-row">${shopProducts(gid).map(prodCard).join("")}</div></section>`}).join("")}
+      <div class="wsp-row">${shopProducts(gid).map(prodCard).join("")}</div></section>`}).join("")}${typeof npcShopSecs==="function"?npcShopSecs():""}
     ${mine.length?`<h2 class="mf-h">我的 ${WHISPER_NAME} 券</h2>${passGroups(mine).map(P=>{ const id=P.ids[0], g=groupOf(P.gid), m=MEMBERS[id], st=passStatus(id), solo=P.ids.length===1&&(!g||(g.members||[]).length<=1);
       const D=P.ids.map(x=>subs()[x]?daysLeft(subs()[x].expires):0), H=P.ids.map(x=>+subDays(x)||0), rg=a=>Math.min(...a)===Math.max(...a)?`${a[0]}`:`${Math.min(...a)}～${Math.max(...a)}`;
       return `<div class="card pass">
@@ -17213,12 +17213,25 @@ function npcExRows(cat){ try{ if(!nlOn()) return []; const J=nlJoined(), now=Dat
   return nlGs().filter(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, nw=now-new Date(I.debut).getTime()<120*864e5; return !cat||cat==="all"||(cat==="solo"?solo:cat==="group"?!solo:nw); }).map(G=>{ const I=NPC_INFO[G], ms=I.mem.map(r=>npcN(r[0])), on=J.includes(G);
     return `<div class="ex-g" data-q="${esc(nz(nlGN(G)+" "+ms.join(" ")))}"><button class="ex-gi" data-a="nlGo" data-v="${esc(G)}">${nlGAv(G,"ex")}<span><b>${esc(nlGN(G))}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="nlGo" data-v="${esc(G)}">前往</button>`:`<button class="ex-btn" data-a="nlJoin" data-v="${esc(G)}">加入</button>`}</div>`; }); }catch(e){ return []; } }
 function nlView(G,tab){ const NI=NPC_INFO[G]; if(!NI) return ""; const on=nlJoined().includes(G), adm=nlAdm(); setTimeout(cmTopSync,0);
-  const tabs=[["feed","Feed"],["about","Artist"]], P=nlGen("cm").filter(p=>p.G===G).slice(0,60);
-  const body=tab==="about"?nlAbout(G):`${adm?`<button class="nl-adm" data-a="nlWrite" data-v="${esc(G)}">＋ 用 ${esc(nlGN(G))} 的帳號發文（管理員）</button>`:""}${P.length?P.map(nlCard).join(""):emptyBox(I.star||"",`還沒有動態`,"過幾天再來看看吧")}`;
+  const tabs=[["home","Home"],["feed","Feed"],["shop","Shop"],["about","Artist"]], P=nlGen("cm").filter(p=>p.G===G).slice(0,60);
+  const body=tab==="about"?nlAbout(G):tab==="home"?nlHome(G):tab==="shop"?`<div class="wsp-grid">${nlIds(G).map(nlProd).join("")}</div><p class="nl-note">${esc(WHISPER_NAME)} 券一位 ${NL_PRICE} 積分，可以用 ${NL_DAYS} 天。</p>`:`${adm?`<button class="nl-adm" data-a="nlWrite" data-v="${esc(G)}">＋ 用 ${esc(nlGN(G))} 的帳號發文（管理員）</button>`:""}${P.length?P.map(nlCard).join(""):emptyBox(I.star||"",`還沒有動態`,"過幾天再來看看吧")}`;
   return `<div class="gcm cmx nlc" style="--gt:${nlCol(G)}"><header class="cmx-top" id="cmTop"><button class="cmx-ib" data-a="back" aria-label="返回">${I.back}</button><b class="cmx-tt">${esc(nlGN(G))}</b><span class="cmx-r"></span></header>
     <section class="cmx-hero nl-hero" style="background:${nlBg(G,1)}"><span class="cmx-hbg nl-hbg"><i>${esc(String(nlGN(G)).slice(0,1))}</i></span><span class="cmx-shade"></span>
-      <div class="cmx-hi"><small>${fmtW(nlFans(G))} 位成員${on?"・✓ 已加入":""}</small><b>${esc(nlGN(G))}</b>${on?`<button class="cmx-ms" data-a="nlTab" data-v="about" data-g="${esc(G)}">${esc(WHISPER_NAME)}</button>`:`<button class="cmx-ms" data-a="nlJoin" data-v="${esc(G)}">＋ 加入社群</button>`}</div></section>
+      <div class="cmx-hi"><small>${fmtW(nlFans(G))} 位成員${on?"・✓ 已加入":""}</small><b>${esc(nlGN(G))}</b>${on?`<button class="cmx-ms" data-a="nlTab" data-v="shop" data-g="${esc(G)}">${esc(WHISPER_NAME)} 券</button>`:`<button class="cmx-ms" data-a="nlJoin" data-v="${esc(G)}">＋ 加入社群</button>`}</div></section>
     <nav class="cm-tabs cmx-tabs">${tabs.map(([k,l])=>`<button class="${tab===k?"on":""}" data-a="nlTab" data-v="${k}" data-g="${esc(G)}">${l}</button>`).join("")}</nav><main class="page cm-body">${body}</main></div>`; }
+/* 商品卡：跟 SHOP 的 TIE 券一樣的票 */
+function nlProd(id){ const m=nlM(id); if(!m) return ""; const act=nlActive(id), r=nlRoomOf(id), left=act?Math.max(1,Math.ceil((r.until-Date.now())/864e5)):0, c=nlCol(m.G);
+  return `<button class="wsp-pc" data-a="${act?"nlRoom":"nlBuy"}" data-v="${id}"><span class="wsp-th"><span class="tkt" style="--c0:${c};--c1:${c}99"><span class="tkt-ph"><b class="tkt-ini">${esc(String(nlName(id)).slice(0,1).toUpperCase())}</b><small>HAECHU</small></span><span class="tkt-st"><b>${esc(WHISPER_NAME)}</b><span class="tkt-nm">${esc(nlName(id))}</span><i class="tkt-bar"></i></span></span></span><span class="wsp-nm">${esc(WHISPER_NAME)} 券・${esc(nlName(id))}</span><span class="wsp-pr"><b>${NL_PRICE}</b> 積分</span>${act?`<em class="wsp-tag on">運行中・剩餘 ${left} 天</em>`:""}</button>`; }
+/* SHOP：有加入的團也出現（跟其他團一樣一團一區） */
+function npcShopSecs(q){ try{ if(!nlOn()) return ""; const G=q?nlGs().filter(g=>nz(nlGN(g)+" "+NPC_INFO[g].mem.map(r=>npcN(r[0])).join(" ")).includes(q)):nlJoined(); if(!G.length) return "";
+  if(q) return G.flatMap(nlIds).map(nlProd).join("");
+  return G.map(g=>`<section class="wsp-sec"><button class="wsp-now" data-a="nlGo" data-v="${esc(g)}" style="background:${nlBg(g,1)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(nlGN(g))} ›</b></button><div class="wsp-row">${nlIds(g).map(nlProd).join("")}</div></section>`).join(""); }catch(e){ return ""; } }
+const npcShopMy=()=>{ try{ return nlOn()?nlJoined().map(g=>`<button class="ws-lg" data-a="nlGo" data-v="${esc(g)}"><i style="background:${nlBg(g,1)}"><span>${esc(nlGN(g))}</span></i><small>${esc(nlGN(g))}</small></button>`).join(""):""; }catch(e){ return ""; } };
+/* Home：像其他社群的 Home（Shop、About、SKpedia） */
+function nlHome(G){ const ids=nlIds(G), P=nlGen("cm").filter(p=>p.G===G)[0];
+  return `${P?`${cmSec("Now")}${nlCard(P)}`:""}<div class="cm-sh"><h3>Shop</h3><button data-a="nlTab" data-v="shop" data-g="${esc(G)}">查看更多 ›</button></div><div class="wsp-row nl-hrow">${ids.map(nlProd).join("")}</div>
+    ${cmSec("About")}<section class="card cm-abc"><div class="cm-ab">${ids.map(id=>`<button data-a="nlTab" data-v="about" data-g="${esc(G)}">${nlAv(id,"md")}<small>${esc(nlName(id))}</small></button>`).join("")}</div><button class="cm-abm" data-a="nlTab" data-v="about" data-g="${esc(G)}">查看更多 ›</button></section>
+    <section class="card cm-card"><button class="cm-go" data-a="wkGo" data-v="n:${esc(G)}">在 SKpedia 看 ${esc(nlGN(G))} <span>→</span></button></section>`; }
 function nlAbout(G){ const I=NPC_INFO[G], adm=nlAdm(), shared=!!S.get(NL_ON,0);
   return `
     <section class="card nl-mems">${nlIds(G).map(id=>{ const m=nlM(id), r=nlRoomOf(id), act=nlActive(id);
@@ -17307,7 +17320,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="nlNo"){ return; }
   if(a==="nlClose"){ layer.innerHTML=""; return; }
   if(a==="nlGo"){ layer.innerHTML=""; navTo(nlHref("npc","id="+encodeURIComponent(v))); scrollTo(0,0); return; }
-  if(a==="nlTab"){ const G=t.dataset.g; location.replace(nlHref("npc","id="+encodeURIComponent(G)+(v==="about"?"&p=about":""))); return; }
+  if(a==="nlTab"){ const G=t.dataset.g; location.replace(nlHref("npc","id="+encodeURIComponent(G)+(v&&v!=="home"?"&p="+v:""))); return; }
   if(a==="nlJoin"){ const J=nlJoined(); if(!J.includes(v)){ J.push(v); S.set(acK(NL_JOIN),J); toast(`已加入 ${nlGN(v)} 的社群`); } render(); return; }
   if(a==="nlEx"){ ui.nlEx=ui.nlEx||{}; ui.nlEx[v]=1; render(); return; }
   if(a==="nlLike"){ const me=myEmail()||"me", on=nlLiked(v); mkEdit(NL_LK,o=>{ o=o||{}; const L=(o[v]||[]).filter(x=>x!==me); if(!on) L.push(me); o[v]=L; return {v:o}; }).then(()=>render()).catch(()=>toast("沒有按到，再試一次")); return; }

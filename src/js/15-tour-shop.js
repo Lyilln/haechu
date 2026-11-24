@@ -236,17 +236,17 @@ function viewShop(){
   const ban=f.flatMap(gid=>shopProducts(gid).filter(p=>p.kind!=="tie"&&!p.own&&!isSelfGid(p.gid)).slice(0,2)).slice(0,6);
   const mine=Object.keys(subs()).filter(id=>MEMBERS[id]);
   return fanHeader(false,"shop","搜尋商品、團名...")+`<main class="page">${srchLabel("shop")}
-    ${q?(all.length?`<div class="wsp-grid">${all.map(prodCard).join("")}</div>`:srchEmpty("商品")):`
+    ${q?((all.length||(typeof npcShopSecs==="function"&&npcShopSecs(q)))?`<div class="wsp-grid">${all.map(prodCard).join("")}${typeof npcShopSecs==="function"?npcShopSecs(q):""}</div>`:srchEmpty("商品")):`
     ${ban.length?`<div class="ws-hero" id="spBan">${ban.map(p=>{const g=groupOf(p.gid), C=GRADS[g.g%GRADS.length];return `<button class="ws-sl" data-a="pOpen" data-v="${p.id}" style="--wl:${mixHex(C[0],"#ffffff",.78)};--wd:${mixHex(C[0],"#17141f",.74)}"><span class="ws-art">${p.kind==="album"&&PCI[`vc|${p.aid}|${p.vid}`]?`<img src="${PCI[`vc|${p.aid}|${p.vid}`]}" alt="">`:prodArt(p)}</span><b>${esc(p.name)}</b><small>HAECHU SHOP ${p.pre?"現正預購中！":"現正販售中！"}</small></button>`}).join("")}</div>
     <div class="ws-pg"><span class="ws-track"><i id="spThumb" style="width:${100/ban.length}%"></i></span><span class="ws-cnt"><b id="spCnt">01</b><i></i>${String(ban.length).padStart(2,"0")}</span><button class="ws-plus" data-a="wsPlus" aria-label="看更多">＋</button></div>`:""}
     <section class="ws-pts"><span>我的積分</span><b>${fmt(points())}<i>✦</i></b>${demoOn()?`<button data-a="addPts">示範：補充積分</button>`:""}</section>
     <section class="ws-my"><h2>My Artist</h2>
-      ${f.length?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}">${gPhoto(gid)?`<span class="ws-lgp" role="img" aria-label="${esc(g.name)}" style="background-image:url('${esc(gPhoto(gid))}')"></span>`:`<span>${esc(g.name)}</span>`}</i><small>${esc(g.name)}</small></button>`:""}).join("")}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
+      ${f.length||(typeof npcShopMy==="function"&&npcShopMy())?`<div class="ws-my-row">${f.map(gid=>{const g=groupOf(gid);return g?`<button class="ws-lg" data-a="shopG" data-v="${gid}"><i style="background:${grad(g.g)}">${gPhoto(gid)?`<span class="ws-lgp" role="img" aria-label="${esc(g.name)}" style="background-image:url('${esc(gPhoto(gid))}')"></span>`:`<span>${esc(g.name)}</span>`}</i><small>${esc(g.name)}</small></button>`:""}).join("")}${typeof npcShopMy==="function"?npcShopMy():""}</div>`:`<p class="me-none">先到 LOVE 的「探索」加入社群吧</p>`}
       <button class="ws-find" data-a="shOpen" data-k="shop">${I.search||"🔍"}<b>藝人</b></button></section>
     ${thShopCard()}
     ${slvShopHtml()}
     ${f.map(gid=>{const g=groupOf(gid); if(!g) return ""; return `<section class="wsp-sec"><button class="wsp-now" data-a="shopG" data-v="${gid}" style="background:${grad(g.g)}"><span class="wsp-shade"></span><small>Now</small><b>${esc(g.name)} ›</b></button>
-      <div class="wsp-row">${shopProducts(gid).map(prodCard).join("")}</div></section>`}).join("")}
+      <div class="wsp-row">${shopProducts(gid).map(prodCard).join("")}</div></section>`}).join("")}${typeof npcShopSecs==="function"?npcShopSecs():""}
     ${mine.length?`<h2 class="mf-h">我的 ${WHISPER_NAME} 券</h2>${passGroups(mine).map(P=>{ const id=P.ids[0], g=groupOf(P.gid), m=MEMBERS[id], st=passStatus(id), solo=P.ids.length===1&&(!g||(g.members||[]).length<=1);
       const D=P.ids.map(x=>subs()[x]?daysLeft(subs()[x].expires):0), H=P.ids.map(x=>+subDays(x)||0), rg=a=>Math.min(...a)===Math.max(...a)?`${a[0]}`:`${Math.min(...a)}～${Math.max(...a)}`;
       return `<div class="card pass">
