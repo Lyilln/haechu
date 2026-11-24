@@ -707,7 +707,7 @@ function hbMergeArr(b,l,r){
   return [...extra.filter(x=>front.has(hbId(x))),...out,...extra.filter(x=>!front.has(hbId(x)))]; }
 /* 寫入：先存手機，再排隊送上雲端 */
 /* ===== 試玩模式（只有 HUSSEY）：在自己手機上玩，什麼都不上傳、不收別人的更新；結束時從雲端還原 ===== */
-function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true; if(typeof svTester==="function"&&svTester(s)) return true;   /* 選秀測試帳號（Bini）也能試玩 */   /* 管理員們也能試玩，幫忙給反饋 */
+function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true; if(typeof svTester==="function"&&svTester(s)&&localStorage.getItem("hc_sandbox")==="1") return true;   /* 11/24 Bini 測完了：只留著讓她把正在跑的試玩結束（清空），不能再開新的 */   /* 管理員們也能試玩，幫忙給反饋 */
     const m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
 function sbxOn(){ try{ return localStorage.getItem("hc_sandbox")==="1"&&sbxWho(); }catch(e){ return false; } }
 /* 試玩開始：先把「只在這支手機、不上雲端」的設定備份起來（積分顯示、各種本機狀態）；雲端那些結束時直接重新抓 */
@@ -15520,7 +15520,7 @@ const svNpcL=g=>(g==="g"?SV_NPC_G:SV_NPC_B).map(([id,n,c])=>[id,npcN(n),c]);   /
 /* 示範（只有 HUSSEY 的粉絲身分看得到）：假的一季，五個階段可以切換看；投票、報名都只在這次打開有效，不存 */
 /* 11/24 測試帳號：Bini（比泥，KIRIN 的小帳）也能開示範測 bug */
 const svTester=x=>{ try{ const em=String(x.email||"").toLowerCase(), a=ACCOUNTS[em]||{}, nm=String(a.name||x.name||""); if(nm==="比泥"||/^bini$/i.test(nm)) return true; const r=S.get(SVS,null); return !!r&&(S.get(SVE,[])||[]).some(e=>e&&e.sid===r.id&&String(e.email||"").toLowerCase()===em&&/^bini$/i.test(String(e.name||"").trim())); }catch(e){ return false; } };
-const svDemoOk=()=>{ try{ const x=session(); return !!x&&x.role==="fan"&&(String(x.email||"").toLowerCase()==="husay"||(typeof isHussey==="function"&&isHussey())||sbxOn()||svTester(x)); }catch(e){ return false; } };   /* 11/18：正式站的帳號 email 不是 husay，改用 isHussey() 認 */
+const svDemoOk=()=>{ try{ const x=session(); return !!x&&x.role==="fan"&&(String(x.email||"").toLowerCase()==="husay"||(typeof isHussey==="function"&&isHussey())||(sbxOn()&&!svTester(x))); }catch(e){ return false; } };   /* 11/24 Bini 測完了：不再開示範／預演 */   /* 11/18：正式站的帳號 email 不是 husay，改用 isHussey() 認 */
 const SV_DEMO_N=["Yuna","Chaewon","Sieun","Hana","Ririka","Mina","Seoyeon","Nako","Jiwoo","Aria","Haeun","Rin"];
 function svDemoSeason(){ const ph=ui.svDemo, now=Date.now(), E=SV_DEMO_N.map((n,i)=>"dm"+i), all=[...E,...svNpcL("g").slice(0,SV_N-E.length).map(x=>x[0])];
   return {id:"demo",demo:1,no:ui.svDemoNo||1,g:"g",ph,t0:now-2*864e5,end:now+(ph==="prep"?20:ph==="final"?5:ph==="recruit"?4:11)*864e5,npcN:SV_N-E.length,prepW:3,keep:{r1:all.filter((x,i)=>i%8!==7).slice(0,15),r2:E.slice(0,10)},debut:E.slice(0,7),rk:{r1:all,r2:E.slice(0,10),final:E.slice(0,10)},ann:{}}; }
