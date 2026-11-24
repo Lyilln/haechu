@@ -15973,13 +15973,19 @@ function svTabsHtml(s,v){ const tr=svTrainee(s);
   const rk=svRank(), all=svAll(), my=svMine(), T=id=>all.find(x=>x.id===id)||{id}, fin=s.ph==="final", hid=svHid(s);
   const body=v==="st"?svStageHtml(s):v==="rk"?(hid?svHidPyr(s,my,tr):svPyr5(fin?"出道組在誰手上？":"現在的排名",rk.slice(0,fin?SV_DEB:6),(id,i)=>svTile(T(id),`${i+1}位`,null,!tr&&my[id]||tr&&tr.id===id)))+svRkList(s,false):v==="pick"?svRkList(s,!tr):svWeekHtml(s);
   return nav+`<div class="sv6-body">${body}</div>`; }
+/* 11/24 補救：上傳影片時打的後採訪被清掉 → 今晚 23:59 前，練習生可以補寫「等級評價」那支的舞台說明和後採訪（只改文字、不改交的時間）。補完由管理員按「重新計算等級評價」 */
+const SV_IVFIX_END=new Date(2026,10,24,23,59,59).getTime();
+const svIvFixSt=(s,tr)=>s&&!s.demo&&s.ph==="r1"&&Date.now()<SV_IVFIX_END&&tr?svStages("r1","lv").find(x=>x.tid===tr.id):null;
+function svIvFixBn(s,tr){ const st=svIvFixSt(s,tr); if(!st) return ""; return `<button class="sv5-bn" data-a="svIvFix"><i>🎤</i><div><b>補寫等級評價的後採訪</b><small>${st.iv?"已經寫了，可以再改":"今晚 23:59 前可以補寫"}・只改文字，不影響交的時間</small></div><em>›</em></button>`; }
+function svIvFixForm(){ const s=svSeason(), tr=svTrainee(s), st=svIvFixSt(s,tr); if(!st){ toast("現在不能補寫了"); return; }
+  tieModal("補寫後採訪",`<label class="svf-l">舞台說明</label><textarea id="svFxC" class="svf-in" rows="3" maxlength="200">${esc(st.cap||"")}</textarea><label class="svf-l">後採訪</label><textarea id="svFxI" class="svf-in" rows="2" maxlength="80" placeholder="例：上台前手一直在抖">${esc(st.iv||"")}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="svIvFixOk">儲存</button>`,"sv3-tm"); }
 function svWeekHtml(s){ const m=svMsNow(s), tr=svTrainee(s), rk=svRank(), all=svAll(), hid=svHid(s), t0=svPhT0(s), end=m?t0+m.d[1]*864e5:0;
   const ep=m?`<section class="sv6-ep"><small>${SV_PH[s.ph]}・第 ${svDayN(s)} 天</small><h2>${esc(m.t)}</h2><p>${esc(m.how)}</p><div class="sv6-chips"><span class="on">${tr?"交舞台":"現場票"}到 ${svMd(end-864e5)}</span><span>${SV_ANN[s.ph]} 還有 ${svCd(s)}</span></div></section>`:"";
   const me=tr?svTrio([[hid?"保密":`${rk.indexOf(tr.id)+1} 位`,"我現在的排名"],[svGrade(tr)||"－","我的等級"],[`${svDaysL(s)} 天`,SV_ANN[s.ph]]])+svTodoTr(s,tr):"";
   const St=m?svStages(s.ph,m.k).slice().sort((a,b)=>svLive(b)-svLive(a)||svHash(a.id)-svHash(b.id)):[], lv=m&&svMyLv()[s.id+m.k];
   const stg=m?`<section class="sv6-sec"><div class="sv6-sh"><b>這週的舞台</b><button data-a="uniGo" data-v="#/fan/core?p=survival&v=st">${St.length?`${St.length} 位已交 ›`:"看舞台 ›"}</button></div>${St.length?`<div class="sv3-sg sv6-sg">${St.slice(0,6).map((x,i)=>{ const t=all.find(y=>y.id===x.tid)||{}; return `<button class="sv3-st ${lv===x.id?"me":""}" data-a="svStage" data-v="${x.id}"><span class="sv3-sp">${svCov(x,t)}${x.url&&x.kind==="v"?`<i class="sv3-play"></i>`:""}${i<3&&svLive(x)?`<em>${i+1}</em>`:""}</span><b>${esc(t.name||"")}</b><small>${esc(x.team||x.pos||"")}${x.team||x.pos?"・":""}♥ ${fmt(svLive(x))}</small></button>`; }).join("")}</div>${tr?"":`<p class="sv6-tip">${lv?"這個任務的現場票投了 ✓":"點舞台進去，這個任務可以投 1 張現場票"}</p>`}`:`<p class="sv6-none">還沒有人交舞台</p>`}</section>`:"";
   const play=`<button class="sv6-play" data-a="svSh"><span>▶</span><div><b>看本週節目</b><small>主持人帶你看這週的任務和每一位的舞台</small></div><i>›</i></button>`;
-  return ep+(tr?play+me+svGrBn(s)+svC1Bn(s):svTodoFan(s))+stg+svHost(s,svHostTxt(s))+svHow5(); }
+  return ep+(tr?svIvFixBn(s,tr)+play+me+svGrBn(s)+svC1Bn(s):svTodoFan(s))+stg+svHost(s,svHostTxt(s))+svHow5(); }
 /* 11/24 粉絲「今天要做的事」：一次只叫你做一件，做完自動換下一件（看節目 → 看舞台投現場票 → PICK） */
 const svShK=s=>{ const m=svMsNow(s); return (svRehOn()?"reh":"")+s.id+(s.airN||"")+s.ph+(m?m.k:""); };
 const svFanNext=s=>{ const m=svMsNow(s); if(!s.demo&&S.get(acK("daisuki_sv_shw"),"")!==svShK(s)) return "sh"; if(m&&!svMyLv()[s.id+m.k]&&svStages(s.ph,m.k).length) return "st"; return svLeft()?"pick":"done"; };
@@ -16169,7 +16175,7 @@ function svGrAdm(s){ const P=s.grPub||{}, nx=SV_GRK.find(k=>!P[k]); const prev=n
   return `<div class="sv5-adm"><b>等級評價（自動算，不能手動改）</b><p class="ae-tip">等級評價：導師看報名時交的表演（有交的人分數高），開播當天公布。主題曲重新評價：粉絲現場票 6 成＋練習生互評 4 成。照名次給 A 10%・B 20%・C 25%・D 25%・F 20%。任務期限到了會自動公布；導師評語在「舞台」點開寫，沒寫就用預設的。</p>
     ${SV_GRK.map(k=>`<p class="ae-tip">${k==="lv"?"等級評價":"主題曲重新評價"}：${P[k]?`已公布（${new Date(P[k]).toLocaleString()}）`:"還沒公布"}</p>`).join("")}
     ${nx&&(nx==="lv"||P.lv)?`<p class="ae-tip">現在算的話：${cnt}</p><button class="btn btn-soft" data-a="svGrPubNow" data-v="${nx}">現在就公布${nx==="lv"?"等級評價":"重新評價"}</button>`:""}</div>`; }
-function svAdminHtml(){ const s=svSeason(), E=svEntries(); const dmb=`<div class="sv5-adm"><b>選秀示範</b><p class="ae-tip">用假資料看每一輪的畫面，只在你的手機，不影響這一季。</p><button class="btn btn-soft" data-a="svDemoGo">打開示範</button></div>`;
+function svAdminHtml(){ const s=svSeason(), E=svEntries(); const dmb=`${s&&!s.demo&&s.ph==="r1"&&!((s.grPub||{}).th)?`<div class="sv5-adm"><b>補救：等級評價重算</b><p class="ae-tip">練習生補寫後採訪（今晚 23:59 前）之後，按這個用最新的資料重新分班。</p><button class="btn btn-soft" data-a="svGrRe">重新計算等級評價</button></div>`:""}<div class="sv5-adm"><b>選秀示範</b><p class="ae-tip">用假資料看每一輪的畫面，只在你的手機，不影響這一季。</p><button class="btn btn-soft" data-a="svDemoGo">打開示範</button></div>`;
   if(!s||s.ph==="done") return dmb+`<section class="card studio"><p class="ae-tip">${s?"上一季已經結束。":""}開一季新的選秀：先招募 1 週，真人不到 ${SV_MIN} 位會自動延長。</p><div class="ls-btns"><button class="btn btn-main" data-a="svNew" data-v="g">開新一季（女團）</button><button class="btn btn-soft" data-a="svNew" data-v="b">開新一季（男團）</button></div><p class="ae-tip" style="margin-top:12px">虛擬練習生的照片（一次可以選很多張，會依序放進還沒有照片的人）</p><div class="ls-btns"><button class="btn btn-soft" data-a="svNpcPh" data-v="g">女生照片（${Object.keys(S.get(SVNP,{})||{}).filter(k=>k[0]==="n").length}／${SV_N}）</button><button class="btn btn-soft" data-a="svNpcPh" data-v="b">男生照片（${Object.keys(S.get(SVNP,{})||{}).filter(k=>k[0]==="m").length}／${SV_N}）</button></div></section>`;
   const rk=svVoting()?svRank():[], sc=svVoting()?svScores():{}, all=svAll();
   const chat=s.ph==="prep"&&!s.demo?`<section class="card studio sv2 ${svTheme()}">${svChatHtml(s,true)}</section>`:"";   /* 出道準備：管理員用主持人身分回答出道組 */
@@ -16189,7 +16195,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
   if(a==="svRehGo"){ e.stopImmediatePropagation(); if(svRehOn()) svRehGo(); return; }
   if(a==="svReh"){ e.stopImmediatePropagation(); if(svRehOn()){ ask("結束預演？剛剛在預演裡做的事（投票、交舞台、改資料）全部清掉，回到真的資料。",()=>sbxOff(),{ok:"結束並清空",danger:false}); return; }
     ask("開始預演？\n用真的這一季（真的練習生、真的上傳）假裝已經開播，投票、交舞台、改資料都能真的做，但只在這支手機，不會影響其他人。結束時一鍵清空。",()=>{ try{ if(!sbxOn()) sbxStart(); localStorage.setItem("hc_sv_reh","1"); const r=svReal(); if(r&&r.ph==="recruit"&&r.end&&r.end>Date.now()) svRehShift(r.end-Date.now()+6e4); for(let i=0;i<6;i++){ try{ svTick(); }catch(e2){} } }catch(er){} ui.svRehC=null; ui.svSh=null; ui.svShIn=0; layer.innerHTML=""; try{ sbxPill(); }catch(er){} render(); window.scrollTo(0,0); toast("預演開始"); },{ok:"開始預演",danger:false}); return; }
-  if(!/^sv(Pick|Unpick|Send|Apply|ApplyOk|Photo|Co|Quit|New|Next|Done|PrepW|End|Bonus|BonusOk|Kick|RevealGo|NextEp|NextX|DemoGo|CvPick|CvOk|DebutApply|Demo|xSkip|Seat|Sk|Speak|SpeakOk|Gr|GrOk|Mk|Stage|Lv|Up|UpPick|UpPos|UpOk|Cm|CmOk|Cast|CastOk|DbDraft|DbSave|MemEd|MemOk|PvNew|PvOk|Pvo|PvEnd|Tab|More|DemoT|NpcPh|Ch1|C1|ChSend|GrPubNow|GrPubOk|PrS|PrOk)$/.test(a)) return; e.stopImmediatePropagation();
+  if(!/^sv(Pick|Unpick|Send|Apply|ApplyOk|Photo|Co|Quit|New|Next|Done|PrepW|End|Bonus|BonusOk|Kick|RevealGo|NextEp|NextX|IvFix|IvFixOk|GrRe|DemoGo|CvPick|CvOk|DebutApply|Demo|xSkip|Seat|Sk|Speak|SpeakOk|Gr|GrOk|Mk|Stage|Lv|Up|UpPick|UpPos|UpOk|Cm|CmOk|Cast|CastOk|DbDraft|DbSave|MemEd|MemOk|PvNew|PvOk|Pvo|PvEnd|Tab|More|DemoT|NpcPh|Ch1|C1|ChSend|GrPubNow|GrPubOk|PrS|PrOk)$/.test(a)) return; e.stopImmediatePropagation();
   const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); }, s=svSeason();
   switch(a){
     case "svPick": { if(!svVoting()) return; if(meBlocked()) return; if(svTrainee(s)){ toast("參賽的練習生不能投票"); return; } const B=ui.svB=ui.svB||{}, n=Object.values(B).reduce((x,y)=>x+y,0); if(n>=svLeft()){ toast(svLeft()?`今天最多再投 ${svLeft()} 票`:"今天的票投完了，明天再來"); return; } if(!svAlive().has(t.dataset.v)) return; B[t.dataset.v]=(B[t.dataset.v]||0)+1; rr(); return; }
@@ -16203,6 +16209,10 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svNextEp": { svNextEp(t.dataset.v); return; }
     case "svNextX": { clearInterval(ui.svNxI); layer.innerHTML=""; return; }
     case "svDemoGo": { ui.svDemo="recruit"; ui.svB={}; ui.svDU=0; ui.svDV={}; navTo("#/fan/core?p=survival"); window.scrollTo(0,0); return; }
+    case "svIvFix": { svIvFixForm(); return; }
+    case "svIvFixOk": { const tr=svTrainee(s), st=svIvFixSt(s,tr); if(!st) return; const cap=((document.getElementById("svFxC")||{}).value||"").trim(), iv=((document.getElementById("svFxI")||{}).value||"").trim();
+      mkEdit(SVST,v=>({v:(Array.isArray(v)?v:[]).map(x=>x.id===st.id?{...x,cap,iv,fix:Date.now()}:x)})).then(()=>{ layer.innerHTML=""; rr(); toast("存好了"); }).catch(()=>toast("沒有存到，再按一次")); return; }
+    case "svGrRe": { if(!isAdminAcct()||!s||s.demo) return; ask("用最新的舞台說明和後採訪，重新計算第一次的等級評價？\n（主題曲重新評價還沒公布前才能用）",()=>{ const r=svReal(); if(!r||(r.grPub||{}).th){ toast("主題曲重新評價已經公布，不能重算"); return; } const g=svRealDo(()=>svGrPub(r,"lv")); S.set(SVS,{...g,grPub:{...(r.grPub||{})}}); render(); toast("等級評價重算好了"); },{ok:"重新計算",danger:false}); return; }
     case "svxSkip": { ui.svxT=0; ui.svxDone&&ui.svxDone(); return; }
     case "svApply": { if(s&&s.demo){ ui.svF=null; svApplyForm(); return; } if((session()||{}).role!=="fan"||svIsArtist(myEmail())){ toast("藝人的帳號不能報名選秀"); return; } if(isWealth(myEmail())){ toast("財富榜的帳號不參加選秀"); return; } ui.svF=null; svApplyForm(); return; }
     case "svPhoto": { svKeep(); const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*"; inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:4/5,max:1080}); if(!c) return;
