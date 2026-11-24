@@ -131,3 +131,19 @@ main.svpend{visibility:hidden}
 .aws.svsh .svsh-tv .svsh-int small i{display:block;font-style:normal;font-size:9.5px;font-weight:800;color:#FF3D8B;letter-spacing:.04em}
 @keyframes svTvIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @keyframes svTvPop{0%{opacity:0;transform:rotate(-3deg) scale(.4)}70%{opacity:1;transform:rotate(-3deg) scale(1.12)}100%{opacity:1;transform:rotate(-3deg) scale(1)}}
+/* 11/24 深色模式：選秀一律維持淺色（發表畫面、舞台視窗） */
+html[data-theme="dark"] .svx{color:#1D1A24}
+html[data-theme="dark"] .svx .svx-call b{color:#2B2233}
+html[data-theme="dark"] .svx .svx-a .s,html[data-theme="dark"] .svx .fc-tag b{background:#fff}
+html[data-theme="dark"] .svx .fc-bar{background:#fff;color:#1D1A24}
+html[data-theme="dark"] .svx .fc-bar small em{background:var(--fc);color:var(--fa)}
+html[data-theme="dark"] .svx .fc-bar small em.dn,html[data-theme="dark"] .svx .fc-bar>em{background:#F2EEF5;color:#8B8195}
+html[data-theme="dark"] .svx .fc-bar>em.up{background:var(--fc);color:var(--fa)}
+html[data-theme] .t-modal.sv3-tm{background:#fff;color:#2B2129}
+html[data-theme] .t-modal.sv3-tm h3{color:#2B2129}
+html[data-theme] .t-modal.sv3-tm .fy-info,html[data-theme] .t-modal.sv3-tm .sv3-cm span{color:#6E5F69}
+html[data-theme] .t-modal.sv3-tm .sv3-cm b{color:#2B2129}
+html[data-theme] .t-modal.sv3-tm .t-mbtn{background:#F8F4F6;color:#2B2129}
+html[data-theme] .t-modal.sv3-tm .t-mbtn.main{background:#FF4F9A;color:#fff}
+html[data-theme] .t-modal.sv3-tm .t-mbtn.main:disabled{background:#F1EAEE;color:#A0929B}
+html[data-theme] .t-modal.sv3-tm p.sv3-tag,html[data-theme] .t-modal.sv3-tm p.sv3-lv{color:#FF4F9A}

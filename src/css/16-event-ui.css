@@ -573,6 +573,5 @@ html[data-theme="dark"] .fv2-ti,html[data-theme="dark"] .fv2-ti b,html[data-them
 
 /* 11/23 選秀不管主題怎麼換，底下一律白底（深色模式是淡淡的粉），文字也固定深色 */
 .page.sv2{--bg:#FFFFFF;--s1:#FFFFFF;--s2:#F8F4F6;--s3:#F1EAEE;--ink:#2B2129;--ink-2:#6E5F69;--ink-3:#A0929B;--line:#F1E5EB;color:var(--ink);position:relative}
-html[data-theme="dark"] .page.sv2{--bg:#FFF1F7;--s2:#FFF7FA;--line:#F6DCE8}
 .page.sv2:before{content:"";position:fixed;left:0;right:0;top:0;bottom:0;background:var(--bg);z-index:0;pointer-events:none}
 .page.sv2>*:not(.sv6-tabs){position:relative;z-index:1}

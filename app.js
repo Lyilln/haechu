@@ -15902,16 +15902,17 @@ const SV_GRQ=[.1,.2,.25,.25];                        /* A 10%、B 20%、C 25%、
 const svPeerAll=(s,mk)=>s.demo?((ui.svPrD||{})[mk]||{}):(((S.get(SVPR,{})||{})[s.id+"|"+mk])||{});
 const svPeerMine=(s,mk,me)=>svPeerAll(s,mk)[me.id];
 const SV_PEERG=false;
-function svGrCalc(s,mk){ const ids=[...svAlive("r1")], St=svStages("r1",mk), P=svPeerAll(s,mk), mx=Math.max(10,...St.map(svLive));
+function svGrCalc(s,mk){ const ids=[...svAlive("r1")], St=svStages("r1",mk), P=svPeerAll(s,mk), mx=Math.max(0,...St.map(svLive));
   const sc={}; ids.forEach(id=>{ const st=St.find(x=>x.tid===id), t=svById(id)||{}, real=t.real||s.demo&&st;
     const taste=(svHash(s.id+mk+"mt"+id)%1000)/1000;   /* 導師口味 */
-    if(mk==="lv"){ if(!t.real||s.demo&&!st){ sc[id]=.25+taste*.75; return; }
+    if(mk==="lv"){ if(!t.real||s.demo&&!st){ sc[id]=.05+taste*.8; return; }   /* 11/24 虛擬練習生平均壓到中間，認真交的真人才有機會拿 A */
       /* 11/24 真人＝積極度＋導師口味：影片 > 照片、越早交越高、有寫說明／後採加分 */
       const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, fr=st&&st.ts?Math.min(1,Math.max(0,(st.ts-t0)/Math.max(1,t1-t0))):1;
-      sc[id]=st?(st.kind==="v"?.35:.2)+(1-fr)*.25+(st.cap?.05:0)+(st.iv?.05:0)+taste*.3:taste*.15; return; }
-    const live=st?svLive(st):real?0:(svHash(mk+"lv"+id)%100)/100*mx;
+      sc[id]=st?(st.kind==="v"?.4:.25)+(1-fr)*.15+(st.cap?.05:0)+(st.iv?.05:0)+taste*.35:taste*.15; return; }
+    /* 11/24 現場票換成 0～1：真人照真人之間的票數比（有交就有底分 .3；大家都 0 票就算中間 .5）；虛擬練習生平均也落在 .5，不會因為真人票少就被虛擬的壓過去 */
+    const lvN=st?(mx>0?.3+.7*svLive(st)/mx:.5):real?0:.15+.7*(svHash(mk+"lv"+id)%100)/100;
     const R=Object.entries(P).filter(([r])=>r!==id).map(([,v])=>v[id]).filter(Boolean), avg=R.length?R.reduce((a,b)=>a+b,0)/R.length:real?(st?3:1):2.5+(svHash(mk+"pr"+id)%200)/100;
-    sc[id]=.6*Math.min(1,live/mx)+.4*(SV_PEERG?(avg-1)/4:taste); });   /* 11/24 重新評價不再用練習生互評：現場票 6 成＋導師 4 成 */
+    sc[id]=.6*lvN+.4*(SV_PEERG?(avg-1)/4:taste); });   /* 11/24 重新評價不再用練習生互評：現場票 6 成＋導師 4 成 */
   const ord=ids.slice().sort((a,b)=>sc[b]-sc[a]||svHash(a)-svHash(b)), n=ord.length, cnt=SV_GRQ.map((q,i)=>i?Math.round(n*q):Math.max(1,Math.round(n*q))), G={};
   let k=0; ord.forEach((id,i)=>{ while(k<4&&i>=cnt.slice(0,k+1).reduce((a,b)=>a+b,0)) k++; G[id]=SV_GR[k]; });
   return {G,ord,sc}; }
