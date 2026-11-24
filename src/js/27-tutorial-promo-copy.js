@@ -325,7 +325,7 @@ const TDM_GEN={
    ・專輯可以設定「跟著發行」：發行那一刻才在 SHOP 出現
    ========================================================= */
 const CO_INFO={"SM":{n:"SM Entertainment",l:"co/sm.webp"},"HYBE":{n:"HYBE",l:"co/hybe.webp"},"JYP":{n:"JYP Entertainment",l:"co/jyp.webp"},"YG":{n:"YG Entertainment",l:"co/yg.webp"},
-  "PAPERMOON":{n:"PAPERMOON Entertainment",l:"co/papermoon.webp"},"BLUE HOUR":{n:"BLUE HOUR Entertainment",l:"co/bluehour.webp"},"DOLPUNG Lab.":{n:"DOLPUNG Lab.",l:"co/dolpung.webp"}};
+  "PAPERMOON":{n:"PAPERMOON Entertainment",l:"co/papermoon.webp"},"BLUE HOUR":{n:"BLUE HOUR Entertainment",l:"co/bluehour.webp"},"DOLPUNG Lab.":{n:"DOLPUNG Lab.",l:"co/dolpung.webp"},"OVERTONE":{n:"OVERTONE Entertainment",l:""}};   /* 11/24 PRODUCE DAY 出道組（限定團）的專屬經紀公司 */
 const coInfo=co=>CO_INFO[co]||{n:APP_NAME,l:""};
 const CO_IC={chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
   cm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="17" cy="9" r="2.4"/><path d="M15.8 14.4c2.3.2 4 1.8 4.6 4.6"/></svg>',

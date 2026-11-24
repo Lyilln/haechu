@@ -10569,7 +10569,7 @@ const snHandle=(name,seed,pre)=>{ const a=String(name||"").toLowerCase().normali
 /* ===== 粉絲帳號 → 藝人帳號 =====
    ・藝人的個人 SNS 不會馬上開：照公司規定，出道滿一段時間才解鎖
    ・原本粉絲身分的 SNS：內容清空、變成私人帳號；用過的帳號名、名稱記到後台，之後不能再用 */
-const SNS_UNLOCK_MO={YG:1.5,SM:2.5,JYP:5,HYBE:3.5,PAPERMOON:2,"BLUE HOUR":3.5,"DOLPUNG Lab.":.8};
+const SNS_UNLOCK_MO={YG:1.5,SM:2.5,JYP:5,HYBE:3.5,PAPERMOON:2,"BLUE HOUR":3.5,"DOLPUNG Lab.":.8,OVERTONE:1};
 function snDebutOf(mid){ try{ const x=getDebut().filter(y=>y.status==="ok"&&(y.mid===mid||Object.values(y.mids||{}).includes(mid))).sort((a,b)=>(b.day||0)-(a.day||0))[0]; if(!x) return null; return {co:x.co||"",ts:dbRelAt(x)||x.day||0}; }catch(e){ return null; } }
 function snLockOf(mid){ const d=snDebutOf(mid); if(!d||!d.ts) return null; const mo=SNS_UNLOCK_MO[d.co]; if(mo==null) return null; const until=d.ts+Math.round(mo*30*864e5); return until>Date.now()?{co:d.co,mo,until}:null; }
 function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEMBERS[s.member]) return; const em=String(s.email||"").toLowerCase(), a=ACCOUNTS[em]||{}; if(a.role==="admin") return; const done=S.get(K.snRetired,{})||{}; if(done[em]) return;
@@ -10578,7 +10578,15 @@ function snRetireCheck(){ try{ const s=session(); if(!s||s.role!=="artist"||!MEM
        snPDel(d,p=>p.uid===uid,"出道：舊粉絲帳號收起來"); d.stories=(d.stories||[]).map(x=>x.uid===uid&&!x.del?{...snStDel(x),by:"出道：舊粉絲帳號收起來"}:x); if(d.notes) delete d.notes[uid]; if(d.hl) delete d.hl[uid]; d.prof[uid]={...pr,priv:true,bio:"",av:"",retired:Date.now()}; snSave(d); }
     done[em]=Date.now(); S.set(K.snRetired,done); }catch(e){} }
 function snMeId(){ const s=session()||{}; if(s.role==="artist"&&MEMBERS[s.member]) return "m:"+s.member; return "u:"+String(s.email||"me").toLowerCase(); }
-function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
+/* 11/24 PRODUCE DAY：播出期間有節目官方帳號，參賽中的練習生只能用它發文（個人帳號鎖住，落選就解開）；
+   出道組送出團名後開團體帳號，成員改用團體帳號發文 */
+function svSnLock(){ try{ const s=svSeason(); if(!s||s.demo) return null; const me=svMyEntry(); if(!me) return null;
+    const P=svPrep(), gn=P&&P.draft&&String(P.draft.gname||"").trim(); if(gn&&(s.debut||[]).includes(me.id)) return {as:"o:pdg",name:gn};
+    if(svVoting()&&svAlive().has(me.id)) return {as:"o:pd",name:"PRODUCE DAY"}; }catch(e){} return null; }
+const svPdOn=()=>{ try{ const s=svSeason(); return !!s&&!s.demo&&s.ph!=="recruit"; }catch(e){ return false; } };
+function snUser(id){ if(id==="o:pd") return {id,u:"produceday.official",name:"PRODUCE DAY",g:6,ver:true,bio:"📺 PRODUCE DAY 官方帳號",av:"",of:1};
+  if(id==="o:pdg"){ let gn=""; try{ gn=String((svPrep().draft||{}).gname||"").trim(); }catch(e){} if(!gn) return null; return {id,u:gn.toLowerCase().replace(/[^a-z0-9]+/g,"")+".official"||"produceday.debut",name:gn,g:6,ver:true,bio:"OVERTONE Entertainment",av:"",of:1}; }
+  if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
   if(String(id).startsWith("o:co_")){ const co=ofCoOf(id.slice(5)); if(!co) return null; const c=coInfo(co), pf=CO_PROF[co]||{}; return {id,u:OF_CO[co],name:pf.n||c.n,g:6,ver:true,bio:pf.bio||"",cat:pf.cat,av:c.l||"",co,of:1}; }
   if(String(id).startsWith("o:g_")){ const gid=id.slice(4), g=groupOf(gid); if(!g||g.solo) return null; return {id,u:ofGH(g),name:g.name,g:g.g||0,ver:true,bio:coInfo(coOfGid(gid)).n,av:gPhoto(gid)||"",gid,of:1}; }
   if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:s.name||s.u,g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
@@ -10588,7 +10596,7 @@ function snUser(id){ if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU
   if(id.startsWith("u:")){ const e=id.slice(2), a=ACCOUNTS[e]||{}, me=id===snMeId(); const nm=adminView()?(a.name||e):me?ME.name:(S.get(K.nicks,{})[e]||a.name||e.split("@")[0]);
     return {id,u:pr.u||(a.role==="admin"&&!a.member?"haechu.official":snHandle("", "u:"+e,"haechu")),name:pr.name!=null?pr.name:nm,g:3,ver:a.role==="admin"&&!a.member&&(!pr.u||pr.u==="haechu.official"),bio:pr.bio||"",av:pr.av||"",acc:e}; }
   return null; }
-function snAllUsers(){ const L=[]; Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&!snLockOf(id)).forEach(id=>L.push("m:"+id)); snOfAccs().forEach(id=>L.push(id)); SNS_FANS.forEach(f=>L.push("f:"+f[0])); if(typeof npcSnUsers==="function") npcSnUsers().forEach(x=>L.push(x)); Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.role!=="artist") L.push("u:"+e); }); L.push("o:scout"); return L.map(snUser).filter(Boolean); }
+function snAllUsers(){ const L=[]; if(svPdOn()) L.push("o:pd"); if(snUser("o:pdg")) L.push("o:pdg"); Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official&&!snLockOf(id)).forEach(id=>L.push("m:"+id)); snOfAccs().forEach(id=>L.push(id)); SNS_FANS.forEach(f=>L.push("f:"+f[0])); if(typeof npcSnUsers==="function") npcSnUsers().forEach(x=>L.push(x)); Object.keys(ACCOUNTS).forEach(e=>{ const a=ACCOUNTS[e]; if(a&&a.role!=="artist") L.push("u:"+e); }); L.push("o:scout"); return L.map(snUser).filter(Boolean); }
 function snSeed(){ return; const d=snDB(); if(d.seeded&&d.seed2) return; if(d.seeded){ const now=Date.now(); d.notes=d.notes||{"f:moonlight_daily":{text:"今晚直播誰要一起看 🌙",ts:now-2*3600e3},"f:sunny.doll":{text:"小卡交換中～",ts:now-6*3600e3}}; d.seed2=true; snSave(d); return; }
   d.seed2=true; const now=Date.now(); let k=0;
   Object.keys(MEMBERS).filter(id=>!MEMBERS[id].official).forEach(mid=>{ for(let i=0;i<3;i++) d.posts.push({id:"sp"+(k++),uid:"m:"+mid,pics:Array.from({length:1+strHash(mid+i)%3},(_,j)=>mid+i+"_"+j),cap:SNS_CAPS[(strHash(mid)+i)%SNS_CAPS.length],ts:now-(i*30+strHash(mid)%20+2)*3600e3,base:300+strHash(mid+i)%4000}); });
@@ -10682,7 +10690,8 @@ const snN=n=>n?fmtW(n).replace(" 萬","萬"):"";   /* IG 的數字：0 不顯示
 
 /* 標註的人（照 IG）：平常只在照片左下角放一個人像小圖示，點了才在照片上跳出黑色名牌，點名牌去他的個人檔案 */
 /* 11/24 照 IG：外語貼文下面「查看翻譯」，按了內文直接換成中文，按鈕變「查看原文」。虛擬歌手用自帶的翻譯，其他人的外語貼文自動翻 */
-function snCapHtml(p,u){ if(!p.cap) return ""; const k="sn:"+p.id; let z="";
+function snCapHtml(p,u){ const by=p.by&&(p.uid==="o:pd"||p.uid==="o:pdg")?snUser(p.by):null, byH=by?`<p class="sn-by">✍️ ${esc(by.name||by.u)}</p>`:""; if(!p.cap) return byH; return snCapHtml0(p,u)+byH; }
+function snCapHtml0(p,u){ const k="sn:"+p.id; let z="";
   try{ z=p.npc?(p.capZ&&p.capZ!==p.cap?p.capZ:""):(anyLang(p.cap)?(cmTrGet(k)||(trNeedT(k,p.cap),"")):""); }catch(e){}
   const on=!!z&&!!(ui.nlCapTr&&ui.nlCapTr[p.id]);
   return `<p><b>${esc(u.u)}</b> ${on?esc(z):snRich(p.cap)}</p>${z?`<button class="sn-more" data-a="nlCapTr" data-v="${p.id}">${on?"查看原文":"查看翻譯"}</button>`:""}`; }
@@ -10782,6 +10791,7 @@ function snEdit(d){ const me=snMeId(), u=snUser(me);
     <div class="sn-edf"><button class="sn-prv ${snForcePriv(me)?"lock":""}" data-a="snPrivT"><span>私人帳號${snForcePriv(me)?`<small>出道後，舊帳號只能是私人帳號</small>`:""}</span><i class="sn-sw ${snPriv(d,me)?"on":""}"></i></button></div>`; }
 function snNew(d){ const dr=ui.snDraft||(ui.snDraft={media:[],cap:"",mode:route().id==="story"?"story":route().id==="sub"?"sub":"post"}), n=dr.media.length, subU=dr.mode==="sub"?snUser(snSubTo((session()||{}).member)):null;
   return `<header class="sn-top"><button class="sn-ib" data-a="snNewX" aria-label="取消">${si("x")}</button><b>${dr.mode==="story"?"新增限時動態":dr.mode==="sub"?"投稿":"新貼文"}</b><span class="sn-sp"></span><button class="sn-next" data-a="snPost" ${n||dr.alb?"":"disabled"}>${dr.mode==="sub"?"送出":"分享"}</button></header>
+    ${(()=>{ const lk=!subU&&svSnLock(); return lk?`<div class="sn-subto">${snAv(snUser(lk.as),28)}<span>會用 <b>${esc(lk.name)}</b> 的帳號發布（下面寫上你的名字）。${lk.as==="o:pd"?"節目播出期間，個人帳號暫停使用，落選後就會打開。":"出道組的團體帳號開通了。"}</span></div>`:""; })()}
     ${subU?`<div class="sn-subto">${snAv(subU,28)}<span>投稿到 <b>${esc(subU.u)}</b>，公司審核後會用官方帳號發布（會加上你的名字）</span></div>`:""}${isAdminAcct()&&dr.mode==="post"?`<label class="sn-asr"><span>發文身分</span><select id="snAs"><option value="">自己（${esc(snUser(snMeId()).u)}）</option>${snOfAccs().map(snUser).filter(Boolean).map(x=>`<option value="${esc(x.id)}" ${dr.as===x.id?"selected":""}>${esc(x.u)}（${esc(x.name)}）</option>`).join("")}</select></label>`:""}
     ${dr.mode==="post"&&!n&&snAlbSongs().length?(dr.alb?`<div class="sn-media sn-cdm">${cdBox(dr.alb.gid,dr.alb.title)}</div><button class="sn-albpick" data-a="snAlbPick">💿 換一張專輯<small>改回照片：點這裡選「不用專輯」</small></button>`:`<button class="sn-albpick" data-a="snAlbPick">💿 發專輯貼文<small>貼文會是一個會轉的 CD 盒</small></button>`):""}
     ${dr.alb&&!n?"":n?`<div class="sn-media"><div class="sn-car">${dr.media.map(x=>`<div class="sn-sl">${x.type==="video"?`<video class="sn-img" src="${x.url||""}" playsinline muted loop autoplay></video><em class="sn-vdur">${fmtDur(x.dur)}</em>`:`<img class="sn-img" data-mid="${x.mid}" alt="">`}</div>`).join("")}</div>${n>1?`<em class="sn-cnt">1/${n}</em>`:""}</div>`:`<label class="sn-pick">${si("cam")}<b>從相簿選擇</b><small>${dr.mode==="story"?`一張照片或 ${SN_VMAX} 秒內的影片`:`最多 10 張・影片 ${SN_VMAX} 秒內`}</small><input type="file" accept="image/*,video/*" ${dr.mode==="story"?"":"multiple"} id="snFile"></label>`}
@@ -11124,7 +11134,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
         (d.sub=d.sub||[]).push({id:"sb"+now.toString(36),mid,to,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap:snSubCap(nm,cap),ts:now,st:bad?"no":"ok",why:bad?"內容有不能用的字詞":"",at:now+Math.round((60+Math.random()*7140)*1000)});
         snSave(d); toast(bad?"投稿被退回：內容有不能用的字詞":"已送出，公司審核後會發布"); ui.snDraft=null; navBack(); break; }
       if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(dr.ov?{ov:dr.ov}:{}),...((dr.stx||[]).length?{stx:dr.stx}:{}),...((dr.ment||[]).length?{ment:dr.ment}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
-      else { const as=isAdminAcct()&&dr.as&&snOfAccs().includes(dr.as)?dr.as:me; d.posts.push({id:"sp"+Date.now(),uid:as,media:dr.media.length?dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }):[],...(dr.alb&&!dr.media.length?{alb:dr.alb}:{}),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice(),...(dr.tagPos?{tagPos:Object.fromEntries(dr.tags.filter(x=>dr.tagPos[x]).map(x=>[x,dr.tagPos[x]]))}:{})}:{})}); toast("已分享"); }
+      else { const lk=svSnLock(), as=isAdminAcct()&&dr.as&&snOfAccs().includes(dr.as)?dr.as:lk?lk.as:me; d.posts.push({id:"sp"+Date.now(),uid:as,...(lk&&as===lk.as?{by:me}:{}),media:dr.media.length?dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }):[],...(dr.alb&&!dr.media.length?{alb:dr.alb}:{}),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice(),...(dr.tagPos?{tagPos:Object.fromEntries(dr.tags.filter(x=>dr.tagPos[x]).map(x=>[x,dr.tagPos[x]]))}:{})}:{})}); toast("已分享"); }
       snSave(d); try{ snMentNotify(dr.mode==="story"?(dr.ment||[]).map(x=>x.u):(dr.tags||[]),dr.mode==="story"?"在限時動態中提到你":"在貼文中標註了你"); }catch(e){} ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
     case "snAlbPick": { const L=snAlbSongs(); snSheet([[...L.map(x=>[`《${x.title}》${(groupOf(x.gid)||{}).name?"・"+groupOf(x.gid).name:""}`,"snAlbSet",`data-v="${x.id}"`,{ic:"music"}]),["不用專輯（改回照片）","snAlbSet",`data-v=""`,{ic:"x"}]]]); break; }
     case "snAlbSet": { const dr=ui.snDraft; if(!dr) break; const x=t.dataset.v&&songOf(t.dataset.v); dr.alb=x?{gid:x.gid,title:x.title,sid:x.id}:null; dr.cap=((document.getElementById("snCap")||{}).value||dr.cap||""); layer.innerHTML=""; render(); break; }
@@ -14745,7 +14755,7 @@ const TDM_GEN={
    ・專輯可以設定「跟著發行」：發行那一刻才在 SHOP 出現
    ========================================================= */
 const CO_INFO={"SM":{n:"SM Entertainment",l:"co/sm.webp"},"HYBE":{n:"HYBE",l:"co/hybe.webp"},"JYP":{n:"JYP Entertainment",l:"co/jyp.webp"},"YG":{n:"YG Entertainment",l:"co/yg.webp"},
-  "PAPERMOON":{n:"PAPERMOON Entertainment",l:"co/papermoon.webp"},"BLUE HOUR":{n:"BLUE HOUR Entertainment",l:"co/bluehour.webp"},"DOLPUNG Lab.":{n:"DOLPUNG Lab.",l:"co/dolpung.webp"}};
+  "PAPERMOON":{n:"PAPERMOON Entertainment",l:"co/papermoon.webp"},"BLUE HOUR":{n:"BLUE HOUR Entertainment",l:"co/bluehour.webp"},"DOLPUNG Lab.":{n:"DOLPUNG Lab.",l:"co/dolpung.webp"},"OVERTONE":{n:"OVERTONE Entertainment",l:""}};   /* 11/24 PRODUCE DAY 出道組（限定團）的專屬經紀公司 */
 const coInfo=co=>CO_INFO[co]||{n:APP_NAME,l:""};
 const CO_IC={chev:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>',
   cm:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 19c.6-3 2.8-4.8 5.5-4.8s4.9 1.8 5.5 4.8"/><circle cx="17" cy="9" r="2.4"/><path d="M15.8 14.4c2.3.2 4 1.8 4.6 4.6"/></svg>',
