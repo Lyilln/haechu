@@ -24,7 +24,13 @@ function npcInject(){ try{ if(typeof NPC_INFO==="undefined") return;
 { const a0=applyRoster; applyRoster=function(){ const r=a0.apply(this,arguments); npcInject(); return r; }; }
 npcInject(); setInterval(npcInject,120000);
 /* 頭貼：沒有照片時用團的代表色＋名字第一個字（跟 SNS 一樣） */
-const npcAv=mid=>{ const k=npcOldOf(mid); return k&&typeof nlAvUrl==="function"?nlAvUrl(k):""; };
+/* 照片（co/npc/團名_幾號_o＝公式照、_l＝生活照、團名_g＝團體公式照）：有放的才用，沒有就用代表色＋字 */
+const NPC_IMG={AURAVEIL:{g:1,m:[0,1,2,3,4]}};
+const npcImgU=(G,i,k)=>{ const I=NPC_IMG[G]; if(!I) return ""; const b="co/npc/"+String(G).toLowerCase().replace(/[^a-z0-9]/g,""); return k==="g"?(I.g?b+"_g.webp":""):(I.m.indexOf(+i)>=0?b+"_"+i+"_"+k+".webp":""); };
+const npcMImg=(mid,k)=>{ const m=MEMBERS[mid], o=m&&m.npcKey?String(m.npcKey).split("."):null; return o?npcImgU(o[0],o[1],k):""; };
+const npcGImg=gid=>{ const g=groupOf(gid); return g&&g.npc?npcImgU(g.npc,0,"g"):""; };
+const npcAv=mid=>{ const u=npcMImg(mid,"o"); if(u) return u; const k=npcOldOf(mid); return k&&typeof nlAvUrl==="function"?nlAvUrl(k):""; };   /* 公式照：About、成員頁 */
+const npcAvL=mid=>npcMImg(mid,"l")||npcAv(mid);   /* 生活照：SNS、個人社群、TIE 頭貼 */
 
 /* ---------- 讀取時加進去、寫回去時濾掉 ---------- */
 const NPC_LK="daisuki_npc_lk2";

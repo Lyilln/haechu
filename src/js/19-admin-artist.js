@@ -119,7 +119,7 @@ const AIC=(()=>{ const sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="curre
    ========================================================= */
 /* 換圖片時先用手機上的那張馬上顯示，上傳到雲端好了再換成雲端網址（看起來是立刻換好） */
 const PREV={}, GPREV={};
-const artProf=mid=>{ const p=(S.get(K.artProf,{})[mid])||{}; return PREV[mid]?{...p,...PREV[mid]}:p; };
+const artProf=mid=>{ let p=(S.get(K.artProf,{})[mid])||{}; if(!p.avatar&&MEMBERS[mid]&&MEMBERS[mid].npc&&typeof npcMImg==="function"){ const u=npcMImg(mid,"l"); if(u) p={...p,avatar:u}; } return PREV[mid]?{...p,...PREV[mid]}:p; };
 const gPhotoMap=()=>({...(S.get(K.gPhoto,{})||{}),...GPREV});
 /* 成員的 Teaser 照（管理員在「藝人與團」放）：About 用。SOLO 用出道／回歸照；社群頭貼只在個人社群裡出現 */
 const MPREV={};
@@ -163,7 +163,7 @@ const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
 /* 社群照片：團體用管理員上傳的出道／回歸照；SOLOIST 用本人的頭貼（規則：SOLOIST 不用管理員上傳） */
-function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; return gPhotoMap()[gid]||""; }   // SOLO 也用管理員放的出道照；社群頭貼只在個人社群裡出現
+function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; return gPhotoMap()[gid]||(g.npc&&typeof npcGImg==="function"?npcGImg(gid):"")||""; }   // SOLO 也用管理員放的出道照；社群頭貼只在個人社群裡出現
 /* TIE 券上的照片：管理員上傳的出道／回歸照（團體、SOLOIST 都可以傳），沒有就用社群照片 */
 const tktPhoto=gid=>gPhotoMap()[gid]||gPhoto(gid);
 const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(ini(g.name)); };

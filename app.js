@@ -9147,7 +9147,7 @@ const AIC=(()=>{ const sv=d=>`<svg viewBox="0 0 24 24" fill="none" stroke="curre
    ========================================================= */
 /* 換圖片時先用手機上的那張馬上顯示，上傳到雲端好了再換成雲端網址（看起來是立刻換好） */
 const PREV={}, GPREV={};
-const artProf=mid=>{ const p=(S.get(K.artProf,{})[mid])||{}; return PREV[mid]?{...p,...PREV[mid]}:p; };
+const artProf=mid=>{ let p=(S.get(K.artProf,{})[mid])||{}; if(!p.avatar&&MEMBERS[mid]&&MEMBERS[mid].npc&&typeof npcMImg==="function"){ const u=npcMImg(mid,"l"); if(u) p={...p,avatar:u}; } return PREV[mid]?{...p,...PREV[mid]}:p; };
 const gPhotoMap=()=>({...(S.get(K.gPhoto,{})||{}),...GPREV});
 /* 成員的 Teaser 照（管理員在「藝人與團」放）：About 用。SOLO 用出道／回歸照；社群頭貼只在個人社群裡出現 */
 const MPREV={};
@@ -9191,7 +9191,7 @@ const midOf=m=>Object.keys(MEMBERS).find(k=>MEMBERS[k]===m);
 /* 團體照：團體用管理員上傳的出道照／團體照；SOLOIST 直接用本人的頭貼 */
 const soloMid=gid=>Object.keys(MEMBERS).find(k=>MEMBERS[k].group===gid&&!MEMBERS[k].official);
 /* 社群照片：團體用管理員上傳的出道／回歸照；SOLOIST 用本人的頭貼（規則：SOLOIST 不用管理員上傳） */
-function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; return gPhotoMap()[gid]||""; }   // SOLO 也用管理員放的出道照；社群頭貼只在個人社群裡出現
+function gPhoto(gid){ const g=groupOf(gid); if(!g) return ""; return gPhotoMap()[gid]||(g.npc&&typeof npcGImg==="function"?npcGImg(gid):"")||""; }   // SOLO 也用管理員放的出道照；社群頭貼只在個人社群裡出現
 /* TIE 券上的照片：管理員上傳的出道／回歸照（團體、SOLOIST 都可以傳），沒有就用社群照片 */
 const tktPhoto=gid=>gPhotoMap()[gid]||gPhoto(gid);
 const gIcoIn=g=>{ const u=gPhoto(g.id); return u?`<span class="g-ph" role="img" aria-label="${esc(g.name)}" style="background-image:url('${u}')"></span>`:esc(ini(g.name)); };
@@ -10594,7 +10594,7 @@ function snUser(id){ if(id==="o:pd") return {id,u:"produceday.official",name:"PR
   if(String(id).startsWith("o:co_")){ const co=ofCoOf(id.slice(5)); if(!co) return null; const c=coInfo(co), pf=CO_PROF[co]||{}; return {id,u:OF_CO[co],name:pf.n||c.n,g:6,ver:true,bio:pf.bio||"",cat:pf.cat,av:c.l||"",co,of:1}; }
   if(String(id).startsWith("o:g_")){ const gid=id.slice(4), g=groupOf(gid); if(!g||g.solo) return null; return {id,u:ofGH(g),name:g.name,g:g.g||0,ver:true,bio:coInfo(coOfGid(gid)).n,av:gPhoto(gid)||"",gid,of:1}; }
   if(String(id).startsWith("o:sc_")){ const s=scAcc(id); return s?{id,u:s.u,name:s.name||s.u,g:6,ver:true,bio:s.bio||"",av:s.av||"",off:1}:null; } const pr=((S.get(snKey("prof"),null)||{})[id])||{};   /* 只讀簡介：不要每個頭像都把整個 SNS 拿出來（滑動會卡） */
-  if(id.startsWith("m:")){ const mid=id.slice(2), m=MEMBERS[mid]; if(!m) return null; const acc=Object.keys(ACCOUNTS).find(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid), du=snHandle(m.name,"m:"+mid,"artist"); return {id,u:pr.u||du,name:pr.name!=null?pr.name:"",g:m.g,ver:true,bio:pr.bio!=null?pr.bio:`${groupOf(m.group)?groupOf(m.group).name:""} 🎤`,av:pr.av||(m.npc&&typeof npcAv==="function"?npcAv(mid):""),mid}; }   /* 藝人的 SNS 跟藝人個人帳號分開：名稱、頭貼都是 SNS 自己的，不跟著個人帳號 */
+  if(id.startsWith("m:")){ const mid=id.slice(2), m=MEMBERS[mid]; if(!m) return null; const acc=Object.keys(ACCOUNTS).find(k=>ACCOUNTS[k]&&ACCOUNTS[k].member===mid), du=snHandle(m.name,"m:"+mid,"artist"); return {id,u:pr.u||du,name:pr.name!=null?pr.name:"",g:m.g,ver:true,bio:pr.bio!=null?pr.bio:`${groupOf(m.group)?groupOf(m.group).name:""} 🎤`,av:pr.av||(m.npc&&typeof npcAvL==="function"?npcAvL(mid):""),mid}; }   /* 藝人的 SNS 跟藝人個人帳號分開：名稱、頭貼都是 SNS 自己的，不跟著個人帳號 */
   if(id.startsWith("n:")) return typeof npcSnUser==="function"?npcSnUser(id):null;   /* 虛擬歌手 */
   if(id.startsWith("f:")){ const f=SNS_FANS.find(x=>x[0]===id.slice(2)); if(!f) return null; return {id,u:f[0],name:f[1],g:f[2],ver:false,bio:"🌙 每天都是追星日",av:"",fake:true}; }
   if(id.startsWith("u:")){ const e=id.slice(2), a=ACCOUNTS[e]||{}, me=id===snMeId(); const nm=adminView()?(a.name||e):me?ME.name:(S.get(K.nicks,{})[e]||a.name||e.split("@")[0]);
@@ -18347,7 +18347,13 @@ function npcInject(){ try{ if(typeof NPC_INFO==="undefined") return;
 { const a0=applyRoster; applyRoster=function(){ const r=a0.apply(this,arguments); npcInject(); return r; }; }
 npcInject(); setInterval(npcInject,120000);
 /* 頭貼：沒有照片時用團的代表色＋名字第一個字（跟 SNS 一樣） */
-const npcAv=mid=>{ const k=npcOldOf(mid); return k&&typeof nlAvUrl==="function"?nlAvUrl(k):""; };
+/* 照片（co/npc/團名_幾號_o＝公式照、_l＝生活照、團名_g＝團體公式照）：有放的才用，沒有就用代表色＋字 */
+const NPC_IMG={AURAVEIL:{g:1,m:[0,1,2,3,4]}};
+const npcImgU=(G,i,k)=>{ const I=NPC_IMG[G]; if(!I) return ""; const b="co/npc/"+String(G).toLowerCase().replace(/[^a-z0-9]/g,""); return k==="g"?(I.g?b+"_g.webp":""):(I.m.indexOf(+i)>=0?b+"_"+i+"_"+k+".webp":""); };
+const npcMImg=(mid,k)=>{ const m=MEMBERS[mid], o=m&&m.npcKey?String(m.npcKey).split("."):null; return o?npcImgU(o[0],o[1],k):""; };
+const npcGImg=gid=>{ const g=groupOf(gid); return g&&g.npc?npcImgU(g.npc,0,"g"):""; };
+const npcAv=mid=>{ const u=npcMImg(mid,"o"); if(u) return u; const k=npcOldOf(mid); return k&&typeof nlAvUrl==="function"?nlAvUrl(k):""; };   /* 公式照：About、成員頁 */
+const npcAvL=mid=>npcMImg(mid,"l")||npcAv(mid);   /* 生活照：SNS、個人社群、TIE 頭貼 */
 
 /* ---------- 讀取時加進去、寫回去時濾掉 ---------- */
 const NPC_LK="daisuki_npc_lk2";
