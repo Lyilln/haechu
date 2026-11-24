@@ -473,8 +473,8 @@ function svHowHtml(s){ const li=L=>`<ol class="sv5-rule">${L.map(x=>`<li>${x}</l
     "國民製作人每天可以 PICK（第一、二輪每天 3 票，決賽每天 1 票）。",
     `出道組會以限定團體活動一年半。`]);
   const M=svMsList(s.ph);
-  return (tr?li(["每個任務期限內都要交舞台（影片或照片＋說明），舞台不會等任何人。","交舞台時可以寫後採訪，節目裡會播出來。","主題曲那週，練習生們一起投出主題曲 C 位。","節目播出期間，個人 SNS 暫停使用，可以用節目官方帳號發文。","寫好排名發表時要說的感言。","參賽的練習生不能 PICK、不能投現場票。",`${SV_ANN[s.ph]}時，${s.ph==="final"?`前 ${SV_DEB} 位出道`:`前 ${s.ph==="r1"?SV_KEEP.r1:SV_KEEP.r2} 位晉級`}。`])
-    :li([`每天可以 PICK ${svCap()} 票，選好按「送出」才算。${s.ph==="final"?"":"可以分給不同人，也可以全投同一位。"}`,"每集晚上六點首播，上線就會開始播。","練習生每個任務都會交舞台，看完可以投 1 張現場票。","官方 SNS 也會放上每一位的舞台，多去看看、按個讚。",`每個任務現場票前三名的練習生，拿 +${SV_BEN.join("／+")} 票。`,`${SV_ANN[s.ph]}時，${s.ph==="final"?`前 ${SV_DEB} 位出道`:`前 ${s.ph==="r1"?SV_KEEP.r1:SV_KEEP.r2} 位晉級`}。`]))
+  return (tr?li(["每個任務期限內都要交舞台（影片或照片＋說明），沒交就等於放棄比賽。早點交、用心準備，節目裡的鏡頭會比較多。","交舞台時可以寫後採訪，節目裡會播出來。","主題曲那週，練習生們一起投出主題曲 C 位。","節目播出期間，個人 SNS 暫停使用，可以用節目官方帳號發文。","寫好排名發表時要說的感言。","參賽的練習生不能 PICK、不能投現場票。",`${SV_ANN[s.ph]}時，${s.ph==="final"?`前 ${SV_DEB} 位出道`:`前 ${s.ph==="r1"?SV_KEEP.r1:SV_KEEP.r2} 位晉級`}。`])
+    :li([`每天可以 PICK ${svCap()} 票，選好按「送出」才算。${s.ph==="final"?"":"可以分給不同人，也可以全投同一位。"}`,"每集晚上六點首播，上線就會開始播。","練習生每個任務都會交舞台，看完可以投 1 張現場票。","官方 SNS 也會放上每一位的舞台，觀看和按讚也會變成她們的票（佔一小部分）。",`每個任務現場票前三名的練習生，拿 +${SV_BEN.join("／+")} 票。`,`${SV_ANN[s.ph]}時，${s.ph==="final"?`前 ${SV_DEB} 位出道`:`前 ${s.ph==="r1"?SV_KEEP.r1:SV_KEEP.r2} 位晉級`}。`]))
     +`<div class="sv5-sh">這一輪的任務</div><div class="sv4-ml">${M.map(x=>`<span class="${svMsSt(s,x)==="進行中"?"on":svMsSt(s,x)==="已結束"?"end":""}"><b>${esc(x.t)}</b><small>${svMsWhen(s,x)}・${svMsSt(s,x)}</small></span>`).join("")}</div>`; }
 function svSubHtml(s,v){ const t={pick:"PICK 練習生",rk:"全部排名",st:"任務舞台",how:"怎麼玩？",gr:s.grade0?"主題曲重新評價":"等級評價",peer:"投主題曲 C 位",c1:s.ph==="r1"&&svC1(s).done?"1 分鐘 PR":"1 號位對決"}[v];
   if(!t) return ""; if(v==="c1"&&s.ph!=="r1") return ""; if(["pick","rk","st","c1","gr","peer"].includes(v)&&!svVoting()) return "";
