@@ -613,12 +613,15 @@ function svShSteps(s){ const m=svMsNow(s), tr=svTrainee(s), st=[{t:"open"}]; if(
   if(!tr&&s.ph==="r1"&&Object.keys(s.demo?svGrDemo(s):s.grade||{}).length) st.push({t:"gr"});
   /* 11/24 節目剪輯：不是每個人都有一樣的鏡頭。有人整段播（focus）、有人被惡剪（evil）、有人只在合集閃過（mont）、有人完全沒鏡頭。照季＋任務固定，大家看到的一樣 */
   if(m){ const L=svStages(s.ph,m.k).slice().sort((a,b)=>svHash(s.id+a.id)-svHash(s.id+b.id)), mont=[];
-    L.forEach((x,i)=>{ const r=(Math.imul(svHash(x.tid+"ed"+s.id+m.k),2654435761)>>>16)%100, ed=i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none";
-      if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed}); });
+    const t0=svPhT0(s)+m.d[0]*864e5, t1=svPhT0(s)+m.d[1]*864e5;
+    L.forEach((x,i)=>{ const r=(Math.imul(svHash(x.tid+"ed"+s.id+m.k),2654435761)>>>16)%100, t=svById(x.tid)||{}, fr=t.real&&x.ts?(x.ts-t0)/Math.max(1,t1-t0):-1;
+      const ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none";
+      if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75}); });
     if(mont.length) st.splice(Math.min(st.length,3+Math.floor(st.length/2)),0,{t:"mont",ids:mont.slice(0,6)}); }
   st.push({t:"end"}); return st; }
 const SV_ED={focus:["導師：「這才叫舞台。」","練習室裡，她每天都是最後一個走的","同組成員：「她真的很拼。」","鏡頭外，她一個人加練到凌晨","副歌一出來，導師們互看了一眼","導師：「我沒什麼要說的，做得好。」"],
-  evil:["導師：「這是你準備了一週的東西？」","（全場安靜）","練習時間，她在角落滑手機……","同組成員：「她都不太來練習……」","音樂一下，表情就垮了","（導師放下了筆）","導師：「你自己覺得呢？」"]};
+  evil:["導師：「這是你準備了一週的東西？」","（全場安靜）","音樂一下，表情就垮了","（導師放下了筆）","導師：「你自己覺得呢？」","（同組成員互看了一眼）","同組成員：「……嗯，她有她自己的節奏吧。」","（鏡頭掃過練習室裡空著的位置）","導師翻了翻資料，沒有說話","她說，自己準備得很充分","（後排有人小聲笑了）","導師：「舞台上不會有第二次機會。」","（休息時間，她一個人坐在角落）"],
+  late:["（交件截止前一刻）","導師：「時間是大家都一樣的。」","「下次早一點開始吧。」","（練習室的燈，很晚才亮起來）","同組成員：「我們等了一下……沒關係啦。」","（時鐘的指針，特寫）"]};
 function svSh(){ const s=svSeason(); if(!s||!svVoting()) return; try{ S.set(acK("daisuki_sv_shw"),svShK(s)); }catch(e){} ui.svSh={i:0,st:svShSteps(s)}; svShDraw(); }
 function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x=S0.st[S0.i], m=svMsNow(s), tr=svTrainee(s), host=t=>`<div class="aws-say"><div><small>${esc(svHostN(s))}</small><p>${t}</p></div></div>`, prog=`<div class="aws-pg"><i style="width:${Math.round(S0.i/Math.max(1,S0.st.length-1)*100)}%"></i></div>`;
   let b="";
@@ -626,7 +629,7 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
   else if(x.t==="ms"){ const end=svPhT0(s)+m.d[1]*864e5; b=`<div class="aws-cat"><small>這週的任務</small><b>${esc(m.t)}</b></div><p class="svsh-how">${esc(m.how)}</p><div class="aws-sp0-st">交舞台到 ${svMd(end-864e5)}</div>${m.host?host(esc(m.host)):""}${tr?(()=>{ const my=svStages(s.ph,m.k).find(y=>y.tid===tr.id); return my?`<p class="svsh-ok">✓ 你的舞台交好了，期限內可以換掉重交</p>`:`<button class="aws-btn" data-a="svUp">交我的舞台</button>`; })():""}`; }
   else if(x.t==="pr"){ const c=svC1(s), w=c.win||{}; b=`<div class="aws-cat"><small>1 分鐘 PR</small><b>${esc(w.name||"")}</b></div><div class="svsh-pr"><span class="svsh-ph">${svPh(w)}</span><p>${esc(w.msg||w.ps||"")}</p></div>${host(`坐上 1 號位的是 ${esc(w.name||"")}！給她一分鐘，好好認識她吧。`)}`; }
   else if(x.t==="stg"){ const y=svStages(s.ph).find(z=>z.id===x.id)||{}, t=svById(y.tid)||{}, lv=m&&svMyLv()[s.id+m.k], idx=S0.st.filter(z=>z.t==="stg").findIndex(z=>z.id===x.id)+1, tot=S0.st.filter(z=>z.t==="stg").length;
-    const ec=(SV_ED[x.ed]||SV_ED.focus)[svHash(s.id+y.id+"c")%(SV_ED[x.ed]||SV_ED.focus).length];
+    const EP=x.ed==="evil"&&x.lt&&svHash(y.id+"lt")%100<60?SV_ED.late:(SV_ED[x.ed]||SV_ED.focus), ec=EP[svHash(s.id+y.id+"c")%EP.length];
     b=`<div class="aws-cat ${x.ed==="evil"?"svsh-evil":""}"><small>${x.ed==="evil"?"⋯⋯":"STAGE "+idx}</small><b>${esc(t.name||"")}</b>${y.team||y.pos?`<span class="svsh-tag">${esc(y.team||y.pos)}</span>`:""}</div><div class="aws-v">${y.url?(y.kind==="v"?`<video src="${esc(y.url)}" playsinline webkit-playsinline controls preload="metadata"></video>`:`<img class="svsh-img" src="${esc(y.url)}" alt="">`):`<div class="svsh-nov">${svPh(t)}</div>`}</div><p class="svsh-cut ${x.ed==="evil"?"ev":""}">${esc(ec)}</p>${y.cap&&x.ed!=="evil"?`<p class="svsh-how">${esc(y.cap)}</p>`:""}${tr||!svVoting()?"":`<button class="aws-btn ${lv?"off":""}" data-a="svLv" data-v="${y.id}" ${lv?"disabled":""}>${lv===y.id?"♥ 投了這個舞台":lv?"這個任務投過現場票了":"♥ 投現場票"}</button>`}`; }
   else if(x.t==="gr"){ const G=s.demo?svGrDemo(s):s.grade||{}, all=svAll(), A=Object.keys(G).filter(id=>G[id]==="A").map(id=>all.find(t=>t.id===id)).filter(Boolean);
     b=`<div class="aws-cat"><small>等級評價結果</small><b>A 班 ${A.length} 位</b></div><div class="svsh-mont">${A.slice(0,6).map(t=>`<span><i class="svsh-ph">${svPh(t)}</i><em class="sv3-gr gA">A</em><b>${esc(t.name||"")}</b></span>`).join("")}</div>${host(`導師們的評價出來了！A 班的 ${A.length} 位，主題曲的歌詞最多。其他班的練習生，下一次重新評價還有機會。`)}<button class="aws-btn" data-a="svShGr">看全部等級和評語</button>`; }
