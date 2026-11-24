@@ -86,7 +86,7 @@ function svOutTick(){ const s=svReal(); if(!s||!isAdminAcct()||!svVoting()) retu
   for(const m of svMsList(s.ph)){ const key=s.ph+m.k; if(m.k==="lv"||d<m.d[1]||chk[key]) continue;   /* 11/24 等級評價沒交不算棄賽（照樣上節目，導師給低等級） */ const has=new Set(svStages(m.k==="lv"?"r1":s.ph,m.k).map(x=>x.tid)), out=[...svAlive()].filter(id=>{ const t=svById(id)||{}; return t.real&&!has.has(id); });
     S.set(SVS,{...s,out:[...new Set([...(s.out||[]),...out])],outChk:{...chk,[key]:Date.now()}}); return; } }
 /* 11/24 進行中的這一季也對齊到晚上六點（每個時間點改成同一天的 18:00，只做一次） */
-function svAt18Fix(){ const s=svReal(); if(!s||s.at18||!isAdminAcct()) return; const f=t=>{ if(!t) return t; const d=new Date(t); d.setHours(18,0,0,0); return d.getTime(); }, mp=o=>o?Object.fromEntries(Object.entries(o).map(([k,v])=>[k,typeof v==="number"?f(v):v])):o;
+function svAt18Fix(){ const s=svReal(); if(!s||s.at18||s.reair1||!isAdminAcct()) return; const f=t=>{ if(!t) return t; const d=new Date(t); d.setHours(18,0,0,0); return d.getTime(); }, mp=o=>o?Object.fromEntries(Object.entries(o).map(([k,v])=>[k,typeof v==="number"?f(v):v])):o;
   S.set(SVS,{...s,t0:f(s.t0),end:f(s.end),t0s:mp(s.t0s),ends:mp(s.ends),at18:1}); }
 /* 11/24 修正：開播那一刻把「等級評價沒交」的真人誤判成棄賽 → 全部救回來，撤掉「宣布退出」的新聞和通知（只做一次） */
 function svOutUndo(){ const s=svReal(); if(!s||s.outUndo||!isAdminAcct()) return; const chk={...(s.outChk||{})}, bad=!!chk.r1lv; delete chk.r1lv;
@@ -105,7 +105,14 @@ function svReAir(){ const s=svReal(); if(!s||s.reair1||!isAdminAcct()||s.ph!=="r
   try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
   const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
   S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:at.getTime(),grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},reair1:1,airN:(s.airN||0)+1,outUndo:1,outUndo2:1}); }
-function svGrTick(){ try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+/* 11/24 補：重播時間被「對齊六點」改回 18:00 → 改回 18:30；已經在 18:00 開了的，18:30 前退回等開播（只做一次） */
+function svReAir2(){ const s=svReal(); if(!s||!s.reair1||s.reair2||!isAdminAcct()) return; const at=new Date(s.ph==="recruit"?s.end:((s.t0s||{}).r1||s.t0)); at.setHours(18,30,0,0); const A=at.getTime();
+  if(s.ph==="recruit"){ S.set(SVS,{...s,end:A,at18:1,reair2:1}); return; }
+  if(s.ph==="r1"&&((s.t0s||{}).r1||s.t0)<A){ if(Date.now()<A){ try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
+      const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1; S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair2:1}); }
+    else S.set(SVS,{...s,t0:A,t0s:{...(s.t0s||{}),r1:A},at18:1,reair2:1}); return; }
+  S.set(SVS,{...s,reair2:1}); }
+function svGrTick(){ try{ svReAir2(); }catch(e){} try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
@@ -800,3 +807,6 @@ document.addEventListener("click",e=>{ const t0=e.target.closest&&e.target.close
 window.addEventListener("hashchange",()=>{ if(ui.svSh){ ui.svSh=null; layer.innerHTML=""; } });
 addEventListener("hashchange",()=>{ if(!/p=survival/.test(location.hash)) ui.svShIn=0; });   /* 離開選秀主頁再回來，就再開播一次 */
 addEventListener("popstate",e=>{ if(ui.svSh&&!(e.state&&e.state.svsh)){ ui.svSh=null; layer.innerHTML=""; } });   /* 節目中按返回＝關掉節目回到選秀頁 */
+
+/* 11/24 管理員的 App 開著就會準時開播（不用等換頁） */
+setInterval(()=>{ try{ if(!isAdminAcct()) return; const s=svReal(); if(s&&s.end&&s.ph!=="done"&&Date.now()>=s.end){ svTick(); render(); } }catch(e){} },15000);
