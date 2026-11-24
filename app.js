@@ -16007,7 +16007,7 @@ function svGrCalc(s,mk){ const ids=[...svAlive("r1")], St=svStages("r1",mk), P=s
     const G0=s.grade, G={}, sub=ids.filter(id=>St.some(x=>x.tid===id)), lvv=id=>{ const st=St.find(x=>x.tid===id); return st?svLive(st):0; }, tot=sub.reduce((a,id)=>a+lvv(id),0);
     const rk=sub.slice().sort((a,b)=>lvv(b)-lvv(a)||sc[b]-sc[a]), q=Math.max(1,Math.round(rk.length/4));
     ids.forEach(id=>{ const g0=G0[id]||"C", i0=SV_GR.indexOf(g0), t=svById(id)||{}; let d=0;
-      if(t.real&&!s.demo){ if(!sub.includes(id)) d=1; else if(tot>0){ const r=rk.indexOf(id); if(r<q&&lvv(id)>0) d=-1; else if(r>=rk.length-q&&lvv(id)<lvv(rk[q-1]||id)) d=1; } }
+      if(t.real&&!s.demo){ if(!sub.includes(id)) d=1; else if(lvv(id)>0) d=-1; }   /* 11/24 有人投現場票＝升一級；沒交＝降一級；其他不變 */
       else { const r=svHash(s.id+mk+"mv"+id)%100; d=r<22?-1:r>80?1:0; }
       G[id]=SV_GR[Math.max(0,Math.min(4,i0+d))]; });
     return {G,ord:Object.keys(G).sort((a,b)=>SV_GR.indexOf(G[a])-SV_GR.indexOf(G[b])),sc}; }
