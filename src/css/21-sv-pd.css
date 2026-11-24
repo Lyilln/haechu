@@ -105,3 +105,10 @@ main.svpend{visibility:hidden}
 .aws.svsh .aws-tap{position:relative;z-index:1}
 .sv6-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}
 .aws.svsh .aws-btn{margin-bottom:46px}
+/* 「點一下繼續」固定在最下面，內容留空間；頭像一定左右排；PR 倒數條拉滿 */
+.aws.svsh .aws-tap{position:fixed!important;top:auto!important;bottom:calc(env(safe-area-inset-bottom,0px) + 10px)!important;color:#8B7A85!important;z-index:5}
+.aws.svsh .aws-in{padding-bottom:64px}
+.svsh-mont{width:100%;align-self:stretch}
+.svsh-tmr{width:100%;max-width:340px;margin-left:auto;margin-right:auto}
+.svsh-rib em{width:max-content;font-style:normal;font-size:10.5px;font-weight:900;letter-spacing:.12em;padding:3px 10px;background:#2B2129;color:#fff}
+.svsh-rib em.live{background:#E11D48;animation:svairB 1.6s ease-in-out infinite}

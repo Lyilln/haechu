@@ -11134,6 +11134,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
       if(dr.mode==="sub"){ const mid=(session()||{}).member, to=snSubTo(mid), now=Date.now(), bad=!!cap&&(hasSlur(cap)||hasBanned(cap)), nm=(MEMBERS[mid]||{}).name||"";
         (d.sub=d.sub||[]).push({id:"sb"+now.toString(36),mid,to,media:dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }),cap:snSubCap(nm,cap),ts:now,st:bad?"no":"ok",why:bad?"內容有不能用的字詞":"",at:now+Math.round((60+Math.random()*7140)*1000)});
         snSave(d); toast(bad?"投稿被退回：內容有不能用的字詞":"已送出，公司審核後會發布"); ui.snDraft=null; navBack(); break; }
+      if(dr.mode==="story"&&svSnLock()&&!isAdminAcct()){ toast("節目播出期間，個人限時動態暫停使用"); return; }
       if(dr.mode==="story"){ const m0=dr.media[0]; d.stories.push({id:"st"+Date.now(),uid:me,mid:m0.mid,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...(dr.ov?{ov:dr.ov}:{}),...((dr.stx||[]).length?{stx:dr.stx}:{}),...((dr.ment||[]).length?{ment:dr.ment}:{}),...(m0.type==="video"?{vid:{poster:m0.poster||"",dur:m0.dur||15,w:m0.w,h:m0.h}}:{}),...(dr.aud==="cf"?{cf:1}:{})}); toast(dr.aud==="cf"?"已分享給摯友":"已分享到限時動態"); }
       else { const lk=svSnLock(), as=isAdminAcct()&&dr.as&&snOfAccs().includes(dr.as)?dr.as:lk?lk.as:me; d.posts.push({id:"sp"+Date.now(),uid:as,...(lk&&as===lk.as?{by:me}:{}),media:dr.media.length?dr.media.map(m=>{ const o={...m}; delete o.file; delete o.url; return o; }):[],...(dr.alb&&!dr.media.length?{alb:dr.alb}:{}),cap,ts:Date.now(),...(dr.mus?{mus:dr.mus}:{}),...((dr.tags||[]).length?{tags:dr.tags.slice(),...(dr.tagPos?{tagPos:Object.fromEntries(dr.tags.filter(x=>dr.tagPos[x]).map(x=>[x,dr.tagPos[x]]))}:{})}:{})}); toast("已分享"); }
       snSave(d); try{ snMentNotify(dr.mode==="story"?(dr.ment||[]).map(x=>x.u):(dr.tags||[]),dr.mode==="story"?"在限時動態中提到你":"在貼文中標註了你"); }catch(e){} ui.snDraft=null; navBackTo("#/"+session().role+"/sns"); window.scrollTo(0,0); break; }
@@ -11188,7 +11189,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(
     case "snDmTap": { const now=Date.now(), k=t.dataset.v+":"+t.dataset.i; if(ui.snDmT&&ui.snDmT.k===k&&now-ui.snDmT.ts<320){ ui.snDmT=null; const me=snMeId(), key=dmKey(me,t.dataset.v), L=S.get(key,[])||[], x=L[+t.dataset.i]; if(!x) break; const lk=x.lk=x.lk||[], i=lk.indexOf(me); if(i>=0) lk.splice(i,1); else lk.push(me); S.set(key,L); render(); } else ui.snDmT={k,ts:now}; break; }
     case "snReqOk": case "snReqNo": { const d=snDB(), me=snMeId(), v=t.dataset.v; d.req=d.req||{}; d.req[me]=(d.req[me]||[]).filter(x=>x!==v); if(a==="snReqOk"){ const F=snFol(d,v); if(!F.includes(me)) F.push(me); } snSave(d); render(); break; }
     case "snPrivT": { const d=snDB(), me=snMeId(); if(snForcePriv(me)){ toast("你已經出道了，這個舊帳號只能維持私人帳號"); break; } const pr=d.prof[me]=d.prof[me]||{}; pr.priv=!pr.priv; if(!pr.priv&&d.req&&d.req[me]&&d.req[me].length){ d.req[me].forEach(x=>{ const F=snFol(d,x); if(!F.includes(me)) F.push(me); }); d.req[me]=[]; } snSave(d); render(); toast(pr.priv?"已改成私人帳號":"已改成公開帳號"); break; }
-    case "snToStory": { const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; d.stories.push({id:"st"+Date.now(),uid:me,post:p.id,ts:Date.now()}); snSave(d); layer.innerHTML=""; render(); toast("已加到你的限時動態"); break; }
+    case "snToStory": { if(svSnLock()&&!isAdminAcct()){ toast("節目播出期間，個人限時動態暫停使用"); break; } const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===t.dataset.id); if(!p) break; d.stories.push({id:"st"+Date.now(),uid:me,post:p.id,ts:Date.now()}); snSave(d); layer.innerHTML=""; render(); toast("已加到你的限時動態"); break; }
     case "snStoryPost": { clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; const d=snDB(), p=d.posts.find(x=>x.id===t.dataset.id); navTo("#/"+session().role+"/sns?p="+(p&&snIsVid(p)?"reels":"post")+"&id="+encodeURIComponent(t.dataset.id)); break; }
     case "snHlPick": t.classList.toggle("on"); break;
     case "snHlDel": { const id=t.dataset.v; ask("要刪除這個精選嗎？",()=>{ const d=snDB(), me=snMeId(); d.hl=d.hl||{}; d.hl[me]=(d.hl[me]||[]).filter(h=>h.id!==id); snSave(d); clearTimeout(ui.snStT); ui.snStory=null; layer.innerHTML=""; render(); toast("已刪除精選"); }); break; }
@@ -15559,6 +15560,9 @@ function svScores(ph){ const s=svSeason(); if(!s) return {}; ph=ph||s.ph; const 
   return typeof svSnsBonus==="function"?svSnsBonus(s,ph,out):out; }
 /* 這一輪還在比的人 */
 function svAlive(ph){ const s=svSeason(); if(!s) return new Set(); ph=ph||s.ph; const K0=s.keep||{};
+  const OUT=new Set(s.out||[]); if(OUT.size){ const r=svAlive0(s,ph,K0); return new Set([...r].filter(id=>!OUT.has(id))); } return svAlive0(s,ph,K0); }
+/* 11/24 期限內沒交舞台＝棄賽（s.out），之後不算在比賽的人裡 */
+function svAlive0(s,ph,K0){
   if(ph==="r1"||ph==="recruit") return new Set(svAll().map(t=>t.id)); if(ph==="r2") return new Set(K0.r1||[]); if(ph==="pr"||ph==="final") return new Set(K0.r2||[]); return new Set(K0.r2||[]); }
 const svRank=ph=>{ const sc=svScores(ph); const sd=(svSeason()||{}).id||""; return Object.keys(sc).sort((a,b)=>sc[b]-sc[a]||svHash(sd+a)-svHash(sd+b)); };
 const svById=id=>svAll().find(t=>t.id===id);
@@ -15568,10 +15572,15 @@ function svInShow(em){ const s=svReal(); if(!s||s.ph==="done") return false; em=
 const svPh=t=>t&&t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil"></i>`;
 const svLeftTxt=ms=>{ ms=Math.max(0,ms); const d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5); return d?`${d} 天 ${h} 時`:`${h} 時 ${Math.floor(ms%36e5/6e4)} 分`; };
 
+/* 11/24 節目時間一律晚上六點：開季對齊到 18:00，之後每段照整天算，所以全部都是六點 */
+const svAt18=t=>{ const d=new Date(t); d.setHours(18,0,0,0); return d.getTime()<t-36e5?d.getTime()+864e5:d.getTime(); };
 /* ---------- 時間到了 → 公布（只在管理員的手機上算，大家看到的才會一樣） ---------- */
 function svTick(){ try{ svLtdTick(); }catch(e){} try{ const s0=svReal(), n0=(S.get("daisuki_sv_doneN",0)||0)+1; if(s0&&s0.ph!=="done"&&s0.no!==n0&&isAdminAcct()) S.set(SVS,{...s0,no:n0}); }catch(e){} try{ svGrTick(); }catch(e){} try{ const s=svReal(); if(!s||!isAdminAcct()||!s.end||Date.now()<s.end) return; svAdvance(false); }catch(e){} }
 /* 等級：任務交件期限一到，管理員的手機自動公布（等級評價→主題曲重新評價） */
-function svGrTick(){ const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+function svOutTick(){ const s=svReal(); if(!s||!isAdminAcct()||!svVoting()) return; const d=(Date.now()-svPhT0(s))/864e5, chk=s.outChk||{};
+  for(const m of svMsList(s.ph)){ const key=s.ph+m.k; if(d<m.d[1]||chk[key]) continue; const has=new Set(svStages(m.k==="lv"?"r1":s.ph,m.k).map(x=>x.tid)), out=[...svAlive()].filter(id=>{ const t=svById(id)||{}; return t.real&&!has.has(id); });
+    S.set(SVS,{...s,out:[...new Set([...(s.out||[]),...out])],outChk:{...chk,[key]:Date.now()}}); return; } }
+function svGrTick(){ try{ svOutTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
@@ -15863,7 +15872,8 @@ function svWeekHtml(s){ const m=svMsNow(s), tr=svTrainee(s), rk=svRank(), all=sv
   const St=m?svStages(s.ph,m.k).slice().sort((a,b)=>svLive(b)-svLive(a)||svHash(a.id)-svHash(b.id)):[], lv=m&&svMyLv()[s.id+m.k];
   const stg=m?`<section class="sv6-sec"><div class="sv6-sh"><b>這週的舞台</b><button data-a="uniGo" data-v="#/fan/core?p=survival&v=st">${St.length?`${St.length} 位已交 ›`:"看舞台 ›"}</button></div>${St.length?`<div class="sv3-sg sv6-sg">${St.slice(0,4).map((x,i)=>{ const t=all.find(y=>y.id===x.tid)||{}; return `<button class="sv3-st ${lv===x.id?"me":""}" data-a="svStage" data-v="${x.id}"><span class="sv3-sp">${x.url?(x.kind==="v"?`<video src="${esc(x.url)}#t=0.1" muted playsinline preload="metadata"></video><i class="sv3-play"></i>`:`<img src="${esc(x.url)}" alt="">`):svPh(t)}${i<3&&svLive(x)?`<em>${i+1}</em>`:""}</span><b>${esc(t.name||"")}</b><small>${esc(x.team||x.pos||"")}${x.team||x.pos?"・":""}♥ ${fmt(svLive(x))}</small></button>`; }).join("")}</div>${tr?"":`<p class="sv6-tip">${lv?"這個任務的現場票投了 ✓":"點舞台進去，這個任務可以投 1 張現場票"}</p>`}`:`<p class="sv6-none">還沒有人交舞台</p>`}</section>`:"";
   try{ const shk=s.id+s.ph+((svMsNow(s)||{}).k||""); if(ui.svShK!==shk){ ui.svShK=shk; ui.svShIn=0; }   /* 換輪、換任務（示範切換也是）就重新開播 */
-    if(!ui.svShIn){ ui.svShIn=1; setTimeout(()=>{ if(!ui.svSh&&!layer.innerHTML){ try{ history.pushState({svsh:1},"",location.href); }catch(e){} svSh(); } const mn=document.querySelector("main.svpend"); if(mn) mn.classList.remove("svpend"); },0); } }catch(e){}   /* 11/24 粉絲一進選秀＝節目開播，直接全螢幕播（按返回才回到頁面）；練習生照舊每個任務播一次 */
+    const seenK=acK("daisuki_sv_shseen"), seen=S.get(seenK,{})||{}; if(!s.demo&&seen[shk]) ui.svShIn=1;   /* 11/24 一集每個人只會自動播一次（示範才可以一直重看） */
+    if(!ui.svShIn){ ui.svShIn=1; if(!s.demo){ seen[shk]=Date.now(); S.set(seenK,seen); } setTimeout(()=>{ if(!ui.svSh&&!layer.innerHTML){ try{ history.pushState({svsh:1},"",location.href); }catch(e){} svSh(); } const mn=document.querySelector("main.svpend"); if(mn) mn.classList.remove("svpend"); },0); } }catch(e){}   /* 11/24 粉絲一進選秀＝節目開播，直接全螢幕播（按返回才回到頁面）；練習生照舊每個任務播一次 */
   const play=`<button class="sv6-play" data-a="svSh"><span>▶</span><div><b>看本週節目</b><small>主持人帶你看這週的任務和每一位的舞台</small></div><i>›</i></button>`;
   return ep+(tr?play+me+svGrBn(s)+svC1Bn(s):svTodoFan(s))+stg+svHost(s,svHostTxt(s))+svHow5(); }
 /* 11/24 粉絲「今天要做的事」：一次只叫你做一件，做完自動換下一件（看節目 → 看舞台投現場票 → PICK） */
@@ -16065,7 +16075,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
       const me=myEmail(), row={name:f.name,bd:f.bd,photo:f.photo,seat:f.seat,ch1:f.ch1?1:0,ps:f.ps,sk:f.sk,msg:f.msg}, nid=uid("sve"), had=(S.get(SVE,[])||[]).some(x=>x.sid===s.id&&x.email===me&&!x.out);
       mkEdit(SVE,v=>{ const L=[...(Array.isArray(v)?v:[])], i=L.findIndex(x=>x.sid===s.id&&x.email===me&&!x.out); if(i>=0) L[i]={...L[i],...row,edited:Date.now()}; else L.push({id:nid,sid:s.id,email:me,ts:Date.now(),...row}); return {v:L}; }).then(()=>{ ui.svF=null; layer.innerHTML=""; rr(); toast(had?"已儲存":"報名完成，招募結束後開始投票"); }).catch(()=>toast("沒有送出去，再按一次")); return; }
     case "svQuit": { ask("確定要取消報名嗎？",()=>{ mkEdit(SVE,o=>({v:(Array.isArray(o)?o:[]).map(x=>x.sid===(s||{}).id&&x.email===myEmail()?{...x,out:Date.now()}:x)})).then(()=>{ layer.innerHTML=""; rr(); toast("已取消報名"); }).catch(()=>toast("沒有送出去，再試一次")); }); return; }
-    case "svNew": { if(!isAdminAcct()) return; const now=Date.now(), no=(S.get("daisuki_sv_doneN",0)||0)+1; S.set(SVS,{id:"sv"+now.toString(36),no,g:t.dataset.v,ph:"recruit",t0:now,t0s:{recruit:now},end:now+SV_DUR.recruit*864e5,prepW:3}); S.set("daisuki_sv_theme",t.dataset.v); rr(); toast("新一季開始招募了"); return; }
+    case "svNew": { if(!isAdminAcct()) return; const now=svAt18(Date.now()), no=(S.get("daisuki_sv_doneN",0)||0)+1; S.set(SVS,{id:"sv"+now.toString(36),no,g:t.dataset.v,ph:"recruit",t0:now,t0s:{recruit:now},end:now+SV_DUR.recruit*864e5,prepW:3}); S.set("daisuki_sv_theme",t.dataset.v); rr(); toast("新一季開始招募了"); return; }
     case "svNext": { ask(s&&s.ph==="recruit"?"現在就結束招募、開始第一輪嗎？（真人不到 "+SV_MIN+" 位也會開始）":"現在就公布這一輪的結果嗎？",()=>{ svAdvance(true); rr(); toast("已公布"); }); return; }
     case "svPrepW": { S.set(SVS,{...s,prepW:(s.prepW||3)===3?4:3,...(s.ph==="prep"?{end:(s.t0||Date.now())+((s.prepW||3)===3?4:3)*7*864e5}:{})}); rr(); return; }
     case "svDone": { S.set("daisuki_sv_doneN",Math.max(S.get("daisuki_sv_doneN",0)||0,s.no||1)); S.set(SVS,{...s,ph:"done",end:0}); rr(); return; }
@@ -16141,7 +16151,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
       cos.forEach(co=>st.push({t:"co",co,ids:ids.filter(id=>coOf(id)===co)}));
       ids.sort((a,b)=>cos.indexOf(coOf(a))-cos.indexOf(coOf(b))||svHash(s.id+"ev"+a)-svHash(s.id+"ev"+b)); st.push({t:"evo"}); const pi=st.findIndex(z=>z.t==="pr"); if(pi>=0) st.push(st.splice(pi,1)[0]); const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, LV=svStages("r1","lv"), mont=[];
       ids.forEach((id,i)=>{ const t=svById(id)||{}, y=LV.find(z=>z.tid===id), fr=t.real&&!s.demo?(y&&y.ts?(y.ts-t0)/Math.max(1,t1-t0):1):-1, r=(Math.imul(svHash(id+"ev"+s.id),2654435761)>>>16)%100;
-        const ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";
+        const ed=t.real&&!s.demo&&!y?"evil":fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";
         if(!st.some(z=>z.t==="nx"&&z.co===coOf(id))) st.push({t:"nx",co:coOf(id)}); if(ed==="mont") mont.push(id); else if(ed!=="none") st.push({t:"ev",id,ed,lt:fr>.75,p:0},{t:"ev",id,ed,lt:fr>.75,p:1}); });
       if(mont.length) st.splice(Math.min(st.length,2+2*Math.floor((st.length-1)/4)),0,{t:"evm",ids:mont.slice(0,9)});
       st.push({t:"gr"}); const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); } }   /* 等級評價播完才公布這週的主題曲任務 */
@@ -16152,7 +16162,11 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
       const ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none";
       if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75}); });
     if(mont.length) st.splice(Math.min(st.length,3+Math.floor(st.length/2)),0,{t:"mont",ids:mont.slice(0,6)}); }
+  /* 這一輪有人沒交舞台＝棄賽：節目裡留一段「空著的位置」 */
+  try{ if(!s.demo&&s.out&&s.out.length){ const R=s.outChk||{}, cur=Object.keys(R).filter(k=>k.startsWith(s.ph)).length; if(cur) s.out.slice(-6).forEach(id=>st.splice(st.length,0,{t:"qt",id})); } }catch(e){}
   st.push({t:"end"}); return st; }
+/* 這一集的首播：任務開始那天晚上六點。首播一小時內在看＝LIVE，其他時間都是重播 */
+const svShLive=s=>{ if(s.demo) return true; const m=svMsNow(s), air=svPhT0(s)+((m&&m.d[0])||0)*864e5; return Date.now()>=air&&Date.now()<air+36e5; };
 const svShOpenTx=(s,m)=>s.ph==="r1"&&m&&m.k!=="lv"&&svDayN(s)<=7?"國民製作人們，歡迎收看 PRODUCE DAY！練習生們一個一個走進來了，今天會是誰讓你記住呢？":`國民製作人們，歡迎回來！${m?`這週的任務是「${esc(m.t)}」，`:""}一起看看練習生們這一週怎麼樣了。`;
 const SV_MSTV={th:"等級出來了，接下來是主題曲！練習生們照班級練習，主題曲 C 位會是誰呢？",gb:"這週是組別對決！同一首歌兩組對決，贏的那組，每個人都有加分。",po:"這週是 Position 評價！Vocal、Rap、Dance，練習生們要挑戰自己最擅長的部分。",co:"這週是概念評價！全新的歌、全新的概念，誰能抓住大家的目光？",pr:"決賽前，給每個人一分鐘！這週是 1 分鐘 PR。",de:"最後的舞台！出道組就在今天決定。"};
 /* 11/24 入場和上台前的竊竊私語：看公司有不有名，練習生、導師的反應不一樣 */
@@ -16172,8 +16186,11 @@ const svCoName=t=>t.co||svCoOf(t.email)||"個人練習生";
 const svShMed=(y,t)=>y&&y.url?(y.kind==="v"?`<video src="${esc(y.url)}" playsinline webkit-playsinline controls autoplay preload="metadata"></video>`:`<img class="svsh-img" src="${esc(y.url)}" alt="">`):`<div class="svsh-nov">${svPh(t||{})}</div>`;
 const SV_INT={focus:["其實上台前手一直在抖。","我想讓大家知道，我不只有這樣。","今天連平常的一半都沒發揮出來……","這首歌對我來說很重要。","腦袋裡只想著，不要出錯。","我等這個舞台等了好久。","被叫到名字的時候，腿都軟了。","我會證明自己的。"],
   evil:["我覺得我準備得蠻充分的啊。","我不太懂導師為什麼那樣說。","其他人怎麼想，我不太在意。","嗯……還好吧？","反正我本來就沒期待很高。","練習？我有練啊。"]};
+const SV_EDLV={focus:["上台前，她一直在深呼吸","導師們的筆停了下來","副歌一出來，台下的練習生都坐直了","她的手在抖，聲音卻很穩","表演結束，全場拍手","導師們互看了一眼，點點頭"],
+  evil:["（特寫：她翻了一個白眼）","（別人表演時，她一臉不在乎）","（被叫到名字，她嘆了一口氣）","（她看著台上的人，嘴角一歪）","（導師講評時，她面無表情）","（候場時，她一直對著鏡子補妝）","音樂一下，表情就垮了","（全場安靜）"],
+  late:["（候場時，她一直在滑手機）","（別人在暖身，她坐著發呆）","（大家都準備好了，她才慢慢走過來）","她說，自己準備得很充分","（特寫：她打了一個大大的哈欠）"]};
 const SV_ED={focus:["導師：「這才叫舞台。」","練習室裡，她每天都是最後一個走的","同組成員：「她真的很拼。」","鏡頭外，她一個人加練到凌晨","副歌一出來，導師們互看了一眼","導師：「我沒什麼要說的，做得好。」"],
-  evil:["導師：「這是你準備了一週的東西？」","（全場安靜）","練習時間，她在角落滑手機……","同組成員：「她都不太來練習……」","音樂一下，表情就垮了","（導師放下了筆）","導師：「你自己覺得呢？」","（同組成員互看了一眼）","同組成員：「……嗯，她有她自己的節奏吧。」","（鏡頭掃過練習室裡空著的位置）","導師翻了翻資料，沒有說話","她說，自己準備得很充分","（後排有人小聲笑了）","導師：「舞台上不會有第二次機會。」","（休息時間，她一個人坐在角落）"],
+  evil:["導師：「這是你準備了一週的東西？」","（全場安靜）","練習時間，她在角落滑手機……","同組成員：「她都不太來練習……」","音樂一下，表情就垮了","（導師放下了筆）","導師：「你自己覺得呢？」","（同組成員互看了一眼）","同組成員：「……嗯，她有她自己的節奏吧。」","（鏡頭掃過練習室裡空著的位置）","導師翻了翻資料，沒有說話","她說，自己準備得很充分","（後排有人小聲笑了）","導師：「舞台上不會有第二次機會。」","（休息時間，她一個人坐在角落）","（特寫：隊友說話時，她翻了個白眼）","（鏡頭掃過，她一臉不耐煩）","（隊友道歉時，她冷冷地轉過頭）"],
   late:["練習時間，她在角落滑手機……","同組成員：「她都不太來練習……」","（大家已經在暖身了，她才推門進來）","練習到一半，她說要先休息一下","同組成員：「我們先練吧，不等她了。」","導師：「你這一週都在做什麼？」","（其他人還在對動作，她已經收好包包）","她打了一個大大的哈欠"]};
 function svSh(){ const s=svSeason(); if(!s||!svVoting()) return; try{ S.set(acK("daisuki_sv_shw"),svShK(s)); }catch(e){} ui.svSh={i:0,st:svShSteps(s)}; svShDraw(); }
 function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x=S0.st[S0.i], m=svMsNow(s), tr=svTrainee(s), host=t=>`<div class="aws-say"><div><small>${esc(svHostN(s))}</small><p>${t}</p></div></div>`, prog=`<div class="aws-pg"><i style="width:${Math.round(S0.i/Math.max(1,S0.st.length-1)*100)}%"></i></div>`;
@@ -16184,10 +16201,11 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
     b=`<div class="aws-cat"><small>1 分鐘 PR</small><b>${esc(w.name||"")}</b><span class="svsh-tag">${esc(w.co||svCoOf(w.email)||"個人練習生")}</span></div><div class="aws-v">${svShMed(y,w)}</div><div class="svsh-tmr"><i></i><b id="svPrT">1:00</b></div>${w.msg?`<p class="svsh-int"><small>${esc(w.name||"")}</small>「${esc(w.msg)}」</p>`:""}${host(svHe(s,`1 號位的主人是 ${esc(w.name||"")}。接下來的一分鐘，是她的時間。`))}`; }
   else if(x.t==="co"){ const L=x.ids.map(id=>svById(id)).filter(Boolean), solo=x.co==="個人練習生";
     b=`<div class="aws-cat svsh-co"><small>${solo?"INDIVIDUAL TRAINEE":"ENTERTAINMENT"}</small><b>${esc(x.co)}</b></div><div class="svsh-mont fast">${L.map(t=>`<span><i class="svsh-ph">${svPh(t)}</i><b>${esc(t.name||"")}</b></span>`).join("")}</div>${svWh(s,x.co,2)}`; }
+  else if(x.t==="qt"){ const t=svById(x.id)||{}; b=`<div class="aws-cat svsh-evil"><small>⋯⋯</small><b>${esc(t.name||"")}</b></div><div class="aws-v"><div class="svsh-nov">${svPh(t)}</div></div><p class="svsh-cut ev">${esc(svHe(s,["（她的位置，空著）","（舞台上，沒有她）","（名牌被收了起來）"][svHash(x.id)%3]))}</p>${host("沒有交舞台的練習生，就沒有舞台。")}`; }
   else if(x.t==="nx") b=`<div class="aws-cat svsh-co"><small>NEXT</small><b>${esc(x.co)}</b></div>${svWh(s,x.co,2,"ev")}`;
   else if(x.t==="evo") b=`<div class="aws-cat"><small>EPISODE 1</small><b>等級評價</b></div><p class="svsh-how">${[...svAlive("r1")].length} 位練習生，全部入座。</p>${host("大家好，我是國民製作人代表。從今天起，誰能出道，由國民製作人決定。第一個任務——等級評價！")}`;
   else if(x.t==="ev"){ const t=svById(x.id)||{}, y=svStages("r1","lv").find(z=>z.tid===x.id)||{}, g=svGrade(t)||((s.demo?svGrDemo(s):s.grade||{})[x.id]), cm=svGrCm(s,t), ev=x.ed==="evil";
-    if(!x.p){ const EP=ev&&x.lt&&svHash(x.id+"lt")%100<75?SV_ED.late:(SV_ED[x.ed]||SV_ED.focus), ec=EP[svHash(s.id+x.id+"c")%EP.length], it=y.iv?y.iv:t.real&&t.msg&&!ev?t.msg:SV_INT[ev?"evil":"focus"][svHash(x.id+"it")%SV_INT[ev?"evil":"focus"].length];
+    if(!x.p){ const EP=ev&&x.lt&&svHash(x.id+"lt")%100<75?SV_EDLV.late:(SV_EDLV[x.ed]||SV_EDLV.focus), ec=EP[svHash(s.id+x.id+"c")%EP.length], it=y.iv?y.iv:t.real&&t.msg&&!ev?t.msg:SV_INT[ev?"evil":"focus"][svHash(x.id+"it")%SV_INT[ev?"evil":"focus"].length];
       b=`<div class="aws-cat ${ev?"svsh-evil":""}"><small>${ev?"⋯⋯":"等級評價"}</small><b>${esc(t.name||"")}</b><span class="svsh-tag">${esc(t.co||svCoOf(t.email)||"個人練習生")}</span></div><div class="aws-v">${svShMed(y,t)}</div><p class="svsh-cut ${ev?"ev":""}">${esc(svHe(s,ec))}</p><p class="svsh-int"><small>後採訪</small>「${esc(it)}」</p><button class="svsh-skip" data-a="svShSkip">跳過，直接看等級結果 ›</button>`; }
     else b=`<div class="aws-cat ${ev?"svsh-evil":""}"><small>${esc(cm.n)}</small><b>${esc(t.name||"")}</b></div><p class="svsh-crit">「${esc(cm.t)}」</p><div class="svsh-stamp g${g}"><i>${g}</i><small>${g} 班</small></div>`; }
   else if(x.t==="evm") b=`<div class="aws-cat"><small>等級評價</small><b>還有這些練習生</b></div><div class="svsh-mont fast">${x.ids.map(id=>{ const t=svById(id)||{}, g=svGrade(t)||((s.demo?svGrDemo(s):s.grade||{})[id]); return `<span><i class="svsh-ph">${svPh(t)}</i><em class="sv3-gr g${g}">${g}</em><b>${esc(t.name||"")}</b></span>`; }).join("")}</div>${host("其他練習生的等級，也一口氣公布！")}`;
@@ -16199,8 +16217,8 @@ function svShDraw(){ const S0=ui.svSh, s=svSeason(); if(!S0||!s) return; const x
   else if(x.t==="mont"){ const L=x.ids.map(id=>svStages(s.ph).find(z=>z.id===id)).filter(Boolean);
     b=`<div class="aws-cat"><small>其他練習生的舞台</small><b>還有這些練習生</b></div><div class="svsh-mont">${L.map(y=>{ const t=svById(y.tid)||{}; return `<button data-a="svStage" data-v="${y.id}"><i class="svsh-ph">${svPh(t)}</i><b>${esc(t.name||"")}</b></button>`; }).join("")}</div>${host("還有這些練習生，也站上了舞台。")}`; }
   else if(x.t==="end"){ const L=svLeft(); b=`<div class="aws-open"><small>${SV_PH[s.ph]}</small><h1><i>SEE YOU</i>NEXT EPISODE</h1></div>${tr?host("練習生們，這週也辛苦了！別忘了在期限前交舞台，排名發表見。")+`<button class="aws-btn" data-a="svShX">回選秀</button>`:host(L?`國民製作人，今天還有 ${L} 票！快去選出你的練習生吧。`:"今天的票都投完了，明天見！")+`<button class="aws-btn" data-a="svShGo">${svFanNext(s)==="st"?"看舞台・投現場票":L?"去 PICK":"看排名"}</button>`}`; }
-  clearInterval(ui.svPrI); if(x.t==="pr"){ const T0=Date.now(); ui.svPrI=setInterval(()=>{ const el=document.getElementById("svPrT"), left=Math.max(0,60-Math.floor((Date.now()-T0)/1000)); if(!el||!ui.svSh||ui.svSh.st[ui.svSh.i]!==x){ clearInterval(ui.svPrI); return; } el.textContent=`0:${String(left).padStart(2,"0")}`; const bar=el.previousElementSibling; if(bar) bar.style.width=(100-left/60*100)+"%"; if(!left){ clearInterval(ui.svPrI); ui.svSh.i++; svShDraw(); } },500); }
-  setLayer(`<div class="aws svsh aw-c-${svTheme()==="g"?"svg":"svb"} ${x.ed==="evil"?"evil":""}" data-a="svShN"><div class="aws-beams"><i></i><i></i><i></i></div><div class="svsh-rib"><b>PRODUCE DAY</b><span>${esc(SV_PH[s.ph]||"")}・第 ${svDayN(s)} 天</span></div><div class="aws-in">${b}</div>${x.t!=="end"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`); }
+  clearInterval(ui.svPrI); if(x.t==="pr"){ const T0=Date.now(); ui.svPrI=setInterval(()=>{ const el=document.getElementById("svPrT"), left=Math.max(0,60-Math.floor((Date.now()-T0)/1000)); if(!el||!ui.svSh||ui.svSh.st[ui.svSh.i]!==x){ clearInterval(ui.svPrI); return; } el.textContent=left>=60?"1:00":`0:${String(left).padStart(2,"0")}`; const bar=el.previousElementSibling; if(bar) bar.style.width=(100-left/60*100)+"%"; if(!left){ clearInterval(ui.svPrI); ui.svSh.i++; svShDraw(); } },500); }
+  setLayer(`<div class="aws svsh aw-c-${svTheme()==="g"?"svg":"svb"} ${x.ed==="evil"||x.t==="qt"?"evil":""}" data-a="svShN"><div class="aws-beams"><i></i><i></i><i></i></div><div class="svsh-rib"><b>PRODUCE DAY</b><span>${esc(SV_PH[s.ph]||"")}・第 ${svDayN(s)} 天</span>${svShLive(s)?`<em class="live">● LIVE</em>`:`<em>重播</em>`}</div><div class="aws-in">${b}</div>${x.t!=="end"?`<p class="aws-tap">點一下繼續</p>`:""}</div>`); }
 document.addEventListener("click",e=>{ const t0=e.target.closest&&e.target.closest("[data-a]"); if(!t0||!/^svSh/.test(t0.dataset.a)) return; const t=t0, a=t.dataset.a; e.stopImmediatePropagation();   /* 裡面的其他按鈕（投現場票、交舞台）交給原本的處理 */
   if(a==="svSh"){ svSh(); return; }
   if(a==="svShSkip"){ const S0=ui.svSh; if(!S0) return; const k=S0.st.findIndex(z=>z.t==="gr"); if(k>0){ S0.i=k; svShDraw(); } return; }
