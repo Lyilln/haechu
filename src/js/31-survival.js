@@ -29,7 +29,15 @@ const SV_CO="daisuki_acc_co", svCoOf=em=>((S.get(SV_CO,{})||{})[String(em||"").t
 const svIsArtist=em=>{ const a=ACCOUNTS[String(em||"").toLowerCase()]||{}; return a.role==="artist"||!!a.member; };
 const SV_SK=["Vocal","Dance","Rap","Visual"];
 const svRehOn=()=>{ try{ return sbxOn()&&localStorage.getItem("hc_sv_reh")==="1"; }catch(e){ return false; } };
-const svSeason=()=>ui.svDemo&&!ui.svRealCtx&&svDemoOk()?svDemoSeason():svRehOn()&&!ui.svRealCtx?svRehSeason():svReal();
+const svSeason=()=>ui.svDemo&&!ui.svRealCtx&&svDemoOk()?svDemoSeason():svReal();
+const svAdmOk=()=>isAdminAcct()||svRehOn();   /* 預演（試玩）中，這支手機自己跑開播、等級、發表、淘汰（只存在這支手機） */
+/* 預演的時光機：把這一季所有時間往前推，等於「現在」往後跳；真的程式照常跑 */
+function svRehShift(ms){ const sh=o=>{ if(Array.isArray(o)) return o.map(sh); if(o&&typeof o==="object"){ const r={}; for(const k in o) r[k]=sh(o[k]); return r; } return typeof o==="number"&&o>1.6e12&&o<2.2e12?o-ms:o; };
+  const s=svReal(); if(!s) return; S.set(SVS,sh(s)); S.set(SVST,(S.get(SVST,[])||[]).map(x=>x&&x.sid===s.id?{...x,ts:x.ts?x.ts-ms:x.ts}:x)); }
+function svRehNext(){ const s=svReal(); if(!s) return null; const now=Date.now(), L=[]; if(s.end&&s.end>now) L.push([s.end,{recruit:"開播",r1:"第一次排名發表",r2:"第二次排名發表",pr:"決賽開始",final:"出道組發表",prep:"出道準備結束"}[s.ph]||"下一階段"]);
+  const t0=(s.t0s||{})[s.ph]||s.t0; svMsList(s.ph).forEach(m=>{ const t=t0+m.d[1]*864e5; if(t>now&&m.d[1]>0) L.push([t,`「${m.t}」截止`]); const a=t0+m.d[0]*864e5; if(a>now&&m.d[0]>0) L.push([a,`「${m.t}」開始`]); });
+  L.sort((a,b)=>a[0]-b[0]); return L[0]||null; }
+function svRehGo(){ const n=svRehNext(); if(!n) return; svRehShift(n[0]-Date.now()+6e4); for(let i=0;i<8;i++){ try{ svTick(); }catch(e){} } ui.svSh=null; ui.svShIn=0; layer.innerHTML=""; render(); window.scrollTo(0,0); toast("時間跳到："+n[1]); }
 /* 11/24 搶先預演（測試帳號用）：拿「真的這一季」的資料（真的練習生、真的上傳）假裝已經開播，跑一次真的流程抓 bug。只在這支手機、什麼都不會存 */
 function svRehSeason(){ const r=svReal(); if(!r||r.ph!=="recruit") return r; const C=ui.svRehC; if(C&&C.k===JSON.stringify([r.id,r.end,(S.get(SVST,[])||[]).length])&&Date.now()-C.t<15e3) return C.s;
   const t0=r.airAt?Math.min(Date.now()-60e3,svDay18(r.airAt)):Date.now()-60e3, c={...r,ph:"r1",reh:1,t0,t0s:{...(r.t0s||{}),r1:t0},end:t0+SV_DUR.r1*864e5,ends:{...(r.ends||{}),r1:t0+SV_DUR.r1*864e5},grPub:{lv:t0},out:[]};
@@ -88,45 +96,45 @@ const svDay18=t=>{ const d=new Date(t); d.setHours(18,0,0,0); return d.getTime()
 const svAt18=t=>{ const d=new Date(t); d.setHours(18,0,0,0); return d.getTime()<t-36e5?d.getTime()+864e5:d.getTime(); };
 /* ---------- 時間到了 → 公布（只在管理員的手機上算，大家看到的才會一樣） ---------- */
 function svTick(){ return svRealDo(svTick0); }
-function svTick0(){ try{ svLtdTick(); }catch(e){} try{ const s0=svReal(), n0=(S.get("daisuki_sv_doneN",0)||0)+1; if(s0&&s0.ph!=="done"&&s0.no!==n0&&isAdminAcct()) S.set(SVS,{...s0,no:n0}); }catch(e){} try{ svGrTick(); }catch(e){} try{ const s=svReal(); if(!s||!isAdminAcct()||!s.end||Date.now()<s.end) return; svAdvance(false); }catch(e){} }
+function svTick0(){ try{ svLtdTick(); }catch(e){} try{ const s0=svReal(), n0=(S.get("daisuki_sv_doneN",0)||0)+1; if(s0&&s0.ph!=="done"&&s0.no!==n0&&svAdmOk()) S.set(SVS,{...s0,no:n0}); }catch(e){} try{ svGrTick(); }catch(e){} try{ const s=svReal(); if(!s||!svAdmOk()||!s.end||Date.now()<s.end) return; svAdvance(false); }catch(e){} }
 /* 等級：任務交件期限一到，管理員的手機自動公布（等級評價→主題曲重新評價） */
-function svOutTick(){ const s=svReal(); if(!s||!isAdminAcct()||!svVoting()) return; const d=(Date.now()-svPhT0(s))/864e5, chk=s.outChk||{};
+function svOutTick(){ const s=svReal(); if(!s||!svAdmOk()||!svVoting()) return; const d=(Date.now()-svPhT0(s))/864e5, chk=s.outChk||{};
   for(const m of svMsList(s.ph)){ const key=s.ph+m.k; if(m.k==="lv"||d<m.d[1]||chk[key]) continue;   /* 11/24 等級評價沒交不算棄賽（照樣上節目，導師給低等級） */ const has=new Set(svStages(m.k==="lv"?"r1":s.ph,m.k).map(x=>x.tid)), out=[...svAlive()].filter(id=>{ const t=svById(id)||{}; return t.real&&!has.has(id); });
     S.set(SVS,{...s,out:[...new Set([...(s.out||[]),...out])],outChk:{...chk,[key]:Date.now()}}); return; } }
 /* 11/24 進行中的這一季也對齊到晚上六點（每個時間點改成同一天的 18:00，只做一次） */
-function svAt18Fix(){ const s=svReal(); if(!s||s.at18||s.reair1||!isAdminAcct()) return; const f=t=>{ if(!t) return t; const d=new Date(t); d.setHours(18,0,0,0); return d.getTime(); }, mp=o=>o?Object.fromEntries(Object.entries(o).map(([k,v])=>[k,typeof v==="number"?f(v):v])):o;
+function svAt18Fix(){ const s=svReal(); if(!s||svRehOn()||s.at18||s.reair1||!isAdminAcct()) return; const f=t=>{ if(!t) return t; const d=new Date(t); d.setHours(18,0,0,0); return d.getTime(); }, mp=o=>o?Object.fromEntries(Object.entries(o).map(([k,v])=>[k,typeof v==="number"?f(v):v])):o;
   S.set(SVS,{...s,t0:f(s.t0),end:f(s.end),t0s:mp(s.t0s),ends:mp(s.ends),at18:1}); }
 /* 11/24 修正：開播那一刻把「等級評價沒交」的真人誤判成棄賽 → 全部救回來，撤掉「宣布退出」的新聞和通知（只做一次） */
-function svOutUndo(){ const s=svReal(); if(!s||s.outUndo||!isAdminAcct()) return; const chk={...(s.outChk||{})}, bad=!!chk.r1lv; delete chk.r1lv;
+function svOutUndo(){ const s=svReal(); if(!s||svRehOn()||s.outUndo||!isAdminAcct()) return; const chk={...(s.outChk||{})}, bad=!!chk.r1lv; delete chk.r1lv;
   const only=bad&&!Object.keys(chk).length, out=only?[]:(s.out||[]), nd={...(s.newsDone||{})}; if(only) Object.keys(nd).filter(k=>/^out/.test(k)).forEach(k=>delete nd[k]);
   if(only){ try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd&&/宣布退出/.test(n.title||"")).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){} }
   S.set(SVS,{...s,out,outChk:chk,newsDone:nd,outUndo:1}); if(only&&(s.grPub||{}).lv&&!(s.grPub||{}).th){ const s2=svReal(); const g=svGrPub(s2,"lv"); S.set(SVS,{...g,grPub:{...(s2.grPub||{}),lv:(s2.grPub||{}).lv}}); } }   /* 等級也重算，被漏掉的人補上等級 */
 /* 11/24 第二次修正：上一次誤判是因為管理員開著示範，系統拿示範的舞台去比 → 真人交過的都沒被看到。
    棄賽全部撤回、等級用真的舞台重算、用示範名字發出去的節目新聞撤掉重發（只做一次） */
-function svOutUndo2(){ const s=svReal(); if(!s||s.outUndo2||!isAdminAcct()) return; const DN=new RegExp(SV_DEMO_N.join("|")), nd={...(s.newsDone||{})};
+function svOutUndo2(){ const s=svReal(); if(!s||svRehOn()||s.outUndo2||!isAdminAcct()) return; const DN=new RegExp(SV_DEMO_N.join("|")), nd={...(s.newsDone||{})};
   try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd&&(/宣布退出/.test(n.title||"")||DN.test((n.title||"")+(n.body||"")))).map(n=>n.id));
     if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); Object.keys(nd).filter(k=>k!=="air").forEach(k=>delete nd[k]); } }catch(e){}
   const chk={...(s.outChk||{})}; delete chk.r1lv; S.set(SVS,{...s,out:s.ph==="r1"?[]:(s.out||[]),outChk:chk,newsDone:nd,outUndo:1,outUndo2:1});
   const P=(svReal().grPub)||{}; if(P.lv&&!P.th){ const s2=svReal(), g=svGrPub(s2,"lv"); S.set(SVS,{...g,grPub:{...P}}); } }
 /* 11/24 18:00 那一集當作播出失誤：退回「招募結束、等開播」，18:30 重新開播；自動發的新聞、通知、等級、棄賽全部收回（只做一次） */
-function svReAir(){ const s=svReal(); if(!s||s.reair1||!isAdminAcct()||s.ph!=="r1") return; const t1=(s.t0s||{}).r1||s.t0, at=new Date(t1); at.setHours(18,30,0,0); if(Date.now()-t1>6*36e5) return;
+function svReAir(){ const s=svReal(); if(!s||svRehOn()||s.reair1||!isAdminAcct()||s.ph!=="r1") return; const t1=(s.t0s||{}).r1||s.t0, at=new Date(t1); at.setHours(18,30,0,0); if(Date.now()-t1>6*36e5) return;
   try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
   const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
   S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:at.getTime(),grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},reair1:1,airN:(s.airN||0)+1,outUndo:1,outUndo2:1}); }
 /* 11/24 補：重播時間被「對齊六點」改回 18:00 → 改回 18:30；已經在 18:00 開了的，18:30 前退回等開播（只做一次） */
-function svReAir2(){ const s=svReal(); if(!s||!s.reair1||s.reair2||!isAdminAcct()) return; const at=new Date(s.ph==="recruit"?s.end:((s.t0s||{}).r1||s.t0)); at.setHours(18,30,0,0); const A=at.getTime();
+function svReAir2(){ const s=svReal(); if(!s||svRehOn()||!s.reair1||s.reair2||!isAdminAcct()) return; const at=new Date(s.ph==="recruit"?s.end:((s.t0s||{}).r1||s.t0)); at.setHours(18,30,0,0); const A=at.getTime();
   if(s.ph==="recruit"){ S.set(SVS,{...s,end:A,at18:1,reair2:1}); return; }
   if(s.ph==="r1"&&((s.t0s||{}).r1||s.t0)<A){ if(Date.now()<A){ try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
       const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1; S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair2:1}); }
     else S.set(SVS,{...s,t0:A,t0s:{...(s.t0s||{}),r1:A},at18:1,reair2:1}); return; }
   S.set(SVS,{...s,reair2:1}); }
 /* 11/24 再延一次：20:00 才開播（影片修好再播），18:30 那集收回（只做一次） */
-function svReAir3(){ const s=svReal(); if(!s||!isAdminAcct()) return; const at=new Date(2026,10,24,20,0,0,0), A=at.getTime(); if(Date.now()>=A) return;   /* 11/24 20:00 前不管誰動過（舊版的手機也一樣），都拉回「20:00 開播」 */
+function svReAir3(){ const s=svReal(); if(!s||svRehOn()||!isAdminAcct()) return; const at=new Date(2026,10,24,20,0,0,0), A=at.getTime(); if(Date.now()>=A) return;   /* 11/24 20:00 前不管誰動過（舊版的手機也一樣），都拉回「20:00 開播」 */
   if(s.ph==="recruit"){ if(s.end!==A||s.airAt!==A) S.set(SVS,{...s,end:A,airAt:A,at18:1,reair1:1,reair2:1,reair3:1}); return; } if(s.ph!=="r1") return;
   try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
   const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
   S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair1:1,reair2:1,reair3:1,airAt:A,airN:(s.airN||0)+1}); }
-function svGrTick(){ try{ svReAir3(); }catch(e){} try{ svReAir2(); }catch(e){} try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
+function svGrTick(){ try{ svReAir3(); }catch(e){} try{ svReAir2(); }catch(e){} try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!svAdmOk()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
@@ -321,7 +329,7 @@ const svFcOut=()=>{ const c=layer.querySelector(".svx-fc"); if(c){ c.classList.a
 /* ---------- 頁面 ---------- */
 /* 11/24 節目播出條：取代 App 標題列（返回、ⓘ 照舊），左上 ON AIR、節目名、現在是第幾天、下一次發表倒數 */
 function svAutoSh(s){
-  try{ const shk=(s.reh?"reh":"")+s.id+(s.airN||"")+s.ph+((svMsNow(s)||{}).k||""); if(ui.svShK!==shk){ ui.svShK=shk; ui.svShIn=0; }   /* 換輪、換任務（示範切換也是）就重新開播 */
+  try{ const shk=(svRehOn()?"reh":"")+s.id+(s.airN||"")+s.ph+((svMsNow(s)||{}).k||""); if(ui.svShK!==shk){ ui.svShK=shk; ui.svShIn=0; }   /* 換輪、換任務（示範切換也是）就重新開播 */
     const seenK=acK("daisuki_sv_shseen"), seen=S.get(seenK,{})||{}; if(!s.demo&&seen[shk]) ui.svShIn=1;   /* 11/24 一集每個人只會自動播一次（示範才可以一直重看） */
     if(!ui.svShIn){ ui.svShIn=1; if(!s.demo){ seen[shk]=Date.now(); S.set(seenK,seen); } setTimeout(()=>{ if(!ui.svSh&&!layer.innerHTML){ svSh(); } const mn=document.querySelector("main.svpend"); if(mn) mn.classList.remove("svpend"); },0); } }catch(e){}   /* 11/24 粉絲一進選秀＝節目開播，直接全螢幕播（按返回才回到頁面）；練習生照舊每個任務播一次 */
 }
@@ -329,7 +337,7 @@ function svOnAir(s,hd){ if(route().role==="artist") return hd; const m=svMsNow(s
   return `<header class="top core-top svair ${svTheme()}"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="svair-t"><b>PRODUCE DAY</b><span>${esc(m?m.t:ph)}</span></div><button class="icon-btn" data-a="pgInfo" data-v="survival" aria-label="玩法說明"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
     <div class="svair-tk"><em>${svVoting()?"ON AIR":"NOW"}</em><span>${esc(ph)}${svVoting()?`・第 ${svDayN(s)} 天`:""}</span>${nx&&svVoting()?`<span>${esc(nx)} ${svCd(s)}</span>`:""}</div></header>`; }
 function viewSurvival(id){ const s=svSeason(), th=svTheme(), hd=(route().role==="artist"?focHead:coreHead)(id?"練習生":"選秀",id?"":"survival");
-  const pre=(s.reh?`<p class="sv-closed">預演中：這是開播後的樣子（真的練習生、真的上傳）。你在這裡做的事只在這支手機 <button class="sv5-sub" data-a="svReh">結束預演・一鍵清空</button></p>`:"")+(svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`);
+  const pre=(svRehOn()&&!s.demo?(()=>{ const n=svRehNext(); return `<div class="sv-closed svreh">預演中（真的這一季・只在這支手機）<br>${n?`<button class="sv2-cta" data-a="svRehGo">⏩ 時間跳到：${esc(n[1])}</button>`:""}<button class="sv5-sub" data-a="svReh">結束預演・一鍵清空</button></div>`; })():"")+(svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`);
   if(!s) return hd+`<main class="page sv2 ${th}">${pre}${svHero("下一季準備中","",svPyr([0,1,2,3,4,5],(x,i)=>`<div class="sv2-t svx-e"><span class="sv2-p"><i class="sv2-sil"></i></span><b>${i+1}位</b><span>？</span></div>`),"《COMING SOON》")}${svDemoOk()?`<button class="sv2-cta" data-a="svDemo" data-v="recruit">看示範</button>`:""}</main>`;
   if(id) return hd+svProfile(id);
   const dm=s.demo?`<div class="sv3-dm">${[["recruit","招募"],["r1","第一輪"],["a:r1","第一次發表"],["r2","第二輪"],["a:r2","第二次發表"],["pr","PR 週"],["final","決賽"],["a:final","出道發表"],["prep","出道準備"],["","結束示範"]].map(([k,l])=>`<button class="${k===s.ph?"on":""} ${k[0]==="a"?"an":""}" data-a="svDemo" data-v="${k}">${l}</button>`).join("")}<span class="sv3-dmv">看誰的畫面：</span><button class="${ui.svDemoT?"":"on"}" data-a="svDemoT" data-v="">投票的粉絲</button><button class="${ui.svDemoT?"on":""}" data-a="svDemoT" data-v="1">參賽的練習生</button></div>`:"";
@@ -464,7 +472,7 @@ function svWeekHtml(s){ const m=svMsNow(s), tr=svTrainee(s), rk=svRank(), all=sv
   const play=`<button class="sv6-play" data-a="svSh"><span>▶</span><div><b>看本週節目</b><small>主持人帶你看這週的任務和每一位的舞台</small></div><i>›</i></button>`;
   return ep+(tr?play+me+svGrBn(s)+svC1Bn(s):svTodoFan(s))+stg+svHost(s,svHostTxt(s))+svHow5(); }
 /* 11/24 粉絲「今天要做的事」：一次只叫你做一件，做完自動換下一件（看節目 → 看舞台投現場票 → PICK） */
-const svShK=s=>{ const m=svMsNow(s); return (s.reh?"reh":"")+s.id+(s.airN||"")+s.ph+(m?m.k:""); };
+const svShK=s=>{ const m=svMsNow(s); return (svRehOn()?"reh":"")+s.id+(s.airN||"")+s.ph+(m?m.k:""); };
 const svFanNext=s=>{ const m=svMsNow(s); if(!s.demo&&S.get(acK("daisuki_sv_shw"),"")!==svShK(s)) return "sh"; if(m&&!svMyLv()[s.id+m.k]&&svStages(s.ph,m.k).length) return "st"; return svLeft()?"pick":"done"; };
 function svTodoFan(s){ const m=svMsNow(s), L=svLeft(), lv=m&&svMyLv()[s.id+m.k], sh=s.demo||S.get(acK("daisuki_sv_shw"),"")===svShK(s), nx=svFanNext(s), fin=s.ph==="final", rk=svRank();
   const st=[["看本週節目",sh],...(m?[["看舞台・投現場票",!!lv]]:[]),[fin?"PICK 出道組":"PICK",!L]];
@@ -636,8 +644,9 @@ function svAdminHtml(){ const s=svSeason(), E=svEntries();
 function svSent(s,B,n){ S.set(acK("daisuki_sv_day"),{k:svDayK(),n:svUsed()+n}); const my=S.get(acK("daisuki_sv_my"),{})||{}; Object.entries(B).forEach(([id,c])=>{ my[id]=(my[id]||0)+c; }); S.set(acK("daisuki_sv_my"),my);
   const all=svAll(), rk=svRank(), y=window.scrollY; render(); window.scrollTo(0,y);
   xvResult({tone:svTheme()==="g"?"p":"b",small:"PRODUCE DAY",title:"PICK 完成",big:`${n} 票`,chips:[...Object.keys(B).map(id=>`${(all.find(x=>x.id===id)||{}).name} 現在 ${rk.indexOf(id)+1}位`),svLeft()?`今天還能投 ${svLeft()} 票`:"今天投完了，明天再來"],back:"好"}); }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(a==="svReh"){ e.stopImmediatePropagation(); if(svRehOn()){ ask("結束預演？剛剛在預演裡做的事（投票、交舞台、改資料）全部清掉，回到真的資料。",()=>sbxOff(),{ok:"結束並清空",danger:false}); return; }
-    ask("開始預演？\n用真的這一季（真的練習生、真的上傳）假裝已經開播，投票、交舞台、改資料都能真的做，但只在這支手機，不會影響其他人。結束時一鍵清空。",()=>{ try{ if(!sbxOn()) sbxStart(); localStorage.setItem("hc_sv_reh","1"); }catch(er){} ui.svRehC=null; ui.svSh=null; ui.svShIn=0; layer.innerHTML=""; try{ sbxPill(); }catch(er){} render(); window.scrollTo(0,0); toast("預演開始"); },{ok:"開始預演",danger:false}); return; }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(a==="svRehGo"){ e.stopImmediatePropagation(); if(svRehOn()) svRehGo(); return; }
+  if(a==="svReh"){ e.stopImmediatePropagation(); if(svRehOn()){ ask("結束預演？剛剛在預演裡做的事（投票、交舞台、改資料）全部清掉，回到真的資料。",()=>sbxOff(),{ok:"結束並清空",danger:false}); return; }
+    ask("開始預演？\n用真的這一季（真的練習生、真的上傳）假裝已經開播，投票、交舞台、改資料都能真的做，但只在這支手機，不會影響其他人。結束時一鍵清空。",()=>{ try{ if(!sbxOn()) sbxStart(); localStorage.setItem("hc_sv_reh","1"); const r=svReal(); if(r&&r.ph==="recruit"&&r.end&&r.end>Date.now()) svRehShift(r.end-Date.now()+6e4); for(let i=0;i<6;i++){ try{ svTick(); }catch(e2){} } }catch(er){} ui.svRehC=null; ui.svSh=null; ui.svShIn=0; layer.innerHTML=""; try{ sbxPill(); }catch(er){} render(); window.scrollTo(0,0); toast("預演開始"); },{ok:"開始預演",danger:false}); return; }
   if(!/^sv(Pick|Unpick|Send|Apply|ApplyOk|Photo|Co|Quit|New|Next|Done|PrepW|End|Bonus|BonusOk|Kick|RevealGo|NextEp|NextX|DebutApply|Demo|xSkip|Seat|Sk|Speak|SpeakOk|Gr|GrOk|Mk|Stage|Lv|Up|UpPick|UpPos|UpOk|Cm|CmOk|Cast|CastOk|DbDraft|DbSave|MemEd|MemOk|PvNew|PvOk|Pvo|PvEnd|Tab|More|DemoT|NpcPh|Ch1|C1|ChSend|GrPubNow|GrPubOk|PrS|PrOk)$/.test(a)) return; e.stopImmediatePropagation();
   const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); }, s=svSeason();
   switch(a){

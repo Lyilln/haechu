@@ -21,7 +21,7 @@ function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(
       out.push({id:"pdc_gr_"+id,uid:"o:pd",npc:1,ts:svPhT0(s)+(2+i)*36e5,base:30+svHash(id)%40,cap:`[等級評價] ${t.name}，${G[id]} 班\n\n#PRODUCEDAY #等級評價`,media:[card("等級評價・"+G[id]+" 班",t.name,cm.n+"：「"+cm.t+"」")]}); }); }catch(e){}
     return out; }catch(e){ return []; } finally{ svPdBusy=0; } }
 /* 瀏覽：每個帳號每則只算一次 */
-function svPdSeen(pid){ try{ if((svSeason()||{}).reh) return; const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,o=>{ o=o||{}; o[pid]=(o[pid]||0)+1; return o; }); }catch(e){} }
+function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,o=>{ o=o||{}; o[pid]=(o[pid]||0)+1; return o; }); }catch(e){} }
 let svSnsC=null;
 function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) return out; if(svSnsC&&svSnsC.t>Date.now()-3e4&&svSnsC.ph===ph&&svSnsC.sid===s.id) return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(svSnsC.b[k]||0)]));
     const d=snDB(), V=S.get(SVPDV,{})||{}, E={}; (d.posts||[]).filter(p=>p.pdStage&&p.pdPh===ph).forEach(p=>{ E[p.pdTid]=(E[p.pdTid]||0)+(d.likes[p.id]||[]).length+(V[p.id]||0); });
@@ -40,7 +40,7 @@ function svSnPrep(){ const lk=svSnLock(), d=snDB(), me=snUser(snMeId()), to=snUs
 function svNews(s,key,title,body,img){ const done=s.newsDone||{}; if(done[key]) return false; const n={id:"nw"+Date.now()+key.length,title,body,img:img||"",gids:[],ts:Date.now(),pd:1};
   S.set(K.news,[n,...getNewsM()].slice(0,200)); try{ feedPush({kind:"news",group:"",text:title.slice(0,80),newsId:n.id,direct:true},"all"); }catch(e){} S.set(SVS,{...svReal(),newsDone:{...done,[key]:Date.now()}}); return true; }
 const svAirTx=s=>{ const d=new Date(s.airAt&&s.ph==="r1"?s.airAt:svPhT0(s)), h=d.getHours()%12||12, m=d.getMinutes(); return ["一","二","三","四","五","六","七","八","九","十","十一","十二"][h-1]+"點"+(m===30?"半":m?m+"分":""); };
-function svNewsTick(){ const s=svReal(); if(!s||s.demo||!isAdminAcct()) return; const all=svAll(), N=id=>(all.find(t=>t.id===id)||{}).name||"", ph=s.ph, he=t=>s.g==="b"?t.replace(/她/g,"他"):t;
+function svNewsTick(){ const s=svReal(); if(!s||s.demo||!svAdmOk()) return; const all=svAll(), N=id=>(all.find(t=>t.id===id)||{}).name||"", ph=s.ph, he=t=>s.g==="b"?t.replace(/她/g,"他"):t;
   if(ph!=="recruit"&&svVoting()){ if(svNews(s,"air","《PRODUCE DAY》今晚"+svAirTx(s)+"首播！"+all.length+" 位練習生正式登場",he(`${all.length} 位練習生在今晚${svAirTx(s)}的首播中依序入場、坐上金字塔座位。坐上 1 號位的練習生將獲得 1 分鐘 PR 的機會。`))) return;
     const big=[...new Set(all.map(t=>svCoName(t)).filter(c=>svCoTier(c)==="big"))]; if(big.length&&svNews(s,"big",`${big.join("、")} 練習生登場，全場一陣騷動`,he(`首播入場時，${big.join("、")} 的練習生一出現，現場練習生紛紛竊竊私語。她們會在等級評價拿到什麼等級，成為觀眾關注的焦點。`))) return; }
   const G=s.grade||{}, A=Object.keys(G).filter(id=>G[id]==="A"), F=Object.keys(G).filter(id=>G[id]==="F");
