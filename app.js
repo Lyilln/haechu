@@ -15799,7 +15799,7 @@ const svRecMe=s=>s.demo?(ui.svDemoT?svEntries()[0]:null):svMyEntry();
 
 function svRecruitHtml(s){ const E=svEntries(), me=svRecMe(s), art=!s.demo&&((session()||{}).role!=="fan"||svIsArtist(myEmail()));
   return svSt5("練習生招募中",`截止 <b>還有 ${svCd(s)}</b>`)
-    +(me?(()=>{ const lv=!s.demo&&svStages("r1","lv").find(x=>x.tid===me.id), chk=`<div class="sv5-chk"><span class="ok">① 報名・選座位 ✓</span><span class="${lv?"ok":""}">② 導師面前表演${lv?" ✓":""}</span><span>③ 開播公布等級</span></div>`;
+    +(me?(()=>{ const lv=s.demo?(ui.svDemoSt||{}).lv:svStages("r1","lv").find(x=>x.tid===me.id), chk=`<div class="sv5-chk"><span class="ok">① 報名・選座位 ✓</span><span class="${lv?"ok":""}">② 導師面前表演${lv?" ✓":""}</span><span>③ 開播公布等級</span></div>`;
       return lv?svCard5("你已經報名了",`坐在 ${me.seat||"?"} 號位・表演交了`,"開播當天導師直接公布 A～F 等級。截止前表演和資料都可以換。",`<button data-a="svUp">換表演</button>`,chk+`<button class="sv5-sub" data-a="svApply">修改報名資料</button>`)
         :svCard5("下一步",`在導師面前表演`,`你坐在 ${me.seat||"?"} 號位。現在交一段 30 秒～1 分鐘的表演（唱、跳、才藝都可以），導師看完會給你 A～F 等級。<b>招募截止前要交，沒交的人等級會很低。</b>`,`<button data-a="svUp">交表演</button>`,chk+`<button class="sv5-sub" data-a="svApply">修改報名資料</button>`); })()
       :svHero5("已經報名",`${E.length} 位`,"誰報名了，開播才公開",art||isWealth(myEmail())?"":`<button data-a="svApply">我也要報名（當練習生）</button>`))
