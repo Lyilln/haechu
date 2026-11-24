@@ -279,8 +279,9 @@ const SV_VB={};
 const svVCodec=async(u,n)=>{ try{ u=String(u).split("#")[0]; const rd=async(a,b)=>{ const r=await fetch(u,{headers:{Range:`bytes=${a}-${b}`}}); return new Uint8Array(await r.arrayBuffer()); };
   const find=(t,w)=>{ const c=[...w].map(x=>x.charCodeAt(0)); for(let i=0;i+3<t.length;i++) if(t[i]===c[0]&&t[i+1]===c[1]&&t[i+2]===c[2]&&t[i+3]===c[3]) return i; return -1; };
   let t=await rd(0,262143), where="開頭"; if(find(t,"stsd")<0&&n>262144){ t=await rd(Math.max(0,n-8388608),n-1); where="結尾"; }
-  const sd=find(t,"stsd"); if(sd<0) return "找不到影片資訊（檔案可能壞了）"; const sub=t.subarray(sd);
-  const K=["avc1","avc3","hvc1","hev1","av01","vp09","mp4v","dvh1","dvhe","apcn","apch","ap4h"].map(k=>[k,find(sub,k)]).filter(x=>x[1]>=0&&x[1]<80).sort((a,b)=>a[1]-b[1])[0]; if(!K) return "看不出來";
+  if(find(t,"stsd")<0) return "找不到影片資訊（檔案可能壞了）"; let sub=null, K=null, o=0;
+  while(!K){ const q=find(t.subarray(o),"stsd"); if(q<0) break; sub=t.subarray(o+q); K=["avc1","avc3","hvc1","hev1","av01","vp09","mp4v","dvh1","dvhe","apcn","apch","ap4h"].map(k=>[k,find(sub.subarray(0,120),k)]).filter(x=>x[1]>=0).sort((a,b)=>a[1]-b[1])[0]||null; o+=q+4; }
+  if(!K){ const ty=["mp4a","Opus","ac-3","ec-3","text","tx3g"].filter(k=>find(t,k)>=0); return "找不到影片軌（"+(ty.join("、")||"沒有影像")+"）"; }
   const p=K[1], w=(sub[p+28]<<8)|sub[p+29], h=(sub[p+30]<<8)|sub[p+31]; let ex="";
   if(/^avc/.test(K[0])){ const q=find(sub,"avcC"); if(q>=0){ const pf=sub[q+5], lv=sub[q+7]; ex="・"+({66:"Baseline",77:"Main",100:"High",110:"High 10（10 位元，iPhone 播不了）",122:"4:2:2（iPhone 播不了）",244:"4:4:4（iPhone 播不了）"}[pf]||"profile "+pf)+"・Level "+(lv/10); } }
   return K[0]+"・"+w+"×"+h+ex+"・資訊在"+where; }catch(e){ return "讀不到"; } };
@@ -508,7 +509,7 @@ function svWeekHtml(s){ const m=svMsNow(s), tr=svTrainee(s), rk=svRank(), all=sv
 const svShK=s=>{ const m=svMsNow(s); return (svRehOn()?"reh":"")+s.id+(s.airN||"")+s.ph+(m?m.k:""); };
 const svFanNext=s=>{ const m=svMsNow(s); if(!s.demo&&S.get(acK("daisuki_sv_shw"),"")!==svShK(s)) return "sh"; if(m&&!svMyLv()[s.id+m.k]&&svStages(s.ph,m.k).length) return "st"; return svLeft()?"pick":"done"; };
 function svTodoFan(s){ const m=svMsNow(s), L=svLeft(), lv=m&&svMyLv()[s.id+m.k], sh=s.demo||S.get(acK("daisuki_sv_shw"),"")===svShK(s), nx=svFanNext(s), fin=s.ph==="final", rk=svRank();
-  const st=[["看本週節目",sh],...(m?[["看舞台・投現場票",!!lv]]:[]),[fin?"PICK 出道組":"PICK",!L]];
+  const st=[["看本週節目",sh],...(m?[["看舞台投票",!!lv]]:[]),[fin?"PICK 出道組":"PICK",!L]];
   const chk=`<div class="sv5-chk">${st.map(([l,ok],i)=>`<span class="${ok?"ok":""}">${"①②③"[i]} ${l}${ok?" ✓":""}</span>`).join("")}</div>`;
   const pk=fin?`選出 ${SV_DEB} 位出道組`:s.ph==="pr"?"這週不淘汰，票數帶進決賽":s.ph==="r2"?`剩 ${rk.length} 位，${SV_KEEP.r2} 位晉級`:`${rk.length} 位練習生，${SV_KEEP.r1} 位晉級`;
   if(nx==="sh") return svCard5("今天要做的事","先看本週節目","主持人帶你看這週的任務和每一位練習生的舞台，看完就知道想投誰。",`<button data-a="svSh">▶ 看本週節目</button>`,chk);
@@ -598,7 +599,7 @@ function svHidPyr(s,my,tr){ const rk=svRank(), all=svAll(), x=all.find(t=>t.id==
 
 /* 點進去的頁面 */
 function svRkList(s,pick){ const sc=svScores(), rk=svRank(), all=svAll(), B=ui.svB||{}, tr=svTrainee(s), cut=s.ph==="r1"?SV_KEEP.r1:s.ph==="r2"?SV_KEEP.r2:s.ph==="pr"?999:SV_DEB, T=id=>all.find(x=>x.id===id)||{id};
-  const hid=svHid(s), h11=rk[svHidN()-1], row=(id,i)=>{ const x=T(id), c=B[id]||0; if(hid) i=id===h11?svHidN()-1:-1; return `<div class="sv2-row ${tr&&tr.id===id?"me":""}" data-a="uniGo" data-v="#/fan/core?p=survival&id=${id}"><span class="sv2-rk">${i<0?"？":i+1+"位"}</span><span class="sv2-av">${svPh(x)}</span><div class="sv2-nm"><b>${esc(x.name)}${svGrB(x,"ln")}</b><small>${esc(x.co||"個人練習生")}${i<0?"":`・${fmt(sc[id]||0)} 票`}</small></div>${tr||!pick?"":`<button class="sv2-pk ${c?"on":""}" data-a="svPick" data-v="${id}">${c?`已選 ${c}`:"PICK"}</button>`}</div>`; };
+  const hid=svHid(s), h11=rk[svHidN()-1], row=(id,i)=>{ const x=T(id), c=B[id]||0; if(hid) i=id===h11?svHidN()-1:-1; return `<div class="sv2-row ${tr&&tr.id===id?"me":""}" data-a="uniGo" data-v="#/fan/core?p=survival&id=${id}"><span class="sv2-rk">${i<0?"？":i+1+"位"}</span><span class="sv2-av">${svPh(x)}</span><div class="sv2-nm"><b>${esc(x.name)}${svGrB(x,"ln")}</b><small>${esc(x.co||"個人練習生")}${i<0?"":`・${fmt(sc[id]||0)} 票`}</small></div>${tr||!pick?"":`<button class="sv2-pk ${c?"on":svLeft()<=0?"off":""}" data-a="svPick" data-v="${id}">${c?`已選 ${c}`:"PICK"}</button>`}</div>`; };
   return (pick&&!tr?`<p class="sv5-tip">今天還能投 <b>${svLeft()}</b> 票。按 PICK 選人，選好按下面的「送出」才算。</p>`:"")
     +(hid?`<p class="sv5-tip">${s.ph==="final"?"決賽排名保密":"第二輪排名保密"}，照名字排。只公開第 ${svHidN()} 名，${s.ph==="final"?"出道發表":"第二次排名發表"}才揭曉。</p><div class="sv3-rl">${rk.slice().sort((a,b)=>String(T(a).name).localeCompare(String(T(b).name))).map(row).join("")}</div>`:"")
     +(hid?"":`<div class="sv3-rl">${rk.slice(0,cut).map(row).join("")}</div>`
