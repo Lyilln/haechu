@@ -32,7 +32,7 @@ const svRehOn=()=>{ try{ return sbxOn()&&localStorage.getItem("hc_sv_reh")==="1"
 const svSeason=()=>ui.svDemo&&!ui.svRealCtx&&svDemoOk()?svDemoSeason():svRehOn()&&!ui.svRealCtx?svRehSeason():svReal();
 /* 11/24 搶先預演（測試帳號用）：拿「真的這一季」的資料（真的練習生、真的上傳）假裝已經開播，跑一次真的流程抓 bug。只在這支手機、什麼都不會存 */
 function svRehSeason(){ const r=svReal(); if(!r||r.ph!=="recruit") return r; const C=ui.svRehC; if(C&&C.k===JSON.stringify([r.id,r.end,(S.get(SVST,[])||[]).length])&&Date.now()-C.t<15e3) return C.s;
-  const t0=Date.now()-60e3, c={...r,ph:"r1",reh:1,t0,t0s:{...(r.t0s||{}),r1:t0},end:t0+SV_DUR.r1*864e5,ends:{...(r.ends||{}),r1:t0+SV_DUR.r1*864e5},grPub:{lv:t0},out:[]};
+  const t0=r.airAt?Math.min(Date.now()-60e3,svDay18(r.airAt)):Date.now()-60e3, c={...r,ph:"r1",reh:1,t0,t0s:{...(r.t0s||{}),r1:t0},end:t0+SV_DUR.r1*864e5,ends:{...(r.ends||{}),r1:t0+SV_DUR.r1*864e5},grPub:{lv:t0},out:[]};
   ui.svRehC={k:JSON.stringify([r.id,r.end,(S.get(SVST,[])||[]).length]),t:Date.now(),s:c}; try{ c.grade=svGrCalc(c,"lv").G; }catch(e){} return c; }
 /* 11/24 後台自動跑的東西（開播、棄賽、等級、新聞、發表）一律用真的這一季算，不管管理員當下是不是開著示範 */
 const svRealDo=fn=>{ const o=ui.svRealCtx; ui.svRealCtx=1; const g=ui.svGrD; ui.svGrD=null; try{ return fn(); } finally{ ui.svRealCtx=o; ui.svGrD=g; } };
@@ -84,6 +84,7 @@ const svPh=t=>t&&t.photo?`<img src="${esc(t.photo)}" alt="">`:`<i class="sv2-sil
 const svLeftTxt=ms=>{ ms=Math.max(0,ms); const d=Math.floor(ms/864e5), h=Math.floor(ms%864e5/36e5); return d?`${d} 天 ${h} 時`:`${h} 時 ${Math.floor(ms%36e5/6e4)} 分`; };
 
 /* 11/24 節目時間一律晚上六點：開季對齊到 18:00，之後每段照整天算，所以全部都是六點 */
+const svDay18=t=>{ const d=new Date(t); d.setHours(18,0,0,0); return d.getTime(); };   /* 同一天的 18:00 */
 const svAt18=t=>{ const d=new Date(t); d.setHours(18,0,0,0); return d.getTime()<t-36e5?d.getTime()+864e5:d.getTime(); };
 /* ---------- 時間到了 → 公布（只在管理員的手機上算，大家看到的才會一樣） ---------- */
 function svTick(){ return svRealDo(svTick0); }
@@ -121,10 +122,10 @@ function svReAir2(){ const s=svReal(); if(!s||!s.reair1||s.reair2||!isAdminAcct(
   S.set(SVS,{...s,reair2:1}); }
 /* 11/24 再延一次：20:00 才開播（影片修好再播），18:30 那集收回（只做一次） */
 function svReAir3(){ const s=svReal(); if(!s||!isAdminAcct()) return; const at=new Date(2026,10,24,20,0,0,0), A=at.getTime(); if(Date.now()>=A) return;   /* 11/24 20:00 前不管誰動過（舊版的手機也一樣），都拉回「20:00 開播」 */
-  if(s.ph==="recruit"){ if(s.end!==A) S.set(SVS,{...s,end:A,at18:1,reair1:1,reair2:1,reair3:1}); return; } if(s.ph!=="r1") return;
+  if(s.ph==="recruit"){ if(s.end!==A||s.airAt!==A) S.set(SVS,{...s,end:A,airAt:A,at18:1,reair1:1,reair2:1,reair3:1}); return; } if(s.ph!=="r1") return;
   try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
   const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
-  S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair1:1,reair2:1,reair3:1,airN:(s.airN||0)+1}); }
+  S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair1:1,reair2:1,reair3:1,airAt:A,airN:(s.airN||0)+1}); }
 function svGrTick(){ try{ svReAir3(); }catch(e){} try{ svReAir2(); }catch(e){} try{ svReAir(); }catch(e){} try{ svOutUndo2(); }catch(e){} try{ svOutUndo(); }catch(e){} try{ svAt18Fix(); }catch(e){} try{ svOutTick(); }catch(e){} try{ svNewsTick(); }catch(e){} const s=svReal(); if(!s||s.ph!=="r1"||!isAdminAcct()) return; const d=(Date.now()-((s.t0s||{}).r1||s.t0||Date.now()))/864e5;
   for(const k of SV_GRK){ const m=svMsList("r1").find(x=>x.k===k); if(m&&d>=m.d[1]&&!(s.grPub||{})[k]&&(k==="lv"||(s.grPub||{}).lv)){ S.set(SVS,svGrPub(s,k)); return; } } }
 /* 限定團體到期（出道日＋一年半）：團員的帳號變回一般粉絲帳號，團留著當紀錄 */
@@ -132,7 +133,7 @@ function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.no
   const L2=L.map(x=>{ if(!x||!x.ltd||x.ltdOff||x.status!=="ok") return x; const st=x.day||x.appr||x.ts||now; if(now<st+x.ltd*864e5) return x; dbEms(x).forEach(e=>{ try{ unbindArtist(e); }catch(er){} }); ch=1; return {...x,ltdOff:now}; });
   if(ch){ S.set(K.debut,L2); feedPush&&feedPush({kind:"core",self:true,text:"限定團體活動期間結束，團員帳號已變回一般粉絲帳號"}); } }
 function svAdvance(force){ return svRealDo(()=>svAdvance0(force)); }
-function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ const now=s.end&&s.end<=Date.now()&&Date.now()-s.end<864e5?s.end:Date.now(); s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
+function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ const now=s.ph==="recruit"&&s.airAt&&s.end===s.airAt?svDay18(s.airAt):s.end&&s.end<=Date.now()&&Date.now()-s.end<864e5?s.end:Date.now();   /* 11/24 今天這集延到 20:00 播，但這一輪的時間表照 18:00 算 */ s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
   const reals=svEntries();
   if(s.ph==="recruit"){ if(reals.length<SV_MIN&&!force){ s.end=now+7*864e5; s.ext=(s.ext||0)+1; S.set(SVS,s); return "ext"; }   /* 真人不夠：延長招募（粉絲只會看到倒數變長） */
     s.npcN=Math.max(0,SV_N-reals.length); nx("r1",SV_DUR.r1); S.set(SVS,s); return "r1"; }
@@ -760,7 +761,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
     if(mont.length) st.splice(Math.min(st.length,3+Math.floor(st.length/2)),0,{t:"mont",ids:mont.slice(0,6)}); }
   st.push({t:"end"}); return st; }
 /* 這一集的首播：任務開始那天晚上六點。首播一小時內在看＝LIVE，其他時間都是重播 */
-const svShLive=s=>{ if(s.demo) return true; const m=svMsNow(s), air=svPhT0(s)+((m&&m.d[0])||0)*864e5; return Date.now()>=air&&Date.now()<air+36e5; };
+const svShLive=s=>{ if(s.demo) return true; const m=svMsNow(s); let air=svPhT0(s)+((m&&m.d[0])||0)*864e5; if(s.airAt&&s.ph==="r1"&&Math.abs(s.airAt-air)<6*36e5) air=s.airAt; return Date.now()>=air&&Date.now()<air+36e5; };
 const svShOpenTx=(s,m)=>s.ph==="r1"&&m&&m.k!=="lv"&&svDayN(s)<=7?"國民製作人們，《PRODUCE DAY》開始了！練習生們，一個一個進場了。":`國民製作人們，晚上好！${m?`這週的任務是「${esc(m.t)}」。`:""}`;
 const SV_MSTV={th:"等級出來了，接下來是主題曲。照班級練習，C 位是誰呢？",gb:"這週是組別對決。同一首歌，兩組對決，贏的那組每個人都加分。",po:"這週是 Position 評價。Vocal、Rap、Dance，挑自己最強的。",co:"這週是概念評價。新歌、新概念。",pr:"決賽前，一人一分鐘。這週是 1 分鐘 PR。",de:"最後的舞台。出道組，今天決定。"};
 /* 11/24 入場和上台前的竊竊私語：看公司有不有名，練習生、導師的反應不一樣 */
