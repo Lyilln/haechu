@@ -17018,8 +17018,11 @@ MELLOWMOON:`== 概要
 以抒情、民謠流行為主，兩人的和聲是招牌。日本出身的 Haru 和韓國出身的 Sena 組成，歌曲常有韓文、日文兩個版本。
 == 成員
 （見上方資訊欄）
-=== 成員間的化學反應
-詳細內容參考 {CHEM} 文件。
+=== 兩人的關係
+* 演出時 Haru 一定站左邊、Sena 一定坐在鋼琴前，出道以來沒換過位置。2018 年首次演唱會「Moonlight」上 Haru 說兩人是「달의 양쪽（月亮的左右兩邊）」，之後就成了兩人的代稱。
+* 兩人至今仍然一起住，家裡的規則是「星期三只講日文」，Sena 的日文就是這樣學會的。還養了一隻 Haru 撿回來的柴犬「月餅」。
+* Haru 寫歌常常寫到一半就睡著，剩下的由 Sena 接著寫完，代表作《Two Moons》也是這樣完成的。
+* 兩人是首爾音樂學校的學姊學妹，出道前一起在咖啡廳駐唱。
 == 特色
 * 以吉他和鋼琴為主的編曲、兩人的和聲是招牌，被稱為「最適合晚上聽的組合」。
 * 每年冬天都會發一首季節單曲，被粉絲叫做「冬天開始的訊號」。
@@ -17310,26 +17313,6 @@ PRISMA9:`== 概要
 * 05：Rael／06：Hari、Mina／07：Coco、Riri、Dami／08：Sol／09：Aya／10：Bin
 === 出身
 * 韓國：Rael、Hari、Dami、Sol、Bin／日本：Mina、Aya／中國：Coco／香港：Riri`,
-
-MELLOWMOON:`== 概要
-{G} 成員間的化學反應整理文件。二人組合，只有一組，但組合名很多。
-* 成員自己取的、或在演出・電台裡公開承認過的組合名，後面標（♥）。
-== 組合表
-| | Haru | Sena |
-| Haru | — | 달의 양쪽 |
-| Sena | 달의 양쪽 | — |
-== 2人
-* **달의 양쪽（月亮的左右兩邊）**（♥） － Haru & Sena：演出時 Haru 一定站左邊、Sena 一定坐在鋼琴前，十年來沒有一次換過位置。2018 年首次演唱會「Moonlight」時 Haru 在台上說出這個名字，成為兩人的代表組合名。
-* **수요일즈（星期三 z）**（♥） － Haru & Sena：兩人至今仍然一起住，家裡的規則是「星期三只講日文」。Sena 的日文就是這樣學會的。2020 年線上電台「月亮電台」第 12 集公開。
-* **반쪽노래（半首歌）** － Haru & Sena：Haru 寫歌常常寫到一半就睡著，剩下的由 Sena 接著寫完。兩人說這是「最好的合作方式」，代表作《Two Moons》也是這樣完成的。
-* **언니동생（學姊學妹）** － Haru & Sena：首爾音樂學校的學姊學妹，畢業後一起在咖啡廳駐唱。粉絲稱呼兩人出道前的時期。
-== 其他分類
-=== 年齡
-* 98：Haru／99：Sena
-=== 室友
-* 兩人一起住，養了一隻 Haru 撿回來的柴犬「月餅」。
-=== 出身
-* 日本：Haru／韓國：Sena`,
 
 NOVELLE:`== 概要
 {G} 成員間的化學反應整理文件。
@@ -18148,6 +18131,7 @@ function npcBodySecs(G){ const I=NPC_INFO[G], solo=I.mem.length===1, out={}, add
     if(sub&&MAP[sub]) add(MAP[sub],lines.join("\n"));
     else if(!solo&&top==="活動") add("act",(sub?`【${sub}】\n`:"")+lines.join("\n"));
     else if(!solo&&sub==="成員間的化學反應"){}
+    else if(sub==="兩人的關係") add("feat",`【兩人的關係】\n`+lines.join("\n"));   /* 二人組合不做化學反應表，關係直接寫在團體頁 */
     else if(MAP[top]&&!sub) add(MAP[top],lines.join("\n"));
     else if(MAP[top]&&sub&&!MAP[sub]) add(MAP[top],`【${sub}】\n`+lines.join("\n")); };
   String(I.body||"").split("\n").forEach(l=>{ let m; if((m=/^===\s*(.+)$/.exec(l))){ flush(); sub=m[1].trim(); } else if((m=/^==\s*(.+)$/.exec(l))){ flush(); top=m[1].trim(); sub=""; } else buf.push(l); }); flush();

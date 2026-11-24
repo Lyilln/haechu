@@ -90,6 +90,7 @@ function npcBodySecs(G){ const I=NPC_INFO[G], solo=I.mem.length===1, out={}, add
     if(sub&&MAP[sub]) add(MAP[sub],lines.join("\n"));
     else if(!solo&&top==="活動") add("act",(sub?`【${sub}】\n`:"")+lines.join("\n"));
     else if(!solo&&sub==="成員間的化學反應"){}
+    else if(sub==="兩人的關係") add("feat",`【兩人的關係】\n`+lines.join("\n"));   /* 二人組合不做化學反應表，關係直接寫在團體頁 */
     else if(MAP[top]&&!sub) add(MAP[top],lines.join("\n"));
     else if(MAP[top]&&sub&&!MAP[sub]) add(MAP[top],`【${sub}】\n`+lines.join("\n")); };
   String(I.body||"").split("\n").forEach(l=>{ let m; if((m=/^===\s*(.+)$/.exec(l))){ flush(); sub=m[1].trim(); } else if((m=/^==\s*(.+)$/.exec(l))){ flush(); top=m[1].trim(); sub=""; } else buf.push(l); }); flush();
