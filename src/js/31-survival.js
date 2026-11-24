@@ -113,7 +113,8 @@ function svReAir2(){ const s=svReal(); if(!s||!s.reair1||s.reair2||!isAdminAcct(
     else S.set(SVS,{...s,t0:A,t0s:{...(s.t0s||{}),r1:A},at18:1,reair2:1}); return; }
   S.set(SVS,{...s,reair2:1}); }
 /* 11/24 再延一次：20:00 才開播（影片修好再播），18:30 那集收回（只做一次） */
-function svReAir3(){ const s=svReal(); if(!s||s.reair3||!isAdminAcct()) return; const at=new Date(); at.setHours(20,0,0,0); const A=at.getTime(); if(Date.now()>=A){ S.set(SVS,{...s,reair3:1}); return; }
+function svReAir3(){ const s=svReal(); if(!s||!isAdminAcct()) return; const at=new Date(2026,10,24,20,0,0,0), A=at.getTime(); if(Date.now()>=A) return;   /* 11/24 20:00 前不管誰動過（舊版的手機也一樣），都拉回「20:00 開播」 */
+  if(s.ph==="recruit"){ if(s.end!==A) S.set(SVS,{...s,end:A,at18:1,reair1:1,reair2:1,reair3:1}); return; } if(s.ph!=="r1") return;
   try{ const NW=S.get(K.news,[])||[], rm=new Set(NW.filter(n=>n&&n.pd).map(n=>n.id)); if(rm.size){ S.set(K.news,NW.filter(n=>!rm.has(n.id))); const F=S.get(K.feed,[])||[]; S.set(K.feed,F.filter(x=>!(x&&x.newsId&&rm.has(x.newsId)))); } }catch(e){}
   const t0s={...(s.t0s||{})}; delete t0s.r1; const ends={...(s.ends||{})}; delete ends.r1;
   S.set(SVS,{...s,ph:"recruit",t0:t0s.recruit||s.t0,t0s,ends,end:A,grade:null,grade0:null,grPub:{},grCen:null,out:[],outChk:{},newsDone:{},at18:1,reair1:1,reair2:1,reair3:1,airN:(s.airN||0)+1}); }
