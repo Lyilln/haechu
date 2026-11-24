@@ -159,7 +159,7 @@ function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const n
 /* ---------- 粉絲：排名發表（每一次發表，第一次打開 App 時跳出來）
    照 PRODUCE 的發表：從後面的名次一位一位叫上台 → 1位候補 → 3位、2位、1位（C位，永遠在三角形最上面）→ 最後一席候補 → 最後一席 ---------- */
 function svRevealCheck(){ try{ const s=svReal(); if(!s||!s.ann||!svOpen()) return; const seen=S.get(acK("daisuki_sv_seen"),{})||{}; const st=["final","r2","r1"].find(k=>s.ann[k]&&!seen[s.id+k]); if(!st||layer.innerHTML) return;
-  seen[s.id+st]=Date.now(); S.set(acK("daisuki_sv_seen"),seen); svReveal(st); }catch(e){} }
+  seen[s.id+st]=Date.now(); S.set(acK("daisuki_sv_seen"),seen); svRevIntro(st); }catch(e){} }
 const svMine=()=>{ const s=svSeason(); return s&&s.demo?(ui.svDV||{}):(S.get(acK("daisuki_sv_my"),{})||{}); };
 /* 三角形：1、2、3…一排比一排多；最後一排太少就併到上一排（7 位＝1・2・4） */
 function svRows(n){ const R=[]; let k=1; while(n>0){ const c=Math.min(k,n); R.push(c); n-=c; k++; } if(R.length>1&&R[R.length-1]<R[R.length-2]&&R[R.length-1]+R[R.length-2]<=6){ const l=R.pop(); R[R.length-1]+=l; } return R; }
@@ -171,6 +171,14 @@ const svGrB=(t,c)=>{ const g=svGrade(t); return g?`<i class="sv3-gr ${c||""} g${
 const svTile=(t,b,sub,me,tag)=>`<${tag||"button"} class="sv2-t ${me?"me":""}" ${tag?"":`data-a="uniGo" data-v="#/fan/core?p=survival&id=${t.id}"`}><span class="sv3-av"><span class="sv2-p">${svPh(t)}</span>${svGrB(t)}</span><b>${b}</b><span>${esc(t.name)}</span>${sub!=null?`<small>${sub}</small>`:""}</${tag||"button"}>`;
 const svHero=(rib,chip,body,foot)=>`<section class="sv2-pyr"><div class="sv2-rib"><span>PRODUCE DAY</span><span>${rib}</span></div>${chip?`<span class="sv2-date">${chip}</span>`:""}<div class="sv2-rows"><i class="sv2-crown">👑</i>${body}</div><div class="sv2-foot">${foot}</div></section>`;
 const svBar=L=>`<div class="sv2-bar">${L.map(([b,s])=>`<div><b>${b}</b><span>${s}</span></div>`).join("")}</div>`;
+/* 11/24 發表前先全屏開場（像節目一樣鋪陳），再進排名發表 */
+const SV_RVI={r1:[["第一次排名發表","今晚，第一次排名發表。"],["","15 位能留下來，剩下的練習生，今天就要離開。"],["","國民製作人投出的票，全部都在這裡。"],["","那麼，現在開始發表。"]],
+  r2:[["第二次排名發表","今晚，第二次排名發表。"],["","這一輪，排名一直都是保密的。"],["","能進決賽的，只有 10 位。"],["","現在開始發表。"]],
+  final:[["出道組發表","《PRODUCE DAY》最終回。"],["","從第一天的金字塔，走到今天。"],["","練習生們，準備好了嗎？"],["","出道組，只有 7 個位置。"],["","國民製作人選出的出道組——現在開始發表。"]]};
+function svRevIntro(st){ const s=svSeason(); if(!s) return; const L=SV_RVI[st]||[["",""]]; let i=0; clearTimeout(ui.svRvT);
+  const draw=()=>{ if(i>=L.length){ svReveal(st); return; } const [ttl,line]=L[i]; setLayer(`<div class="aws svsh svrvi aw-c-${svTheme()==="g"?"svg":"svb"}" data-a="svRvN"><div class="aws-beams"><i></i><i></i><i></i></div><div class="svsh-rib"><b>PRODUCE DAY</b><span>${esc(SV_RVI[st]?SV_RVI[st][0][0]:"")}</span><em class="live">● LIVE</em></div><div class="aws-in">${i===0?`<div class="aws-open"><small>PRODUCE DAY</small><h1><i>${st==="final"?"FINAL":"RANKING"}</i>${esc(ttl)}</h1></div>`:""}<div class="aws-say"><div><small>${esc(svHostN(s))}</small><p>${esc(line)}</p></div></div></div><p class="aws-tap">點一下繼續</p></div>`,"svx"); };
+  ui.svRvN=()=>{ i++; draw(); }; draw(); }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="svRvN"]'); if(!t) return; e.stopImmediatePropagation(); ui.svRvN&&ui.svRvN(); },true);
 /* 11/24 發表當下的票數（存起來，之後怎麼看都一樣；舊的沒存就用現在的） */
 const svRkV=(s,st)=>((s.rkv||{})[st])||svScores(st)||{};
 function svReveal(st){ const s=svSeason(); if(!s) return; ui.svSpU={}; const all=svAll(), T=id=>all.find(x=>x.id===id)||{id,name:"?"}, rk=(s.rk||{})[st]||[], V0=svRkV(s,st), K=(st==="final"?(s.debut||[]):((s.keep||{})[st]||[])).slice().sort((a,b)=>(V0[b]||0)-(V0[a]||0)), n=K.length, my=svMine(), tok=ui.svxT=Date.now();
@@ -690,7 +698,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
       /* 11/23 票數修正：以前是「拿手機裡的那份票數＋自己的票，整份蓋回雲端」，手機那份還沒更新（或兩個人同時投）時，別人的票會被蓋掉；改成在雲端那份上加（有版本號，同時投也不會互蓋） */
       const ph0=s.ph, sid0=s.id, B0={...B}; ui.svB={}; t.disabled=true;
       mkEdit(SVV,v=>{ const o={...(v||{})}; o[sid0]={...(o[sid0]||{})}; o[sid0][ph0]={...(o[sid0][ph0]||{})}; Object.entries(B0).forEach(([id,c])=>{ o[sid0][ph0][id]=(o[sid0][ph0][id]||0)+c; }); return {v:o}; }).then(()=>svSent(s,B0,n)).catch(()=>{ ui.svB=B0; t.disabled=false; rr(); toast("票沒有送出去，再按一次"); }); return; }
-    case "svDemo": { const v=t.dataset.v||""; if(v[0]==="a"){ const st=v.slice(2); ui.svDemoNo=(ui.svDemoNo||0)%3+1; ui.svDemo={r1:"r2",r2:"pr",final:"prep"}[st]; ui.svB={}; rr(); svReveal(st); return; } ui.svDemo=v||null; ui.svB={}; ui.svDU=0; ui.svDV={}; rr(); window.scrollTo(0,0); return; }
+    case "svDemo": { const v=t.dataset.v||""; if(v[0]==="a"){ const st=v.slice(2); ui.svDemoNo=(ui.svDemoNo||0)%3+1; ui.svDemo={r1:"r2",r2:"pr",final:"prep"}[st]; ui.svB={}; rr(); svRevIntro(st); return; } ui.svDemo=v||null; ui.svB={}; ui.svDU=0; ui.svDV={}; rr(); window.scrollTo(0,0); return; }
     case "svNextEp": { svNextEp(t.dataset.v); return; }
     case "svNextX": { clearInterval(ui.svNxI); layer.innerHTML=""; return; }
     case "svxSkip": { ui.svxT=0; ui.svxDone&&ui.svxDone(); return; }
@@ -803,8 +811,8 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
     const P0=((s.t0s||{})[pv.ph]||svPhT0(s)), t0=P0+pm.d[0]*864e5, t1=P0+pm.d[1]*864e5; const m=pm;
     L.forEach((x,i)=>{ const r=(Math.imul(svHash(x.tid+"ed"+s.id+m.k),2654435761)>>>16)%100, t=svById(x.tid)||{}, fr=t.real&&x.ts?(x.ts-t0)/Math.max(1,t1-t0):-1;
       let ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none"; if(t.real&&ed==="none") ed=fr>.75?"evil":"mont";
-      if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75,ph:pv.ph}); });
-    if(mont.length) st.splice(Math.min(st.length,3+Math.floor(st.length/2)),0,{t:"mont",ids:mont.slice(0,6),ph:pv.ph});
+      if((s.ph==="final"||s.ph==="pr"||pv.ph==="pr")&&ed==="evil") ed="focus"; if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75&&ed==="evil",ph:pv.ph}); });   /* 決賽前後不惡剪 */
+    if(mont.length){ const fi=st.findIndex(z=>z.t==="stg"), nS=st.filter(z=>z.t==="stg").length; st.splice(fi<0?st.length:fi+Math.ceil(nS/2),0,{t:"mont",ids:mont.slice(0,6),ph:pv.ph}); }   /* 合集放在舞台們的中間，不會插進候補介紹 */
     const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); }
   st.push({t:"end"}); return st; }
 /* 這一集的首播：任務開始那天晚上六點。首播一小時內在看＝LIVE，其他時間都是重播 */
