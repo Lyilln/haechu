@@ -57,7 +57,7 @@ function svSnLock(){ try{ const s=svSeason(); if(!s||s.demo) return null; const 
     const P=svPrep(), gn=P&&P.draft&&String(P.draft.gname||"").trim(); if(gn&&(s.debut||[]).includes(me.id)) return {as:"o:pdg",name:gn};
     if(svVoting()&&svAlive().has(me.id)) return {as:"o:pd",name:"PRODUCE DAY"}; }catch(e){} return null; }
 const svPdOn=()=>{ try{ const s=svSeason(); return !!s&&!s.demo&&s.ph!=="recruit"; }catch(e){ return false; } };
-function snUser(id){ if(id==="o:pd") return {id,u:"produceday.official",name:"PRODUCE DAY",g:6,ver:true,bio:"📺 PRODUCE DAY 官方帳號",av:"",of:1};
+function snUser(id){ if(id==="o:pd") return {id,u:"produceday.official",name:"PRODUCE DAY",g:6,ver:true,bio:"📺 PRODUCE DAY 官方帳號",av:"co/produceday.jpg",of:1};
   if(id==="o:pdg"){ let gn=""; try{ gn=String((svPrep().draft||{}).gname||"").trim(); }catch(e){} if(!gn) return null; return {id,u:gn.toLowerCase().replace(/[^a-z0-9]+/g,"")+".official"||"produceday.debut",name:gn,g:6,ver:true,bio:"OVERTONE Entertainment",av:"",of:1}; }
   if(id==="o:scout") return {id,u:"haechu.scout",name:"HAECHU 星探",g:6,ver:true,bio:"✨ 尋找下一顆星",av:"",off:1};
   if(String(id).startsWith("o:co_")){ const co=ofCoOf(id.slice(5)); if(!co) return null; const c=coInfo(co), pf=CO_PROF[co]||{}; return {id,u:OF_CO[co],name:pf.n||c.n,g:6,ver:true,bio:pf.bio||"",cat:pf.cat,av:c.l||"",co,of:1}; }
