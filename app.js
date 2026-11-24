@@ -15916,7 +15916,12 @@ function svOpenSeats(s){ const E=svEntries(), c=svC1(s), out={}; E.forEach(e=>{ 
 function svC1Html(s){ if(s.ph!=="r1") return ""; const c=svC1(s); if(!c.cand.length) return ""; const my=s.demo?null:((S.get(acK("daisuki_sv_c1"),{})||{})[s.id]);
   const tile=(t,lab,sub)=>`<div class="sv2-t ${my===t.id?"me":""}"><span class="sv2-p">${svPh(t)}</span><b>${esc(t.name)}</b><span>${lab}</span>${sub||""}</div>`;
   let h="";
-  if(!c.done) h=svHost(s,"有人想搶 1 號位！國民製作人，請選出誰坐上 1 號位，坐上的人有 1 分鐘 PR 時間。")+`<section class="sv4-c1"><div class="sv4-h"><b>1 號位對決</b><small>${s.demo?"示範":"倒數 "+svLeftTxt(svC1End(s)-Date.now())}・一人一票</small></div><div class="sv4-c1l">${c.cand.map(t=>`<div class="sv4-c1i">${tile(t,t===c.hold?"原本坐 1 號位":"挑戰者",`<small>${fmt(c.cnt(t.id))} 票</small>`)}${my||svTrainee(s)?"":`<button class="sv2-cta sm" data-a="svC1" data-v="${t.id}">投他</button>`}</div>`).join("")}</div>${svTrainee(s)?`<p class="sv4-stx">練習生不能投票，交給國民製作人決定。</p>`:""}</section>`;
+  if(!c.done){ const me=svTrainee(s), role=!me?"fan":c.hold&&me.id===c.hold.id?"hold":c.chs.some(t=>t.id===me.id)?"ch":"watch";
+    const sec=`<section class="sv4-c1"><div class="sv4-h"><b>1 號位對決</b><small>${s.demo?"示範":"倒數 "+svLeftTxt(svC1End(s)-Date.now())}・${role==="fan"?"一人一票":"觀戰中"}</small></div><div class="sv4-c1l">${c.cand.map(t=>`<div class="sv4-c1i">${tile(t,t===c.hold?"原本坐 1 號位":"挑戰者",`<small>${fmt(c.cnt(t.id))} 票</small>`)}${my||role!=="fan"?"":`<button class="sv2-cta sm" data-a="svC1" data-v="${t.id}">投他</button>`}</div>`).join("")}</div></section>`;
+    if(role==="fan") h=svHost(s,"有人想搶 1 號位！國民製作人，請選出誰坐上 1 號位，坐上的人有 1 分鐘 PR 時間。")+sec;
+    else if(role==="hold") h=svHost(s,"你的 1 號位正在被挑戰！誰坐上 1 號位，交給國民製作人決定。")+sec;
+    else if(role==="ch") h=svHost(s,"你正在挑戰 1 號位！誰坐上 1 號位，交給國民製作人決定。")+sec;
+    else h=`<details class="sv4-seat sv4-c1w"><summary>1 號位對決進行中・觀戰</summary>${svHost(s,"1 號位的主人，交給國民製作人決定！")}${sec}</details>`; }
   else if(c.win) h=`<section class="sv4-pr"><div class="sv4-h"><b>1 分鐘 PR</b><small>${c.chs.length?"1 號位對決的贏家":"坐上 1 號位"}</small></div><div class="sv4-prb"><span class="sv4-prp">${svPh(c.win)}</span><div><b>${esc(c.win.name)}</b><small>${esc(c.win.co||svCoOf(c.win.email)||"個人練習生")}</small><p>${esc(c.win.msg||"")}</p><p class="sub">${esc(c.win.ps||"")}</p></div></div></section>`+svHost(s,`坐上 1 號位的 ${esc(c.win.name)}，給你 1 分鐘的 PR 時間！`);
   const O=svOpenSeats(s);
   h+=`<details class="sv4-seat"><summary>開場座位：誰坐在哪裡</summary>${svPyr(Array.from({length:SV_N},(x,i)=>i+1),n=>{ const t=O[n]; return `<div class="sv2-t ${t?"":"svx-e"}"><span class="sv2-p">${t?svPh(t):`<i class="sv2-sil"></i>`}</span><b>${n}</b><span>${t?esc(t.name):"空位"}</span></div>`; })}</details>`;
