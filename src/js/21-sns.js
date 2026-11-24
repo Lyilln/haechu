@@ -178,7 +178,7 @@ function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; i
     <div class="sn-meta">${snLikedBy(d,p)}${snCapHtml(p,u)}${cms.length?`<button class="sn-more" data-a="snCm" data-id="${p.id}">查看全部 ${fmt(cms.length)} 則留言</button>`:""}<small>${snsAgo(p.ts)}</small></div></article>`; }
 
 function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me), mode=ui.snFeed||"all";
-  const items=d.posts.filter(p=>(p.npc?fol.includes(p.uid):(mode==="all"||p.uid===me||fol.includes(p.uid)))&&snCanSee(d,p.uid)).map(p=>({p,ts:p.ts}));
+  const items=d.posts.filter(p=>(p.npc?(fol.includes(p.uid)||p.uid==="o:pd"):(mode==="all"||p.uid===me||fol.includes(p.uid)))&&snCanSee(d,p.uid)).map(p=>({p,ts:p.ts}));
   [].forEach(uid=>snRp(d,uid).forEach(x=>{ const p=d.posts.find(y=>y.id===x.id); if(p&&p.uid!==uid&&snCanSee(d,p.uid)&&snCanSee(d,uid)) items.push({p,by:uid,ts:x.ts}); }));
   items.sort((a,b)=>b.ts-a.ts);
   const sids=[...new Set(snActiveStories(d).filter(s=>s.uid!==me&&fol.includes(s.uid)).sort((a,b)=>b.ts-a.ts).map(s=>s.uid))].sort((a,b)=>snStorySeen(d,a)-snStorySeen(d,b));
