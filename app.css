@@ -8115,3 +8115,6 @@ html[data-theme="dark"] .nl-mr{border-color:#2E2A35}
 .sntg-sh .sn-tpl span{display:flex;flex-direction:column}.sntg-sh .sn-tpl small{color:#737373;font-size:13px}
 .sntg-0{text-align:center;color:#8E8E8E;padding:24px 0}
 .wkn-tb td:first-child,.wkn-tb td:nth-child(2),.wkn-tb th{white-space:nowrap}.wkn-tb td:last-child{white-space:normal}
+.wkn-tb td:empty{background:transparent}.wkn-tb th:first-child{white-space:nowrap}
+.wkn-tbw{overflow-x:auto;-webkit-overflow-scrolling:touch;margin-bottom:8px}.wkn-tbw .wk-tb{margin-bottom:0}
+.wkn-tb.mx td,.wkn-tb.mx th{white-space:nowrap;text-align:center;font-size:12.5px}

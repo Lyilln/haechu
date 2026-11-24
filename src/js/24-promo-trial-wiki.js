@@ -171,7 +171,7 @@ const WK_KEY="daisuki_wiki";
 
 const wkAll=()=>S.get(WK_KEY,{})||{};
 const wkPage=id=>wkAll()[id]||{};
-const wkOk=id=>{ if(String(id||"").startsWith("n:")) return typeof NPC_INFO!=="undefined"&&!!NPC_INFO[id.slice(2)]; if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
+const wkOk=id=>{ if(String(id||"").startsWith("n:")) return typeof NPC_INFO!=="undefined"&&!!NPC_INFO[id.slice(2).split("/")[0]]; if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
 const wkFanView=()=>!["artist","admin"].includes(route().role)||((session()||{}).role==="fan");   /* 粉絲端只能看：不顯示編輯、修改時間、還沒寫的段落 */
 function wkCanEdit(id){ try{ if(wkFanView()) return false; if(isAdminAcct()) return true; const s=session(); if(!s||s.role!=="artist") return false; const me=s.member||uniMe();
     if(id.startsWith("m:")) return id.slice(2)===me; if(id.startsWith("g:")) return !!MEMBERS[me]&&MEMBERS[me].group===id.slice(2); }catch(e){} return false; }

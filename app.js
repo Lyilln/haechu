@@ -12868,7 +12868,7 @@ const WK_KEY="daisuki_wiki";
 
 const wkAll=()=>S.get(WK_KEY,{})||{};
 const wkPage=id=>wkAll()[id]||{};
-const wkOk=id=>{ if(String(id||"").startsWith("n:")) return typeof NPC_INFO!=="undefined"&&!!NPC_INFO[id.slice(2)]; if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
+const wkOk=id=>{ if(String(id||"").startsWith("n:")) return typeof NPC_INFO!=="undefined"&&!!NPC_INFO[id.slice(2).split("/")[0]]; if(!groupOf((id||"").startsWith("g:")?id.slice(2):(MEMBERS[id.slice(2)]||{}).group)) return false; return true; };
 const wkFanView=()=>!["artist","admin"].includes(route().role)||((session()||{}).role==="fan");   /* 粉絲端只能看：不顯示編輯、修改時間、還沒寫的段落 */
 function wkCanEdit(id){ try{ if(wkFanView()) return false; if(isAdminAcct()) return true; const s=session(); if(!s||s.role!=="artist") return false; const me=s.member||uniMe();
     if(id.startsWith("m:")) return id.slice(2)===me; if(id.startsWith("g:")) return !!MEMBERS[me]&&MEMBERS[me].group===id.slice(2); }catch(e){} return false; }
@@ -16743,24 +16743,25 @@ const NPC_INFO={
 * 很少穿亮色衣服，粉絲把他少見的彩色造型叫做「彩蛋造型」。
 * 每年生日都會在網路直播唱粉絲點的歌，直到天亮。`}};
 const npcWkOrig=id=>String(id||"").slice(2);
-const npcWkName=id=>npcN(npcWkOrig(id));
-const npcWkBody=o=>{ const ov=(S.get(NPCWK,{})||{})[o]; return (ov&&ov.body)||((NPC_INFO[o]||{}).body)||""; };
+const npcWkName=id=>{ const f=npcWkOrig(id).split("/"); return npcN(f[0])+(f[1]==="chem"?"/成員間的化學反應":""); };   /* 「團名/成員間的化學反應」是另外一篇（照 Namuwiki 的「그룹/멤버 간 케미」） */
+const npcWkBody=o=>{ const ov=(S.get(NPCWK,{})||{})[o]; if(ov&&ov.body) return ov.body; const f=String(o).split("/"); return f[1]==="chem"?((typeof NPC_CHEM!=="undefined"&&NPC_CHEM[f[0]])||""):((NPC_INFO[o]||{}).body)||""; };
 const npcWkList=()=>Object.keys(NPC_INFO).map(o=>"n:"+o);
-function npcWkView(id){ const o=npcWkOrig(id), I=NPC_INFO[o]; if(!I) return `<p class="wk-empty">找不到這個文件</p>`; const G=npcN(o), adm=typeof isAdminAcct==="function"&&isAdminAcct();
-  if(ui.npcWkEd===o) return `<div class="wk-doc wkn"><div class="wk-doc-t"><h1>${esc(G)}</h1></div><p class="wkn-tip">「== 標題」是大段落、「=== 標題」是小段落、「* 」是條列；團名寫 {G}，會自動換成現在的名字。</p><textarea id="npcWkT" class="wkn-ta">${esc(npcWkBody(o))}</textarea><div class="wkn-btns"><button class="btn btn-soft" data-a="npcWkCancel">取消</button><button class="btn btn-main" data-a="npcWkSave" data-v="${esc(o)}">儲存</button></div></div>`;
-  let body=npcWkBody(o).replace(/\{G\}/g,G); I.mem.forEach(m=>{ const nn=npcN(m[0]); if(nn!==m[0]) body=body.split(m[0]).join(nn); }); const secs=[]; let cur=null, sub=null; const toc=[];
+function npcWkView(id){ const full=npcWkOrig(id), o=full.split("/")[0], chem=full.split("/")[1]==="chem", I=NPC_INFO[o]; if(!I||chem&&!npcWkBody(full)) return `<p class="wk-empty">找不到這個文件</p>`; const G=npcN(o), T=chem?G+"/成員間的化學反應":G, adm=typeof isAdminAcct==="function"&&isAdminAcct();
+  if(ui.npcWkEd===full) return `<div class="wk-doc wkn"><div class="wk-doc-t"><h1>${esc(T)}</h1></div><p class="wkn-tip">「== 標題」是大段落、「=== 標題」是小段落、「* 」是條列；團名寫 {G}，會自動換成現在的名字。</p><textarea id="npcWkT" class="wkn-ta">${esc(npcWkBody(full))}</textarea><div class="wkn-btns"><button class="btn btn-soft" data-a="npcWkCancel">取消</button><button class="btn btn-main" data-a="npcWkSave" data-v="${esc(full)}">儲存</button></div></div>`;
+  let body=npcWkBody(full).replace(/\{G\}/g,G); I.mem.forEach(m=>{ const nn=npcN(m[0]); if(nn!==m[0]) body=body.split(m[0]).join(nn); }); const secs=[]; let cur=null, sub=null; const toc=[];
   body.split("\n").forEach(l=>{ let m;
     if((m=/^===\s*(.+)$/.exec(l))){ sub={t:m[1],lines:[]}; (cur||(cur={t:"",lines:[],subs:[]},secs.push(cur),cur)).subs.push(sub); }
     else if((m=/^==\s*(.+)$/.exec(l))){ cur={t:m[1],lines:[],subs:[]}; sub=null; secs.push(cur); }
     else (sub||cur||(cur={t:"",lines:[],subs:[]},secs.push(cur),cur)).lines.push(l); });
-  const para=L=>{ let h="", ul=false, tb=null; const tEnd=()=>{ if(tb){ h+=`<table class="wk-tb wkn-tb">${tb.map((r,i)=>`<tr>${r.map(c=>i?`<td>${esc(c)}</td>`:`<th>${esc(c)}</th>`).join("")}</tr>`).join("")}</table>`; tb=null; } };
-    L.forEach(l=>{ if(/^\|/.test(l.trim())){ if(ul){ h+="</ul>"; ul=false; } (tb=tb||[]).push(l.trim().replace(/^\||\|$/g,"").split("|").map(x=>x.trim())); return; } tEnd(); if(/^\*\s+/.test(l)){ if(!ul){ h+="<ul>"; ul=true; } h+=`<li>${esc(l.replace(/^\*\s+/,""))}</li>`; } else { if(ul){ h+="</ul>"; ul=false; } if(l.trim()) h+=`<p>${esc(l)}</p>`; } }); if(ul) h+="</ul>"; tEnd(); return h; };
+  const fm=x=>esc(x).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>").replace(/\{CHEM\}/g,`<a class="wk-ln" data-a="wkGo" data-v="n:${esc(o)}/chem">${esc(G)}/成員間的化學反應</a>`);
+  const para=L=>{ let h="", ul=false, tb=null; const tEnd=()=>{ if(tb){ h+=`<div class="wkn-tbw"><table class="wk-tb wkn-tb${tb[0]&&tb[0][0]===""?" mx":""}">${tb.map((r,i)=>`<tr>${r.map((c,j)=>i&&j?`<td>${fm(c)}</td>`:`<th>${fm(c)}</th>`).join("")}</tr>`).join("")}</table></div>`; tb=null; } };
+    L.forEach(l=>{ if(/^\|/.test(l.trim())){ if(ul){ h+="</ul>"; ul=false; } (tb=tb||[]).push(l.trim().replace(/^\||\|$/g,"").split("|").map(x=>x.trim())); return; } tEnd(); if(/^\*\s+/.test(l)){ if(!ul){ h+="<ul>"; ul=true; } h+=`<li>${fm(l.replace(/^\*\s+/,""))}</li>`; } else { if(ul){ h+="</ul>"; ul=false; } if(l.trim()) h+=`<p>${fm(l)}</p>`; } }); if(ul) h+="</ul>"; tEnd(); return h; };
   let n=0; const html=secs.filter(s=>s.t).map(s=>{ n++; toc.push(`<a data-a="npcWkTo" data-v="ns${n}" class="lv1"><span class="wk-no">${n}.</span> ${esc(s.t)}</a>`); let j=0;
     const kids=s.subs.map(x=>{ j++; toc.push(`<a data-a="npcWkTo" data-v="ns${n}_${j}" class="lv2"><span class="wk-no">${n}.${j}.</span> ${esc(x.t)}</a>`); return `<section class="wk-s lv2" id="ns${n}_${j}"><h2><span class="wk-no" data-a="wkTocBack">${n}.${j}.</span> ${esc(x.t)}</h2><div class="wk-sc">${para(x.lines)}</div></section>`; }).join("");
     const memb=/成員|人物/.test(s.t)&&s.lines.join("").includes("資訊欄")?`<ul>${I.mem.map(m=>`<li><b>${esc(npcN(m[0]))}</b>（${esc(m[1])}，${esc(m[2])}${m[4]?"，"+esc(m[4]):""}）：${esc(m[3])}</li>`).join("")}</ul>`:para(s.lines);
     return `<section class="wk-s lv1" id="ns${n}"><h2><span class="wk-no" data-a="wkTocBack">${n}.</span> ${esc(s.t)}</h2><div class="wk-sc">${memb}${kids}</div></section>`; }).join("");
   const info=`<table class="wkn-info" style="--wc:${I.col}"><tr><th colspan="2">${esc(G)}<small>${esc(I.ko)}</small></th></tr><tr><td>類型</td><td>${esc(I.type)}</td></tr><tr><td>出道</td><td>${esc(I.debut.replace(/-/g,"."))}</td></tr><tr><td>經紀公司</td><td>${esc(I.co)}</td></tr><tr><td>粉絲名</td><td>${esc(I.fan)}</td></tr><tr><td>${I.mem.length>1?"成員":"本名"}</td><td>${I.mem.map(m=>I.mem.length>1?`<b>${esc(npcN(m[0]))}</b>（${esc(m[1])}・${esc(m[2])}${m[4]?"・"+esc(m[4]):""}）<br><small>${esc(m[3])}</small>`:`${esc(m[1])}（${esc(m[2])}）`).join("<div class='wkn-sep'></div>")}</td></tr></table>`;
-  return `<div class="wk-doc wkn"><div class="wk-doc-t"><h1>${esc(G)}</h1>${adm?`<a class="wk-ed1" data-a="npcWkEdit" data-v="${esc(o)}">[編輯]</a>`:""}</div><div class="wk-cat">分類：${esc(G)}｜${esc(I.debut.slice(0,4))}年出道｜${esc(I.type)}｜${esc(I.co)}</div>${info}<div class="wk-toc2" id="wkToc"><b>目錄</b>${toc.join("")}</div>${html}</div>`; }
+  return `<div class="wk-doc wkn"><div class="wk-doc-t"><h1>${esc(T)}</h1>${adm?`<a class="wk-ed1" data-a="npcWkEdit" data-v="${esc(full)}">[編輯]</a>`:""}</div>${chem?`<div class="wk-cat">上級文件：<a class="wk-ln" data-a="wkGo" data-v="n:${esc(o)}">${esc(G)}</a></div>`:`<div class="wk-cat">分類：${esc(G)}｜${esc(I.debut.slice(0,4))}年出道｜${esc(I.type)}｜${esc(I.co)}</div>${info}`}<div class="wk-toc2" id="wkToc"><b>目錄</b>${toc.join("")}</div>${html}</div>`; }
 document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a^="npcWk"]'); if(!t) return; e.stopImmediatePropagation(); const a=t.dataset.a, v=t.dataset.v;
   if(a==="npcWkTo"){ const s=document.getElementById(v); if(s) s.scrollIntoView({behavior:"smooth",block:"start"}); return; }
   if(a==="npcWkEdit"){ if(!isAdminAcct()) return; ui.npcWkEd=v; render(); scrollTo(0,0); return; }
@@ -16781,12 +16782,7 @@ AURAVEIL:`== 概要
 == 成員
 （見上方資訊欄）
 === 成員間的化學反應
-| 組合 | 組合名 | 說明 |
-| Rhea & Noa | 媽媽與女兒 | 年紀差最多的兩人。Noa 出道時剛滿 18 歲，Rhea 幾乎是一手照顧她長大，Noa 至今還會在宿舍跟著 Rhea 進房間睡。 |
-| Siena & Elle | 外國人聯盟 | 練習生時期都不會韓文，兩人只能用破英文溝通，吵架時到現在還是會切換成英文。 |
-| Juno & Elle | 冰與火 | 話最少的 Juno 和話最多的 Elle 是室友。Elle 說 Juno 一天跟她講的話大概十句，但每天都會幫她留宵夜。 |
-| Siena & Noa | 日文老師 | Noa 跟 Siena 學日文，現在會用日文道晚安；Siena 則跟 Noa 學韓國流行語。 |
-| Rhea & Juno | 98・99 line | 團裡年紀最大的兩人，綜藝裡負責吐槽，私下會一起去喝咖啡討論團的方向。 |
+詳細內容參考 {CHEM} 文件。
 == 特色
 * 招牌是「面紗」：幾乎每次回歸的舞台都有半透明的布料或紗，被粉絲稱為「看得見的氛圍」。
 * 群舞的整齊度在業界有名，音樂節目的直拍經常被舞蹈系學生拿來當教材。
@@ -16855,12 +16851,7 @@ ODDLINE:`== 概要
 == 成員
 （見上方資訊欄）
 === 成員間的化學反應
-| 組合 | 組合名 | 說明 |
-| Kyle & Seb | 英文組 | 在弘大 Live House 認識的兩個「外國人」，私下講英文。Seb 的冷笑話只有 Kyle 會笑。 |
-| Kyle & Ian | 靠北事件 | Kyle 教 Ian 英文，Ian 教 Kyle 台語「靠北」，Kyle 在直播中脫口而出，Ian 笑到從椅子上滑下去。 |
-| Dohwan & Seb | 安靜組 | 兩個話最少的人。巡演期間在飯店同房，據說一整晚只講了「晚安」兩個字。 |
-| Dohwan & Ian | 吉他與鼓 | Ian 的鼓棒在演出中飛出去打到 Dohwan 已經是固定橋段，粉絲做成了合輯影片。 |
-| Kyle & Dohwan | 創作搭檔 | 團裡大部分主打歌由兩人共同作曲。Dohwan 寫 riff、Kyle 寫旋律，常常吵到凌晨。 |
+詳細內容參考 {CHEM} 文件。
 == 特色
 * 現場演出全程真彈真唱，從出道起就不使用預錄伴奏，被稱為「偶像圈最吵的樂團」。
 * 歌曲以英式搖滾和城市流行為主，歌詞常寫末班車、深夜、青春的不安。
@@ -16926,12 +16917,7 @@ PRISMA9:`== 概要
 == 成員
 （見上方資訊欄）
 === 成員間的化學反應
-| 組合 | 組合名 | 說明 |
-| Coco & Riri | 普粵翻譯機 | 一個講普通話、一個講廣東話，兩人聊天常常要靠寫字溝通，成為團綜的固定笑點。 |
-| Mina & Aya | 日本組 | 兩人用日文聊天時特別放鬆。Aya 說只有跟 Mina 在一起才不會怕生。 |
-| Yeon & Bin | 隊長與忙內 | Yeon 幫 Bin 檢查作業，結果自己也不會算，被 Bin 笑了一整天。 |
-| Hari & Dami | 主唱組 | 合唱時的和聲被稱為「糖果和聲」，常在直播裡即興唱歌。 |
-| Sol & Coco | 饒舌組 | 一個體力最好、一個最會吃。Sol 晨跑完回宿舍時，Coco 通常已經在吃早餐了。 |
+詳細內容參考 {CHEM} 文件。
 == 特色
 * 九人隊形變化是最大賣點，出道曲副歌的「彩虹散開」隊形被稱為今年最好看的隊形之一。
 * 九位成員各有一個代表色，合起來是一道彩虹再加上白色。
@@ -16994,10 +16980,7 @@ MELLOWMOON:`== 概要
 == 成員
 （見上方資訊欄）
 === 成員間的化學反應
-| 組合 | 組合名 | 說明 |
-| Haru & Sena | 月亮的左右兩邊 | 演出時 Haru 一定站左邊、Sena 一定坐在鋼琴前。十年來沒有一次換過位置。 |
-| Haru & Sena | 星期三規則 | 兩人至今仍然一起住，家裡的規則是「星期三只講日文」。Sena 的日文就是這樣學會的。 |
-| Haru & Sena | 半首歌 | Haru 寫歌常常寫到一半就睡著，剩下的由 Sena 接著寫完，兩人說這是「最好的合作方式」。 |
+詳細內容參考 {CHEM} 文件。
 == 特色
 * 以吉他和鋼琴為主的編曲、兩人的和聲是招牌，被稱為「最適合晚上聽的組合」。
 * 每年冬天都會發一首季節單曲，被粉絲叫做「冬天開始的訊號」。
@@ -17060,12 +17043,7 @@ NOVELLE:`== 概要
 == 成員
 （見上方資訊欄）
 === 成員間的化學反應
-| 組合 | 組合名 | 說明 |
-| Jiho & Lucas | 澳洲俚語 | Lucas 教 Jiho 澳洲俚語，Jiho 在直播中用錯場合，被粉絲做成梗圖。 |
-| Ren & Haneul | 中文課 | Ren 教 Haneul 中文，Haneul 到現在只會說「好吃」。 |
-| Ren & Wooj | 整人與被整 | Ren 的整人對象九成是 Wooj，Wooj 的鞋帶已經被綁在一起好幾次。 |
-| Taeo & Wooj | 主唱線 | 兩人的和聲被稱為團的「聲音」，在車上常一起唱歌。 |
-| Jiho & Haneul | 隊長與忙內 | Haneul 想吃宵夜時都會去找 Jiho，Jiho 每次都說不行，最後還是買了。 |
+詳細內容參考 {CHEM} 文件。
 == 特色
 * 每張專輯是同一部故事的一個章節，MV 裡藏著大量伏筆，粉絲會整理成「解讀文」。
 * 出道前用網路漫畫公開世界觀，是少見的宣傳方式。
@@ -17098,11 +17076,7 @@ NOVELLE:`== 概要
 == 成員
 （見上方資訊欄）
 === 成員間的化學反應
-| 組合 | 組合名 | 說明 |
-| Vee & Yena | 冰山與小太陽 | 幾乎不笑的 Vee 只對 Yena 笑，Yena 每次都會截圖發給其他成員炫耀。 |
-| Lune & Yena | 舞蹈師徒 | Yena 跟 Lune 學舞，Lune 是團裡最嚴格的老師，也是最常幫 Yena 留晚餐的人。 |
-| Ari & Vee | 1999・2000 | 隊長和主 Rap，兩人一起決定每次回歸的代表玫瑰。 |
-| Vee & Lune | 外國人組 | 兩人用中文、泰文、韓文混著聊天，Yena 也跟著學會了一點中文。 |
+詳細內容參考 {CHEM} 文件。
 == 特色
 * 每次回歸都會換一種玫瑰當代表花，粉絲會在打歌時送同一種花。
 * 服裝以天鵝絨、蕾絲、復古剪裁為主，被稱為「穿得最像電影的女團」。
@@ -17190,6 +17164,190 @@ HYUNE:`== 概要
 * 寫給其他歌手的歌超過 50 首，其中有好幾首拿過一位。`
 };
 Object.keys(B).forEach(G=>{ if(typeof NPC_INFO!=="undefined"&&NPC_INFO[G]) NPC_INFO[G].body=B[G]; }); })();
+
+/* =========================================================
+   虛擬歌手「團名/成員間的化學反應」文件（11/24，照 Namuwiki「그룹/멤버 간 케미」）
+   ・概要（標示規則）→ 組合表（成員×成員，格子裡是兩人的組合名）→ 2人 → 3人以上 → 其他分類（年齡、室友、出身…）
+   ・組合名寫韓文原名＋中文意思；（♥）＝成員自己取的或公開承認過的
+   ・2 人以上的團才有
+   ========================================================= */
+const NPC_CHEM={
+AURAVEIL:`== 概要
+{G} 成員間的化學反應整理文件。
+* 成員自己取的、或在直播・綜藝裡公開承認過的組合名，後面標（♥）。
+* 同一個組合有好幾個名字時，用「／」分開。
+== 組合表
+| | Rhea | Siena | Juno | Elle | Noa |
+| Rhea | — | 리시즈 | 구팔구구 | 고음댄스 | 맏막즈 |
+| Siena | 리시즈 | — | 딸기블랙 | 외국인즈 | 니혼고쌤 |
+| Juno | 구팔구구 | 딸기블랙 | — | 얼음불 | 무뚝언니 |
+| Elle | 고음댄스 | 외국인즈 | 얼음불 | — | 텐션즈 |
+| Noa | 맏막즈 | 니혼고쌤 | 무뚝언니 | 텐션즈 | — |
+== 2人
+* **맏막즈（大忙 z）**（♥） － Rhea & Noa：團裡最大的和最小的。Noa 出道時剛滿 18 歲，從練習生時期就跟著 Rhea，2021 年團綜《VEIL OFF》裡 Noa 說「Rhea 姐姐比我媽還像我媽」，這個組合名從此定下來。至今 Noa 還常常抱著枕頭去 Rhea 房間睡。
+* **리시즈（Rhe+Si z）**（♥） － Rhea & Siena：Siena 剛來韓國時的第一位室友。Rhea 每天睡前用簡單的韓文跟她聊天，Siena 說自己的韓文「有一半是 Rhea 教的」。
+* **구팔구구（98・99）** － Rhea & Juno：團裡年紀最大的兩人（98、99 年生）。綜藝裡負責吐槽其他成員，私下會一起去咖啡廳討論回歸方向。
+* **고음댄스（高音與舞）** － Rhea & Elle：主唱與主舞。舞台上 Rhea 的高音段落一定配 Elle 的獨舞，粉絲稱為「AURAVEIL 的高潮公式」。
+* **외국인즈（外國人 z）**（♥） － Siena & Elle：練習生時期兩人都不會韓文，只能用破英文溝通。吵架時到現在還是會自動切換成英文，2023 年直播中被 Rhea 吐槽「你們吵架我聽不懂」。
+* **니혼고쌤（日文老師）**（♥） － Siena & Noa：Noa 跟 Siena 學日文，現在每天會用日文說「おやすみ」。Siena 則跟 Noa 學最新的韓國流行語，常常用錯場合。
+* **딸기블랙（草莓與黑）** － Siena & Juno：愛草莓的 Siena 和一身黑的 Juno。2022 年的見面會上兩人穿了互換的衣服，草莓色的 Juno 成為名場面。
+* **얼음불（冰與火）**（♥） － Juno & Elle：話最少的 Juno 和話最多的 Elle 是室友。Elle 說 Juno 一天跟她講的話大概十句，但每天都會幫她留宵夜。組合名是 Elle 在 2021 年的直播裡自己取的。
+* **무뚝언니（冷面姐姐）** － Juno & Noa：表情冷淡的 Juno 對 Noa 特別溫柔，被拍到偷偷幫 Noa 綁鞋帶。
+* **텐션즈（high z）** － Elle & Noa：團裡情緒最高的兩人，一起直播時常常因為太吵被經紀人進來關掉。
+== 3人以上
+* **언니즈（姐姐們）** － Rhea & Siena & Juno：98、99 年生的三位姐姐。
+* **동생즈（妹妹們）** － Elle & Noa：00 年後出生的兩位。
+* **다국적즈（多國籍 z）**（♥） － Siena & Elle & Noa：日本、泰國、韓國各一位。2024 年日本巡演期間三人用三種語言輪流主持一個單元。
+* **블루라인（藍色線）** － 全員：應援色「Veil Blue」得名的全體組合名，官方帳號也會使用。
+== 其他分類
+=== 年齡
+* 98：Rhea／99：Siena、Juno／00：Elle／02：Noa
+=== 室友
+* Rhea & Noa（雙人房，原本是 Rhea 一人房，Noa 常常跑進來後乾脆搬進去）
+* Juno & Elle（雙人房）
+* Siena（一人房，房間裡放滿草莓周邊）
+=== 出身
+* 韓國：Rhea、Juno、Noa
+* 日本：Siena
+* 泰國：Elle`,
+
+ODDLINE:`== 概要
+{G} 成員間的化學反應整理文件。
+* 成員自己取的、或在演出・直播裡公開承認過的組合名，後面標（♥）。
+* 團內溝通韓文、英文、中文混著講，有些組合名是英文或中文。
+== 組合表
+| | Kyle | Dohwan | Seb | Ian |
+| Kyle | — | 작곡즈 | English Line | 靠北즈 |
+| Dohwan | 작곡즈 | — | 조용즈 | 스틱피해자 |
+| Seb | English Line | 조용즈 | — | 리듬즈 |
+| Ian | 靠北즈 | 스틱피해자 | 리듬즈 | — |
+== 2人
+* **작곡즈（作曲 z）**（♥） － Kyle & Dohwan：團裡大部分主打歌由兩人共同作曲。Dohwan 寫 riff、Kyle 寫旋律，常常在練團室吵到凌晨。2020 年專輯《Last Stop》的製作花絮裡，兩人為了一個和弦吵了 40 分鐘。
+* **English Line**（♥） － Kyle & Seb：在洛杉磯長大的 Kyle 和雪梨出身的 Seb，是在弘大 Live House 認識的。私下講英文，Seb 的冷笑話只有 Kyle 會笑。
+* **靠北즈（靠北 z）**（♥） － Kyle & Ian：Kyle 教 Ian 英文，Ian 教 Kyle 台語「靠北」，Kyle 在 2024 年台北場演唱會上脫口而出，全場大笑，Ian 笑到從鼓椅上滑下去。從此成為官方組合名。
+* **조용즈（安靜 z）** － Dohwan & Seb：兩個話最少的人。巡演期間在飯店同房，據說一整晚只講了「晚安」兩個字。
+* **스틱피해자（鼓棒受害者）**（♥） － Dohwan & Ian：Ian 的鼓棒在演出中飛出去打到 Dohwan 已經是固定橋段，粉絲做成了合輯影片。Dohwan 在 2023 年復出演唱會上戴著安全帽登場報復。
+* **리듬즈（節奏 z）** － Seb & Ian：貝斯和鼓組成的節奏組。Seb 說「Ian 的鼓聲比他講話穩」。
+== 3人以上
+* **Three Lines**（♥） － Kyle & Seb & Ian：Dohwan 入伍期間以三人體制活動時的名稱，也是當時特別專輯的名字。三人每場演出都在舞台上留一把吉他。
+* **외국인 라인（外國人線）** － Kyle & Seb & Ian：韓國以外出身的三人。2024 年「Hometown Tour」就是去這三人的家鄉。
+* **라이너（LINER）** － 全員＋粉絲：粉絲名，也被當成全體組合名使用。
+== 其他分類
+=== 年齡
+* 95：Kyle／96：Dohwan、Seb／98：Ian
+=== 室友
+* Kyle & Seb（從出道前就住在一起）
+* Dohwan & Ian（Ian 負責叫 Dohwan 起床）
+=== 出身
+* 美國：Kyle／韓國：Dohwan／澳洲：Seb／台灣：Ian`,
+
+PRISMA9:`== 概要
+{G} 成員間的化學反應整理文件。
+* 成員自己取的、或在直播・團綜裡公開承認過的組合名，後面標（♥）。
+* 出道還不到一年，組合名還在陸續增加中。還沒有組合名的格子先空著。
+== 組合表
+| | Yeon | Hari | Mina | Coco | Riri | Dami | Sol | Aya | Bin |
+| Yeon | — | | | | | | | | 숙제즈 |
+| Hari | | — | | | | 사탕화음 | | | |
+| Mina | | | — | | | | | 일본즈 | |
+| Coco | | | | — | 보통광동 | | 랩즈 | | |
+| Riri | | | | 보통광동 | — | | | | |
+| Dami | | 사탕화음 | | | | — | | | |
+| Sol | | | | 랩즈 | | | — | | |
+| Aya | | | 일본즈 | | | | | — | 막내즈 |
+| Bin | 숙제즈 | | | | | | | 막내즈 | — |
+== 2人
+* **보통광동（普粵）**（♥） － Coco & Riri：一個講普通話、一個講廣東話，兩人聊天常常要靠寫字溝通。出道實境節目《PRISM ROAD》第 3 集兩人用寫字吵架的片段成為節目最多人看的片段。
+* **일본즈（日本 z）**（♥） － Mina & Aya：日本出身的兩人。用日文聊天時特別放鬆，Aya 說只有跟 Mina 在一起才不會怕生。
+* **숙제즈（作業 z）** － Yeon & Bin：Yeon 幫還是國中生的 Bin 檢查作業，結果自己也不會算，被 Bin 笑了一整天。2026 年 4 月的直播片段。
+* **사탕화음（糖果和聲）** － Hari & Dami：主唱組。合唱時的和聲被粉絲叫做「糖果和聲」，常在直播裡即興唱歌。
+* **랩즈（Rap z）** － Coco & Sol：兩位饒舌擔當。一個體力最好、一個最會吃，Sol 晨跑完回宿舍時，Coco 通常已經在吃早餐了。
+* **막내즈（忙內 z）**（♥） － Aya & Bin：團裡最小的兩人。Bin 每天纏著 Aya 玩，怕生的 Aya 只有對 Bin 沒辦法拒絕。
+== 3人以上
+* **외국인즈（外國人 z）** － Mina & Coco & Riri & Aya：韓國以外出身的四人。
+* **프리즘（PRISM）**（♥） － 全員：「九種顏色、同一道光」的團名由來，成員自己用來稱呼全體。
+== 其他分類
+=== 年齡
+* 03：Yeon／04：Hari、Mina／05：Coco、Riri、Dami／06：Sol／07：Aya／08：Bin
+=== 出身
+* 韓國：Yeon、Hari、Dami、Sol、Bin／日本：Mina、Aya／中國：Coco／香港：Riri`,
+
+MELLOWMOON:`== 概要
+{G} 成員間的化學反應整理文件。二人組合，只有一組，但組合名很多。
+* 成員自己取的、或在演出・電台裡公開承認過的組合名，後面標（♥）。
+== 組合表
+| | Haru | Sena |
+| Haru | — | 달의 양쪽 |
+| Sena | 달의 양쪽 | — |
+== 2人
+* **달의 양쪽（月亮的左右兩邊）**（♥） － Haru & Sena：演出時 Haru 一定站左邊、Sena 一定坐在鋼琴前，十年來沒有一次換過位置。2018 年首次演唱會「Moonlight」時 Haru 在台上說出這個名字，成為兩人的代表組合名。
+* **수요일즈（星期三 z）**（♥） － Haru & Sena：兩人至今仍然一起住，家裡的規則是「星期三只講日文」。Sena 的日文就是這樣學會的。2020 年線上電台「月亮電台」第 12 集公開。
+* **반쪽노래（半首歌）** － Haru & Sena：Haru 寫歌常常寫到一半就睡著，剩下的由 Sena 接著寫完。兩人說這是「最好的合作方式」，代表作《Two Moons》也是這樣完成的。
+* **언니동생（學姊學妹）** － Haru & Sena：首爾音樂學校的學姊學妹，畢業後一起在咖啡廳駐唱。粉絲稱呼兩人出道前的時期。
+== 其他分類
+=== 年齡
+* 94：Haru／95：Sena
+=== 室友
+* 兩人一起住，養了一隻 Haru 撿回來的柴犬「月餅」。
+=== 出身
+* 日本：Haru／韓國：Sena`,
+
+NOVELLE:`== 概要
+{G} 成員間的化學反應整理文件。
+* 成員自己取的、或在直播・團綜裡公開承認過的組合名，後面標（♥）。
+* 出道一年多，組合名還在陸續增加中。還沒有組合名的格子先空著。
+== 組合表
+| | Jiho | Taeo | Lucas | Wooj | Ren | Haneul |
+| Jiho | — | 리더보컬 | 슬랭즈 | | | 치킨즈 |
+| Taeo | 리더보컬 | — | | 화음즈 | | |
+| Lucas | 슬랭즈 | | — | | 해외즈 | |
+| Wooj | | 화음즈 | | — | 장난피해자 | |
+| Ren | | | 해외즈 | 장난피해자 | — | 하오츠 |
+| Haneul | 치킨즈 | | | | 하오츠 | — |
+== 2人
+* **슬랭즈（俚語 z）**（♥） － Jiho & Lucas：Lucas 教 Jiho 澳洲俚語，Jiho 在 2025 年 9 月的直播中用錯場合，被粉絲做成梗圖。
+* **하오츠（好吃）**（♥） － Ren & Haneul：Ren 教 Haneul 中文，Haneul 到現在只會說「好吃」，於是兩人的組合名就叫「好吃」。
+* **장난피해자（整人受害者）**（♥） － Ren & Wooj：Ren 的整人對象九成是 Wooj，Wooj 的鞋帶已經被綁在一起好幾次。團綜《Behind the Page》第 2 集的整人特輯是代表片段。
+* **화음즈（和聲 z）** － Taeo & Wooj：主唱與領唱，兩人的和聲被稱為團的「聲音」，在車上常一起唱歌。
+* **치킨즈（炸雞 z）**（♥） － Jiho & Haneul：Haneul 想吃宵夜時都會去找 Jiho，Jiho 每次都說不行，最後還是買了炸雞。
+* **리더보컬（隊長與主唱）** － Jiho & Taeo：同一間練習室出身、練習期最長的兩人。
+* **해외즈（海外 z）** － Lucas & Ren：澳洲和中國出身的兩人，講話時韓文、英文、中文混在一起。
+== 3人以上
+* **동생라인（弟弟線）** － Wooj & Ren & Haneul：03 年後出生的三人。
+* **챕터즈（Chapter z）**（♥） － 全員：「每張專輯是一個章節」的團體概念，成員自己用來稱呼全體。
+== 其他分類
+=== 年齡
+* 01：Jiho／02：Taeo、Lucas／03：Wooj／04：Ren／06：Haneul
+=== 出身
+* 韓國：Jiho、Taeo、Wooj、Haneul／澳洲：Lucas／中國：Ren`,
+
+"ROSÉVA":`== 概要
+{G} 成員間的化學反應整理文件。
+* 成員自己取的、或在直播・團綜裡公開承認過的組合名，後面標（♥）。
+== 組合表
+| | Ari | Vee | Lune | Yena |
+| Ari | — | 장미즈 | 언니라인 | 맏막즈 |
+| Vee | 장미즈 | — | 외국인즈 | 빙산태양 |
+| Lune | 언니라인 | 외국인즈 | — | 사제즈 |
+| Yena | 맏막즈 | 빙산태양 | 사제즈 | — |
+== 2人
+* **빙산태양（冰山與小太陽）**（♥） － Vee & Yena：幾乎不笑的 Vee 只對 Yena 笑，Yena 每次都會截圖發給其他成員炫耀。團綜《ROSÉ ROOM》第 4 集 Vee 笑出聲的片段，被粉絲稱為「世紀名場面」。
+* **사제즈（師徒 z）** － Lune & Yena：Yena 跟 Lune 學舞，Lune 是團裡最嚴格的老師，也是最常幫 Yena 留晚餐的人。
+* **장미즈（玫瑰 z）**（♥） － Ari & Vee：隊長和主 Rap，每次回歸一起決定代表玫瑰。2024 年《Rosé Wine》回歸時，兩人在花市挑花的影片公開。
+* **외국인즈（外國人 z）** － Vee & Lune：泰國和台灣出身的兩人，用中文、泰文、韓文混著聊天。
+* **맏막즈（大忙 z）** － Ari & Yena：隊長和忙內。Yena 的撒嬌對 Ari 最有效。
+* **언니라인（姐姐線）** － Ari & Lune：團裡最穩重的兩人，負責管理宿舍的作息表。
+== 3人以上
+* **아시아투어즈（亞洲巡迴 z）** － Ari & Vee & Lune：2025 年首次亞洲巡迴時，各自在家鄉場用母語主持（首爾、曼谷、台北）。
+* **로즈가든（玫瑰花園）**（♥） － 全員：每次回歸換一種玫瑰的傳統而來的全體組合名。
+== 其他分類
+=== 年齡
+* 99：Ari／00：Vee／01：Lune／03：Yena
+=== 室友
+* Ari & Yena／Vee & Lune
+=== 出身
+* 韓國：Ari、Yena／泰國：Vee／台灣：Lune`
+};
 
 /* =========================================================
    虛擬歌手的「人設」和寫好的內容（11/24）
