@@ -8294,3 +8294,6 @@ html[data-theme] .t-modal.sv3-tm p.sv3-tag,html[data-theme] .t-modal.sv3-tm p.sv
 .aws.svsh .svsh-nov img,.aws.svsh .svsh-ph img,.fc-ph img,.svsh-mont img{object-position:50% 18%!important}
 .sv2 .sv3-sp img,.sv2 .sv3-sp video{object-position:50% 18%}
 .svnx-c .aws-v img.svsh-img,.svnx-c .aws-v video{object-fit:contain!important;background:#1a1016}
+/* 照片框跟著照片大小（3:4 的照片剛好塞滿，不會有黑邊） */
+.aws.svsh .aws-v:has(> .svsh-img){width:fit-content;max-width:100%;margin-left:auto!important;margin-right:auto!important;background:none}
+.aws.svsh .aws-v > img.svsh-img{width:auto!important;max-width:100%;height:auto!important;max-height:52vh;display:block}
