@@ -835,7 +835,7 @@ addEventListener("hashchange",()=>{ if(!/p=survival/.test(location.hash)) ui.svS
 addEventListener("popstate",e=>{ if(ui.svSh&&!(e.state&&e.state.svsh)){ ui.svSh=null; layer.innerHTML=""; } });   /* 節目中按返回＝關掉節目回到選秀頁 */
 
 /* 11/24 管理員的 App 開著就會準時開播（不用等換頁） */
-setInterval(()=>{ try{ if(!isAdminAcct()) return; const s=svReal(); if(s&&s.end&&s.ph!=="done"&&Date.now()>=s.end){ svTick(); render(); } }catch(e){} },15000);
+setInterval(()=>{ try{ if(!isAdminAcct()||document.hidden) return; const s=svReal(); if(s&&s.end&&s.ph!=="done"&&Date.now()>=s.end){ const b=JSON.stringify(s); svTick(); const a2=svReal(); if(a2&&JSON.stringify(a2)!==b&&a2.ph!==s.ph&&!document.querySelector(".sb-moving")) render(); } }catch(e){} },15000);   /* 只有真的換階段才重畫，不會在滑動時一直重畫 */
 
 /* 交舞台：影片取景（拖曳＝移動，滑桿＝放大） */
 (function(){ let d=null; const ap=()=>{ const f=ui.svU, v=document.querySelector("#svFr video"); if(f&&v) v.setAttribute("style",svFp(f)); };
