@@ -162,7 +162,7 @@ function hbMergeArr(b,l,r){
   return [...extra.filter(x=>front.has(hbId(x))),...out,...extra.filter(x=>!front.has(hbId(x)))]; }
 /* 寫入：先存手機，再排隊送上雲端 */
 /* ===== 試玩模式（只有 HUSSEY）：在自己手機上玩，什麼都不上傳、不收別人的更新；結束時從雲端還原 ===== */
-function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true;   /* 管理員們也能試玩，幫忙給反饋 */
+function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true; if(typeof svTester==="function"&&svTester(s)) return true;   /* 選秀測試帳號（Bini）也能試玩 */   /* 管理員們也能試玩，幫忙給反饋 */
     const m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
 function sbxOn(){ try{ return localStorage.getItem("hc_sandbox")==="1"&&sbxWho(); }catch(e){ return false; } }
 /* 試玩開始：先把「只在這支手機、不上雲端」的設定備份起來（積分顯示、各種本機狀態）；雲端那些結束時直接重新抓 */

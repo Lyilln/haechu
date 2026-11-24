@@ -13,7 +13,8 @@ const mkGid=cid=>{ const o=parseIt(cid); return o?o.a.gid:""; };
 const mkNo=n=>n?"No."+String(n).padStart(4,"0"):"";
 const mkLab=cid=>{ const o=parseIt(cid); if(!o) return {who:"",kind:"",alb:""}; const m=MEMBERS[o.p.mid], g=groupOf(o.a.gid)||{}; return {who:m?m.name:g.name||"",grp:g.name||"",kind:o.it.name,alb:o.a.title,sp:!!o.p.sp,rule:o.it.rule||"album"}; };
 /* 共用資料用版本號改（跟序號計數器同一招）；fn 回傳 false 代表不用改 */
-async function kvCas(k,fn){ for(let i=0;i<6;i++){ const rows=await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&select=k,v,ver,updated_at`), row=Array.isArray(rows)&&rows[0], v=row?row.v:null, res=fn(v);
+async function kvCas(k,fn){ if(typeof sbxOn==="function"&&sbxOn()){ const res=fn(S.get(k,null)); if(res===false) return false; S.set(k,res.v); return res.out===undefined?true:res.out; }   /* 試玩中：只改這支手機 */
+  for(let i=0;i<6;i++){ const rows=await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&select=k,v,ver,updated_at`), row=Array.isArray(rows)&&rows[0], v=row?row.v:null, res=fn(v);
     if(res===false) return false; const nv=res.v; let r=null;
     try{ r=row?await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&ver=eq.${row.ver}`,{method:"PATCH",body:{v:nv},prefer:"return=representation"}):await hbFetch("/rest/v1/kv",{method:"POST",body:{k,v:nv},prefer:"return=representation"}); }
     catch(e){ if(e.status!==409&&!/duplicate/i.test(e.message||"")) throw e; }

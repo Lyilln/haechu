@@ -707,7 +707,7 @@ function hbMergeArr(b,l,r){
   return [...extra.filter(x=>front.has(hbId(x))),...out,...extra.filter(x=>!front.has(hbId(x)))]; }
 /* 寫入：先存手機，再排隊送上雲端 */
 /* ===== 試玩模式（只有 HUSSEY）：在自己手機上玩，什麼都不上傳、不收別人的更新；結束時從雲端還原 ===== */
-function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true;   /* 管理員們也能試玩，幫忙給反饋 */
+function sbxWho(){ try{ const s=session(); if(!s) return false; const a=ACCOUNTS[s.email]||{}; if(a.role==="admin"||s.uni||s.admin) return true; if(typeof svTester==="function"&&svTester(s)) return true;   /* 選秀測試帳號（Bini）也能試玩 */   /* 管理員們也能試玩，幫忙給反饋 */
     const m=MEMBERS[a.member||s.home||""]; if(!m) return false; const g=groupOf(m.group); return String(m.name).toUpperCase()==="HUSSEY"||!!(g&&String(g.name).toUpperCase()==="HUSSEY"); }catch(e){ return false; } }
 function sbxOn(){ try{ return localStorage.getItem("hc_sandbox")==="1"&&sbxWho(); }catch(e){ return false; } }
 /* 試玩開始：先把「只在這支手機、不上雲端」的設定備份起來（積分顯示、各種本機狀態）；雲端那些結束時直接重新抓 */
@@ -15529,7 +15529,8 @@ const svReal=()=>{ const x=S.get(SVS,null); return x&&x.ph!=="x"?x:null; };   /*
 const SV_CO="daisuki_acc_co", svCoOf=em=>((S.get(SV_CO,{})||{})[String(em||"").toLowerCase()])||"";
 const svIsArtist=em=>{ const a=ACCOUNTS[String(em||"").toLowerCase()]||{}; return a.role==="artist"||!!a.member; };
 const SV_SK=["Vocal","Dance","Rap","Visual"];
-const svSeason=()=>ui.svDemo&&!ui.svRealCtx&&svDemoOk()?svDemoSeason():ui.svReh&&!ui.svRealCtx&&svDemoOk()?svRehSeason():svReal();
+const svRehOn=()=>{ try{ return sbxOn()&&localStorage.getItem("hc_sv_reh")==="1"; }catch(e){ return false; } };
+const svSeason=()=>ui.svDemo&&!ui.svRealCtx&&svDemoOk()?svDemoSeason():svRehOn()&&!ui.svRealCtx?svRehSeason():svReal();
 /* 11/24 搶先預演（測試帳號用）：拿「真的這一季」的資料（真的練習生、真的上傳）假裝已經開播，跑一次真的流程抓 bug。只在這支手機、什麼都不會存 */
 function svRehSeason(){ const r=svReal(); if(!r||r.ph!=="recruit") return r; const C=ui.svRehC; if(C&&C.k===JSON.stringify([r.id,r.end,(S.get(SVST,[])||[]).length])&&Date.now()-C.t<15e3) return C.s;
   const t0=Date.now()-60e3, c={...r,ph:"r1",reh:1,t0,t0s:{...(r.t0s||{}),r1:t0},end:t0+SV_DUR.r1*864e5,ends:{...(r.ends||{}),r1:t0+SV_DUR.r1*864e5},grPub:{lv:t0},out:[]};
@@ -15828,7 +15829,7 @@ function svOnAir(s,hd){ if(route().role==="artist") return hd; const m=svMsNow(s
   return `<header class="top core-top svair ${svTheme()}"><div class="top-row"><button class="icon-btn" data-a="back" aria-label="返回">${I.back}</button><div class="svair-t"><b>PRODUCE DAY</b><span>${esc(m?m.t:ph)}</span></div><button class="icon-btn" data-a="pgInfo" data-v="survival" aria-label="玩法說明"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></button></div>
     <div class="svair-tk"><em>${svVoting()?"ON AIR":"NOW"}</em><span>${esc(ph)}${svVoting()?`・第 ${svDayN(s)} 天`:""}</span>${nx&&svVoting()?`<span>${esc(nx)} ${svCd(s)}</span>`:""}</div></header>`; }
 function viewSurvival(id){ const s=svSeason(), th=svTheme(), hd=(route().role==="artist"?focHead:coreHead)(id?"練習生":"選秀",id?"":"survival");
-  const pre=(s.reh?`<p class="sv-closed">預演中：這是開播後的樣子（真的練習生、真的上傳），只有你看得到，投票和交舞台不會送出 <button class="sv5-sub" data-a="svReh">結束預演</button></p>`:"")+(svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`);
+  const pre=(s.reh?`<p class="sv-closed">預演中：這是開播後的樣子（真的練習生、真的上傳）。你在這裡做的事只在這支手機 <button class="sv5-sub" data-a="svReh">結束預演・一鍵清空</button></p>`:"")+(svOpen()?"":`<p class="sv-closed">目前沒有開放，這是管理員預覽</p>`);
   if(!s) return hd+`<main class="page sv2 ${th}">${pre}${svHero("下一季準備中","",svPyr([0,1,2,3,4,5],(x,i)=>`<div class="sv2-t svx-e"><span class="sv2-p"><i class="sv2-sil"></i></span><b>${i+1}位</b><span>？</span></div>`),"《COMING SOON》")}${svDemoOk()?`<button class="sv2-cta" data-a="svDemo" data-v="recruit">看示範</button>`:""}</main>`;
   if(id) return hd+svProfile(id);
   const dm=s.demo?`<div class="sv3-dm">${[["recruit","招募"],["r1","第一輪"],["a:r1","第一次發表"],["r2","第二輪"],["a:r2","第二次發表"],["pr","PR 週"],["final","決賽"],["a:final","出道發表"],["prep","出道準備"],["","結束示範"]].map(([k,l])=>`<button class="${k===s.ph?"on":""} ${k[0]==="a"?"an":""}" data-a="svDemo" data-v="${k}">${l}</button>`).join("")}<span class="sv3-dmv">看誰的畫面：</span><button class="${ui.svDemoT?"":"on"}" data-a="svDemoT" data-v="">投票的粉絲</button><button class="${ui.svDemoT?"on":""}" data-a="svDemoT" data-v="1">參賽的練習生</button></div>`:"";
@@ -16135,8 +16136,8 @@ function svAdminHtml(){ const s=svSeason(), E=svEntries();
 function svSent(s,B,n){ S.set(acK("daisuki_sv_day"),{k:svDayK(),n:svUsed()+n}); const my=S.get(acK("daisuki_sv_my"),{})||{}; Object.entries(B).forEach(([id,c])=>{ my[id]=(my[id]||0)+c; }); S.set(acK("daisuki_sv_my"),my);
   const all=svAll(), rk=svRank(), y=window.scrollY; render(); window.scrollTo(0,y);
   xvResult({tone:svTheme()==="g"?"p":"b",small:"PRODUCE DAY",title:"PICK 完成",big:`${n} 票`,chips:[...Object.keys(B).map(id=>`${(all.find(x=>x.id===id)||{}).name} 現在 ${rk.indexOf(id)+1}位`),svLeft()?`今天還能投 ${svLeft()} 票`:"今天投完了，明天再來"],back:"好"}); }
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(a==="svReh"){ e.stopImmediatePropagation(); ui.svReh=!ui.svReh; ui.svRehC=null; ui.svSh=null; ui.svShIn=0; layer.innerHTML=""; render(); window.scrollTo(0,0); toast(ui.svReh?"預演開始：這是開播後的樣子，只有你看得到":"結束預演"); return; }
-  if((svSeason()||{}).reh&&/^sv(Send|Lv|UpOk|Up|UpPick|ApplyOk|Apply|SpeakOk|ChSend|PrOk|CvOk|C1|Seat|Quit|Photo)$/.test(a)){ e.stopImmediatePropagation(); toast("預演中：只能看，投票和交舞台不會送出"); return; }
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(a==="svReh"){ e.stopImmediatePropagation(); if(svRehOn()){ ask("結束預演？剛剛在預演裡做的事（投票、交舞台、改資料）全部清掉，回到真的資料。",()=>sbxOff(),{ok:"結束並清空",danger:false}); return; }
+    ask("開始預演？\n用真的這一季（真的練習生、真的上傳）假裝已經開播，投票、交舞台、改資料都能真的做，但只在這支手機，不會影響其他人。結束時一鍵清空。",()=>{ try{ if(!sbxOn()) sbxStart(); localStorage.setItem("hc_sv_reh","1"); }catch(er){} ui.svRehC=null; ui.svSh=null; ui.svShIn=0; layer.innerHTML=""; try{ sbxPill(); }catch(er){} render(); window.scrollTo(0,0); toast("預演開始"); },{ok:"開始預演",danger:false}); return; }
   if(!/^sv(Pick|Unpick|Send|Apply|ApplyOk|Photo|Co|Quit|New|Next|Done|PrepW|End|Bonus|BonusOk|Kick|RevealGo|NextEp|NextX|DebutApply|Demo|xSkip|Seat|Sk|Speak|SpeakOk|Gr|GrOk|Mk|Stage|Lv|Up|UpPick|UpPos|UpOk|Cm|CmOk|Cast|CastOk|DbDraft|DbSave|MemEd|MemOk|PvNew|PvOk|Pvo|PvEnd|Tab|More|DemoT|NpcPh|Ch1|C1|ChSend|GrPubNow|GrPubOk|PrS|PrOk)$/.test(a)) return; e.stopImmediatePropagation();
   const rr=()=>{ const y=window.scrollY; render(); window.scrollTo(0,y); }, s=svSeason();
   switch(a){
@@ -16513,7 +16514,8 @@ const mkGid=cid=>{ const o=parseIt(cid); return o?o.a.gid:""; };
 const mkNo=n=>n?"No."+String(n).padStart(4,"0"):"";
 const mkLab=cid=>{ const o=parseIt(cid); if(!o) return {who:"",kind:"",alb:""}; const m=MEMBERS[o.p.mid], g=groupOf(o.a.gid)||{}; return {who:m?m.name:g.name||"",grp:g.name||"",kind:o.it.name,alb:o.a.title,sp:!!o.p.sp,rule:o.it.rule||"album"}; };
 /* 共用資料用版本號改（跟序號計數器同一招）；fn 回傳 false 代表不用改 */
-async function kvCas(k,fn){ for(let i=0;i<6;i++){ const rows=await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&select=k,v,ver,updated_at`), row=Array.isArray(rows)&&rows[0], v=row?row.v:null, res=fn(v);
+async function kvCas(k,fn){ if(typeof sbxOn==="function"&&sbxOn()){ const res=fn(S.get(k,null)); if(res===false) return false; S.set(k,res.v); return res.out===undefined?true:res.out; }   /* 試玩中：只改這支手機 */
+  for(let i=0;i<6;i++){ const rows=await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&select=k,v,ver,updated_at`), row=Array.isArray(rows)&&rows[0], v=row?row.v:null, res=fn(v);
     if(res===false) return false; const nv=res.v; let r=null;
     try{ r=row?await hbFetch(`/rest/v1/kv?k=eq.${encodeURIComponent(k)}&ver=eq.${row.ver}`,{method:"PATCH",body:{v:nv},prefer:"return=representation"}):await hbFetch("/rest/v1/kv",{method:"POST",body:{k,v:nv},prefer:"return=representation"}); }
     catch(e){ if(e.status!==409&&!/duplicate/i.test(e.message||"")) throw e; }
