@@ -10659,7 +10659,7 @@ function snArSeen(el,w,h){ try{ if(!w||!h) return; const sl=el.closest(".sn-sl")
 document.addEventListener("load",e=>{ const el=e.target; if(el&&el.tagName==="IMG"&&el.classList.contains("sn-img")) snArSeen(el,el.naturalWidth,el.naturalHeight); },true);
 document.addEventListener("loadedmetadata",e=>{ const el=e.target; if(el&&el.tagName==="VIDEO"&&el.classList.contains("sn-vid")) snArSeen(el,el.videoWidth,el.videoHeight); },true);
 const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics?p.pics[i]:p.id+i,u?u.g:0,"fill"); if(m.type==="html") return `<div class="snof-h">${m.h}</div>`; if(m.url&&m.type!=="video") return `<img class="sn-img" src="${esc(m.url)}" alt="" loading="lazy">`;
-  if(m.type==="video"&&m.url) return `<video class="sn-img sn-vid" src="${esc(m.url)}" ${m.st?`style="${esc(m.st)}"`:""} muted playsinline webkit-playsinline loop preload="metadata"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;   /* 11/24 網址影片（選秀官方帳號的舞台）跟一般貼文一樣的樣子 */
+  if(m.type==="video"&&m.url) return `<video class="sn-img sn-vid" data-vurl="${esc(m.url)}" ${m.st?`style="${esc(m.st)}"`:""} muted playsinline webkit-playsinline loop preload="metadata"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;   /* 11/24 網址影片（選秀官方帳號的舞台）跟一般貼文一樣的樣子 */
   if(m.type==="video") return `<video class="sn-img sn-vid" data-vmid="${m.mid}" data-pmid="${m.poster||""}" muted playsinline webkit-playsinline loop preload="none"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;
   return `<img class="sn-img" data-mid="${m.mid}" alt="">`; };
 /* 格子裡的小圖：影片用封面，右上角放 Reels 圖示 */
@@ -11289,9 +11289,9 @@ function snSndToggle(){ ui.snMute=ui.snMute===false; document.querySelectorAll("
 ui.snVT=ui.snVT||{};
 let snVio=null;
 function snVidScan(){ const L=document.querySelectorAll("video.sn-vid:not([data-ob])"); if(!L.length) return;
-  if(!snVio&&"IntersectionObserver" in window) snVio=new IntersectionObserver(es=>es.forEach(e=>{ const v=e.target; if(e.isIntersecting&&e.intersectionRatio>=.6) snVidOn(v); else { if(!v.paused){ ui.snVT[v.dataset.vmid]=v.currentTime; v.pause(); } } }),{threshold:[0,.6]});
+  if(!snVio&&"IntersectionObserver" in window) snVio=new IntersectionObserver(es=>es.forEach(e=>{ const v=e.target; if(e.isIntersecting&&e.intersectionRatio>=(v.dataset.vurl?.3:.6)) snVidOn(v); else { if(!v.paused){ ui.snVT[v.dataset.vmid]=v.currentTime; v.pause(); } } }),{threshold:[0,.3,.6]});
   L.forEach(v=>{ v.dataset.ob="1"; v.muted=ui.snMute!==false; if(v.dataset.pmid) mediaSrc(v.dataset.pmid).then(u=>{ if(u&&!v.poster) v.poster=u; }); v.addEventListener("timeupdate",()=>{ ui.snVT[v.dataset.vmid]=v.currentTime; }); if(snVio) snVio.observe(v); else snVidOn(v); }); }
-async function snVidOn(v){ if(!v.isConnected) return; if(!v.src){ v.closest(".sn-sl,.sn-rbg")?.classList.add("vload"); const u=await mediaSrc(v.dataset.vmid); v.closest(".sn-sl,.sn-rbg")?.classList.remove("vload"); if(!u||!v.isConnected){ v.closest(".sn-sl,.sn-rbg")?.classList.add("gone"); return; } v.src=u; const t=ui.snVT[v.dataset.vmid]; if(t) try{ v.currentTime=t; }catch(e){} }
+async function snVidOn(v){ if(!v.isConnected) return; if(!v.src){ v.closest(".sn-sl,.sn-rbg")?.classList.add("vload"); const u=v.dataset.vurl?await svVBlob(v.dataset.vurl):await mediaSrc(v.dataset.vmid);   /* 網址影片：跟一般貼文一樣先整支下載到手機再播，iPhone 才會自動播 */ v.closest(".sn-sl,.sn-rbg")?.classList.remove("vload"); if(!u||!v.isConnected){ v.closest(".sn-sl,.sn-rbg")?.classList.add("gone"); return; } v.src=u; const t=ui.snVT[v.dataset.vmid]; if(t) try{ v.currentTime=t; }catch(e){} }
   v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>snVidTap(v)); }); }
 /* 播不出來（省電模式擋自動播放、網路斷掉）：先秀第一格，加一顆 ▶ 讓人點 */
 function snVidTap(v){ const w=v.closest(".sn-sl,.sn-rbg,.sn-simg"); if(!w||w.querySelector(".sn-vtap")) return; try{ if(!v.currentTime) v.currentTime=.1; }catch(e){} const b=document.createElement("button"); b.className="sn-vtap"; b.setAttribute("aria-label","播放"); b.innerHTML="▶"; b.onclick=ev=>{ ev.stopPropagation(); b.remove(); v.muted=ui.snMute!==false; v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); }); }; w.appendChild(b); }
@@ -15779,6 +15779,7 @@ const svUpMs=s=>s.ph==="recruit"?{ph:"r1",m:SV_MS.r1[0]}:{ph:s.ph,m:svMsNow(s)};
 /* 11/24 舞台畫面一律 3:4：照片上傳時就裁成 3:4；影片不重新轉檔，記下練習生挑的取景（位置＋放大），播的時候照這個裁 */
 /* 11/24 舞台影片播不出來（直接串流失敗）→ 自動改成整支下載到手機再播（SNS 一直都是這樣播的） */
 const SV_VB={};
+const svVBlob=u=>{ u=String(u||"").split("#")[0]; if(!u) return Promise.resolve(null); if(!SV_VB[u]) SV_VB[u]=fetch(u).then(r=>r.ok?r.blob():null).then(b=>b&&b.size?URL.createObjectURL(b.type&&b.type!=="application/octet-stream"?b:new Blob([b],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"})):null).catch(()=>null); return SV_VB[u]; };
 document.addEventListener("error",async e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)) return; const src=v.currentSrc||v.getAttribute("src")||""; if(!/\/media\/svs_/.test(src)||v.dataset.svb) return; v.dataset.svb="1";
   const u=src.split("#")[0], frag=src.includes("#")?"#"+src.split("#")[1]:"";
   try{ if(!SV_VB[u]) SV_VB[u]=fetch(u).then(r=>r.ok?r.blob():null).then(b=>b&&b.size?URL.createObjectURL(b.type&&b.type!=="application/octet-stream"?b:new Blob([b],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"})):null).catch(()=>null);
@@ -16437,17 +16438,17 @@ function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(
     const MS=k=>{ for(const ph in SV_MS) { const m=(SV_MS[ph]||[]).find(x=>x.k===k); if(m) return m.t; } return ""; };
     const med=(y,t)=>y.url?(y.kind==="v"?{type:"video",url:y.url,st:svFp(y)}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
     ["r1","r2","pr","final"].flatMap(p=>svStages(p)).filter(y=>y&&!y.del&&!y.v&&y.url&&y.sid===s.id).forEach(y=>{   /* 11/24 原本拿不到任何舞台（沒給階段），官方帳號一直沒有舞台貼文 */ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
-      out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.ts||Date.now(),base:svHash(y.id+"lk")%60,
+      out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.ts||Date.now(),base:0,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
     /* 開播：每位練習生的公式照＋名字（3:4，真人照片不切到臉） */
-    const t1=svPhT0(s)+60*6e4; svAll().forEach((t,i)=>{ out.push({id:"pdp_"+t.id,uid:"o:pd",npc:1,ar:"3/4",ts:((s.t0s||{}).r1||t1)+i*6e4,base:50+svHash(t.id+"pf")%120,
+    const t1=svPhT0(s)+60*6e4; svAll().forEach((t,i)=>{ out.push({id:"pdp_"+t.id,uid:"o:pd",npc:1,ar:"3/4",ts:((s.t0s||{}).r1||t1)+i*6e4,base:0,
       cap:`[PRODUCE DAY] ${t.name}\n${svCoName(t)}\n\n#PRODUCEDAY #${String(t.name||"").replace(/\s+/g,"")}`,
       media:[{type:"html",h:`<div style="width:100%;height:100%;background:#FFE3EF;display:flex;align-items:flex-start;justify-content:center;overflow:hidden">${t.photo?`<img src="${esc(t.photo)}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%">`:svPh(t)}</div>`}]}); });
     /* 節目片段 */
     const card=(top,big,line)=>({type:"html",h:`<div style="width:100%;height:100%;display:flex;flex-direction:column;justify-content:center;gap:10px;padding:22px;background:#FFF5F9;font-family:inherit"><b style="align-self:flex-start;background:#F0408F;color:#fff;font-size:12px;padding:3px 10px;letter-spacing:.1em">${esc(top)}</b><b style="font-size:26px;color:#F0408F">${esc(big)}</b><p style="margin:0;background:#2B2129;color:#fff;padding:10px 12px;font-size:14px;line-height:1.6">${esc(line)}</p></div>`});
-    try{ const c=s.ph==="r1"?svC1(s):null, w=c&&c.win; if(w&&w.msg) out.push({id:"pdc_pr_"+s.id,uid:"o:pd",npc:1,ts:svPhT0(s)+36e5,base:80,cap:`[1 分鐘 PR] 1 號位的主人，${w.name}\n\n#PRODUCEDAY #1分鐘PR`,media:[card("1 分鐘 PR",w.name,"「"+w.msg+"」")]}); }catch(e){}
+    try{ const c=s.ph==="r1"?svC1(s):null, w=c&&c.win; if(w&&w.msg) out.push({id:"pdc_pr_"+s.id,uid:"o:pd",npc:1,ts:svPhT0(s)+36e5,base:0,cap:`[1 分鐘 PR] 1 號位的主人，${w.name}\n\n#PRODUCEDAY #1分鐘PR`,media:[card("1 分鐘 PR",w.name,"「"+w.msg+"」")]}); }catch(e){}
     try{ const G=s.grade||{}; Object.keys(G).filter(id=>G[id]==="A"||G[id]==="F").sort((a,b)=>svHash(a+"cl")-svHash(b+"cl")).slice(0,4).forEach((id,i)=>{ const t=all.find(x=>x.id===id); if(!t) return; const cm=svGrCm(s,t);
-      out.push({id:"pdc_gr_"+id,uid:"o:pd",npc:1,ts:svPhT0(s)+(2+i)*36e5,base:30+svHash(id)%40,cap:`[等級評價] ${t.name}，${G[id]} 班\n\n#PRODUCEDAY #等級評價`,media:[card("等級評價・"+G[id]+" 班",t.name,cm.n+"：「"+cm.t+"」")]}); }); }catch(e){}
+      out.push({id:"pdc_gr_"+id,uid:"o:pd",npc:1,ts:svPhT0(s)+(2+i)*36e5,base:0,cap:`[等級評價] ${t.name}，${G[id]} 班\n\n#PRODUCEDAY #等級評價`,media:[card("等級評價・"+G[id]+" 班",t.name,cm.n+"：「"+cm.t+"」")]}); }); }catch(e){}
     return out; }catch(e){ return []; } finally{ svPdBusy=0; } }
 /* 瀏覽：每個帳號每則只算一次 */
 function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,v=>{ const o={...(v||{})}; o[pid]=(o[pid]||0)+1; return {v:o}; }); }catch(e){} }

@@ -276,6 +276,7 @@ const svUpMs=s=>s.ph==="recruit"?{ph:"r1",m:SV_MS.r1[0]}:{ph:s.ph,m:svMsNow(s)};
 /* 11/24 舞台畫面一律 3:4：照片上傳時就裁成 3:4；影片不重新轉檔，記下練習生挑的取景（位置＋放大），播的時候照這個裁 */
 /* 11/24 舞台影片播不出來（直接串流失敗）→ 自動改成整支下載到手機再播（SNS 一直都是這樣播的） */
 const SV_VB={};
+const svVBlob=u=>{ u=String(u||"").split("#")[0]; if(!u) return Promise.resolve(null); if(!SV_VB[u]) SV_VB[u]=fetch(u).then(r=>r.ok?r.blob():null).then(b=>b&&b.size?URL.createObjectURL(b.type&&b.type!=="application/octet-stream"?b:new Blob([b],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"})):null).catch(()=>null); return SV_VB[u]; };
 document.addEventListener("error",async e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)) return; const src=v.currentSrc||v.getAttribute("src")||""; if(!/\/media\/svs_/.test(src)||v.dataset.svb) return; v.dataset.svb="1";
   const u=src.split("#")[0], frag=src.includes("#")?"#"+src.split("#")[1]:"";
   try{ if(!SV_VB[u]) SV_VB[u]=fetch(u).then(r=>r.ok?r.blob():null).then(b=>b&&b.size?URL.createObjectURL(b.type&&b.type!=="application/octet-stream"?b:new Blob([b],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"})):null).catch(()=>null);
