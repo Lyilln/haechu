@@ -4152,8 +4152,8 @@ function exploreTop(){
     ${ban.length?`<div class="ex-ban" id="exBan">${ban.map(g=>`<button class="ex-b" data-a="gOpen" data-v="${g.id}" style="background:${grad(g.g)}"><b>OPEN! ${esc(g.name)}</b><small>立即前往查看</small><span>${esc(ini(g.name))}</span></button>`).join("")}</div>${ban.length>1?`<div class="tiei-dots ex-dots">${ban.map((_,i)=>`<i class="${i?"":"on"}"></i>`).join("")}</div>`:""}`:""}
     <h2 class="mf-h">全部社群</h2>
     <div class="ex-cat">${[["all","全部"],["group","Group"],["solo","Solo"],["new","New"]].map(([k,l])=>`<button class="${cat===k?"on":""}" data-a="exCat" data-v="${k}">${l}</button>`).join("")}</div>
-    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>MEMBERS[id].name), on=fa.includes(g.id);   /* 社群外面一律顯示藝名（個人社群改的名字只在個人社群裡） */return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"feed")+" "+artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${gNew(g)?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}</div>
-    ${all.length>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}${typeof npcExploreHtml==="function"?npcExploreHtml():""}`;
+    <div class="ex-list">${shown.map(g=>{const ms=grpMembers(g.id).map(id=>MEMBERS[id].name), on=fa.includes(g.id);   /* 社群外面一律顯示藝名（個人社群改的名字只在個人社群裡） */return `<div class="ex-g" data-q="${esc(nz(g.name+" "+ms.join(" ")+" "+grpMembers(g.id).map(id=>artName(id,"feed")+" "+artName(id,"tie")).join(" ")))}"><button class="ex-gi" data-a="gOpen" data-v="${g.id}"><i style="background:${grad(g.g)}">${gIcoIn(g)}</i><span><b>${esc(g.name)}${gNew(g)?' <em class="ex-new">NEW</em>':""}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="gOpen" data-v="${g.id}">前往</button>`:`<button class="ex-btn" data-a="gJoin" data-v="${g.id}">加入</button>`}</div>`}).join("")}${(()=>{ const N=typeof npcExRows==="function"?npcExRows(cat):[]; return N.slice(0,ui.exAll?N.length:Math.max(0,4-shown.length)).join(""); })()}</div>
+    ${all.length+(typeof npcExRows==="function"?npcExRows(cat).length:0)>4?`<button class="ex-more" data-a="exAll">${ui.exAll?"收起":"查看全部社群 ›"}</button>`:""}`;
 }
 /* 搜尋：直接在全部社群裡篩選（不重畫，才不會收鍵盤） */
 document.addEventListener("input",e=>{ const t=e.target; if(!t.classList||!t.classList.contains("fd-in")) return; const M=S.get(K.fandom,{}); M[t.dataset.g]=t.value.trim(); S.set(K.fandom,M); });
@@ -16525,15 +16525,15 @@ window.addEventListener("hashchange",()=>{ if(ui.awS){ clearTimeout(ui.awT); ui.
    ========================================================= */
 const NPCWK="daisuki_npc_wiki";
 const NPC_INFO={
-  AURAVEIL:{ko:"오라베일",co:"Lumière Ent.",debut:"2020-03-12",type:"五人女子團體",fan:"VEILY（베일리）",col:"#8FA4C4",
+  AURAVEIL:{ko:"오라베일",co:"JYP Entertainment",debut:"2020-03-12",type:"五人女子團體",fan:"VEILY（베일리）",col:"#8FA4C4",
     mem:[["Rhea","李書允","1998.05.17","隊長、主唱","韓國"],["Siena","森下詩音","1999.01.09","領舞、副唱","日本"],["Juno","朴采媛","1999.08.22","主Rap、領舞","韓國"],["Elle","Ellada Wongsakul","2000.11.30","主舞、副唱","泰國"],["Noa","韓知雅","2002.02.14","副唱、忙內","韓國"]],
     body:`== 概要
-{G}是 Lumière Ent. 於 2020 年 3 月 12 日推出的五人女子團體。團名結合「Aura（氛圍）」與「Veil（面紗）」，意思是「藏在面紗後面、慢慢顯露出來的光芒」。
-以夢幻、帶點冷感的概念為主，舞台以整齊的群舞和高音聞名。成員來自韓國、日本、泰國三個國家。
+{G}是 JYP Entertainment 於 2020 年 3 月 12 日推出的五人女子團體。團名結合「Aura（氛圍）」與「Veil（面紗）」，意思是「藏在面紗後面、慢慢顯露出來的光芒」。
+以夢幻、帶點冷感的概念為主，舞台以整齊的群舞和高音聞名。成員來自韓國、日本、泰國三個國家，延續公司重視海外市場的路線，出道後很快就在日本、泰國展開活動。
 == 成員
 （見上方資訊欄）
 == 出道前
-* 出道前以「Lumière Girls」的名義在公司 SNS 公開練習影片，其中泰國成員 Elle 的獨舞影片在短影音平台累積超過百萬觀看，成為最早的話題。
+* 出道前以「Veil Project」的名義在公司 SNS 公開練習影片，其中泰國成員 Elle 的獨舞影片在短影音平台累積超過百萬觀看，成為最早的話題。
 * 隊長 Rhea 曾參加其他公司的練習生計畫，練習期長達 6 年。
 * 日本成員 Siena 是在東京的公開甄選中被選上，來韓國時一句韓文都不會說。
 == 活動
@@ -16545,7 +16545,7 @@ const NPC_INFO={
 * 2022 年發行正規一輯《Behind the Veil》，舉辦首次亞洲巡迴，泰國場由 Elle 全程用泰文主持。
 * 2023 年 Siena 因健康問題暫停活動三個月，其餘四人以四人體制完成回歸。
 === 2024 年～2025 年
-* 2024 年全員與公司續約，成為公司第一組續約的團體。
+* 2024 年全員與公司續約。同年在日本發行首張日文單曲。
 * 2025 年發行迷你四輯《Frost》，主打歌風格轉向冷調電子。
 === 2026 年
 * 以單曲《Glass Garden》回歸。主打歌把玻璃溫室的意象做成舞台裝置，「碎玻璃走位」受到討論。
@@ -16559,10 +16559,10 @@ const NPC_INFO={
 * 應援色是霧藍色，官方稱為「Veil Blue」。
 * 成員宿舍裡有一面寫滿彼此生日願望的牆，是出道前就開始的傳統。
 * Siena 和 Elle 剛來韓國時，兩人用破破的英文溝通，現在三種語言混著講，被成員們稱為「宿舍翻譯機」。`},
-  ODDLINE:{ko:"오드라인",co:"Blue Wave",debut:"2018-09-05",type:"四人男子樂團",fan:"LINER（라이너）",col:"#4B5B6E",
+  ODDLINE:{ko:"오드라인",co:"HYBE",debut:"2018-09-05",type:"四人男子樂團",fan:"LINER（라이너）",col:"#4B5B6E",
     mem:[["Kyle","Kyle Kang（姜宇辰）","1995.03.03","隊長、主唱、節奏吉他","美國"],["Dohwan","尹度桓","1996.07.19","主音吉他","韓國"],["Seb","Sebastian Seo（徐承範）","1996.12.02","貝斯","澳洲"],["Ian","林以寬","1998.04.25","鼓手、副唱","台灣"]],
     body:`== 概要
-{G}是 Blue Wave 於 2018 年 9 月 5 日推出的四人男子樂團。團名的意思是「與眾不同的那條線」，代表他們想走一條跟一般偶像不一樣的路。
+{G}是 HYBE 旗下廠牌於 2018 年 9 月 5 日推出的四人男子樂團，是集團裡少見的樂團。團名的意思是「與眾不同的那條線」，代表他們想走一條跟一般偶像不一樣的路。
 全員參與作詞作曲，現場演出全程真唱真彈，被稱為「演唱會型樂團」。四位成員分別來自美國、韓國、澳洲、台灣。
 == 成員
 （見上方資訊欄）
@@ -16590,20 +16590,20 @@ const NPC_INFO={
 * 粉絲名「LINER」的意思是「跟著那條線一起走的人」。
 * 鼓手 Ian 是團裡年紀最小的，卻是公認的「團內爸爸」，負責管理大家的作息。
 * 團內溝通是韓文、英文、中文混著講，Ian 說他的英文是 Kyle 和 Seb 教的，所以有美國腔也有澳洲腔。`},
-  PRISMA9:{ko:"프리즈마나인",co:"Prism Works",debut:"2026-02-18",type:"九人女子團體",fan:"PRISMY（프리즈미）",col:"#E86A92",
+  PRISMA9:{ko:"프리즈마나인",co:"DOLPUNG Lab.",debut:"2026-02-18",type:"九人女子團體",fan:"PRISMY（프리즈미）",col:"#E86A92",
     mem:[["Yeon","鄭娟雅","2003.06.11","隊長、副唱","韓國"],["Hari","河利恩","2004.02.27","主唱","韓國"],["Mina","南美奈","2004.09.03","主舞","日本"],["Coco","高可可","2005.01.18","主Rap","中國"],["Riri","李莉莉","2005.05.05","領舞","香港"],["Dami","都多美","2005.10.10","副唱","韓國"],["Sol","宋率","2006.03.21","領Rap","韓國"],["Aya","秋山彩","2007.07.07","副唱","日本"],["Bin","卞嬪","2008.12.24","副唱、忙內","韓國"]],
     body:`== 概要
-{G}是 Prism Works 於 2026 年 2 月 18 日推出的九人女子團體。團名來自「稜鏡（Prism）」：九種不同的顏色，透過同一道光散開。
+{G}是 DOLPUNG Lab. 於 2026 年 2 月 18 日推出的九人女子團體，也是這間新公司成立後的第一組藝人。團名來自「稜鏡（Prism）」：九種不同的顏色，透過同一道光散開。
 人數多、舞台編排大，以「隊形變化」為最大賣點。成員來自韓國、日本、中國、香港。
 == 成員
 （見上方資訊欄）
 == 出道前
-* 透過公司自製、在韓國與日本同步播出的出道實境節目選出最終九人，節目播出期間就累積了粉絲。
+* 公司成立的第一個計畫，就是在韓國與日本同步播出的出道實境節目，選出最終九人，節目播出期間就累積了粉絲。
 * 出道前發行的預告曲在社群上被大量翻跳。
 == 活動
 === 2026 年
 * 2 月 18 日以單曲《Sugar Rush》出道。主打歌節奏輕快、副歌的「糖果手勢」成為流行的挑戰舞。
-* 出道 3 週內在音樂節目拿下一位，是公司歷代最快的紀錄。
+* 出道 3 週內在音樂節目拿下一位，以新公司的第一組團體來說非常少見，受到業界關注。
 * 年底被視為多個頒獎典禮新人賞的熱門人選。
 == 作品
 * 單曲《Sugar Rush》（2026）
@@ -16611,14 +16611,14 @@ const NPC_INFO={
 * 九位成員各有一個代表色，合起來是一道彩虹再加上白色。
 * 忙內 Bin 出道時還是國中生，學校考試期間會暫停部分行程。
 * Coco 和 Riri 一個講普通話、一個講廣東話，兩人聊天常常要靠寫字溝通，成為團綜的固定笑點。`},
-  KIRAZ:{ko:"키라즈",co:"Petal & Co.",debut:"2021-04-07",type:"女子歌手（SOLO）",fan:"CHERRISH（체리쉬）",col:"#C2305A",
+  KIRAZ:{ko:"키라즈",co:"YG Entertainment",debut:"2021-04-07",type:"女子歌手（SOLO）",fan:"CHERRISH（체리쉬）",col:"#C2305A",
     mem:[["KIRAZ","尹瑞拉","1997.04.07","SOLO 歌手、詞曲創作","韓國"]],
     body:`== 概要
-{G}是 Petal & Co. 旗下的女子 SOLO 歌手，2021 年 4 月 7 日（本人生日）出道。藝名在土耳其語中是「櫻桃」的意思。
+{G}是 YG Entertainment 旗下的女子 SOLO 歌手，2021 年 4 月 7 日（本人生日）出道。藝名在土耳其語中是「櫻桃」的意思。
 以溫柔的中低音和自己寫的歌詞著稱，被形容為「最會唱夜晚的歌手」。
 == 人物
 * 本名尹瑞拉，大學主修實用音樂。
-* 出道前在網路上翻唱多年，翻唱頻道是她被發掘的契機。
+* 出道前在網路上翻唱多年，翻唱頻道是她被發掘的契機。公司很少推出新人，她出道時被稱為「YG 隔了好久的新人」。
 * 會說英文和一點土耳其語，藝名就是在伊斯坦堡旅行時決定的。
 == 活動
 === 2021 年～2022 年
@@ -16638,10 +16638,10 @@ const NPC_INFO={
 == 趣聞
 * 演唱會一定會留一首當天才決定的「點播曲」給粉絲。
 * 很怕高，但 MV 拍攝時挑戰過高空鞦韆，成為粉絲間的名場面。`},
-  MELLOWMOON:{ko:"멜로우문",co:"Moonlit Ent.",debut:"2016-10-21",type:"二人組合",fan:"MOONIE（무니）",col:"#E5C07B",
+  MELLOWMOON:{ko:"멜로우문",co:"PAPERMOON Entertainment",debut:"2016-10-21",type:"二人組合",fan:"MOONIE（무니）",col:"#E5C07B",
     mem:[["Haru","白石晴","1994.11.02","主唱、作曲","日本"],["Sena","申世娜","1995.06.16","主唱、鋼琴","韓國"]],
     body:`== 概要
-{G}是 Moonlit Ent. 於 2016 年 10 月 21 日推出的二人組合。以抒情、民謠流行為主，兩人的和聲是招牌。
+{G}是 PAPERMOON Entertainment 於 2016 年 10 月 21 日推出的二人組合。公司規模小，旗下藝人很少，{G}是公司的代表藝人。以抒情、民謠流行為主，兩人的和聲是招牌。
 日本出身的 Haru 和韓國出身的 Sena 組成，歌曲常有韓文、日文兩個版本。
 == 成員
 （見上方資訊欄）
@@ -16666,10 +16666,10 @@ const NPC_INFO={
 == 趣聞
 * 演出時 Haru 一定站左邊、Sena 一定坐在鋼琴前，被粉絲稱為「月亮的左右兩邊」。
 * 兩人至今仍然一起住，家裡的規則是「星期三只講日文」。`},
-  NOVELLE:{ko:"노벨",co:"Aurora Lab",debut:"2025-06-30",type:"六人男子團體",fan:"NOVA（노바）",col:"#3F6FD8",
+  NOVELLE:{ko:"노벨",co:"HYBE",debut:"2025-06-30",type:"六人男子團體",fan:"NOVA（노바）",col:"#3F6FD8",
     mem:[["Jiho","崔智浩","2001.02.08","隊長、主Rap","韓國"],["Taeo","金泰悟","2002.04.14","主唱","韓國"],["Lucas","Lucas Leung（梁路卡）","2002.09.29","主舞","澳洲"],["Wooj","吳宇鎮","2003.12.12","領唱","韓國"],["Ren","任蓮","2004.08.01","領舞、副Rap","中國"],["Haneul","河天","2006.05.20","副唱、忙內","韓國"]],
     body:`== 概要
-{G}是 Aurora Lab 於 2025 年 6 月 30 日推出的六人男子團體。團名來自「Novel（小說）」，每一張專輯都是同一部故事的一個章節。
+{G}是 HYBE 旗下廠牌於 2025 年 6 月 30 日推出的六人男子團體。團名來自「Novel（小說）」，每一張專輯都是同一部故事的一個章節。
 以帥氣的群舞、加上專輯裡連貫的世界觀為特色。成員來自韓國、澳洲、中國。
 == 成員
 （見上方資訊欄）
@@ -16690,10 +16690,10 @@ const NPC_INFO={
 == 趣聞
 * 粉絲會整理每首歌 MV 裡的「伏筆」，官方也會偷偷回應。
 * 忙內 Haneul 的名字是韓文「天空」的意思，應援物上常畫雲朵。`},
-  "ROSÉVA":{ko:"로제바",co:"Velvet Moon",debut:"2023-05-14",type:"四人女子團體",fan:"PETALS（페탈즈）",col:"#B4636E",
+  "ROSÉVA":{ko:"로제바",co:"BLUE HOUR Entertainment",debut:"2023-05-14",type:"四人女子團體",fan:"PETALS（페탈즈）",col:"#B4636E",
     mem:[["Ari","安雅琳","1999.08.08","隊長、主唱","韓國"],["Vee","Varisa Chaiyaporn","2000.03.30","主Rap","泰國"],["Lune","柳月","2001.10.17","主舞、副唱","台灣"],["Yena","黃藝娜","2003.12.05","副唱、忙內","韓國"]],
     body:`== 概要
-{G}是 Velvet Moon 於 2023 年 5 月 14 日推出的四人女子團體。團名結合「Rose（玫瑰）」與「Diva（歌后）」。
+{G}是 BLUE HOUR Entertainment 於 2023 年 5 月 14 日推出的四人女子團體。團名結合「Rose（玫瑰）」與「Diva（歌后）」。
 走復古、帶點成熟感的路線，舞台服裝常用天鵝絨和蕾絲。成員來自韓國、泰國、台灣。
 == 成員
 （見上方資訊欄）
@@ -16716,10 +16716,10 @@ const NPC_INFO={
 == 趣聞
 * 每次回歸都會換一種玫瑰當代表花，粉絲會在打歌時送同一種花。
 * 主Rap Vee 擅長畫畫，專輯內頁有她親手畫的插圖。`},
-  HYUNE:{ko:"현에",co:"Starlit",debut:"2014-08-19",type:"男子歌手（SOLO）",fan:"DREAMER（드리머）",col:"#7C8B6F",
+  HYUNE:{ko:"현에",co:"SM Entertainment",debut:"2014-08-19",type:"男子歌手（SOLO）",fan:"DREAMER（드리머）",col:"#7C8B6F",
     mem:[["HYUNE","金賢宇","1991.08.19","SOLO 歌手、詞曲製作","韓國"]],
     body:`== 概要
-{G}是 Starlit 旗下的男子 SOLO 歌手，2014 年 8 月 19 日（本人生日）出道。以溫暖的嗓音和抒情 R&B 為主，所有主打歌都是自己作曲。
+{G}是 SM Entertainment 旗下的男子 SOLO 歌手，2014 年 8 月 19 日（本人生日）出道。以溫暖的嗓音和抒情 R&B 為主，所有主打歌都是自己作曲。
 == 人物
 * 本名金賢宇，藝名取自本名的「賢」加上代表「夢」的字尾。
 * 出道前是作曲家，替其他歌手寫過歌。
@@ -17208,9 +17208,10 @@ function nlCard(p){ const m=nlM(p.mid); if(!m) return ""; const lk=nlLiked(p.id)
     <div class="post-foot"><button class="act ${lk?"liked":""}" data-a="nlLike" data-v="${p.id}" aria-pressed="${lk}" aria-label="按讚">${I.heart}<span>${fmt(nlLikeN(p))}</span></button><button class="act" data-a="nlCm" data-v="${p.id}" aria-label="留言">${I.chat}<span>${fmt(cn)}</span></button></div></article>`; }
 /* LOVE 首頁「藝人動態」：有加入的虛擬歌手社群也一起出現 */
 function npcFeedItems(){ try{ if(!nlOn()) return []; const J=nlJoined(); if(!J.length) return []; const lim=Date.now()-14*864e5; return nlGen("cm").filter(p=>J.includes(p.G)&&p.ts>=lim).map(p=>({ts:p.ts,h:()=>nlCard(p)})); }catch(e){ return []; } }
-/* LOVE 探索：虛擬歌手的社群 */
-function npcExploreHtml(){ try{ if(!nlOn()) return ""; const J=nlJoined();
-  return `<h2 class="mf-h">虛擬歌手</h2><div class="ex-list">${nlGs().map(G=>{ const I=NPC_INFO[G]; return `<div class="ex-g"><button class="ex-gi" data-a="nlGo" data-v="${esc(G)}">${nlGAv(G,"ex")}<span><b>${esc(nlGN(G))}</b><small>${esc(I.mem.map(r=>npcN(r[0])).slice(0,5).join("・"))}</small></span></button>${J.includes(G)?`<span class="nl-in">已加入</span>`:`<button class="ex-join nl-j" data-a="nlJoin" data-v="${esc(G)}">加入</button>`}</div>`; }).join("")}</div>`; }catch(e){ return ""; } }
+/* LOVE 探索：跟其他社群排在一起（不特別標出來） */
+function npcExRows(cat){ try{ if(!nlOn()) return []; const J=nlJoined(), now=Date.now();
+  return nlGs().filter(G=>{ const I=NPC_INFO[G], solo=I.mem.length===1, nw=now-new Date(I.debut).getTime()<120*864e5; return !cat||cat==="all"||(cat==="solo"?solo:cat==="group"?!solo:nw); }).map(G=>{ const I=NPC_INFO[G], ms=I.mem.map(r=>npcN(r[0])), on=J.includes(G);
+    return `<div class="ex-g" data-q="${esc(nz(nlGN(G)+" "+ms.join(" ")))}"><button class="ex-gi" data-a="nlGo" data-v="${esc(G)}">${nlGAv(G,"ex")}<span><b>${esc(nlGN(G))}</b><small>${esc(ms.slice(0,5).join("・"))}${ms.length>5?` +${ms.length-5}`:""}</small></span></button>${on?`<button class="ex-btn on" data-a="nlGo" data-v="${esc(G)}">前往</button>`:`<button class="ex-btn" data-a="nlJoin" data-v="${esc(G)}">加入</button>`}</div>`; }); }catch(e){ return []; } }
 function nlView(G,tab){ const NI=NPC_INFO[G]; if(!NI) return ""; const on=nlJoined().includes(G), adm=nlAdm(); setTimeout(cmTopSync,0);
   const tabs=[["feed","Feed"],["about","Artist"]], P=nlGen("cm").filter(p=>p.G===G).slice(0,60);
   const body=tab==="about"?nlAbout(G):`${adm?`<button class="nl-adm" data-a="nlWrite" data-v="${esc(G)}">＋ 用 ${esc(nlGN(G))} 的帳號發文（管理員）</button>`:""}${P.length?P.map(nlCard).join(""):emptyBox(I.star||"",`還沒有動態`,"過幾天再來看看吧")}`;
@@ -17244,7 +17245,7 @@ const nlUnread=id=>{ const r=nlRoomOf(id); return r?nlShown(r).filter(x=>x.f==="
 function nlRoomList(){ if(!nlOn()) return []; const o=nlRooms(); return Object.keys(o).filter(id=>nlM(id)).map(id=>{ const r=o[id], sh=nlShown(r); return {id,r,last:sh[sh.length-1]||null,active:r.until>Date.now(),un:nlUnread(id)}; }).sort((a,b)=>((b.last||{}).ts||0)-((a.last||{}).ts||0)); }
 /* TIE 列表裡的虛擬歌手聊天室 */
 function npcTieRows(q){ try{ let L=nlRoomList(); if(q) L=L.filter(x=>hit(q,nlName(x.id),nlGN(nlM(x.id).G),x.last&&x.last.t)); if(!L.length) return "";
-  return `<span class="t-sec">虛擬歌手</span>${L.map(x=>`<button class="t-room ${x.active?"":"off"}" data-a="nlRoom" data-v="${x.id}">${nlAv(x.id,"lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${esc(nlName(x.id))}</b>${x.active?"":`<span class="t-exp">已到期</span>`}</span><span class="t-room-t">${x.last?ago(x.last.ts):""}</span></div><p>${x.last?(x.last.f==="me"?"你：":"")+esc(nlFill(x.last.t,x.id,0)):"還沒有新訊息"}</p></div>${x.un?`<span class="t-cnt">${x.un}</span>`:""}</button>`).join("")}`; }catch(e){ return ""; } }
+  return `${(typeof fanRooms==="function"&&fanRooms().length)?"":`<span class="t-sec">最近的聊天室</span>`}${L.map(x=>`<button class="t-room ${x.active?"":"off"}" data-a="nlRoom" data-v="${x.id}">${nlAv(x.id,"lg")}<div class="t-room-b"><div class="t-room-top"><span class="t-room-n"><b>${esc(nlName(x.id))}</b>${x.active?"":`<span class="t-exp">已到期</span>`}</span><span class="t-room-t">${x.last?ago(x.last.ts):""}</span></div><p>${x.last?(x.last.f==="me"?"你：":"")+esc(nlFill(x.last.t,x.id,0)):"還沒有新訊息"}</p></div>${x.un?`<span class="t-cnt">${x.un}</span>`:""}</button>`).join("")}`; }catch(e){ return ""; } }
 const npcTieCount=()=>{ try{ return nlRoomList().length; }catch(e){ return 0; } };
 function nlBuy(id){ const m=nlM(id); if(!m) return; const act=nlActive(id);
   ask(`${act?"延長":"購買"} ${nlName(id)} 的 ${WHISPER_NAME} 券？\n${NL_PRICE} 積分，可以用 ${NL_DAYS} 天。`,()=>{ if(points()<NL_PRICE){ toast("積分不足，先補充積分吧"); return; }
