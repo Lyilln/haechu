@@ -6561,7 +6561,7 @@ const PG_INFO={
   awardsArt:["年末大賞",`<p>一年一度的頒獎典禮，分成三場：<b>MAMA AWARDS</b>、<b>MELON MUSIC AWARDS</b>、<b>GOLDEN DISC AWARDS</b>，每一場在不同的晚上舉行。</p><p><b>入圍了</b>：先寫好每個獎的得獎感言，得獎那一刻會出現在典禮上；揭曉前誰都看不到。</p><p><b>年末舞台</b>：可以從自己的影片裡選一支，典禮中間會播出（不選也可以）。</p><p><b>藝人互評</b>：出道藝人也是評審，每個獎選一位你覺得最該得獎的，不能選自己的團，投票結束前都可以改。</p><p>典禮當天晚上 8 點開場，跟大家一起看揭曉！</p>`],
   survivalTr:["選秀",`<p>歡迎來到《PRODUCE DAY》！你是練習生，目標只有一個：讓國民製作人記住你，一起站上出道的舞台。</p><p><b>報名</b>：選好座位後，就要在導師面前表演。開播當天，導師會給你 A～F 的等級。導師看的不只是表演，也看你準備得多用心（影片比照片好、越早交越好）。</p><p><b>每個任務</b>：期限內交出你的舞台（影片或照片＋說明），期限內都可以換。<b>期限內沒交，就等於放棄比賽。</b>早點交、用心準備，節目裡的鏡頭會比較多；拖到最後才交，播出來的樣子可不一定好看。</p><p><b>後採訪</b>：交舞台時可以寫一段想說的話，節目裡會播出來。</p><p><b>主題曲重新評價</b>：只要這次特別用心，還是有機會被導師拉上去。</p><p><b>主題曲 C 位</b>：主題曲那週，練習生們會一起投出 C 位。</p><p><b>SNS</b>：節目播出期間，個人帳號暫停使用，想發文就用節目的官方帳號。</p><p><b>排名發表</b>：寫好感言，被叫到名字時會出現在畫面上。比賽期間你不能 PICK、也不能投現場票，專心準備就好！</p>`],
   survival:["選秀",`<p>《PRODUCE DAY》開播了！練習生們在這裡競爭出道，而你就是決定出道組的國民製作人。</p><p><b>看節目</b>：每集晚上六點首播，上線就會開始播。準時守著首播，就能看到 LIVE。</p><p><b>PICK</b>：每天都能 PICK 喜歡的練習生（第一、二輪每天 3 票，決賽每天 1 票），選好按「送出」才算。</p><p><b>現場票</b>：每個任務看完練習生們的舞台，投一張現場票給最喜歡的舞台。</p><p><b>官方 SNS</b>：produceday.official 會放上每一位的舞台。多去看看、按個讚，觀看和按讚也會變成她們的票（佔一小部分）。</p><p><b>排名發表</b>：每一輪結束時公布排名，名次不夠的練習生會在那一輪離開。第二輪開始排名會保密，只公開少數名次，結果留到發表那天。</p><p>撐到最後的練習生，就能出道！</p>`]};
-document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="pgInfo"]'); if(!t) return; e.stopImmediatePropagation(); let k=t.dataset.v; try{ if(k==="awards"&&awMyGid()) k="awardsArt"; if(k==="survival"&&svSeason()&&svTrainee(svSeason())) k="survivalTr"; }catch(er){} const x=PG_INFO[k]; if(!x) return; tieModal(x[0]+"・怎麼玩",`<div class="pg-info">${x[1]}</div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); },true);
+document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closest('[data-a="pgInfo"]'); if(!t) return; e.stopImmediatePropagation(); let k=t.dataset.v; try{ if(k==="awards"&&awMyGid()) k="awardsArt"; if(k==="survival"&&svSeason()&&svTrainee(svSeason())) k="survivalTr"; }catch(er){} let x=PG_INFO[k]; try{ const s=svSeason(); if(s&&/^survival/.test(k)) x=["選秀",svHowInfo(s,k==="survivalTr")]; }catch(er){} if(!x) return; tieModal(x[0]+"・怎麼玩",`<div class="pg-info">${x[1]}</div>`,`<button class="t-mbtn main" data-a="tCloseLayer">知道了</button>`); },true);
 
 /* HAECHU｜世巡、SHOP */
 /* =========================================================
@@ -16071,6 +16071,29 @@ function svRkList(s,pick){ const sc=svScores(), rk=svRank(), all=svAll(), B=ui.s
     +(hid?`<p class="sv5-tip">${s.ph==="final"?"決賽排名保密":"第二輪排名保密"}，照名字排。只公開第 ${svHidN()} 名，${s.ph==="final"?"出道發表":"第二次排名發表"}才揭曉。</p><div class="sv3-rl">${rk.slice().sort((a,b)=>String(T(a).name).localeCompare(String(T(b).name))).map(row).join("")}</div>`:"")
     +(hid?"":`<div class="sv3-rl">${rk.slice(0,cut).map(row).join("")}</div>`
     +(rk.length>cut?`<div class="sv2-sh out"><b>${s.ph==="final"?"出道組以外":"淘汰邊緣"}</b><i>${cut+1} 位以下</i></div><div class="sv3-rl">${rk.slice(cut).map((id,i)=>row(id,i+cut)).join("")}</div>`:"")); }
+
+/* 11/24 「怎麼玩」照每一輪、每個任務換內容（練習生／國民製作人各一版；規則只用暗示，不寫後台算法） */
+function svHowInfo(s,tr){ const ph=s.ph, m=svMsNow(s), k=m&&m.k, P=t=>`<p>${t}</p>`, B=(b,t)=>P(`<b>${b}</b>：${t}`), keep=ph==="r1"?SV_KEEP.r1:SV_KEEP.r2, out=[];
+  if(tr){
+    if(ph==="recruit") out.push(P("歡迎來到《PRODUCE DAY》！先選好座位，接著在導師面前表演。"),B("等級評價","開播當天，導師會給你 A～F 的等級。導師看的不只是表演，也看你準備得多用心。"),B("換表演","截止前表演和報名資料都可以換。"));
+    else if(ph==="r1"&&(k==="th"||k==="lv")) out.push(P("等級出來了！這週照班級練主題曲。"),B("交舞台","期限內交出主題曲練習（影片或照片＋說明），期限內都能換。沒交的人，就等於離開這個舞台。"),B("主題曲 C 位","A 班的練習生裡，大家一起投出誰最適合站 C 位。"),B("主題曲重新評價","只要這次特別用心，還是有機會被導師拉上去。"),B("後採訪","交舞台時寫下想說的話，節目裡會播出來。"));
+    else if(ph==="r1") out.push(P("第一輪的最後一關：組別對決。"),B("交舞台","交舞台時寫上你的組名。兩組唱同一首歌，國民製作人的現場票決定哪一組贏。"),B("第一次排名發表",`這一輪結束時發表，前 ${SV_KEEP.r1} 位才能繼續。先把被叫到名字時要說的感言寫好。`));
+    else if(ph==="r2"&&k==="po") out.push(P("第二輪開始！這週是 Position 評價。"),B("選位置","Vocal、Dance、Rap，交舞台時選一個最能讓你發光的位置。"),B("排名保密","從這一輪開始，排名不再全部公開。結果，留到發表那天。"));
+    else if(ph==="r2") out.push(P("這週是概念評價，每一組都要表演一首全新的歌。"),B("交舞台","交舞台時寫上你的組名，讓國民製作人看到不一樣的你。"),B("第二次排名發表",`這一輪結束時發表，前 ${SV_KEEP.r2} 位才能進決賽。感言先寫好。`));
+    else if(ph==="pr") out.push(P("決賽前的特別一週：1 分鐘 PR。"),B("交舞台","一分鐘的自我介紹或直拍，讓國民製作人最後一次好好認識你。"),B("這週不淘汰","但這一分鐘，國民製作人都會記得。"));
+    else if(ph==="final") out.push(P("最後的舞台：出道評價。"),B("交舞台","剩下的人分兩組，各表演一首決賽曲，交舞台時寫上組名。"),B("出道組發表",`前 ${SV_DEB} 位出道。被叫到名字時要說的話，先寫好。`));
+    else out.push(P("恭喜出道組誕生！接下來準備出道：一起決定團名、隊長和出道曲。"));
+    if(ph!=="recruit"&&ph!=="prep") out.push(B("SNS","節目播出期間，個人帳號暫停使用，想發文就用節目的官方帳號。"),P("比賽期間不能 PICK、也不能投現場票，專心準備就好！"));
+    return out.join(""); }
+  if(ph==="recruit") out.push(P("《PRODUCE DAY》練習生招募中！開播後，你就是決定出道組的國民製作人。"),B("開播","每集晚上六點首播。準時守著首播，就能看到 LIVE。"));
+  else if(ph==="r1"&&(k==="th"||k==="lv")) out.push(P("第一集播完了！等級出來了，這週是主題曲。"),B("PICK",`每天可以 PICK ${svCap()} 票，選好按「送出」才算。`),B("現場票","看完主題曲舞台，投一張現場票給最喜歡的。你的現場票，也會影響她們的重新評價。"));
+  else if(ph==="r1") out.push(P("這週是組別對決：兩組唱同一首歌。"),B("PICK",`每天可以 PICK ${svCap()} 票。`),B("現場票","投給最喜歡的舞台，現場票高的那組會拿到加分。"),B("第一次排名發表",`這一輪結束時發表，前 ${SV_KEEP.r1} 位晉級。`));
+  else if(ph==="r2") out.push(P(k==="po"?"第二輪開始！這週是 Position 評價：Vocal、Dance、Rap。":"這週是概念評價：每組一首全新的歌。"),B("PICK",`每天可以 PICK ${svCap()} 票。`),B("現場票","每個任務投一張給最喜歡的舞台，前三名會拿到加分票。"),B("排名保密",`從這一輪開始，排名不再全部公開，只公開第 ${SV_KEEP.r2+1} 名。誰會留下來，發表那天才知道。`));
+  else if(ph==="pr") out.push(P("決賽前的特別一週：每位練習生的 1 分鐘 PR。"),B("這週不淘汰","但這週的票會一起帶進決賽。"),B("現場票","投給最打動你的 PR，前三名會拿到加分票。"));
+  else if(ph==="final") out.push(P("終於到決賽了。"),B("PICK",`每天 ${svCap()} 票，請慎重。`),B("出道組發表",`前 ${SV_DEB} 位出道。最後一個位置，就交給國民製作人了。`));
+  else out.push(P("出道組誕生了！謝謝國民製作人一路陪到最後。"));
+  if(ph!=="recruit"&&ph!=="prep") out.push(B("看節目","每集晚上六點首播，準時守著就能看到 LIVE。"),B("官方 SNS","produceday.official 會放上每一位的舞台，多去看看、按個讚，也會變成她們的票。"));
+  return out.join(""); }
 function svHowHtml(s){ const li=L=>`<ol class="sv5-rule">${L.map(x=>`<li>${x}</li>`).join("")}</ol>`, tr=svVoting()&&svTrainee(s);
   if(s.ph==="recruit") return li(["想當練習生的人按「報名」：填名字、生日、照片，選一個座位。1 號在最頂端，先選先贏；1 號有人坐了也可以挑戰（要另外選一個備用座位）。",
     "招募結束就開播，誰報名了要等開播才公開。",
@@ -16078,8 +16101,7 @@ function svHowHtml(s){ const li=L=>`<ol class="sv5-rule">${L.map(x=>`<li>${x}</l
     "國民製作人每天可以 PICK（第一、二輪每天 3 票，決賽每天 1 票）。",
     `出道組會以限定團體活動一年半。`]);
   const M=svMsList(s.ph);
-  return (tr?li(["每個任務期限內都要交舞台（影片或照片＋說明），沒交就等於放棄比賽。早點交、用心準備，節目裡的鏡頭會比較多。","交舞台時可以寫後採訪，節目裡會播出來。","主題曲那週，練習生們一起投出主題曲 C 位。","節目播出期間，個人 SNS 暫停使用，可以用節目官方帳號發文。","寫好排名發表時要說的感言。","參賽的練習生不能 PICK、不能投現場票。",`${SV_ANN[s.ph]}時，${s.ph==="final"?`前 ${SV_DEB} 位出道`:`前 ${s.ph==="r1"?SV_KEEP.r1:SV_KEEP.r2} 位晉級`}。`])
-    :li([`每天可以 PICK ${svCap()} 票，選好按「送出」才算。${s.ph==="final"?"":"可以分給不同人，也可以全投同一位。"}`,"每集晚上六點首播，上線就會開始播。","練習生每個任務都會交舞台，看完可以投 1 張現場票。","官方 SNS 也會放上每一位的舞台，觀看和按讚也會變成她們的票（佔一小部分）。",`每個任務現場票前三名的練習生，拿 +${SV_BEN.join("／+")} 票。`,`${SV_ANN[s.ph]}時，${s.ph==="final"?`前 ${SV_DEB} 位出道`:`前 ${s.ph==="r1"?SV_KEEP.r1:SV_KEEP.r2} 位晉級`}。`]))
+  return `<div class="pg-info sv5-howi">${svHowInfo(s,tr)}</div>`
     +`<div class="sv5-sh">這一輪的任務</div><div class="sv4-ml">${M.map(x=>`<span class="${svMsSt(s,x)==="進行中"?"on":svMsSt(s,x)==="已結束"?"end":""}"><b>${esc(x.t)}</b><small>${svMsWhen(s,x)}・${svMsSt(s,x)}</small></span>`).join("")}</div>`; }
 function svSubHtml(s,v){ const t={pick:"PICK 練習生",rk:"全部排名",st:"任務舞台",how:"怎麼玩？",gr:s.grade0?"主題曲重新評價":"等級評價",peer:"投主題曲 C 位",c1:s.ph==="r1"&&svC1(s).done?"1 分鐘 PR":"1 號位對決"}[v];
   if(!t) return ""; if(v==="c1"&&s.ph!=="r1") return ""; if(["pick","rk","st","c1","gr","peer"].includes(v)&&!svVoting()) return "";
