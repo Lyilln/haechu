@@ -103,3 +103,5 @@ main.svpend{visibility:hidden}
 .aws.svsh .svsh-int{margin-top:8px}
 .aws.svsh .svsh-skip{margin-top:8px;position:relative;z-index:2}
 .aws.svsh .aws-tap{position:relative;z-index:1}
+.sv6-tabs{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+.aws.svsh .aws-btn{margin-bottom:46px}
