@@ -36,7 +36,7 @@ function navReplace(h){ ui.navUi=performance.now(); ui.navFwd=performance.now();
 function navFire(h){ ui.navUi=performance.now(); h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(location.hash===h){ navSet(); render(); return; } const o=location.href; try{ history.replaceState({d:NAV_D,hc:NAV_BOOT},"",h||location.pathname+location.search); }catch(e){ location.hash=h; return; } window.dispatchEvent(new HashChangeEvent("hashchange",{oldURL:o,newURL:location.href})); }
 function navTo(h){ h=String(h||""); if(h&&h[0]!=="#") h="#"+h; if(/^#\/fan\/core\?p=survival/.test(h)&&session()&&session().role==="artist") h=h.replace("#/fan/core?p=survival","#/artist?tab=foc&p=survival");   /* 藝人端的選秀頁裡的連結留在藝人端 */ if(location.hash===h) return; NAV_BASE++; ui.navFwd=performance.now(); navFire(h); }   /* navFwd：往前走的新頁，不要放回以前在這頁滑到的位置 */
 function navRoot(h){ ui.navUi=performance.now(); if(NAV_D>0){ NAV_PEND=h; history.go(-NAV_D); return; } const deep=NAV_BASE>0; NAV_BASE=0; if(deep) navFire(h); else navReplace(h); }
-function navBack(){ ui.navUi=performance.now(); if(NAV_D>0){ history.back(); return; }
+function navBack(){ ui.navUi=performance.now(); if(ui.svSh&&document.querySelector(".aws.svsh")){ ui.svSh=null; layer.innerHTML=""; return; }   /* 11/24 節目全屏中按返回／右滑＝關掉節目（不再塞瀏覽器紀錄，系統的左右滑才不會跟 App 打架） */ if(NAV_D>0){ history.back(); return; }
   if(NAV_BASE>0){ NAV_BASE--; navFire(NAV_STK[NAV_BASE]); return; }   // 上一頁：照 App 自己記下來的回去
   const s=session(); if(!s) return; const r=route(), home=s.uni&&r.role==="admin"?"#/admin":"#/"+(s.role==="artist"?"artist":s.uni?"fan":s.role);   /* 管理員切在藝人端時，回藝人首頁（不是粉絲端） */ if(location.hash!==home) navRoot(home); }
 /* 回到指定的那一頁（例如離開 SNS 回到進來前的頁面）：在記錄裡就一路退回去，不在就當作最上層打開 */
