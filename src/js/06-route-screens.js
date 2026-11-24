@@ -173,7 +173,9 @@ const MDB={
 };
 async function idbHas(id){ try{ const d=await MDB.open(); return await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(!!q.result); q.onerror=()=>res(false); }); }catch(e){ return false; } }
 const mediaURL={};
-async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; const b=await MDB.get(id); if(!b) return null; return mediaURL[id]=URL.createObjectURL(b); }
+async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; let b=await MDB.get(id); if(!b) return null;
+  try{ if(/^video/.test(b.type||"")&&typeof svVPatch==="function"){ const t=new Uint8Array(await b.arrayBuffer()); for(let i=0;i+16<t.length;i++) if(t[i]===97&&t[i+1]===118&&t[i+2]===99&&t[i+3]===67&&t[i+4]===1){ if(t[i+7]>52){ svVPatch(t,i); b=new Blob([t],{type:b.type}); } break; } } }catch(e){}   /* 影片標了 iPhone 不支援的等級：改成 5.1 才播得出來 */
+  return mediaURL[id]=URL.createObjectURL(b); }
 /* 圖片：記下每張圖的長寬比，畫面重畫時先把高度留好，圖還沒解碼也不會塌下去再彈回來（公司公告一閃一閃） */
 const IMR=new Map(); document.addEventListener("load",e=>{ const im=e.target; if(im&&im.tagName==="IMG"&&im.naturalWidth){ const k=im.getAttribute("src"); if(k&&!IMR.has(k)) IMR.set(k,im.naturalWidth+" / "+im.naturalHeight); } },true);
 function imgKeep(scope){ try{ scope.querySelectorAll("img[src]").forEach(im=>{ const r=IMR.get(im.getAttribute("src")); if(r&&!im.style.aspectRatio) im.style.aspectRatio=r; }); }catch(e){} }
