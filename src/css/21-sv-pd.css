@@ -83,3 +83,10 @@ main.svpend{visibility:hidden}
 /* 節目裡的頭像排在中間 */
 .svsh-mont{display:flex!important;flex-wrap:wrap;justify-content:center}
 .svsh-mont>*{width:30%}
+/* 節目：照片不拉伸、頭像不重疊、公司入場 */
+.aws.svsh .aws-v img,.aws.svsh .svsh-nov img,.aws.svsh .svsh-ph img{object-fit:cover;width:100%;height:100%}
+.aws.svsh .svsh-nov{aspect-ratio:3/4;max-height:52vh;margin:0 auto;overflow:hidden}
+.aws.svsh .svsh-nov>*{width:100%!important;height:100%!important;background-size:cover!important;background-position:center top!important}
+.svsh-mont>*{width:auto!important;flex:0 0 88px}
+.aws.svsh .svsh-mont .svsh-ph{width:80px!important;height:80px!important;flex:none}
+.svsh-co b{font-size:34px!important;letter-spacing:.04em}
