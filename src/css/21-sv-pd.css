@@ -77,3 +77,9 @@
 @keyframes svWhoosh{0%{transform:translateX(120%);opacity:0}100%{transform:none;opacity:1}}
 /* 自動開播前先把頁面藏起來，不會閃一下 */
 main.svpend{visibility:hidden}
+/* 11/24 SKpedia 團體資訊框的成員照片不要那麼大 */
+.wkm-ph{aspect-ratio:auto!important;height:118px}
+.wkm-ph>*{max-width:118px;margin:0 auto}
+/* 節目裡的頭像排在中間 */
+.svsh-mont{display:flex!important;flex-wrap:wrap;justify-content:center}
+.svsh-mont>*{width:30%}

@@ -154,6 +154,11 @@ const snRp=(d,uid)=>d.rp&&d.rp[uid]||[];
 const snN=n=>n?fmtW(n).replace(" 萬","萬"):"";   /* IG 的數字：0 不顯示、1,059、2.5萬 */
 
 /* 標註的人（照 IG）：平常只在照片左下角放一個人像小圖示，點了才在照片上跳出黑色名牌，點名牌去他的個人檔案 */
+/* 11/24 照 IG：外語貼文下面「查看翻譯」，按了內文直接換成中文，按鈕變「查看原文」。虛擬歌手用自帶的翻譯，其他人的外語貼文自動翻 */
+function snCapHtml(p,u){ if(!p.cap) return ""; const k="sn:"+p.id; let z="";
+  try{ z=p.npc?(p.capZ&&p.capZ!==p.cap?p.capZ:""):(anyLang(p.cap)?(cmTrGet(k)||(trNeedT(k,p.cap),"")):""); }catch(e){}
+  const on=!!z&&!!(ui.nlCapTr&&ui.nlCapTr[p.id]);
+  return `<p><b>${esc(u.u)}</b> ${on?esc(z):snRich(p.cap)}</p>${z?`<button class="sn-more" data-a="nlCapTr" data-v="${p.id}">${on?"查看原文":"查看翻譯"}</button>`:""}`; }
 function snTagsHtml(p){ if(!(p.tags||[]).length) return ""; const T=(p.tags||[]).filter(id=>!(p.tagPos||{})[id]).map(snUser).filter(Boolean);   /* 有位置的名牌畫在那張照片上（snSlTags）；舊貼文沒有位置的才自動排 */ 
   return `<button class="sn-tagi" data-a="snTagTg" data-id="${p.id}" aria-label="標註的人">${si("user","sm")}</button>${!T.length?"":`<div class="sn-tagl">${T.map((x,i)=>{ const h=strHash(p.id+x.id), l=26+h%48, t=Math.round(22+(i+.5)*(58/T.length)-3+((h>>>8)%7)); return `<button class="sn-tagb" style="left:${l}%;top:${t}%" data-a="snsGo" data-v="profile" data-id="${x.id}">${esc(x.u)}</button>`; }).join("")}</div>`}`; }
 function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; const me=snMeId(), liked=(d.likes[p.id]||[]).includes(me), saved=(d.saved[me]||[]).includes(p.id), rpd=snRp(d,me).some(x=>x.id===p.id), n=snCount(p), cms=d.cms[p.id]||[], bu=by&&snUser(by);
@@ -161,7 +166,7 @@ function snPostCard(d,p,by){ const u=snUser(p.uid); if(!u||p._gone) return ""; c
     <div class="sn-media${p.alb?" sn-cdm":""}">${p.alb?cdBox(p.alb.gid,snAlbTitle(p.alb)):`<div class="sn-car" data-a="snTap" data-id="${p.id}"${snArStyle(p)}>${Array.from({length:n},(_,i)=>`<div class="sn-sl">${snMedia(p,u,i)}${snSlTags(p,i)}</div>`).join("")}</div>`}${n>1?`<em class="sn-cnt">1/${n}</em>`:""}<i class="sn-heart">${si("heart")}</i>${snRpAvs(d,p)}${snTagsHtml(p)}${p.mus&&p.mus.mid?`<button class="sn-mbtn" data-a="snMusTg" data-k="p:${p.id}" data-v="${esc(p.mus.mid)}" aria-label="聲音"><i class="off">${si("mute","sm")}</i><i class="onn">${si("sound","sm")}</i></button>`:""}</div>
     ${n>1?snDotsHtml(n):""}
     <div class="sn-acts"><button class="${liked?"liked":""}" data-a="snLike" data-id="${p.id}" aria-label="讚">${si("heart")}<b>${snN(snLikes(d,p))}</b></button><button data-a="snCm" data-id="${p.id}" aria-label="留言">${si("chat")}${cms.length?`<b>${snN(cms.length)}</b>`:""}</button><button data-a="snShare" data-id="${p.id}" aria-label="分享">${si("send")}</button><span class="sn-sp"></span><button class="${saved?"saved":""}" data-a="snSaveP" data-id="${p.id}" aria-label="收藏">${si("save")}</button></div>
-    <div class="sn-meta">${snLikedBy(d,p)}${p.cap?`<p><b>${esc(u.u)}</b> ${snRich(p.cap)}</p>`:""}${p.npc&&p.capZ&&p.capZ!==p.cap?`${ui.nlCapTr&&ui.nlCapTr[p.id]?`<p class="sn-captr">${esc(p.capZ)}</p>`:""}<button class="sn-more" data-a="nlCapTr" data-v="${p.id}">${ui.nlCapTr&&ui.nlCapTr[p.id]?"隱藏翻譯":"查看翻譯"}</button>`:""}${cms.length?`<button class="sn-more" data-a="snCm" data-id="${p.id}">查看全部 ${fmt(cms.length)} 則留言</button>`:""}<small>${snsAgo(p.ts)}</small></div></article>`; }
+    <div class="sn-meta">${snLikedBy(d,p)}${snCapHtml(p,u)}${cms.length?`<button class="sn-more" data-a="snCm" data-id="${p.id}">查看全部 ${fmt(cms.length)} 則留言</button>`:""}<small>${snsAgo(p.ts)}</small></div></article>`; }
 
 function snHome(d){ snFolFix(d); const me=snMeId(), fol=snFol(d,me), U=snUser(me), mode=ui.snFeed||"all";
   const items=d.posts.filter(p=>(p.npc?fol.includes(p.uid):(mode==="all"||p.uid===me||fol.includes(p.uid)))&&snCanSee(d,p.uid)).map(p=>({p,ts:p.ts}));
