@@ -16006,7 +16006,8 @@ function svGrCalc(s,mk){ const ids=[...svAlive("r1")], St=svStages("r1",mk), P=s
   if(mk!=="lv"&&s.grade&&Object.keys(s.grade).length){ /* 11/24 重新評價照 PD：從第一次的等級最多上下一級。現場票前段的升一級、後段的降一級，沒交舞台的降一級；大家都沒票就不動 */
     const G0=s.grade, G={}, sub=ids.filter(id=>St.some(x=>x.tid===id)), lvv=id=>{ const st=St.find(x=>x.tid===id); return st?svLive(st):0; }, tot=sub.reduce((a,id)=>a+lvv(id),0);
     const rk=sub.slice().sort((a,b)=>lvv(b)-lvv(a)||sc[b]-sc[a]), q=Math.max(1,Math.round(rk.length/4));
-    const q30=Math.max(1,Math.round(rk.length*.3)), mid=rk.slice(q30,rk.length-q30).filter(id=>(svById(id)||{}).real), pick=mid.length?mid.slice().sort((a,b)=>svHash(s.id+mk+"pick"+a)-svHash(s.id+mk+"pick"+b))[0]:null;
+    const q30=Math.max(1,Math.round(rk.length*.3)), mid=rk.slice(q30,rk.length-q30).filter(id=>(svById(id)||{}).real), ef=id=>{ const x=St.find(y=>y.tid===id)||{}, m0=svMsList("r1").find(m=>m.k===mk)||{d:[0,8]}, T0=svPhT0(s)+m0.d[0]*864e5, T1=svPhT0(s)+m0.d[1]*864e5, fr=x.ts?Math.min(1,Math.max(0,(x.ts-T0)/Math.max(1,T1-T0))):1; return (x.kind==="v"?.45:.25)+(1-fr)*.2+(x.cap?.08:0)+(x.iv?.07:0); },
+      pick=mid.length?mid.slice().sort((a,b)=>ef(b)-ef(a)||svHash(s.id+mk+"pick"+a)-svHash(s.id+mk+"pick"+b))[0]:null;   /* 導師推薦：中間那群裡「這次最用心」的一位（影片>照片、越早交、有說明、有後採訪） */
     ids.forEach(id=>{ const g0=G0[id]||"C", i0=SV_GR.indexOf(g0), t=svById(id)||{}; let d=0;
       if(t.real&&!s.demo){ if(!sub.includes(id)) d=1; else if(tot>0){ const r=rk.indexOf(id), q3=Math.max(1,Math.round(rk.length*.3)); if(r<q3&&lvv(id)>0) d=-1; else if(r>=rk.length-q3&&lvv(id)<lvv(rk[rk.length-q3-1]||rk[0])) d=1; if(d===0&&id===pick) d=-1; } }   /* 11/24 照現場票：前三成升一級、後三成降一級、中間不變、沒交降一級；中間的人裡有一位「導師特別推薦」升一級（意外感） */
       else { const r=svHash(s.id+mk+"mv"+id)%100; d=r<22?-1:r>80?1:0; }
