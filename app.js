@@ -15997,7 +15997,7 @@ function svGrCalc(s,mk){ const ids=[...svAlive("r1")], St=svStages("r1",mk), P=s
     const taste=(svHash(s.id+mk+"mt"+id)%1000)/1000;   /* 導師口味 */
     if(mk==="lv"){ if(!t.real||s.demo&&!st){ sc[id]=.05+taste*.8; return; }   /* 11/24 虛擬練習生平均壓到中間，認真交的真人才有機會拿 A */
       /* 11/24 真人＝積極度＋導師口味：影片 > 照片、越早交越高、有寫說明／後採加分 */
-      const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, fr=st&&st.ts?Math.min(1,Math.max(0,(st.ts-t0)/Math.max(1,t1-t0))):1;
+      const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, fr=st&&st.ts?(st.ts>t1?.5:Math.min(1,Math.max(0,(st.ts-t0)/Math.max(1,t1-t0)))):1;   /* 11/24 原定開播之後（延播期間）才換的表演算中間，不算遲交 */
       sc[id]=st?(st.kind==="v"?.4:.25)+(1-fr)*.15+(st.cap?.05:0)+(st.iv?.05:0)+taste*.35:taste*.15; return; }
     /* 11/24 現場票換成 0～1：真人照真人之間的票數比（有交就有底分 .3；大家都 0 票就算中間 .5）；虛擬練習生平均也落在 .5，不會因為真人票少就被虛擬的壓過去 */
     const lvN=st?(mx>0?.3+.7*svLive(st)/mx:.5):real?0:.15+.7*(svHash(mk+"lv"+id)%100)/100;
@@ -16217,7 +16217,7 @@ document.addEventListener("click",e=>{ const t=e.target.closest&&e.target.closes
     case "svUpOk": { svUKeep(); const f=ui.svU, me=s&&s.demo?(svTrainee(s)||svRecMe(s)):svMyEntry(), {ph:uph,m}=svUpMs(s); if(!f||!me||!m) return; if(f.busy){ toast("還在上傳，等一下"); return; } if(!f.url){ toast("請放影片或照片"); return; } if(m.team&&!f.team){ toast("請填組名"); return; } if(m.pos&&!f.pos){ toast("請選位置"); return; }
       if(s.demo){ ui.svDemoSt={...(ui.svDemoSt||{}),[m.k]:{url:f.url,kind:f.kind,fp:f.fp||null,cap:f.cap,team:f.team,pos:f.pos}}; ui.svU=null; layer.innerHTML=""; rr(); toast("示範：舞台交出去了（只在你的手機）"); return; }
       const row={url:f.url,kind:f.kind,fp:f.kind==="v"?(f.fp||null):null,cap:f.cap,team:f.team,pos:f.pos,iv:f.iv||"",ts:Date.now()}, nid=uid("svs");
-      mkEdit(SVST,v=>{ const L=[...(Array.isArray(v)?v:[])], i=L.findIndex(x=>x.sid===s.id&&x.ph===uph&&x.mk===m.k&&x.tid===me.id&&!x.del); if(i>=0) L[i]={...L[i],...row}; else L.push({id:nid,sid:s.id,ph:uph,mk:m.k,tid:me.id,email:me.email,...row}); return {v:L}; }).then(()=>{ ui.svU=null; layer.innerHTML=""; rr(); toast("舞台交出去了"); }).catch(()=>toast("沒有送出去，再按一次")); return; }
+      mkEdit(SVST,v=>{ const L=[...(Array.isArray(v)?v:[])], i=L.findIndex(x=>x.sid===s.id&&x.ph===uph&&x.mk===m.k&&x.tid===me.id&&!x.del); if(i>=0) L[i]={...L[i],...row,ts:L[i].ts||row.ts,ets:row.ts};   /* 換表演不改「第一次交的時間」 */ else L.push({id:nid,sid:s.id,ph:uph,mk:m.k,tid:me.id,email:me.email,...row}); return {v:L}; }).then(()=>{ ui.svU=null; layer.innerHTML=""; rr(); toast("舞台交出去了"); }).catch(()=>toast("沒有送出去，再按一次")); return; }
     case "svCm": { const M=svMentors(s); tieModal("導師評語",`<select id="svCmM" class="a-nick-in">${M.map((m,i)=>`<option value="${i}">${esc(m.n)}（${esc(m.r)}）</option>`).join("")}</select><textarea id="svCmT" class="a-nick-in dbx-ta" rows="4" maxlength="200" placeholder="輸入文字" style="margin-top:8px"></textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="svCmOk" data-v="${t.dataset.v}">加上去</button>`); return; }
     case "svCmOk": { const M=svMentors(s), m=M[+(document.getElementById("svCmM")||{}).value||0], tx=((document.getElementById("svCmT")||{}).value||"").trim(); if(!tx) return; S.set(SVST,(S.get(SVST,[])||[]).map(x=>x.id===t.dataset.v?{...x,cm:[...(x.cm||[]),{n:m.n,t:tx}]}:x)); layer.innerHTML=""; svStageView(t.dataset.v); toast("評語加上去了"); return; }
     case "svCast": { tieModal("主持人・導師",`<span class="fs-f-lab">主持人（國民製作人代表）</span><input id="svHn" class="a-nick-in" maxlength="20" value="${esc(svHostN(s))}"><span class="fs-f-lab" style="margin-top:10px">導師（一行一位：名字／Vocal、Dance 或 Rap）</span><textarea id="svMn" class="a-nick-in dbx-ta" rows="6">${esc(svMentors(s).map(m=>m.n+"／"+m.r).join("\n"))}</textarea>`,`<button class="t-mbtn" data-a="tCloseLayer">取消</button><button class="t-mbtn main" data-a="svCastOk">儲存</button>`); return; }
@@ -16257,8 +16257,8 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
       const coOf=id=>svCoName(svById(id)||{}), cos=[...new Set(ids.map(coOf))].sort((a,b)=>(a==="個人練習生")-(b==="個人練習生")||svHash(s.id+a)-svHash(s.id+b));
       cos.forEach(co=>st.push({t:"co",co,ids:ids.filter(id=>coOf(id)===co)}));
       ids.sort((a,b)=>cos.indexOf(coOf(a))-cos.indexOf(coOf(b))||svHash(s.id+"ev"+a)-svHash(s.id+"ev"+b)); st.push({t:"evo"}); const pi=st.findIndex(z=>z.t==="pr"); if(pi>=0) st.push(st.splice(pi,1)[0]); const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, LV=svStages("r1","lv"), mont=[];
-      ids.forEach((id,i)=>{ const t=svById(id)||{}, y=LV.find(z=>z.tid===id), fr=t.real&&!s.demo?(y&&y.ts?(y.ts-t0)/Math.max(1,t1-t0):1):-1, r=(Math.imul(svHash(id+"ev"+s.id),2654435761)>>>16)%100;
-        const ed=t.real&&!s.demo&&!y?"evil":fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";
+      ids.forEach((id,i)=>{ const t=svById(id)||{}, y=LV.find(z=>z.tid===id), fr=t.real&&!s.demo?(y&&y.ts?(y.ts>t1?.5:(y.ts-t0)/Math.max(1,t1-t0)):1):-1, r=(Math.imul(svHash(id+"ev"+s.id),2654435761)>>>16)%100;
+        const ed=t.real&&!s.demo&&!y?"evil":t.real&&!s.demo?(fr>.75?"evil":fr<.4?(r<75?"focus":"mont"):r<50?"focus":r<75?"evil":"mont"):fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<55?"evil":r<85?"mont":"none";   /* 11/24 真人有交就一定有鏡頭（整段／惡剪／合集），不會完全沒鏡頭 */
         if(!st.some(z=>z.t==="nx"&&z.co===coOf(id))){ if(mont.length) st.push({t:"evm",ids:mont.splice(0)}); st.push({t:"nx",co:coOf(id)}); } if(ed==="mont") mont.push(id); else if(ed!=="none") st.push({t:"ev",id,ed,lt:fr>.75,p:0},{t:"ev",id,ed,lt:fr>.75,p:1}); });
       if(mont.length) st.push({t:"evm",ids:mont.splice(0)});   /* 11/24 合集放在那間公司的評價最後，不會插在別人的表演和講評中間 */
       st.push({t:"gr"}); const mi=st.findIndex(z=>z.t==="ms"); if(mi>=0) st.push(st.splice(mi,1)[0]); } }   /* 等級評價播完才公布這週的主題曲任務 */
@@ -16266,7 +16266,7 @@ function svShSteps(s){ const m=svMsNow(s), tr=null, st=[{t:"open"}]; if(m) st.pu
   if(m){ const L=svStages(s.ph,m.k).slice().sort((a,b)=>svHash(s.id+a.id)-svHash(s.id+b.id)), mont=[];
     const t0=svPhT0(s)+m.d[0]*864e5, t1=svPhT0(s)+m.d[1]*864e5;
     L.forEach((x,i)=>{ const r=(Math.imul(svHash(x.tid+"ed"+s.id+m.k),2654435761)>>>16)%100, t=svById(x.tid)||{}, fr=t.real&&x.ts?(x.ts-t0)/Math.max(1,t1-t0):-1;
-      const ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none";
+      let ed=fr>.75?(r<70?"evil":"none"):fr>=0&&fr<.4?(r<75?"focus":"mont"):i<2?"focus":r<38?"focus":r<58?"evil":r<82?"mont":"none"; if(t.real&&ed==="none") ed=fr>.75?"evil":"mont";
       if(ed==="mont") mont.push(x.id); else if(ed!=="none") st.push({t:"stg",id:x.id,ed,lt:fr>.75}); });
     if(mont.length) st.splice(Math.min(st.length,3+Math.floor(st.length/2)),0,{t:"mont",ids:mont.slice(0,6)}); }
   st.push({t:"end"}); return st; }
