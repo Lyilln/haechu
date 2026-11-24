@@ -494,14 +494,22 @@ const SV_PEERG=false;
 function svGrCalc(s,mk){ const ids=[...svAlive("r1")], St=svStages("r1",mk), P=svPeerAll(s,mk), mx=Math.max(0,...St.map(svLive));
   const sc={}; ids.forEach(id=>{ const st=St.find(x=>x.tid===id), t=svById(id)||{}, real=t.real||s.demo&&st;
     const taste=(svHash(s.id+mk+"mt"+id)%1000)/1000;   /* 導師口味 */
-    if(mk==="lv"){ if(!t.real||s.demo&&!st){ sc[id]=.05+taste*.8; return; }   /* 11/24 虛擬練習生平均壓到中間，認真交的真人才有機會拿 A */
+    if(mk==="lv"){ if(!t.real||s.demo&&!st){ sc[id]=.1+taste*.75; return; }   /* 11/24 虛擬練習生平均壓到中間，認真交的真人才有機會拿 A */
       /* 11/24 真人＝積極度＋導師口味：影片 > 照片、越早交越高、有寫說明／後採加分 */
       const t1=svPhT0(s), t0=t1-SV_DUR.recruit*864e5, fr=st&&st.ts?(st.ts>t1?.5:Math.min(1,Math.max(0,(st.ts-t0)/Math.max(1,t1-t0)))):1;   /* 11/24 原定開播之後（延播期間）才換的表演算中間，不算遲交 */
-      sc[id]=st?(st.kind==="v"?.4:.25)+(1-fr)*.15+(st.cap?.05:0)+(st.iv?.05:0)+taste*.35:taste*.15; return; }
+      sc[id]=st?(st.kind==="v"?.45:.25)+(1-fr)*.2+(st.cap?.08:0)+(st.iv?.07:0)+taste*.2:taste*.1; return; }   /* 11/24 看得出來的努力占大部分，導師口味只占兩成，不會莫名其妙 */
     /* 11/24 現場票換成 0～1：真人照真人之間的票數比（有交就有底分 .3；大家都 0 票就算中間 .5）；虛擬練習生平均也落在 .5，不會因為真人票少就被虛擬的壓過去 */
     const lvN=st?(mx>0?.3+.7*svLive(st)/mx:.5):real?0:.15+.7*(svHash(mk+"lv"+id)%100)/100;
     const R=Object.entries(P).filter(([r])=>r!==id).map(([,v])=>v[id]).filter(Boolean), avg=R.length?R.reduce((a,b)=>a+b,0)/R.length:real?(st?3:1):2.5+(svHash(mk+"pr"+id)%200)/100;
     sc[id]=.6*lvN+.4*(SV_PEERG?(avg-1)/4:taste); });   /* 11/24 重新評價不再用練習生互評：現場票 6 成＋導師 4 成 */
+  if(mk!=="lv"&&s.grade&&Object.keys(s.grade).length){ /* 11/24 重新評價照 PD：從第一次的等級最多上下一級。現場票前段的升一級、後段的降一級，沒交舞台的降一級；大家都沒票就不動 */
+    const G0=s.grade, G={}, sub=ids.filter(id=>St.some(x=>x.tid===id)), lvv=id=>{ const st=St.find(x=>x.tid===id); return st?svLive(st):0; }, tot=sub.reduce((a,id)=>a+lvv(id),0);
+    const rk=sub.slice().sort((a,b)=>lvv(b)-lvv(a)||sc[b]-sc[a]), q=Math.max(1,Math.round(rk.length/4));
+    ids.forEach(id=>{ const g0=G0[id]||"C", i0=SV_GR.indexOf(g0), t=svById(id)||{}; let d=0;
+      if(t.real&&!s.demo){ if(!sub.includes(id)) d=1; else if(tot>0){ const r=rk.indexOf(id); if(r<q&&lvv(id)>0) d=-1; else if(r>=rk.length-q&&lvv(id)<lvv(rk[q-1]||id)) d=1; } }
+      else { const r=svHash(s.id+mk+"mv"+id)%100; d=r<22?-1:r>80?1:0; }
+      G[id]=SV_GR[Math.max(0,Math.min(4,i0+d))]; });
+    return {G,ord:Object.keys(G).sort((a,b)=>SV_GR.indexOf(G[a])-SV_GR.indexOf(G[b])),sc}; }
   const ord=ids.slice().sort((a,b)=>sc[b]-sc[a]||svHash(a)-svHash(b)), n=ord.length, cnt=SV_GRQ.map((q,i)=>i?Math.round(n*q):Math.max(1,Math.round(n*q))), G={};
   let k=0; ord.forEach((id,i)=>{ while(k<4&&i>=cnt.slice(0,k+1).reduce((a,b)=>a+b,0)) k++; G[id]=SV_GR[k]; });
   return {G,ord,sc}; }
@@ -516,7 +524,7 @@ const svGrDemo=s=>{ if(s.ph==="r1"&&(svMsNow(s)||{}).k==="lv") return {};   /* 1
 const SV_GRCM={A: ["這才叫準備好了。其他人看清楚，這就是標準。", "A 不是終點，主題曲沒有今天這個水準，我照樣把你拉下來。", "高音很穩，表情也沒有放掉。挑不出什麼毛病，繼續保持。", "你一上台我就知道你練過。但別得意，A 班的競爭更兇。", "說實話我本來想給 B，最後那段副歌救了你。"], B: ["實力有，可是我看不到你。你跟其他人哪裡不一樣？", "差一點就是 A。差的那一點，叫自信。", "唱得不錯，跳的時候整個人就散掉了，練。", "你很穩，但穩到我差點睡著。舞台要有記憶點。", "技術上沒問題，就是太乖了。給我一點野心。"], C: ["前三十秒很好，後面整個垮掉，體力是基本功。", "你自己覺得今天的舞台幾分？我覺得你可以更好，所以給 C。", "音準飄了至少三次，你自己有聽到嗎？", "表情管理呢？跳到一半笑場，這在正式舞台是事故。", "不上不下，是最危險的位置。你要往哪邊走自己選。"], D: ["這是準備了多久的舞台？老實說看不出來。", "選曲完全沒有考慮自己的音域，這是判斷力的問題。", "動作都記得，可是沒有一個做到位。", "太緊張了。緊張可以理解，但出道之後每天都是這種壓力。", "我看到努力了，可是努力在這裡是最基本的。"], F: ["你為什麼站在這裡？這個問題你今天回去好好想。", "這個程度不能叫舞台，叫練習室的第一天。", "基本功要從頭來。不想從頭來的話，現在就可以放棄。", "我不是要打擊你，是現在不講，之後節目會講得更難聽。", "F 班不是終點，但如果下次還是這樣，就是了。"]};
 const svGrCm=(s,t,k)=>{ const st=svStages("r1",k||"lv").find(x=>x.tid===t.id), c=st&&(st.cm||[])[0]; if(c) return {n:c.n,t:c.t};
   const M=svMentors(s), g=svGrade(t), g0=(s.grade0||{})[t.id], up=g0&&g0!==g?(SV_GR.indexOf(g)<SV_GR.indexOf(g0)?"這幾天進步很多！":"這幾天狀態掉了，要調整回來。"):"";
-  const mm=M[svHash("m"+t.id)%M.length]; if(up) return {n:mm.n,t:up}; return {n:mm.n,t:svGrLine(s,t,g,mm)}; };
+  const sk=String(((t.sk||[])[0])||""), mm=M.find(x=>sk&&String(x.r||"").toLowerCase()===sk.toLowerCase())||M[svHash("m"+t.id)%M.length]; if(up) return {n:mm.n,t:up}; return {n:mm.n,t:svGrLine(s,t,g,mm)}; };
 /* 11/24 導師評語：看導師專長（Vocal／Dance／Rap）挑「指出問題」＋「判決」兩段拼，同一班不會有兩個人拿到一樣的話；A 班中立不兇 */
 const SV_CMO={Vocal:["高音一上去就破了。","氣息撐不住，每一句尾音都在掉。","音準飄了至少三次，你自己有聽到嗎？","咬字含糊，我聽不出你在唱什麼。","你一直在用喉嚨硬擠。","副歌那段完全沒有力氣。","低音還可以，一到高音就在閃躲。","你在唱，可是沒有在表達。","呼吸的位置全部錯了。","情緒是假的，我感受不到。"],
   Dance:["動作全部慢半拍。","腳步是亂的，重心一直在晃。","手的線條根本沒有延伸出去。","你在做動作，不是在跳舞。","表情管理整個放掉了。","力量只撐到前八拍，後面就沒了。","走位錯了兩次，你自己知道嗎？","動作很大，可是一點都不乾淨。","跟音樂完全沒有對上。","定點沒停住，整段看起來很散。"],
