@@ -8157,3 +8157,28 @@ html[data-theme="dark"] .nl-mr{border-color:#2E2A35}
 .svsh-mont>*{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;background:none;border:0;color:#fff;font:inherit;padding:0}
 .svsh-mont .svsh-ph{display:block;width:72px;height:72px;border-radius:12px;overflow:hidden}.svsh-mont .svsh-ph>*{width:100%;height:100%}
 .svsh-mont b{font-size:12px;font-weight:800}.svsh-mont .sv3-gr{position:absolute;top:-4px;right:8px}
+/* 11/24 本週節目換成 PD 那種亮粉白的播出畫面：白底、粉三角、白粉疊標籤、白底粉線字幕條（不再是年末大賞的暗紫舞台） */
+.aws.svsh{--k:#F0408F;--k2:#FF9CC6;--k3:#FFE3EF;background:#FFF5F9!important;color:#2B2129}
+.aws.svsh.aw-c-svb{--k:#2F6FE0;--k2:#5ED6C8;--k3:#E3EEFF;background:#F5F9FF!important}
+.aws.svsh .aws-beams{display:none}
+.aws.svsh:before,.aws.svsh:after{content:"";position:absolute;z-index:-1;pointer-events:none;clip-path:polygon(0 100%,50% 0,100% 100%)}
+.aws.svsh:before{left:-60px;bottom:0;width:300px;height:260px;background:var(--k);opacity:.95}
+.aws.svsh:after{left:120px;bottom:0;width:180px;height:160px;background:var(--k2);opacity:.9}
+.aws.svsh .aws-in{position:static}
+.svsh-rib{position:absolute;left:0;top:calc(env(safe-area-inset-top,0px) + 18px);display:flex;flex-direction:column;gap:3px;z-index:2}.svsh-rib b,.svsh-rib span{width:max-content;padding:3px 12px 3px 10px;font-size:10.5px;font-weight:900;letter-spacing:.14em}.svsh-rib b{background:#fff;color:var(--k);box-shadow:0 1px 0 rgba(0,0,0,.06)}.svsh-rib span{background:var(--k);color:#fff;letter-spacing:.04em;font-size:11px}
+.aws.svsh .aws-open small,.aws.svsh .aws-cat small{display:inline-block;background:var(--k);color:#fff;padding:3px 12px;letter-spacing:.12em;font-weight:900}
+.aws.svsh .aws-open h1,.aws.svsh .aws-cat b{color:var(--k);font-weight:900}
+.aws.svsh .aws-open h1 i{color:#2B2129;letter-spacing:.35em}
+.aws.svsh .aws-say>div{background:#fff;border:0;border-left:6px solid var(--k);border-radius:0;box-shadow:0 10px 30px -14px rgba(120,20,70,.35)}
+.aws.svsh .aws-say small{color:var(--k);font-weight:900}
+.aws.svsh .aws-say p{color:#2B2129;font-weight:700}
+.aws.svsh .aws-btn{background:var(--k);color:#fff;border-radius:0;font-weight:900;padding:13px 28px;box-shadow:4px 4px 0 var(--k2)}
+.aws.svsh .aws-btn.off{background:#D9CFD5;box-shadow:none}
+.aws.svsh .aws-tap,.aws.svsh .svsh-how,.aws.svsh .svsh-cut{color:#6E5F69;text-shadow:none}
+.aws.svsh .svsh-cut{color:#2B2129;background:#fff;display:inline-block;padding:6px 12px;border-left:4px solid var(--k)}
+.aws.svsh .svsh-mont>*{color:#2B2129}
+.aws.svsh .svsh-mont .svsh-ph{box-shadow:0 0 0 2px var(--k);background:var(--k3)}.aws.svsh .aws-v,.aws.svsh .svsh-nov{background:var(--k3)}
+.aws.svsh .aws-sp0-st,.aws.svsh .svsh-tag{background:var(--k3);color:var(--k);border:0}
+.aws.svsh.evil{background:#1d1a1c!important;filter:grayscale(1) contrast(1.1)}
+.aws.svsh.evil .aws-cat b,.aws.svsh.evil .aws-cat small{color:#fff;background:none}
+.aws.svsh.evil .svsh-cut{background:#000;color:#eee;border-left-color:#555;font-family:serif}
