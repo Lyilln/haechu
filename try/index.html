@@ -144,7 +144,7 @@ const hint=h=>`<p class="tz-hint"><span class="tz-hi">${TZ_I.bulb}</span><span>$
 const unl=t=>`<p class="tz-unl">${TZ_I.lock}${t}</p>`;
 
 /* ---------- TIE（照 App 的 TIE：聊天室列表 → 聊天室） ---------- */
-const WELCOME="嗨～我是 LUMI ✨ 歡迎來試玩 HAECHU！\n這裡是只屬於我們的 TIE 💜 從你傳第一則開始，24 小時內都可以跟我聊。\n\n先說清楚群的規則：\n① 加入 SUN KISS（LINE 社群）不等於可以玩 App，進群後還要填單，管理員發帳號密碼給你才能登入。\n② 不能用「原創角色」：每位藝人都一定要有一位真人當皮相，不能是沒有真人臉的自創角色。\n\n有什麼想問的都可以問我～";
+const WELCOME="嗨～我是 LUMI ✨ 歡迎來試玩 HAECHU！\n這裡是只屬於我們的 TIE 💜 從你傳第一則開始，24 小時內都可以跟我聊。\n\n先說清楚群的規則：\n① 加入 SUN KISS（LINE 社群）不等於可以玩 App，進群後還要填單，填單時自己設定帳號密碼，之後用它登入。\n② 不能用「原創角色」：每位藝人都一定要有一位真人當皮相，不能是沒有真人臉的自創角色。\n\n有什麼想問的都可以問我～";
 let CH=LS.get("chat",{nick:"",msgs:[]}), POLL=0;
 const lumiAv=(cls="")=>`<div class="t-av tz-l ${cls}">L</div>`;
 const tHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tryHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tryHG)"/></svg><i></i></span>`;
@@ -215,7 +215,7 @@ function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) r
 function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分</h2><p>HAECHU 是 <b>K-pop 偶像角色扮演（RP）社群</b>：每位偶像都是社群成員自己設定、自己扮演的藝人（一定要有真人皮相）。不是真的韓國偶像，也不是 AI 或二次元角色。在 TIE 跟你聊天的，是扮演那位偶像的成員本人。</p>
   <section class="card tz-how"><h3>在 HAECHU 怎麼玩</h3><ol><li><b>加入後先當粉絲</b>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</li><li><b>想當偶像？從練習生開始</b>在社群累積積分（打卡、宣群、發文、創作…），準備好藝名、Teaser 和 MV，在 App 裡申請出道。</li><li><b>出道</b>管理員審核通過、出道日一到，就有自己的 TIE、SNS、打歌。當粉絲時累積的積分會原封不動帶過去。</li></ol><p class="tz-how-n">只想追星停在第 1 步就好，想出道就繼續往下。</p></section>
   <section class="card tz-faq"><h3>可以用「原創角色」嗎？</h3><p><b>不行。</b>「原創角色」是指沒有真人臉、完全自己創造的角色。每位藝人都一定要有一位真人當人設皮相；藝名、個性、故事再由你自己設定。</p></section>
-  <section class="card tz-faq"><h3>進群就能玩 App 嗎？</h3><p><b>不是。</b>加入 SUN KISS（LINE 社群）後，還要<b>填單</b>，管理員會給你<b>帳號密碼</b>，拿到才能登入 HAECHU。</p></section>
+  <section class="card tz-faq"><h3>進群就能玩 App 嗎？</h3><p><b>不是。</b>加入 SUN KISS（LINE 社群）後，還要<b>填單</b>，在單子上<b>自己設定帳號密碼</b>，之後用它登入 HAECHU。</p></section>
   <a class="btn btn-main btn-block" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
   <a class="btn btn-soft btn-block" href="../">我已經有帳號，回到 HAECHU</a></main>`; }
 
