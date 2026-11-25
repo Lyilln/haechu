@@ -15577,9 +15577,9 @@ const svSpeech=(t,st)=>{ const x=((t&&t.sp)||{})[st]; if(x) return x; const P=SV
 const svPk=(Z,nm,P,key)=>{ if(!Z) return P[svHash(key)%P.length]; Z.u=Z.u||{}; Z.m=Z.m||{}; const mk=nm+"|"+key; if(Z.m[mk]!=null) return P[Z.m[mk]]; const U=Z.u[nm]=Z.u[nm]||[]; if(U.length>=P.length) U.length=0; let i=svHash(key)%P.length; for(let k=0;k<P.length&&U.includes(i);k++) i=(i+1)%P.length; U.push(i); Z.m[mk]=i; return P[i]; };
 const svHash=s=>{ let h=0; for(const c of String(s)) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); };
 function svScores(ph){ const s=svSeason(); if(!s) return {}; ph=ph||s.ph; const V=s.demo?Object.fromEntries(SV_DEMO_N.map((n,i)=>["dm"+i,(12-i)*9+((ui.svDV||{})["dm"+i]||0)])):((S.get(SVV,{})||{})[s.id]||{})[ph]||{}, B=((s.bonus||{})[ph])||{}, all=svAll(), out={};
-  const BN=svBenefit(ph), live=svAlive(ph), reals=all.filter(t=>t.real&&live.has(t.id)), avg=reals.length?reals.reduce((a,t)=>a+(V[t.id]||0)+(B[t.id]||0),0)/reals.length:0;
+  const live=svAlive(ph), reals=all.filter(t=>t.real&&live.has(t.id)), avg=reals.length?reals.reduce((a,t)=>a+(V[t.id]||0)+(B[t.id]||0),0)/reals.length:0, BN=svBenefit(ph,avg);
   const t0=(s.t0s||{})[ph]||s.t0||Date.now(), days=Math.max(1,Math.ceil((Math.min(Date.now(),(s.ends||{})[ph]||Date.now())-t0)/864e5));
-  const VP=ph==='final'&&!s.demo?(((S.get(SVV,{})||{})[s.id]||{}).pr||{}):{}, BP=ph==='final'?svBenefit('pr'):{};   /* 決賽：PR 週的票和加分票一起帶進來 */
+  const VP=ph==='final'&&!s.demo?(((S.get(SVV,{})||{})[s.id]||{}).pr||{}):{}, BP=ph==='final'?svBenefit('pr',(()=>{ const P=((S.get(SVV,{})||{})[s.id]||{}).pr||{}, n=Object.keys(P).length; return n?Object.values(P).reduce((a,b)=>a+b,0)/n:0; })()):{};   /* 決賽：PR 週的票和加分票一起帶進來 */
   all.forEach(t=>{ if(!live.has(t.id)) return; out[t.id]=t.real?(V[t.id]||0)+(B[t.id]||0)+(BN[t.id]||0)+(VP[t.id]||0)+(BP[t.id]||0):Math.round(days*(2+svHash(t.id+ph)%6)+avg*(.25+svHash(ph+t.id)%55/100))+(B[t.id]||0); });
   return typeof svSnsBonus==="function"?svSnsBonus(s,ph,out):out; }
 /* 這一輪還在比的人 */
@@ -15754,7 +15754,9 @@ function svVStages(s,ph,mk){ try{ if(!s||s.demo||s.ph==="recruit"||ph==="recruit
 const svLive=x=>(x.live||0)+(((S.get(SVLV,{})||{})[x.id])||0)+((ui.svDL||{})[x.id]||0);
 const svMyLv=()=>{ const s=svSeason(); return s&&s.demo?(ui.svDLm||{}):(S.get(acK("daisuki_sv_lv"),{})||{}); };
 /* 現場票前三名的加分票（這一輪每個任務各算一次） */
-function svBenefit(ph){ const out={}; svMsList(ph).forEach(m=>{ svStages(ph,m.k).filter(x=>!x.v).slice().sort((a,b)=>svLive(b)-svLive(a)).slice(0,3).forEach((x,i)=>{ if(svLive(x)>0) out[x.tid]=(out[x.tid]||0)+SV_BEN[i]; }); }); return out; }
+/* 11/25 舞台加分：現場票前三名拿「真人平均票數」的 30%／20%／10%（票少加少、票多加多）；等這個任務的現場票截止才加進排名 */
+const SV_BENR=[.3,.2,.1];
+function svBenefit(ph,avg){ const out={}, s=svSeason(), t0=s&&((s.t0s||{})[ph]||s.t0)||0; svMsList(ph).forEach(m=>{ if(s&&!s.demo&&Date.now()<t0+m.d[1]*864e5) return; svStages(ph,m.k).filter(x=>!x.v).slice().sort((a,b)=>svLive(b)-svLive(a)).slice(0,3).forEach((x,i)=>{ if(svLive(x)>0) out[x.tid]=(out[x.tid]||0)+(s&&s.demo?SV_BEN[i]:Math.max(1,Math.round((avg||0)*SV_BENR[i]))); }); }); return out; }
 const SV_MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 const svHost=(s,txt)=>`<section class="sv3-host"><span class="sv3-hav">${SV_MIC}</span><div><small>${esc(svHostN(s))}</small><p>${txt}</p></div></section>`;
 function svHostTxt(s){ if(s.ph==="recruit") return "國民製作人們好！新一季的練習生正在報名中，招募結束後，就請大家幫喜歡的練習生投下寶貴的一票。";
@@ -16214,7 +16216,7 @@ function svAdminHtml(){ const s=svSeason(), E=svEntries(); const dmb=`${s&&!s.de
   return dmb+chat+`<section class="card studio"><p class="ae-tip">${s.g==="g"?"女團":"男團"}第 ${s.no||1} 季・<b>${SV_PH[s.ph]}</b>${s.end?`・${new Date(s.end).toLocaleString()} 自動公布／進下一階段`:""}${s.ext?`・招募已延長 ${s.ext} 次（真人 ${E.length}／至少 ${SV_MIN}）`:""}</p>
     <div class="sv3-adm">${s.ph!=="prep"?`<button class="btn btn-soft" data-a="svNext">現在就${s.ph==="recruit"?"結束招募":"公布"}</button>`:`<button class="btn btn-soft" data-a="svDone">出道完成，結束這一季</button>`}<button class="btn btn-soft" data-a="svPrepW">出道準備 ${s.prepW||3} 週</button><button class="btn btn-soft" data-a="svCast">主持人・導師</button><button class="btn btn-soft" data-a="svNpcPh" data-v="${s.g==="b"?"b":"g"}">虛擬練習生照片 ${Object.keys(S.get(SVNP,{})||{}).filter(k=>k[0]===(s.g==="b"?"m":"n")).length}/${SV_N}</button><button class="btn btn-soft" data-a="svEnd">取消這一季</button></div>
     ${s.ph==="r1"?svGrAdm(s):""}
-    ${svMsList(s.ph).length?`<p class="ae-tip">這一輪的任務：${svMsList(s.ph).map(m=>`${m.t}（第 ${m.d[0]+1}～${m.d[1]} 天）`).join("→")}。現場票前三名自動加 ${SV_BEN.join("／")} 票；舞台點開可以寫導師評語。</p>`:""}</section>
+    ${svMsList(s.ph).length?`<p class="ae-tip">這一輪的任務：${svMsList(s.ph).map(m=>`${m.t}（第 ${m.d[0]+1}～${m.d[1]} 天）`).join("→")}。現場票前三名在任務截止後加「真人平均票數」的 30%／20%／10%；舞台點開可以寫導師評語。</p>`:""}</section>
     ${svVoting()?`<div class="section-h">這一輪排名・加分票</div><section class="card studio">${rk.map((id,i)=>{ const x=all.find(t=>t.id===id)||{}; return `<div class="sv2-row"><span class="sv2-rk">${i+1}</span><div class="sv2-nm"><b>${esc(x.name)}${x.real?"":"<small>（虛擬）</small>"}</b><small>${fmt(sc[id]||0)} 票</small></div><i class="sv3-gr g${svGrade(x)}">${svGrade(x)||"－"}</i><button class="btn btn-soft btn-sm" data-a="svBonus" data-v="${id}">加分</button></div>`; }).join("")}</section>`:""}
     ${E.length?`<div class="section-h">報名的人（${E.length}）</div><section class="card studio">${E.map(e=>`<div class="sv2-row"><div class="sv2-nm"><b>${esc(e.name)}</b><small>${esc(acctUser(e.email))}・${esc(e.co||"個人練習生")}</small></div><button class="btn btn-soft btn-sm" data-a="svKick" data-v="${e.id}">移除</button></div>`).join("")}</section>`:""}`; }
 
