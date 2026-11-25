@@ -85,8 +85,7 @@ export default {
       const tryOld = (v, up) => {
         const F = ((v && v.msgs) || []).filter(m => m.from === "fan").sort((a, c) => a.ts - c.ts), now = Date.now();
         if (!F.length) return now - up > 3 * 864e5;
-        if (F.length >= 3) return now - F[2].ts > 36e5;
-        return now - F[F.length - 1].ts > 3 * 864e5;
+        return now - F[0].ts > 864e5 + 36e5;   // 11/25 試玩改限時間：第一則之後 24 小時能傳，再過 1 小時刪
       };
       if (!id) {
         if (req.method !== "GET") return reply({ error: "method" }, 405);
@@ -114,7 +113,7 @@ export default {
         let ping = null;
         const res = await update(k, v => {
           const have = new Set((v.msgs || []).map(m => m.id)), add = inc.filter(m => !have.has(m.id));
-          if ((v.msgs || []).filter(m => m.from === "fan").length + add.length > 3) return null;   // 試玩只能傳 3 則
+          { const F0 = (v.msgs || []).filter(m => m.from === "fan").map(m => m.ts).sort((a, c) => a - c)[0]; if (F0 && Date.now() > F0 + 864e5) return null; }   // 11/25 試玩：第一則之後 24 小時內都能傳
           if (!add.length && (v.nick || "") === (nick || v.nick || "")) return null;
           // 有新訊息就通知管理員；同一位訪客 2 分鐘內只通知一次（連發好幾則不會一直響）
           let pingTs = v.pingTs || 0; ping = null;

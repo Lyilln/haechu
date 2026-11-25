@@ -124,8 +124,10 @@ const STICK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-w
 const TABS=[["tie","TIE",NAV.tie],["sns","SNS",NAV.love],["show","FEST",NAV.core],["ls","LIGHT",STICK],["end","JOIN",NAV.me]];
 let NAVP=null;
 /* 解鎖：在 TIE 傳一則訊息給 LUMI，就解鎖下一個玩法（SNS → FEST → LIGHT → JOIN） */
-/* 試玩的 TIE 只能傳 3 則（不管 LUMI 有沒有回）：第 1 則解鎖 SNS、第 2 則 FEST、第 3 則 LIGHT＋JOIN */
-const TRY_MAX=3, fanN=()=>CH.msgs.filter(m=>m.from==="fan").length, tryLeft=()=>Math.max(0,TRY_MAX-fanN());
+/* 11/25 試玩的 TIE 限時間：第一則之後 24 小時內都能傳（不限則數） */
+/* 11/25 改成限時間：從傳第一則開始算 24 小時，時間到就不能再傳（不限則數） */
+const TRY_WIN=864e5, fanN=()=>CH.msgs.filter(m=>m.from==="fan").length, tryT0=()=>{ const F=CH.msgs.filter(m=>m.from==="fan").map(m=>m.ts).sort((a,b)=>a-b); return F[0]||0; }, tryLeft=()=>!tryT0()||Date.now()<tryT0()+TRY_WIN,
+  tryEndTxt=()=>{ const d=new Date(tryT0()+TRY_WIN); return `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,"0")}:${String(d.getMinutes()).padStart(2,"0")}`; };
 /* 解鎖順序（一關接一關）：TIE 傳一則 → SNS；SNS 按一個讚 → FEST；FEST 投一票 → LIGHT；應援棒晃一下 → JOIN */
 const UNL_REQ={sns:()=>`在 TIE 傳一則訊息給 ${IDOL.name}`,show:()=>"在 SNS 幫一則貼文按讚",ls:()=>"在 FEST 投一票",end:()=>"在 LIGHT 晃一下應援棒"};
 const unlSet=()=>{ const s=new Set(["tie"]); if(fanN()>=1) s.add("sns"); if(s.has("sns")&&ST.done.sns) s.add("show"); if(s.has("show")&&ST.done.show) s.add("ls"); if(s.has("ls")&&ST.done.ls) s.add("end"); return s; };
@@ -142,7 +144,7 @@ const hint=h=>`<p class="tz-hint"><span class="tz-hi">${TZ_I.bulb}</span><span>$
 const unl=t=>`<p class="tz-unl">${TZ_I.lock}${t}</p>`;
 
 /* ---------- TIE（照 App 的 TIE：聊天室列表 → 聊天室） ---------- */
-const WELCOME="嗨～我是 LUMI ✨\n這裡是只屬於我們的 TIE 💜\n跟我說說話吧！我看到就會回你～";
+const WELCOME="嗨～我是 LUMI ✨ 歡迎來試玩 HAECHU！\n這裡是只屬於我們的 TIE 💜 從你傳第一則開始，24 小時內都可以跟我聊。\n\n先說清楚群的規則：\n① 加入 SUN KISS（LINE 社群）不等於可以玩 App，進群後還要填單，管理員發帳號密碼給你才能登入。\n② 不能用「原創角色」：每位藝人都一定要有一位真人當皮相，不能是沒有真人臉的自創角色。\n\n有什麼想問的都可以問我～";
 let CH=LS.get("chat",{nick:"",msgs:[]}), POLL=0;
 const lumiAv=(cls="")=>`<div class="t-av tz-l ${cls}">L</div>`;
 const tHeart=()=>`<span class="t-heart"><svg viewBox="0 0 24 24" width="15" height="15"><defs><radialGradient id="tryHG" cx="35%" cy="35%" r="65%"><stop offset="0%" stop-color="#D8B4FE"/><stop offset="50%" stop-color="#8843FB"/><stop offset="100%" stop-color="#8A2BE2"/></radialGradient></defs><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="url(#tryHG)"/></svg><i></i></span>`;
@@ -159,7 +161,7 @@ function roomHtml(){ const L=[{id:"w0",from:"idol",text:WELCOME,ts:CH.t0||Date.n
   return `<div class="tz-room"><div class="t-bgl t-default"></div><header class="t-rh sh-head"><div class="t-rh-row"><button class="t-ib" data-go="tie" aria-label="返回">${TI.back}</button><h3>${IDOL.name}</h3><div class="t-rh-r"></div></div>
       <div class="t-sub"><span class="t-sub-n">𝑇𝐼𝐸</span>${tHeart()}<span>+1</span></div></header>
     <main class="t-msgs" id="msgs">${body}${CH.msgs.length?`<p class="tz-sys">${IDOL.name} 是真人回覆的，可能要等一下下～可以先去玩別的，回來再看。</p>`:""}<div id="chat-end"></div></main>
-    ${tryLeft()?`<form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?`還可以傳 ${tryLeft()} 則`:"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form>`:`<div class="t-foot tz-done"><p>試玩的 TIE 只能傳 ${TRY_MAX} 則～${IDOL.name} 是試玩用的角色，加入 HAECHU 後，就能跟在 SUN KISS 裡已出道的藝人聊天。</p><button class="btn btn-main" data-go="end">看看怎麼加入</button></div>`}</div>`; }
+    ${tryLeft()?`<form class="t-foot" id="tieF"><div class="t-inp"><input id="tieIn" maxlength="200" placeholder="${CH.nick?(tryT0()?`${tryEndTxt()} 前都可以傳`:"傳第一則開始，24 小時內都能聊"):"先取一個暱稱再開始聊天"}" autocomplete="off" aria-label="輸入訊息"></div><button class="t-send" id="tieSend" type="submit" aria-label="送出">${TI.send}</button></form>`:`<div class="t-foot tz-done"><p>試玩的 TIE 時間到了（第一則之後 24 小時）～${IDOL.name} 是試玩用的角色，加入 HAECHU 後，就能跟在 SUN KISS 裡已出道的藝人聊天。</p><button class="btn btn-main" data-go="end">看看怎麼加入</button></div>`}</div>`; }
 function scrollMsgs(){ const e=document.getElementById("chat-end"); if(e) e.scrollIntoView({block:"end"}); }
 function nickSheet(){ layer.innerHTML=`<div class="t-modal-w" data-close="1"><div class="t-modal" role="dialog" aria-label="你的暱稱"><h3>你的暱稱</h3><p>${IDOL.name} 在訊息裡會用這個名字叫你。</p><div class="t-mb"><input id="nickIn" class="t-wel-ta tpk-nk" maxlength="12" placeholder="輸入文字" autocomplete="off"><button class="t-mbtn main" id="nickOk">確認</button></div></div></div>`; setTimeout(()=>{ const i=document.getElementById("nickIn"); if(i) i.focus(); },60); }
 async function sendMsg(text){ const u0=unlSet(); const m={id:"f"+rid(),from:"fan",text,ts:Date.now(),pend:1}; CH.msgs.push(m); unlCheck(u0); if(!CH.t0) CH.t0=Date.now(); LS.set("chat",CH); render();
@@ -210,9 +212,10 @@ let lsAcc=0;
 function lsMount(){ const el=document.getElementById("lsBox"); if(!el||el._ls) return; try{ el._ls=LS3D.mount(el,{...lsDesign(),glow:ST.col},{swing:true,auto:false,glow:ST.col,onSwing:v=>{ if(!ST.done.ls&&v>1){ const u0=unlSet(); done("ls"); unlCheck(u0); const nv=document.querySelector("nav.nav"); if(nv) nv.outerHTML=navBar(ST.tab); const k=document.getElementById("lsLock"); if(k) k.remove(); }   /* 晃一下就解鎖 JOIN（不重畫整頁，應援棒不會斷） */ lsAcc+=v; if(lsAcc>90){ lsAcc=0; ST.waves++; done("ls"); const c=document.getElementById("lsCnt"); if(c) c.textContent=`已經揮了 ${ST.waves} 下`; } }}); }catch(e){ el.innerHTML=""; } }
 
 /* ---------- 結尾 ---------- */
-function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分</h2><p>HAECHU 是 <b>K-pop 偶像角色扮演（RP）社群</b>：每位偶像都是社群成員自己創造、自己扮演的<b>原創藝人</b>。不是真的韓國偶像，也不是 AI 或二次元角色。在 TIE 跟你聊天的，是扮演那位偶像的成員本人。</p>
+function endHtml(){ return head("JOIN")+`<main class="page tz-end"><h2>這只是一小部分</h2><p>HAECHU 是 <b>K-pop 偶像角色扮演（RP）社群</b>：每位偶像都是社群成員自己設定、自己扮演的藝人（一定要有真人皮相）。不是真的韓國偶像，也不是 AI 或二次元角色。在 TIE 跟你聊天的，是扮演那位偶像的成員本人。</p>
   <section class="card tz-how"><h3>在 HAECHU 怎麼玩</h3><ol><li><b>加入後先當粉絲</b>追喜歡的偶像、收 TIE、留言、打歌、看直播、參加演唱會和簽售，做任務賺積分升等級。</li><li><b>想當偶像？從練習生開始</b>在社群累積積分（打卡、宣群、發文、創作…），準備好藝名、Teaser 和 MV，在 App 裡申請出道。</li><li><b>出道</b>管理員審核通過、出道日一到，就有自己的 TIE、SNS、打歌。當粉絲時累積的積分會原封不動帶過去。</li></ol><p class="tz-how-n">只想追星停在第 1 步就好，想出道就繼續往下。</p></section>
-  <section class="card tz-faq"><h3>可以不用皮相、完全原創一個藝人嗎？</h3><p><b>不行。</b>每位藝人都一定要有一位真人當人設皮相；藝名、個性、故事再由你自己設定。</p></section>
+  <section class="card tz-faq"><h3>可以用「原創角色」嗎？</h3><p><b>不行。</b>「原創角色」是指沒有真人臉、完全自己創造的角色。每位藝人都一定要有一位真人當人設皮相；藝名、個性、故事再由你自己設定。</p></section>
+  <section class="card tz-faq"><h3>進群就能玩 App 嗎？</h3><p><b>不是。</b>加入 SUN KISS（LINE 社群）後，還要<b>填單</b>，管理員會給你<b>帳號密碼</b>，拿到才能登入 HAECHU。</p></section>
   <a class="btn btn-main btn-block" href="${JOIN}" target="_blank" rel="noopener">加入 SUN KISS（LINE 社群）</a>
   <a class="btn btn-soft btn-block" href="../">我已經有帳號，回到 HAECHU</a></main>`; }
 
