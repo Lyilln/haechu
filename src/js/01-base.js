@@ -1,4 +1,6 @@
-/* HAECHU｜共用基礎：動畫、共用資料、儲存 */
+/* HAECHU｜共用基礎：動畫、共用資料、儲存 *//* 11/25 積分紀錄寫出在哪裡用的／拿的（看當下在哪個頁面） */
+function ptWhere(){ try{ const h=decodeURIComponent(location.hash||""), M=[[/lot|gacha|抽/,"抽獎"],[/market|mk=/,"卡圈市場"],[/shop|store/,"商店"],[/tint|theme/,"主題"],[/album|pcard|photocard|card/,"小卡／專輯"],[/promo|music|mshow/,"打歌"],[/concert|ls=|light/,"演唱會"],[/fansign|sign/,"簽售"],[/cafe/,"咖啡廳"],[/game/,"小遊戲"],[/tie/,"TIE"],[/sns/,"SNS"],[/survival|sv/,"選秀"],[/live/,"直播"],[/tour/,"巡演"],[/variety|vs/,"綜藝"],[/meet/,"見面會"]]; const f=M.find(([r])=>r.test(h)); return "："+(f?f[1]:(h.replace(/^#\/?/,"")||"首頁").slice(0,24)); }catch(e){ return ""; } }
+
 /* =========================================================
    1. 共用資料：兩端都從這裡讀，名稱只在這裡改一次
    ========================================================= */
@@ -119,7 +121,7 @@ const S = {
   get(k,fb){ if(k===K.whispers&&tie2On()) return tieAllGet(); if(k===K.points){ const m=uniArt(); if(m) return Math.max(0,((typeof pointsOf==="function"&&pointsOf(m))||{}).net||0); } k=pk(k);const v=store.get(k,undefined);const r=v===undefined?(k in mem?mem[k]:fb):v; return k==="daisuki_posts"&&Array.isArray(r)?r.filter(x=>!(x&&x.del)):r},   /* 藝人動態：刪除記號畫面上當作沒有 */
   set(k,v){ if(k===K.whispers&&tie2On()){ tieAllSet(v); return; }
     if(k===K.posts&&Array.isArray(v)){ try{ const raw=store.get(k,undefined)||mem[k]||[], ids=new Set(v.map(x=>x&&x.id)); v=[...v,...(Array.isArray(raw)?raw:[]).filter(x=>x&&x.del&&!ids.has(x.id))]; }catch(e){} }   /* 存的時候把刪除記號留著（不然別支手機的舊資料會讓刪掉的又跑回來） */
-    if(k===K.points){ const m=uniArt(); if(m){ const d=Math.round((+v||0)-S.get(K.points,0)); if(d){ const L=S.get(K.ptGrants,[])||[]; L.push({id:"uf_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),to:"art:"+m,mid:m,n:d,art:1,why:d<0?"粉絲身分使用":"粉絲身分獲得",by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); } return; } } try{ if(typeof kvImgSoon==="function") kvImgSoon(k); }catch(e){} k=pk(k);mem[k]=v;store.set(k,v);hbMark(k)},
+    if(k===K.points){ const m=uniArt(); if(m){ const d=Math.round((+v||0)-S.get(K.points,0)); if(d){ const L=S.get(K.ptGrants,[])||[]; L.push({id:"uf_"+Date.now().toString(36)+Math.random().toString(36).slice(2,5),to:"art:"+m,mid:m,n:d,art:1,why:(d<0?"粉絲身分使用":"粉絲身分獲得")+ptWhere(),by:"auto",ts:Date.now()}); S.set(K.ptGrants,L); } return; } } try{ if(typeof kvImgSoon==="function") kvImgSoon(k); }catch(e){} k=pk(k);mem[k]=v;store.set(k,v);hbMark(k)},
   del(k){k=pk(k);delete mem[k];store.del(k);hbMark(k)}
 };
 
