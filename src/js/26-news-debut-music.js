@@ -97,6 +97,9 @@ function nwWin(id,{g,s,show,k,n,cr,t,days}){ const D=nwD(t);
    ========================================================= */
 const CBR_KEY="daisuki_cb_req";
 const REL_T=["單曲","數位單曲","EP","迷你專輯","正規專輯","改版專輯","電子專輯"];   /* 發行型態 */
+/* 11/25 發行型態決定表格要填什麼（alb 專輯名稱／介紹、trk 曲目表、hl Highlight Medley、cv 概念照至少幾版） */
+const REL_CFG={"數位單曲":{alb:0,trk:0,hl:0,cv:1,tip:"只在音源平台發 1～2 首歌，沒有實體專輯：不用專輯名稱、曲目表、Highlight Medley。"},"單曲":{alb:1,trk:1,hl:0,cv:1,tip:"單曲專輯：1～3 首歌，有實體專輯。"},"EP":{alb:1,trk:1,hl:1,cv:2,tip:"EP：3～6 首歌，概念照至少 2 個版本。"},"迷你專輯":{alb:1,trk:1,hl:1,cv:2,tip:"迷你專輯：4～7 首歌，概念照至少 2 個版本。"},"正規專輯":{alb:1,trk:1,hl:1,cv:3,tip:"正規專輯：8 首以上，概念照至少 3 個版本。"},"改版專輯":{alb:1,trk:1,hl:1,cv:1,tip:"改版專輯：上一張專輯＋新歌，曲目表把新歌標出來（例：★）。"},"電子專輯":{alb:1,trk:1,hl:1,cv:2,tip:"只有數位版、沒有實體專輯，一樣要曲目表。"}};
+const relCfg=rt=>REL_CFG[rt]||{alb:1,trk:0,hl:1,cv:2,tip:""};
 const relChips=(cur,act)=>`<div class="chips wrap co-chips">${REL_T.map(c=>`<button class="chip ${cur===c?"on":""}" data-a="${act}" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
 const getCbr=()=>(S.get(CBR_KEY,[])||[]).filter(x=>x&&x.id);
 const cbrWait=()=>getCbr().filter(x=>x.status==="wait").length;

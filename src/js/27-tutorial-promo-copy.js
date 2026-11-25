@@ -537,7 +537,7 @@ const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>x.
 
 /* ---------- 申請表裡的欄位 ---------- */
 /* 不是單曲／數位單曲 → 要填曲目表 */
-const needsTrk=rt=>!!rt&&!["單曲","數位單曲"].includes(rt);
+const needsTrk=rt=>!!rt&&!!relCfg(rt).trk;
 const promoCheck=f=>needsTrk(f.rtype)&&!String((f.pr||{}).trk||"").split("\n").some(x=>x.trim())?"請填曲目表（一行一首）":"";
 /* 曲目表：選了發行型態就接在下面（單曲、數位單曲不用填） */
 function promoTrk(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const img=(u,ex)=>`<button class="db-slot t sm" data-a="prImg" ${ex}>${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}</button>`;

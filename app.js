@@ -2474,13 +2474,13 @@ function debutForm(){ const f=ui.dbF||(ui.dbF={kind:"solo",name:"",gname:"",co:"
     ["出道當天","",dbDayF(f,"出道")]]); }
 /* ---------- 出道／回歸申請：獨立一頁（照真實 K-POP 宣傳會有的東西分區） ---------- */
 function dbSpkF(f){ const v=esc((prOf(f)||{}).spk||""); return `<span class="fs-f-lab">拿到一位時想對粉絲說的話 <em>選填</em></span><textarea id="prX_spk" class="a-nick-in dbx-ta" rows="4" maxlength="120" placeholder="例：謝謝一直陪在我們身邊的你們，這個一位是大家一起拿到的💜">${v}</textarea><p class="dbx-d">這首歌拿到一位時，會在一位發表的「得獎感言」出現。之後回歸可以再寫新的。</p>`; }
-function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||"");
-  return `<span class="fs-f-lab">專輯名稱 <em>選填</em></span><input id="prX_album" class="a-nick-in" maxlength="40" placeholder="例：The 1st Mini Album『Sequence 01』" value="${X("album")}">
+function dbWorkF(f,songId,songLab){ const pr=prOf(f), X=k=>esc(pr[k]||""), sv=songId==="cbTitle"?(f.title||""):(f.song||""), rc=relCfg(f.rtype);
+  return `${rc.alb?`<span class="fs-f-lab">專輯名稱 <em>選填</em></span><input id="prX_album" class="a-nick-in" maxlength="40" placeholder="例：The 1st Mini Album『Sequence 01』" value="${X("album")}">`:""}
     <span class="fs-f-lab">專輯封面 <em>選填</em></span><div class="db-up4 one">${prImgSlot(pr.covP||pr.cov,'data-k="cov"',"")}</div><p class="dbx-d">會用在打歌排行、SNS 加入音樂、出道／回歸當天的官方貼文和 MEET 相簿。</p>
     <span class="fs-f-lab">${songLab}</span><input id="${songId}" class="a-nick-in" maxlength="30" placeholder="輸入文字" value="${esc(sv)}">
     <span class="fs-f-lab">第二首主打（雙主打）<em>選填</em></span><input id="prX_t2" class="a-nick-in" maxlength="30" placeholder="例：BOOMBAYAH＋WHISTLE 這種" value="${X("t2")}"><p class="dbx-d">兩首主打會一起打歌、互相比分數；之後回歸才會一起下檔。</p>
-    <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"",songId==="cbTitle"?"cbrRel":"dbRel")}${promoTrk(f)}
-    <span class="fs-f-lab">專輯介紹 <em>選填</em></span><textarea id="prX_desc" class="a-nick-in dbx-ta" rows="4" placeholder="這張專輯想說的故事、概念">${X("desc")}</textarea>
+    <span class="fs-f-lab">發行型態</span>${relChips(f.rtype||"",songId==="cbTitle"?"cbrRel":"dbRel")}${rc.tip?`<p class="dbx-d">${rc.tip}</p>`:""}${promoTrk(f)}
+    ${rc.alb?`<span class="fs-f-lab">專輯介紹 <em>選填</em></span><textarea id="prX_desc" class="a-nick-in dbx-ta" rows="4" placeholder="這張專輯想說的故事、概念">${X("desc")}</textarea>`:""}
     <span class="fs-f-lab">主打歌製作人員 <em>選填</em></span><textarea id="prX_credit" class="a-nick-in dbx-ta" rows="3" placeholder="作詞：&#10;作曲：&#10;編曲：">${X("credit")}</textarea>
     <span class="fs-f-lab">主打歌歌詞 <em>選填</em></span><textarea id="prX_lyr" class="a-nick-in dbx-ta" rows="4" placeholder="發行當天跟 MV 一起公開">${X("lyr")}</textarea>`; }
 function dbPromoF(f,dateF){ const tp=f.tPrev||f.teaser, vid=(v,pv)=>v?(pv?`<img src="${esc(pv)}" alt=""><i>▶</i>`:`<i>▶</i>`):`<b>＋</b>`;
@@ -2488,8 +2488,8 @@ function dbPromoF(f,dateF){ const tp=f.tPrev||f.teaser, vid=(v,pv)=>v?(pv?`<img 
   return `${dateF}<span class="fs-f-lab">每天發布時間</span>${prTimeF(f)}
     <span class="fs-f-lab">排程表 <em>沒放會自動做一張</em></span>${prSchedF(f)}
     <span class="fs-f-lab">Teaser 照片</span><div class="db-up4"><button class="db-slot t" data-a="dbTeaser" data-i="0" aria-label="Teaser 照片">${tp?`<img src="${esc(tp)}" alt="">`:`<b>＋</b>`}<small>主圖</small></button>${tx}</div>
-    <span class="fs-f-lab">概念照 <em>可以有好幾個版本</em></span>${prCvF(f)}
-    <span class="fs-f-lab">預告影片 <em>選填</em></span>${prVidF(f)}
+    <span class="fs-f-lab">概念照 <em>${relCfg(f.rtype).cv>1?`至少 ${relCfg(f.rtype).cv} 個版本`:"可以有好幾個版本"}</em></span>${prCvF(f)}
+    <span class="fs-f-lab">${relCfg(f.rtype).hl?"Highlight Medley／預告影片":"預告影片 <em>選填</em>"}</span>${prVidF(f)}
     <span class="fs-f-lab">MV</span><div class="db-up"><button class="db-slot v" data-a="dbMvt" aria-label="MV Teaser">${vid(f.mvt,f.mtPrev)}<small>MV Teaser</small></button><button class="db-slot v" data-a="dbMv" aria-label="MV">${vid(f.mv,f.mPrev)}<small>MV</small></button></div><div class="db-up"><button class="db-slot v" data-a="dbMv2" aria-label="第二首主打 MV">${vid(prOf(f).mv2,prOf(f).mv2P)}<small>${String(prOf(f).t2||"").trim()?`《${esc(prOf(f).t2)}》MV`:"第二首主打 MV（雙主打才要）"}</small></button><span class="db-slot ghost" aria-hidden="true"></span></div>`; }
 /* 結尾妖精：成員幾位就幾格，每位先放好自己的片段 */
 function dbFairyF(f){ const fy=prOf(f).fy||{}; let L;
@@ -2500,7 +2500,8 @@ function dbDayF(f,w){ const pr=prOf(f); return `<div class="dbx-day"><b>${w}當�
     <span class="fs-f-lab">Showcase 開始時間 <em>選填</em></span><input id="prX_sc" class="a-nick-in" type="time" value="${esc(pr.sc||"")}"><p class="dbx-d">Showcase＝${w}後的第一個舞台（例如在群裡直播、表演）。有辦就填幾點開始，當天到了那個時間會自動發公告提醒大家來看；沒有辦就留空。</p>`; }
 /* 跟真實的出道／回歸宣傳比，還缺什麼 */
 function dbCheck(f){ const pr=prOf(f), cv=(pr.cv||[]).filter(v=>(v.ph||[]).some(Boolean)||(v.phP||[]).some(Boolean)).length, db=!f.cb;
-  return [["Teaser 照片",!!(f.teaser||(f.tx||[]).some(Boolean))],["概念照（至少 2 個版本）",cv>=2],["曲目表",!needsTrk(f.rtype)||!!String(pr.trk||"").trim()],["Highlight Medley／概念影片",!!pr.vid],["MV Teaser",!!f.mvt],["MV",!!f.mv],["專輯名稱",!!String(pr.album||"").trim()],["專輯介紹",!!String(pr.desc||"").trim()],["製作人員",!!String(pr.credit||"").trim()],["結尾妖精",Object.values(pr.fy||{}).some(v=>v&&v.m)],...(db?[["粉絲名",!!String(pr.fan||"").trim()]]:[])]; }
+  const rc=relCfg(f.rtype);
+  return [["Teaser 照片",!!(f.teaser||(f.tx||[]).some(Boolean))],[`概念照（至少 ${rc.cv} 個版本）`,cv>=rc.cv],...(rc.trk?[["曲目表",!!String(pr.trk||"").trim()]]:[]),...(rc.hl?[["Highlight Medley／概念影片",!!pr.vid]]:[]),["MV Teaser",!!f.mvt],["MV",!!f.mv],...(rc.alb?[["專輯名稱",!!String(pr.album||"").trim()],["專輯介紹",!!String(pr.desc||"").trim()]]:[]),["製作人員",!!String(pr.credit||"").trim()],["結尾妖精",Object.values(pr.fy||{}).some(v=>v&&v.m)],...(db?[["粉絲名",!!String(pr.fan||"").trim()]]:[])]; }
 function dbPlanPv(f){ const day=ymdTs(f.date); if(!day) return ""; const sv={k:f.cb?"cb":"db",id:"pv",name:f.cb?((groupOf(f.gid)||{}).name||""):(f.kind==="group"?f.gname:f.name)||"",title:f.cb?f.title:f.song,day,appr:Date.now(),teaser:f.teaser||f.tPrev||"",teasers:(f.tx||[]).filter(Boolean),mvt:f.mvt,pr:{...prOf(f),vid:prOf(f).vid},rtype:f.rtype||""};
   let L=[]; try{ L=promoPlan(sv); }catch(e){ return ""; } return `<ol class="dbx-pl">${L.map(x=>`<li><time>${x.k==="sched"?"核准後馬上":mdTxt(x.ts)+" "+hm(x.ts)}</time><span>${x.k==="concept"&&x.n?`Concept Photo・${esc(x.n)}`:PR_KIND[x.k]||x.k}</span></li>`).join("")}</ol>`; }
 /* 11/17 申請表改成一頁一步：上面是步驟列（點了可以跳），一次只看一區；完整度收成一行，點開才看細項；最後一步才是送出 */
@@ -13750,6 +13751,9 @@ function nwWin(id,{g,s,show,k,n,cr,t,days}){ const D=nwD(t);
    ========================================================= */
 const CBR_KEY="daisuki_cb_req";
 const REL_T=["單曲","數位單曲","EP","迷你專輯","正規專輯","改版專輯","電子專輯"];   /* 發行型態 */
+/* 11/25 發行型態決定表格要填什麼（alb 專輯名稱／介紹、trk 曲目表、hl Highlight Medley、cv 概念照至少幾版） */
+const REL_CFG={"數位單曲":{alb:0,trk:0,hl:0,cv:1,tip:"只在音源平台發 1～2 首歌，沒有實體專輯：不用專輯名稱、曲目表、Highlight Medley。"},"單曲":{alb:1,trk:1,hl:0,cv:1,tip:"單曲專輯：1～3 首歌，有實體專輯。"},"EP":{alb:1,trk:1,hl:1,cv:2,tip:"EP：3～6 首歌，概念照至少 2 個版本。"},"迷你專輯":{alb:1,trk:1,hl:1,cv:2,tip:"迷你專輯：4～7 首歌，概念照至少 2 個版本。"},"正規專輯":{alb:1,trk:1,hl:1,cv:3,tip:"正規專輯：8 首以上，概念照至少 3 個版本。"},"改版專輯":{alb:1,trk:1,hl:1,cv:1,tip:"改版專輯：上一張專輯＋新歌，曲目表把新歌標出來（例：★）。"},"電子專輯":{alb:1,trk:1,hl:1,cv:2,tip:"只有數位版、沒有實體專輯，一樣要曲目表。"}};
+const relCfg=rt=>REL_CFG[rt]||{alb:1,trk:0,hl:1,cv:2,tip:""};
 const relChips=(cur,act)=>`<div class="chips wrap co-chips">${REL_T.map(c=>`<button class="chip ${cur===c?"on":""}" data-a="${act}" data-v="${esc(c)}">${esc(c)}</button>`).join("")}</div>`;
 const getCbr=()=>(S.get(CBR_KEY,[])||[]).filter(x=>x&&x.id);
 const cbrWait=()=>getCbr().filter(x=>x.status==="wait").length;
@@ -14979,7 +14983,7 @@ const coPinList=()=>{ const now=Date.now(); return coFeed("",false).filter(x=>x.
 
 /* ---------- 申請表裡的欄位 ---------- */
 /* 不是單曲／數位單曲 → 要填曲目表 */
-const needsTrk=rt=>!!rt&&!["單曲","數位單曲"].includes(rt);
+const needsTrk=rt=>!!rt&&!!relCfg(rt).trk;
 const promoCheck=f=>needsTrk(f.rtype)&&!String((f.pr||{}).trk||"").split("\n").some(x=>x.trim())?"請填曲目表（一行一首）":"";
 /* 曲目表：選了發行型態就接在下面（單曲、數位單曲不用填） */
 function promoTrk(f){ const pr=f.pr||(f.pr={time:"18:00",cv:[],vk:"",trk:""}); const img=(u,ex)=>`<button class="db-slot t sm" data-a="prImg" ${ex}>${u?`<img src="${esc(u)}" alt="">`:`<b>＋</b>`}</button>`;
