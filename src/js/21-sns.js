@@ -390,7 +390,8 @@ function snLikeBump(id){ document.querySelectorAll(`[data-a="snLike"][data-id="$
 function snDblLike(id){ const d=snDB(), had=(d.likes[id]||[]).includes(snMeId()); snToggleLike(id,true); if(!snLikeUI(id)){ const y=window.scrollY; render(); window.scrollTo(0,y); } snHeartPop(id); hap(12); if(!had){ document.querySelectorAll(`[data-a="snLike"][data-id="${CSS.escape(id)}"]`).forEach(b=>{ if(AN.ok()) AN.heart(b); else snLikeBump(id); }); } }
 document.addEventListener("click",e=>{ const post=e.target.closest&&e.target.closest(".sn-post"); if(!post) return; const a=e.target.closest("[data-a],a,button,input,textarea,video"); if(a&&post.contains(a)) return;
   const id=post.id.replace(/^snp-/,""), now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; } });
-function snToggleLike(id,force){ const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
+const snRO=()=>{ try{ return session().role!=="artist"&&typeof svSnLock==="function"&&!!svSnLock(); }catch(e){ return false; } };   /* 11/25 參賽中的練習生：SNS 只能看 */
+function snToggleLike(id,force){ if(snRO()){ toast("節目播出期間，個人帳號暫停使用"); return; } const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
 
 /* ===== 一次性整理（管理員的手機做一次，大家共用）：
    藝人帳號：名稱、簡介、追蹤、精選全部恢復預設（藝人自己發的貼文留著）
@@ -547,6 +548,7 @@ function snColSheet(pid){ const d=snDB(), me=snMeId(), p=d.posts.find(x=>x.id===
    SNS 的按鈕（從 10-點擊互動 拆出來：SNS 自己一個檔案，改 SNS 不會動到別的地方）
    ========================================================= */
 document.addEventListener("click",e=>{ const t=e.target.closest("[data-a]"); if(!t) return; const a=t.dataset.a; if(!/^sn/.test(a)||a==="snOpen") return;
+  if(snRO()&&["snLike","snCmLk","snCmRe","snFollow","snCmEmo"].includes(a)){ toast("節目播出期間，個人帳號暫停使用"); return; }
   switch(a){
     case "snsGo": ui.snTab="grid"; if(t.dataset.v!=="new") ui.snDraft=ui.snDraft&&ui.snDraft.media.length?ui.snDraft:null; clearTimeout(ui.snStT); if(ui.snStory){ ui.snStory=null; } if(layer.innerHTML) layer.innerHTML=""; { const h="#/"+session().role+"/sns?p="+t.dataset.v+(t.dataset.id?"&id="+encodeURIComponent(t.dataset.id):""), cur=route(), tabLike=t.closest(".sn-tabs,.sn-nav,nav")&&!t.dataset.id;
       /* 下面的分頁（跟 Instagram 一樣）：從首頁切過去會留一筆，返回就回首頁；分頁之間互切不留；按首頁直接退回首頁 */
@@ -762,8 +764,8 @@ let snVio=null;
 function snVidScan(){ const L=document.querySelectorAll("video.sn-vid:not([data-ob])"); if(!L.length) return;
   if(!snVio&&"IntersectionObserver" in window) snVio=new IntersectionObserver(es=>es.forEach(e=>{ const v=e.target; if(e.isIntersecting&&e.intersectionRatio>=(v.dataset.vurl?.3:.6)) snVidOn(v); else { if(!v.paused){ ui.snVT[v.dataset.vmid]=v.currentTime; v.pause(); } } }),{threshold:[0,.3,.6]});
   L.forEach(v=>{ v.dataset.ob="1"; v.muted=ui.snMute!==false; if(v.dataset.pmid) mediaSrc(v.dataset.pmid).then(u=>{ if(u&&!v.poster) v.poster=u; }); v.addEventListener("timeupdate",()=>{ ui.snVT[v.dataset.vmid]=v.currentTime; }); if(snVio) snVio.observe(v); else snVidOn(v); }); }
-async function snVidOn(v){ if(!v.isConnected) return; if(!v.src){ v.closest(".sn-sl,.sn-rbg")?.classList.add("vload"); const u=v.dataset.vurl?await svVBlob(v.dataset.vurl):await mediaSrc(v.dataset.vmid);   /* 網址影片：跟一般貼文一樣先整支下載到手機再播，iPhone 才會自動播 */ v.closest(".sn-sl,.sn-rbg")?.classList.remove("vload"); if(!u||!v.isConnected){ v.closest(".sn-sl,.sn-rbg")?.classList.add("gone"); return; } v.src=u; const t=ui.snVT[v.dataset.vmid]; if(t) try{ v.currentTime=t; }catch(e){} }
-  v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(()=>{ v.muted=true; ui.snMute=true; v.play().catch(()=>snVidTap(v)); }); }
+async function snVidOn(v){ if(!v.isConnected||v.dataset.ld) return; if(!v.src){ v.dataset.ld="1"; v.closest(".sn-sl,.sn-rbg")?.classList.add("vload"); const u=v.dataset.vurl?await svVBlob(v.dataset.vurl):await mediaSrc(v.dataset.vmid);   /* 網址影片：跟一般貼文一樣先整支下載到手機再播，iPhone 才會自動播 */ delete v.dataset.ld; v.closest(".sn-sl,.sn-rbg")?.classList.remove("vload"); if(!u||!v.isConnected){ v.closest(".sn-sl,.sn-rbg")?.classList.add("gone"); return; } v.src=u; const t=ui.snVT[v.dataset.vmid]; if(t) try{ v.currentTime=t; }catch(e){} }
+  v.muted=ui.snMute!==false||!!v.closest(".sn-post[data-mus]"); const p=v.play();   /* 有配音樂的貼文：影片一律靜音（跟 IG 一樣，聲音是那首歌），才不會把歌打斷 */ if(p&&p.catch) p.catch(er=>{ if(er&&er.name==="AbortError"){ v.addEventListener("canplay",()=>{ v.play().catch(()=>{}); },{once:true}); return; } v.muted=true; ui.snMute=true; v.play().catch(e2=>{ if(e2&&e2.name==="AbortError") return; snVidTap(v); }); }); }   /* 11/25 換來源時舊的 play 會被中斷（AbortError），不是播不了：不要秀 ▶ */
 /* 播不出來（省電模式擋自動播放、網路斷掉）：先秀第一格，加一顆 ▶ 讓人點 */
 function snVidTap(v){ const w=v.closest(".sn-sl,.sn-rbg,.sn-simg"); if(!w||w.querySelector(".sn-vtap")) return; try{ if(!v.currentTime) v.currentTime=.1; }catch(e){} const b=document.createElement("button"); b.className="sn-vtap"; b.setAttribute("aria-label","播放"); b.innerHTML="▶"; b.onclick=ev=>{ ev.stopPropagation(); b.remove(); v.muted=ui.snMute!==false; v.play().catch(()=>{ v.muted=true; v.play().catch(()=>{}); }); }; w.appendChild(b); }
 document.addEventListener("error",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")||!v.src) return; if(!v.dataset.rt){ v.dataset.rt="1"; const t=v.currentTime; setTimeout(()=>{ try{ v.load(); if(t) v.currentTime=t; }catch(_){} snVidOn(v); },800); } else snVidTap(v); },true);
