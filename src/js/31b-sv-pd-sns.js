@@ -6,7 +6,7 @@ const SV_SNSW=.03, SVPDV="daisuki_sv_pdview";
 let svPdBusy=0;
 function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(); if(!s||s.demo||s.ph==="recruit") return []; const all=svAll(), out=[];
     const MS=k=>{ for(const ph in SV_MS) { const m=(SV_MS[ph]||[]).find(x=>x.k===k); if(m) return m.t; } return ""; };
-    const med=(y,t)=>y.url?(y.kind==="v"?{type:"video",url:y.url,st:svFp(y)}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
+    const med=(y,t)=>y.url?(y.kind==="v"?{type:"video",url:y.url,st:svFp(y),pu:svPu(y.url)}:{type:"html",h:`<img src="${esc(y.url)}" alt="" style="width:100%;height:100%;object-fit:cover">`}):{type:"html",h:`<div style="width:100%;height:100%;display:grid;place-items:center;background:#FFE3EF">${svPh(t)}</div>`};
     ["r1","r2","pr","final"].flatMap(p=>svStages(p)).filter(y=>y&&!y.del&&!y.v&&y.url&&y.sid===s.id).forEach(y=>{   /* 11/24 原本拿不到任何舞台（沒給階段），官方帳號一直沒有舞台貼文 */ const t=all.find(x=>x.id===y.tid); if(!t) return; const tag=String(t.name||"").replace(/\s+/g,"");
       const P0=(s.t0s||{})[y.ph], mm=svMsList(y.ph).find(m=>m.k===y.mk), ms0=P0&&mm?(y.ph==="r1"&&s.airAt&&mm.d[0]===0?s.airAt:P0+mm.d[0]*864e5):0; out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.mk==="lv"?Math.min(y.ts||0,(s.airAt||P0||Date.now())-60e3):Math.max(y.ts||0,ms0+10*60e3+Math.floor((y.ts||0)/1e3)%6e5),base:0,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
@@ -23,6 +23,9 @@ function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(
 /* 瀏覽：每個帳號每則只算一次 */
 function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}; if(M[pid]) return; M[pid]=1; S.set(k,M); mkEdit(SVPDV,v=>{ const o={...(v||{})}; o[pid]=(o[pid]||0)+1; return {v:o}; }); }catch(e){} }
 let svSnsC=null;
+/* 11/25 參賽中的練習生不能幫官方帳號的貼文按讚（不能自肥）：管理員手機把已經按的清掉 */
+let svLkDone=0;
+function svLikeClean(){ if(svLkDone>Date.now()-6e5||!isAdminAcct()) return; svLkDone=Date.now(); try{ const d=snDB(); let ch=0; (d.posts||[]).filter(p=>p.uid==="o:pd").forEach(p=>{ const L=d.likes[p.id]; if(!L) return; const L2=L.filter(id=>!(String(id).startsWith("u:")&&svInShow(String(id).slice(2)))); if(L2.length!==L.length){ d.likes[p.id]=L2; ch=1; } }); if(ch) snSave(d); }catch(e){} }
 function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) return out; if(svSnsC&&svSnsC.t>Date.now()-3e4&&svSnsC.ph===ph&&svSnsC.sid===s.id) return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(svSnsC.b[k]||0)]));
     const d=snDB(), V=S.get(SVPDV,{})||{}, E={}; (d.posts||[]).filter(p=>p.pdStage&&p.pdPh===ph).forEach(p=>{ E[p.pdTid]=(E[p.pdTid]||0)+(d.likes[p.id]||[]).length+(V[p.id]||0); });
     const tE=Object.values(E).reduce((a,b)=>a+b,0), tV=Object.values(out).reduce((a,b)=>a+b,0), b={};
