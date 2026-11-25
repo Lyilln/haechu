@@ -503,6 +503,7 @@ function viewUniOps(){ const th=getThemes().filter(t=>t.status==="pending").leng
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}加積分</button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=npcph">${I.star}虛擬歌手照片<span class="r">${GROUPS.filter(g=>g.npc).length} 組</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${th?`<em class="t-cnt">${th}</em>`:""}</span></button></section>
     <div class="section-h">系統</div>

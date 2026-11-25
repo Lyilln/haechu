@@ -27,7 +27,10 @@ npcInject(); setInterval(npcInject,120000);
 /* 照片（co/npc/團名_幾號_o＝公式照、_l＝生活照、團名_g＝團體公式照）：有放的才用，沒有就用代表色＋字 */
 const NPC_IMG={AURAVEIL:{g:1,m:[0,1,2,3,4]}};
 const npcImgU=(G,i,k)=>{ const I=NPC_IMG[G]; if(!I) return ""; const b="co/npc/"+String(G).toLowerCase().replace(/[^a-z0-9]/g,""); return k==="g"?(I.g?b+"_g.webp":""):(I.m.indexOf(+i)>=0?b+"_"+i+"_"+k+".webp":""); };
-const npcMImg=(mid,k)=>{ const m=MEMBERS[mid], o=m&&m.npcKey?String(m.npcKey).split("."):null; return o?npcImgU(o[0],o[1],k):""; };
+const npcMImg=(mid,k)=>{ const M=S.get(K.mPhoto,{})||{}; if(k==="l"&&M[mid+"|l"]) return M[mid+"|l"]; if(k==="o"&&M[mid]) return M[mid]; const m=MEMBERS[mid], o=m&&m.npcKey?String(m.npcKey).split("."):null; return o?npcImgU(o[0],o[1],k):""; };
+/* 11/25 後台「虛擬歌手照片」：團體公式照（K.gPhoto）、成員公式照（K.mPhoto[mid]）、生活照（K.mPhoto[mid|l]）自己換 */
+function viewNpcPh(){ const slot=(u,v,lab,r)=>`<button class="npp-s ${r}" data-a="npcPh" data-v="${v}">${u?`<img src="${esc(u)}" alt="">`:"<b>＋</b>"}<small>${lab}</small></button>`;
+  return `<main class="page"><p class="ae-tip">點格子換照片，換好大家都會看到。公式照用在 About、成員頁；生活照用在 SNS、個人社群、TIE 頭貼。</p>${GROUPS.filter(g=>g.npc).map(g=>`<section class="card npp"><div class="section-h">${esc(g.name)}</div>${slot(gPhoto(g.id),"g|"+g.id,"團體公式照","w")}<div class="npp-m">${g.members.map(m=>`<div><span>${esc(MEMBERS[m].name)}</span>${slot(npcMImg(m,"o"),"o|"+m,"公式照","")}${slot(npcMImg(m,"l"),"l|"+m,"生活照","")}</div>`).join("")}</div></section>`).join("")}</main>`; }
 const npcGImg=gid=>{ const g=groupOf(gid); return g&&g.npc?npcImgU(g.npc,0,"g"):""; };
 const npcAv=mid=>{ const u=npcMImg(mid,"o"); if(u) return u; const k=npcOldOf(mid); return k&&typeof nlAvUrl==="function"?nlAvUrl(k):""; };   /* 公式照：About、成員頁 */
 const npcAvL=mid=>npcMImg(mid,"l")||npcAv(mid);   /* 生活照：SNS、個人社群、TIE 頭貼 */

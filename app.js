@@ -6953,6 +6953,7 @@ function viewAdmin(tab){
     if(tab==="snsub") return uniHead("SNS 投稿紀錄")+viewSnSubAdm();
     if(tab==="ptadd"||tab==="revenue") return uniHead("加積分")+viewPtAdd()+`<main class="page pt-share-w"><button class="uni-row" data-a="ptShare"><span>藝人分得比例</span><small>${revShare()}%</small>${UI_S.chev}</button></main>`;
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
+    if(tab==="npcph") return uniHead("虛擬歌手照片")+viewNpcPh();
     if(tab==="debut") return uniHead("出道申請")+debutAdmHtml();
     if(tab==="cbreq") return uniHead("回歸申請")+cbrAdmHtml();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
@@ -7482,6 +7483,10 @@ function clickGen(a,t,e,r){ switch(a){
       if(d&&d.status==="wait"){ tieModal("申請出道",`<span class="info-row"><em>${d.kind==="group"?"團名":"藝名"}</em>${esc(d.name)}</span>${d.co?`<span class="info-row"><em>公司</em>${esc(d.co)}</span>`:""}<span class="info-row"><em>狀態</em>審核中</span>${dbMedia(d)}`,`${d.email===myEmail()?`<button class="t-mbtn" data-a="debutCancel" data-v="${d.id}">撤回申請</button>`:""}<button class="t-mbtn main" data-a="tCloseLayer">好</button>`); hydrateMedia(layer); break; }
       { const need=LV_TBL[1][1][0]-points(); if((!d||d.status==="no")&&need>0){ tieModal("還不能申請出道",`<p class="fy-info">等級到 <b>R1</b>（${fmt(LV_TBL[1][1][0])} 積分）才能申請出道。<br>現在還差 <b>${fmt(need)}</b> 積分，繼續加油 💜</p>`,`<button class="t-mbtn main" data-a="tCloseLayer">好</button>`); break; } }   /* 沒到 R1 不能申請 */
       debutForm(); break; }
+    case "npcPh": { if(!isAdminAcct()) break; const [k,id]=String(t.dataset.v).split("|"), inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
+      inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:k==="g"?1.5:k==="o"?.75:1,max:1200}); if(!c) return; toast("上傳中…");
+        try{ const b=await shrinkImg(c,k==="g"?1200:800), url=HB_ON?await hbImgUrl("npc_"+Date.now().toString(36)+".jpg",b):null; if(!url){ toast("上傳失敗，再試一次"); return; }
+          if(k==="g"){ const G={...(S.get(K.gPhoto,{})||{})}; G[id]=url; S.set(K.gPhoto,G); } else { const M={...(S.get(K.mPhoto,{})||{})}; M[k==="l"?id+"|l":id]=url; S.set(K.mPhoto,M); } toast("換好了 ✓"); render(); }catch(e){ toast("上傳失敗，再試一次"); } }; inp.click(); break; }
     case "dbLogo": { dbKeep(); const f=ui.dbF; if(!f||f.busy) break; const inp=document.createElement("input"); inp.type="file"; inp.accept="image/*";
       inp.onchange=async()=>{ const f0=inp.files&&inp.files[0]; if(!f0) return; const c=await cropImg(f0,{ratio:1,max:800}); if(!c) return;
         try{ const b=await shrinkImg(c,800); f.logoP=URL.createObjectURL(b); f.busy="上傳中…"; dbReform(); f.logo=(HB_ON&&await hbImgUrl("logo_"+Date.now().toString(36)+".jpg",b))||await new Promise(res=>{ const rd=new FileReader(); rd.onload=()=>res(rd.result); rd.readAsDataURL(b); }); }catch(e){ toast("上傳失敗，再試一次"); } f.busy=""; dbReform(); }; inp.click(); break; }
@@ -9541,6 +9546,7 @@ function viewUniOps(){ const th=getThemes().filter(t=>t.status==="pending").leng
     <section class="card">
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=accounts">${AIC.acct}帳號<span class="r">${Object.keys(ACCOUNTS).length} 個</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=ptadd">${AIC.plus}加積分</button>
+      <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=npcph">${I.star}虛擬歌手照片<span class="r">${GROUPS.filter(g=>g.npc).length} 組</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin?tab=albums">${I.shop}專輯與店家<span class="r">${getStores().length} 家店</span></button>
       <button class="list-btn" data-a="uniGo" data-v="#/admin/themes">${I.star}主題（${TH_STORE}）<span class="r">${th?`<em class="t-cnt">${th}</em>`:""}</span></button></section>
     <div class="section-h">系統</div>
@@ -18396,7 +18402,10 @@ npcInject(); setInterval(npcInject,120000);
 /* 照片（co/npc/團名_幾號_o＝公式照、_l＝生活照、團名_g＝團體公式照）：有放的才用，沒有就用代表色＋字 */
 const NPC_IMG={AURAVEIL:{g:1,m:[0,1,2,3,4]}};
 const npcImgU=(G,i,k)=>{ const I=NPC_IMG[G]; if(!I) return ""; const b="co/npc/"+String(G).toLowerCase().replace(/[^a-z0-9]/g,""); return k==="g"?(I.g?b+"_g.webp":""):(I.m.indexOf(+i)>=0?b+"_"+i+"_"+k+".webp":""); };
-const npcMImg=(mid,k)=>{ const m=MEMBERS[mid], o=m&&m.npcKey?String(m.npcKey).split("."):null; return o?npcImgU(o[0],o[1],k):""; };
+const npcMImg=(mid,k)=>{ const M=S.get(K.mPhoto,{})||{}; if(k==="l"&&M[mid+"|l"]) return M[mid+"|l"]; if(k==="o"&&M[mid]) return M[mid]; const m=MEMBERS[mid], o=m&&m.npcKey?String(m.npcKey).split("."):null; return o?npcImgU(o[0],o[1],k):""; };
+/* 11/25 後台「虛擬歌手照片」：團體公式照（K.gPhoto）、成員公式照（K.mPhoto[mid]）、生活照（K.mPhoto[mid|l]）自己換 */
+function viewNpcPh(){ const slot=(u,v,lab,r)=>`<button class="npp-s ${r}" data-a="npcPh" data-v="${v}">${u?`<img src="${esc(u)}" alt="">`:"<b>＋</b>"}<small>${lab}</small></button>`;
+  return `<main class="page"><p class="ae-tip">點格子換照片，換好大家都會看到。公式照用在 About、成員頁；生活照用在 SNS、個人社群、TIE 頭貼。</p>${GROUPS.filter(g=>g.npc).map(g=>`<section class="card npp"><div class="section-h">${esc(g.name)}</div>${slot(gPhoto(g.id),"g|"+g.id,"團體公式照","w")}<div class="npp-m">${g.members.map(m=>`<div><span>${esc(MEMBERS[m].name)}</span>${slot(npcMImg(m,"o"),"o|"+m,"公式照","")}${slot(npcMImg(m,"l"),"l|"+m,"生活照","")}</div>`).join("")}</div></section>`).join("")}</main>`; }
 const npcGImg=gid=>{ const g=groupOf(gid); return g&&g.npc?npcImgU(g.npc,0,"g"):""; };
 const npcAv=mid=>{ const u=npcMImg(mid,"o"); if(u) return u; const k=npcOldOf(mid); return k&&typeof nlAvUrl==="function"?nlAvUrl(k):""; };   /* 公式照：About、成員頁 */
 const npcAvL=mid=>npcMImg(mid,"l")||npcAv(mid);   /* 生活照：SNS、個人社群、TIE 頭貼 */

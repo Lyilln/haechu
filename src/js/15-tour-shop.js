@@ -378,6 +378,7 @@ function viewAdmin(tab){
     if(tab==="snsub") return uniHead("SNS 投稿紀錄")+viewSnSubAdm();
     if(tab==="ptadd"||tab==="revenue") return uniHead("加積分")+viewPtAdd()+`<main class="page pt-share-w"><button class="uni-row" data-a="ptShare"><span>藝人分得比例</span><small>${revShare()}%</small>${UI_S.chev}</button></main>`;
     if(tab==="banned") return uniHead("禁用字詞")+viewBanned();
+    if(tab==="npcph") return uniHead("虛擬歌手照片")+viewNpcPh();
     if(tab==="debut") return uniHead("出道申請")+debutAdmHtml();
     if(tab==="cbreq") return uniHead("回歸申請")+cbrAdmHtml();
     if(tab==="roster"){ const h=viewRoster(), r0=route(), a=h.indexOf('<section class="card studio" id="rsNew">'), b=h.indexOf('<div class="section-h">目前的團與藝人'), cards=h.slice(b).split('<section class="card rs-g">').slice(1).map(x=>'<section class="card rs-g">'+x.replace(/<\/main>\s*$/,""));
