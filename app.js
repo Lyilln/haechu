@@ -13264,7 +13264,7 @@ function snMusPick(){ const inp=document.createElement("input"); inp.type="file"
     try{ const AC=window.AudioContext||window.webkitAudioContext, c=new AC(), isV=/^video\//.test(f.type)||/\.(mov|mp4|m4v|webm)$/i.test(f.name||""); let buf;
       try{ buf=await decodeAu(c,await f.arrayBuffer()); }catch(err){ if(!isV) throw err; const am=await MB.audio(f); if(!am) throw err; buf=await decodeAu(c,await am.blob.arrayBuffer()); } try{ c.close(); }catch(e){}
       if(!buf||!buf.duration) throw new Error("no audio");
-      snMusBuf=buf; { const me=snMeId(), mu=snUser(me)||{}; ui.snMusT={title:"原始音訊",artist:mu.u||"",uid:me,src:"orig",start:0,dur:buf.duration}; } snMusSheet(); }catch(e){ toast("讀不出聲音，換一個檔案試試"); } };
+      snMusBuf=buf; { const lk=typeof svSnLock==="function"&&session().role!=="artist"?svSnLock():null, me=(lk&&lk.as)||snMeId(), mu=snUser(me)||{};   /* 用官方帳號發文：原始音訊掛官方帳號 */ ui.snMusT={title:"原始音訊",artist:mu.u||"",uid:me,src:"orig",start:0,dur:buf.duration}; } snMusSheet(); }catch(e){ toast("讀不出聲音，換一個檔案試試"); } };
   pickClick(inp); }
 function snMusSongs(){ const m=getMShow(), seen=new Set(); return [...(m.songs||[]),...(m.ended||[])].reverse().filter(x=>x&&!x.demo&&groupOf(x.gid)&&!seen.has(x.id)&&seen.add(x.id)); }
 function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } } const L=snMusSongs();
@@ -16518,7 +16518,7 @@ function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}
 let svSnsC=null;
 /* 11/25 參賽中的練習生不能幫官方帳號的貼文按讚（不能自肥）：管理員手機把已經按的清掉 */
 let svLkDone=0;
-function svLikeClean(){ if(svLkDone>Date.now()-6e5||!isAdminAcct()) return; svLkDone=Date.now(); try{ const d=snDB(); let ch=0; (d.posts||[]).filter(p=>p.uid==="o:pd").forEach(p=>{ const L=d.likes[p.id]; if(!L) return; const L2=L.filter(id=>!(String(id).startsWith("u:")&&svInShow(String(id).slice(2)))); if(L2.length!==L.length){ d.likes[p.id]=L2; ch=1; } }); if(ch) snSave(d); }catch(e){} }
+function svLikeClean(){ if(svLkDone>Date.now()-6e5||!isAdminAcct()) return; svLkDone=Date.now(); try{ const d=snDB(); let ch=0; (d.posts||[]).filter(p=>p.uid==="o:pd").forEach(p=>{ if(p.mus&&p.mus.src==="orig"&&p.mus.uid&&p.mus.uid!=="o:pd"){ p.mus={...p.mus,uid:"o:pd",artist:(snUser("o:pd")||{}).u||p.mus.artist}; ch=1; } const L=d.likes[p.id]; if(!L) return; const L2=L.filter(id=>!(String(id).startsWith("u:")&&svInShow(String(id).slice(2)))); if(L2.length!==L.length){ d.likes[p.id]=L2; ch=1; } }); if(ch) snSave(d); }catch(e){} }
 function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) return out; if(svSnsC&&svSnsC.t>Date.now()-3e4&&svSnsC.ph===ph&&svSnsC.sid===s.id) return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(svSnsC.b[k]||0)]));
     const d=snDB(), V=S.get(SVPDV,{})||{}, E={}; (d.posts||[]).filter(p=>p.pdStage&&p.pdPh===ph).forEach(p=>{ E[p.pdTid]=(E[p.pdTid]||0)+(d.likes[p.id]||[]).length+(V[p.id]||0); });
     const tE=Object.values(E).reduce((a,b)=>a+b,0), tV=Object.values(out).reduce((a,b)=>a+b,0), b={};

@@ -46,7 +46,7 @@ function snMusPick(){ const inp=document.createElement("input"); inp.type="file"
     try{ const AC=window.AudioContext||window.webkitAudioContext, c=new AC(), isV=/^video\//.test(f.type)||/\.(mov|mp4|m4v|webm)$/i.test(f.name||""); let buf;
       try{ buf=await decodeAu(c,await f.arrayBuffer()); }catch(err){ if(!isV) throw err; const am=await MB.audio(f); if(!am) throw err; buf=await decodeAu(c,await am.blob.arrayBuffer()); } try{ c.close(); }catch(e){}
       if(!buf||!buf.duration) throw new Error("no audio");
-      snMusBuf=buf; { const me=snMeId(), mu=snUser(me)||{}; ui.snMusT={title:"原始音訊",artist:mu.u||"",uid:me,src:"orig",start:0,dur:buf.duration}; } snMusSheet(); }catch(e){ toast("讀不出聲音，換一個檔案試試"); } };
+      snMusBuf=buf; { const lk=typeof svSnLock==="function"&&session().role!=="artist"?svSnLock():null, me=(lk&&lk.as)||snMeId(), mu=snUser(me)||{};   /* 用官方帳號發文：原始音訊掛官方帳號 */ ui.snMusT={title:"原始音訊",artist:mu.u||"",uid:me,src:"orig",start:0,dur:buf.duration}; } snMusSheet(); }catch(e){ toast("讀不出聲音，換一個檔案試試"); } };
   pickClick(inp); }
 function snMusSongs(){ const m=getMShow(), seen=new Set(); return [...(m.songs||[]),...(m.ended||[])].reverse().filter(x=>x&&!x.demo&&groupOf(x.gid)&&!seen.has(x.id)&&seen.add(x.id)); }
 function snMusList(){ { const ste=document.getElementById("steRoot"); if(ste){ STE_NODE=ste; ste.remove(); } } const L=snMusSongs();

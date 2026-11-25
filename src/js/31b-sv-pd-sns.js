@@ -25,7 +25,7 @@ function svPdSeen(pid){ try{ const k=acK("daisuki_sv_pdseen"), M=S.get(k,{})||{}
 let svSnsC=null;
 /* 11/25 參賽中的練習生不能幫官方帳號的貼文按讚（不能自肥）：管理員手機把已經按的清掉 */
 let svLkDone=0;
-function svLikeClean(){ if(svLkDone>Date.now()-6e5||!isAdminAcct()) return; svLkDone=Date.now(); try{ const d=snDB(); let ch=0; (d.posts||[]).filter(p=>p.uid==="o:pd").forEach(p=>{ const L=d.likes[p.id]; if(!L) return; const L2=L.filter(id=>!(String(id).startsWith("u:")&&svInShow(String(id).slice(2)))); if(L2.length!==L.length){ d.likes[p.id]=L2; ch=1; } }); if(ch) snSave(d); }catch(e){} }
+function svLikeClean(){ if(svLkDone>Date.now()-6e5||!isAdminAcct()) return; svLkDone=Date.now(); try{ const d=snDB(); let ch=0; (d.posts||[]).filter(p=>p.uid==="o:pd").forEach(p=>{ if(p.mus&&p.mus.src==="orig"&&p.mus.uid&&p.mus.uid!=="o:pd"){ p.mus={...p.mus,uid:"o:pd",artist:(snUser("o:pd")||{}).u||p.mus.artist}; ch=1; } const L=d.likes[p.id]; if(!L) return; const L2=L.filter(id=>!(String(id).startsWith("u:")&&svInShow(String(id).slice(2)))); if(L2.length!==L.length){ d.likes[p.id]=L2; ch=1; } }); if(ch) snSave(d); }catch(e){} }
 function svSnsBonus(s,ph,out){ if(svPdBusy) return out; try{ if(!s||s.demo) return out; if(svSnsC&&svSnsC.t>Date.now()-3e4&&svSnsC.ph===ph&&svSnsC.sid===s.id) return Object.fromEntries(Object.entries(out).map(([k,v])=>[k,v+(svSnsC.b[k]||0)]));
     const d=snDB(), V=S.get(SVPDV,{})||{}, E={}; (d.posts||[]).filter(p=>p.pdStage&&p.pdPh===ph).forEach(p=>{ E[p.pdTid]=(E[p.pdTid]||0)+(d.likes[p.id]||[]).length+(V[p.id]||0); });
     const tE=Object.values(E).reduce((a,b)=>a+b,0), tV=Object.values(out).reduce((a,b)=>a+b,0), b={};
