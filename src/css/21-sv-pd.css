@@ -194,3 +194,9 @@ html[data-theme] .t-modal.sv3-tm p.sv3-tag,html[data-theme] .t-modal.sv3-tm p.sv
 .cm-gx{display:flex;align-items:center;gap:12px;padding:4px 2px 12px}.cm-gx img{width:56px;height:56px;border-radius:14px;object-fit:contain;background:#fff}.cm-gx p{margin:0;font-weight:700;font-size:14px}.cm-ab small.cm-pos{opacity:.6;font-size:11px;margin-top:-2px}
 
 .npp .npp-m{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;margin-top:10px}.npp .npp-m>div{display:grid;grid-template-columns:1fr 1fr;gap:6px}.npp .npp-m span{grid-column:1/-1;font-weight:700;font-size:13px}.npp-s{position:relative;border:1px dashed var(--line,#ddd);border-radius:12px;background:var(--l,#f6f6f6);aspect-ratio:3/4;overflow:hidden;padding:0;display:grid;place-items:center}.npp-s.w{aspect-ratio:3/2;width:100%}.npp-s img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.npp-s small{position:absolute;left:0;right:0;bottom:0;padding:3px;font-size:10px;background:rgba(0,0,0,.45);color:#fff}.npp-s b{font-size:22px;opacity:.5}
+/* 11/25 淺色模式：節目條是淺底，字和按鈕改深色；返回、ⓘ 都不要底 */
+.svair .icon-btn{background:none!important}
+html:not([data-theme="dark"]) .svair{color:#3a1f2c}
+html:not([data-theme="dark"]) .svair .icon-btn,html:not([data-theme="dark"]) .svair .icon-btn svg{color:#3a1f2c!important;stroke:#3a1f2c!important}
+html:not([data-theme="dark"]) .svair-tk{color:#B4235F}
+html:not([data-theme="dark"]) .svair-tk span+span:before{color:#d9a5bd}
