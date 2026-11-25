@@ -11,7 +11,7 @@ function svPdPosts(){ if(svPdBusy) return []; svPdBusy=1; try{ const s=svSeason(
       const P0=(s.t0s||{})[y.ph], mm=svMsList(y.ph).find(m=>m.k===y.mk), ms0=P0&&mm?(y.ph==="r1"&&s.airAt&&mm.d[0]===0?s.airAt:P0+mm.d[0]*864e5):0; out.push({id:"pd_"+y.id,uid:"o:pd",npc:1,ar:"3/4",pdStage:y.id,pdTid:t.id,pdPh:y.ph,ts:y.mk==="lv"?Math.min(y.ts||0,(s.airAt||P0||Date.now())-60e3):Math.max(y.ts||0,ms0+10*60e3+Math.floor((y.ts||0)/1e3)%6e5),base:0,
         cap:`[${MS(y.mk)}] ${t.name}（${svCoName(t)}）${y.cap?"\n"+y.cap:""}\n\n#PRODUCEDAY #${tag}`,media:[med(y,t)]}); });
     /* 開播：每位練習生的公式照＋名字（3:4，真人照片不切到臉） */
-    const t1=svPhT0(s)+60*6e4; svAll().forEach((t,i)=>{ out.push({id:"pdp_"+t.id,uid:"o:pd",npc:1,ar:"3/4",ts:((s.t0s||{}).r1||t1)+i*6e4,base:0,
+    const t1=svPhT0(s)+60*6e4; svAll().forEach((t,i)=>{ out.push({id:"pdp_"+t.id,uid:"o:pd",npc:1,ar:"3/4",ts:(s.airAt||(s.t0s||{}).r1||t1)+i*1e3,base:0,
       cap:`[PRODUCE DAY] ${t.name}\n${svCoName(t)}\n\n#PRODUCEDAY #${String(t.name||"").replace(/\s+/g,"")}`,
       media:[{type:"html",h:`<div style="width:100%;height:100%;background:#FFE3EF;display:flex;align-items:flex-start;justify-content:center;overflow:hidden">${t.photo?`<img src="${esc(t.photo)}" alt="" style="width:100%;height:100%;object-fit:cover;object-position:50% 20%">`:svPh(t)}</div>`}]}); });
     /* 節目片段 */
