@@ -11309,6 +11309,8 @@ function snVidTap(v){ const w=v.closest(".sn-sl,.sn-rbg,.sn-simg"); if(!w||w.que
 document.addEventListener("error",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)||!v.classList.contains("sn-vid")||!v.src) return; if(!v.dataset.rt){ v.dataset.rt="1"; const t=v.currentTime; setTimeout(()=>{ try{ v.load(); if(t) v.currentTime=t; }catch(_){} snVidOn(v); },800); } else snVidTap(v); },true);
 new MutationObserver(()=>{ cancelAnimationFrame(snVidScan._r); snVidScan._r=requestAnimationFrame(snVidScan); }).observe(document.documentElement,{childList:true,subtree:true});
 document.addEventListener("visibilitychange",()=>{ if(document.hidden) document.querySelectorAll("video.sn-vid").forEach(v=>v.pause()); });
+/* 11/25 影片之後自己播起來了（讀好、重試成功）：把先前秀的 ▶ 拿掉 */
+document.addEventListener("playing",e=>{ const v=e.target; if(!(v instanceof HTMLVideoElement)) return; const w=v.closest(".sn-sl,.sn-rbg,.sn-simg"); const b=w&&w.querySelector(".sn-vtap"); if(b) b.remove(); },true);
 
 /* 今天已經發了幾支影片 */
 
