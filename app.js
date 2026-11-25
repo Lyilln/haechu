@@ -15577,11 +15577,11 @@ const svSpeech=(t,st)=>{ const x=((t&&t.sp)||{})[st]; if(x) return x; const P=SV
 const svPk=(Z,nm,P,key)=>{ if(!Z) return P[svHash(key)%P.length]; Z.u=Z.u||{}; Z.m=Z.m||{}; const mk=nm+"|"+key; if(Z.m[mk]!=null) return P[Z.m[mk]]; const U=Z.u[nm]=Z.u[nm]||[]; if(U.length>=P.length) U.length=0; let i=svHash(key)%P.length; for(let k=0;k<P.length&&U.includes(i);k++) i=(i+1)%P.length; U.push(i); Z.m[mk]=i; return P[i]; };
 const svHash=s=>{ let h=0; for(const c of String(s)) h=(h*31+c.charCodeAt(0))|0; return Math.abs(h); };
 function svScores(ph){ const s=svSeason(); if(!s) return {}; ph=ph||s.ph; const V=s.demo?Object.fromEntries(SV_DEMO_N.map((n,i)=>["dm"+i,(12-i)*9+((ui.svDV||{})["dm"+i]||0)])):((S.get(SVV,{})||{})[s.id]||{})[ph]||{}, B=((s.bonus||{})[ph])||{}, all=svAll(), out={};
-  const live=svAlive(ph), reals=all.filter(t=>t.real&&live.has(t.id)), avg=reals.length?reals.reduce((a,t)=>a+(V[t.id]||0)+(B[t.id]||0),0)/reals.length:0, BN=svBenefit(ph,avg);
+  const live=svAlive(ph), reals=all.filter(t=>t.real&&live.has(t.id)), avg=reals.length?reals.reduce((a,t)=>a+(V[t.id]||0)+(B[t.id]||0),0)/reals.length:0, BN=svFull||s.demo?svBenefit(ph,avg):{};
   const t0=(s.t0s||{})[ph]||s.t0||Date.now(), days=Math.max(1,Math.ceil((Math.min(Date.now(),(s.ends||{})[ph]||Date.now())-t0)/864e5));
-  const VP=ph==='final'&&!s.demo?(((S.get(SVV,{})||{})[s.id]||{}).pr||{}):{}, BP=ph==='final'?svBenefit('pr',(()=>{ const P=((S.get(SVV,{})||{})[s.id]||{}).pr||{}, n=Object.keys(P).length; return n?Object.values(P).reduce((a,b)=>a+b,0)/n:0; })()):{};   /* 決賽：PR 週的票和加分票一起帶進來 */
+  const VP=ph==='final'&&!s.demo?(((S.get(SVV,{})||{})[s.id]||{}).pr||{}):{}, BP=ph==='final'&&(svFull||s.demo)?svBenefit('pr',(()=>{ const P=((S.get(SVV,{})||{})[s.id]||{}).pr||{}, n=Object.keys(P).length; return n?Object.values(P).reduce((a,b)=>a+b,0)/n:0; })()):{};   /* 決賽：PR 週的票和加分票一起帶進來 */
   all.forEach(t=>{ if(!live.has(t.id)) return; out[t.id]=t.real?(V[t.id]||0)+(B[t.id]||0)+(BN[t.id]||0)+(VP[t.id]||0)+(BP[t.id]||0):Math.round(days*(2+svHash(t.id+ph)%6)+avg*(.25+svHash(ph+t.id)%55/100))+(B[t.id]||0); });
-  return typeof svSnsBonus==="function"?svSnsBonus(s,ph,out):out; }
+  return svFull&&typeof svSnsBonus==="function"?svSnsBonus(s,ph,out):out; }
 /* 這一輪還在比的人 */
 function svAlive(ph){ const s=svSeason(); if(!s) return new Set(); ph=ph||s.ph; const K0=s.keep||{};
   const OUT=new Set(s.out||[]); if(OUT.size){ const r=svAlive0(s,ph,K0); return new Set([...r].filter(id=>!OUT.has(id))); } return svAlive0(s,ph,K0); }
@@ -15647,7 +15647,9 @@ function svGrTick(){ try{ svNews8(); }catch(e){} try{ svReAir3(); }catch(e){} tr
 function svLtdTick(){ if(!isAdminAcct()) return; const L=getDebut(), now=Date.now(); let ch=0;
   const L2=L.map(x=>{ if(!x||!x.ltd||x.ltdOff||x.status!=="ok") return x; const st=x.day||x.appr||x.ts||now; if(now<st+x.ltd*864e5) return x; dbEms(x).forEach(e=>{ try{ unbindArtist(e); }catch(er){} }); ch=1; return {...x,ltdOff:now}; });
   if(ch){ S.set(K.debut,L2); feedPush&&feedPush({kind:"core",self:true,text:"限定團體活動期間結束，團員帳號已變回一般粉絲帳號"}); } }
-function svAdvance(force){ return svRealDo(()=>svAdvance0(force)); }
+/* 11/25 投票期間排名只算粉絲 PICK 的票（中間排名）；舞台加分、SNS 加分等發表時才一起算進去 */
+var svFull=0;
+function svAdvance(force){ svFull=1; try{ return svRealDo(()=>svAdvance0(force)); } finally{ svFull=0; } }
 function svAdvance0(force){ if(!svReal()) return; const s={...svReal()}; const now=Date.now(), nx=(ph,d)=>{ const now=s.ph==="recruit"&&s.airAt&&s.end===s.airAt?svDay18(s.airAt):s.end&&s.end<=Date.now()&&Date.now()-s.end<864e5?s.end:Date.now();   /* 11/24 今天這集延到 20:00 播，但這一輪的時間表照 18:00 算 */ s.ph=ph; s.t0=now; s.t0s={...(s.t0s||{}),[ph]:now}; s.end=d?now+d*864e5:0; s.ends={...(s.ends||{}),[ph]:s.end}; };
   const reals=svEntries();
   if(s.ph==="recruit"){ if(reals.length<SV_MIN&&!force){ s.end=now+7*864e5; s.ext=(s.ext||0)+1; S.set(SVS,s); return "ext"; }   /* 真人不夠：延長招募（粉絲只會看到倒數變長） */
@@ -15756,7 +15758,10 @@ const svMyLv=()=>{ const s=svSeason(); return s&&s.demo?(ui.svDLm||{}):(S.get(ac
 /* 現場票前三名的加分票（這一輪每個任務各算一次） */
 /* 11/25 舞台加分：現場票前三名拿「真人平均票數」的 30%／20%／10%（票少加少、票多加多）；等這個任務的現場票截止才加進排名 */
 const SV_BENR=[.3,.2,.1];
-function svBenefit(ph,avg){ const out={}, s=svSeason(), t0=s&&((s.t0s||{})[ph]||s.t0)||0; svMsList(ph).forEach(m=>{ if(s&&!s.demo&&Date.now()<t0+m.d[1]*864e5) return; svStages(ph,m.k).filter(x=>!x.v).slice().sort((a,b)=>svLive(b)-svLive(a)).slice(0,3).forEach((x,i)=>{ if(svLive(x)>0) out[x.tid]=(out[x.tid]||0)+(s&&s.demo?SV_BEN[i]:Math.max(1,Math.round((avg||0)*SV_BENR[i]))); }); }); return out; }
+function svBenefit(ph,avg){ const out={}, s=svSeason(), t0=s&&((s.t0s||{})[ph]||s.t0)||0, amt=i=>s&&s.demo?SV_BEN[i]:Math.max(1,Math.round((avg||0)*SV_BENR[i])); svMsList(ph).forEach(m=>{ if(s&&!s.demo&&Date.now()<t0+m.d[1]*864e5) return; const L=svStages(ph,m.k).filter(x=>!x.v);
+  if(m.team){ const T={}; L.forEach(x=>{ const k=String(x.team||"").trim().toLowerCase()||x.id; (T[k]=T[k]||{v:0,m:[]}).v+=svLive(x); T[k].m.push(x.tid); }); const R=Object.values(T).filter(t=>t.v>0).sort((a,b)=>b.v-a.v);   /* 分組任務：整組一起加；只有兩組時只有贏的那組加 */
+    R.slice(0,R.length<=2?1:3).forEach((t,i)=>{ if(i&&t.v===R[i-1].v) return; t.m.forEach(id=>{ out[id]=(out[id]||0)+amt(i); }); }); return; }
+  L.slice().sort((a,b)=>svLive(b)-svLive(a)).slice(0,3).forEach((x,i)=>{ if(svLive(x)>0) out[x.tid]=(out[x.tid]||0)+amt(i); }); }); return out; }
 const SV_MIC='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg>';
 const svHost=(s,txt)=>`<section class="sv3-host"><span class="sv3-hav">${SV_MIC}</span><div><small>${esc(svHostN(s))}</small><p>${txt}</p></div></section>`;
 function svHostTxt(s){ if(s.ph==="recruit") return "國民製作人們好！新一季的練習生正在報名中，招募結束後，就請大家幫喜歡的練習生投下寶貴的一票。";
