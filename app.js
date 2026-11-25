@@ -1950,7 +1950,10 @@ const MDB={
 };
 async function idbHas(id){ try{ const d=await MDB.open(); return await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(!!q.result); q.onerror=()=>res(false); }); }catch(e){ return false; } }
 const mediaURL={};
-async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; let b=await MDB.get(id); if(!b) return null;
+async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; let b=null;
+  if(String(id).startsWith("U|")){ const u=id.slice(2); b=memBlobs[id]||null; if(!b) try{ const d=await MDB.open(); const r=await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); if(r&&r.ab) b=new Blob([r.ab],{type:r.type||"video/mp4"}); }catch(e){}
+    if(!b){ try{ const r=await fetch(u); if(r.ok){ const t=await r.blob(); b=new Blob([t],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"}); if(b.size<45*1024*1024) MDB.put(id,b,true); else memBlobs[id]=b; } }catch(e){} } }   /* 舞台影片（網址）：抓一次存在手機 */
+  else b=await MDB.get(id); if(!b) return null;
   try{ if(/^video/.test(b.type||"")&&typeof svVBad==="function"){ const t=new Uint8Array(await b.arrayBuffer()); if(svVBad(t)) b=new Blob([svVPatch(t)],{type:b.type}); } }catch(e){}   /* 影片標籤 iPhone 不收：改好再播 */
   return mediaURL[id]=URL.createObjectURL(b); }
 /* 圖片：記下每張圖的長寬比，畫面重畫時先把高度留好，圖還沒解碼也不會塌下去再彈回來（公司公告一閃一閃） */
@@ -10668,7 +10671,7 @@ function snArSeen(el,w,h){ try{ if(!w||!h) return; const sl=el.closest(".sn-sl")
 document.addEventListener("load",e=>{ const el=e.target; if(el&&el.tagName==="IMG"&&el.classList.contains("sn-img")) snArSeen(el,el.naturalWidth,el.naturalHeight); },true);
 document.addEventListener("loadedmetadata",e=>{ const el=e.target; if(el&&el.tagName==="VIDEO"&&el.classList.contains("sn-vid")) snArSeen(el,el.videoWidth,el.videoHeight); },true);
 const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics?p.pics[i]:p.id+i,u?u.g:0,"fill"); if(m.type==="html") return `<div class="snof-h">${m.h}</div>`; if(m.url&&m.type!=="video") return `<img class="sn-img" src="${esc(m.url)}" alt="" loading="lazy">`;
-  if(m.type==="video"&&m.url) return `<video class="sn-img sn-vid" data-vurl="${esc(m.url)}" ${m.pu?`poster="${esc(m.pu)}"`:""} ${m.st?`style="${esc(m.st)}"`:""} muted playsinline webkit-playsinline loop preload="metadata"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;   /* 11/24 網址影片（選秀官方帳號的舞台）跟一般貼文一樣的樣子 */
+  if(m.type==="video"&&m.url) return `<video class="sn-img sn-vid" data-vmid="U|${esc(m.url)}" ${m.pu?`poster="${esc(m.pu)}"`:""} ${m.st?`style="${esc(m.st)}"`:""} muted playsinline webkit-playsinline loop preload="none"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;   /* 11/25 舞台影片跟一般貼文的影片走同一套（下載一次就存在手機，之後秒開） */
   if(m.type==="video") return `<video class="sn-img sn-vid" data-vmid="${m.mid}" data-pmid="${m.poster||""}" muted playsinline webkit-playsinline loop preload="none"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;
   return `<img class="sn-img" data-mid="${m.mid}" alt="">`; };
 /* 格子裡的小圖：影片用封面，右上角放 Reels 圖示 */
@@ -15832,7 +15835,7 @@ function svPuGrab(v){ try{ const w=v.videoWidth, h=v.videoHeight; if(!w||!h) ret
 function svPuSave(u,c,up){ try{ const L=svPuL(); L[u]=c.toDataURL("image/jpeg",.7); const ks=Object.keys(L); while(ks.length>40) delete L[ks.shift()]; localStorage.setItem(SVPU,JSON.stringify(L)); }catch(e){}
   if(!HB_ON||!(up||isAdminAcct())||(S.get(SVST,[])||[]).some(x=>x.url===u&&x.pu)) return; c.toBlob(async b=>{ try{ const pu=b&&await hbImgUrl("svpu_"+Date.now().toString(36)+".jpg",b); if(!pu) return; if(ui.svU&&ui.svU.url===u) ui.svU.pu=pu; mkEdit(SVST,v=>({v:(Array.isArray(v)?v:[]).map(x=>x.url===u&&!x.pu?{...x,pu}:x)})).catch(()=>{}); }catch(e){} },"image/jpeg",.75); }
 function svPuFromBlob(u,b){ try{ const v=document.createElement("video"); v.muted=true; v.playsInline=true; v.preload="auto"; v.src=URL.createObjectURL(b); v.onloadedmetadata=()=>{ try{ v.currentTime=Math.min(Math.max(.8,v.duration*.4),v.duration-.2); }catch(e){} }; v.onseeked=()=>{ const c=svPuGrab(v); if(c) svPuSave(u,c,1); URL.revokeObjectURL(v.src); }; v.load(); }catch(e){} }
-document.addEventListener("timeupdate",e=>{ const v=e.target; if(!v||v.tagName!=="VIDEO"||v.dataset.pug||v.currentTime<1||!/^blob:/.test(v.currentSrc||v.src)) return; const u=String(v.dataset.vurl||v.dataset.su||"").split("#")[0]; if(!/\/media\/svs_/.test(u)) return; v.dataset.pug=1; if(svPuL()[u]&&!isAdminAcct()) return; const c=svPuGrab(v); if(c) svPuSave(u,c); },true);
+document.addEventListener("timeupdate",e=>{ const v=e.target; if(!v||v.tagName!=="VIDEO"||v.dataset.pug||v.currentTime<1||!/^blob:/.test(v.currentSrc||v.src)) return; const u=String(v.dataset.vurl||v.dataset.su||String(v.dataset.vmid||"").replace(/^U\|/,"")).split("#")[0]; if(!/\/media\/svs_/.test(u)) return; v.dataset.pug=1; if(svPuL()[u]&&!isAdminAcct()) return; const c=svPuGrab(v); if(c) svPuSave(u,c); },true);
 async function svMediaUp(id,blob,on){ if(!HB_ON) return URL.createObjectURL(blob);
   const ct=blob.type||(/\.mov$/.test(id)?"video/quicktime":/\.mp4$/.test(id)?"video/mp4":"image/jpeg"), pub=MEDIA_URL+"/media/"+encodeURIComponent(id);
   if(MEDIA_URL&&blob.size>45*1024*1024){ hbUploadBig.on=p=>on&&on(p); try{ const ok=await hbUploadBig(id,blob.type?blob:new Blob([blob],{type:ct})); if(ok&&!(await svMediaOk(pub,blob.size))) return null; if(ok&&on) on(100); return ok?pub:null; } finally{ hbUploadBig.on=null; } }

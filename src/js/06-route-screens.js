@@ -173,7 +173,10 @@ const MDB={
 };
 async function idbHas(id){ try{ const d=await MDB.open(); return await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(!!q.result); q.onerror=()=>res(false); }); }catch(e){ return false; } }
 const mediaURL={};
-async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; let b=await MDB.get(id); if(!b) return null;
+async function mediaSrc(id){ if(mediaURL[id]) return mediaURL[id]; let b=null;
+  if(String(id).startsWith("U|")){ const u=id.slice(2); b=memBlobs[id]||null; if(!b) try{ const d=await MDB.open(); const r=await new Promise(res=>{ const q=d.transaction("m").objectStore("m").get(id); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); if(r&&r.ab) b=new Blob([r.ab],{type:r.type||"video/mp4"}); }catch(e){}
+    if(!b){ try{ const r=await fetch(u); if(r.ok){ const t=await r.blob(); b=new Blob([t],{type:/\.mov$/i.test(u)?"video/quicktime":"video/mp4"}); if(b.size<45*1024*1024) MDB.put(id,b,true); else memBlobs[id]=b; } }catch(e){} } }   /* 舞台影片（網址）：抓一次存在手機 */
+  else b=await MDB.get(id); if(!b) return null;
   try{ if(/^video/.test(b.type||"")&&typeof svVBad==="function"){ const t=new Uint8Array(await b.arrayBuffer()); if(svVBad(t)) b=new Blob([svVPatch(t)],{type:b.type}); } }catch(e){}   /* 影片標籤 iPhone 不收：改好再播 */
   return mediaURL[id]=URL.createObjectURL(b); }
 /* 圖片：記下每張圖的長寬比，畫面重畫時先把高度留好，圖還沒解碼也不會塌下去再彈回來（公司公告一閃一閃） */

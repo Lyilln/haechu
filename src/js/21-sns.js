@@ -130,7 +130,7 @@ function snArSeen(el,w,h){ try{ if(!w||!h) return; const sl=el.closest(".sn-sl")
 document.addEventListener("load",e=>{ const el=e.target; if(el&&el.tagName==="IMG"&&el.classList.contains("sn-img")) snArSeen(el,el.naturalWidth,el.naturalHeight); },true);
 document.addEventListener("loadedmetadata",e=>{ const el=e.target; if(el&&el.tagName==="VIDEO"&&el.classList.contains("sn-vid")) snArSeen(el,el.videoWidth,el.videoHeight); },true);
 const snMedia=(p,u,i)=>{ const m=p.media&&p.media[i]; if(!m) return snPic(p.pics?p.pics[i]:p.id+i,u?u.g:0,"fill"); if(m.type==="html") return `<div class="snof-h">${m.h}</div>`; if(m.url&&m.type!=="video") return `<img class="sn-img" src="${esc(m.url)}" alt="" loading="lazy">`;
-  if(m.type==="video"&&m.url) return `<video class="sn-img sn-vid" data-vurl="${esc(m.url)}" ${m.pu?`poster="${esc(m.pu)}"`:""} ${m.st?`style="${esc(m.st)}"`:""} muted playsinline webkit-playsinline loop preload="metadata"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;   /* 11/24 網址影片（選秀官方帳號的舞台）跟一般貼文一樣的樣子 */
+  if(m.type==="video"&&m.url) return `<video class="sn-img sn-vid" data-vmid="U|${esc(m.url)}" ${m.pu?`poster="${esc(m.pu)}"`:""} ${m.st?`style="${esc(m.st)}"`:""} muted playsinline webkit-playsinline loop preload="none"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;   /* 11/25 舞台影片跟一般貼文的影片走同一套（下載一次就存在手機，之後秒開） */
   if(m.type==="video") return `<video class="sn-img sn-vid" data-vmid="${m.mid}" data-pmid="${m.poster||""}" muted playsinline webkit-playsinline loop preload="none"></video><button class="sn-snd" data-a="snSnd" aria-label="聲音">${snSndIc()}</button>`;
   return `<img class="sn-img" data-mid="${m.mid}" alt="">`; };
 /* 格子裡的小圖：影片用封面，右上角放 Reels 圖示 */
