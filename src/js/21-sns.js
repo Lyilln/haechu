@@ -14,7 +14,7 @@ const SNS_FANS=[];   // 正式版：沒有假的粉絲帳號
 const SNS_CAPS=["今天的天空好美 ☁️","練習結束，回家路上 🌙","咖啡續命中 ☕","週末小確幸 🍰","新買的手機殼 💜","彩排後的宵夜 🍜","雨天聽歌最對味 🎧","今日穿搭 👗"];
 /* SNS 資料分開存（貼文、按讚、留言、追蹤…各一份）：按一個讚不用整包重存，人多也不會互相蓋掉
    私訊：每兩個人一份（daisuki_dm:甲~乙），只有這兩個人的對話，不再混在一起 */
-const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{},cf:{},folAt:{},intr:{},col:{},slk:{},sub:[]};
+const SN_PARTS={posts:[],fol:{},likes:{},cms:{},saved:{},stories:[],seen:{},prof:{},rp:{},notes:{},hl:{},folTs:{},ntSeen:{},req:{},cf:{},folAt:{},lkAt:{},intr:{},col:{},slk:{},sub:[]};
 const snKey=p=>"daisuki_sn_"+p;
 function snMigrate(){ try{ if(S.get("daisuki_sn_mig",false)) return; if(HB_ON&&HB.ver[K.sns]==null&&!Object.keys(HB.ver||{}).length) return;
   const old=S.get(K.sns,null); if(old&&typeof old==="object"){ Object.keys(SN_PARTS).forEach(p=>{ if(old[p]!=null&&S.get(snKey(p),null)==null) S.set(snKey(p),old[p]); });
@@ -297,17 +297,17 @@ function snThread(d,id){ const me=snMeId(), u=snUser(id); if(!u) return snDmList
       <span class="sn-dmic"><button type="button" data-a="snCallX" aria-label="語音訊息">${si("mic")}</button><label aria-label="相片">${si("img")}<input type="file" accept="image/*" class="sn-dmpic2" data-id="${u.id}"></label><button type="button" data-a="snDmStk" aria-label="貼圖">${si("stk")}</button><button type="button" data-a="snDmPlus" aria-label="更多">${si("plusC")}</button></span>
       <button type="submit" class="sn-dmsend" aria-label="傳送">${si("arrowUp")}</button></div></form>`; }
 function snNotifList(d){ const me=snMeId(), mine=d.posts.filter(p=>p.uid===me), L=[];
-  mine.forEach(p=>{ (d.likes[p.id]||[]).filter(x=>x!==me).forEach(x=>L.push({uid:x,t:"說你的貼文讚。",p:p.id,ts:p.ts+60e3})); (d.cms[p.id]||[]).filter(c=>c.uid!==me).forEach(c=>L.push({uid:c.uid,t:`留言：${c.text}`,p:p.id,ts:c.ts})); });
+  mine.forEach(p=>{ (d.likes[p.id]||[]).filter(x=>x!==me).forEach(x=>L.push({uid:x,t:"說你的貼文讚。",p:p.id,ts:((d.lkAt||{})[p.id]||{})[x]||p.ts+60e3})); (d.cms[p.id]||[]).filter(c=>c.uid!==me).forEach(c=>L.push({uid:c.uid,t:`留言：${c.text}`,p:p.id,ts:c.ts})); });
 
   const myU=(snUser(me)||{}).u||"";
   d.posts.forEach(p=>{ if(p.uid!==me&&(p.tags||[]).includes(me)) L.push({uid:p.uid,t:"在貼文中標註了你。",p:p.id,ts:p.ts}); if(p.uid!==me&&myU&&new RegExp("@"+myU.replace(/[.]/g,"\\.")+"(?![a-z0-9._])","i").test(p.cap||"")) L.push({uid:p.uid,t:"在貼文中提到你。",p:p.id,ts:p.ts+1});
     const C=d.cms[p.id]||[]; C.forEach(c=>{ if(c.uid===me) return; const par=c.re&&C.find(x=>x.id===c.re); if(par&&par.uid===me&&p.uid!==me) L.push({uid:c.uid,t:`回覆了你的留言：${c.text}`,p:p.id,ts:c.ts}); else if(p.uid!==me&&myU&&c.text.toLowerCase().includes("@"+myU)) L.push({uid:c.uid,t:`在留言中提到你：${c.text}`,p:p.id,ts:c.ts}); (c.lk||[]).length; }); });
   (d.stories||[]).forEach(s=>{ if(s.del) return; if(s.post&&s.uid!==me&&mine.some(p=>p.id===s.post)) L.push({uid:s.uid,t:"把你的貼文加到限時動態。",p:s.post,ts:s.ts}); if(s.uid!==me&&(s.ment||[]).some(m=>m.u===me)) L.push({uid:s.uid,t:"在限時動態中提到你。",ts:s.ts}); });
-  Object.keys(d.fol).filter(k=>k!==me&&(d.fol[k]||[]).includes(me)).forEach(k=>L.push({uid:k,t:"開始追蹤你。",ts:(d.folTs||{})[k]||0}));
+  Object.keys(d.fol).filter(k=>k!==me&&(d.fol[k]||[]).includes(me)).forEach(k=>L.push({uid:k,t:"開始追蹤你。",ts:((d.folAt||{})[k]||{})[me]||0}));
   return L.sort((a,b)=>b.ts-a.ts); }
 function snNotif(d){ const me=snMeId(), L=snNotifList(d); (d.ntSeen=d.ntSeen||{})[me]=Date.now(); snSave(d);
   const day=Date.now()-864e5, wk=Date.now()-7*864e5, grp=[["今天",L.filter(x=>x.ts>=day)],["這週",L.filter(x=>x.ts<day&&x.ts>=wk)],["更早",L.filter(x=>x.ts<wk)]].filter(g=>g[1].length);
-  const row=x=>{ const u=snUser(x.uid); if(!u) return ""; return `<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> ${esc(x.t)} <small>${snsAgo(x.ts||Date.now())}</small></p>${x.p?`<button class="sn-ntp" data-a="snsGo" data-v="post" data-id="${x.p}">${(()=>{ const pp=d.posts.find(p=>p.id===x.p); return pp?snThumb(pp,snUser(pp.uid)):snPic(x.p,u.g,"fill"); })()}</button>`:x.t==="開始追蹤你。"?`<button class="sn-fb ${snFol(d,me).includes(u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${snFol(d,me).includes(u.id)?"追蹤中":"回追"}</button>`:""}</div>`; };
+  const row=x=>{ const u=snUser(x.uid); if(!u) return ""; return `<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> ${esc(x.t)} <small>${x.ts?snsAgo(x.ts):""}</small></p>${x.p?`<button class="sn-ntp" data-a="snsGo" data-v="post" data-id="${x.p}">${(()=>{ const pp=d.posts.find(p=>p.id===x.p); return pp?snThumb(pp,snUser(pp.uid)):snPic(x.p,u.g,"fill"); })()}</button>`:x.t==="開始追蹤你。"?`<button class="sn-fb ${snFol(d,me).includes(u.id)?"":"pri"}" data-a="snFollow" data-v="${u.id}">${snFol(d,me).includes(u.id)?"追蹤中":"回追"}</button>`:""}</div>`; };
   return `<header class="sn-top"><button class="sn-ib" data-a="back" aria-label="返回">${si("back")}</button><b>通知</b><span class="sn-sp"></span></header>
     <main class="sn-nt">${(()=>{ const R=((d.req||{})[me]||[]).map(snUser).filter(Boolean); return R.length?`<h3 class="sn-nth">追蹤要求</h3>${R.map(u=>`<div class="sn-ntr"><button class="sn-hu" data-a="snsGo" data-v="profile" data-id="${u.id}">${snAv(u,44)}</button><p><b>${esc(u.u)}</b> 想要追蹤你。</p><button class="sn-fb pri" data-a="snReqOk" data-v="${u.id}">確認</button><button class="sn-fb" data-a="snReqNo" data-v="${u.id}">刪除</button></div>`).join("")}`:""; })()}${grp.length?grp.map(([t,g])=>`<h3 class="sn-nth">${t}</h3>${g.map(row).join("")}`).join(""):`<p class="sn-none">還沒有通知</p>`}</main>`; }
 
@@ -391,7 +391,7 @@ function snDblLike(id){ const d=snDB(), had=(d.likes[id]||[]).includes(snMeId())
 document.addEventListener("click",e=>{ const post=e.target.closest&&e.target.closest(".sn-post"); if(!post) return; const a=e.target.closest("[data-a],a,button,input,textarea,video"); if(a&&post.contains(a)) return;
   const id=post.id.replace(/^snp-/,""), now=Date.now(); if(now-snTapT<320&&ui.snTapId===id){ snTapT=0; snDblLike(id); } else { snTapT=now; ui.snTapId=id; } });
 const snRO=()=>{ try{ return session().role!=="artist"&&typeof svSnLock==="function"&&!!svSnLock(); }catch(e){ return false; } };   /* 11/25 參賽中的練習生：SNS 只能看 */
-function snToggleLike(id,force){ if(snRO()){ toast("節目播出期間，個人帳號暫停使用"); return; } const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0) L.push(me); snSave(d); }
+function snToggleLike(id,force){ if(snRO()){ toast("節目播出期間，個人帳號暫停使用"); return; } const d=snDB(), me=snMeId(), L=d.likes[id]=d.likes[id]||[], i=L.indexOf(me); if(i>=0&&!force) L.splice(i,1); else if(i<0){ L.push(me); ((d.lkAt=d.lkAt||{})[id]=d.lkAt[id]||{})[me]=Date.now(); } snSave(d); }   /* 11/25 記下按讚時間，通知才顯示對的時間 */
 
 /* ===== 一次性整理（管理員的手機做一次，大家共用）：
    藝人帳號：名稱、簡介、追蹤、精選全部恢復預設（藝人自己發的貼文留著）
